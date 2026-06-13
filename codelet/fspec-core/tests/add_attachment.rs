@@ -305,7 +305,11 @@ fn re_adding_same_file_surfaces_duplicate_attachment_error() {
     );
 
     // @step And the file spec/attachments/AUTH-001/diagram.png already exists on disk
-    write_file(tmp.path(), "spec/attachments/AUTH-001/diagram.png", b"existing");
+    write_file(
+        tmp.path(),
+        "spec/attachments/AUTH-001/diagram.png",
+        b"existing",
+    );
 
     // @step And a source file ./diagram.png exists
     write_file(tmp.path(), "diagram.png", b"new-source");
@@ -457,7 +461,93 @@ fn auto_creates_work_units_json_when_missing_then_reports_missing_work_unit_erro
     assert!(p.exists(), "spec/work-units.json must be auto-created");
     let v = read_work_units(tmp.path());
     assert!(
-        v.get("workUnits").map(|w| w.is_object()).unwrap_or(false),
+        v.get("workUnits").map(Value::is_object).unwrap_or(false),
         "expected workUnits object: {v}"
+    );
+}
+
+#[test]
+fn validates_mmd_attachment_and_rejects_invalid_mermaid_before_copy() {
+    // Scenario: Validates a .mmd attachment and rejects invalid Mermaid before copy
+
+    // @step Given a work unit AUTH-001 and a source file diagram.mmd containing invalid Mermaid
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("AUTH-001", "specifying", None));
+    write_file(
+        tmp.path(),
+        "diagram.mmd",
+        b"flowchart TD\n  A[Start --> B[Done",
+    );
+
+    // @step When I dispatch add-attachment with workUnitId='AUTH-001' filePath='diagram.mmd'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "filePath": "diagram.mmd"}),
+    ));
+
+    // @step Then the dispatcher returns an error containing 'Invalid Mermaid'
+    assert!(!result.success, "expected failure; got {result:?}");
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(msg.contains("Invalid Mermaid"), "got: {msg}");
+
+    // @step And no file is copied into spec/attachments/AUTH-001 and the work unit is unchanged
+    assert!(
+        !tmp.path().join("spec/attachments/AUTH-001").exists(),
+        "no attachments dir should be created on validation failure"
+    );
+    let data = read_work_units(tmp.path());
+    assert!(
+        data["workUnits"]["AUTH-001"].get("attachments").is_none(),
+        "work unit must remain unchanged"
+    );
+}
+
+#[test]
+fn validates_md_mermaid_fences_and_accepts_fence_free_markdown() {
+    // Scenario: Validates mermaid fences inside a .md attachment and accepts fence-free markdown
+
+    // @step Given a work unit AUTH-001 and a notes.md containing one valid and one invalid mermaid fence
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("AUTH-001", "specifying", None));
+    write_file(
+        tmp.path(),
+        "notes.md",
+        b"# Notes\n\n```mermaid\ngraph TD\n  A-->B\n```\n\n```mermaid\nflowchart TD\n  A[Start --> B\n```\n",
+    );
+
+    // @step When I dispatch add-attachment with workUnitId='AUTH-001' filePath='notes.md'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "filePath": "notes.md"}),
+    ));
+
+    // @step Then the dispatcher returns an error naming the failing code block
+    assert!(!result.success, "expected failure; got {result:?}");
+    let msg = result.error.as_ref().expect("error must be set");
+    assert!(
+        msg.contains("Mermaid code block 2 is invalid"),
+        "got: {msg}"
+    );
+
+    // @step And a plain.md containing no mermaid fences is accepted and copied unchanged
+    write_file(
+        tmp.path(),
+        "plain.md",
+        b"# Just markdown\n\nNo diagrams here.\n",
+    );
+    let ok = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "AUTH-001", "filePath": "plain.md"}),
+    ));
+    assert!(
+        ok.success,
+        "fence-free markdown must be accepted; got {ok:?}"
+    );
+    let copied = tmp.path().join("spec/attachments/AUTH-001/plain.md");
+    assert!(copied.exists(), "plain.md should be copied");
+    assert_eq!(
+        fs::read(&copied).expect("read copied"),
+        b"# Just markdown\n\nNo diagrams here.\n",
+        "copied markdown must be byte-identical"
     );
 }

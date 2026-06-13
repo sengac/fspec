@@ -251,7 +251,10 @@ fn omits_deleted_at_when_absent_on_source_item() {
     let items = data["deletedItems"].as_array().expect("deletedItems array");
     let first = items[0].as_object().expect("object");
     assert_eq!(first.get("id").and_then(Value::as_u64), Some(7));
-    assert_eq!(first.get("text").and_then(Value::as_str), Some("No timestamp"));
+    assert_eq!(
+        first.get("text").and_then(Value::as_str),
+        Some("No timestamp")
+    );
     assert!(
         !first.contains_key("deletedAt"),
         "deletedAt must be omitted when absent on source: {first:?}"
@@ -411,7 +414,9 @@ fn returns_error_when_work_unit_id_missing() {
     let msg = result.error.as_ref().expect("error message");
     let lower = msg.to_lowercase();
     assert!(
-        lower.contains("workunitid") || lower.contains("work unit id") || lower.contains("workunit"),
+        lower.contains("workunitid")
+            || lower.contains("work unit id")
+            || lower.contains("workunit"),
         "error message must mention the missing workUnitId arg; got: {msg}"
     );
 }
@@ -441,10 +446,7 @@ fn json_format_emits_two_space_indent_with_canonical_field_set() {
     assert_eq!(data["success"].as_bool(), Some(true));
     assert_eq!(data["workUnitId"].as_str(), Some("AUTH-001"));
     assert_eq!(data["totalDeleted"].as_u64(), Some(1));
-    assert_eq!(
-        data["deletedItems"].as_array().map(Vec::len),
-        Some(1)
-    );
+    assert_eq!(data["deletedItems"].as_array().map(Vec::len), Some(1));
 
     // @step Then the DispatchResult.data uses 2-space indentation
     // serde_json::to_string_pretty produces 2-space indent by default. We
@@ -454,8 +456,14 @@ fn json_format_emits_two_space_indent_with_canonical_field_set() {
     //   level 3: `      "id"`   (6 spaces — nested field)
     assert!(
         result.data.lines().any(|l| l.starts_with("  \"success\""))
-            || result.data.lines().any(|l| l.starts_with("  \"workUnitId\""))
-            || result.data.lines().any(|l| l.starts_with("  \"deletedItems\"")),
+            || result
+                .data
+                .lines()
+                .any(|l| l.starts_with("  \"workUnitId\""))
+            || result
+                .data
+                .lines()
+                .any(|l| l.starts_with("  \"deletedItems\"")),
         "expected a line starting with two-space-indented root field; got:\n{}",
         result.data
     );

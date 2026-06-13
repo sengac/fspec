@@ -46,8 +46,11 @@ fn write_prefixes(project_root: &Path, prefixes: &[&str]) {
         );
     }
     let data = json!({"prefixes": Value::Object(obj)});
-    fs::write(spec.join("prefixes.json"), serde_json::to_string_pretty(&data).unwrap())
-        .expect("write prefixes.json");
+    fs::write(
+        spec.join("prefixes.json"),
+        serde_json::to_string_pretty(&data).unwrap(),
+    )
+    .expect("write prefixes.json");
 }
 
 /// Write spec/epics.json with the given epic ids.
@@ -61,8 +64,11 @@ fn write_epics(project_root: &Path, epics: &[&str]) {
         );
     }
     let data = json!({"epics": Value::Object(obj)});
-    fs::write(spec.join("epics.json"), serde_json::to_string_pretty(&data).unwrap())
-        .expect("write epics.json");
+    fs::write(
+        spec.join("epics.json"),
+        serde_json::to_string_pretty(&data).unwrap(),
+    )
+    .expect("write epics.json");
 }
 
 /// Write a raw spec/work-units.json string.
@@ -92,7 +98,15 @@ fn read_epics(project_root: &Path) -> Value {
 fn build_work_units(units: &[(&str, &str, &str)]) -> String {
     let mut wus = serde_json::Map::new();
     let mut states: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states.insert(*st, Vec::new());
     }
     for (id, status, parent) in units {
@@ -101,21 +115,45 @@ fn build_work_units(units: &[(&str, &str, &str)]) -> String {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".to_string()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
         if !parent.is_empty() {
             obj.insert("parent".into(), Value::String((*parent).to_string()));
         } else {
             obj.insert("children".into(), Value::Array(vec![]));
         }
         wus.insert((*id).to_string(), Value::Object(obj));
-        states.get_mut(*status).expect("known state").push((*id).to_string());
+        states
+            .get_mut(*status)
+            .expect("known state")
+            .push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
-            Value::Array(states.get(*st).expect("state").iter().map(|s| Value::String(s.clone())).collect()),
+            Value::Array(
+                states
+                    .get(*st)
+                    .expect("state")
+                    .iter()
+                    .map(|s| Value::String(s.clone()))
+                    .collect(),
+            ),
         );
     }
     serde_json::to_string_pretty(&json!({
@@ -157,10 +195,13 @@ fn dispatcher_creates_a_minimal_story_and_writes_work_units_json() {
     assert!(!wu["updatedAt"].as_str().unwrap_or("").is_empty());
 
     // @step And AUTH-001 has a children field equal to an empty array
-    assert_eq!(wu["children"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(wu["children"].as_array().map(Vec::len), Some(0));
 
     // @step And AUTH-001 does NOT contain a 'parent' key
-    assert!(wu.get("parent").is_none(), "must not have parent key; got {wu}");
+    assert!(
+        wu.get("parent").is_none(),
+        "must not have parent key; got {wu}"
+    );
 
     // @step And states.backlog contains 'AUTH-001'
     let backlog = v["states"]["backlog"].as_array().expect("backlog array");
@@ -196,7 +237,15 @@ fn new_story_object_field_order_matches_ts_object_literal() {
         .collect();
     assert_eq!(
         keys,
-        vec!["id", "title", "type", "status", "createdAt", "updatedAt", "children"],
+        vec![
+            "id",
+            "title",
+            "type",
+            "status",
+            "createdAt",
+            "updatedAt",
+            "children"
+        ],
         "AUTH-001 key order must match TS object-literal insertion order"
     );
 }
@@ -221,13 +270,19 @@ fn dispatcher_stores_optional_description_after_updated_at() {
 
     // @step And spec/work-units.json shows AUTH-001.description='Email + password'
     let v = read_work_units(tmp.path());
-    assert_eq!(v["workUnits"]["AUTH-001"]["description"].as_str(), Some("Email + password"));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["description"].as_str(),
+        Some("Email + password")
+    );
 
     // @step And in the on-disk JSON the 'updatedAt' key appears before the 'description' key
     let raw = read_work_units_raw(tmp.path());
     let upd = raw.find("\"updatedAt\"").expect("updatedAt key");
     let desc = raw.find("\"description\"").expect("description key");
-    assert!(upd < desc, "updatedAt ({upd}) must appear before description ({desc})");
+    assert!(
+        upd < desc,
+        "updatedAt ({upd}) must appear before description ({desc})"
+    );
 }
 
 #[test]
@@ -238,7 +293,10 @@ fn id_generation_increments_using_prefix_counters_high_water_mark() {
     let tmp = TempDir::new().expect("tempdir");
     write_foundation(tmp.path());
     write_prefixes(tmp.path(), &["AUTH"]);
-    write_work_units(tmp.path(), &build_work_units(&[("AUTH-001", "backlog", "")]));
+    write_work_units(
+        tmp.path(),
+        &build_work_units(&[("AUTH-001", "backlog", "")]),
+    );
 
     // @step When I dispatch create-story with prefix='AUTH' and title='Second story'
     let result = dispatch_command(req(
@@ -251,7 +309,10 @@ fn id_generation_increments_using_prefix_counters_high_water_mark() {
 
     // @step And spec/work-units.json contains a work unit AUTH-002
     let v = read_work_units(tmp.path());
-    assert!(v["workUnits"].get("AUTH-002").is_some(), "AUTH-002 must exist");
+    assert!(
+        v["workUnits"].get("AUTH-002").is_some(),
+        "AUTH-002 must exist"
+    );
 
     // @step And prefixCounters.AUTH equals 2
     assert_eq!(v["prefixCounters"]["AUTH"].as_u64(), Some(2));
@@ -265,7 +326,10 @@ fn a_child_story_is_linked_to_its_parent_and_omits_children_array() {
     let tmp = TempDir::new().expect("tempdir");
     write_foundation(tmp.path());
     write_prefixes(tmp.path(), &["AUTH"]);
-    write_work_units(tmp.path(), &build_work_units(&[("AUTH-001", "backlog", "")]));
+    write_work_units(
+        tmp.path(),
+        &build_work_units(&[("AUTH-001", "backlog", "")]),
+    );
 
     // @step When I dispatch create-story with prefix='AUTH', title='Child story', and parent='AUTH-001'
     let result = dispatch_command(req(
@@ -278,7 +342,10 @@ fn a_child_story_is_linked_to_its_parent_and_omits_children_array() {
 
     // @step And spec/work-units.json shows AUTH-002.parent='AUTH-001'
     let v = read_work_units(tmp.path());
-    assert_eq!(v["workUnits"]["AUTH-002"]["parent"].as_str(), Some("AUTH-001"));
+    assert_eq!(
+        v["workUnits"]["AUTH-002"]["parent"].as_str(),
+        Some("AUTH-001")
+    );
 
     // @step And AUTH-002 does NOT contain a 'children' key
     assert!(
@@ -287,7 +354,9 @@ fn a_child_story_is_linked_to_its_parent_and_omits_children_array() {
     );
 
     // @step And AUTH-001.children contains 'AUTH-002'
-    let children = v["workUnits"]["AUTH-001"]["children"].as_array().expect("children array");
+    let children = v["workUnits"]["AUTH-001"]["children"]
+        .as_array()
+        .expect("children array");
     assert!(children.iter().any(|x| x.as_str() == Some("AUTH-002")));
 }
 
@@ -316,7 +385,9 @@ fn an_epic_association_appends_the_story_id_to_the_epic_work_units_array() {
 
     // @step And spec/epics.json shows epic 'auth' workUnits contains 'AUTH-001'
     let e = read_epics(tmp.path());
-    let work_units = e["epics"]["auth"]["workUnits"].as_array().expect("epic workUnits array");
+    let work_units = e["epics"]["auth"]["workUnits"]
+        .as_array()
+        .expect("epic workUnits array");
     assert!(work_units.iter().any(|x| x.as_str() == Some("AUTH-001")));
 }
 
@@ -367,10 +438,7 @@ fn dispatcher_rejects_an_empty_title() {
     write_prefixes(tmp.path(), &["AUTH"]);
 
     // @step When I dispatch create-story with prefix='AUTH' and title=''
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({"prefix": "AUTH", "title": ""}),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({"prefix": "AUTH", "title": ""})));
 
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected failure; got {result:?}");
@@ -400,7 +468,10 @@ fn dispatcher_rejects_an_unregistered_prefix() {
 
     // @step And the error message contains the substring "Prefix 'NOPE' is not registered"
     let err = result.error.unwrap_or_default();
-    assert!(err.contains("Prefix 'NOPE' is not registered"), "got: {err}");
+    assert!(
+        err.contains("Prefix 'NOPE' is not registered"),
+        "got: {err}"
+    );
 }
 
 #[test]
@@ -423,7 +494,10 @@ fn dispatcher_rejects_a_non_existent_parent() {
 
     // @step And the error message contains the substring "Parent story 'AUTH-999' does not exist"
     let err = result.error.unwrap_or_default();
-    assert!(err.contains("Parent story 'AUTH-999' does not exist"), "got: {err}");
+    assert!(
+        err.contains("Parent story 'AUTH-999' does not exist"),
+        "got: {err}"
+    );
 }
 
 #[test]
@@ -454,7 +528,10 @@ fn dispatcher_rejects_exceeding_the_maximum_nesting_depth() {
 
     // @step And the error message contains the substring 'Maximum nesting depth (3) exceeded'
     let err = result.error.unwrap_or_default();
-    assert!(err.contains("Maximum nesting depth (3) exceeded"), "got: {err}");
+    assert!(
+        err.contains("Maximum nesting depth (3) exceeded"),
+        "got: {err}"
+    );
 }
 
 #[test]

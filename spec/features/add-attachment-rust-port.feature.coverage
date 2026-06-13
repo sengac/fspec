@@ -2393,18 +2393,87 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Validates a .mmd attachment and rejects invalid Mermaid before copy",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "lines": "469-504",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_attachment.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validates mermaid fences inside a .md attachment and accepts fence-free markdown",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_attachment.rs",
+          "lines": "505-552",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/utils/mermaid_validation.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-core/tests/add_attachment.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_attachment.rs"
+      "codelet/fspec-core/src/commands/add_attachment.rs",
+      "codelet/fspec-core/src/utils/mermaid_validation.rs"
     ],
-    "totalLinesCovered": 2602
+    "totalLinesCovered": 2722
   }
 }

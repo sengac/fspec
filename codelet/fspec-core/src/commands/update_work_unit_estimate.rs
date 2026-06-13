@@ -108,8 +108,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// The wrapped body. Returns the raw inner error message (no wrap prefix) on
 /// failure so [`run`] can apply the single outer-catch envelope.
 fn run_inner(args_json: &str, project_root: &Path) -> Result<String, String> {
-    let args: UpdateEstimateArgs = serde_json::from_str(args_json)
-        .map_err(|e| format!("failed to parse args: {e}"))?;
+    let args: UpdateEstimateArgs =
+        serde_json::from_str(args_json).map_err(|e| format!("failed to parse args: {e}"))?;
 
     // ── Fibonacci validation (TS: lines 33-37). FIRST, before file reads. ──
     // TS validates the `parseInt`-coerced number; a non-numeric CLI arg
@@ -133,8 +133,7 @@ fn run_inner(args_json: &str, project_root: &Path) -> Result<String, String> {
     // parse error would escalate as a ParseJson FspecCoreError before we get
     // here; but ensure_work_units_file returns that as a Result — we surface
     // its Display through the wrap by stringifying via a helper read below.
-    let data = ensure_work_units_file(project_root)
-        .map_err(|e| e.to_string())?;
+    let data = ensure_work_units_file(project_root).map_err(|e| e.to_string())?;
 
     // ── Existence check (TS: lines 46-48) ──────────────────────────────
     let work_unit = data
@@ -154,7 +153,10 @@ fn run_inner(args_json: &str, project_root: &Path) -> Result<String, String> {
                 return Err(no_feature_file_message(&args.work_unit_id, ty));
             }
             Some(result) if result.has_prefill => {
-                return Err(prefill_placeholders_message(&args.work_unit_id, &result.matches));
+                return Err(prefill_placeholders_message(
+                    &args.work_unit_id,
+                    &result.matches,
+                ));
             }
             Some(_) => { /* clean feature file — proceed */ }
         }
@@ -162,16 +164,15 @@ fn run_inner(args_json: &str, project_root: &Path) -> Result<String, String> {
 
     // ── Mutation (TS: lines 122-124). Round-trip raw object for key order. ──
     let mut top: Map<String, Value> =
-        read_raw_object(&project_root.join("spec").join("work-units.json"))
-            .unwrap_or_else(|| {
-                serde_json::to_value(&data)
-                    .ok()
-                    .and_then(|v| match v {
-                        Value::Object(m) => Some(m),
-                        _ => None,
-                    })
-                    .unwrap_or_default()
-            });
+        read_raw_object(&project_root.join("spec").join("work-units.json")).unwrap_or_else(|| {
+            serde_json::to_value(&data)
+                .ok()
+                .and_then(|v| match v {
+                    Value::Object(m) => Some(m),
+                    _ => None,
+                })
+                .unwrap_or_default()
+        });
 
     if let Some(unit) = top
         .get_mut("workUnits")
@@ -230,7 +231,10 @@ fn prefill_placeholders_message(work_unit_id: &str, matches: &[prefill::PrefillM
         String::new(),
         format!("Work unit {work_unit_id} cannot be estimated because:"),
         "  - Feature file contains prefill placeholders".to_string(),
-        format!("  - Found {} placeholder(s) that must be removed", matches.len()),
+        format!(
+            "  - Found {} placeholder(s) that must be removed",
+            matches.len()
+        ),
         "  - ACDD requires complete acceptance criteria before estimation".to_string(),
         String::new(),
         "Prefill placeholders found:".to_string(),
@@ -328,18 +332,14 @@ mod prefill {
         //   /^@.*@component(?!\w)/gm  and  /^@.*@feature-group(?!\w)/gm
         // Rust's `regex` crate lacks lookahead, so we emulate `(?!\w)` by
         // matching the token then asserting the next char is not a word char.
-        push_tag_matches(
-            &Regex::new(r"(?m)^@.*@component").expect("static regex"),
-            "@component",
-            content,
-            &mut matches,
-        );
-        push_tag_matches(
-            &Regex::new(r"(?m)^@.*@feature-group").expect("static regex"),
-            "@feature-group",
-            content,
-            &mut matches,
-        );
+        // These patterns are static and always compile; the `if let Ok`
+        // guard simply avoids an `expect`/panic.
+        if let Ok(re) = Regex::new(r"(?m)^@.*@component") {
+            push_tag_matches(&re, "@component", content, &mut matches);
+        }
+        if let Ok(re) = Regex::new(r"(?m)^@.*@feature-group") {
+            push_tag_matches(&re, "@feature-group", content, &mut matches);
+        }
 
         PrefillDetectionResult {
             has_prefill: !matches.is_empty(),
@@ -417,7 +417,7 @@ mod prefill {
         entries.sort();
 
         for path in entries {
-            if path.extension().and_then(|s| s.to_str()) != Some("feature") {
+            if path.extension().and_then(std::ffi::OsStr::to_str) != Some("feature") {
                 continue;
             }
             let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
@@ -431,7 +431,12 @@ mod prefill {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -477,7 +482,10 @@ mod tests {
 
     #[test]
     fn prefill_message_contains_required_substrings() {
-        let matches = vec![prefill::PrefillMatch { pattern: "[role]", line: 5 }];
+        let matches = vec![prefill::PrefillMatch {
+            pattern: "[role]",
+            line: 5,
+        }];
         let msg = prefill_placeholders_message("AUTH-001", &matches);
         assert!(msg.contains("ACDD VIOLATION"));
         assert!(msg.contains("prefill placeholders"));

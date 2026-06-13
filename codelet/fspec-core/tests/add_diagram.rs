@@ -305,7 +305,7 @@ fn dispatcher_rejects_empty_code_argument() {
 
 #[test]
 fn dispatcher_rejects_diagram_with_quoted_subgraph_title() {
-    // Scenario: Dispatcher rejects diagram with quoted subgraph title (Framing A regex check)
+    // Scenario: Dispatcher rejects diagram with quoted subgraph title (merman pre-check)
 
     // @step Given spec/foundation.json exists with architectureDiagrams=[]
     let tmp = TempDir::new().expect("tempdir");
@@ -334,7 +334,7 @@ fn dispatcher_rejects_diagram_with_quoted_subgraph_title() {
 
 #[test]
 fn dispatcher_rejects_diagram_with_invalid_subgraph_identifier() {
-    // Scenario: Dispatcher rejects diagram with invalid subgraph identifier (Framing A regex check)
+    // Scenario: Dispatcher rejects diagram with invalid subgraph identifier (merman pre-check)
 
     // @step Given spec/foundation.json exists with architectureDiagrams=[]
     let tmp = TempDir::new().expect("tempdir");
@@ -391,4 +391,70 @@ fn dispatcher_preserves_unknown_top_level_fields_on_write() {
 
     // @step And spec/foundation.json still contains the 'project' object
     assert_eq!(data["project"]["name"].as_str(), Some("fspec"));
+}
+
+#[test]
+fn dispatcher_rejects_diagram_with_a_genuine_merman_syntax_error() {
+    // Scenario: Dispatcher rejects diagram with a genuine merman syntax error
+
+    // @step Given spec/foundation.json exists with architectureDiagrams=[]
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(tmp.path(), &empty_foundation());
+
+    // @step When I dispatch add-diagram with section='Architecture' title='Bad' code='flowchart TD\n  A[Start --> B[Done'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({
+            "section": "Architecture",
+            "title": "Bad",
+            "code": "flowchart TD\n  A[Start --> B[Done"
+        }),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected failure, got {result:?}");
+
+    // @step And no entry is appended to architectureDiagrams
+    let data = read_foundation(tmp.path());
+    assert_eq!(
+        data["architectureDiagrams"]
+            .as_array()
+            .expect("array")
+            .len(),
+        0,
+        "no diagram should be persisted on invalid mermaid"
+    );
+}
+
+#[test]
+fn dispatcher_rejects_code_that_matches_no_mermaid_diagram_type() {
+    // Scenario: Dispatcher rejects code that matches no mermaid diagram type
+
+    // @step Given spec/foundation.json exists with architectureDiagrams=[]
+    let tmp = TempDir::new().expect("tempdir");
+    write_foundation(tmp.path(), &empty_foundation());
+
+    // @step When I dispatch add-diagram with section='Architecture' title='Bad' code='this is not a diagram at all'
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({
+            "section": "Architecture",
+            "title": "Bad",
+            "code": "this is not a diagram at all"
+        }),
+    ));
+
+    // @step Then the dispatcher returns success=false
+    assert!(!result.success, "expected failure, got {result:?}");
+
+    // @step And no entry is appended to architectureDiagrams
+    let data = read_foundation(tmp.path());
+    assert_eq!(
+        data["architectureDiagrams"]
+            .as_array()
+            .expect("array")
+            .len(),
+        0,
+        "no diagram should be persisted on undetectable mermaid"
+    );
 }

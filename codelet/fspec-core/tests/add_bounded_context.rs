@@ -40,7 +40,15 @@ fn read_work_units(project_root: &Path) -> Value {
 /// Seed a work-units.json with a single (id, status) unit and no eventStorm.
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<Value> = if *st == status {
             vec![Value::String(id.to_string())]
         } else {
@@ -97,14 +105,20 @@ fn first_add_seeds_event_storm_on_clean_unit() {
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items[0] has type='bounded_context', color=null, text='Order Management', id=0, deleted=false
     let i0 = &es["items"][0];
     assert_eq!(i0["type"].as_str(), Some("bounded_context"));
-    assert!(i0.get("color").map(Value::is_null).unwrap_or(false), "color must be JSON null");
+    assert!(
+        i0.get("color").map(Value::is_null).unwrap_or(false),
+        "color must be JSON null"
+    );
     assert_eq!(i0["text"].as_str(), Some("Order Management"));
     assert_eq!(i0["id"].as_u64(), Some(0));
     assert_eq!(i0["deleted"].as_bool(), Some(false));
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items[0].createdAt is a fresh ISO-8601 timestamp
     let created = i0["createdAt"].as_str().expect("createdAt string");
-    assert!(created.len() == 24 && created.ends_with('Z'), "got: {created}");
+    assert!(
+        created.len() == 24 && created.ends_with('Z'),
+        "got: {created}"
+    );
 }
 
 #[test]
@@ -164,14 +178,22 @@ fn optional_fields_persisted_in_ts_insertion_order() {
     // @step And the items[0] JSON key order is type, color, text, description, timestamp, boundedContext, id, deleted, createdAt
     let raw = read_work_units_raw(tmp.path());
     let expected_order = [
-        "\"type\"", "\"color\"", "\"text\"", "\"description\"", "\"timestamp\"",
-        "\"boundedContext\"", "\"id\"", "\"deleted\"", "\"createdAt\"",
+        "\"type\"",
+        "\"color\"",
+        "\"text\"",
+        "\"description\"",
+        "\"timestamp\"",
+        "\"boundedContext\"",
+        "\"id\"",
+        "\"deleted\"",
+        "\"createdAt\"",
     ];
     let mut last = 0usize;
     for key in expected_order {
-        let pos = raw[last..].find(key).map(|p| p + last).unwrap_or_else(|| {
-            panic!("key {key} not found after position {last} in:\n{raw}")
-        });
+        let pos = raw[last..]
+            .find(key)
+            .map(|p| p + last)
+            .unwrap_or_else(|| panic!("key {key} not found after position {last} in:\n{raw}"));
         assert!(pos >= last, "key {key} out of order in:\n{raw}");
         last = pos + key.len();
     }
@@ -245,7 +267,10 @@ fn missing_work_unit_surfaces_canonical_not_found_error() {
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
     let post_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
-    assert_eq!(pre_bytes, post_bytes, "work-units.json must NOT be mutated on failure");
+    assert_eq!(
+        pre_bytes, post_bytes,
+        "work-units.json must NOT be mutated on failure"
+    );
 }
 
 #[test]

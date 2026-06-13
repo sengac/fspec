@@ -46,7 +46,7 @@ use crate::error::FspecCoreError;
 use crate::io::ensure::ensure_work_units_file;
 use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
-use crate::types::work_unit::{WorkUnitsData, WorkUnit, WorkUnitStatus};
+use crate::types::work_unit::{WorkUnit, WorkUnitStatus, WorkUnitsData};
 
 // ─────────────────────────────────────────────────────────────────────────
 // Args
@@ -138,11 +138,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let path = project_root.join("spec").join("work-units.json");
     write_json_atomic(&path, &data)?;
 
-    serde_json::to_string(&AddDependenciesResult { success: true, added }).map_err(|e| {
-        FspecCoreError::InvalidArgs {
-            command: "add-dependencies",
-            reason: format!("failed to serialize result: {e}"),
-        }
+    serde_json::to_string(&AddDependenciesResult {
+        success: true,
+        added,
+    })
+    .map_err(|e| FspecCoreError::InvalidArgs {
+        command: "add-dependencies",
+        reason: format!("failed to serialize result: {e}"),
     })
 }
 
@@ -159,10 +161,11 @@ fn apply_blocks(
     if source_id == target_id {
         return Err(self_dep_error());
     }
-    if list_field(data.work_units.get(source_id).expect("source"), "blocks")
-        .iter()
-        .any(|v| v == target_id)
-    {
+    let is_dup = data
+        .work_units
+        .get(source_id)
+        .is_some_and(|wu| list_field(wu, "blocks").iter().any(|v| v == target_id));
+    if is_dup {
         return Err(duplicate_error());
     }
     // Cycle detection: follow `blocks` adjacency from target back to source.
@@ -177,13 +180,10 @@ fn apply_blocks(
     // Push source onto target.blockedBy.
     push_into_list_field(data, target_id, "blockedBy", source_id);
     // Auto-transition target to blocked if not blocked/done.
-    let cur_status = data
-        .work_units
-        .get(target_id)
-        .map(|w| w.status)
-        .expect("target");
-    if cur_status != WorkUnitStatus::Blocked && cur_status != WorkUnitStatus::Done {
-        transition_to_blocked(data, target_id, cur_status, None);
+    if let Some(cur_status) = data.work_units.get(target_id).map(|w| w.status) {
+        if cur_status != WorkUnitStatus::Blocked && cur_status != WorkUnitStatus::Done {
+            transition_to_blocked(data, target_id, cur_status, None);
+        }
     }
     Ok(())
 }
@@ -197,10 +197,11 @@ fn apply_blocked_by(
     if source_id == target_id {
         return Err(self_dep_error());
     }
-    if list_field(data.work_units.get(source_id).expect("source"), "blockedBy")
-        .iter()
-        .any(|v| v == target_id)
-    {
+    let is_dup = data
+        .work_units
+        .get(source_id)
+        .is_some_and(|wu| list_field(wu, "blockedBy").iter().any(|v| v == target_id));
+    if is_dup {
         return Err(duplicate_error());
     }
     // Cycle detection from the BLOCKER's perspective (TS add-dependency.ts:153-162).
@@ -212,18 +213,15 @@ fn apply_blocked_by(
     }
     push_into_list_field(data, source_id, "blockedBy", target_id);
     push_into_list_field(data, target_id, "blocks", source_id);
-    let cur_status = data
-        .work_units
-        .get(source_id)
-        .map(|w| w.status)
-        .expect("source");
-    if cur_status != WorkUnitStatus::Blocked && cur_status != WorkUnitStatus::Done {
-        transition_to_blocked(
-            data,
-            source_id,
-            cur_status,
-            Some(format!("Blocked by {target_id}")),
-        );
+    if let Some(cur_status) = data.work_units.get(source_id).map(|w| w.status) {
+        if cur_status != WorkUnitStatus::Blocked && cur_status != WorkUnitStatus::Done {
+            transition_to_blocked(
+                data,
+                source_id,
+                cur_status,
+                Some(format!("Blocked by {target_id}")),
+            );
+        }
     }
     Ok(())
 }
@@ -237,10 +235,11 @@ fn apply_depends_on(
     if source_id == target_id {
         return Err(self_dep_error());
     }
-    if list_field(data.work_units.get(source_id).expect("source"), "dependsOn")
-        .iter()
-        .any(|v| v == target_id)
-    {
+    let is_dup = data
+        .work_units
+        .get(source_id)
+        .is_some_and(|wu| list_field(wu, "dependsOn").iter().any(|v| v == target_id));
+    if is_dup {
         return Err(duplicate_error());
     }
     push_into_list_field(data, source_id, "dependsOn", target_id);
@@ -256,17 +255,19 @@ fn apply_relates_to(
     if source_id == target_id {
         return Err(self_dep_error());
     }
-    if list_field(data.work_units.get(source_id).expect("source"), "relatesTo")
-        .iter()
-        .any(|v| v == target_id)
-    {
+    let is_dup = data
+        .work_units
+        .get(source_id)
+        .is_some_and(|wu| list_field(wu, "relatesTo").iter().any(|v| v == target_id));
+    if is_dup {
         return Err(duplicate_error());
     }
     push_into_list_field(data, source_id, "relatesTo", target_id);
     // Idempotent symmetric reverse edge.
-    let reverse_has = list_field(data.work_units.get(target_id).expect("target"), "relatesTo")
-        .iter()
-        .any(|v| v == source_id);
+    let reverse_has = data
+        .work_units
+        .get(target_id)
+        .is_some_and(|wu| list_field(wu, "relatesTo").iter().any(|v| v == source_id));
     if !reverse_has {
         push_into_list_field(data, target_id, "relatesTo", source_id);
     }
@@ -317,13 +318,10 @@ fn list_field(wu: &WorkUnit, field: &str) -> Vec<String> {
 /// Append `value` to the array-typed `field` on the work unit with id
 /// `id`, creating the array if absent. Mirrors `wu.<field> = wu.<field> ||
 /// []; wu.<field>.push(value)` from TS.
-fn push_into_list_field(
-    data: &mut WorkUnitsData,
-    id: &str,
-    field: &str,
-    value: &str,
-) {
-    let wu = data.work_units.get_mut(id).expect("work unit exists");
+fn push_into_list_field(data: &mut WorkUnitsData, id: &str, field: &str, value: &str) {
+    let Some(wu) = data.work_units.get_mut(id) else {
+        return;
+    };
     let entry = wu
         .extra
         .entry(field.to_string())
@@ -356,7 +354,9 @@ fn transition_to_blocked(
         blocked_arr.push(id.to_string());
     }
     // Update the unit's status + optional blockedReason.
-    let wu = data.work_units.get_mut(id).expect("work unit exists");
+    let Some(wu) = data.work_units.get_mut(id) else {
+        return;
+    };
     wu.status = WorkUnitStatus::Blocked;
     if let Some(reason) = blocked_reason {
         wu.extra
@@ -405,7 +405,13 @@ fn detect_cycle(data: &WorkUnitsData, from_id: &str, to_id: &str) -> Option<Stri
             for entry in list_field(wu, "blocks") {
                 let mut branch_visited = visited.clone();
                 let mut branch_path = path.clone();
-                if let Some(cycle) = dfs(units, from_id, &entry, &mut branch_visited, &mut branch_path) {
+                if let Some(cycle) = dfs(
+                    units,
+                    from_id,
+                    &entry,
+                    &mut branch_visited,
+                    &mut branch_path,
+                ) {
                     return Some(cycle);
                 }
             }

@@ -14,16 +14,14 @@ const ARGS: &[CommandArgument] = &[
     },
     CommandArgument {
         name: "index",
-        description:
-            "Architecture note ID (stable index from show-work-unit or show-deleted)",
+        description: "Architecture note ID (stable index from show-work-unit or show-deleted)",
         required: true,
     },
 ];
 
 const OPTS: &[CommandOption] = &[CommandOption {
     flag: "--ids <ids>",
-    description:
-        "Restore multiple architecture notes with comma-separated IDs (e.g., \"2,5,7\")",
+    description: "Restore multiple architecture notes with comma-separated IDs (e.g., \"2,5,7\")",
     default_value: None,
 }];
 

@@ -1,7 +1,9 @@
 //! `remove-architecture-note` help configuration — Rust port of
 //! `src/commands/remove-architecture-note-help.ts`.
 
-use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError};
+use super::super::{
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
+};
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {

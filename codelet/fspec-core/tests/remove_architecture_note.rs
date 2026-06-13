@@ -35,8 +35,7 @@ fn read_work_units_value(project_root: &Path) -> Value {
 }
 
 fn read_work_units_raw(project_root: &Path) -> String {
-    fs::read_to_string(project_root.join("spec/work-units.json"))
-        .expect("read work-units.json")
+    fs::read_to_string(project_root.join("spec/work-units.json")).expect("read work-units.json")
 }
 
 fn seed_unit_with_notes(project_root: &Path, notes: &str, next_note_id: u32) {
@@ -131,7 +130,10 @@ fn dispatcher_is_idempotent_on_already_deleted_notes() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected idempotent success; got {result:?}");
+    assert!(
+        result.success,
+        "expected idempotent success; got {result:?}"
+    );
 
     // @step And the DispatchResult.data contains the substring 'Item ID 0 already deleted'
     assert!(

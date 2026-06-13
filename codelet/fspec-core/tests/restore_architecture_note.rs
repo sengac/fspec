@@ -78,7 +78,11 @@ fn work_units_with(status: &str, meta_last_updated: &str, extras_json: &str) -> 
     "blocked": {blocked}
   }}
 }}"#,
-        maybe_comma = if extras_json.trim().is_empty() { "" } else { ",\n      " },
+        maybe_comma = if extras_json.trim().is_empty() {
+            ""
+        } else {
+            ",\n      "
+        },
         extras_json = extras_json.trim(),
     )
 }

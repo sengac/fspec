@@ -461,7 +461,7 @@
       ]
     },
     {
-      "name": "CLI rejects an invalid mermaid subgraph identifier (Framing A regex check)",
+      "name": "CLI rejects an invalid mermaid subgraph identifier (merman pre-check)",
       "testMappings": [
         {
           "file": "codelet/fspec/tests/cli_add_diagram.rs",

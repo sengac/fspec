@@ -120,7 +120,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let status_str = data
         .work_units
         .get(&args.work_unit_id)
-        .expect("present")
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "remove-example",
+            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+        })?
         .status
         .as_str();
     if status_str != "specifying" {
@@ -135,10 +138,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Locate-by-id, examples array check.
     let (located_index, was_deleted, removed_text) = {
-        let wu = data
-            .work_units
-            .get(&args.work_unit_id)
-            .expect("present");
+        let wu =
+            data.work_units
+                .get(&args.work_unit_id)
+                .ok_or_else(|| FspecCoreError::InvalidArgs {
+                    command: "remove-example",
+                    reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+                })?;
 
         let examples_val = wu.extra.get("examples");
         let arr = match examples_val.and_then(Value::as_array) {
@@ -196,38 +202,41 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // `✓ Removed example: "<text>"`. We mirror the surface, not the internal
     // result shape, because the CLI byte parity is the contract.
     if was_deleted {
-        return Ok(format!("✓ Removed example: \"{}\"\n", removed_text));
+        return Ok(format!("✓ Removed example: \"{removed_text}\"\n"));
     }
 
     // Mutate: set deleted + deletedAt, bump updatedAt, write atomically.
     let now_ts = iso8601_now();
     {
-        let wu = data
-            .work_units
-            .get_mut(&args.work_unit_id)
-            .expect("present");
-        if let Some(arr) = wu
-            .extra
-            .get_mut("examples")
-            .and_then(Value::as_array_mut)
-        {
+        let wu = data.work_units.get_mut(&args.work_unit_id).ok_or_else(|| {
+            FspecCoreError::InvalidArgs {
+                command: "remove-example",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            }
+        })?;
+        if let Some(arr) = wu.extra.get_mut("examples").and_then(Value::as_array_mut) {
             if let Some(item) = arr.get_mut(located_index).and_then(Value::as_object_mut) {
                 item.insert("deleted".to_string(), Value::Bool(true));
                 item.insert("deletedAt".to_string(), Value::String(now_ts.clone()));
             }
         }
-        wu.updated_at = now_ts.clone();
+        wu.updated_at = now_ts;
     }
 
     let path = project_root.join("spec").join("work-units.json");
     write_json_atomic(&path, &data)?;
 
-    Ok(format!("✓ Removed example: \"{}\"\n", removed_text))
+    Ok(format!("✓ Removed example: \"{removed_text}\"\n"))
 }
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -248,7 +257,8 @@ mod tests {
 
     #[test]
     fn args_parse_fails_without_index() {
-        let err = serde_json::from_str::<RemoveExampleArgs>(r#"{"workUnitId":"AUTH-001"}"#).unwrap_err();
+        let err =
+            serde_json::from_str::<RemoveExampleArgs>(r#"{"workUnitId":"AUTH-001"}"#).unwrap_err();
         let msg = err.to_string();
         assert!(msg.to_lowercase().contains("index"), "got: {msg}");
     }

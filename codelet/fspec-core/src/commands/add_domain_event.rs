@@ -50,7 +50,10 @@ use crate::types::work_unit::WorkUnitsData;
 struct AddDomainEventArgs {
     work_unit_id: String,
     text: String,
-    #[serde(default, deserialize_with = "crate::js_compat::deserialize_present_value")]
+    #[serde(
+        default,
+        deserialize_with = "crate::js_compat::deserialize_present_value"
+    )]
     timestamp: Option<Value>,
     #[serde(default)]
     bounded_context: Option<String>,
@@ -108,40 +111,52 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .work_units
         .get(&args.work_unit_id)
         .map(|w| w.status.as_str())
-        .expect("work unit exists");
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "add-domain-event",
+            reason: format!("Work unit {} not found", args.work_unit_id),
+        })?;
     if status_str == "done" || status_str == "blocked" {
         return Err(FspecCoreError::InvalidArgs {
             command: "add-domain-event",
-            reason: format!(
-                "Cannot add Event Storm items to work unit in {status_str} state"
-            ),
+            reason: format!("Cannot add Event Storm items to work unit in {status_str} state"),
         });
     }
 
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
+    let wu =
+        data.work_units
+            .get_mut(&args.work_unit_id)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "add-domain-event",
+                reason: format!("Work unit {} not found", args.work_unit_id),
+            })?;
 
     // Initialize eventStorm if missing (mirrors src/commands/add-domain-event.ts:85-91).
-    let es_entry = wu
-        .extra
-        .entry("eventStorm".to_string())
-        .or_insert_with(|| {
-            let mut m = Map::new();
-            m.insert("level".to_string(), Value::String("process_modeling".to_string()));
-            m.insert("items".to_string(), Value::Array(Vec::new()));
-            m.insert("nextItemId".to_string(), Value::from(0u64));
-            Value::Object(m)
-        });
+    let es_entry = wu.extra.entry("eventStorm".to_string()).or_insert_with(|| {
+        let mut m = Map::new();
+        m.insert(
+            "level".to_string(),
+            Value::String("process_modeling".to_string()),
+        );
+        m.insert("items".to_string(), Value::Array(Vec::new()));
+        m.insert("nextItemId".to_string(), Value::from(0u64));
+        Value::Object(m)
+    });
     if !es_entry.is_object() {
         let mut m = Map::new();
-        m.insert("level".to_string(), Value::String("process_modeling".to_string()));
+        m.insert(
+            "level".to_string(),
+            Value::String("process_modeling".to_string()),
+        );
         m.insert("items".to_string(), Value::Array(Vec::new()));
         m.insert("nextItemId".to_string(), Value::from(0u64));
         *es_entry = Value::Object(m);
     }
-    let es = es_entry.as_object_mut().expect("eventStorm is object");
+    let es = es_entry
+        .as_object_mut()
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "add-domain-event",
+            reason: "failed to initialize eventStorm section".to_string(),
+        })?;
 
     // Ensure items array exists.
     let items_val = es
@@ -157,21 +172,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let text_lower = args.text.to_lowercase();
     if let Value::Array(items) = items_val {
         for item in items.iter() {
-            let is_event = item.get("type").and_then(|v| v.as_str()) == Some("event");
+            let is_event = item.get("type").and_then(Value::as_str) == Some("event");
             let deleted = matches!(item.get("deleted"), Some(Value::Bool(true)));
             let matches_text = item
                 .get("text")
-                .and_then(|v| v.as_str())
+                .and_then(Value::as_str)
                 .map(|t| t.to_lowercase() == text_lower)
                 .unwrap_or(false);
             if is_event && !deleted && matches_text {
-                let existing_id = item.get("id").and_then(|v| v.as_u64()).unwrap_or(0);
+                let existing_id = item.get("id").and_then(Value::as_u64).unwrap_or(0);
                 return Err(FspecCoreError::InvalidArgs {
                     command: "add-domain-event",
-                    reason: format!(
-                        "Event '{}' already exists (ID: {existing_id})",
-                        args.text
-                    ),
+                    reason: format!("Event '{}' already exists (ID: {existing_id})", args.text),
                 });
             }
         }
@@ -180,7 +192,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let now = iso8601_now();
 
     // nextItemId → eventId (post-increment).
-    let event_id = es.get("nextItemId").and_then(|v| v.as_u64()).unwrap_or(0);
+    let event_id = es.get("nextItemId").and_then(Value::as_u64).unwrap_or(0);
 
     // Build the event item with explicit field order matching the TS object
     // literal: id, type, color, text, deleted, createdAt, then optionals.
@@ -224,7 +236,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

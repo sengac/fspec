@@ -59,7 +59,10 @@ struct AddPolicyArgs {
     when: Option<String>,
     #[serde(default)]
     then: Option<String>,
-    #[serde(default, deserialize_with = "crate::js_compat::deserialize_present_value")]
+    #[serde(
+        default,
+        deserialize_with = "crate::js_compat::deserialize_present_value"
+    )]
     timestamp: Option<Value>,
     #[serde(default)]
     bounded_context: Option<String>,
@@ -125,55 +128,58 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
 
     // Validate work unit exists (mirrors event-storm-utils.ts:63-69).
-    if !data.work_units.contains_key(&args.work_unit_id) {
-        return Err(FspecCoreError::InvalidArgs {
-            command: "add-policy",
-            reason: format!("Work unit {} not found", args.work_unit_id),
-        });
-    }
+    let wu = match data.work_units.get_mut(&args.work_unit_id) {
+        Some(wu) => wu,
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "add-policy",
+                reason: format!("Work unit {} not found", args.work_unit_id),
+            });
+        }
+    };
 
     // Validate work unit is not done/blocked (mirrors
     // event-storm-utils.ts:72-77). Capture the status string BEFORE
     // mutating so the canonical error embeds the TS-lowercase form.
-    let status_str = data
-        .work_units
-        .get(&args.work_unit_id)
-        .map(|w| w.status.as_str())
-        .expect("work unit exists");
+    let status_str = wu.status.as_str();
     if status_str == "done" || status_str == "blocked" {
         return Err(FspecCoreError::InvalidArgs {
             command: "add-policy",
-            reason: format!(
-                "Cannot add Event Storm items to work unit in {status_str} state"
-            ),
+            reason: format!("Cannot add Event Storm items to work unit in {status_str} state"),
         });
     }
 
     let now = iso8601_now();
 
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
-
     // Seed eventStorm if missing or not an object (TS literal order:
     // level, items, nextItemId).
     let es_entry = wu.extra.entry("eventStorm".to_string()).or_insert_with(|| {
         let mut m = Map::new();
-        m.insert("level".to_string(), Value::String("process_modeling".to_string()));
+        m.insert(
+            "level".to_string(),
+            Value::String("process_modeling".to_string()),
+        );
         m.insert("items".to_string(), Value::Array(Vec::new()));
         m.insert("nextItemId".to_string(), Value::from(0u64));
         Value::Object(m)
     });
     if !es_entry.is_object() {
         let mut m = Map::new();
-        m.insert("level".to_string(), Value::String("process_modeling".to_string()));
+        m.insert(
+            "level".to_string(),
+            Value::String("process_modeling".to_string()),
+        );
         m.insert("items".to_string(), Value::Array(Vec::new()));
         m.insert("nextItemId".to_string(), Value::from(0u64));
         *es_entry = Value::Object(m);
     }
 
-    let es = es_entry.as_object_mut().expect("eventStorm is object");
+    let es = es_entry
+        .as_object_mut()
+        .ok_or_else(|| FspecCoreError::ParseJson {
+            file: "work-units.json".to_string(),
+            reason: "eventStorm must be an object".to_string(),
+        })?;
 
     // Resolve nextItemId (default 0 if missing/non-numeric).
     let item_id = es.get("nextItemId").and_then(Value::as_u64).unwrap_or(0);
@@ -199,7 +205,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
     item.insert("id".to_string(), Value::from(item_id));
     item.insert("deleted".to_string(), Value::Bool(false));
-    item.insert("createdAt".to_string(), Value::String(now.clone()));
+    item.insert("createdAt".to_string(), Value::String(now));
 
     // Append to items (init if missing or non-array).
     let items_entry = es
@@ -231,7 +237,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

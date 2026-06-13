@@ -94,3 +94,17 @@ Feature: Port add-attachment command to Rust
     Then the dispatcher returns an error
     And the error message contains the substring "Work unit 'AUTH-001' does not exist"
     And spec/work-units.json now exists on disk with the canonical empty initial structure
+
+  Scenario: Validates a .mmd attachment and rejects invalid Mermaid before copy
+    Given a work unit AUTH-001 and a source file diagram.mmd containing invalid Mermaid
+    When I dispatch add-attachment with workUnitId='AUTH-001' filePath='diagram.mmd'
+    Then the dispatcher returns an error containing 'Invalid Mermaid'
+    And no file is copied into spec/attachments/AUTH-001 and the work unit is unchanged
+
+
+  Scenario: Validates mermaid fences inside a .md attachment and accepts fence-free markdown
+    Given a work unit AUTH-001 and a notes.md containing one valid and one invalid mermaid fence
+    When I dispatch add-attachment with workUnitId='AUTH-001' filePath='notes.md'
+    Then the dispatcher returns an error naming the failing code block
+    And a plain.md containing no mermaid fences is accepted and copied unchanged
+

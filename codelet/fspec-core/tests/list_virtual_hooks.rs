@@ -482,10 +482,7 @@ fn scenario_default_format_is_text() {
     seed_work_units(tmp.path(), auth001_no_hooks());
 
     // @step When I dispatch list-virtual-hooks with workUnitId='AUTH-001' and no format key
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
@@ -519,7 +516,9 @@ fn scenario_missing_work_unit_id_argument_is_rejected() {
     let msg = result.error.as_ref().expect("error message expected");
     let lower = msg.to_lowercase();
     assert!(
-        lower.contains("workunitid") || lower.contains("work unit id") || lower.contains("workunit"),
+        lower.contains("workunitid")
+            || lower.contains("work unit id")
+            || lower.contains("workunit"),
         "error message should mention workUnitId; got: {msg}"
     );
 }

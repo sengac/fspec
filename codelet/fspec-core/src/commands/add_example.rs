@@ -75,10 +75,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Status-gate: only specifying.
     let status_str = {
-        let wu = data
-            .work_units
-            .get(&args.work_unit_id)
-            .expect("work unit exists");
+        let wu =
+            data.work_units
+                .get(&args.work_unit_id)
+                .ok_or_else(|| FspecCoreError::InvalidArgs {
+                    command: "add-example",
+                    reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+                })?;
         wu.status.as_str()
     };
     if status_str != "specifying" {
@@ -94,16 +97,19 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Mutate: initialise counters, append example, bump timestamps.
     let now_ts = iso8601_now();
     let assigned_id = {
-        let wu = data
-            .work_units
-            .get_mut(&args.work_unit_id)
-            .expect("work unit exists");
+        let wu = data.work_units.get_mut(&args.work_unit_id).ok_or_else(|| {
+            FspecCoreError::InvalidArgs {
+                command: "add-example",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            }
+        })?;
 
         // Lazy-init nextExampleId (backward-compat for v0.6.0 data).
-        let next_id = match wu.extra.get("nextExampleId").and_then(Value::as_u64) {
-            Some(n) => n,
-            None => 0,
-        };
+        let next_id = wu
+            .extra
+            .get("nextExampleId")
+            .and_then(Value::as_u64)
+            .unwrap_or_default();
 
         // Build the new ExampleItem with explicit field order
         // id, text, deleted, createdAt (matches TS object-literal order).
@@ -132,7 +138,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         );
 
         // Bump updatedAt.
-        wu.updated_at = now_ts.clone();
+        wu.updated_at = now_ts;
 
         next_id
     };
@@ -188,7 +194,12 @@ fn render_success(example: &str, role: &str, _assigned_id: u64) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -201,7 +212,8 @@ mod tests {
 
     #[test]
     fn args_parse_fails_without_example() {
-        let err = serde_json::from_str::<AddExampleArgs>(r#"{"workUnitId":"AUTH-001"}"#).unwrap_err();
+        let err =
+            serde_json::from_str::<AddExampleArgs>(r#"{"workUnitId":"AUTH-001"}"#).unwrap_err();
         let msg = err.to_string();
         assert!(msg.to_lowercase().contains("example"), "got: {msg}");
     }

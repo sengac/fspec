@@ -114,7 +114,10 @@ fn returns_structured_error_when_work_unit_does_not_exist() {
     let raw = fs::read_to_string(&wu_path).expect("read work-units.json");
     let parsed: Value = serde_json::from_str(&raw).expect("auto-created file is valid JSON");
     let wus = parsed["workUnits"].as_object().expect("workUnits map");
-    assert!(wus.is_empty(), "auto-created workUnits must be empty; got {wus:?}");
+    assert!(
+        wus.is_empty(),
+        "auto-created workUnits must be empty; got {wus:?}"
+    );
 }
 
 #[test]
@@ -178,10 +181,7 @@ fn renders_present_attachment_with_size_and_modified_prefix() {
     let tmp = TempDir::new().expect("tempdir");
     write_work_units(
         tmp.path(),
-        &work_units_with_attachments(
-            "AUTH-001",
-            Some(&["spec/attachments/AUTH-001/diagram.png"]),
-        ),
+        &work_units_with_attachments("AUTH-001", Some(&["spec/attachments/AUTH-001/diagram.png"])),
     );
 
     // @step Given the file spec/attachments/AUTH-001/diagram.png exists on disk with exactly 2048 bytes
@@ -233,10 +233,7 @@ fn renders_missing_attachment_with_x_marker_and_not_found_line() {
     let tmp = TempDir::new().expect("tempdir");
     write_work_units(
         tmp.path(),
-        &work_units_with_attachments(
-            "AUTH-001",
-            Some(&["spec/attachments/AUTH-001/missing.png"]),
-        ),
+        &work_units_with_attachments("AUTH-001", Some(&["spec/attachments/AUTH-001/missing.png"])),
     );
 
     // @step Given no file exists at spec/attachments/AUTH-001/missing.png
@@ -419,10 +416,7 @@ fn json_format_emits_two_space_indent_with_canonical_field_set() {
     let tmp = TempDir::new().expect("tempdir");
     write_work_units(
         tmp.path(),
-        &work_units_with_attachments(
-            "AUTH-001",
-            Some(&["spec/attachments/AUTH-001/x.png"]),
-        ),
+        &work_units_with_attachments("AUTH-001", Some(&["spec/attachments/AUTH-001/x.png"])),
     );
 
     // @step Given the file spec/attachments/AUTH-001/x.png exists on disk with exactly 1024 bytes
@@ -472,8 +466,10 @@ fn json_format_emits_two_space_indent_with_canonical_field_set() {
 
     // @step Then the DispatchResult.data uses 2-space indentation
     assert!(
-        result.data.lines().any(|l| l.starts_with("  \"workUnitId\"")
-            || l.starts_with("  \"attachments\"")),
+        result
+            .data
+            .lines()
+            .any(|l| l.starts_with("  \"workUnitId\"") || l.starts_with("  \"attachments\"")),
         "expected 2-space-indented root fields; got:\n{}",
         result.data
     );
@@ -521,8 +517,8 @@ fn shared_infrastructure_and_ported_wiring_are_in_place() {
     );
 
     // @step Then canonical.rs lists "list-attachments" in PORTED_COMMANDS
-    let canonical_src = fs::read_to_string(crate_src.join("canonical.rs"))
-        .expect("canonical.rs readable");
+    let canonical_src =
+        fs::read_to_string(crate_src.join("canonical.rs")).expect("canonical.rs readable");
     assert!(
         canonical_src.contains("\"list-attachments\""),
         "canonical.rs PORTED_COMMANDS must include \"list-attachments\"; got:\n{canonical_src}"

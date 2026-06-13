@@ -50,10 +50,9 @@ where
         Poll::Ready(v) => v,
         Poll::Pending => Err(FspecCoreError::InvalidArgs {
             command: "dispatch",
-            reason:
-                "ported command future returned Pending under sync dispatch — \
+            reason: "ported command future returned Pending under sync dispatch — \
                  introduce a real async runtime or make the command sync"
-                    .to_string(),
+                .to_string(),
         }),
     }
 }
@@ -166,9 +165,7 @@ fn run_ported(
             // RPC-247 — list-hooks
             "list-hooks" => commands::list_hooks::run(args_json, project_root).await,
             // RPC-244 — list-feature-tags
-            "list-feature-tags" => {
-                commands::list_feature_tags::run(args_json, project_root).await
-            }
+            "list-feature-tags" => commands::list_feature_tags::run(args_json, project_root).await,
             // RPC-246 — list-foundation-sections
             "list-foundation-sections" => {
                 commands::list_foundation_sections::run(args_json, project_root).await
@@ -184,9 +181,7 @@ fn run_ported(
                 commands::list_virtual_hooks::run(args_json, project_root).await
             }
             // RPC-242 — list-checkpoints
-            "list-checkpoints" => {
-                commands::list_checkpoints::run(args_json, project_root).await
-            }
+            "list-checkpoints" => commands::list_checkpoints::run(args_json, project_root).await,
             // RPC-301 — show-deleted
             "show-deleted" => commands::show_deleted::run(args_json, project_root).await,
             // RPC-302 — show-epic
@@ -211,9 +206,7 @@ fn run_ported(
             "query-work-units" => commands::query_work_units::run(args_json, project_root).await,
             // Batch 6 (2026-06-09)
             // RPC-256 — query-bottlenecks
-            "query-bottlenecks" => {
-                commands::query_bottlenecks::run(args_json, project_root).await
-            }
+            "query-bottlenecks" => commands::query_bottlenecks::run(args_json, project_root).await,
             // RPC-262 — query-orphans
             "query-orphans" => commands::query_orphans::run(args_json, project_root).await,
             // RPC-259 — query-estimation-guide
@@ -258,13 +251,9 @@ fn run_ported(
             // RPC-222 — delete-tag
             "delete-tag" => commands::delete_tag::run(args_json, project_root).await,
             // RPC-176 — add-dependencies
-            "add-dependencies" => {
-                commands::add_dependencies::run(args_json, project_root).await
-            }
+            "add-dependencies" => commands::add_dependencies::run(args_json, project_root).await,
             // RPC-271 — remove-dependency
-            "remove-dependency" => {
-                commands::remove_dependency::run(args_json, project_root).await
-            }
+            "remove-dependency" => commands::remove_dependency::run(args_json, project_root).await,
             // RPC-204 — clear-dependencies
             "clear-dependencies" => {
                 commands::clear_dependencies::run(args_json, project_root).await
@@ -329,13 +318,9 @@ fn run_ported(
             // RPC-170 — add-attachment
             "add-attachment" => commands::add_attachment::run(args_json, project_root).await,
             // RPC-268 — remove-attachment
-            "remove-attachment" => {
-                commands::remove_attachment::run(args_json, project_root).await
-            }
+            "remove-attachment" => commands::remove_attachment::run(args_json, project_root).await,
             // RPC-195 — add-virtual-hook
-            "add-virtual-hook" => {
-                commands::add_virtual_hook::run(args_json, project_root).await
-            }
+            "add-virtual-hook" => commands::add_virtual_hook::run(args_json, project_root).await,
             // RPC-283 — remove-virtual-hook
             "remove-virtual-hook" => {
                 commands::remove_virtual_hook::run(args_json, project_root).await
@@ -366,9 +351,13 @@ fn run_ported(
             // RPC-185 — add-hotspot
             "add-hotspot" => commands::add_hotspot::run(args_json, project_root).await,
             // RPC-172 — add-bounded-context
-            "add-bounded-context" => commands::add_bounded_context::run(args_json, project_root).await,
+            "add-bounded-context" => {
+                commands::add_bounded_context::run(args_json, project_root).await
+            }
             // RPC-182 — add-external-system
-            "add-external-system" => commands::add_external_system::run(args_json, project_root).await,
+            "add-external-system" => {
+                commands::add_external_system::run(args_json, project_root).await
+            }
             // RPC-187 — add-policy
             "add-policy" => commands::add_policy::run(args_json, project_root).await,
             // RPC-214 — create-story
@@ -406,6 +395,43 @@ fn run_ported(
             "export-dependencies" => {
                 commands::export_dependencies::run(args_json, project_root).await
             }
+            // Batch 13 (2026-06-12) — foundation mutation commands
+            // RPC-173 — add-capability
+            "add-capability" => commands::add_capability::run(args_json, project_root).await,
+            // RPC-269 — remove-capability
+            "remove-capability" => commands::remove_capability::run(args_json, project_root).await,
+            // RPC-186 — add-persona
+            "add-persona" => commands::add_persona::run(args_json, project_root).await,
+            // RPC-277 — remove-persona
+            "remove-persona" => commands::remove_persona::run(args_json, project_root).await,
+            // RPC-183 — add-foundation-bounded-context
+            "add-foundation-bounded-context" => {
+                commands::add_foundation_bounded_context::run(args_json, project_root).await
+            }
+            // RPC-274 — remove-foundation-bounded-context
+            "remove-foundation-bounded-context" => {
+                commands::remove_foundation_bounded_context::run(args_json, project_root).await
+            }
+            // RPC-166 — add-aggregate-to-foundation
+            "add-aggregate-to-foundation" => {
+                commands::add_aggregate_to_foundation::run(args_json, project_root).await
+            }
+            // RPC-266 — remove-aggregate-from-foundation
+            "remove-aggregate-from-foundation" => {
+                commands::remove_aggregate_from_foundation::run(args_json, project_root).await
+            }
+            // RPC-175 — add-command-to-foundation
+            "add-command-to-foundation" => {
+                commands::add_command_to_foundation::run(args_json, project_root).await
+            }
+            // RPC-270 — remove-command-from-foundation
+            "remove-command-from-foundation" => {
+                commands::remove_command_from_foundation::run(args_json, project_root).await
+            }
+            // RPC-233 — generate-foundation-md
+            "generate-foundation-md" => {
+                commands::generate_foundation_md::run(args_json, project_root).await
+            }
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -424,7 +450,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
     // and a nested `block_on` either panics or dead-locks the worker.
     poll_sync_future(async move {
         match name {
-            "add-aggregate-to-foundation" => commands::add_aggregate_to_foundation::run(args_json).await,
+            // "add-aggregate-to-foundation" — ported (RPC-166, Batch 13). Handled by `run_ported`.
             "add-architecture" => commands::add_architecture::run(args_json).await,
             // "add-architecture-note" — ported (RPC-168, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -434,9 +460,9 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             "add-background" => commands::add_background::run(args_json).await,
             // "add-bounded-context" — ported (RPC-172, Batch 11). Handled by `run_ported`.
-            "add-capability" => commands::add_capability::run(args_json).await,
+            // "add-capability" — ported (RPC-173, Batch 13). Handled by `run_ported`.
             // "add-command" — ported (RPC-174, Batch 11). Handled by `run_ported`.
-            "add-command-to-foundation" => commands::add_command_to_foundation::run(args_json).await,
+            // "add-command-to-foundation" — ported (RPC-175, Batch 13). Handled by `run_ported`.
             // "add-dependencies" — ported (RPC-176, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-dependency" — ported (RPC-177, Batch 9). Handled by `run_ported`
@@ -444,15 +470,17 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "add-diagram" — ported (RPC-178, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-domain-event" — ported (RPC-179, Batch 11). Handled by `run_ported`.
-            "add-domain-event-to-foundation" => commands::add_domain_event_to_foundation::run(args_json).await,
+            "add-domain-event-to-foundation" => {
+                commands::add_domain_event_to_foundation::run(args_json).await
+            }
             // "add-example" — ported (RPC-181, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-external-system" — ported (RPC-182, Batch 11). Handled by `run_ported`.
-            "add-foundation-bounded-context" => commands::add_foundation_bounded_context::run(args_json).await,
+            // "add-foundation-bounded-context" — ported (RPC-183, Batch 13). Handled by `run_ported`.
             // "add-hook" — ported (RPC-184, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-hotspot" — ported (RPC-185, Batch 11). Handled by `run_ported`.
-            "add-persona" => commands::add_persona::run(args_json).await,
+            // "add-persona" — ported (RPC-186, Batch 13). Handled by `run_ported`.
             // "add-policy" — ported (RPC-187, Batch 11). Handled by `run_ported`.
             // "add-question" — ported (RPC-188, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -514,8 +542,10 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "export-work-units" — ported (RPC-229, Batch 12). Handled by `run_ported`.
             "format" => commands::format::run(args_json).await,
             "generate-coverage" => commands::generate_coverage::run(args_json).await,
-            "generate-example-mapping-from-event-storm" => commands::generate_example_mapping_from_event_storm::run(args_json).await,
-            "generate-foundation-md" => commands::generate_foundation_md::run(args_json).await,
+            "generate-example-mapping-from-event-storm" => {
+                commands::generate_example_mapping_from_event_storm::run(args_json).await
+            }
+            // "generate-foundation-md" — ported (RPC-233). Handled by `run_ported`.
             "generate-scenarios" => commands::generate_scenarios::run(args_json).await,
             "generate-summary-report" => commands::generate_summary_report::run(args_json).await,
             "generate-tags-md" => commands::generate_tags_md::run(args_json).await,
@@ -572,23 +602,25 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "register-tag" — ported (RPC-265, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-aggregate-from-foundation" => commands::remove_aggregate_from_foundation::run(args_json).await,
+            // "remove-aggregate-from-foundation" — ported (RPC-266, Batch 13). Handled by `run_ported`.
             // "remove-architecture-note" — ported (RPC-267, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "remove-attachment" — ported (RPC-268, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-capability" => commands::remove_capability::run(args_json).await,
-            "remove-command-from-foundation" => commands::remove_command_from_foundation::run(args_json).await,
+            // "remove-capability" — ported (RPC-269, Batch 13). Handled by `run_ported`.
+            // "remove-command-from-foundation" — ported (RPC-270, Batch 13). Handled by `run_ported`.
             // "remove-dependency" — ported (RPC-271, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-domain-event-from-foundation" => commands::remove_domain_event_from_foundation::run(args_json).await,
+            "remove-domain-event-from-foundation" => {
+                commands::remove_domain_event_from_foundation::run(args_json).await
+            }
             // "remove-example" — ported (RPC-273, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-foundation-bounded-context" => commands::remove_foundation_bounded_context::run(args_json).await,
+            // "remove-foundation-bounded-context" — ported (RPC-274, Batch 13). Handled by `run_ported`.
             // "remove-hook" — ported (RPC-275, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "remove-init-files" => commands::remove_init_files::run(args_json).await,
-            "remove-persona" => commands::remove_persona::run(args_json).await,
+            // "remove-persona" — ported (RPC-277, Batch 13). Handled by `run_ported`.
             // "remove-question" — ported (RPC-278, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "remove-rule" — ported (RPC-279, Batch 8). Handled by `run_ported`
@@ -658,7 +690,9 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             "update-work-unit-status" => commands::update_work_unit_status::run(args_json).await,
             "validate" => commands::validate::run(args_json).await,
-            "validate-foundation-schema" => commands::validate_foundation_schema::run(args_json).await,
+            "validate-foundation-schema" => {
+                commands::validate_foundation_schema::run(args_json).await
+            }
             "validate-hooks" => commands::validate_hooks::run(args_json).await,
             "validate-spec-alignment" => commands::validate_spec_alignment::run(args_json).await,
             "validate-tags" => commands::validate_tags::run(args_json).await,
@@ -666,8 +700,9 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "workflow-automation" => commands::workflow_automation::run(args_json).await,
             // Unreachable: canonical lookup already validated the
             // command exists, and every canonical entry has a stub.
-            other => Err(FspecCoreError::UnknownCommand { command: other.to_string() }),
+            other => Err(FspecCoreError::UnknownCommand {
+                command: other.to_string(),
+            }),
         }
     })
 }
-

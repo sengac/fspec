@@ -67,7 +67,7 @@ struct PrioritizeWorkUnitResult {
 }
 
 /// Borrow the mutable `states.<status>` vector matching `status`.
-fn column_for<'a>(states: &'a mut WorkUnitStates, status: WorkUnitStatus) -> &'a mut Vec<String> {
+fn column_for(states: &mut WorkUnitStates, status: WorkUnitStatus) -> &mut Vec<String> {
     match status {
         WorkUnitStatus::Backlog => &mut states.backlog,
         WorkUnitStatus::Specifying => &mut states.specifying,
@@ -105,11 +105,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         )));
     }
 
-    let current_status = data
-        .work_units
-        .get(&args.work_unit_id)
-        .map(|w| w.status)
-        .expect("work unit exists");
+    let Some(current_status) = data.work_units.get(&args.work_unit_id).map(|w| w.status) else {
+        return Err(invalid_args(format!(
+            "Work unit '{}' does not exist",
+            args.work_unit_id
+        )));
+    };
     let current_status_str = current_status.as_str();
 
     // ── Done guard (TS: prioritize-work-unit.ts:38-42) ──────────────────
@@ -136,11 +137,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // ── Cross-column guard (TS: prioritize-work-unit.ts:53-68) ──────────
     if let Some(before) = &args.before {
-        let before_status = data
-            .work_units
-            .get(before)
-            .map(|w| w.status)
-            .expect("before existence checked above");
+        let Some(before_status) = data.work_units.get(before).map(|w| w.status) else {
+            return Err(invalid_args(format!("Work unit '{before}' does not exist")));
+        };
         if before_status != current_status {
             return Err(invalid_args(format!(
                 "Cannot prioritize across columns. {} ({}) and {} ({}) are in different columns.",
@@ -152,11 +151,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         }
     }
     if let Some(after) = &args.after {
-        let after_status = data
-            .work_units
-            .get(after)
-            .map(|w| w.status)
-            .expect("after existence checked above");
+        let Some(after_status) = data.work_units.get(after).map(|w| w.status) else {
+            return Err(invalid_args(format!("Work unit '{after}' does not exist")));
+        };
         if after_status != current_status {
             return Err(invalid_args(format!(
                 "Cannot prioritize across columns. {} ({}) and {} ({}) are in different columns.",
@@ -216,9 +213,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             Some(idx) => new_index = idx,
             None => {
                 return Err(invalid_args(format!(
-                    "Data integrity error: Work unit {} has status '{}' but is not in \
-                     states.{} array. Run 'fspec repair-work-units' to fix data corruption.",
-                    before, current_status_str, current_status_str
+                    "Data integrity error: Work unit {before} has status '{current_status_str}' but is not in \
+                     states.{current_status_str} array. Run 'fspec repair-work-units' to fix data corruption."
                 )));
             }
         }
@@ -228,9 +224,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             Some(idx) => new_index = idx + 1,
             None => {
                 return Err(invalid_args(format!(
-                    "Data integrity error: Work unit {} has status '{}' but is not in \
-                     states.{} array. Run 'fspec repair-work-units' to fix data corruption.",
-                    after, current_status_str, current_status_str
+                    "Data integrity error: Work unit {after} has status '{current_status_str}' but is not in \
+                     states.{current_status_str} array. Run 'fspec repair-work-units' to fix data corruption."
                 )));
             }
         }
@@ -242,7 +237,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     if new_index > column.len() {
         new_index = column.len();
     }
-    column.insert(new_index, args.work_unit_id.clone());
+    column.insert(new_index, args.work_unit_id);
 
     // Write back the reordered column.
     *column_for(&mut data.states, current_status) = column;
@@ -260,7 +255,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -275,7 +275,10 @@ mod tests {
     fn args_parse_numeric_position() {
         let a: PrioritizeWorkUnitArgs =
             serde_json::from_str(r#"{"workUnitId":"AUTH-001","position":3}"#).unwrap();
-        assert_eq!(a.position.as_ref().and_then(|v| v.as_i64()), Some(3));
+        assert_eq!(
+            a.position.as_ref().and_then(serde_json::Value::as_i64),
+            Some(3)
+        );
     }
 
     #[test]

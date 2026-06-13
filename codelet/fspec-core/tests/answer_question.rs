@@ -36,7 +36,15 @@ fn read_work_units(project_root: &Path) -> Value {
 
 fn seed_unit(id: &str, status: &str) -> Value {
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<Value> = if *st == status {
             vec![Value::String(id.to_string())]
         } else {
@@ -103,25 +111,47 @@ fn add_to_rule_creates_a_proper_rule_item_with_id_from_next_rule_id() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows AUTH-001.questions[0].selected=true
-    assert_eq!(v["workUnits"]["AUTH-001"]["questions"][0]["selected"].as_bool(), Some(true));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["questions"][0]["selected"].as_bool(),
+        Some(true)
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.questions[0].answered=true
-    assert_eq!(v["workUnits"]["AUTH-001"]["questions"][0]["answered"].as_bool(), Some(true));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["questions"][0]["answered"].as_bool(),
+        Some(true)
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.questions[0].answer='Yes, Google OAuth'
-    assert_eq!(v["workUnits"]["AUTH-001"]["questions"][0]["answer"].as_str(), Some("Yes, Google OAuth"));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["questions"][0]["answer"].as_str(),
+        Some("Yes, Google OAuth")
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].id=0
-    assert_eq!(v["workUnits"]["AUTH-001"]["rules"][0]["id"].as_u64(), Some(0));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["rules"][0]["id"].as_u64(),
+        Some(0)
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].text='Yes, Google OAuth'
-    assert_eq!(v["workUnits"]["AUTH-001"]["rules"][0]["text"].as_str(), Some("Yes, Google OAuth"));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["rules"][0]["text"].as_str(),
+        Some("Yes, Google OAuth")
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].deleted=false
-    assert_eq!(v["workUnits"]["AUTH-001"]["rules"][0]["deleted"].as_bool(), Some(false));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["rules"][0]["deleted"].as_bool(),
+        Some(false)
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].createdAt is a freshly bumped ISO-8601 timestamp
-    let created = v["workUnits"]["AUTH-001"]["rules"][0]["createdAt"].as_str().expect("createdAt");
+    let created = v["workUnits"]["AUTH-001"]["rules"][0]["createdAt"]
+        .as_str()
+        .expect("createdAt");
     assert!(created.len() == 24 && created.ends_with('Z'));
     assert!(!created.starts_with("2026-06-01"));
     // @step And spec/work-units.json on disk shows AUTH-001.nextRuleId=1
     assert_eq!(v["workUnits"]["AUTH-001"]["nextRuleId"].as_u64(), Some(1));
     // @step And spec/work-units.json on disk shows AUTH-001.updatedAt is a freshly bumped ISO-8601 timestamp
-    let updated = v["workUnits"]["AUTH-001"]["updatedAt"].as_str().expect("updatedAt");
+    let updated = v["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .expect("updatedAt");
     assert!(updated.len() == 24 && updated.ends_with('Z'));
     assert!(!updated.starts_with("2026-06-01"));
 }
@@ -146,7 +176,10 @@ fn add_to_rule_with_preexisting_next_rule_id_increments_sequentially() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].id=5
-    assert_eq!(v["workUnits"]["AUTH-001"]["rules"][0]["id"].as_u64(), Some(5));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["rules"][0]["id"].as_u64(),
+        Some(5)
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.nextRuleId=6
     assert_eq!(v["workUnits"]["AUTH-001"]["nextRuleId"].as_u64(), Some(6));
 }
@@ -174,11 +207,15 @@ fn add_to_assumption_appends_raw_string_to_assumptions_array() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows AUTH-001.assumptions=['Server is HTTPS only']
-    let assumes = v["workUnits"]["AUTH-001"]["assumptions"].as_array().expect("assumptions array");
+    let assumes = v["workUnits"]["AUTH-001"]["assumptions"]
+        .as_array()
+        .expect("assumptions array");
     assert_eq!(assumes.len(), 1);
     assert_eq!(assumes[0].as_str(), Some("Server is HTTPS only"));
     // @step And spec/work-units.json on disk shows AUTH-001 has no rules added
-    assert!(v["workUnits"]["AUTH-001"]["rules"].as_array().map_or(true, |a| a.is_empty()));
+    assert!(v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
 }
 
 #[test]
@@ -206,13 +243,23 @@ fn add_to_none_with_answer_marks_question_but_does_not_modify_rules_or_assumptio
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows AUTH-001.questions[0].answered=true
-    assert_eq!(v["workUnits"]["AUTH-001"]["questions"][0]["answered"].as_bool(), Some(true));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["questions"][0]["answered"].as_bool(),
+        Some(true)
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.questions[0].answer='Maybe'
-    assert_eq!(v["workUnits"]["AUTH-001"]["questions"][0]["answer"].as_str(), Some("Maybe"));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["questions"][0]["answer"].as_str(),
+        Some("Maybe")
+    );
     // @step And spec/work-units.json on disk shows AUTH-001 has no rules added
-    assert!(v["workUnits"]["AUTH-001"]["rules"].as_array().map_or(true, |a| a.is_empty()));
+    assert!(v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
     // @step And spec/work-units.json on disk shows AUTH-001 has no assumptions added
-    assert!(v["workUnits"]["AUTH-001"]["assumptions"].as_array().map_or(true, |a| a.is_empty()));
+    assert!(v["workUnits"]["AUTH-001"]["assumptions"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
 }
 
 #[test]
@@ -234,7 +281,10 @@ fn no_answer_leaves_answer_untouched_but_still_selects_the_question() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows AUTH-001.questions[0].selected=true
-    assert_eq!(v["workUnits"]["AUTH-001"]["questions"][0]["selected"].as_bool(), Some(true));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["questions"][0]["selected"].as_bool(),
+        Some(true)
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.questions[0] has no answered field set
     let q0 = &v["workUnits"]["AUTH-001"]["questions"][0];
     assert!(q0.get("answered").is_none() || q0["answered"].is_null());

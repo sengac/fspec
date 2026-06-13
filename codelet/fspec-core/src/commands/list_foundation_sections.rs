@@ -212,7 +212,12 @@ fn render_text(sections: &[FoundationSectionSpec]) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -223,8 +228,7 @@ mod tests {
 
     #[test]
     fn args_parse_format_json() {
-        let a: ListFoundationSectionsArgs =
-            serde_json::from_str(r#"{"format":"json"}"#).unwrap();
+        let a: ListFoundationSectionsArgs = serde_json::from_str(r#"{"format":"json"}"#).unwrap();
         assert_eq!(a.format.as_deref(), Some("json"));
     }
 
@@ -279,7 +283,10 @@ mod tests {
     #[test]
     fn render_text_emits_examples_only_for_project_type() {
         let out = render_text(FOUNDATION_SECTIONS);
-        let count = out.lines().filter(|l| l.starts_with("    examples:")).count();
+        let count = out
+            .lines()
+            .filter(|l| l.starts_with("    examples:"))
+            .count();
         assert_eq!(count, 1, "expected exactly one examples row");
         assert!(out.contains("    examples:   cli-tool, web-app, saas-platform"));
     }

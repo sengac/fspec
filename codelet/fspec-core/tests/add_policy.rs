@@ -112,7 +112,10 @@ fn first_add_seeds_event_storm_sub_object_on_clean_work_unit() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items[0].createdAt is a fresh ISO-8601 timestamp
     let created = item["createdAt"].as_str().expect("createdAt string");
-    assert!(created.len() == 24 && created.ends_with('Z'), "got: {created}");
+    assert!(
+        created.len() == 24 && created.ends_with('Z'),
+        "got: {created}"
+    );
     assert!(
         !created.starts_with("2026-06-01"),
         "createdAt must NOT be the seed value"

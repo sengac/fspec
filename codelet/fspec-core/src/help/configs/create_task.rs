@@ -66,7 +66,8 @@ const EXAMPLES: &[CommandExample] = &[
         output: Some(EXAMPLE_2_OUTPUT),
     },
     CommandExample {
-        command: "fspec create-task DEVOPS \"Update dependencies\" --description=\"Security patches\"",
+        command:
+            "fspec create-task DEVOPS \"Update dependencies\" --description=\"Security patches\"",
         description: Some("Create task with description"),
         output: Some(EXAMPLE_3_OUTPUT),
     },

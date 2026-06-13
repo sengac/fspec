@@ -44,8 +44,7 @@ const ARGUMENTS: &[CommandArgument] = &[
     },
     CommandArgument {
         name: "event",
-        description:
-            "Hook event when command should run (e.g., post-implementing, pre-validating)",
+        description: "Hook event when command should run (e.g., post-implementing, pre-validating)",
         required: true,
     },
     CommandArgument {

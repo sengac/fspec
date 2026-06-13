@@ -379,7 +379,10 @@ fn treats_malformed_tags_json_as_missing_without_escalating() {
     let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "malformed tags.json must be silent: {result:?}");
+    assert!(
+        result.success,
+        "malformed tags.json must be silent: {result:?}"
+    );
     let data = parse_data(&result.data);
 
     // @step Then the result has tagsFileFound=false
@@ -433,7 +436,15 @@ fn json_format_emits_two_space_indented_payload_with_canonical_field_order() {
         "\"invalidFiles\"",
     ]
     .iter()
-    .map(|k| (result.data.find(k).unwrap_or_else(|| panic!("missing key {k} in:\n{}", result.data)), *k))
+    .map(|k| {
+        (
+            result
+                .data
+                .find(k)
+                .unwrap_or_else(|| panic!("missing key {k} in:\n{}", result.data)),
+            *k,
+        )
+    })
     .collect();
     for w in positions.windows(2) {
         assert!(

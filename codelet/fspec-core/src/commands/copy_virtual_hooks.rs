@@ -135,9 +135,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         _ => {
             return Err(FspecCoreError::InvalidArgs {
                 command: "copy-virtual-hooks",
-                reason: format!(
-                    "No virtual hooks configured for source work unit {from}"
-                ),
+                reason: format!("No virtual hooks configured for source work unit {from}"),
             });
         }
     };
@@ -190,9 +188,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     serde_json::to_string(&CopyVirtualHooksResult {
         success: true,
         copied_count,
-        message: format!(
-            "✓ Copied {copied_count} virtual hook(s) from {from} to {to}"
-        ),
+        message: format!("✓ Copied {copied_count} virtual hook(s) from {from} to {to}"),
     })
     .map_err(|e| FspecCoreError::InvalidArgs {
         command: "copy-virtual-hooks",

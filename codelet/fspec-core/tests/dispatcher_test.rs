@@ -30,16 +30,16 @@ fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
     // @step And the NAPI chunk callback is NOT registered (is_global_chunk_callback_registered returns false)
     // (precondition satisfied by reaching dispatch_command — agent_loop only delegates here on the false branch)
 
-    // @step And the dispatcher's command map records "add-persona" as ported by RPC-XXX
+    // @step And the dispatcher's command map records "add-architecture" as ported by RPC-XXX
     // (verified indirectly via the canonical_list test; here we trust the lookup.
-    //  We deliberately pick a command that is still in the stub state — `add-persona`
-    //  maps to RPC-186 in the per-command mapping and is NOT in PORTED_COMMANDS, so its
+    //  We deliberately pick a command that is still in the stub state — `add-architecture`
+    //  maps to RPC-167 in the per-command mapping and is NOT in PORTED_COMMANDS, so its
     //  stub still returns NotYetPorted. This test asserts the stub path; once
-    //  `add-persona` itself is ported, swap to another unported canonical command.)
-    let stub_command = "add-persona";
-    let stub_rpc = "RPC-186";
+    //  `add-architecture` itself is ported, swap to another unported canonical command.)
+    let stub_command = "add-architecture";
+    let stub_rpc = "RPC-167";
 
-    // @step When the LLM emits Fspec with command="add-persona" and any args_json
+    // @step When the LLM emits Fspec with command="add-architecture" and any args_json
     let start = std::time::Instant::now();
     let result = dispatch_command(req(stub_command));
     let elapsed = start.elapsed();
@@ -52,7 +52,7 @@ fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
         .as_ref()
         .expect("expected an error message for unported command");
 
-    // @step And the error message contains the literal substring "add-persona"
+    // @step And the error message contains the literal substring "add-architecture"
     assert!(
         msg.contains(stub_command),
         "missing '{stub_command}' in error message: {msg}"
@@ -183,9 +183,7 @@ use serde_json::Value;
 // ---------- path helpers ----------
 
 fn workspace_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("..")
-        .join("..")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..")
 }
 
 fn attachment_path() -> PathBuf {
@@ -209,7 +207,9 @@ fn work_units_json_path() -> PathBuf {
 }
 
 fn commands_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join("commands")
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("src")
+        .join("commands")
 }
 
 fn agent_loop_path() -> PathBuf {
@@ -409,9 +409,9 @@ fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
     let mut by_command: Vec<(String, &Value)> = Vec::with_capacity(162);
     for (command, rpc_value) in mapping {
         let rpc_id = rpc_value.as_str().expect("rpc-id string");
-        let unit = work_units
-            .get(rpc_id)
-            .unwrap_or_else(|| panic!("expected work unit {rpc_id} for command {command} to exist"));
+        let unit = work_units.get(rpc_id).unwrap_or_else(|| {
+            panic!("expected work unit {rpc_id} for command {command} to exist")
+        });
         by_command.push((command.clone(), unit));
     }
 
@@ -425,7 +425,10 @@ fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
 
     for (command, unit) in &by_command {
         let title = unit.get("title").and_then(Value::as_str).unwrap_or("");
-        let description = unit.get("description").and_then(Value::as_str).unwrap_or("");
+        let description = unit
+            .get("description")
+            .and_then(Value::as_str)
+            .unwrap_or("");
         let status = unit.get("status").and_then(Value::as_str).unwrap_or("");
         let estimate = unit.get("estimate");
 
@@ -438,7 +441,10 @@ fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
         // @step And every child work unit's description references the TypeScript source file path
         let canonical = lookup(command).expect("canonical entry");
         if !description.contains(canonical.ts_file) {
-            bad_description.push(format!("{command}: description missing {}", canonical.ts_file));
+            bad_description.push(format!(
+                "{command}: description missing {}",
+                canonical.ts_file
+            ));
         }
 
         // Ported commands (PORTED_COMMANDS) are exempt from the
@@ -462,14 +468,26 @@ fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
         }
     }
 
-    assert!(bad_title.is_empty(), "{} card(s) with wrong title: {bad_title:?}", bad_title.len());
+    assert!(
+        bad_title.is_empty(),
+        "{} card(s) with wrong title: {bad_title:?}",
+        bad_title.len()
+    );
     assert!(
         bad_description.is_empty(),
         "{} card(s) with description missing TS source path: {bad_description:?}",
         bad_description.len()
     );
-    assert!(bad_status.is_empty(), "{} card(s) with non-backlog status: {bad_status:?}", bad_status.len());
-    assert!(bad_estimate.is_empty(), "{} card(s) with an estimate set: {bad_estimate:?}", bad_estimate.len());
+    assert!(
+        bad_status.is_empty(),
+        "{} card(s) with non-backlog status: {bad_status:?}",
+        bad_status.len()
+    );
+    assert!(
+        bad_estimate.is_empty(),
+        "{} card(s) with an estimate set: {bad_estimate:?}",
+        bad_estimate.len()
+    );
 }
 
 #[test]

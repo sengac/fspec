@@ -106,7 +106,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
-    let source_id = args.work_unit_id.clone();
+    let source_id = args.work_unit_id;
 
     // ── blocks branch (bidirectional) ──
     let blocks_targets = take_list_field(&mut data, &source_id, "blocks");
@@ -167,7 +167,13 @@ fn take_list_field(data: &mut WorkUnitsData, id: &str, field: &str) -> Vec<Strin
     match removed {
         Some(Value::Array(arr)) => arr
             .into_iter()
-            .filter_map(|v| if let Value::String(s) = v { Some(s) } else { None })
+            .filter_map(|v| {
+                if let Value::String(s) = v {
+                    Some(s)
+                } else {
+                    None
+                }
+            })
             .collect(),
         _ => Vec::new(),
     }
@@ -186,12 +192,7 @@ fn take_list_field(data: &mut WorkUnitsData, id: &str, field: &str) -> Vec<Strin
 ///   delete data.workUnits[targetId].blockedBy;
 /// }
 /// ```
-fn filter_field_on_unit(
-    data: &mut WorkUnitsData,
-    id: &str,
-    field: &str,
-    target_value: &str,
-) {
+fn filter_field_on_unit(data: &mut WorkUnitsData, id: &str, field: &str, target_value: &str) {
     let Some(wu) = data.work_units.get_mut(id) else {
         return;
     };

@@ -111,10 +111,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         if cat.tags.iter().any(|t| t.name == normalised) {
             return Err(FspecCoreError::InvalidArgs {
                 command: "register-tag",
-                reason: format!(
-                    "Tag {} is already registered in {}",
-                    normalised, cat.name
-                ),
+                reason: format!("Tag {} is already registered in {}", normalised, cat.name),
             });
         }
     }
@@ -190,10 +187,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             normalised, args.tag, canonical_category_name
         )
     } else {
-        format!(
-            "Successfully registered {} in {}",
-            normalised, canonical_category_name
-        )
+        format!("Successfully registered {normalised} in {canonical_category_name}")
     };
 
     // ---- Render result ----
@@ -326,7 +320,7 @@ fn generate_tags_md(tags: &TagsData) -> String {
     }
 
     if let Some(stats) = tags.extra.get("statistics") {
-        if let Some(last_updated) = stats.get("lastUpdated").and_then(|v| v.as_str()) {
+        if let Some(last_updated) = stats.get("lastUpdated").and_then(Value::as_str) {
             out.push_str(&format!("_Last updated: {last_updated}_\n"));
         }
     }
@@ -336,7 +330,12 @@ fn generate_tags_md(tags: &TagsData) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -360,7 +359,11 @@ mod tests {
 
     #[test]
     fn render_text_omits_note_when_not_converted() {
-        let out = render_text("Successfully registered @api in Technical Tags", "@api", false);
+        let out = render_text(
+            "Successfully registered @api in Technical Tags",
+            "@api",
+            false,
+        );
         assert!(!out.contains("Note: Tag converted"));
         assert!(out.contains("✓ Successfully registered @api in Technical Tags"));
         assert!(out.contains("  Updated: spec/tags.json"));
@@ -374,7 +377,9 @@ mod tests {
             "@API-Integration",
             true,
         );
-        assert!(out.contains("Note: Tag converted to lowercase: @API-Integration → @api-integration"));
+        assert!(
+            out.contains("Note: Tag converted to lowercase: @API-Integration → @api-integration")
+        );
     }
 
     #[test]

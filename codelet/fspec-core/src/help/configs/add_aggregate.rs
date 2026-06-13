@@ -77,7 +77,9 @@ const COMMON_ERRORS: &[CommonError] = &[
 ];
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
-    CommonPatternEntry::Bullet("Use PascalCase for aggregate names (Order, ShoppingCart, UserAccount)"),
+    CommonPatternEntry::Bullet(
+        "Use PascalCase for aggregate names (Order, ShoppingCart, UserAccount)",
+    ),
     CommonPatternEntry::Bullet("Aggregates are nouns representing domain entities (not actions)"),
     CommonPatternEntry::Bullet("Group related aggregates using --bounded-context flag"),
     CommonPatternEntry::Bullet("Define responsibilities to clarify aggregate behavior"),

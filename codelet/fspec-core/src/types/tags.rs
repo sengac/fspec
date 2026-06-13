@@ -176,7 +176,12 @@ impl TagsData {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
@@ -205,8 +210,14 @@ mod tests {
         let d = TagsData::initial();
         assert!(d.categories[0].required, "Phase Tags must be required");
         assert!(d.categories[1].required, "Component Tags must be required");
-        assert!(d.categories[2].required, "Feature Group Tags must be required");
-        assert!(!d.categories[3].required, "Technical Tags must NOT be required");
+        assert!(
+            d.categories[2].required,
+            "Feature Group Tags must be required"
+        );
+        assert!(
+            !d.categories[3].required,
+            "Technical Tags must NOT be required"
+        );
     }
 
     #[test]

@@ -148,11 +148,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 source,
             })?;
         }
-        std::fs::write(&out_abs, rendered.as_bytes()).map_err(|source| {
-            FspecCoreError::Io {
-                command: "show-coverage",
-                source,
-            }
+        std::fs::write(&out_abs, rendered.as_bytes()).map_err(|source| FspecCoreError::Io {
+            command: "show-coverage",
+            source,
         })?;
     }
 
@@ -173,7 +171,9 @@ fn show_single_feature(
     format: OutputFormat,
 ) -> Result<String, FspecCoreError> {
     let features_dir = project_root.join("spec").join("features");
-    let stripped = feature_input.strip_suffix(".feature").unwrap_or(feature_input);
+    let stripped = feature_input
+        .strip_suffix(".feature")
+        .unwrap_or(feature_input);
     let file_name = format!("{stripped}.feature");
     let coverage_path = features_dir.join(format!("{file_name}.coverage"));
 
@@ -277,11 +277,7 @@ fn calculate_line_counts(coverage: &CoverageFile) -> LineCounts {
 }
 
 #[allow(clippy::expect_used)] // stats invariant: caller synthesizes before render
-fn render_single_markdown(
-    coverage: &CoverageFile,
-    file_name: &str,
-    warnings: &[String],
-) -> String {
+fn render_single_markdown(coverage: &CoverageFile, file_name: &str, warnings: &[String]) -> String {
     let mut lines: Vec<String> = Vec::new();
 
     let stats = coverage
@@ -302,7 +298,9 @@ fn render_single_markdown(
     lines.push(format!("- Covered: {}", stats.covered_scenarios));
     lines.push(format!(
         "- Uncovered: {}",
-        stats.total_scenarios.saturating_sub(stats.covered_scenarios)
+        stats
+            .total_scenarios
+            .saturating_sub(stats.covered_scenarios)
     ));
     lines.push(format!("- Test Files: {}", stats.test_files.len()));
     lines.push(format!(
@@ -342,17 +340,13 @@ fn render_single_markdown(
             for tm in &scenario.test_mappings {
                 lines.push(format!("- **Test**: `{}:{}`", tm.file, tm.lines));
                 if tm.impl_mappings.is_empty() {
-                    lines.push(
-                        "- **Implementation**: ⚠️  No implementation mappings".to_string(),
-                    );
+                    lines.push("- **Implementation**: ⚠️  No implementation mappings".to_string());
                 } else {
                     for im in &tm.impl_mappings {
                         let impl_lines_str = match &im.lines {
-                            ImplLines::Array(v) => v
-                                .iter()
-                                .map(i64::to_string)
-                                .collect::<Vec<_>>()
-                                .join(","),
+                            ImplLines::Array(v) => {
+                                v.iter().map(i64::to_string).collect::<Vec<_>>().join(",")
+                            }
                             ImplLines::String(s) => s.clone(),
                         };
                         lines.push(format!(
@@ -409,11 +403,7 @@ struct EnrichedScenario<'a> {
 }
 
 #[allow(clippy::expect_used)] // stats invariant: caller synthesizes before render
-fn render_single_json(
-    coverage: &CoverageFile,
-    file_name: &str,
-    warnings: &[String],
-) -> String {
+fn render_single_json(coverage: &CoverageFile, file_name: &str, warnings: &[String]) -> String {
     let enriched_scenarios: Vec<EnrichedScenario> = coverage
         .scenarios
         .iter()
@@ -451,10 +441,7 @@ struct LoadedFeature {
     warnings: Vec<String>,
 }
 
-fn show_project_wide(
-    project_root: &Path,
-    format: OutputFormat,
-) -> Result<String, FspecCoreError> {
+fn show_project_wide(project_root: &Path, format: OutputFormat) -> Result<String, FspecCoreError> {
     let features_dir = project_root.join("spec").join("features");
     let entries = match std::fs::read_dir(&features_dir) {
         Ok(e) => e,
@@ -515,11 +502,23 @@ fn show_project_wide(
     let total_features = loaded.len() as i64;
     let total_scenarios: i64 = loaded
         .iter()
-        .map(|f| f.coverage.stats.as_ref().map(|s| s.total_scenarios as i64).unwrap_or(0))
+        .map(|f| {
+            f.coverage
+                .stats
+                .as_ref()
+                .map(|s| s.total_scenarios as i64)
+                .unwrap_or(0)
+        })
         .sum();
     let covered_scenarios: i64 = loaded
         .iter()
-        .map(|f| f.coverage.stats.as_ref().map(|s| s.covered_scenarios as i64).unwrap_or(0))
+        .map(|f| {
+            f.coverage
+                .stats
+                .as_ref()
+                .map(|s| s.covered_scenarios as i64)
+                .unwrap_or(0)
+        })
         .sum();
     let coverage_percent: i64 = if total_scenarios == 0 {
         0
@@ -615,10 +614,7 @@ fn render_project_markdown(aggregated: &Aggregated, loaded: &[LoadedFeature]) ->
 
     lines.push("## Project Summary".to_string());
     lines.push(format!("- Total Features: {}", aggregated.total_features));
-    lines.push(format!(
-        "- Total Scenarios: {}",
-        aggregated.total_scenarios
-    ));
+    lines.push(format!("- Total Scenarios: {}", aggregated.total_scenarios));
     lines.push(format!("- Covered: {}", aggregated.covered_scenarios));
     lines.push(format!(
         "- Uncovered: {}",
@@ -646,11 +642,7 @@ fn render_project_markdown(aggregated: &Aggregated, loaded: &[LoadedFeature]) ->
         };
         lines.push(format!(
             "- {}: {}% ({}/{}) {}",
-            lf.file_name,
-            percent,
-            stats.covered_scenarios,
-            stats.total_scenarios,
-            symbol
+            lf.file_name, percent, stats.covered_scenarios, stats.total_scenarios, symbol
         ));
     }
     lines.push(String::new());

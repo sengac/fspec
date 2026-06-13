@@ -39,7 +39,15 @@ fn read_work_units(project_root: &Path) -> Value {
 fn seed_units(units: &[(&str, &str)]) -> String {
     let mut wus = serde_json::Map::new();
     let mut states: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -48,17 +56,37 @@ fn seed_units(units: &[(&str, &str)]) -> String {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".to_string()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
-        states.get_mut(*status).expect("known state").push((*id).to_string());
+        states
+            .get_mut(*status)
+            .expect("known state")
+            .push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
             Value::Array(
-                states.get(*st).expect("seeded state").iter()
+                states
+                    .get(*st)
+                    .expect("seeded state")
+                    .iter()
                     .map(|s| Value::String(s.clone()))
                     .collect(),
             ),
@@ -75,7 +103,10 @@ fn seed_units(units: &[(&str, &str)]) -> String {
 /// Override a work-unit's dependency array on disk (for cycle-test seeding).
 fn add_blocks_to_unit(json_str: &str, id: &str, blocks: &[&str]) -> String {
     let mut v: Value = serde_json::from_str(json_str).unwrap();
-    let arr: Vec<Value> = blocks.iter().map(|s| Value::String((*s).to_string())).collect();
+    let arr: Vec<Value> = blocks
+        .iter()
+        .map(|s| Value::String((*s).to_string()))
+        .collect();
     v["workUnits"][id]["blocks"] = Value::Array(arr);
     serde_json::to_string_pretty(&v).unwrap()
 }
@@ -86,7 +117,11 @@ fn add_blocks_to_unit(json_str: &str, id: &str, blocks: &[&str]) -> String {
 fn bulk_blocks_adds_bidirectional_edges_and_auto_transitions_targets_to_blocked() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001, AUTH-002, AUTH-003 all status=backlog with empty dependency arrays
     let tmp = TempDir::new().expect("tempdir");
-    let pre = seed_units(&[("AUTH-001", "backlog"), ("AUTH-002", "backlog"), ("AUTH-003", "backlog")]);
+    let pre = seed_units(&[
+        ("AUTH-001", "backlog"),
+        ("AUTH-002", "backlog"),
+        ("AUTH-003", "backlog"),
+    ]);
     write_work_units(tmp.path(), &pre);
 
     // @step When I dispatch add-dependencies with workUnitId='AUTH-001' and dependencies.blocks=['AUTH-002', 'AUTH-003']
@@ -111,14 +146,18 @@ fn bulk_blocks_adds_bidirectional_edges_and_auto_transitions_targets_to_blocked(
     );
 
     // @step And spec/work-units.json on disk shows AUTH-002.blockedBy contains 'AUTH-001'
-    let bb2 = on_disk["workUnits"]["AUTH-002"]["blockedBy"].as_array().expect("blockedBy array");
+    let bb2 = on_disk["workUnits"]["AUTH-002"]["blockedBy"]
+        .as_array()
+        .expect("blockedBy array");
     assert!(bb2.iter().any(|v| v == "AUTH-001"));
 
     // @step And spec/work-units.json on disk shows AUTH-002.status='blocked'
     assert_eq!(on_disk["workUnits"]["AUTH-002"]["status"], "blocked");
 
     // @step And spec/work-units.json on disk shows AUTH-003.blockedBy contains 'AUTH-001'
-    let bb3 = on_disk["workUnits"]["AUTH-003"]["blockedBy"].as_array().expect("blockedBy array");
+    let bb3 = on_disk["workUnits"]["AUTH-003"]["blockedBy"]
+        .as_array()
+        .expect("blockedBy array");
     assert!(bb3.iter().any(|v| v == "AUTH-001"));
 
     // @step And spec/work-units.json on disk shows AUTH-003.status='blocked'
@@ -135,9 +174,17 @@ fn bulk_blocks_adds_bidirectional_edges_and_auto_transitions_targets_to_blocked(
     assert!(blocked.iter().any(|v| v == "AUTH-003"));
 
     // @step And spec/work-units.json on disk shows AUTH-001.updatedAt is a freshly bumped ISO-8601 timestamp
-    let updated = on_disk["workUnits"]["AUTH-001"]["updatedAt"].as_str().expect("updatedAt str");
-    assert_ne!(updated, "2026-06-01T00:00:00.000Z", "updatedAt must be bumped");
-    assert!(updated.ends_with('Z') && updated.contains('T'), "updatedAt must be ISO-8601: {updated}");
+    let updated = on_disk["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .expect("updatedAt str");
+    assert_ne!(
+        updated, "2026-06-01T00:00:00.000Z",
+        "updatedAt must be bumped"
+    );
+    assert!(
+        updated.ends_with('Z') && updated.contains('T'),
+        "updatedAt must be ISO-8601: {updated}"
+    );
 }
 
 #[test]
@@ -163,20 +210,30 @@ fn bulk_blocked_by_auto_transitions_source_to_blocked_with_blocked_reason() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows UI-001.blockedBy=['API-001']
-    assert_eq!(on_disk["workUnits"]["UI-001"]["blockedBy"], json!(["API-001"]));
+    assert_eq!(
+        on_disk["workUnits"]["UI-001"]["blockedBy"],
+        json!(["API-001"])
+    );
 
     // @step And spec/work-units.json on disk shows API-001.blocks contains 'UI-001'
-    let blocks = on_disk["workUnits"]["API-001"]["blocks"].as_array().expect("blocks");
+    let blocks = on_disk["workUnits"]["API-001"]["blocks"]
+        .as_array()
+        .expect("blocks");
     assert!(blocks.iter().any(|v| v == "UI-001"));
 
     // @step And spec/work-units.json on disk shows UI-001.status='blocked'
     assert_eq!(on_disk["workUnits"]["UI-001"]["status"], "blocked");
 
     // @step And spec/work-units.json on disk shows UI-001.blockedReason='Blocked by API-001'
-    assert_eq!(on_disk["workUnits"]["UI-001"]["blockedReason"], "Blocked by API-001");
+    assert_eq!(
+        on_disk["workUnits"]["UI-001"]["blockedReason"],
+        "Blocked by API-001"
+    );
 
     // @step And spec/work-units.json on disk shows states.specifying does NOT contain 'UI-001'
-    let specifying = on_disk["states"]["specifying"].as_array().expect("specifying");
+    let specifying = on_disk["states"]["specifying"]
+        .as_array()
+        .expect("specifying");
     assert!(!specifying.iter().any(|v| v == "UI-001"));
 
     // @step And spec/work-units.json on disk shows states.blocked contains 'UI-001'
@@ -188,7 +245,11 @@ fn bulk_blocked_by_auto_transitions_source_to_blocked_with_blocked_reason() {
 fn bulk_depends_on_writes_only_source_array_with_no_reverse_or_status_change() {
     // @step Given a project root tempdir with spec/work-units.json containing DASH-001 status=backlog, AUTH-001 status=backlog, AUTH-002 status=backlog
     let tmp = TempDir::new().expect("tempdir");
-    let pre = seed_units(&[("DASH-001", "backlog"), ("AUTH-001", "backlog"), ("AUTH-002", "backlog")]);
+    let pre = seed_units(&[
+        ("DASH-001", "backlog"),
+        ("AUTH-001", "backlog"),
+        ("AUTH-002", "backlog"),
+    ]);
     write_work_units(tmp.path(), &pre);
 
     // @step When I dispatch add-dependencies with workUnitId='DASH-001' and dependencies.dependsOn=['AUTH-001', 'AUTH-002']
@@ -207,12 +268,21 @@ fn bulk_depends_on_writes_only_source_array_with_no_reverse_or_status_change() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows DASH-001.dependsOn=['AUTH-001', 'AUTH-002']
-    assert_eq!(on_disk["workUnits"]["DASH-001"]["dependsOn"], json!(["AUTH-001", "AUTH-002"]));
+    assert_eq!(
+        on_disk["workUnits"]["DASH-001"]["dependsOn"],
+        json!(["AUTH-001", "AUTH-002"])
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no blocks, no blockedBy, no dependsOn, no relatesTo fields
     for field in &["blocks", "blockedBy", "dependsOn", "relatesTo"] {
-        assert!(on_disk["workUnits"]["AUTH-001"].get(*field).is_none(), "AUTH-001.{field} should be absent");
-        assert!(on_disk["workUnits"]["AUTH-002"].get(*field).is_none(), "AUTH-002.{field} should be absent");
+        assert!(
+            on_disk["workUnits"]["AUTH-001"].get(*field).is_none(),
+            "AUTH-001.{field} should be absent"
+        );
+        assert!(
+            on_disk["workUnits"]["AUTH-002"].get(*field).is_none(),
+            "AUTH-002.{field} should be absent"
+        );
     }
 
     // @step And spec/work-units.json on disk shows AUTH-001.status='backlog' and AUTH-002.status='backlog'
@@ -243,10 +313,16 @@ fn bulk_relates_to_creates_symmetric_edge_on_both_sides() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows AUTH-002.relatesTo=['AUTH-003']
-    assert_eq!(on_disk["workUnits"]["AUTH-002"]["relatesTo"], json!(["AUTH-003"]));
+    assert_eq!(
+        on_disk["workUnits"]["AUTH-002"]["relatesTo"],
+        json!(["AUTH-003"])
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-003.relatesTo=['AUTH-002']
-    assert_eq!(on_disk["workUnits"]["AUTH-003"]["relatesTo"], json!(["AUTH-002"]));
+    assert_eq!(
+        on_disk["workUnits"]["AUTH-003"]["relatesTo"],
+        json!(["AUTH-002"])
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-002.status='backlog' and AUTH-003.status='backlog'
     assert_eq!(on_disk["workUnits"]["AUTH-002"]["status"], "backlog");
@@ -272,7 +348,10 @@ fn missing_target_id_surfaces_canonical_error() {
 
     // @step And the error message contains "Target work unit 'NOPE-999' does not exist"
     let err = result.error.as_deref().unwrap_or("");
-    assert!(err.contains("Target work unit 'NOPE-999' does not exist"), "err was: {err}");
+    assert!(
+        err.contains("Target work unit 'NOPE-999' does not exist"),
+        "err was: {err}"
+    );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
     let post_disk = fs::read_to_string(tmp.path().join("spec").join("work-units.json")).unwrap();
@@ -298,7 +377,10 @@ fn self_dependency_is_rejected_verbatim() {
 
     // @step And the error message contains 'Cannot create self-dependency'
     let err = result.error.as_deref().unwrap_or("");
-    assert!(err.contains("Cannot create self-dependency"), "err was: {err}");
+    assert!(
+        err.contains("Cannot create self-dependency"),
+        "err was: {err}"
+    );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
     let post_disk = fs::read_to_string(tmp.path().join("spec").join("work-units.json")).unwrap();
@@ -353,7 +435,10 @@ fn missing_source_work_unit_surfaces_canonical_error() {
 
     // @step And the error message contains "Work unit 'NOPE-001' does not exist"
     let err = result.error.as_deref().unwrap_or("");
-    assert!(err.contains("Work unit 'NOPE-001' does not exist"), "err was: {err}");
+    assert!(
+        err.contains("Work unit 'NOPE-001' does not exist"),
+        "err was: {err}"
+    );
 }
 
 #[test]
@@ -373,12 +458,18 @@ fn auto_creates_work_units_json_when_missing_then_reports_missing_source_error()
 
     // @step And the error message contains "Work unit 'AUTH-001' does not exist"
     let err = result.error.as_deref().unwrap_or("");
-    assert!(err.contains("Work unit 'AUTH-001' does not exist"), "err was: {err}");
+    assert!(
+        err.contains("Work unit 'AUTH-001' does not exist"),
+        "err was: {err}"
+    );
 
     // @step And spec/work-units.json now exists on disk with the canonical empty initial structure
     let path = tmp.path().join("spec").join("work-units.json");
     assert!(path.exists(), "spec/work-units.json must be auto-created");
     let on_disk: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
     assert_eq!(on_disk["version"].as_str(), Some("0.7.1"));
-    assert!(on_disk["workUnits"].as_object().map(|m| m.is_empty()).unwrap_or(false));
+    assert!(on_disk["workUnits"]
+        .as_object()
+        .map(serde_json::Map::is_empty)
+        .unwrap_or(false));
 }

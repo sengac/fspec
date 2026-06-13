@@ -12,8 +12,7 @@ use super::super::{
 const ARGS: &[CommandArgument] = &[
     CommandArgument {
         name: "section",
-        description:
-            "Section name (e.g., \"Architecture\", \"Data Flow\") - used for organization",
+        description: "Section name (e.g., \"Architecture\", \"Data Flow\") - used for organization",
         required: true,
     },
     CommandArgument {
@@ -80,11 +79,14 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
 ];
 
-const PREREQUISITES: &[&str] = &[
-    "spec/foundation.json exists (created by fspec init or discover-foundation)",
-];
+const PREREQUISITES: &[&str] =
+    &["spec/foundation.json exists (created by fspec init or discover-foundation)"];
 
-const RELATED: &[&str] = &["delete-diagram", "show-foundation", "generate-foundation-md"];
+const RELATED: &[&str] = &[
+    "delete-diagram",
+    "show-foundation",
+    "generate-foundation-md",
+];
 
 const NOTES: &[&str] = &[
     "Mermaid syntax is validated using mermaid.parse() before adding",

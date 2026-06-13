@@ -34,8 +34,7 @@ fn write_prefixes(project_root: &Path, raw: &str) {
 }
 
 fn read_prefixes_raw(project_root: &Path) -> String {
-    fs::read_to_string(project_root.join("spec/prefixes.json"))
-        .expect("read spec/prefixes.json")
+    fs::read_to_string(project_root.join("spec/prefixes.json")).expect("read spec/prefixes.json")
 }
 
 const AUTH_ONLY_JSON: &str = r#"{
@@ -68,8 +67,8 @@ fn successful_registration_creates_prefixes_file_with_new_entry() {
     assert!(result.success, "expected success=true, got {result:?}");
 
     // @step Then spec/prefixes.json exists and contains the prefix entry 'AUTH' with description 'Auth features'
-    let on_disk: Value = serde_json::from_str(&read_prefixes_raw(tmp.path()))
-        .expect("on-disk JSON parse");
+    let on_disk: Value =
+        serde_json::from_str(&read_prefixes_raw(tmp.path())).expect("on-disk JSON parse");
     let auth = &on_disk["prefixes"]["AUTH"];
     assert_eq!(auth["prefix"].as_str(), Some("AUTH"));
     assert_eq!(auth["description"].as_str(), Some("Auth features"));
@@ -404,19 +403,29 @@ fn regex_lite(pat: &str) -> impl Fn(&str) -> bool {
         let bytes = s.as_bytes();
         // YYYY-MM-DDTHH:MM:SS.sssZ
         let digit = |i: usize| bytes[i].is_ascii_digit();
-        digit(0) && digit(1) && digit(2) && digit(3)
+        digit(0)
+            && digit(1)
+            && digit(2)
+            && digit(3)
             && bytes[4] == b'-'
-            && digit(5) && digit(6)
+            && digit(5)
+            && digit(6)
             && bytes[7] == b'-'
-            && digit(8) && digit(9)
+            && digit(8)
+            && digit(9)
             && bytes[10] == b'T'
-            && digit(11) && digit(12)
+            && digit(11)
+            && digit(12)
             && bytes[13] == b':'
-            && digit(14) && digit(15)
+            && digit(14)
+            && digit(15)
             && bytes[16] == b':'
-            && digit(17) && digit(18)
+            && digit(17)
+            && digit(18)
             && bytes[19] == b'.'
-            && digit(20) && digit(21) && digit(22)
+            && digit(20)
+            && digit(21)
+            && digit(22)
             && bytes[23] == b'Z'
     }
 }

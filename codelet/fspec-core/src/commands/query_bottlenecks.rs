@@ -105,7 +105,10 @@ fn render_text(result: &QueryBottlenecksResult) -> String {
     for b in &result.bottlenecks {
         out.push_str(&format!("{} ({}) - {}\n", b.id, b.status, b.title));
         out.push_str(&format!("  Bottleneck Score: {}\n", b.score));
-        out.push_str(&format!("  Direct Blocks: {}\n", b.direct_blocks.join(", ")));
+        out.push_str(&format!(
+            "  Direct Blocks: {}\n",
+            b.direct_blocks.join(", ")
+        ));
         if !b.transitive_blocks.is_empty() {
             out.push_str(&format!(
                 "  Transitive Blocks: {}\n",
@@ -114,7 +117,10 @@ fn render_text(result: &QueryBottlenecksResult) -> String {
         }
         out.push('\n');
     }
-    out.push_str(&format!("\nTotal bottlenecks: {}", result.bottlenecks.len()));
+    out.push_str(&format!(
+        "\nTotal bottlenecks: {}",
+        result.bottlenecks.len()
+    ));
     out
 }
 
@@ -175,7 +181,7 @@ fn compute_bottlenecks(
 
     // Rule 4: rank by score descending. Stable sort preserves IndexMap order
     // for ties (TS Array.prototype.sort parity).
-    bottlenecks.sort_by(|a, b| b.score.cmp(&a.score));
+    bottlenecks.sort_by_key(|b| std::cmp::Reverse(b.score));
 
     QueryBottlenecksResult { bottlenecks }
 }
@@ -342,7 +348,14 @@ mod tests {
         ]);
         let result = compute_bottlenecks(&units);
         let s = serde_json::to_string_pretty(&result).unwrap();
-        let expected = ["\"id\"", "\"title\"", "\"status\"", "\"score\"", "\"directBlocks\"", "\"transitiveBlocks\""];
+        let expected = [
+            "\"id\"",
+            "\"title\"",
+            "\"status\"",
+            "\"score\"",
+            "\"directBlocks\"",
+            "\"transitiveBlocks\"",
+        ];
         let mut positions = Vec::new();
         for f in &expected {
             positions.push(s.find(f).unwrap_or_else(|| panic!("missing {f}\n{s}")));

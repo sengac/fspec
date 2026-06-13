@@ -130,13 +130,22 @@ fn scenario_json_emits_canonical_jsonpath_strings() {
     };
 
     // @step And the projectName entry has jsonPath='project.name'
-    assert_eq!(by_name("projectName")["jsonPath"].as_str(), Some("project.name"));
+    assert_eq!(
+        by_name("projectName")["jsonPath"].as_str(),
+        Some("project.name")
+    );
 
     // @step And the projectVision entry has jsonPath='project.vision'
-    assert_eq!(by_name("projectVision")["jsonPath"].as_str(), Some("project.vision"));
+    assert_eq!(
+        by_name("projectVision")["jsonPath"].as_str(),
+        Some("project.vision")
+    );
 
     // @step And the projectType entry has jsonPath='project.projectType'
-    assert_eq!(by_name("projectType")["jsonPath"].as_str(), Some("project.projectType"));
+    assert_eq!(
+        by_name("projectType")["jsonPath"].as_str(),
+        Some("project.projectType")
+    );
 
     // @step And the problemTitle entry has jsonPath='problemSpace.primaryProblem.title'
     assert_eq!(
@@ -186,10 +195,16 @@ fn scenario_json_emits_canonical_constraint_strings() {
     };
 
     // @step And the projectName entry has constraint='freeform string'
-    assert_eq!(by_name("projectName")["constraint"].as_str(), Some("freeform string"));
+    assert_eq!(
+        by_name("projectName")["constraint"].as_str(),
+        Some("freeform string")
+    );
 
     // @step And the projectVision entry has constraint='freeform string'
-    assert_eq!(by_name("projectVision")["constraint"].as_str(), Some("freeform string"));
+    assert_eq!(
+        by_name("projectVision")["constraint"].as_str(),
+        Some("freeform string")
+    );
 
     // @step And the projectType entry has constraint='freeform string (1-30 characters)'
     assert_eq!(
@@ -198,7 +213,10 @@ fn scenario_json_emits_canonical_constraint_strings() {
     );
 
     // @step And the problemTitle entry has constraint='freeform string'
-    assert_eq!(by_name("problemTitle")["constraint"].as_str(), Some("freeform string"));
+    assert_eq!(
+        by_name("problemTitle")["constraint"].as_str(),
+        Some("freeform string")
+    );
 
     // @step And the problemDefinition entry has constraint='freeform string'
     assert_eq!(
@@ -243,7 +261,9 @@ fn scenario_json_omits_examples_field_for_sections_without_examples() {
 
     // @step And the projectType entry has examples=['cli-tool','web-app','saas-platform']
     let pt = by_name("projectType");
-    let ex = pt["examples"].as_array().expect("projectType.examples array");
+    let ex = pt["examples"]
+        .as_array()
+        .expect("projectType.examples array");
     assert_eq!(ex.len(), 3, "expected 3 examples, got {ex:?}");
     assert_eq!(ex[0].as_str(), Some("cli-tool"));
     assert_eq!(ex[1].as_str(), Some("web-app"));
@@ -286,7 +306,9 @@ fn scenario_json_uses_two_space_indented_pretty_print() {
 
     // @step And the DispatchResult.data starts with the exact string "[\n  {\n    \"name\": \"projectName\""
     assert!(
-        result.data.starts_with("[\n  {\n    \"name\": \"projectName\""),
+        result
+            .data
+            .starts_with("[\n  {\n    \"name\": \"projectName\""),
         "expected 2-space indented JSON opener; got:\n{}",
         result.data
     );
@@ -345,23 +367,44 @@ fn scenario_text_renders_header_separator_and_seven_section_bullets() {
     assert!(result.data.lines().any(|l| l == "\u{2022} problemTitle"));
 
     // @step And the DispatchResult.data contains the exact line '• problemDefinition'
-    assert!(result.data.lines().any(|l| l == "\u{2022} problemDefinition"));
+    assert!(result
+        .data
+        .lines()
+        .any(|l| l == "\u{2022} problemDefinition"));
 
     // @step And the DispatchResult.data contains the exact line '• problemImpact'
     assert!(result.data.lines().any(|l| l == "\u{2022} problemImpact"));
 
     // @step And the DispatchResult.data contains the exact line '• solutionOverview'
-    assert!(result.data.lines().any(|l| l == "\u{2022} solutionOverview"));
+    assert!(result
+        .data
+        .lines()
+        .any(|l| l == "\u{2022} solutionOverview"));
 
     // @step And the substring '• projectName' appears before '• projectVision' in the output
-    let a = result.data.find("\u{2022} projectName").expect("projectName present");
-    let b = result.data.find("\u{2022} projectVision").expect("projectVision present");
+    let a = result
+        .data
+        .find("\u{2022} projectName")
+        .expect("projectName present");
+    let b = result
+        .data
+        .find("\u{2022} projectVision")
+        .expect("projectVision present");
     assert!(a < b, "projectName must precede projectVision; a={a} b={b}");
 
     // @step And the substring '• problemImpact' appears before '• solutionOverview' in the output
-    let c = result.data.find("\u{2022} problemImpact").expect("problemImpact present");
-    let d = result.data.find("\u{2022} solutionOverview").expect("solutionOverview present");
-    assert!(c < d, "problemImpact must precede solutionOverview; c={c} d={d}");
+    let c = result
+        .data
+        .find("\u{2022} problemImpact")
+        .expect("problemImpact present");
+    let d = result
+        .data
+        .find("\u{2022} solutionOverview")
+        .expect("solutionOverview present");
+    assert!(
+        c < d,
+        "problemImpact must precede solutionOverview; c={c} d={d}"
+    );
 }
 
 #[test]
@@ -379,42 +422,60 @@ fn scenario_text_renders_path_constraint_and_about_lines() {
 
     // @step And the DispatchResult.data contains the exact line '    path:       project.name'
     assert!(
-        result.data.lines().any(|l| l == "    path:       project.name"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "    path:       project.name"),
         "missing path row for project.name; got:\n{}",
         result.data
     );
 
     // @step And the DispatchResult.data contains the exact line '    constraint: freeform string'
     assert!(
-        result.data.lines().any(|l| l == "    constraint: freeform string"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "    constraint: freeform string"),
         "missing 'constraint: freeform string' line; got:\n{}",
         result.data
     );
 
     // @step And the DispatchResult.data contains the exact line '    about:      Project name'
     assert!(
-        result.data.lines().any(|l| l == "    about:      Project name"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "    about:      Project name"),
         "missing 'about: Project name' line; got:\n{}",
         result.data
     );
 
     // @step And the DispatchResult.data contains the exact line '    path:       problemSpace.primaryProblem.impact'
     assert!(
-        result.data.lines().any(|l| l == "    path:       problemSpace.primaryProblem.impact"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "    path:       problemSpace.primaryProblem.impact"),
         "missing impact path; got:\n{}",
         result.data
     );
 
     // @step And the DispatchResult.data contains the exact line '    constraint: enum: high, medium, low'
     assert!(
-        result.data.lines().any(|l| l == "    constraint: enum: high, medium, low"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "    constraint: enum: high, medium, low"),
         "missing impact constraint; got:\n{}",
         result.data
     );
 
     // @step And the DispatchResult.data contains the exact line '    about:      How critical the problem is'
     assert!(
-        result.data.lines().any(|l| l == "    about:      How critical the problem is"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "    about:      How critical the problem is"),
         "missing impact about; got:\n{}",
         result.data
     );
@@ -435,13 +496,20 @@ fn scenario_text_renders_examples_line_only_for_project_type() {
 
     // @step And the DispatchResult.data contains the exact line '    examples:   cli-tool, web-app, saas-platform'
     assert!(
-        result.data.lines().any(|l| l == "    examples:   cli-tool, web-app, saas-platform"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "    examples:   cli-tool, web-app, saas-platform"),
         "missing projectType examples line; got:\n{}",
         result.data
     );
 
     // @step And the DispatchResult.data contains exactly one line starting with '    examples:'
-    let count = result.data.lines().filter(|l| l.starts_with("    examples:")).count();
+    let count = result
+        .data
+        .lines()
+        .filter(|l| l.starts_with("    examples:"))
+        .count();
     assert_eq!(
         count, 1,
         "expected exactly one '    examples:' line, got {count}\n{}",
@@ -482,8 +550,14 @@ fn scenario_text_ends_with_two_line_footer_about_dedicated_commands() {
     );
 
     // @step And the substring 'Note: capabilities and personas' appears after '• solutionOverview' in the output
-    let solution_pos = result.data.find("\u{2022} solutionOverview").expect("solutionOverview present");
-    let note_pos = result.data.find("Note: capabilities and personas").expect("footer present");
+    let solution_pos = result
+        .data
+        .find("\u{2022} solutionOverview")
+        .expect("solutionOverview present");
+    let note_pos = result
+        .data
+        .find("Note: capabilities and personas")
+        .expect("footer present");
     assert!(
         solution_pos < note_pos,
         "footer must appear AFTER solutionOverview bullet; solution={solution_pos} note={note_pos}\n{}",

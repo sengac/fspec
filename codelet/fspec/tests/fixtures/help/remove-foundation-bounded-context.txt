@@ -1,0 +1,70 @@
+
+REMOVE-FOUNDATION-BOUNDED-CONTEXT
+Remove a bounded context from foundation Big Picture Event Storm (soft-delete)
+
+WHEN TO USE
+  Use to remove a bounded context from the foundation-level Big Picture Event Storm when correcting mistakes or refactoring the domain architecture.
+
+PREREQUISITES
+  • spec/foundation.json must exist with Event Storm data
+  • The bounded context must exist and not already be deleted
+  • If the context has child items, use --cascade to remove them too
+
+USAGE
+  fspec remove-foundation-bounded-context <context-name> [--cascade]
+
+ARGUMENTS
+  <context-name> (required)
+    Name of the bounded context to remove (e.g., "Work Management")
+
+OPTIONS
+  --cascade
+    Also remove all child items (aggregates, domain events, commands) within this bounded context
+
+COMMON PATTERNS
+  • Use --cascade when removing contexts that were fully explored but no longer needed
+  • Remove empty contexts first, then re-evaluate children before cascading
+  • Removal uses soft-delete (sets deleted: true) — items are not permanently erased
+  • FOUNDATION.md is auto-regenerated after removal
+  • Combine with show-foundation-event-storm to verify removal results
+
+EXAMPLES
+  1. Remove an empty bounded context
+  $ fspec remove-foundation-bounded-context "Legacy System"
+  ✓ Removed bounded context "Legacy System" from foundation Event Storm
+✓ Regenerated FOUNDATION.md
+
+  2. Remove a bounded context and all its child items (aggregates, events, commands)
+  $ fspec remove-foundation-bounded-context "Old Module" --cascade
+  ✓ Removed bounded context "Old Module" and all its children from foundation Event Storm
+✓ Regenerated FOUNDATION.md
+
+  3. Attempt to remove a non-empty bounded context without --cascade
+  $ fspec remove-foundation-bounded-context "Work Management"
+  Error: Bounded context 'Work Management' has 5 child items. Use --cascade to remove the context and all its children.
+
+COMMON ERRORS
+  ✗ Bounded context 'Foo' not found
+    Fix: Check the bounded context name with: fspec show-foundation-event-storm --type bounded-context
+
+  ✗ has 5 child items. Use --cascade
+    Fix: Add --cascade flag to remove the context and all its aggregates, events, and commands
+
+  ✗ spec/foundation.json not found
+    Fix: Initialize foundation first: fspec discover-foundation
+
+RELATED COMMANDS
+  fspec add-foundation-bounded-context
+  fspec remove-aggregate-from-foundation
+  fspec remove-domain-event-from-foundation
+  fspec remove-command-from-foundation
+  fspec show-foundation-event-storm
+
+NOTES
+  • Uses soft-delete (sets deleted: true) consistent with the ItemWithId pattern
+  • Without --cascade, non-empty bounded contexts cannot be removed
+  • --cascade soft-deletes all child items that share the boundedContextId
+  • FOUNDATION.md is automatically regenerated after removal
+  • Soft-deleted items are excluded from show-foundation-event-storm output
+  • Uses fileManager.transaction() for atomic updates
+

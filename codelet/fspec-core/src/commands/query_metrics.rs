@@ -100,12 +100,11 @@ enum MetricsOutput {
 // ─────────────────────────────────────────────────────────────────────────
 
 pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
-    let args: QueryMetricsArgs = serde_json::from_str(args_json).map_err(|e| {
-        FspecCoreError::InvalidArgs {
+    let args: QueryMetricsArgs =
+        serde_json::from_str(args_json).map_err(|e| FspecCoreError::InvalidArgs {
             command: "query-metrics",
             reason: format!("failed to parse args: {e}"),
-        }
-    })?;
+        })?;
 
     let data = load_work_units(project_root)?;
 
@@ -176,7 +175,10 @@ fn compute(
     if let Some(id) = work_unit_id {
         return compute_single(data, id);
     }
-    Ok(MetricsOutput::Aggregate(compute_aggregate(data, type_filter)))
+    Ok(MetricsOutput::Aggregate(compute_aggregate(
+        data,
+        type_filter,
+    )))
 }
 
 fn compute_single(data: &WorkUnitsData, id: &str) -> Result<MetricsOutput, FspecCoreError> {
@@ -448,7 +450,12 @@ fn render_text(output: &MetricsOutput) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

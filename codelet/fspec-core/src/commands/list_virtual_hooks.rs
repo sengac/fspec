@@ -59,7 +59,11 @@ struct VirtualHook {
     event: String,
     command: String,
     blocking: bool,
-    #[serde(default, skip_serializing_if = "Option::is_none", rename = "gitContext")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        rename = "gitContext"
+    )]
     git_context: Option<bool>,
 }
 
@@ -92,13 +96,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Validate that the requested work unit exists. We mirror the exact TS
     // error string `Work unit '<id>' does not exist` (single-quoted id) so
     // that integration callers can match on the canonical substring.
-    let work_unit = data
-        .work_units
-        .get(&args.work_unit_id)
-        .ok_or_else(|| FspecCoreError::InvalidArgs {
-            command: "list-virtual-hooks",
-            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
-        })?;
+    let work_unit =
+        data.work_units
+            .get(&args.work_unit_id)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "list-virtual-hooks",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            })?;
 
     // Extract `virtualHooks` from the work-unit's `extra` flatten map. We
     // intentionally read through `wu.extra` rather than adding a typed
@@ -138,12 +142,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "list-virtual-hooks",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text.
         _ => Ok(render_text(&args.work_unit_id, &result)),
     }
@@ -195,7 +199,12 @@ fn render_text(work_unit_id: &str, result: &ListVirtualHooksResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

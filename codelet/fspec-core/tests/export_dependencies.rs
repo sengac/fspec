@@ -96,13 +96,28 @@ fn export_mermaid_for_a_store_with_all_dependency_kinds() {
     assert!(written.starts_with("graph TB"), "got:\n{written}");
 
     // @step And it contains a node line for each work unit
-    assert!(written.contains("  AUTH-001[\"title AUTH-001\"]"), "got:\n{written}");
-    assert!(written.contains("  AUTH-002[\"title AUTH-002\"]:::done"), "got:\n{written}");
+    assert!(
+        written.contains("  AUTH-001[\"title AUTH-001\"]"),
+        "got:\n{written}"
+    );
+    assert!(
+        written.contains("  AUTH-002[\"title AUTH-002\"]:::done"),
+        "got:\n{written}"
+    );
 
     // @step And it contains the edge lines for blocks, depends on, and relates to
-    assert!(written.contains("  AUTH-001 -->|blocks| AUTH-002"), "got:\n{written}");
-    assert!(written.contains("  AUTH-001 -.->|depends on| AUTH-003"), "got:\n{written}");
-    assert!(written.contains("  AUTH-001 <-.->|relates to| AUTH-004"), "got:\n{written}");
+    assert!(
+        written.contains("  AUTH-001 -->|blocks| AUTH-002"),
+        "got:\n{written}"
+    );
+    assert!(
+        written.contains("  AUTH-001 -.->|depends on| AUTH-003"),
+        "got:\n{written}"
+    );
+    assert!(
+        written.contains("  AUTH-001 <-.->|relates to| AUTH-004"),
+        "got:\n{written}"
+    );
 
     // @step And it ends with the classDef done and classDef blocked trailer
     assert!(
@@ -155,7 +170,10 @@ fn export_json_for_a_store_maps_every_work_unit_to_dependency_arrays() {
         }
     }
     assert_eq!(parsed["AUTH-001"]["blocks"][0].as_str(), Some("AUTH-002"));
-    assert_eq!(parsed["AUTH-001"]["dependsOn"][0].as_str(), Some("AUTH-003"));
+    assert_eq!(
+        parsed["AUTH-001"]["dependsOn"][0].as_str(),
+        Some("AUTH-003")
+    );
 }
 
 #[test]
@@ -246,7 +264,10 @@ fn export_mermaid_dedupes_bidirectional_relates_to_edges() {
 
     // @step Then only one "<-.->|relates to|" edge appears between AUTH-001 and AUTH-004
     let count = written.matches("<-.->|relates to|").count();
-    assert_eq!(count, 1, "expected exactly one relates-to edge; got {count}:\n{written}");
+    assert_eq!(
+        count, 1,
+        "expected exactly one relates-to edge; got {count}:\n{written}"
+    );
 }
 
 #[test]
@@ -324,5 +345,8 @@ fn dispatcher_and_core_produce_identical_file_content() {
     // @step Then the written file content is the same as exporting via the dispatcher path
     let a = fs::read_to_string(tmp.path().join("a.json")).expect("read a.json");
     let b = fs::read_to_string(tmp.path().join("b.json")).expect("read b.json");
-    assert_eq!(a, b, "both export paths must produce identical file content");
+    assert_eq!(
+        a, b,
+        "both export paths must produce identical file content"
+    );
 }

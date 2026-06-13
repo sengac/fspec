@@ -39,8 +39,7 @@ const OPTS: &[CommandOption] = &[
     },
     CommandOption {
         flag: "--relates-to <id>",
-        description:
-            "This work unit is related to the specified work unit (no blocking)",
+        description: "This work unit is related to the specified work unit (no blocking)",
         default_value: None,
     },
 ];

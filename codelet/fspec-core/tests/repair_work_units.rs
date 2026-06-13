@@ -82,20 +82,18 @@ fn dispatcher_moves_work_unit_into_matching_states_array() {
 
     // @step Then states.specifying contains AUTH-001 and states.testing does not
     let disk = on_disk(tmp.path());
-    let specifying: Vec<&str> = disk["states"]["specifying"]
+    let specifying_has = disk["states"]["specifying"]
         .as_array()
         .unwrap()
         .iter()
-        .map(|v| v.as_str().unwrap())
-        .collect();
-    let testing: Vec<&str> = disk["states"]["testing"]
+        .any(|v| v.as_str() == Some("AUTH-001"));
+    let testing_has = disk["states"]["testing"]
         .as_array()
         .unwrap()
         .iter()
-        .map(|v| v.as_str().unwrap())
-        .collect();
-    assert!(specifying.contains(&"AUTH-001"), "specifying must contain AUTH-001");
-    assert!(!testing.contains(&"AUTH-001"), "testing must not contain AUTH-001");
+        .any(|v| v.as_str() == Some("AUTH-001"));
+    assert!(specifying_has, "specifying must contain AUTH-001");
+    assert!(!testing_has, "testing must not contain AUTH-001");
 
     // @step And the repairs array contains "Moved AUTH-001 from testing to specifying"
     assert!(
@@ -126,17 +124,19 @@ fn dispatcher_repairs_missing_blocked_by_reverse_link() {
 
     // @step Then AUTH-002.blockedBy contains AUTH-001
     let disk = on_disk(tmp.path());
-    let blocked_by: Vec<&str> = disk["workUnits"]["AUTH-002"]["blockedBy"]
+    let blocked_by_has = disk["workUnits"]["AUTH-002"]["blockedBy"]
         .as_array()
         .expect("AUTH-002.blockedBy present")
         .iter()
-        .map(|v| v.as_str().unwrap())
-        .collect();
-    assert!(blocked_by.contains(&"AUTH-001"), "AUTH-002.blockedBy must contain AUTH-001");
+        .any(|v| v.as_str() == Some("AUTH-001"));
+    assert!(blocked_by_has, "AUTH-002.blockedBy must contain AUTH-001");
 
     // @step And the repairs array contains "Repaired bidirectional link: AUTH-001 blocks AUTH-002"
     assert!(
-        repairs_contains(&data, "Repaired bidirectional link: AUTH-001 blocks AUTH-002"),
+        repairs_contains(
+            &data,
+            "Repaired bidirectional link: AUTH-001 blocks AUTH-002"
+        ),
         "repairs must contain the blocks message; got: {data:?}"
     );
 }
@@ -163,17 +163,19 @@ fn dispatcher_repairs_missing_relates_to_reverse_link() {
 
     // @step Then AUTH-002.relatesTo contains AUTH-001
     let disk = on_disk(tmp.path());
-    let relates_to: Vec<&str> = disk["workUnits"]["AUTH-002"]["relatesTo"]
+    let relates_to_has = disk["workUnits"]["AUTH-002"]["relatesTo"]
         .as_array()
         .expect("AUTH-002.relatesTo present")
         .iter()
-        .map(|v| v.as_str().unwrap())
-        .collect();
-    assert!(relates_to.contains(&"AUTH-001"), "AUTH-002.relatesTo must contain AUTH-001");
+        .any(|v| v.as_str() == Some("AUTH-001"));
+    assert!(relates_to_has, "AUTH-002.relatesTo must contain AUTH-001");
 
     // @step And the repairs array contains "Repaired bidirectional link: AUTH-001 relates to AUTH-002"
     assert!(
-        repairs_contains(&data, "Repaired bidirectional link: AUTH-001 relates to AUTH-002"),
+        repairs_contains(
+            &data,
+            "Repaired bidirectional link: AUTH-001 relates to AUTH-002"
+        ),
         "repairs must contain the relates-to message; got: {data:?}"
     );
 }
@@ -198,7 +200,11 @@ fn dispatcher_consistent_data_yields_zero_repairs() {
     let data = parse_data(&result.data);
 
     // @step Then the result reports repaired 0 with an empty repairs array
-    assert_eq!(data["repaired"].as_u64(), Some(0), "repaired must be 0; got {data:?}");
+    assert_eq!(
+        data["repaired"].as_u64(),
+        Some(0),
+        "repaired must be 0; got {data:?}"
+    );
     assert_eq!(
         data["repairs"].as_array().map(Vec::len),
         Some(0),

@@ -107,9 +107,8 @@ pub fn sanitize_for_gherkin(content: &str) -> String {
         // concerned. Pipe lines and `@` tag lines DO terminate a
         // description because the next scenario's table or tag run
         // begins there.
-        let ends_block_strong = trimmed.starts_with('|')
-            || is_step_keyword_prefix(trimmed)
-            || trimmed.starts_with('@');
+        let ends_block_strong =
+            trimmed.starts_with('|') || is_step_keyword_prefix(trimmed) || trimmed.starts_with('@');
         let comment = trimmed.starts_with('#');
 
         let mut rewritten: Option<String> = None;
@@ -267,9 +266,9 @@ fn rewrite_table_row_escapes(line: &str) -> String {
                     out.push('\\');
                     chars.next();
                 }
-                Some('|') | Some('n') => {
+                Some(&c2 @ ('|' | 'n')) => {
                     out.push('\\');
-                    out.push(*chars.peek().unwrap());
+                    out.push(c2);
                     chars.next();
                 }
                 Some(_) => {
@@ -290,6 +289,12 @@ fn rewrite_table_row_escapes(line: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

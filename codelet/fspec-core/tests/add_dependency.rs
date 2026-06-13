@@ -38,7 +38,15 @@ fn read_work_units(project_root: &Path) -> Value {
 fn seed_units(units: &[(&str, &str)]) -> String {
     let mut wus = serde_json::Map::new();
     let mut states: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -47,17 +55,37 @@ fn seed_units(units: &[(&str, &str)]) -> String {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".to_string()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
-        states.get_mut(*status).expect("known state").push((*id).to_string());
+        states
+            .get_mut(*status)
+            .expect("known state")
+            .push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
             Value::Array(
-                states.get(*st).expect("seeded state").iter()
+                states
+                    .get(*st)
+                    .expect("seeded state")
+                    .iter()
                     .map(|s| Value::String(s.clone()))
                     .collect(),
             ),
@@ -91,16 +119,24 @@ fn depends_on_shorthand_seeds_depends_on_array_on_source() {
 
     // @step And spec/work-units.json on disk shows AUTH-002.dependsOn=['AUTH-001']
     let v = read_work_units(tmp.path());
-    let deps = v["workUnits"]["AUTH-002"]["dependsOn"].as_array().expect("dependsOn array");
+    let deps = v["workUnits"]["AUTH-002"]["dependsOn"]
+        .as_array()
+        .expect("dependsOn array");
     assert_eq!(deps.len(), 1);
     assert_eq!(deps[0].as_str(), Some("AUTH-001"));
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no blocks or blockedBy edge added
-    assert!(v["workUnits"]["AUTH-001"]["blocks"].as_array().map_or(true, |a| a.is_empty()));
-    assert!(v["workUnits"]["AUTH-001"]["blockedBy"].as_array().map_or(true, |a| a.is_empty()));
+    assert!(v["workUnits"]["AUTH-001"]["blocks"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
+    assert!(v["workUnits"]["AUTH-001"]["blockedBy"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
 
     // @step And spec/work-units.json on disk shows AUTH-002.updatedAt is a freshly bumped ISO-8601 timestamp
-    let updated = v["workUnits"]["AUTH-002"]["updatedAt"].as_str().expect("updatedAt");
+    let updated = v["workUnits"]["AUTH-002"]["updatedAt"]
+        .as_str()
+        .expect("updatedAt");
     assert!(updated.len() == 24 && updated.ends_with('Z'));
     assert!(!updated.starts_with("2026-06-01"));
 }
@@ -123,20 +159,29 @@ fn blocks_creates_bidirectional_edge_and_auto_transitions_target_to_blocked() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows AUTH-001.blocks=['API-001']
-    let blocks = v["workUnits"]["AUTH-001"]["blocks"].as_array().expect("blocks array");
+    let blocks = v["workUnits"]["AUTH-001"]["blocks"]
+        .as_array()
+        .expect("blocks array");
     assert_eq!(blocks.len(), 1);
     assert_eq!(blocks[0].as_str(), Some("API-001"));
 
     // @step And spec/work-units.json on disk shows API-001.blockedBy=['AUTH-001']
-    let bb = v["workUnits"]["API-001"]["blockedBy"].as_array().expect("blockedBy array");
+    let bb = v["workUnits"]["API-001"]["blockedBy"]
+        .as_array()
+        .expect("blockedBy array");
     assert_eq!(bb.len(), 1);
     assert_eq!(bb[0].as_str(), Some("AUTH-001"));
 
     // @step And spec/work-units.json on disk shows API-001.status='blocked'
-    assert_eq!(v["workUnits"]["API-001"]["status"].as_str(), Some("blocked"));
+    assert_eq!(
+        v["workUnits"]["API-001"]["status"].as_str(),
+        Some("blocked")
+    );
 
     // @step And spec/work-units.json on disk shows states.specifying no longer contains 'API-001'
-    let spec_states = v["states"]["specifying"].as_array().expect("states.specifying");
+    let spec_states = v["states"]["specifying"]
+        .as_array()
+        .expect("states.specifying");
     assert!(!spec_states.iter().any(|x| x.as_str() == Some("API-001")));
 
     // @step And spec/work-units.json on disk shows states.blocked contains 'API-001'
@@ -189,12 +234,16 @@ fn blocked_by_creates_bidirectional_edge_and_auto_transitions_source_with_blocke
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows UI-001.blockedBy=['API-001']
-    let bb = v["workUnits"]["UI-001"]["blockedBy"].as_array().expect("blockedBy array");
+    let bb = v["workUnits"]["UI-001"]["blockedBy"]
+        .as_array()
+        .expect("blockedBy array");
     assert_eq!(bb.len(), 1);
     assert_eq!(bb[0].as_str(), Some("API-001"));
 
     // @step And spec/work-units.json on disk shows API-001.blocks=['UI-001']
-    let bl = v["workUnits"]["API-001"]["blocks"].as_array().expect("blocks array");
+    let bl = v["workUnits"]["API-001"]["blocks"]
+        .as_array()
+        .expect("blocks array");
     assert_eq!(bl.len(), 1);
     assert_eq!(bl[0].as_str(), Some("UI-001"));
 
@@ -202,10 +251,15 @@ fn blocked_by_creates_bidirectional_edge_and_auto_transitions_source_with_blocke
     assert_eq!(v["workUnits"]["UI-001"]["status"].as_str(), Some("blocked"));
 
     // @step And spec/work-units.json on disk shows UI-001.blockedReason='Blocked by API-001'
-    assert_eq!(v["workUnits"]["UI-001"]["blockedReason"].as_str(), Some("Blocked by API-001"));
+    assert_eq!(
+        v["workUnits"]["UI-001"]["blockedReason"].as_str(),
+        Some("Blocked by API-001")
+    );
 
     // @step And spec/work-units.json on disk shows states.specifying no longer contains 'UI-001'
-    let spec_states = v["states"]["specifying"].as_array().expect("states.specifying");
+    let spec_states = v["states"]["specifying"]
+        .as_array()
+        .expect("states.specifying");
     assert!(!spec_states.iter().any(|x| x.as_str() == Some("UI-001")));
 
     // @step And spec/work-units.json on disk shows states.blocked contains 'UI-001'
@@ -231,15 +285,22 @@ fn depends_on_flag_creates_unidirectional_edge_only() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows DASH-001.dependsOn=['AUTH-001']
-    let deps = v["workUnits"]["DASH-001"]["dependsOn"].as_array().expect("dependsOn array");
+    let deps = v["workUnits"]["DASH-001"]["dependsOn"]
+        .as_array()
+        .expect("dependsOn array");
     assert_eq!(deps.len(), 1);
     assert_eq!(deps[0].as_str(), Some("AUTH-001"));
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no blocks edge added
-    assert!(v["workUnits"]["AUTH-001"]["blocks"].as_array().map_or(true, |a| a.is_empty()));
+    assert!(v["workUnits"]["AUTH-001"]["blocks"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
 
     // @step And spec/work-units.json on disk shows AUTH-001.status remains unchanged
-    assert_eq!(v["workUnits"]["AUTH-001"]["status"].as_str(), Some("specifying"));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["status"].as_str(),
+        Some("specifying")
+    );
 }
 
 #[test]
@@ -260,25 +321,39 @@ fn relates_to_creates_symmetric_edges() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows UI-005.relatesTo=['UI-004']
-    let r5 = v["workUnits"]["UI-005"]["relatesTo"].as_array().expect("UI-005 relatesTo");
+    let r5 = v["workUnits"]["UI-005"]["relatesTo"]
+        .as_array()
+        .expect("UI-005 relatesTo");
     assert_eq!(r5.len(), 1);
     assert_eq!(r5[0].as_str(), Some("UI-004"));
 
     // @step And spec/work-units.json on disk shows UI-004.relatesTo=['UI-005']
-    let r4 = v["workUnits"]["UI-004"]["relatesTo"].as_array().expect("UI-004 relatesTo");
+    let r4 = v["workUnits"]["UI-004"]["relatesTo"]
+        .as_array()
+        .expect("UI-004 relatesTo");
     assert_eq!(r4.len(), 1);
     assert_eq!(r4[0].as_str(), Some("UI-005"));
 
     // @step And spec/work-units.json on disk shows neither UI-005 nor UI-004 changed status
-    assert_eq!(v["workUnits"]["UI-005"]["status"].as_str(), Some("specifying"));
-    assert_eq!(v["workUnits"]["UI-004"]["status"].as_str(), Some("specifying"));
+    assert_eq!(
+        v["workUnits"]["UI-005"]["status"].as_str(),
+        Some("specifying")
+    );
+    assert_eq!(
+        v["workUnits"]["UI-004"]["status"].as_str(),
+        Some("specifying")
+    );
 }
 
 #[test]
 fn relates_to_reverse_edge_is_idempotent_when_already_present() {
     // @step Given a project root tempdir with spec/work-units.json containing UI-005 status=specifying and UI-004 status=specifying with UI-004.relatesTo already containing 'UI-005'
     let tmp = TempDir::new().expect("tempdir");
-    let mut pre: Value = serde_json::from_str(&seed_units(&[("UI-005", "specifying"), ("UI-004", "specifying")])).unwrap();
+    let mut pre: Value = serde_json::from_str(&seed_units(&[
+        ("UI-005", "specifying"),
+        ("UI-004", "specifying"),
+    ]))
+    .unwrap();
     pre["workUnits"]["UI-004"]["relatesTo"] = json!(["UI-005"]);
     write_work_units(tmp.path(), &serde_json::to_string_pretty(&pre).unwrap());
 
@@ -293,12 +368,16 @@ fn relates_to_reverse_edge_is_idempotent_when_already_present() {
 
     let v = read_work_units(tmp.path());
     // @step And spec/work-units.json on disk shows UI-005.relatesTo=['UI-004']
-    let r5 = v["workUnits"]["UI-005"]["relatesTo"].as_array().expect("UI-005 relatesTo");
+    let r5 = v["workUnits"]["UI-005"]["relatesTo"]
+        .as_array()
+        .expect("UI-005 relatesTo");
     assert_eq!(r5.len(), 1);
     assert_eq!(r5[0].as_str(), Some("UI-004"));
 
     // @step And spec/work-units.json on disk shows UI-004.relatesTo=['UI-005']
-    let r4 = v["workUnits"]["UI-004"]["relatesTo"].as_array().expect("UI-004 relatesTo");
+    let r4 = v["workUnits"]["UI-004"]["relatesTo"]
+        .as_array()
+        .expect("UI-004 relatesTo");
     assert_eq!(r4.len(), 1);
     assert_eq!(r4[0].as_str(), Some("UI-005"));
 }
@@ -394,7 +473,11 @@ fn self_dependency_is_rejected_for_every_flag() {
 fn duplicate_edge_is_rejected() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with dependsOn=['AUTH-000'] and AUTH-000 status=specifying
     let tmp = TempDir::new().expect("tempdir");
-    let mut pre: Value = serde_json::from_str(&seed_units(&[("AUTH-001", "specifying"), ("AUTH-000", "specifying")])).unwrap();
+    let mut pre: Value = serde_json::from_str(&seed_units(&[
+        ("AUTH-001", "specifying"),
+        ("AUTH-000", "specifying"),
+    ]))
+    .unwrap();
     pre["workUnits"]["AUTH-001"]["dependsOn"] = json!(["AUTH-000"]);
     write_work_units(tmp.path(), &serde_json::to_string_pretty(&pre).unwrap());
     let pre_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
@@ -424,7 +507,11 @@ fn duplicate_edge_is_rejected() {
 fn circular_blocks_chain_is_rejected_before_disk_write() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with blocks=['AUTH-002'] and AUTH-002 status=blocked with blockedBy=['AUTH-001']
     let tmp = TempDir::new().expect("tempdir");
-    let mut pre: Value = serde_json::from_str(&seed_units(&[("AUTH-001", "specifying"), ("AUTH-002", "blocked")])).unwrap();
+    let mut pre: Value = serde_json::from_str(&seed_units(&[
+        ("AUTH-001", "specifying"),
+        ("AUTH-002", "blocked"),
+    ]))
+    .unwrap();
     pre["workUnits"]["AUTH-001"]["blocks"] = json!(["AUTH-002"]);
     pre["workUnits"]["AUTH-002"]["blockedBy"] = json!(["AUTH-001"]);
     write_work_units(tmp.path(), &serde_json::to_string_pretty(&pre).unwrap());

@@ -105,7 +105,11 @@ fn dispatcher_removes_deleted_rules_and_renumbers_survivors() {
 
     // @step And the surviving AUTH-001 rules have sequential ids 0 through 6
     let ids: Vec<i64> = rules.iter().filter_map(|r| r["id"].as_i64()).collect();
-    assert_eq!(ids, (0..7).collect::<Vec<i64>>(), "ids must be renumbered 0..6; got {ids:?}");
+    assert_eq!(
+        ids,
+        (0..7).collect::<Vec<i64>>(),
+        "ids must be renumbered 0..6; got {ids:?}"
+    );
 
     // @step And nextRuleId on AUTH-001 equals 7
     assert_eq!(
@@ -160,7 +164,11 @@ fn dispatcher_requires_force_when_status_not_done() {
 
     // @step And the AUTH-001 rules array in spec/work-units.json still contains the deleted rule
     let data = read_work_units(tmp.path());
-    assert_eq!(rules_array(&data).len(), 1, "deleted rule must be preserved; got {data}");
+    assert_eq!(
+        rules_array(&data).len(),
+        1,
+        "deleted rule must be preserved; got {data}"
+    );
 }
 
 #[test]
@@ -182,7 +190,11 @@ fn dispatcher_compacts_during_non_done_status_with_force() {
 
     // @step And the AUTH-001 rules array in spec/work-units.json contains 2 items
     let data = read_work_units(tmp.path());
-    assert_eq!(rules_array(&data).len(), 2, "expected 2 surviving rules; got {data}");
+    assert_eq!(
+        rules_array(&data).len(),
+        2,
+        "expected 2 surviving rules; got {data}"
+    );
 }
 
 #[test]
@@ -227,7 +239,9 @@ fn dispatcher_updates_work_unit_and_meta_timestamps() {
 
     // @step And the AUTH-001 updatedAt field in spec/work-units.json is a non-empty ISO-8601 timestamp
     let data = read_work_units(tmp.path());
-    let updated = data["workUnits"]["AUTH-001"]["updatedAt"].as_str().unwrap_or("");
+    let updated = data["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .unwrap_or("");
     assert!(
         updated.contains('T') && updated.ends_with('Z') && !updated.is_empty(),
         "updatedAt must be a non-empty ISO-8601 timestamp; got '{updated}'"

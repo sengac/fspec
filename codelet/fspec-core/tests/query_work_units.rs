@@ -99,10 +99,7 @@ fn tag_filter_returns_only_work_units_containing_the_specified_tag() {
     );
 
     // @step When I dispatch query-work-units with tag='@cli' and format='json'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "tag": "@cli", "format": "json" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "tag": "@cli", "format": "json" })));
 
     // @step Then the workUnits array contains only AUTH-001
     assert!(result.success, "{result:?}");
@@ -300,7 +297,10 @@ fn cycle_time_mode_returns_per_state_hour_deltas_and_total() {
 
     // @step Then the result contains stateTimings { backlog: '2 hours', specifying: '3 hours' }
     let timings = data["stateTimings"].as_object().expect("stateTimings");
-    assert_eq!(timings.get("backlog").and_then(Value::as_str), Some("2 hours"));
+    assert_eq!(
+        timings.get("backlog").and_then(Value::as_str),
+        Some("2 hours")
+    );
     assert_eq!(
         timings.get("specifying").and_then(Value::as_str),
         Some("3 hours")
@@ -345,7 +345,10 @@ fn cycle_time_mode_singularises_hour_when_delta_equals_1() {
 
     // @step Then the result contains stateTimings { backlog: '1 hour' }
     let timings = data["stateTimings"].as_object().expect("stateTimings");
-    assert_eq!(timings.get("backlog").and_then(Value::as_str), Some("1 hour"));
+    assert_eq!(
+        timings.get("backlog").and_then(Value::as_str),
+        Some("1 hour")
+    );
 
     // @step Then the result contains totalCycleTime '1 hour'
     assert_eq!(data["totalCycleTime"].as_str(), Some("1 hour"));

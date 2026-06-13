@@ -145,7 +145,10 @@ fn build_display(name: &str, index: &Option<Value>) -> CheckpointDisplay {
         .as_ref()
         .and_then(|v| v.get("checkpoints"))
         .and_then(|v| v.as_array())
-        .and_then(|arr| arr.iter().find(|cp| cp.get("name").and_then(|n| n.as_str()) == Some(name)))
+        .and_then(|arr| {
+            arr.iter()
+                .find(|cp| cp.get("name").and_then(|n| n.as_str()) == Some(name))
+        })
         .and_then(|cp| cp.get("timestamp").and_then(|t| t.as_str()))
         .map(String::from)
         .unwrap_or_else(fallback_timestamp);
@@ -197,9 +200,7 @@ fn fallback_timestamp() -> String {
     let month = if mp < 10 { mp + 3 } else { mp - 9 };
     let year = if month <= 2 { y + 1 } else { y };
 
-    format!(
-        "{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millis:03}Z"
-    )
+    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millis:03}Z")
 }
 
 /// Render the empty-result text sentinel or the populated checkpoint
@@ -272,7 +273,11 @@ mod tests {
     #[test]
     fn fallback_timestamp_is_iso8601_24_chars() {
         let ts = fallback_timestamp();
-        assert_eq!(ts.len(), 24, "want 24 chars for ISO-8601 millis-Z; got {ts:?}");
+        assert_eq!(
+            ts.len(),
+            24,
+            "want 24 chars for ISO-8601 millis-Z; got {ts:?}"
+        );
         assert!(ts.ends_with('Z'));
         assert_eq!(&ts[10..11], "T");
         assert_eq!(&ts[19..20], ".");

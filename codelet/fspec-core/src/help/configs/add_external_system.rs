@@ -5,8 +5,8 @@
 //! Captured fixture: `codelet/fspec/tests/fixtures/help/add-external-system.txt`.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandOption, CommonError, CommonPatternEntry,
-    CommandHelpConfig,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
+    CommonPatternEntry,
 };
 
 const ARGS: &[CommandArgument] = &[
@@ -49,13 +49,19 @@ const PREREQUISITES: &[&str] = &[
 ];
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
-    CommonPatternEntry::Bullet("External systems help identify integration points and dependencies"),
-    CommonPatternEntry::Bullet("Use --type to categorize external systems for better documentation"),
+    CommonPatternEntry::Bullet(
+        "External systems help identify integration points and dependencies",
+    ),
+    CommonPatternEntry::Bullet(
+        "Use --type to categorize external systems for better documentation",
+    ),
     CommonPatternEntry::Bullet(
         "External systems represent boundaries between your domain and the outside world",
     ),
     CommonPatternEntry::Bullet("Consider anti-corruption layers when integrating external systems"),
-    CommonPatternEntry::Bullet("External systems have pink sticky notes in physical Event Storming"),
+    CommonPatternEntry::Bullet(
+        "External systems have pink sticky notes in physical Event Storming",
+    ),
 ];
 
 const EXAMPLES: &[CommandExample] = &[

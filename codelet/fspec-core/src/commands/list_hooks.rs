@@ -116,12 +116,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let result = load_hook_config(project_root);
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "list-hooks",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text.
         _ => Ok(render_text(&result)),
     }
@@ -229,7 +229,12 @@ fn render_text(result: &ListHooksResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

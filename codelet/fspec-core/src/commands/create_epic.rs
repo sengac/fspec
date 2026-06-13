@@ -133,7 +133,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     if epics_data.epics.contains_key(&args.epic_id) {
         return Err(FspecCoreError::InvalidArgs {
             command: "create-epic",
-            reason: format!("Failed to create epic: Epic {} already exists", args.epic_id),
+            reason: format!(
+                "Failed to create epic: Epic {} already exists",
+                args.epic_id
+            ),
         });
     }
 
@@ -158,8 +161,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // raw file (best-effort) so we round-trip any unknown top-level keys
     // and preserve every existing epic's exact field order. On any
     // failure we fall back to the typed `epics_data`.
-    let mut top_level: Map<String, Value> = read_raw_epics_object(project_root).unwrap_or_else(
-        || {
+    let mut top_level: Map<String, Value> =
+        read_raw_epics_object(project_root).unwrap_or_else(|| {
             // Build from typed EpicsData.
             let mut m = Map::new();
             let mut epics_obj = Map::new();
@@ -170,8 +173,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             }
             m.insert("epics".to_string(), Value::Object(epics_obj));
             m
-        },
-    );
+        });
 
     // Ensure "epics" key exists and is an object.
     let epics_value = top_level
@@ -226,7 +228,12 @@ fn read_raw_epics_object(project_root: &Path) -> Option<Map<String, Value>> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

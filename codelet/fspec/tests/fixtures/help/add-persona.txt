@@ -1,0 +1,62 @@
+
+ADD-PERSONA
+Add a user persona to foundation.json or foundation.json.draft. Personas describe WHO uses the system, their characteristics, and their goals. Used during foundation discovery to define the problem space.
+
+WHEN TO USE
+  Use during fspec discover-foundation workflow when adding personas to foundation.json.draft, or when adding new personas to an existing foundation.json after initial discovery.
+
+PREREQUISITES
+  • foundation.json or foundation.json.draft must exist
+  • Run fspec discover-foundation to create foundation.json.draft if needed
+
+USAGE
+  fspec add-persona "<name>" "<description>" [options]
+
+ARGUMENTS
+  <name> (required)
+    Persona name (e.g., "Developer", "End User", "Administrator"). Should represent a distinct user type.
+  <description> (required)
+    Description of the persona: who they are, their characteristics, and how they interact with the system.
+
+OPTIONS
+  --goal <goal>
+    Primary goal for this persona (can be specified multiple times for multiple goals)
+
+TYPICAL WORKFLOW
+  Start foundation discovery: fspec discover-foundation,AI analyzes codebase and identifies user types,Add each persona: fspec add-persona "name" "description" --goal "goal1" --goal "goal2",Repeat for all personas,Finalize foundation: fspec discover-foundation --finalize
+
+EXAMPLES
+  1. Add persona with multiple goals
+  $ fspec add-persona "Developer" "Software developer using fspec for project management" --goal "Track work efficiently" --goal "Generate documentation"
+  ✓ Added persona to foundation.json.draft
+  Name: Developer
+  Description: Software developer using fspec for project management
+  Goals: Track work efficiently, Generate documentation
+
+  2. Add persona with single goal
+  $ fspec add-persona "End User" "Person using the application features" --goal "Complete tasks quickly"
+  ✓ Added persona to foundation.json.draft
+  Name: End User
+  Description: Person using the application features
+  Goals: Complete tasks quickly
+
+COMMON ERRORS
+  ✗ foundation.json not found
+    Fix: undefined
+
+  ✗ Persona already exists
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec discover-foundation - Start foundation discovery process
+  fspec fspec remove-persona - Remove persona from foundation
+  fspec fspec add-capability - Add capability to foundation
+  fspec fspec update-foundation - Update foundation fields
+
+NOTES
+  • Draft file (foundation.json.draft) takes precedence over foundation.json
+  • Personas describe WHO uses the system (problem space)
+  • Goals should describe what the persona wants to achieve
+  • Personas help inform Example Mapping and acceptance criteria
+  • Multiple goals can be specified using multiple --goal flags
+

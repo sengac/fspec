@@ -39,10 +39,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let work_unit_id = args.work_unit_id.ok_or_else(|| FspecCoreError::InvalidArgs {
-        command: "export-example-map",
-        reason: "missing required argument: workUnitId".to_string(),
-    })?;
+    let work_unit_id = args
+        .work_unit_id
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "export-example-map",
+            reason: "missing required argument: workUnitId".to_string(),
+        })?;
     let file = args.file.ok_or_else(|| FspecCoreError::InvalidArgs {
         command: "export-example-map",
         reason: "missing required argument: file".to_string(),
@@ -64,10 +66,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Build the export document with the canonical field order:
     // workUnitId, title, rules, examples, questions, assumptions.
     let mut export = serde_json::Map::new();
-    export.insert("workUnitId".to_string(), Value::String(work_unit_id.clone()));
+    export.insert(
+        "workUnitId".to_string(),
+        Value::String(work_unit_id.clone()),
+    );
     export.insert("title".to_string(), Value::String(wu.title.clone()));
     export.insert("rules".to_string(), extra_array(wu.extra.get("rules")));
-    export.insert("examples".to_string(), extra_array(wu.extra.get("examples")));
+    export.insert(
+        "examples".to_string(),
+        extra_array(wu.extra.get("examples")),
+    );
     export.insert(
         "questions".to_string(),
         extra_array(wu.extra.get("questions")),
@@ -77,8 +85,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         extra_array(wu.extra.get("assumptions")),
     );
 
-    let content = serde_json::to_string_pretty(&Value::Object(export))
-        .unwrap_or_else(|_| "{}".to_string());
+    let content =
+        serde_json::to_string_pretty(&Value::Object(export)).unwrap_or_else(|_| "{}".to_string());
 
     // Resolve the output path relative to project_root, create parents, write.
     let out_path = resolve_output(project_root, &file);

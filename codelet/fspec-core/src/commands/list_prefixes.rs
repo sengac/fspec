@@ -62,12 +62,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     });
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "list-prefixes",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text.
         _ => Ok(render_text(&summaries)),
     }
@@ -162,7 +162,12 @@ fn render_text(summaries: &[PrefixWithProgress]) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 

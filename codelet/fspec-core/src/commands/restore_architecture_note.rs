@@ -77,11 +77,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Locate architectureNotes (immutable scan) (TS L38-42).
-    let wu_ref = data
+    let notes = data
         .work_units
         .get(&args.work_unit_id)
-        .expect("work unit exists");
-    let notes = wu_ref.extra.get("architectureNotes").and_then(|v| v.as_array());
+        .and_then(|wu| wu.extra.get("architectureNotes"))
+        .and_then(Value::as_array);
     let notes = match notes {
         Some(arr) if !arr.is_empty() => arr.clone(),
         _ => {
@@ -98,7 +98,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Find by stable id (TS L46-50).
     let pos = notes
         .iter()
-        .position(|n| n.get("id").and_then(|v| v.as_u64()) == Some(args.index));
+        .position(|n| n.get("id").and_then(Value::as_u64) == Some(args.index));
     let pos = match pos {
         Some(p) => p,
         None => {
@@ -112,17 +112,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let n = &notes[pos];
     let restored_text = n
         .get("text")
-        .and_then(|v| v.as_str())
+        .and_then(Value::as_str)
         .unwrap_or("")
         .to_string();
-    let already_active = !n
-        .get("deleted")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false);
+    let already_active = !n.get("deleted").and_then(Value::as_bool).unwrap_or(false);
 
     let count_active = |arr: &[Value]| -> usize {
         arr.iter()
-            .filter(|n| !n.get("deleted").and_then(|v| v.as_bool()).unwrap_or(false))
+            .filter(|n| !n.get("deleted").and_then(Value::as_bool).unwrap_or(false))
             .count()
     };
 
@@ -142,17 +139,26 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Mutate: restore in place (TS L62-64).
     let now = iso8601_now();
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
+    let wu =
+        data.work_units
+            .get_mut(&args.work_unit_id)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "restore-architecture-note",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            })?;
 
     let entry = wu
         .extra
         .get_mut("architectureNotes")
-        .and_then(|v| v.as_array_mut())
-        .expect("architectureNotes array exists (verified above)");
-    if let Some(n_mut) = entry.get_mut(pos).and_then(|v| v.as_object_mut()) {
+        .and_then(Value::as_array_mut)
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "restore-architecture-note",
+            reason: format!(
+                "Work unit '{}' has no architecture notes",
+                args.work_unit_id
+            ),
+        })?;
+    if let Some(n_mut) = entry.get_mut(pos).and_then(Value::as_object_mut) {
         n_mut.insert("deleted".to_string(), Value::Bool(false));
         n_mut.remove("deletedAt");
     }
@@ -161,7 +167,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Bump BOTH workUnit.updatedAt AND meta.lastUpdated (TS L69-74).
     wu.updated_at = now.clone();
     if let Some(meta) = data.meta.as_mut() {
-        meta.last_updated = now.clone();
+        meta.last_updated = now;
     }
 
     // Single atomic write (parity with TS fileManager.transaction).
@@ -188,7 +194,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

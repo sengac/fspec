@@ -102,11 +102,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         };
 
         // Feature tags (gherkin strips leading '@'; restore for compare).
-        let feature_tags: Vec<String> = feature
-            .tags
-            .iter()
-            .map(|t| format!("@{t}"))
-            .collect();
+        let feature_tags: Vec<String> = feature.tags.iter().map(|t| format!("@{t}")).collect();
 
         // Filter: ALL requested tags must be present.
         if !tags.is_empty() {
@@ -152,9 +148,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             let bg_desc_verbatim = extract_description_verbatim(
                 &content,
                 bg.position.line,
-                bg.steps.first().map(|s| s.position.line).or_else(|| {
-                    feature.scenarios.first().map(|s| s.position.line)
-                }),
+                bg.steps
+                    .first()
+                    .map(|s| s.position.line)
+                    .or_else(|| feature.scenarios.first().map(|s| s.position.line)),
             );
             let has_desc = bg_desc_verbatim.is_some();
             let has_name = !bg.name.is_empty();
@@ -443,7 +440,7 @@ fn extract_description_verbatim(
     // Strip leading blank lines (TS parser `_` consumer skips leading
     // whitespace before the first description line).
     let mut start = 0usize;
-    while start < slice.len() && slice[start].chars().all(|c| c.is_whitespace()) {
+    while start < slice.len() && slice[start].chars().all(char::is_whitespace) {
         start += 1;
     }
     // Walk forward and stop at the first comment line OR tag line —
@@ -458,7 +455,7 @@ fn extract_description_verbatim(
     }
     // Strip trailing blank lines (parity with TS parser's `__`
     // consumer which trims trailing whitespace/newlines).
-    while end > start && slice[end - 1].chars().all(|c| c.is_whitespace()) {
+    while end > start && slice[end - 1].chars().all(char::is_whitespace) {
         end -= 1;
     }
     if start >= end {
@@ -474,7 +471,12 @@ fn extract_description_verbatim(
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -487,10 +489,9 @@ mod tests {
 
     #[test]
     fn args_parse_full() {
-        let a: ShowArgs = serde_json::from_str(
-            r#"{"tags":["@a","@b"],"format":"markdown","output":"out.md"}"#,
-        )
-        .unwrap();
+        let a: ShowArgs =
+            serde_json::from_str(r#"{"tags":["@a","@b"],"format":"markdown","output":"out.md"}"#)
+                .unwrap();
         assert_eq!(a.tags.as_deref().unwrap().len(), 2);
         assert_eq!(a.format.as_deref(), Some("markdown"));
         assert_eq!(a.output.as_deref(), Some("out.md"));

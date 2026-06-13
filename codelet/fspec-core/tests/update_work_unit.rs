@@ -313,7 +313,10 @@ fn dispatcher_moves_work_unit_between_epics() {
 
     // @step And spec/work-units.json work unit 'AUTH-001' has epic 'security'
     let wu = read_work_units(tmp.path());
-    assert_eq!(wu["workUnits"]["AUTH-001"]["epic"].as_str(), Some("security"));
+    assert_eq!(
+        wu["workUnits"]["AUTH-001"]["epic"].as_str(),
+        Some("security")
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -357,7 +360,10 @@ fn dispatcher_sets_parent_and_updates_children() {
 
     // @step And spec/work-units.json work unit 'AUTH-002' has parent 'AUTH-001'
     let wu = read_work_units(tmp.path());
-    assert_eq!(wu["workUnits"]["AUTH-002"]["parent"].as_str(), Some("AUTH-001"));
+    assert_eq!(
+        wu["workUnits"]["AUTH-002"]["parent"].as_str(),
+        Some("AUTH-001")
+    );
 
     // @step And the children array of 'AUTH-001' contains 'AUTH-002'
     let children = wu["workUnits"]["AUTH-001"]["children"]
@@ -390,7 +396,13 @@ fn dispatcher_is_the_single_source_of_truth_for_update_work_unit() {
     //  dispatcher path — the single source of truth both front doors converge on — succeeds.)
 
     // @step Then both invocations produce the same success result and the same on-disk title 'Same'
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let on_disk = read_work_units(tmp.path());
-    assert_eq!(on_disk["workUnits"]["AUTH-001"]["title"].as_str(), Some("Same"));
+    assert_eq!(
+        on_disk["workUnits"]["AUTH-001"]["title"].as_str(),
+        Some("Same")
+    );
 }

@@ -1761,7 +1761,7 @@
       ]
     },
     {
-      "name": "Dispatcher rejects diagram with quoted subgraph title (Framing A regex check)",
+      "name": "Dispatcher rejects diagram with quoted subgraph title (merman pre-check)",
       "testMappings": [
         {
           "file": "codelet/fspec-core/tests/add_diagram.rs",
@@ -1981,7 +1981,7 @@
       ]
     },
     {
-      "name": "Dispatcher rejects diagram with invalid subgraph identifier (Framing A regex check)",
+      "name": "Dispatcher rejects diagram with invalid subgraph identifier (merman pre-check)",
       "testMappings": [
         {
           "file": "codelet/fspec-core/tests/add_diagram.rs",
@@ -2419,18 +2419,72 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Dispatcher rejects diagram with a genuine merman syntax error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "lines": "396-428",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/utils/mermaid_validation.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects code that matches no mermaid diagram type",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_diagram.rs",
+          "lines": "429-459",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_diagram.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 11,
-    "coveredScenarios": 11,
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-core/tests/add_diagram.rs"
     ],
     "implFiles": [
-      "codelet/fspec-core/src/commands/add_diagram.rs"
+      "codelet/fspec-core/src/commands/add_diagram.rs",
+      "codelet/fspec-core/src/utils/mermaid_validation.rs"
     ],
-    "totalLinesCovered": 2588
+    "totalLinesCovered": 2673
   }
 }

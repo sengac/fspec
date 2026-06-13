@@ -202,7 +202,10 @@ fn format_foundation_as_text(foundation: &Value) -> String {
         ));
         lines.push(format!(
             "Vision: {}",
-            project.get("vision").and_then(Value::as_str).unwrap_or("N/A")
+            project
+                .get("vision")
+                .and_then(Value::as_str)
+                .unwrap_or("N/A")
         ));
         lines.push(format!(
             "Type: {}",
@@ -228,7 +231,10 @@ fn format_foundation_as_text(foundation: &Value) -> String {
         lines.push("=== PROBLEM SPACE ===".to_string());
         lines.push(format!(
             "Title: {}",
-            problem.get("title").and_then(Value::as_str).unwrap_or("N/A")
+            problem
+                .get("title")
+                .and_then(Value::as_str)
+                .unwrap_or("N/A")
         ));
         lines.push(format!(
             "Description: {}",
@@ -309,7 +315,12 @@ fn format_foundation_as_text(foundation: &Value) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
@@ -322,12 +333,18 @@ mod tests {
             resolve_field_path("problemTitle"),
             "problemSpace.primaryProblem.title"
         );
-        assert_eq!(resolve_field_path("solutionOverview"), "solutionSpace.overview");
+        assert_eq!(
+            resolve_field_path("solutionOverview"),
+            "solutionSpace.overview"
+        );
     }
 
     #[test]
     fn resolve_field_path_legacy_aliases() {
-        assert_eq!(resolve_field_path("projectOverview"), "solutionSpace.overview");
+        assert_eq!(
+            resolve_field_path("projectOverview"),
+            "solutionSpace.overview"
+        );
         assert_eq!(
             resolve_field_path("problemDefinition"),
             "problemSpace.primaryProblem.description"

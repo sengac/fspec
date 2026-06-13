@@ -253,11 +253,11 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         .filter_map(|q| q["text"].as_str())
         .collect();
     assert!(
-        texts.iter().any(|t| *t == "dispatched"),
+        texts.contains(&"dispatched"),
         "questions must include 'dispatched'; got {texts:?}"
     );
     assert!(
-        texts.iter().any(|t| *t == "from-cli"),
+        texts.contains(&"from-cli"),
         "questions must include 'from-cli'; got {texts:?}"
     );
 

@@ -1,0 +1,179 @@
+{
+  "scenarios": [
+    {
+      "name": "First add seeds the eventStorm sub-object on a foundation with no eventStorm field",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "lines": "57-96",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The color field is persisted as JSON null",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "lines": "98-117",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The persisted item key order matches TS insertion order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "lines": "119-145",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Second add increments nextItemId and assigns the next id",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "lines": "147-182",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing foundation.json is auto-created with the default schema before appending",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "lines": "184-209",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "lines": [
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown top-level foundation fields are preserved byte-for-byte",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_foundation_bounded_context.rs",
+          "lines": "211-232",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs",
+              "lines": [
+                120,
+                121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/add_foundation_bounded_context.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/add_foundation_bounded_context.rs"
+    ],
+    "totalLinesCovered": 238
+  }
+}

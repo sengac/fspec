@@ -106,10 +106,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         _ => {
             return Err(FspecCoreError::InvalidArgs {
                 command: "remove-virtual-hook",
-                reason: format!(
-                    "No virtual hooks configured for {}",
-                    args.work_unit_id
-                ),
+                reason: format!("No virtual hooks configured for {}", args.work_unit_id),
             });
         }
     };
@@ -123,9 +120,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .and_then(|wu| wu.extra.get_mut("virtualHooks"))
     {
         Some(Value::Array(arr)) => {
-            arr.retain(|h| {
-                h.get("name").and_then(Value::as_str) != Some(args.hook_name.as_str())
-            });
+            arr.retain(|h| h.get("name").and_then(Value::as_str) != Some(args.hook_name.as_str()));
             arr.len()
         }
         // Guarded above; treat as no-op to preserve initial length.
@@ -174,11 +169,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// ALL errors (incl. file-not-found) are swallowed silently — mirroring the
 /// TS try/catch wrapper at `remove-virtual-hook.ts:56-64` and the catch in
 /// `cleanupVirtualHookScript` at `script-generation.ts:115-122`.
-fn cleanup_virtual_hook_script(
-    work_unit_id: &str,
-    hook_name: &str,
-    project_root: &Path,
-) {
+fn cleanup_virtual_hook_script(work_unit_id: &str, hook_name: &str, project_root: &Path) {
     let script_path = project_root
         .join("spec")
         .join("hooks")

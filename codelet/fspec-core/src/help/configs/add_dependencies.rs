@@ -5,8 +5,8 @@
 //! Captured fixture: `codelet/fspec/tests/fixtures/help/add-dependencies.txt`.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const ARGS: &[CommandArgument] = &[CommandArgument {
@@ -33,8 +33,7 @@ const OPTS: &[CommandOption] = &[
     },
     CommandOption {
         flag: "--relates-to <ids...>",
-        description:
-            "Space-separated list of related work unit IDs (non-blocking association)",
+        description: "Space-separated list of related work unit IDs (non-blocking association)",
         default_value: None,
     },
 ];
@@ -57,8 +56,7 @@ const EXAMPLES: &[CommandExample] = &[
         output: Some("✓ Added 3 dependencies successfully"),
     },
     CommandExample {
-        command:
-            "fspec add-dependencies REFAC-001 --relates-to AUTH-001 API-001 DB-001",
+        command: "fspec add-dependencies REFAC-001 --relates-to AUTH-001 API-001 DB-001",
         description: Some("Add related work units (non-blocking relationships)"),
         output: Some("✓ Added 3 dependencies successfully"),
     },

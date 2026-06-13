@@ -83,11 +83,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // ---- Load tags.json ----
-    let raw =
-        std::fs::read_to_string(&tags_json_path).map_err(|source| FspecCoreError::Io {
-            command: "delete-tag",
-            source,
-        })?;
+    let raw = std::fs::read_to_string(&tags_json_path).map_err(|source| FspecCoreError::Io {
+        command: "delete-tag",
+        source,
+    })?;
     let mut tags_data: TagsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "tags.json".to_string(),
@@ -156,18 +155,17 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // ---- Dry-run: report intent, no disk mutation. Mirrors L119-125 ----
     if args.dry_run {
-        let message =
-            format!("Would delete tag {} from category \"{}\"", args.tag, current_category_name);
-        return render_result(
-            &args,
-            &message,
-            None,
-            /* mutated_disk = */ false,
+        let message = format!(
+            "Would delete tag {} from category \"{}\"",
+            args.tag, current_category_name
         );
+        return render_result(&args, &message, None, /* mutated_disk = */ false);
     }
 
     // ---- Mutate: splice from current category. Mirrors L128 ----
-    tags_data.categories[current_cat_index].tags.remove(tag_index);
+    tags_data.categories[current_cat_index]
+        .tags
+        .remove(tag_index);
 
     // ---- Atomic write spec/tags.json ----
     write_json_atomic(&tags_json_path, &tags_data).map_err(|e| match e {
@@ -188,7 +186,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // ---- Build success message ----
     let message = format!("Successfully deleted tag {} from registry", args.tag);
-    render_result(&args, &message, warning.as_deref(), /* mutated_disk = */ true)
+    render_result(
+        &args,
+        &message,
+        warning.as_deref(),
+        /* mutated_disk = */ true,
+    )
 }
 
 /// Format the result either as JSON (`--format json`) or text. The
@@ -269,7 +272,7 @@ fn scan_feature_files_for_tag(project_root: &Path, tag: &str) -> Option<Vec<Stri
     }
 
     let mut hits: Vec<String> = Vec::new();
-    let mut stack: Vec<PathBuf> = vec![features_root.clone()];
+    let mut stack: Vec<PathBuf> = vec![features_root];
     while let Some(dir) = stack.pop() {
         let entries = match std::fs::read_dir(&dir) {
             Ok(it) => it,
@@ -292,7 +295,7 @@ fn scan_feature_files_for_tag(project_root: &Path, tag: &str) -> Option<Vec<Stri
             if !file_type.is_file() {
                 continue;
             }
-            if path.extension().and_then(|s| s.to_str()) != Some("feature") {
+            if path.extension().and_then(std::ffi::OsStr::to_str) != Some("feature") {
                 continue;
             }
             let contents = match std::fs::read_to_string(&path) {
@@ -302,7 +305,7 @@ fn scan_feature_files_for_tag(project_root: &Path, tag: &str) -> Option<Vec<Stri
             if contents.contains(tag) {
                 let rel = path
                     .strip_prefix(project_root)
-                    .map(|p| p.to_path_buf())
+                    .map(Path::to_path_buf)
                     .unwrap_or_else(|_| path.clone());
                 // Normalise to forward slashes for cross-platform parity
                 // with the TS glob output.
@@ -360,7 +363,7 @@ fn generate_tags_md(tags: &TagsData) -> String {
     }
 
     if let Some(stats) = tags.extra.get("statistics") {
-        if let Some(last_updated) = stats.get("lastUpdated").and_then(|v| v.as_str()) {
+        if let Some(last_updated) = stats.get("lastUpdated").and_then(serde_json::Value::as_str) {
             out.push_str(&format!("_Last updated: {last_updated}_\n"));
         }
     }
@@ -370,7 +373,12 @@ fn generate_tags_md(tags: &TagsData) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use crate::types::tags::Tag;
     use serde_json::json;
@@ -387,7 +395,11 @@ mod tests {
 
     #[test]
     fn render_text_emits_success_block_with_trailing_lines_on_mutated_disk() {
-        let out = render_text("Successfully deleted tag @critical from registry", None, true);
+        let out = render_text(
+            "Successfully deleted tag @critical from registry",
+            None,
+            true,
+        );
         assert!(out.contains("✓ Successfully deleted tag @critical from registry"));
         assert!(out.contains("  Updated: spec/tags.json"));
         assert!(out.contains("  Regenerated: spec/TAGS.md"));
@@ -437,9 +449,17 @@ mod tests {
         let tmp = TempDir::new().expect("tempdir");
         let nested = tmp.path().join("spec/features/nested");
         std::fs::create_dir_all(&nested).unwrap();
-        std::fs::write(tmp.path().join("spec/features/a.feature"), "@critical\nFeature: A\n").unwrap();
+        std::fs::write(
+            tmp.path().join("spec/features/a.feature"),
+            "@critical\nFeature: A\n",
+        )
+        .unwrap();
         std::fs::write(nested.join("b.feature"), "@critical\nFeature: B\n").unwrap();
-        std::fs::write(tmp.path().join("spec/features/c.feature"), "@other\nFeature: C\n").unwrap();
+        std::fs::write(
+            tmp.path().join("spec/features/c.feature"),
+            "@other\nFeature: C\n",
+        )
+        .unwrap();
         let hits = scan_feature_files_for_tag(tmp.path(), "@critical").expect("scan returns Some");
         // Note: nested b.feature path should use forward slashes.
         assert_eq!(hits.len(), 2);

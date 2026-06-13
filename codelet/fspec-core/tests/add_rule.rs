@@ -38,7 +38,15 @@ fn read_work_units(project_root: &Path) -> Value {
 fn seed_units(units: &[(&str, &str)]) -> String {
     let mut wus = serde_json::Map::new();
     let mut states: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -47,17 +55,37 @@ fn seed_units(units: &[(&str, &str)]) -> String {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".to_string()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
-        states.get_mut(*status).expect("known state").push((*id).to_string());
+        states
+            .get_mut(*status)
+            .expect("known state")
+            .push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
             Value::Array(
-                states.get(*st).expect("seeded state").iter()
+                states
+                    .get(*st)
+                    .expect("seeded state")
+                    .iter()
                     .map(|s| Value::String(s.clone()))
                     .collect(),
             ),
@@ -106,8 +134,14 @@ fn first_add_seeds_rules_array_and_next_rule_id_on_clean_specifying_unit() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].createdAt is a freshly bumped ISO-8601 timestamp
     let created = r0["createdAt"].as_str().expect("createdAt string");
-    assert!(created.len() == 24 && created.ends_with('Z'), "got: {created}");
-    assert!(!created.starts_with("2026-06-01"), "createdAt must NOT be the seed value");
+    assert!(
+        created.len() == 24 && created.ends_with('Z'),
+        "got: {created}"
+    );
+    assert!(
+        !created.starts_with("2026-06-01"),
+        "createdAt must NOT be the seed value"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.nextRuleId=1
     assert_eq!(v["workUnits"]["AUTH-001"]["nextRuleId"].as_u64(), Some(1));
@@ -117,7 +151,10 @@ fn first_add_seeds_rules_array_and_next_rule_id_on_clean_specifying_unit() {
         .as_str()
         .expect("updatedAt string");
     assert!(updated.len() == 24 && updated.ends_with('Z'));
-    assert!(!updated.starts_with("2026-06-01"), "updatedAt must NOT be the seed value");
+    assert!(
+        !updated.starts_with("2026-06-01"),
+        "updatedAt must NOT be the seed value"
+    );
 }
 
 #[test]
@@ -149,7 +186,9 @@ fn second_add_appends_with_auto_incremented_id() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules has length 2
     let v = read_work_units(tmp.path());
-    let rules = v["workUnits"]["AUTH-001"]["rules"].as_array().expect("rules array");
+    let rules = v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .expect("rules array");
     assert_eq!(rules.len(), 2);
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[1].id=1
@@ -188,7 +227,10 @@ fn missing_work_unit_surfaces_canonical_error() {
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
     let post_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
-    assert_eq!(pre_bytes, post_bytes, "work-units.json must NOT be mutated on failure");
+    assert_eq!(
+        pre_bytes, post_bytes,
+        "work-units.json must NOT be mutated on failure"
+    );
 }
 
 #[test]

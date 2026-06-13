@@ -42,8 +42,15 @@ fn read_work_units(project_root: &Path) -> Value {
 fn seed_units(units: &[(&str, &str)]) -> Value {
     let mut wus = serde_json::Map::new();
     let mut states: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"]
-    {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -52,14 +59,30 @@ fn seed_units(units: &[(&str, &str)]) -> Value {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".to_string()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
-        states.get_mut(*status).expect("known state").push((*id).to_string());
+        states
+            .get_mut(*status)
+            .expect("known state")
+            .push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"]
-    {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
             Value::Array(
@@ -150,14 +173,14 @@ fn add_the_same_hotspot_text_twice_without_deduplication() {
         .as_array()
         .expect("items array");
     assert_eq!(items.len(), 2);
-    let same_text: Vec<&Value> = items
+    let same_text = items
         .iter()
         .filter(|i| {
             i["text"].as_str() == Some("Unclear retry policy")
                 && i["deleted"].as_bool() != Some(true)
         })
-        .collect();
-    assert_eq!(same_text.len(), 2, "no dedup: both hotspots must remain");
+        .count();
+    assert_eq!(same_text, 2, "no dedup: both hotspots must remain");
 }
 
 #[test]

@@ -36,7 +36,9 @@ pub struct CoverageTestRef {
 ///
 /// Coverage files that fail to parse as JSON are silently skipped
 /// (parity with TS `try { JSON.parse } catch { continue }`).
-pub fn read_all_coverage_files(project_root: &Path) -> Result<Vec<CoverageTestRef>, FspecCoreError> {
+pub fn read_all_coverage_files(
+    project_root: &Path,
+) -> Result<Vec<CoverageTestRef>, FspecCoreError> {
     let features_dir = project_root.join("spec").join("features");
     if !features_dir.exists() {
         return Ok(Vec::new());

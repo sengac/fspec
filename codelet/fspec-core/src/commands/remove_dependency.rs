@@ -172,12 +172,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// workUnit.blocks = workUnit.blocks.filter(id => id !== options.blocks);
 /// if (workUnit.blocks.length === 0) { delete workUnit.blocks; }
 /// ```
-fn filter_field_on_unit(
-    data: &mut WorkUnitsData,
-    id: &str,
-    field: &str,
-    target_value: &str,
-) {
+fn filter_field_on_unit(data: &mut WorkUnitsData, id: &str, field: &str, target_value: &str) {
     let Some(wu) = data.work_units.get_mut(id) else {
         return;
     };

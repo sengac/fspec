@@ -104,20 +104,23 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let file_rel = args.file.clone().ok_or_else(|| FspecCoreError::InvalidArgs {
-        command: "list-feature-tags",
-        reason: "missing required 'file' argument".to_string(),
-    })?;
+    let file_rel = args
+        .file
+        .clone()
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "list-feature-tags",
+            reason: "missing required 'file' argument".to_string(),
+        })?;
 
     let result = load_feature_tags(project_root, &file_rel, args.show_categories);
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "list-feature-tags",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text.
         _ => Ok(render_text(&result)),
     }
@@ -352,7 +355,12 @@ fn render_text(result: &ListFeatureTagsResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -375,7 +383,8 @@ mod tests {
 
     #[test]
     fn parse_feature_tags_extracts_declaration_order() {
-        let body = "@critical @auth @wip\nFeature: User Authentication\n\n  Scenario: A\n    Given x\n";
+        let body =
+            "@critical @auth @wip\nFeature: User Authentication\n\n  Scenario: A\n    Given x\n";
         let tags = parse_feature_tags(body).unwrap();
         assert_eq!(tags, vec!["@critical", "@auth", "@wip"]);
     }

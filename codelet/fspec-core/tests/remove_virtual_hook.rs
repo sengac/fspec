@@ -114,7 +114,10 @@ fn scenario_removes_the_only_hook_and_returns_remaining_count_zero() {
     let hooks = v["workUnits"]["AUTH-001"]["virtualHooks"]
         .as_array()
         .expect("virtualHooks array");
-    assert!(hooks.is_empty(), "expected empty virtualHooks; got {hooks:?}");
+    assert!(
+        hooks.is_empty(),
+        "expected empty virtualHooks; got {hooks:?}"
+    );
 }
 
 #[test]
@@ -257,7 +260,10 @@ fn scenario_removing_hook_without_script_succeeds_silently() {
     );
 
     // @step And spec/hooks/.virtual/AUTH-001-eslint.sh does NOT exist on disk
-    assert!(!tmp.path().join("spec/hooks/.virtual/AUTH-001-eslint.sh").exists());
+    assert!(!tmp
+        .path()
+        .join("spec/hooks/.virtual/AUTH-001-eslint.sh")
+        .exists());
 
     // @step When I dispatch remove-virtual-hook with workUnitId='AUTH-001' hookName='eslint'
     let result = dispatch_command(req(
@@ -401,7 +407,9 @@ fn scenario_empty_args_object_rejected_mentioning_work_unit_id() {
     let msg = result.error.as_ref().expect("error message expected");
     let lower = msg.to_lowercase();
     assert!(
-        lower.contains("workunitid") || lower.contains("work unit id") || lower.contains("workunit"),
+        lower.contains("workunitid")
+            || lower.contains("work unit id")
+            || lower.contains("workunit"),
         "error message should mention workUnitId; got: {msg}"
     );
 }

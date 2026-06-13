@@ -4,24 +4,18 @@
 //! top-level `architectureDiagrams` array. Each entry uses the generic
 //! schema v2.0.0 shape: `{ title, mermaidCode, [description] }`.
 //!
-//! ## Framing A divergences from TypeScript
+//! ## Divergences from TypeScript
 //!
-//! * **Mermaid validation**: TS uses `mermaid.parse()` + jsdom to validate
-//!   the full diagram syntax. The Rust port performs a lightweight,
-//!   pure-regex pre-check focused on the highest-impact failure modes in
-//!   `src/utils/mermaid-validation.ts`:
-//!     1. Quoted subgraph titles (`subgraph "Quoted"`) are rejected with
-//!        the canonical message `"Quoted subgraph titles are not
-//!        supported"`.
-//!     2. Subgraph identifiers must match `[A-Za-z_][A-Za-z0-9_]*` —
-//!        anything else returns `"Invalid subgraph identifier '<id>'"`.
-//!
-//!   Other Mermaid syntax errors are NOT pre-validated; the LLM is
-//!   expected to produce valid Mermaid.
-//! * **FOUNDATION.md regeneration**: `generate-foundation-md` (RPC-233)
-//!   is itself unported, so the Rust core does NOT touch
-//!   `spec/FOUNDATION.md`. The CLI bridge still prints
-//!   `  Regenerated: spec/FOUNDATION.md` for stdout parity.
+//! * **Mermaid validation**: TS uses `mermaid.parse()` + jsdom. The Rust port
+//!   now performs *real* validation via the `merman` Rust-native Mermaid
+//!   parser (see [`crate::utils::mermaid_validation::validate_mermaid_syntax`]):
+//!   pure-string pre-checks (quoted subgraph title, invalid subgraph
+//!   identifier) run first for canonical error-message parity, then
+//!   `merman_core::Engine::parse_diagram_sync` gates genuine syntax errors.
+//! * **FOUNDATION.md regeneration**: `generate-foundation-md` (RPC-233) IS
+//!   now ported, but this command does NOT itself regenerate FOUNDATION.md.
+//!   The CLI bridge still prints `  Regenerated: spec/FOUNDATION.md` for
+//!   stdout parity.
 //! * **JSON schema validation**: TS calls `validateFoundationJson` (Ajv);
 //!   Rust skips this — no Ajv-equivalent has been ported.
 //!
@@ -79,8 +73,15 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         });
     }
 
-    // Framing A: lightweight subgraph pre-check.
-    validate_mermaid_subgraph(&args.code)?;
+    // Real Mermaid validation via merman (parser-only). Pre-checks for the
+    // two canonical TS patterns (quoted subgraph title, invalid subgraph id)
+    // run first inside the shared validator, then merman gates real syntax.
+    if let Err(reason) = crate::utils::mermaid_validation::validate_mermaid_syntax(&args.code) {
+        return Err(FspecCoreError::InvalidArgs {
+            command: "add-diagram",
+            reason,
+        });
+    }
 
     // Load-or-init foundation.json (auto-creates the canonical generic
     // schema v2.0.0 default when missing).
@@ -151,66 +152,4 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to serialize result: {e}"),
         }
     })
-}
-
-/// Framing A: lightweight subgraph pre-check.
-///
-/// Walks every line of the Mermaid code looking for a `subgraph <body>`
-/// directive. Rejects:
-///
-/// * Quoted titles — `subgraph "Title"` → `"Quoted subgraph titles are
-///   not supported"`.
-/// * Invalid identifiers — `subgraph <ident>` where `<ident>` does not
-///   match `[A-Za-z_][A-Za-z0-9_]*` → `"Invalid subgraph identifier
-///   '<ident>'"`.
-///
-/// All other code strings pass through. This intentionally diverges from
-/// the TS `mermaid.parse()` validation, which we cannot run without
-/// jsdom + a full Mermaid runtime.
-fn validate_mermaid_subgraph(code: &str) -> Result<(), FspecCoreError> {
-    for raw_line in code.lines() {
-        let line = raw_line.trim();
-        let rest = match line.strip_prefix("subgraph") {
-            Some(r) => r,
-            None => continue,
-        };
-        // `subgraphX` is an identifier, not a keyword.
-        if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
-            continue;
-        }
-        let body = rest.trim();
-        if body.is_empty() {
-            continue;
-        }
-        // Strip optional ` [Title]` descriptor.
-        let ident_part = match body.split_once('[') {
-            Some((before, _)) => before.trim(),
-            None => body,
-        };
-        if ident_part.starts_with('"') {
-            return Err(FspecCoreError::InvalidArgs {
-                command: "add-diagram",
-                reason: "Quoted subgraph titles are not supported".to_string(),
-            });
-        }
-        let ident = ident_part.split_whitespace().next().unwrap_or("");
-        if !is_valid_ident(ident) {
-            return Err(FspecCoreError::InvalidArgs {
-                command: "add-diagram",
-                reason: format!("Invalid subgraph identifier '{ident}'"),
-            });
-        }
-    }
-    Ok(())
-}
-
-fn is_valid_ident(s: &str) -> bool {
-    let mut chars = s.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    if !(first.is_ascii_alphabetic() || first == '_') {
-        return false;
-    }
-    chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
 }

@@ -117,9 +117,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let status_str = data
         .work_units
         .get(&args.work_unit_id)
-        .expect("present")
-        .status
-        .as_str();
+        .map(|w| w.status.as_str())
+        .unwrap_or("");
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "restore-rule",
@@ -132,11 +131,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Rules-array-present gate.
     {
-        let wu = data.work_units.get(&args.work_unit_id).expect("present");
-        let rules_present = matches!(
-            wu.extra.get("rules"),
-            Some(Value::Array(a)) if !a.is_empty()
-        );
+        let rules_present = data
+            .work_units
+            .get(&args.work_unit_id)
+            .map(|wu| {
+                matches!(
+                    wu.extra.get("rules"),
+                    Some(Value::Array(a)) if !a.is_empty()
+                )
+            })
+            .unwrap_or(false);
         if !rules_present {
             return Err(FspecCoreError::InvalidArgs {
                 command: "restore-rule",
@@ -161,24 +165,18 @@ fn run_single(
     index: TsIndex,
     project_root: &Path,
 ) -> Result<String, FspecCoreError> {
-    let (located_index, was_deleted, text) = {
-        let wu = data.work_units.get(work_unit_id).expect("present");
-        let arr = wu
-            .extra
-            .get("rules")
-            .and_then(Value::as_array)
-            .expect("rules-present gate above");
-
-        let target_id: Option<i64> = match index {
-            TsIndex::Int(n) => Some(n),
-            TsIndex::Nan => None,
-        };
-
-        let mut found: Option<(usize, bool, String)> = None;
-        if let Some(target) = target_id {
-            for (i, item) in arr.iter().enumerate() {
-                let id = item.get("id").and_then(Value::as_i64);
-                if id == Some(target) {
+    let located = data
+        .work_units
+        .get(work_unit_id)
+        .and_then(|wu| wu.extra.get("rules"))
+        .and_then(Value::as_array)
+        .and_then(|arr| {
+            let target_id: i64 = match index {
+                TsIndex::Int(n) => n,
+                TsIndex::Nan => return None,
+            };
+            arr.iter().enumerate().find_map(|(i, item)| {
+                if item.get("id").and_then(Value::as_i64) == Some(target_id) {
                     let deleted = item
                         .get("deleted")
                         .and_then(Value::as_bool)
@@ -188,19 +186,19 @@ fn run_single(
                         .and_then(Value::as_str)
                         .unwrap_or("")
                         .to_string();
-                    found = Some((i, deleted, t));
-                    break;
+                    Some((i, deleted, t))
+                } else {
+                    None
                 }
-            }
-        }
-        match found {
-            Some(v) => v,
-            None => {
-                return Err(FspecCoreError::InvalidArgs {
-                    command: "restore-rule",
-                    reason: format!("Rule with ID {} not found", index.display()),
-                });
-            }
+            })
+        });
+    let (located_index, was_deleted, text) = match located {
+        Some(v) => v,
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "restore-rule",
+                reason: format!("Rule with ID {} not found", index.display()),
+            });
         }
     };
 
@@ -215,28 +213,20 @@ fn run_single(
 
     // Restore: clear deleted, REMOVE deletedAt key, bump updatedAt, write.
     let now_ts = iso8601_now();
-    {
-        let wu = data
-            .work_units
-            .get_mut(work_unit_id)
-            .expect("present");
-        if let Some(arr) = wu
-            .extra
-            .get_mut("rules")
-            .and_then(Value::as_array_mut)
-        {
+    if let Some(wu) = data.work_units.get_mut(work_unit_id) {
+        if let Some(arr) = wu.extra.get_mut("rules").and_then(Value::as_array_mut) {
             if let Some(item) = arr.get_mut(located_index).and_then(Value::as_object_mut) {
                 item.insert("deleted".to_string(), Value::Bool(false));
                 item.remove("deletedAt");
             }
         }
-        wu.updated_at = now_ts.clone();
+        wu.updated_at = now_ts;
     }
 
     let path = project_root.join("spec").join("work-units.json");
     write_json_atomic(&path, data)?;
 
-    Ok(format!("✓ Restored rule: \"{}\"\n", text))
+    Ok(format!("✓ Restored rule: \"{text}\"\n"))
 }
 
 fn run_bulk(
@@ -251,20 +241,25 @@ fn run_bulk(
     // promise documented in the help fixture
     // ("Bulk restore validates all IDs before restoring any item").
     let tokens: Vec<&str> = ids_str.split(',').collect();
-    let parsed: Vec<TsIndex> = tokens
-        .iter()
-        .map(|tok| parse_ts_int(tok.trim()))
-        .collect();
+    let parsed: Vec<TsIndex> = tokens.iter().map(|tok| parse_ts_int(tok.trim())).collect();
 
     // Collect (position, already_active, text) for each requested id.
     // Errors surface here BEFORE any mutation so the file stays byte-equal.
     let plan: Vec<(usize, bool, String, TsIndex)> = {
-        let wu = data.work_units.get(work_unit_id).expect("present");
-        let arr = wu
-            .extra
-            .get("rules")
+        let arr = match data
+            .work_units
+            .get(work_unit_id)
+            .and_then(|wu| wu.extra.get("rules"))
             .and_then(Value::as_array)
-            .expect("rules-present gate above");
+        {
+            Some(arr) => arr,
+            None => {
+                return Err(FspecCoreError::InvalidArgs {
+                    command: "restore-rule",
+                    reason: format!("Work unit {work_unit_id} has no rules"),
+                });
+            }
+        };
 
         let mut plan = Vec::with_capacity(parsed.len());
         for idx in parsed {
@@ -308,16 +303,12 @@ fn run_bulk(
     // Already-active entries are silently skipped (TS `continue`).
     let now_ts = iso8601_now();
     let mut restored_texts: Vec<String> = Vec::new();
+    if let Some(arr) = data
+        .work_units
+        .get_mut(work_unit_id)
+        .and_then(|wu| wu.extra.get_mut("rules"))
+        .and_then(Value::as_array_mut)
     {
-        let wu = data
-            .work_units
-            .get_mut(work_unit_id)
-            .expect("present");
-        let arr = wu
-            .extra
-            .get_mut("rules")
-            .and_then(Value::as_array_mut)
-            .expect("rules-present gate above");
         for (i, was_deleted, text, _idx) in plan {
             if !was_deleted {
                 continue;
@@ -328,9 +319,11 @@ fn run_bulk(
             }
             restored_texts.push(text);
         }
-        // TS always bumps updatedAt and writes on the bulk success path,
-        // even when zero rules were actually restored.
-        wu.updated_at = now_ts.clone();
+    }
+    // TS always bumps updatedAt and writes on the bulk success path,
+    // even when zero rules were actually restored.
+    if let Some(wu) = data.work_units.get_mut(work_unit_id) {
+        wu.updated_at = now_ts;
     }
 
     let path = project_root.join("spec").join("work-units.json");
@@ -355,7 +348,7 @@ fn parse_ts_int(raw: &str) -> TsIndex {
     if rest.is_empty() || !rest.chars().next().is_some_and(|c| c.is_ascii_digit()) {
         return TsIndex::Nan;
     }
-    let digits: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+    let digits: String = rest.chars().take_while(char::is_ascii_digit).collect();
     match digits.parse::<i64>() {
         Ok(n) => TsIndex::Int(sign * n),
         Err(_) => TsIndex::Nan,
@@ -364,7 +357,12 @@ fn parse_ts_int(raw: &str) -> TsIndex {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

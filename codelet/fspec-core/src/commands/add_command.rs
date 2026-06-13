@@ -36,9 +36,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
 use crate::error::FspecCoreError;
-use crate::io::time::iso8601_now;
 use crate::io::locked_file::write_json_atomic;
-use crate::types::work_unit::{WorkUnitsData, WorkUnitStatus};
+use crate::io::time::iso8601_now;
+use crate::types::work_unit::{WorkUnitStatus, WorkUnitsData};
 
 /// CLI arguments accepted by `add-command`. Mirrors the TS
 /// `AddCommandOptions` interface at `src/commands/add-command.ts:14-21`.
@@ -49,7 +49,10 @@ struct AddCommandArgs {
     text: String,
     #[serde(default)]
     actor: Option<String>,
-    #[serde(default, deserialize_with = "crate::js_compat::deserialize_present_value")]
+    #[serde(
+        default,
+        deserialize_with = "crate::js_compat::deserialize_present_value"
+    )]
     timestamp: Option<Value>,
     #[serde(default)]
     bounded_context: Option<String>,
@@ -102,7 +105,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .work_units
         .get(&args.work_unit_id)
         .map(|w| w.status)
-        .expect("work unit exists");
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "add-command",
+            reason: format!("Work unit {} not found", args.work_unit_id),
+        })?;
     if matches!(status, WorkUnitStatus::Done | WorkUnitStatus::Blocked) {
         return Err(FspecCoreError::InvalidArgs {
             command: "add-command",
@@ -117,10 +123,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // ---- mutate the work unit's eventStorm section ----
     let command_id: u64 = {
-        let wu = data
-            .work_units
-            .get_mut(&args.work_unit_id)
-            .expect("work unit exists");
+        let wu = data.work_units.get_mut(&args.work_unit_id).ok_or_else(|| {
+            FspecCoreError::InvalidArgs {
+                command: "add-command",
+                reason: format!("Work unit {} not found", args.work_unit_id),
+            }
+        })?;
 
         // Initialize eventStorm only when absent (mirrors `if (!workUnit.eventStorm)`).
         let es_missing = !matches!(wu.extra.get("eventStorm"), Some(Value::Object(_)));
@@ -135,7 +143,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             .extra
             .get_mut("eventStorm")
             .and_then(Value::as_object_mut)
-            .expect("eventStorm initialized above");
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "add-command",
+                reason: "failed to initialize eventStorm section".to_string(),
+            })?;
 
         let next_id = es.get("nextItemId").and_then(Value::as_u64).unwrap_or(0);
 
@@ -181,7 +192,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Bump meta.lastUpdated when present (mirrors src/commands/add-command.ts:124-126).
     if let Some(meta) = data.meta.as_mut() {
-        meta.last_updated = now.clone();
+        meta.last_updated = now;
     }
 
     write_json_atomic(&path, &data)?;
@@ -198,7 +209,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -216,7 +232,8 @@ mod tests {
 
     #[test]
     fn args_parse_fails_without_text() {
-        let err = serde_json::from_str::<AddCommandArgs>(r#"{"workUnitId":"AUTH-001"}"#).unwrap_err();
+        let err =
+            serde_json::from_str::<AddCommandArgs>(r#"{"workUnitId":"AUTH-001"}"#).unwrap_err();
         assert!(err.to_string().to_lowercase().contains("text"));
     }
 }

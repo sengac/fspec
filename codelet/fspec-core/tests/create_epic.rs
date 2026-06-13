@@ -29,14 +29,13 @@ fn write_epics(project_root: &Path, raw: &str) {
 }
 
 fn read_epics_value(project_root: &Path) -> Value {
-    let raw = fs::read_to_string(project_root.join("spec/epics.json"))
-        .expect("read spec/epics.json");
+    let raw =
+        fs::read_to_string(project_root.join("spec/epics.json")).expect("read spec/epics.json");
     serde_json::from_str(&raw).expect("epics.json is valid JSON")
 }
 
 fn read_epics_raw(project_root: &Path) -> String {
-    fs::read_to_string(project_root.join("spec/epics.json"))
-        .expect("read spec/epics.json")
+    fs::read_to_string(project_root.join("spec/epics.json")).expect("read spec/epics.json")
 }
 
 // ---------- scenarios ----------
@@ -227,7 +226,10 @@ fn dispatcher_rejects_creating_an_epic_that_already_exists() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected duplicate to be rejected: {result:?}");
+    assert!(
+        !result.success,
+        "expected duplicate to be rejected: {result:?}"
+    );
 
     // @step And the error message contains the substring 'Failed to create epic'
     let msg = result.error.as_ref().expect("error must be set");

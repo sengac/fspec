@@ -29,8 +29,7 @@ fn write_spec_file(project_root: &Path, name: &str, raw: &str) {
 }
 
 fn read_value(project_root: &Path, name: &str) -> Value {
-    let raw = fs::read_to_string(project_root.join("spec").join(name))
-        .expect("read spec file");
+    let raw = fs::read_to_string(project_root.join("spec").join(name)).expect("read spec file");
     serde_json::from_str(&raw).expect("valid JSON")
 }
 
@@ -218,7 +217,10 @@ fn dispatcher_rejects_deletion_of_missing_epic_with_wrapped_error() {
 
     // @step And spec/epics.json still contains the 'dash' epic
     let data = read_value(tmp.path(), "epics.json");
-    assert!(data["epics"].get("dash").is_some(), "dash must be preserved");
+    assert!(
+        data["epics"].get("dash").is_some(),
+        "dash must be preserved"
+    );
 }
 
 #[test]

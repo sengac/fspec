@@ -57,12 +57,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Read raw bytes — query-work-units does NOT auto-create the file (TS
     // parity: src/commands/query-work-units.ts:55-57 uses readFile directly
     // with no ensure helper, surfacing any IO error to the catch-all wrapper).
-    let raw = std::fs::read_to_string(&work_units_path).map_err(|e| {
-        FspecCoreError::InvalidArgs {
+    let raw =
+        std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
             command: "query-work-units",
             reason: wrap_failure(&format_io_error(&e, &work_units_path.display().to_string())),
-        }
-    })?;
+        })?;
 
     let data: WorkUnitsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
@@ -200,7 +199,11 @@ fn apply_sort(units: &mut [&WorkUnit], args: &QueryWorkUnitsArgs) {
         let av = field_value(a, sort_key);
         let bv = field_value(b, sort_key);
         let cmp = compare_values(&av, &bv);
-        if desc { cmp.reverse() } else { cmp }
+        if desc {
+            cmp.reverse()
+        } else {
+            cmp
+        }
     });
 }
 

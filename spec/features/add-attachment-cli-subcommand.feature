@@ -54,16 +54,16 @@ Feature: fspec add-attachment CLI subcommand
     Then the exit code is 0
     And stdout contains the substring '  Description: Auth flow v2'
 
-  Scenario: CLI exits 2 when the workUnitId positional argument is missing
+  Scenario: CLI exits 1 when the workUnitId positional argument is missing (Commander usage-error parity)
     Given an empty directory is set as the current working directory
     When I run `fspec add-attachment` (no positionals) from that directory
-    Then the exit code is 2
+    Then the exit code is 1
     And stderr names the missing required argument
 
-  Scenario: CLI exits 2 when the filePath positional argument is missing
+  Scenario: CLI exits 1 when the filePath positional argument is missing (Commander usage-error parity)
     Given an empty directory is set as the current working directory
     When I run `fspec add-attachment AUTH-001` (missing second positional) from that directory
-    Then the exit code is 2
+    Then the exit code is 1
     And stderr names the missing required argument
 
   Scenario: CLI exits 1 with stderr prefix when the work unit does not exist

@@ -84,7 +84,12 @@ fn walk(dir: &Path, project_root: &Path, out: &mut Vec<String>) -> Result<(), Fs
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use tempfile::TempDir;
 
@@ -121,7 +126,11 @@ mod tests {
         std::fs::create_dir_all(tmp.path().join("spec/features")).unwrap();
         write(tmp.path(), "spec/features/zebra.feature", "Feature: Z\n");
         write(tmp.path(), "spec/features/alpha.feature", "Feature: A\n");
-        write(tmp.path(), "spec/features/nested/mango.feature", "Feature: M\n");
+        write(
+            tmp.path(),
+            "spec/features/nested/mango.feature",
+            "Feature: M\n",
+        );
         let files = glob_feature_files(tmp.path()).unwrap();
         assert_eq!(
             files,

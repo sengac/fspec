@@ -76,7 +76,8 @@ fn three_unit_store() -> Value {
 }
 
 fn parse_data(data: &str) -> Value {
-    serde_json::from_str(data).unwrap_or_else(|e| panic!("dispatch data not valid JSON: {e}\n{data}"))
+    serde_json::from_str(data)
+        .unwrap_or_else(|e| panic!("dispatch data not valid JSON: {e}\n{data}"))
 }
 
 fn ids_in(data: &Value) -> Vec<String> {
@@ -97,7 +98,10 @@ fn auto_creates_work_units_and_prefixes_files_on_first_run() {
     // @step Given an empty project root directory with no spec/ subdirectory
     let tmp = TempDir::new().expect("tempdir");
     let root = tmp.path();
-    assert!(!root.join("spec").exists(), "precondition: spec/ must not exist");
+    assert!(
+        !root.join("spec").exists(),
+        "precondition: spec/ must not exist"
+    );
 
     // @step When I dispatch the list-work-units command against that project root
     let result = dispatch_command(req(root, json!({ "format": "json" })));
@@ -146,7 +150,10 @@ fn auto_creates_work_units_and_prefixes_files_on_first_run() {
     let prefixes_obj = prefixes["prefixes"]
         .as_object()
         .expect("prefixes.json must have 'prefixes' object");
-    assert!(prefixes_obj.is_empty(), "prefixes object must be empty on first run");
+    assert!(
+        prefixes_obj.is_empty(),
+        "prefixes object must be empty on first run"
+    );
 }
 
 #[test]
@@ -253,10 +260,7 @@ fn filters_by_epic_with_exact_equality() {
     seed_work_units(tmp.path(), store);
 
     // @step When I dispatch list-work-units with epic='ux' and format=json
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "epic": "ux", "format": "json" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "epic": "ux", "format": "json" })));
 
     // @step Then the workUnits array contains only AUTH-001
     assert!(result.success, "{result:?}");
@@ -310,10 +314,8 @@ fn filters_by_type_defaulting_missing_type_to_story() {
     assert!(!ids_story.contains(&"TASK-001".to_string()));
 
     // @step When I dispatch list-work-units again with type='task' and format=json
-    let result_task = dispatch_command(req(
-        tmp.path(),
-        json!({ "type": "task", "format": "json" }),
-    ));
+    let result_task =
+        dispatch_command(req(tmp.path(), json!({ "type": "task", "format": "json" })));
 
     // @step Then the workUnits array contains only TASK-001
     assert!(result_task.success, "{result_task:?}");
@@ -403,10 +405,26 @@ fn text_format_prints_work_units_header_and_entries_when_populated() {
 
     // @step Then the DispatchResult.data contains 'Work Units (1)' and 'AUTH-001 [backlog]' and 'Login feature' and 'Epic: ux'
     assert!(result.success, "{result:?}");
-    assert!(result.data.contains("Work Units (1)"), "missing header: {}", result.data);
-    assert!(result.data.contains("AUTH-001 [backlog]"), "missing id line: {}", result.data);
-    assert!(result.data.contains("Login feature"), "missing title: {}", result.data);
-    assert!(result.data.contains("Epic: ux"), "missing epic line: {}", result.data);
+    assert!(
+        result.data.contains("Work Units (1)"),
+        "missing header: {}",
+        result.data
+    );
+    assert!(
+        result.data.contains("AUTH-001 [backlog]"),
+        "missing id line: {}",
+        result.data
+    );
+    assert!(
+        result.data.contains("Login feature"),
+        "missing title: {}",
+        result.data
+    );
+    assert!(
+        result.data.contains("Epic: ux"),
+        "missing epic line: {}",
+        result.data
+    );
 }
 
 #[test]
@@ -423,7 +441,10 @@ fn returns_structured_error_when_work_units_json_is_malformed() {
     let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
 
     // @step Then the dispatcher returns success=false with an error message containing the substring 'Failed to parse work-units.json'
-    assert!(!result.success, "expected success=false for malformed JSON, got {result:?}");
+    assert!(
+        !result.success,
+        "expected success=false for malformed JSON, got {result:?}"
+    );
     let msg = result.error.as_ref().expect("error message expected");
     assert!(
         msg.contains("Failed to parse work-units.json"),
@@ -451,11 +472,18 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         "types/work_unit.rs",
     ] {
         let p: PathBuf = crate_src.join(rel);
-        assert!(p.exists(), "expected shared module file to exist: {}", p.display());
+        assert!(
+            p.exists(),
+            "expected shared module file to exist: {}",
+            p.display()
+        );
     }
     let lib_src = fs::read_to_string(crate_src.join("lib.rs")).expect("lib.rs readable");
     assert!(lib_src.contains("pub mod io"), "lib.rs must `pub mod io`");
-    assert!(lib_src.contains("pub mod types"), "lib.rs must `pub mod types`");
+    assert!(
+        lib_src.contains("pub mod types"),
+        "lib.rs must `pub mod types`"
+    );
 
     // @step Then list_work_units::run delegates to these shared modules rather than embedding its own filesystem logic
     let list_src = fs::read_to_string(crate_src.join("commands").join("list_work_units.rs"))
@@ -496,10 +524,11 @@ async fn dispatch_command_does_not_hang_when_called_from_inside_a_tokio_runtime(
 
     // @step When I invoke dispatch_command for the list-work-units command via tokio::task::spawn_blocking
     let started = std::time::Instant::now();
-    let result =
-        tokio::task::spawn_blocking(move || dispatch_command(req(tmp.path(), json!({ "format": "json" }))))
-            .await
-            .expect("spawn_blocking joined cleanly — a panic here means the nested-runtime bug regressed");
+    let result = tokio::task::spawn_blocking(move || {
+        dispatch_command(req(tmp.path(), json!({ "format": "json" })))
+    })
+    .await
+    .expect("spawn_blocking joined cleanly — a panic here means the nested-runtime bug regressed");
     let elapsed = started.elapsed();
 
     // @step Then the DispatchResult has success=true within 2 seconds
@@ -517,20 +546,20 @@ async fn dispatch_command_does_not_hang_when_called_from_inside_a_tokio_runtime(
 /// Scenario: Dispatching an unported command from inside a tokio runtime returns NotYetPorted instead of hanging
 #[tokio::test]
 async fn dispatch_command_returns_not_yet_ported_when_called_from_inside_a_tokio_runtime() {
-    // @step Given the canonical command map registers 'add-persona' as a Phase 1 stub
-    // (precondition: 'add-persona' is in CANONICAL_COMMANDS and is_ported('add-persona') == false;
-    //  verified in dispatcher_test.rs. We use add-persona instead of add-rule because the latter
-    //  has been ported as part of Batch 8 and now returns a real arg-parsing error rather than the
+    // @step Given the canonical command map registers 'add-architecture' as a Phase 1 stub
+    // (precondition: 'add-architecture' is in CANONICAL_COMMANDS and is_ported('add-architecture') == false;
+    //  verified in dispatcher_test.rs. We use add-architecture instead of add-rule/add-persona because those
+    //  have been ported and now return a real arg-parsing error rather than the
     //  NotYetPorted stub message this regression test was written to catch.)
 
     // @step Given the test is running inside an active tokio runtime via #[tokio::test]
     // (precondition satisfied by the #[tokio::test] attribute on this test fn)
 
-    // @step When I invoke dispatch_command for the 'add-persona' command via tokio::task::spawn_blocking
+    // @step When I invoke dispatch_command for the 'add-architecture' command via tokio::task::spawn_blocking
     let started = std::time::Instant::now();
     let result = tokio::task::spawn_blocking(|| {
         dispatch_command(DispatchRequest {
-            command: "add-persona".to_string(),
+            command: "add-architecture".to_string(),
             args_json: "{}".to_string(),
             project_root: std::path::PathBuf::from("/tmp/fspec-rpc327"),
         })

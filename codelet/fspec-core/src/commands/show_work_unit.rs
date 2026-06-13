@@ -124,12 +124,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "show-work-unit",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text.
         _ => Ok(render_text(&result)),
     }
@@ -363,9 +363,8 @@ fn project_work_unit(
                 if q.is_string() {
                     return Err(FspecCoreError::InvalidArgs {
                         command: "show-work-unit",
-                        reason:
-                            "Invalid question format. Questions must be QuestionItem objects."
-                                .to_string(),
+                        reason: "Invalid question format. Questions must be QuestionItem objects."
+                            .to_string(),
                     });
                 }
                 let obj = match q.as_object() {
@@ -567,11 +566,7 @@ fn wrap_in_system_reminder(content: &str) -> String {
 /// empty Vec when reminders are disabled OR no reminder conditions
 /// trigger. Mirrors the five `get*Reminder` helpers in
 /// `src/utils/system-reminder.ts`.
-fn build_system_reminders(
-    work_unit_id: &str,
-    wu: &Value,
-    linked: &[LinkedFeature],
-) -> Vec<String> {
+fn build_system_reminders(work_unit_id: &str, wu: &Value, linked: &[LinkedFeature]) -> Vec<String> {
     if !reminders_enabled() {
         return Vec::new();
     }
@@ -597,12 +592,18 @@ fn build_system_reminders(
         let has_rules = wu
             .get("rules")
             .and_then(Value::as_array)
-            .map(|a| a.iter().any(|r| r.get("deleted").and_then(Value::as_bool) != Some(true)))
+            .map(|a| {
+                a.iter()
+                    .any(|r| r.get("deleted").and_then(Value::as_bool) != Some(true))
+            })
             .unwrap_or(false);
         let has_examples = wu
             .get("examples")
             .and_then(Value::as_array)
-            .map(|a| a.iter().any(|r| r.get("deleted").and_then(Value::as_bool) != Some(true)))
+            .map(|a| {
+                a.iter()
+                    .any(|r| r.get("deleted").and_then(Value::as_bool) != Some(true))
+            })
             .unwrap_or(false);
         if let Some(r) = empty_example_mapping_reminder(work_unit_id, has_rules, has_examples) {
             out.push(r);
@@ -641,7 +642,9 @@ fn build_system_reminders(
                 .filter(|r| r.get("deleted").and_then(Value::as_bool) == Some(true))
                 .count();
             if deleted_count > 0 {
-                out.push(format!("{active_count} active items ({deleted_count} deleted)"));
+                out.push(format!(
+                    "{active_count} active items ({deleted_count} deleted)"
+                ));
             }
         }
     }
@@ -677,11 +680,7 @@ fn empty_example_mapping_reminder(
     Some(wrap_in_system_reminder(&body))
 }
 
-fn long_duration_reminder(
-    work_unit_id: &str,
-    status: &str,
-    duration_hours: f64,
-) -> Option<String> {
+fn long_duration_reminder(work_unit_id: &str, status: &str, duration_hours: f64) -> Option<String> {
     if duration_hours < 24.0 {
         return None;
     }
@@ -800,7 +799,11 @@ fn iso8601_to_epoch_secs(ts: &str) -> Option<i64> {
     let m: u32 = time_parts.next()?.parse().ok()?;
     let sec: u32 = time_parts.next()?.parse().ok()?;
     // Howard Hinnant's civil → days-since-epoch.
-    let (yy, mm) = if mo <= 2 { (y - 1, mo + 9) } else { (y, mo - 3) };
+    let (yy, mm) = if mo <= 2 {
+        (y - 1, mo + 9)
+    } else {
+        (y, mo - 3)
+    };
     let era = if yy >= 0 { yy / 400 } else { (yy - 399) / 400 };
     let yoe = yy - era * 400; // [0, 399]
     let doy = (153 * mm as i64 + 2) / 5 + d as i64 - 1; // [0, 365]
@@ -940,15 +943,16 @@ fn render_text(result: &ShowWorkUnitResult) -> String {
                     out.push_str(&format!("  {event}:\n"));
                     for hk in hooks {
                         let name = hk.get("name").and_then(Value::as_str).unwrap_or("");
-                        let blocking = hk
-                            .get("blocking")
-                            .and_then(Value::as_bool)
-                            .unwrap_or(false);
+                        let blocking = hk.get("blocking").and_then(Value::as_bool).unwrap_or(false);
                         let git_ctx = hk
                             .get("gitContext")
                             .and_then(Value::as_bool)
                             .unwrap_or(false);
-                        let bb = if blocking { "(blocking)" } else { "(non-blocking)" };
+                        let bb = if blocking {
+                            "(blocking)"
+                        } else {
+                            "(non-blocking)"
+                        };
                         let gc = if git_ctx { " [git-context]" } else { "" };
                         out.push_str(&format!("    • {name} {bb}{gc}\n"));
                         let cmd = hk.get("command").and_then(Value::as_str).unwrap_or("");
@@ -985,7 +989,12 @@ fn render_text(result: &ShowWorkUnitResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
@@ -1006,8 +1015,14 @@ mod tests {
 
     #[test]
     fn extract_work_unit_id_accepts_canonical_form() {
-        assert_eq!(extract_work_unit_id("AUTH-001"), Some("AUTH-001".to_string()));
-        assert_eq!(extract_work_unit_id("@AUTH-001"), Some("AUTH-001".to_string()));
+        assert_eq!(
+            extract_work_unit_id("AUTH-001"),
+            Some("AUTH-001".to_string())
+        );
+        assert_eq!(
+            extract_work_unit_id("@AUTH-001"),
+            Some("AUTH-001".to_string())
+        );
     }
 
     #[test]
@@ -1057,14 +1072,17 @@ mod tests {
 
     #[test]
     fn large_estimate_reminder_only_fires_for_story_and_bug() {
-        assert!(large_estimate_reminder("AUTH-001", Some(21.0), "task", "implementing", false)
-            .is_none());
+        assert!(
+            large_estimate_reminder("AUTH-001", Some(21.0), "task", "implementing", false)
+                .is_none()
+        );
         assert!(large_estimate_reminder("AUTH-001", Some(21.0), "story", "done", false).is_none());
-        assert!(large_estimate_reminder("AUTH-001", Some(13.0), "story", "implementing", false)
-            .is_none());
-        let r =
-            large_estimate_reminder("AUTH-001", Some(21.0), "story", "implementing", false)
-                .expect("Some");
+        assert!(
+            large_estimate_reminder("AUTH-001", Some(13.0), "story", "implementing", false)
+                .is_none()
+        );
+        let r = large_estimate_reminder("AUTH-001", Some(21.0), "story", "implementing", false)
+            .expect("Some");
         assert!(r.contains("LARGE ESTIMATE WARNING"));
         assert!(r.contains("CREATE FEATURE FILE FIRST"));
     }

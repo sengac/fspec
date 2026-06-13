@@ -91,12 +91,11 @@ struct RemoveRuleResult {
 }
 
 pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
-    let args: RemoveRuleArgs = serde_json::from_str(args_json).map_err(|e| {
-        FspecCoreError::InvalidArgs {
+    let args: RemoveRuleArgs =
+        serde_json::from_str(args_json).map_err(|e| FspecCoreError::InvalidArgs {
             command: "remove-rule",
             reason: format!("failed to parse args: {e}"),
-        }
-    })?;
+        })?;
 
     let mut data = ensure_work_units_file(project_root)?;
 
@@ -113,7 +112,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .work_units
         .get(&args.work_unit_id)
         .map(|w| w.status.as_str())
-        .expect("work unit exists");
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "remove-rule",
+            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+        })?;
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "remove-rule",
@@ -125,10 +127,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Validate rules array exists and non-empty.
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
+    let wu =
+        data.work_units
+            .get_mut(&args.work_unit_id)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "remove-rule",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            })?;
     let rules_present = matches!(wu.extra.get("rules"), Some(Value::Array(a)) if !a.is_empty());
     if !rules_present {
         return Err(FspecCoreError::InvalidArgs {
@@ -153,7 +158,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let pos = target_id.and_then(|id| {
         rules
             .iter()
-            .position(|r| r.get("id").and_then(|v| v.as_i64()) == Some(id))
+            .position(|r| r.get("id").and_then(Value::as_i64) == Some(id))
     });
     let pos = match pos {
         Some(p) => p,
@@ -169,12 +174,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     let text = rule
         .get("text")
-        .and_then(|v| v.as_str())
+        .and_then(Value::as_str)
         .unwrap_or("")
         .to_string();
     let already_deleted = rule
         .get("deleted")
-        .and_then(|v| v.as_bool())
+        .and_then(Value::as_bool)
         .unwrap_or(false);
 
     // Idempotent path: already-deleted rule returns success WITHOUT disk write.
@@ -224,17 +229,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 fn non_deleted_count(rules: &[Value]) -> usize {
     rules
         .iter()
-        .filter(|r| {
-            !r.get("deleted")
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false)
-        })
+        .filter(|r| !r.get("deleted").and_then(Value::as_bool).unwrap_or(false))
         .count()
 }
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 

@@ -187,7 +187,11 @@ fn scenario_missing_event_key_is_a_silent_noop_success() {
     let hooks = v["hooks"].as_object().expect("hooks object");
 
     // @step Then the on-disk 'hooks' object contains only the key 'pre-implementing'
-    assert_eq!(hooks.len(), 1, "expected only pre-implementing, got {hooks:?}");
+    assert_eq!(
+        hooks.len(),
+        1,
+        "expected only pre-implementing, got {hooks:?}"
+    );
     assert!(hooks.contains_key("pre-implementing"));
 
     // @step Then the on-disk 'pre-implementing' array is unchanged (one entry named 'lint')
@@ -250,7 +254,11 @@ fn scenario_enoent_on_spec_fspec_hooks_json_propagates_an_error() {
     );
 
     // @step Then the dispatcher error message indicates an IO failure
-    let combined = format!("{} {}", result.data, result.error.clone().unwrap_or_default());
+    let combined = format!(
+        "{} {}",
+        result.data,
+        result.error.clone().unwrap_or_default()
+    );
     let lower = combined.to_lowercase();
     assert!(
         lower.contains("io")
@@ -284,7 +292,11 @@ fn scenario_invalid_json_propagates_a_parsejson_error_no_silent_overwrite() {
     );
 
     // @step Then the dispatcher error message indicates a parse failure for fspec-hooks.json
-    let combined = format!("{} {}", result.data, result.error.clone().unwrap_or_default());
+    let combined = format!(
+        "{} {}",
+        result.data,
+        result.error.clone().unwrap_or_default()
+    );
     assert!(
         combined.contains("fspec-hooks.json"),
         "expected parse error message to reference fspec-hooks.json; got data={:?} error={:?}",
@@ -294,7 +306,10 @@ fn scenario_invalid_json_propagates_a_parsejson_error_no_silent_overwrite() {
 
     // @step Then the raw bytes of spec/fspec-hooks.json equal '{ not json' (file unchanged)
     let raw = read_hooks_raw(tmp.path());
-    assert_eq!(raw, "{ not json", "config file must be UNCHANGED on parse error; got: {raw:?}");
+    assert_eq!(
+        raw, "{ not json",
+        "config file must be UNCHANGED on parse error; got: {raw:?}"
+    );
 }
 
 #[test]
@@ -362,10 +377,7 @@ fn scenario_preserves_event_key_insertion_order_across_writes() {
     );
 
     // @step When I dispatch remove-hook with event='AAA', name='a'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "event": "AAA", "name": "a" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "event": "AAA", "name": "a" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");

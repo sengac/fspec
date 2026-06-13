@@ -22,7 +22,7 @@
 //! (write-then-rename with `fs2` exclusive lock). Two-front-doors: both
 //! the CLI bridge and the LLM dispatcher route through this single `run`.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::Deserialize;
 use serde_json::{Map, Value};
@@ -94,7 +94,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let epics_obj = epics_top
         .get_mut("epics")
         .and_then(Value::as_object_mut)
-        .expect("ensured object above");
+        .ok_or_else(|| FspecCoreError::ParseJson {
+            file: "epics.json".to_string(),
+            reason: "epics must be an object".to_string(),
+        })?;
 
     if !epics_obj.contains_key(&args.epic_id) {
         return Err(FspecCoreError::InvalidArgs {
@@ -118,22 +121,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // try/catch parity — read errors (ENOENT or parse-error) are
     // silently swallowed.
     let prefixes_path = project_root.join("spec").join("prefixes.json");
-    let _ = mutate_dereference(
-        &prefixes_path,
-        "prefixes",
-        "epicId",
-        &args.epic_id,
-    );
+    let _ = mutate_dereference(&prefixes_path, "prefixes", "epicId", &args.epic_id);
 
     // Side-effect: dereference matching work units. Same bare-catch
     // parity as above.
     let work_units_path = project_root.join("spec").join("work-units.json");
-    let _ = mutate_dereference(
-        &work_units_path,
-        "workUnits",
-        "epic",
-        &args.epic_id,
-    );
+    let _ = mutate_dereference(&work_units_path, "workUnits", "epic", &args.epic_id);
 
     Ok(format!("✓ Epic {} deleted successfully\n", args.epic_id))
 }
@@ -160,7 +153,7 @@ fn read_json_object(path: &Path) -> Option<Map<String, Value>> {
 /// — matching the TS bare `catch {}` wrappers at
 /// `src/commands/delete-epic.ts:57-68` and `:70-81`.
 fn mutate_dereference(
-    path: &PathBuf,
+    path: &Path,
     outer_key: &str,
     field_key: &str,
     match_value: &str,
@@ -199,21 +192,24 @@ fn mutate_dereference(
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use tempfile::TempDir;
 
     #[test]
     fn args_parse_camel_case() {
-        let a: DeleteEpicArgs =
-            serde_json::from_str(r#"{"epicId":"auth"}"#).unwrap();
+        let a: DeleteEpicArgs = serde_json::from_str(r#"{"epicId":"auth"}"#).unwrap();
         assert_eq!(a.epic_id, "auth");
     }
 
     #[test]
     fn args_parse_accepts_force_for_parity() {
-        let a: DeleteEpicArgs =
-            serde_json::from_str(r#"{"epicId":"auth","force":true}"#).unwrap();
+        let a: DeleteEpicArgs = serde_json::from_str(r#"{"epicId":"auth","force":true}"#).unwrap();
         assert_eq!(a.epic_id, "auth");
         assert_eq!(a.force, Some(true));
     }

@@ -91,13 +91,13 @@ Feature: Port add-diagram command to Rust
     Then the dispatcher returns success=false
     And the error message contains the substring 'Diagram code cannot be empty'
 
-  Scenario: Dispatcher rejects diagram with quoted subgraph title (Framing A regex check)
+  Scenario: Dispatcher rejects diagram with quoted subgraph title (merman pre-check)
     Given spec/foundation.json exists with architectureDiagrams=[]
     When I dispatch add-diagram with section='Architecture' title='Bad' code='graph TB\n  subgraph "Quoted"\n  end'
     Then the dispatcher returns success=false
     And the error message contains the substring 'Quoted subgraph titles are not supported'
 
-  Scenario: Dispatcher rejects diagram with invalid subgraph identifier (Framing A regex check)
+  Scenario: Dispatcher rejects diagram with invalid subgraph identifier (merman pre-check)
     Given spec/foundation.json exists with architectureDiagrams=[]
     When I dispatch add-diagram with section='Architecture' title='Bad' code='graph TB\n  subgraph Id!!!\n  end'
     Then the dispatcher returns success=false
@@ -109,3 +109,17 @@ Feature: Port add-diagram command to Rust
     Then the dispatcher returns success=true
     And spec/foundation.json still contains the 'experiments' key with its original value
     And spec/foundation.json still contains the 'project' object
+
+  Scenario: Dispatcher rejects diagram with a genuine merman syntax error
+    Given spec/foundation.json exists with architectureDiagrams=[]
+    When I dispatch add-diagram with section='Architecture' title='Bad' code='flowchart TD\n  A[Start --> B[Done'
+    Then the dispatcher returns success=false
+    And no entry is appended to architectureDiagrams
+
+
+  Scenario: Dispatcher rejects code that matches no mermaid diagram type
+    Given spec/foundation.json exists with architectureDiagrams=[]
+    When I dispatch add-diagram with section='Architecture' title='Bad' code='this is not a diagram at all'
+    Then the dispatcher returns success=false
+    And no entry is appended to architectureDiagrams
+

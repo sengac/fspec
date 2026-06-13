@@ -4,8 +4,8 @@
 //! Byte-for-byte parity with `node dist/index.js update-work-unit --help`.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonPattern,
-    CommonPatternEntry, CommonError,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const ARGS: &[CommandArgument] = &[CommandArgument {

@@ -64,12 +64,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let result = json!({ "workUnits": summaries });
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "list-work-units",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text.
         _ => Ok(render_text(&summaries)),
     }
@@ -158,7 +158,12 @@ fn render_text(summaries: &[Value]) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
@@ -185,8 +190,7 @@ mod tests {
     fn args_parse_bogus_type_does_not_reject() {
         // Parity with TS: unknown --type values are accepted at parse
         // time and simply match nothing downstream.
-        let a: ListWorkUnitsArgs =
-            serde_json::from_str(r#"{"type":"feature"}"#).unwrap();
+        let a: ListWorkUnitsArgs = serde_json::from_str(r#"{"type":"feature"}"#).unwrap();
         assert_eq!(a.r#type.as_deref(), Some("feature"));
     }
 

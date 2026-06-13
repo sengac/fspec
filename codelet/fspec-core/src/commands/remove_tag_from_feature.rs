@@ -89,7 +89,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // ---- Whole-line equality filter (TS parity) ----
-    let to_remove: HashSet<&str> = args.tags.iter().map(|s| s.as_str()).collect();
+    let to_remove: HashSet<&str> = args.tags.iter().map(String::as_str).collect();
     let mut kept: Vec<&str> = Vec::new();
     for line in content.split('\n') {
         let trimmed = line.trim();
@@ -129,10 +129,8 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case() {
-        let a: RemoveTagFromFeatureArgs = serde_json::from_str(
-            r#"{"file":"spec/features/x.feature","tags":["@wip"]}"#,
-        )
-        .unwrap();
+        let a: RemoveTagFromFeatureArgs =
+            serde_json::from_str(r#"{"file":"spec/features/x.feature","tags":["@wip"]}"#).unwrap();
         assert_eq!(a.file, "spec/features/x.feature");
         assert_eq!(a.tags, vec!["@wip".to_string()]);
     }

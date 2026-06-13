@@ -374,8 +374,10 @@ fn json_format_emits_two_space_indent_with_canonical_field_set() {
 
     // @step Then the DispatchResult.data uses 2-space indentation
     assert!(
-        result.data.lines().any(|l| l.starts_with("  \"checkpoints\"")
-            || l.starts_with("  \"workUnitId\"")),
+        result
+            .data
+            .lines()
+            .any(|l| l.starts_with("  \"checkpoints\"") || l.starts_with("  \"workUnitId\"")),
         "expected a line starting with two-space indent + a root field; got:\n{}",
         result.data
     );
@@ -474,8 +476,7 @@ fn shared_infrastructure_wiring_under_fspec_core() {
 
     // @step When I inspect codelet/fspec-core/Cargo.toml
     let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let cargo_toml =
-        fs::read_to_string(crate_dir.join("Cargo.toml")).expect("Cargo.toml readable");
+    let cargo_toml = fs::read_to_string(crate_dir.join("Cargo.toml")).expect("Cargo.toml readable");
 
     // @step Then the dependencies section declares codelet-git via the workspace
     assert!(

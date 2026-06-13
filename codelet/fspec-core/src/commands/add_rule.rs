@@ -77,22 +77,21 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut data = ensure_work_units_file(project_root)?;
 
     // Validate work unit exists (mirrors src/commands/add-rule.ts:28-30).
-    if !data.work_units.contains_key(&args.work_unit_id) {
-        return Err(FspecCoreError::InvalidArgs {
-            command: "add-rule",
-            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
-        });
-    }
+    let wu = match data.work_units.get_mut(&args.work_unit_id) {
+        Some(wu) => wu,
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "add-rule",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            });
+        }
+    };
 
     // Validate work unit is in specifying state (mirrors
     // src/commands/add-rule.ts:34-39). We capture the status string BEFORE
     // mutating because the canonical error message embeds the status as
     // its TS-lowercase form.
-    let status_str = data
-        .work_units
-        .get(&args.work_unit_id)
-        .map(|w| w.status.as_str())
-        .expect("work unit exists");
+    let status_str = wu.status.as_str();
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "add-rule",
@@ -107,15 +106,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Mutate: ensure `rules` and `nextRuleId` exist on the WorkUnit's
     // extra map, then post-increment the counter and push the new rule.
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
 
-    let next_id = match wu.extra.get("nextRuleId").and_then(|v| v.as_u64()) {
-        Some(n) => n,
-        None => 0,
-    };
+    let next_id = wu
+        .extra
+        .get("nextRuleId")
+        .and_then(Value::as_u64)
+        .unwrap_or(0);
 
     // Build the RuleItem with explicit field declaration order
     // (id, text, deleted, createdAt) so on-disk JSON matches TS
@@ -164,7 +160,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -177,8 +178,7 @@ mod tests {
 
     #[test]
     fn args_parse_fails_without_work_unit_id() {
-        let err =
-            serde_json::from_str::<AddRuleArgs>(r#"{"rule":"r1"}"#).unwrap_err();
+        let err = serde_json::from_str::<AddRuleArgs>(r#"{"rule":"r1"}"#).unwrap_err();
         let msg = err.to_string();
         assert!(
             msg.to_lowercase().contains("workunitid"),

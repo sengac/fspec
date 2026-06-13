@@ -15,6 +15,10 @@ indexmap = { version = "2", features = ["serde"] }
 fs2 = "0.4"
 gherkin.workspace = true
 regex.workspace = true
+# RPC-178/RPC-233/RPC-170: Rust-native Mermaid parser (parity target
+# mermaid@11.15.0), parser-only — no render/jsdom. Replaces the Framing-A
+# pure-regex pre-check with real syntax validation.
+merman-core = "0.8.0-alpha.1"
 codelet-git = { path = "../git" }
 
 [dev-dependencies]

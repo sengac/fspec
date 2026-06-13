@@ -44,8 +44,15 @@ fn read_work_units(project_root: &Path) -> Value {
 fn seed_units(units: &[(&str, &str)]) -> Value {
     let mut wus = serde_json::Map::new();
     let mut states: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"]
-    {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -54,14 +61,30 @@ fn seed_units(units: &[(&str, &str)]) -> Value {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".to_string()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
-        states.get_mut(*status).expect("known state").push((*id).to_string());
+        states
+            .get_mut(*status)
+            .expect("known state")
+            .push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"]
-    {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
             Value::Array(
@@ -152,7 +175,10 @@ fn reject_duplicate_event_with_same_case() {
 
     // @step And the work units file is unchanged
     let post_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
-    assert_eq!(pre_bytes, post_bytes, "file must NOT be mutated on dedup failure");
+    assert_eq!(
+        pre_bytes, post_bytes,
+        "file must NOT be mutated on dedup failure"
+    );
 }
 
 #[test]
@@ -208,7 +234,11 @@ fn re_add_an_event_whose_prior_occurrence_was_soft_deleted() {
     let items = v["workUnits"]["RPC-179"]["eventStorm"]["items"]
         .as_array()
         .expect("items array");
-    assert_eq!(items.len(), 2, "a new event must be appended past the soft-deleted one");
+    assert_eq!(
+        items.len(),
+        2,
+        "a new event must be appended past the soft-deleted one"
+    );
     assert_eq!(items[1]["text"].as_str(), Some("UserRegistered"));
     assert_eq!(items[1]["deleted"].as_bool(), Some(false));
 }

@@ -176,7 +176,7 @@ fn cli_and_dispatcher_converge_on_the_same_fspec_core_function() {
     // @step When the dispatcher and the CLI both invoke record-iteration with identical JSON args for "AUTH-001"
     let args = json!({ "workUnitId": "AUTH-001" });
     let via_a = dispatch_command(req(ws_a.path(), args.clone()));
-    let via_b = dispatch_command(req(ws_b.path(), args.clone()));
+    let via_b = dispatch_command(req(ws_b.path(), args));
 
     // @step Then both invocations produce identical results from commands::record_iteration::run
     assert_eq!(
@@ -191,8 +191,8 @@ fn cli_and_dispatcher_converge_on_the_same_fspec_core_function() {
         );
     } else {
         // Red phase: both paths return the SAME NotYetPorted error.
-        let ma = via_a.error.clone().unwrap_or_default();
-        let mb = via_b.error.clone().unwrap_or_default();
+        let ma = via_a.error.unwrap_or_default();
+        let mb = via_b.error.unwrap_or_default();
         assert_eq!(ma, mb, "both front doors must surface identical errors");
         assert!(
             ma.contains("not yet ported"),

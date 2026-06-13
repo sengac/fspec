@@ -1,0 +1,335 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatcher soft-deletes an existing aggregate",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "110-146",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects when foundation.json has no eventStorm section",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "148-177",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects a non-existent bounded context",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "179-208",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects a non-existent aggregate within an existing context",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "210-239",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher treats an already soft-deleted aggregate as not found",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "241-270",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher treats an already soft-deleted bounded context as not found",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "272-301",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher only removes the aggregate scoped to the named context",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "303-340",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher preserves unknown top-level fields on write",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "342-368",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher fails fast when required args are missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs",
+          "lines": "370-388",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/remove_aggregate_from_foundation.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/remove_aggregate_from_foundation.rs"
+    ],
+    "totalLinesCovered": 446
+  }
+}

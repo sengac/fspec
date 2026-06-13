@@ -1,0 +1,304 @@
+{
+  "scenarios": [
+    {
+      "name": "Removing an existing command soft-deletes it and returns the success message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "lines": "87-132",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing when the foundation has no event storm reports the no-data error and leaves the file unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "lines": "134-166",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing from a non-existent bounded context fails with the context not-found error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "lines": "168-203",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing a command name that does not exist in the matched context fails",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "lines": "205-240",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A command belonging to a different context id is not matched",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "lines": "242-273",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing an already soft-deleted command fails as not-found",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_command_from_foundation.rs",
+          "lines": "275-305",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_command_from_foundation.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/remove_command_from_foundation.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/remove_command_from_foundation.rs"
+    ],
+    "totalLinesCovered": 406
+  }
+}

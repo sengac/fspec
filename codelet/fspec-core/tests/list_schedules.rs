@@ -50,11 +50,7 @@ fn expected_columns() -> Vec<&'static str> {
 fn assert_columns_match(data: &Value, raw: &str) {
     let cols = data["columns"].as_array().expect("columns array");
     let actual: Vec<&str> = cols.iter().map(|v| v.as_str().unwrap_or("")).collect();
-    assert_eq!(
-        actual,
-        expected_columns(),
-        "columns mismatch; got {raw}"
-    );
+    assert_eq!(actual, expected_columns(), "columns mismatch; got {raw}");
 }
 
 // ---------- scenarios ----------

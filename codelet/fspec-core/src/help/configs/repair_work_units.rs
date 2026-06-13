@@ -21,7 +21,10 @@ const EXAMPLES: &[CommandExample] = &[CommandExample {
 
 const RELATED: &[&str] = &["validate-work-units"];
 
-const NOTES: &[&str] = &["Use --dry-run first to preview changes", "Creates backup before modifying"];
+const NOTES: &[&str] = &[
+    "Use --dry-run first to preview changes",
+    "Creates backup before modifying",
+];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "repair-work-units",

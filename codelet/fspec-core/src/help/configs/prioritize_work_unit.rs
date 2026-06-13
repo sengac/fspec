@@ -14,8 +14,8 @@
 //! `codelet/fspec/tests/fixtures/help/prioritize-work-unit.txt:35,42`).
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {

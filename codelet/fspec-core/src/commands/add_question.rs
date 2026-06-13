@@ -88,19 +88,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut data = ensure_work_units_file(project_root)?;
 
     // Validate work unit exists.
-    if !data.work_units.contains_key(&args.work_unit_id) {
-        return Err(FspecCoreError::InvalidArgs {
-            command: "add-question",
-            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
-        });
-    }
+    let wu = match data.work_units.get_mut(&args.work_unit_id) {
+        Some(wu) => wu,
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "add-question",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            });
+        }
+    };
 
     // Validate work unit is in specifying state.
-    let status_str = data
-        .work_units
-        .get(&args.work_unit_id)
-        .map(|w| w.status.as_str())
-        .expect("work unit exists");
+    let status_str = wu.status.as_str();
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "add-question",
@@ -120,15 +119,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Mutate: ensure `questions` and `nextQuestionId` exist on the
     // WorkUnit's extra map, then post-increment the counter and push the
     // new question.
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
-
     let next_id = wu
         .extra
         .get("nextQuestionId")
-        .and_then(|v| v.as_u64())
+        .and_then(Value::as_u64)
         .unwrap_or(0);
 
     // Build the QuestionItem with explicit field declaration order
@@ -204,7 +198,11 @@ fn extract_mentions(text: &str) -> Vec<String> {
             }
             if end > start {
                 // Safe: ASCII slice across word chars.
-                out.push(std::str::from_utf8(&bytes[start..end]).unwrap_or("").to_string());
+                out.push(
+                    std::str::from_utf8(&bytes[start..end])
+                        .unwrap_or("")
+                        .to_string(),
+                );
                 i = end;
                 continue;
             }
@@ -216,7 +214,12 @@ fn extract_mentions(text: &str) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

@@ -163,12 +163,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Registry validation (optional, opt-in).
     if args.validate_registry {
-        let registered = load_registered_tags(project_root).map_err(|reason| {
-            FspecCoreError::InvalidArgs {
+        let registered =
+            load_registered_tags(project_root).map_err(|reason| FspecCoreError::InvalidArgs {
                 command: "add-tag-to-scenario",
                 reason: format!("Failed to validate against registry: {reason}"),
-            }
-        })?;
+            })?;
         for tag in &args.tags {
             if !registered.iter().any(|r| r == tag) {
                 return Err(FspecCoreError::InvalidArgs {
@@ -234,10 +233,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .chars()
         .take_while(|c| c.is_whitespace())
         .collect();
-    let indent_str = if indent.is_empty() { "  ".to_string() } else { indent };
+    let indent_str = if indent.is_empty() {
+        "  ".to_string()
+    } else {
+        indent
+    };
 
     // Splice new tag lines in.
-    let mut new_lines: Vec<String> = lines.iter().map(|s| s.to_string()).collect();
+    let mut new_lines: Vec<String> = lines.iter().copied().map(str::to_string).collect();
     for (offset, tag) in args.tags.iter().enumerate() {
         new_lines.insert(insert_index + offset, format!("{indent_str}{tag}"));
     }
@@ -307,16 +310,8 @@ fn is_regular_tag(tag: &str) -> bool {
 /// `Rule:` blocks are intentionally NOT searched, matching TS behaviour
 /// exactly (the TS filter uses the flat `feature.children` array which
 /// only contains top-level children).
-fn find_scenario<'a>(
-    feature: &'a gherkin::Feature,
-    name: &str,
-) -> Option<&'a gherkin::Scenario> {
-    for s in &feature.scenarios {
-        if s.name == name {
-            return Some(s);
-        }
-    }
-    None
+fn find_scenario<'a>(feature: &'a gherkin::Feature, name: &str) -> Option<&'a gherkin::Scenario> {
+    feature.scenarios.iter().find(|s| s.name == name)
 }
 
 /// Load all registered tag names from `spec/tags.json`. Returns
@@ -325,15 +320,14 @@ fn find_scenario<'a>(
 /// (parity with TS `"Failed to validate against registry: <msg>"`).
 fn load_registered_tags(project_root: &Path) -> Result<Vec<String>, String> {
     let path = project_root.join("spec").join("tags.json");
-    let body =
-        std::fs::read_to_string(&path).map_err(|e| format!("{}: {}", path.display(), e))?;
+    let body = std::fs::read_to_string(&path).map_err(|e| format!("{}: {}", path.display(), e))?;
     let v: Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
     let mut tags: Vec<String> = Vec::new();
-    if let Some(cats) = v.get("categories").and_then(|c| c.as_array()) {
+    if let Some(cats) = v.get("categories").and_then(Value::as_array) {
         for cat in cats {
-            if let Some(arr) = cat.get("tags").and_then(|t| t.as_array()) {
+            if let Some(arr) = cat.get("tags").and_then(Value::as_array) {
                 for t in arr {
-                    if let Some(n) = t.get("name").and_then(|n| n.as_str()) {
+                    if let Some(n) = t.get("name").and_then(Value::as_str) {
                         tags.push(n.to_string());
                     }
                 }

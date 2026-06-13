@@ -190,9 +190,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Missing required component/feature-group reminder.
-    let mut all_tags: Vec<String> = existing_tags.clone();
+    let mut all_tags: Vec<String> = existing_tags;
     all_tags.extend(args.tags.iter().cloned());
-    let has_component = all_tags.iter().any(|t| COMPONENT_TAGS.contains(&t.as_str()));
+    let has_component = all_tags
+        .iter()
+        .any(|t| COMPONENT_TAGS.contains(&t.as_str()));
     let has_feature_group = all_tags
         .iter()
         .any(|t| FEATURE_GROUP_TAGS.contains(&t.as_str()));
@@ -221,12 +223,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         let consolidated = consolidate_reminders(&reminders);
         if let Some(rem) = consolidated {
             response["systemReminder"] = Value::String(rem);
-            response["systemReminders"] = Value::Array(
-                reminders
-                    .iter()
-                    .map(|r| Value::String(r.clone()))
-                    .collect(),
-            );
+            response["systemReminders"] =
+                Value::Array(reminders.iter().map(|r| Value::String(r.clone())).collect());
         }
     }
 
@@ -285,11 +283,11 @@ fn load_registered_tags(project_root: &Path) -> Result<HashSet<String>, String> 
     let body = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
     let parsed: Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
     let mut out = HashSet::new();
-    if let Some(cats) = parsed.get("categories").and_then(|c| c.as_array()) {
+    if let Some(cats) = parsed.get("categories").and_then(Value::as_array) {
         for cat in cats {
-            if let Some(tags) = cat.get("tags").and_then(|t| t.as_array()) {
+            if let Some(tags) = cat.get("tags").and_then(Value::as_array) {
                 for t in tags {
-                    if let Some(n) = t.get("name").and_then(|n| n.as_str()) {
+                    if let Some(n) = t.get("name").and_then(Value::as_str) {
                         out.insert(n.to_string());
                     }
                 }
@@ -309,7 +307,7 @@ fn insert_tags_before_feature(
     new_tags: &[String],
     existing_tags: &[String],
 ) -> Result<String, FspecCoreError> {
-    let mut lines: Vec<String> = content.split('\n').map(|s| s.to_string()).collect();
+    let mut lines: Vec<String> = content.split('\n').map(str::to_string).collect();
 
     let feature_line_index = lines
         .iter()

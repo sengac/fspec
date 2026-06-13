@@ -481,6 +481,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "export_work_units.rs",
         "export_example_map.rs",
         "export_dependencies.rs",
+        // Batch 13 (foundation mutation)
+        "add_capability.rs",
+        "remove_capability.rs",
+        "add_persona.rs",
+        "remove_persona.rs",
+        "add_foundation_bounded_context.rs",
+        "remove_foundation_bounded_context.rs",
+        "add_aggregate_to_foundation.rs",
+        "remove_aggregate_from_foundation.rs",
+        "add_command_to_foundation.rs",
+        "remove_command_from_foundation.rs",
     ] {
         let p = src.join(f);
         assert!(
@@ -596,6 +607,19 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "export_work_units.rs",
         "export_example_map.rs",
         "export_dependencies.rs",
+        // Batch 13 (foundation mutation)
+        "add_capability.rs",
+        "remove_capability.rs",
+        "add_persona.rs",
+        "remove_persona.rs",
+        "add_foundation_bounded_context.rs",
+        "remove_foundation_bounded_context.rs",
+        "add_aggregate_to_foundation.rs",
+        "remove_aggregate_from_foundation.rs",
+        "add_command_to_foundation.rs",
+        "remove_command_from_foundation.rs",
+        // RPC-233 (foundation markdown regeneration)
+        "generate_foundation_md.rs",
     ]
     .iter()
     .copied()
@@ -613,7 +637,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 98 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 109 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
@@ -679,8 +703,11 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // ~1815 lines. Cap raised from 1700 → 2000.
     // Parity batch (clap→Commander usage-error rendering: render_clap_error +
     // ~9 helper fns) pushes main.rs to ~2093 lines. Cap raised from 2000 → 2300.
+    // Batch 13 (10 foundation mutation commands) added 10 clap variants +
+    // forward! arms + help-intercept arms + mod decls, pushing main.rs to
+    // ~2440 lines. Cap raised from 2300 → 2500.
     let common_cap: usize = 900;
-    let main_cap: usize = 2300;
+    let main_cap: usize = 2500;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);

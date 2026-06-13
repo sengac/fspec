@@ -166,7 +166,10 @@ fn scenario_removing_absent_tag_leaves_file_untouched() {
 
     // @step And the file on disk is byte-equal to its pre-call contents
     let post_bytes = fs::read(tmp.path().join("spec/features/login.feature")).unwrap();
-    assert_eq!(pre_bytes, post_bytes, "file must not be modified on failure");
+    assert_eq!(
+        pre_bytes, post_bytes,
+        "file must not be modified on failure"
+    );
 }
 
 #[test]
@@ -218,12 +221,25 @@ fn scenario_removed_tag_leaves_others_untouched_in_original_order() {
     // @step And the file on disk contains the line '@critical' immediately followed by the line '@auth' above 'Feature: Login'
     let after = read_feature(tmp.path(), "spec/features/login.feature");
     let lines: Vec<&str> = after.lines().collect();
-    let crit = lines.iter().position(|l| *l == "@critical").expect("@critical line");
-    let auth = lines.iter().position(|l| *l == "@auth").expect("@auth line");
-    let feat = lines.iter().position(|l| *l == "Feature: Login").expect("Feature line");
-    assert_eq!(crit + 1, auth, "@critical must be immediately followed by @auth");
+    let crit = lines
+        .iter()
+        .position(|l| *l == "@critical")
+        .expect("@critical line");
+    let auth = lines
+        .iter()
+        .position(|l| *l == "@auth")
+        .expect("@auth line");
+    let feat = lines
+        .iter()
+        .position(|l| *l == "Feature: Login")
+        .expect("Feature line");
+    assert_eq!(
+        crit + 1,
+        auth,
+        "@critical must be immediately followed by @auth"
+    );
     assert!(auth < feat, "tags must come above Feature line");
-    assert!(!lines.iter().any(|l| *l == "@wip"), "@wip line removed");
+    assert!(!lines.contains(&"@wip"), "@wip line removed");
 }
 
 #[test]
@@ -243,7 +259,10 @@ fn scenario_multi_tag_on_one_line_is_preserved() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true (existence check passes via gherkin parse); got {result:?}");
+    assert!(
+        result.success,
+        "expected success=true (existence check passes via gherkin parse); got {result:?}"
+    );
 
     // @step And the file on disk still contains a line whose trimmed value is '@a @b' (documented TS divergence — whole-line equality removal does not split multi-tag lines)
     let after = read_feature(tmp.path(), "spec/features/login.feature");

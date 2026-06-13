@@ -139,7 +139,9 @@ fn scenario_adds_blocking_hook_to_work_unit_with_no_prior_hooks() {
     assert_eq!(hooks[0]["blocking"].as_bool(), Some(true));
 
     // @step And the stored hook does NOT contain a gitContext key
-    let obj = hooks[0].as_object().expect("hook entry should be an object");
+    let obj = hooks[0]
+        .as_object()
+        .expect("hook entry should be an object");
     assert!(
         !obj.contains_key("gitContext"),
         "stored hook must not include gitContext when --git-context is not passed; got: {hooks:?}"
@@ -208,9 +210,7 @@ fn scenario_git_context_generates_script_and_stores_relative_path() {
     assert!(result.success, "expected success=true, got {result:?}");
 
     // @step And the file spec/hooks/.virtual/AUTH-001-eslint.sh exists
-    let script_path = tmp
-        .path()
-        .join("spec/hooks/.virtual/AUTH-001-eslint.sh");
+    let script_path = tmp.path().join("spec/hooks/.virtual/AUTH-001-eslint.sh");
     assert!(
         script_path.exists(),
         "expected generated script at {}",
@@ -221,7 +221,11 @@ fn scenario_git_context_generates_script_and_stores_relative_path() {
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        let mode = fs::metadata(&script_path).expect("metadata").permissions().mode() & 0o777;
+        let mode = fs::metadata(&script_path)
+            .expect("metadata")
+            .permissions()
+            .mode()
+            & 0o777;
         assert_eq!(mode, 0o755, "expected mode 0o755, got 0o{mode:o}");
     }
 
@@ -284,7 +288,9 @@ fn scenario_empty_args_object_rejected_mentioning_work_unit_id() {
     let msg = result.error.as_ref().expect("error message expected");
     let lower = msg.to_lowercase();
     assert!(
-        lower.contains("workunitid") || lower.contains("work unit id") || lower.contains("workunit"),
+        lower.contains("workunitid")
+            || lower.contains("work unit id")
+            || lower.contains("workunit"),
         "error message should mention workUnitId; got: {msg}"
     );
 }

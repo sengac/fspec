@@ -192,10 +192,14 @@ fn compute_result(units: &[&WorkUnit]) -> QueryExampleMappingStatsResult {
         .collect();
 
     let work_units_with_rules = units.iter().filter(|wu| array_len(wu, "rules") > 0).count();
-    let work_units_with_examples =
-        units.iter().filter(|wu| array_len(wu, "examples") > 0).count();
-    let work_units_with_questions =
-        units.iter().filter(|wu| array_len(wu, "questions") > 0).count();
+    let work_units_with_examples = units
+        .iter()
+        .filter(|wu| array_len(wu, "examples") > 0)
+        .count();
+    let work_units_with_questions = units
+        .iter()
+        .filter(|wu| array_len(wu, "questions") > 0)
+        .count();
     let work_units_with_assumptions = units
         .iter()
         .filter(|wu| array_len(wu, "assumptions") > 0)
@@ -267,7 +271,12 @@ fn array_string_entries<'a>(wu: &'a WorkUnit, field: &str) -> Vec<&'a str> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 

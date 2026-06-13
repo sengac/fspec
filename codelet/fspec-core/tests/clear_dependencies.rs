@@ -39,7 +39,15 @@ fn read_work_units(project_root: &Path) -> Value {
 fn seed_units(units: &[(&str, &str)]) -> String {
     let mut wus = serde_json::Map::new();
     let mut states: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -48,17 +56,37 @@ fn seed_units(units: &[(&str, &str)]) -> String {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".to_string()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".to_string()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".to_string()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
-        states.get_mut(*status).expect("known state").push((*id).to_string());
+        states
+            .get_mut(*status)
+            .expect("known state")
+            .push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
             Value::Array(
-                states.get(*st).expect("seeded state").iter()
+                states
+                    .get(*st)
+                    .expect("seeded state")
+                    .iter()
                     .map(|s| Value::String(s.clone()))
                     .collect(),
             ),
@@ -75,7 +103,10 @@ fn seed_units(units: &[(&str, &str)]) -> String {
 /// Set an array-typed dep field on a unit (e.g. blocks/blockedBy/dependsOn/relatesTo).
 fn set_field(json_str: &str, id: &str, field: &str, values: &[&str]) -> String {
     let mut v: Value = serde_json::from_str(json_str).unwrap();
-    let arr: Vec<Value> = values.iter().map(|s| Value::String((*s).to_string())).collect();
+    let arr: Vec<Value> = values
+        .iter()
+        .map(|s| Value::String((*s).to_string()))
+        .collect();
     v["workUnits"][id][field] = Value::Array(arr);
     serde_json::to_string_pretty(&v).unwrap()
 }
@@ -130,7 +161,10 @@ fn missing_source_work_unit_surfaces_canonical_error() {
 
     // @step And the error message contains "Work unit 'UNKNOWN-001' does not exist"
     let err = result.error.as_deref().unwrap_or("");
-    assert!(err.contains("Work unit 'UNKNOWN-001' does not exist"), "err was: {err}");
+    assert!(
+        err.contains("Work unit 'UNKNOWN-001' does not exist"),
+        "err was: {err}"
+    );
 }
 
 #[test]
@@ -159,20 +193,43 @@ fn mixed_blocks_and_depends_on_are_removed_with_bidirectional_cleanup() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no blocks field and no dependsOn field
-    assert!(on_disk["workUnits"]["AUTH-001"].get("blocks").is_none(), "AUTH-001.blocks should be absent");
-    assert!(on_disk["workUnits"]["AUTH-001"].get("dependsOn").is_none(), "AUTH-001.dependsOn should be absent");
+    assert!(
+        on_disk["workUnits"]["AUTH-001"].get("blocks").is_none(),
+        "AUTH-001.blocks should be absent"
+    );
+    assert!(
+        on_disk["workUnits"]["AUTH-001"].get("dependsOn").is_none(),
+        "AUTH-001.dependsOn should be absent"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-002 has no blockedBy field
-    assert!(on_disk["workUnits"]["AUTH-002"].get("blockedBy").is_none(), "AUTH-002.blockedBy should be absent");
+    assert!(
+        on_disk["workUnits"]["AUTH-002"].get("blockedBy").is_none(),
+        "AUTH-002.blockedBy should be absent"
+    );
 
     // @step And spec/work-units.json on disk shows API-001 has no blocks field and no blockedBy field
-    assert!(on_disk["workUnits"]["API-001"].get("blocks").is_none(), "API-001.blocks should be absent");
-    assert!(on_disk["workUnits"]["API-001"].get("blockedBy").is_none(), "API-001.blockedBy should be absent");
+    assert!(
+        on_disk["workUnits"]["API-001"].get("blocks").is_none(),
+        "API-001.blocks should be absent"
+    );
+    assert!(
+        on_disk["workUnits"]["API-001"].get("blockedBy").is_none(),
+        "API-001.blockedBy should be absent"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.updatedAt is a freshly bumped ISO-8601 timestamp
-    let updated = on_disk["workUnits"]["AUTH-001"]["updatedAt"].as_str().expect("updatedAt str");
-    assert_ne!(updated, "2026-06-01T00:00:00.000Z", "updatedAt must be bumped");
-    assert!(updated.ends_with('Z') && updated.contains('T'), "updatedAt must be ISO-8601: {updated}");
+    let updated = on_disk["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .expect("updatedAt str");
+    assert_ne!(
+        updated, "2026-06-01T00:00:00.000Z",
+        "updatedAt must be bumped"
+    );
+    assert!(
+        updated.ends_with('Z') && updated.contains('T'),
+        "updatedAt must be ISO-8601: {updated}"
+    );
 }
 
 #[test]
@@ -202,13 +259,22 @@ fn relates_to_edges_are_symmetrically_dropped_from_both_sides() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no relatesTo field
-    assert!(on_disk["workUnits"]["AUTH-001"].get("relatesTo").is_none(), "AUTH-001.relatesTo should be absent");
+    assert!(
+        on_disk["workUnits"]["AUTH-001"].get("relatesTo").is_none(),
+        "AUTH-001.relatesTo should be absent"
+    );
 
     // @step And spec/work-units.json on disk shows UI-001 has no relatesTo field
-    assert!(on_disk["workUnits"]["UI-001"].get("relatesTo").is_none(), "UI-001.relatesTo should be absent");
+    assert!(
+        on_disk["workUnits"]["UI-001"].get("relatesTo").is_none(),
+        "UI-001.relatesTo should be absent"
+    );
 
     // @step And spec/work-units.json on disk shows UI-002.relatesTo=['OTHER-001']
-    assert_eq!(on_disk["workUnits"]["UI-002"]["relatesTo"], json!(["OTHER-001"]));
+    assert_eq!(
+        on_disk["workUnits"]["UI-002"]["relatesTo"],
+        json!(["OTHER-001"])
+    );
 }
 
 #[test]
@@ -236,11 +302,17 @@ fn clearing_never_changes_a_blocked_work_units_status_or_state_array() {
 
     // @step And spec/work-units.json on disk shows states.blocked still contains 'AUTH-001'
     let blocked = on_disk["states"]["blocked"].as_array().expect("blocked");
-    assert!(blocked.iter().any(|v| v == "AUTH-001"), "states.blocked must still contain AUTH-001");
+    assert!(
+        blocked.iter().any(|v| v == "AUTH-001"),
+        "states.blocked must still contain AUTH-001"
+    );
 
     // @step And spec/work-units.json on disk shows states.backlog does NOT contain 'AUTH-001'
     let backlog = on_disk["states"]["backlog"].as_array().expect("backlog");
-    assert!(!backlog.iter().any(|v| v == "AUTH-001"), "states.backlog must not contain AUTH-001");
+    assert!(
+        !backlog.iter().any(|v| v == "AUTH-001"),
+        "states.backlog must not contain AUTH-001"
+    );
 }
 
 #[test]
@@ -263,10 +335,17 @@ fn reverse_edge_cleanup_is_silently_skipped_when_target_is_missing() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no blocks field
-    assert!(on_disk["workUnits"]["AUTH-001"].get("blocks").is_none(), "AUTH-001.blocks should be absent");
+    assert!(
+        on_disk["workUnits"]["AUTH-001"].get("blocks").is_none(),
+        "AUTH-001.blocks should be absent"
+    );
 
     // @step And no error is raised for the missing GHOST-999 work unit
-    assert!(result.error.is_none(), "no error should be reported, got {:?}", result.error);
+    assert!(
+        result.error.is_none(),
+        "no error should be reported, got {:?}",
+        result.error
+    );
 }
 
 #[test]
@@ -289,13 +368,24 @@ fn no_dependency_arrays_still_succeeds_and_only_bumps_updated_at() {
 
     // @step And spec/work-units.json on disk shows AUTH-001 still has no blocks, blockedBy, dependsOn, or relatesTo fields
     for field in &["blocks", "blockedBy", "dependsOn", "relatesTo"] {
-        assert!(on_disk["workUnits"]["AUTH-001"].get(*field).is_none(), "AUTH-001.{field} should be absent");
+        assert!(
+            on_disk["workUnits"]["AUTH-001"].get(*field).is_none(),
+            "AUTH-001.{field} should be absent"
+        );
     }
 
     // @step And spec/work-units.json on disk shows AUTH-001.updatedAt is a freshly bumped ISO-8601 timestamp
-    let updated = on_disk["workUnits"]["AUTH-001"]["updatedAt"].as_str().expect("updatedAt str");
-    assert_ne!(updated, "2026-06-01T00:00:00.000Z", "updatedAt must be bumped");
-    assert!(updated.ends_with('Z') && updated.contains('T'), "updatedAt must be ISO-8601: {updated}");
+    let updated = on_disk["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .expect("updatedAt str");
+    assert_ne!(
+        updated, "2026-06-01T00:00:00.000Z",
+        "updatedAt must be bumped"
+    );
+    assert!(
+        updated.ends_with('Z') && updated.contains('T'),
+        "updatedAt must be ISO-8601: {updated}"
+    );
 }
 
 #[test]
@@ -325,10 +415,16 @@ fn blocked_by_clearing_reverse_removes_source_from_each_targets_blocks_array() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows UI-001 has no blockedBy field
-    assert!(on_disk["workUnits"]["UI-001"].get("blockedBy").is_none(), "UI-001.blockedBy should be absent");
+    assert!(
+        on_disk["workUnits"]["UI-001"].get("blockedBy").is_none(),
+        "UI-001.blockedBy should be absent"
+    );
 
     // @step And spec/work-units.json on disk shows API-001 has no blocks field
-    assert!(on_disk["workUnits"]["API-001"].get("blocks").is_none(), "API-001.blocks should be absent");
+    assert!(
+        on_disk["workUnits"]["API-001"].get("blocks").is_none(),
+        "API-001.blocks should be absent"
+    );
 
     // @step And spec/work-units.json on disk shows DB-001.blocks=['UI-002']
     assert_eq!(on_disk["workUnits"]["DB-001"]["blocks"], json!(["UI-002"]));

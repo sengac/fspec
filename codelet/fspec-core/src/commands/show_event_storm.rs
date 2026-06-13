@@ -116,7 +116,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -127,8 +132,7 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case_work_unit_id() {
-        let a: ShowEventStormArgs =
-            serde_json::from_str(r#"{"workUnitId":"AUTH-001"}"#).unwrap();
+        let a: ShowEventStormArgs = serde_json::from_str(r#"{"workUnitId":"AUTH-001"}"#).unwrap();
         assert_eq!(a.work_unit_id.as_deref(), Some("AUTH-001"));
     }
 }

@@ -198,10 +198,7 @@ fn single_work_unit_json_returns_cycletime_and_timeperstate() {
 
     // @step Then timePerState.backlog='2 hours' and timePerState.specifying='3 hours'
     assert_eq!(data["timePerState"]["backlog"].as_str(), Some("2 hours"));
-    assert_eq!(
-        data["timePerState"]["specifying"].as_str(),
-        Some("3 hours")
-    );
+    assert_eq!(data["timePerState"]["specifying"].as_str(), Some("3 hours"));
 
     // @step Then the JSON does NOT contain an aggregateMetrics key
     assert!(

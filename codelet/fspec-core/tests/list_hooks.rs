@@ -248,11 +248,7 @@ fn scenario_emits_null_for_hooks_missing_name_field() {
 
     // @step Then the first event's hooks array equals ['lint', null]
     let hooks = arr[0]["hooks"].as_array().expect("hooks array");
-    assert_eq!(
-        hooks.len(),
-        2,
-        "expected two hook entries, got {hooks:?}"
-    );
+    assert_eq!(hooks.len(), 2, "expected two hook entries, got {hooks:?}");
     assert_eq!(hooks[0].as_str(), Some("lint"));
     assert!(
         hooks[1].is_null(),

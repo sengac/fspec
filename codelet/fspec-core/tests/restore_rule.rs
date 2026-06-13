@@ -121,7 +121,10 @@ fn single_restore_happy_path_clears_deleted_flag_and_removes_deleted_at() {
     let on_disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].deleted=false
-    assert_eq!(on_disk["workUnits"]["AUTH-001"]["rules"][0]["deleted"], false);
+    assert_eq!(
+        on_disk["workUnits"]["AUTH-001"]["rules"][0]["deleted"],
+        false
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0] has no deletedAt key
     let r0 = &on_disk["workUnits"]["AUTH-001"]["rules"][0];
@@ -142,8 +145,7 @@ fn idempotent_single_re_restore_returns_success_without_writing() {
     let rules = json!([rule(0, "already active", false)]);
     let pre = seed_one("AUTH-001", "specifying", Some(rules));
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch restore-rule with workUnitId='AUTH-001' and index=0
     let result = dispatch_command(req(
@@ -169,8 +171,7 @@ fn idempotent_single_re_restore_returns_success_without_writing() {
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 
@@ -205,8 +206,7 @@ fn status_guard_rejects_restore_rule_when_work_unit_is_not_in_specifying() {
     let rules = json!([rule(0, "x", true)]);
     let pre = seed_one("AUTH-001", "backlog", Some(rules));
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch restore-rule with workUnitId='AUTH-001' and index=0
     let result = dispatch_command(req(
@@ -225,8 +225,7 @@ fn status_guard_rejects_restore_rule_when_work_unit_is_not_in_specifying() {
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 
@@ -363,8 +362,7 @@ fn bulk_restore_fails_atomically_on_unknown_id_without_writing() {
     let rules = json!([rule(0, "r0", true), rule(1, "r1", true)]);
     let pre = seed_one("AUTH-001", "specifying", Some(rules));
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch restore-rule with workUnitId='AUTH-001' and ids='0,99,1'
     let result = dispatch_command(req(
@@ -380,8 +378,7 @@ fn bulk_restore_fails_atomically_on_unknown_id_without_writing() {
     assert!(err.contains("Rule with ID 99 not found"), "err: {err}");
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 

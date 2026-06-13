@@ -13,7 +13,7 @@
 //!   `undefined` in the captured fixture. We mirror that verbatim.
 
 use super::super::{
-    CommandArgument, CommonError, CommandExample, CommandHelpConfig, CommandOption,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
 };
 
 const ARGS: &[CommandArgument] = &[

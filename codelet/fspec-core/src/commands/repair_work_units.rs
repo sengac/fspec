@@ -89,7 +89,7 @@ const STATE_NAMES: &[(&str, WorkUnitStatus)] = &[
     ("blocked", WorkUnitStatus::Blocked),
 ];
 
-fn old_state_array<'a>(states: &'a WorkUnitStates, status: WorkUnitStatus) -> &'a [String] {
+fn old_state_array(states: &WorkUnitStates, status: WorkUnitStatus) -> &[String] {
     match status {
         WorkUnitStatus::Backlog => &states.backlog,
         WorkUnitStatus::Specifying => &states.specifying,
@@ -101,7 +101,7 @@ fn old_state_array<'a>(states: &'a WorkUnitStates, status: WorkUnitStatus) -> &'
     }
 }
 
-fn push_into<'a>(states: &'a mut WorkUnitStates, status: WorkUnitStatus, id: &str) {
+fn push_into(states: &mut WorkUnitStates, status: WorkUnitStatus, id: &str) {
     let column = match status {
         WorkUnitStatus::Backlog => &mut states.backlog,
         WorkUnitStatus::Specifying => &mut states.specifying,
@@ -234,10 +234,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             ),
         };
 
-        let target = data
-            .work_units
-            .get_mut(&target_id)
-            .expect("target existence checked above");
+        let target = match data.work_units.get_mut(&target_id) {
+            Some(target) => target,
+            // Unreachable: existence is checked above; mirror the TS guard.
+            None => continue,
+        };
 
         let entry = target
             .extra
@@ -247,7 +248,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             *entry = Value::Array(Vec::new());
         }
         if let Value::Array(arr) = entry {
-            let already = arr.iter().any(|v| v.as_str() == Some(reverse_value.as_str()));
+            let already = arr
+                .iter()
+                .any(|v| v.as_str() == Some(reverse_value.as_str()));
             if !already {
                 arr.push(Value::String(reverse_value));
                 repairs.push(message);
@@ -273,7 +276,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -298,6 +306,9 @@ mod tests {
             "blocks".to_string(),
             Value::Array(vec![Value::String("AUTH-002".to_string())]),
         );
-        assert_eq!(read_string_array(&m, "blocks"), vec!["AUTH-002".to_string()]);
+        assert_eq!(
+            read_string_array(&m, "blocks"),
+            vec!["AUTH-002".to_string()]
+        );
     }
 }

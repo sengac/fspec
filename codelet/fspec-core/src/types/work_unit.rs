@@ -91,12 +91,12 @@ impl serde::Serialize for WorkUnitsData {
                     Some(meta) => Ok(Some(serde_json::to_value(meta).map_err(SerError::custom)?)),
                     None => Ok(None),
                 },
-                "workUnits" => {
-                    Ok(Some(serde_json::to_value(&self.work_units).map_err(SerError::custom)?))
-                }
-                "states" => {
-                    Ok(Some(serde_json::to_value(&self.states).map_err(SerError::custom)?))
-                }
+                "workUnits" => Ok(Some(
+                    serde_json::to_value(&self.work_units).map_err(SerError::custom)?,
+                )),
+                "states" => Ok(Some(
+                    serde_json::to_value(&self.states).map_err(SerError::custom)?,
+                )),
                 _ => Ok(None),
             }
         };
@@ -294,12 +294,12 @@ impl<'de> serde::Deserialize<'de> for Meta {
             serde_json::Map::deserialize(deserializer)?;
         let field_order: Vec<String> = raw.keys().cloned().collect();
 
-        let take_string = |raw: &mut serde_json::Map<String, serde_json::Value>, key: &str| {
-            match raw.remove(key) {
+        let take_string =
+            |raw: &mut serde_json::Map<String, serde_json::Value>, key: &str| match raw.remove(key)
+            {
                 Some(serde_json::Value::String(s)) => s,
                 _ => String::new(),
-            }
-        };
+            };
 
         let version = take_string(&mut raw, "version");
         let last_updated = take_string(&mut raw, "lastUpdated");
@@ -701,7 +701,12 @@ impl EpicsData {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 

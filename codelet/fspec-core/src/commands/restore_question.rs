@@ -81,7 +81,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .work_units
         .get(&args.work_unit_id)
         .map(|w| w.status.as_str())
-        .expect("work unit exists");
+        .unwrap_or("");
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "restore-question",
@@ -93,11 +93,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Locate the questions array (immutable scan) (TS L46-48).
-    let wu_ref = data
+    let questions = data
         .work_units
         .get(&args.work_unit_id)
-        .expect("work unit exists");
-    let questions = wu_ref.extra.get("questions").and_then(|v| v.as_array());
+        .and_then(|wu| wu.extra.get("questions"))
+        .and_then(Value::as_array);
     let questions = match questions {
         Some(arr) if !arr.is_empty() => arr.clone(),
         _ => {
@@ -111,7 +111,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Find by stable id (TS L50-54).
     let pos = questions
         .iter()
-        .position(|q| q.get("id").and_then(|v| v.as_u64()) == Some(args.index));
+        .position(|q| q.get("id").and_then(Value::as_u64) == Some(args.index));
     let pos = match pos {
         Some(p) => p,
         None => {
@@ -125,17 +125,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let q = &questions[pos];
     let restored_text = q
         .get("text")
-        .and_then(|v| v.as_str())
+        .and_then(Value::as_str)
         .unwrap_or("")
         .to_string();
-    let already_active = !q
-        .get("deleted")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false);
+    let already_active = !q.get("deleted").and_then(Value::as_bool).unwrap_or(false);
 
     let count_active = |arr: &[Value]| -> usize {
         arr.iter()
-            .filter(|q| !q.get("deleted").and_then(|v| v.as_bool()).unwrap_or(false))
+            .filter(|q| !q.get("deleted").and_then(Value::as_bool).unwrap_or(false))
             .count()
     };
 
@@ -155,23 +152,17 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Mutate: restore in place (TS L68-69, L74).
     let now = iso8601_now();
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
-
-    let entry = wu
-        .extra
-        .get_mut("questions")
-        .and_then(|v| v.as_array_mut())
-        .expect("questions array exists (verified above)");
-    if let Some(q_mut) = entry.get_mut(pos).and_then(|v| v.as_object_mut()) {
-        q_mut.insert("deleted".to_string(), Value::Bool(false));
-        q_mut.remove("deletedAt");
+    let mut active = 0_usize;
+    if let Some(wu) = data.work_units.get_mut(&args.work_unit_id) {
+        if let Some(entry) = wu.extra.get_mut("questions").and_then(Value::as_array_mut) {
+            if let Some(q_mut) = entry.get_mut(pos).and_then(Value::as_object_mut) {
+                q_mut.insert("deleted".to_string(), Value::Bool(false));
+                q_mut.remove("deletedAt");
+            }
+            active = count_active(entry);
+        }
+        wu.updated_at = now;
     }
-    let active = count_active(entry);
-
-    wu.updated_at = now;
 
     // Single atomic write (parity with TS fileManager.transaction).
     let path = project_root.join("spec").join("work-units.json");
@@ -197,7 +188,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

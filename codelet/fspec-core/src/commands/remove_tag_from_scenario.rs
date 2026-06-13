@@ -167,8 +167,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 };
                 // Look ahead to see what header this tag attaches to.
                 let mut belongs_to_target = false;
-                for j in (i + 1)..lines.len() {
-                    let nxt = lines[j].trim();
+                for nxt_line in &lines[i + 1..] {
+                    let nxt = nxt_line.trim();
                     if nxt == scenario_target.as_str() {
                         belongs_to_target = true;
                         break;
@@ -214,16 +214,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// at src/commands/remove-tag-from-scenario.ts. Scenarios nested under
 /// `Rule:` blocks are intentionally NOT searched, matching the TS filter
 /// which iterates only the flat `feature.children` array.
-fn find_scenario<'a>(
-    feature: &'a gherkin::Feature,
-    name: &str,
-) -> Option<&'a gherkin::Scenario> {
-    for s in &feature.scenarios {
-        if s.name == name {
-            return Some(s);
-        }
-    }
-    None
+fn find_scenario<'a>(feature: &'a gherkin::Feature, name: &str) -> Option<&'a gherkin::Scenario> {
+    feature.scenarios.iter().find(|s| s.name == name)
 }
 
 // (no extra anchor needed)

@@ -166,9 +166,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 out.push_str("✓ Attachment removed from work unit and file deleted\n");
             }
             Err(_) => {
-                out.push_str(
-                    "⚠ Attachment removed from work unit (file was already missing)\n",
-                );
+                out.push_str("⚠ Attachment removed from work unit (file was already missing)\n");
             }
         }
     }
@@ -189,15 +187,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
     fn args_parse_with_camel_case() {
-        let a: RemoveAttachmentArgs = serde_json::from_str(
-            r#"{"workUnitId":"AUTH-001","fileName":"d.png"}"#,
-        )
-        .unwrap();
+        let a: RemoveAttachmentArgs =
+            serde_json::from_str(r#"{"workUnitId":"AUTH-001","fileName":"d.png"}"#).unwrap();
         assert_eq!(a.work_unit_id, "AUTH-001");
         assert_eq!(a.file_name, "d.png");
         assert!(a.keep_file.is_none());
@@ -205,10 +206,9 @@ mod tests {
 
     #[test]
     fn args_parse_with_keep_file() {
-        let a: RemoveAttachmentArgs = serde_json::from_str(
-            r#"{"workUnitId":"AUTH-001","fileName":"d.png","keepFile":true}"#,
-        )
-        .unwrap();
+        let a: RemoveAttachmentArgs =
+            serde_json::from_str(r#"{"workUnitId":"AUTH-001","fileName":"d.png","keepFile":true}"#)
+                .unwrap();
         assert_eq!(a.keep_file, Some(true));
     }
 }

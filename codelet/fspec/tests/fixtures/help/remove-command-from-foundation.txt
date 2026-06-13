@@ -1,0 +1,65 @@
+
+REMOVE-COMMAND-FROM-FOUNDATION
+Remove a command from a foundation bounded context (soft-delete)
+
+WHEN TO USE
+  Use to remove a command from a bounded context in the foundation Big Picture Event Storm when correcting mistakes or refactoring the domain model.
+
+PREREQUISITES
+  • spec/foundation.json must exist with Event Storm data
+  • The target bounded context must exist and not be deleted
+  • The command must exist within the specified bounded context
+
+USAGE
+  fspec remove-command-from-foundation <context-name> <command-name>
+
+ARGUMENTS
+  <<context-name>> (required)
+    Name of the bounded context containing the command
+  <<command-name>> (required)
+    Name of the command to remove (e.g., "CreateWorkUnit", "UpdateStatus")
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Requires both context name and command name (matching the add command signature)
+  • Uses soft-delete (sets deleted: true) — items are not permanently erased
+  • FOUNDATION.md is auto-regenerated after removal
+  • Only removes the command — other items in the context are unaffected
+
+EXAMPLES
+  1. Remove a command from a bounded context
+  $ fspec remove-command-from-foundation "Work Management" "DeprecatedAction"
+  ✓ Removed command "DeprecatedAction" from "Work Management" bounded context
+✓ Regenerated FOUNDATION.md
+
+  2. Remove command from Identity bounded context
+  $ fspec remove-command-from-foundation "Identity" "OldAuthenticateUser"
+  ✓ Removed command "OldAuthenticateUser" from "Identity" bounded context
+✓ Regenerated FOUNDATION.md
+
+COMMON ERRORS
+  ✗ Bounded context 'Foo' not found
+    Fix: Check context names with: fspec show-foundation-event-storm --type bounded-context
+
+  ✗ Command 'Bar' not found in bounded context 'Foo'
+    Fix: Check command names with: fspec show-foundation-event-storm
+
+  ✗ spec/foundation.json not found
+    Fix: Initialize foundation first: fspec discover-foundation
+
+RELATED COMMANDS
+  fspec add-command-to-foundation
+  fspec remove-foundation-bounded-context
+  fspec remove-aggregate-from-foundation
+  fspec remove-domain-event-from-foundation
+  fspec show-foundation-event-storm
+
+NOTES
+  • Uses soft-delete (sets deleted: true) consistent with the ItemWithId pattern
+  • Both the bounded context and command must exist and not be deleted
+  • FOUNDATION.md is automatically regenerated after removal
+  • Uses fileManager.transaction() for atomic updates
+  • Commands are identified by name within their bounded context
+

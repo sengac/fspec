@@ -534,8 +534,8 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
     let crate_src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
 
     // @step Then the module io::ensure::read_epics_or_empty exists and is publicly accessible from the crate root
-    let ensure_src = fs::read_to_string(crate_src.join("io/ensure.rs"))
-        .expect("io/ensure.rs readable");
+    let ensure_src =
+        fs::read_to_string(crate_src.join("io/ensure.rs")).expect("io/ensure.rs readable");
     assert!(
         ensure_src.contains("pub fn read_epics_or_empty"),
         "io/ensure.rs must declare `pub fn read_epics_or_empty`; got:\n{ensure_src}"

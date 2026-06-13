@@ -5,8 +5,8 @@
 //! Captured fixture: `codelet/fspec/tests/fixtures/help/add-bounded-context.txt`.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandOption, CommonError, CommonPatternEntry,
-    CommandHelpConfig,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
+    CommonPatternEntry,
 };
 
 const ARGS: &[CommandArgument] = &[
@@ -17,7 +17,8 @@ const ARGS: &[CommandArgument] = &[
     },
     CommandArgument {
         name: "text",
-        description: "Bounded context name (e.g., \"Order Management\", \"Inventory\", \"Identity\")",
+        description:
+            "Bounded context name (e.g., \"Order Management\", \"Inventory\", \"Identity\")",
         required: true,
     },
 ];

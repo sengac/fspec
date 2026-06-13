@@ -1,0 +1,55 @@
+
+REMOVE-PERSONA
+Remove a persona from foundation.json or foundation.json.draft by exact name match (case-sensitive). Used to correct mistakes during foundation discovery or remove obsolete personas.
+
+WHEN TO USE
+  Use during foundation discovery to correct mistakes, or when updating an existing foundation to remove personas that are no longer relevant to the system.
+
+PREREQUISITES
+  • foundation.json or foundation.json.draft must exist
+  • Persona must exist with exact name match
+
+USAGE
+  fspec remove-persona "<name>"
+
+ARGUMENTS
+  <name> (required)
+    Exact name of the persona to remove (case-sensitive). Must match existing persona name exactly.
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  List current personas: Check foundation.json or foundation.json.draft,Remove persona: fspec remove-persona "exact name",Verify removal: Check updated foundation file
+
+EXAMPLES
+  1. Remove persona by exact name
+  $ fspec remove-persona "Developer"
+  ✓ Removed persona "Developer" from foundation.json.draft
+
+  2. Remove persona from finalized foundation
+  $ fspec remove-persona "End User"
+  ✓ Removed persona "End User" from foundation.json
+
+COMMON ERRORS
+  ✗ foundation.json not found
+    Fix: undefined
+
+  ✗ Persona "Name" not found
+    Fix: undefined
+
+  ✗ No personas exist in foundation
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec add-persona - Add persona to foundation
+  fspec fspec discover-foundation - Foundation discovery process
+  fspec fspec remove-capability - Remove capability from foundation
+  fspec fspec update-foundation - Update foundation fields
+
+NOTES
+  • Draft file (foundation.json.draft) takes precedence over foundation.json
+  • Name matching is case-sensitive and must be exact
+  • Removal is permanent - no undo functionality
+  • Error message shows available personas if name not found
+

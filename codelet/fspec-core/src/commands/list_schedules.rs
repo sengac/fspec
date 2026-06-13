@@ -110,12 +110,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let result = load_schedules(project_root);
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "list-schedules",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text.
         _ => Ok(render_text(&result)),
     }
@@ -193,14 +193,8 @@ fn render_text(result: &ListSchedulesResult) -> String {
     out.push('\n');
 
     for schedule in &result.schedules {
-        let name = schedule
-            .get("name")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-        let cron = schedule
-            .get("cron")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
+        let name = schedule.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let cron = schedule.get("cron").and_then(|v| v.as_str()).unwrap_or("");
         let timezone = schedule
             .get("timezone")
             .and_then(|v| v.as_str())
@@ -256,7 +250,12 @@ fn render_text(result: &ListSchedulesResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

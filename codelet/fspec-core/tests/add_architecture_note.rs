@@ -298,7 +298,10 @@ fn dispatcher_auto_creates_work_units_json_when_missing() {
     );
 
     // @step And the dispatcher returns success=false
-    assert!(!result.success, "expected failure on missing work unit; got {result:?}");
+    assert!(
+        !result.success,
+        "expected failure on missing work unit; got {result:?}"
+    );
 
     // @step And the error message contains the substring "Work unit 'AUTH-001' does not exist"
     let msg = result.error.as_ref().expect("error must be set");

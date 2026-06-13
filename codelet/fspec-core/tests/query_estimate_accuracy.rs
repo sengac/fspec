@@ -65,7 +65,9 @@ fn returns_empty_by_story_points_when_spec_does_not_exist() {
     assert!(result.success, "expected success=true, got {result:?}");
     let data = parse_data(&result.data);
     assert_eq!(
-        data["byStoryPoints"].as_object().map(serde_json::Map::is_empty),
+        data["byStoryPoints"]
+            .as_object()
+            .map(serde_json::Map::is_empty),
         Some(true),
         "expected empty byStoryPoints object, got {}",
         result.data
@@ -239,11 +241,26 @@ fn all_completed_aggregation_buckets_by_story_point_with_avg_iterations() {
     write_work_units(
         tmp.path(),
         &raw_work_units(&[
-            ("AUTH-001", r#"{"id":"AUTH-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":1}"#),
-            ("AUTH-002", r#"{"id":"AUTH-002","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":2}"#),
-            ("AUTH-003", r#"{"id":"AUTH-003","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":2}"#),
-            ("AUTH-004", r#"{"id":"AUTH-004","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":3}"#),
-            ("AUTH-005", r#"{"id":"AUTH-005","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":2}"#),
+            (
+                "AUTH-001",
+                r#"{"id":"AUTH-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":1}"#,
+            ),
+            (
+                "AUTH-002",
+                r#"{"id":"AUTH-002","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":2}"#,
+            ),
+            (
+                "AUTH-003",
+                r#"{"id":"AUTH-003","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":2}"#,
+            ),
+            (
+                "AUTH-004",
+                r#"{"id":"AUTH-004","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":3}"#,
+            ),
+            (
+                "AUTH-005",
+                r#"{"id":"AUTH-005","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":2}"#,
+            ),
         ]),
     );
 
@@ -279,9 +296,18 @@ fn all_completed_aggregation_excludes_units_missing_estimate_or_iterations() {
     write_work_units(
         tmp.path(),
         &raw_work_units(&[
-            ("AUTH-100", r#"{"id":"AUTH-100","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3}"#),
-            ("AUTH-101", r#"{"id":"AUTH-101","title":"t","status":"done","createdAt":"x","updatedAt":"x","iterations":4}"#),
-            ("AUTH-102", r#"{"id":"AUTH-102","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":2,"iterations":3}"#),
+            (
+                "AUTH-100",
+                r#"{"id":"AUTH-100","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3}"#,
+            ),
+            (
+                "AUTH-101",
+                r#"{"id":"AUTH-101","title":"t","status":"done","createdAt":"x","updatedAt":"x","iterations":4}"#,
+            ),
+            (
+                "AUTH-102",
+                r#"{"id":"AUTH-102","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":2,"iterations":3}"#,
+            ),
         ]),
     );
 
@@ -289,7 +315,9 @@ fn all_completed_aggregation_excludes_units_missing_estimate_or_iterations() {
     let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
     assert!(result.success, "{result:?}");
     let data = parse_data(&result.data);
-    let bsp = data["byStoryPoints"].as_object().expect("byStoryPoints object");
+    let bsp = data["byStoryPoints"]
+        .as_object()
+        .expect("byStoryPoints object");
 
     // @step Then the byStoryPoints object has exactly one key '2'
     assert_eq!(bsp.len(), 1, "expected exactly one key, got {bsp:?}");
@@ -309,9 +337,18 @@ fn by_prefix_true_groups_by_id_prefix_and_reports_strings() {
     write_work_units(
         tmp.path(),
         &raw_work_units(&[
-            ("AUTH-001", r#"{"id":"AUTH-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":2}"#),
-            ("AUTH-002", r#"{"id":"AUTH-002","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":4}"#),
-            ("SEC-001", r#"{"id":"SEC-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":3}"#),
+            (
+                "AUTH-001",
+                r#"{"id":"AUTH-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":2}"#,
+            ),
+            (
+                "AUTH-002",
+                r#"{"id":"AUTH-002","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":4}"#,
+            ),
+            (
+                "SEC-001",
+                r#"{"id":"SEC-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":3}"#,
+            ),
         ]),
     );
 
@@ -327,11 +364,17 @@ fn by_prefix_true_groups_by_id_prefix_and_reports_strings() {
     let bp = &data["byPrefix"];
 
     // @step And the byPrefix entry for 'AUTH' has avgAccuracy='3.0 avg iterations' and recommendation='2 samples'
-    assert_eq!(bp["AUTH"]["avgAccuracy"].as_str(), Some("3.0 avg iterations"));
+    assert_eq!(
+        bp["AUTH"]["avgAccuracy"].as_str(),
+        Some("3.0 avg iterations")
+    );
     assert_eq!(bp["AUTH"]["recommendation"].as_str(), Some("2 samples"));
 
     // @step And the byPrefix entry for 'SEC' has avgAccuracy='3.0 avg iterations' and recommendation='1 sample'
-    assert_eq!(bp["SEC"]["avgAccuracy"].as_str(), Some("3.0 avg iterations"));
+    assert_eq!(
+        bp["SEC"]["avgAccuracy"].as_str(),
+        Some("3.0 avg iterations")
+    );
     assert_eq!(bp["SEC"]["recommendation"].as_str(), Some("1 sample"));
 }
 
@@ -346,9 +389,18 @@ fn by_story_points_key_iteration_order_follows_numeric_ascending() {
     write_work_units(
         tmp.path(),
         &raw_work_units(&[
-            ("ZED-001", r#"{"id":"ZED-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":1}"#),
-            ("AAA-001", r#"{"id":"AAA-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":1}"#),
-            ("MID-001", r#"{"id":"MID-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":1}"#),
+            (
+                "ZED-001",
+                r#"{"id":"ZED-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":1}"#,
+            ),
+            (
+                "AAA-001",
+                r#"{"id":"AAA-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":1}"#,
+            ),
+            (
+                "MID-001",
+                r#"{"id":"MID-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":1}"#,
+            ),
         ]),
     );
 
@@ -392,7 +444,10 @@ fn json_payload_is_pretty_printed_with_canonical_field_order() {
 
     // @step And the payload string contains a line that starts with two spaces followed by '"byStoryPoints"'
     assert!(
-        result.data.lines().any(|l| l.starts_with("  \"byStoryPoints\"")),
+        result
+            .data
+            .lines()
+            .any(|l| l.starts_with("  \"byStoryPoints\"")),
         "expected a line starting with two-space indent + \"byStoryPoints\"; got:\n{}",
         result.data
     );
@@ -405,7 +460,10 @@ fn json_payload_is_pretty_printed_with_canonical_field_order() {
     );
 
     // @step And the byStoryPoints field appears before the byPrefix field in the payload string
-    let bsp_pos = result.data.find("\"byStoryPoints\"").expect("byStoryPoints present");
+    let bsp_pos = result
+        .data
+        .find("\"byStoryPoints\"")
+        .expect("byStoryPoints present");
     let bp_pos = result.data.find("\"byPrefix\"").expect("byPrefix present");
     assert!(
         bsp_pos < bp_pos,
@@ -431,7 +489,9 @@ fn all_completed_against_missing_work_units_json_returns_empty() {
     // @step And the payload field 'byStoryPoints' is an empty object
     let data = parse_data(&result.data);
     assert_eq!(
-        data["byStoryPoints"].as_object().map(serde_json::Map::is_empty),
+        data["byStoryPoints"]
+            .as_object()
+            .map(serde_json::Map::is_empty),
         Some(true),
         "expected empty byStoryPoints object; got:\n{}",
         result.data
@@ -467,7 +527,10 @@ fn both_invocation_paths_call_the_same_fspec_core_run_function() {
     // @step And the dispatcher payload contains a byStoryPoints entry for '5' with samples=1
     let data = parse_data(&result.data);
     assert_eq!(data["byStoryPoints"]["5"]["samples"].as_u64(), Some(1));
-    assert_eq!(data["byStoryPoints"]["5"]["avgIterations"].as_f64(), Some(2.0));
+    assert_eq!(
+        data["byStoryPoints"]["5"]["avgIterations"].as_f64(),
+        Some(2.0)
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/query_estimate_accuracy.rs contains no inline aggregation or rendering logic
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR"))

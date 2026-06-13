@@ -122,7 +122,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let status_str = data
         .work_units
         .get(&args.work_unit_id)
-        .expect("present")
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "restore-example",
+            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+        })?
         .status
         .as_str();
     if status_str != "specifying" {
@@ -137,10 +140,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Locate-by-id, examples array check.
     let (located_index, was_deleted, text) = {
-        let wu = data
-            .work_units
-            .get(&args.work_unit_id)
-            .expect("present");
+        let wu =
+            data.work_units
+                .get(&args.work_unit_id)
+                .ok_or_else(|| FspecCoreError::InvalidArgs {
+                    command: "restore-example",
+                    reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+                })?;
 
         let examples_val = wu.extra.get("examples");
         let arr = match examples_val.and_then(Value::as_array) {
@@ -196,8 +202,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // identical bytes.
     if !was_deleted {
         return Ok(format!(
-            "✓ Restored example: \"{}\"\n  Item ID {} already active\n",
-            text,
+            "✓ Restored example: \"{text}\"\n  Item ID {} already active\n",
             args.index.display()
         ));
     }
@@ -205,33 +210,36 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Restore: clear deleted, REMOVE deletedAt key, bump updatedAt, write.
     let now_ts = iso8601_now();
     {
-        let wu = data
-            .work_units
-            .get_mut(&args.work_unit_id)
-            .expect("present");
-        if let Some(arr) = wu
-            .extra
-            .get_mut("examples")
-            .and_then(Value::as_array_mut)
-        {
+        let wu = data.work_units.get_mut(&args.work_unit_id).ok_or_else(|| {
+            FspecCoreError::InvalidArgs {
+                command: "restore-example",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            }
+        })?;
+        if let Some(arr) = wu.extra.get_mut("examples").and_then(Value::as_array_mut) {
             if let Some(item) = arr.get_mut(located_index).and_then(Value::as_object_mut) {
                 item.insert("deleted".to_string(), Value::Bool(false));
                 // `delete example.deletedAt` (TS) — remove the key entirely.
                 item.remove("deletedAt");
             }
         }
-        wu.updated_at = now_ts.clone();
+        wu.updated_at = now_ts;
     }
 
     let path = project_root.join("spec").join("work-units.json");
     write_json_atomic(&path, &data)?;
 
-    Ok(format!("✓ Restored example: \"{}\"\n", text))
+    Ok(format!("✓ Restored example: \"{text}\"\n"))
 }
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

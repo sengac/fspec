@@ -1,0 +1,59 @@
+
+ADD-CAPABILITY
+Add a capability to foundation.json or foundation.json.draft. Capabilities describe WHAT the system CAN DO (from the user perspective), not HOW it works internally. Used during foundation discovery to incrementally build the solution space.
+
+WHEN TO USE
+  Use during fspec discover-foundation workflow when adding capabilities to foundation.json.draft, or when adding new capabilities to an existing foundation.json after initial discovery.
+
+PREREQUISITES
+  • foundation.json or foundation.json.draft must exist
+  • Run fspec discover-foundation to create foundation.json.draft if needed
+
+USAGE
+  fspec add-capability "<name>" "<description>"
+
+ARGUMENTS
+  <name> (required)
+    Capability name (e.g., "User Authentication", "Data Export"). Should describe what users can do, not implementation details.
+  <description> (required)
+    Description of the capability from user perspective. Focus on WHAT users can achieve, not HOW it works.
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  Start foundation discovery: fspec discover-foundation,AI analyzes codebase and identifies capabilities,Add each capability: fspec add-capability "name" "description",Repeat for all capabilities,Finalize foundation: fspec discover-foundation --finalize
+
+EXAMPLES
+  1. Add capability during foundation discovery
+  $ fspec add-capability "User Authentication" "Users can register, login, and manage their accounts"
+  ✓ Added capability to foundation.json.draft
+  Name: User Authentication
+  Description: Users can register, login, and manage their accounts
+
+  2. Add capability to existing foundation
+  $ fspec add-capability "Data Export" "Users can export their data in multiple formats (CSV, JSON, PDF)"
+  ✓ Added capability to foundation.json
+  Name: Data Export
+  Description: Users can export their data in multiple formats (CSV, JSON, PDF)
+
+COMMON ERRORS
+  ✗ foundation.json not found
+    Fix: undefined
+
+  ✗ Capability already exists
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec discover-foundation - Start foundation discovery process
+  fspec fspec remove-capability - Remove capability from foundation
+  fspec fspec add-persona - Add user persona to foundation
+  fspec fspec update-foundation - Update foundation fields
+
+NOTES
+  • Draft file (foundation.json.draft) takes precedence over foundation.json
+  • Capabilities describe WHAT users can do, not HOW system works
+  • Focus on user-facing functionality, not implementation details
+  • Capabilities are part of the solution space (what system provides)
+  • Use present tense and active voice (e.g., "Users can..." not "User will...")
+

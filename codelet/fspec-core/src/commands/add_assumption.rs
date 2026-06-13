@@ -38,29 +38,27 @@ struct AddAssumptionResult {
 }
 
 pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
-    let args: AddAssumptionArgs = serde_json::from_str(args_json).map_err(|e| {
-        FspecCoreError::InvalidArgs {
+    let args: AddAssumptionArgs =
+        serde_json::from_str(args_json).map_err(|e| FspecCoreError::InvalidArgs {
             command: "add-assumption",
             reason: format!("failed to parse args: {e}"),
-        }
-    })?;
+        })?;
 
     let mut data = ensure_work_units_file(project_root)?;
 
     // Validate work unit exists.
-    if !data.work_units.contains_key(&args.work_unit_id) {
-        return Err(FspecCoreError::InvalidArgs {
-            command: "add-assumption",
-            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
-        });
-    }
+    let wu = match data.work_units.get_mut(&args.work_unit_id) {
+        Some(wu) => wu,
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "add-assumption",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            });
+        }
+    };
 
     // Validate specifying status.
-    let status_str = data
-        .work_units
-        .get(&args.work_unit_id)
-        .map(|w| w.status.as_str())
-        .expect("work unit exists");
+    let status_str = wu.status.as_str();
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "add-assumption",
@@ -72,11 +70,6 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     let now = iso8601_now();
-
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
 
     // Append the raw assumption string (init array if missing or non-array).
     let assumptions_entry = wu
@@ -110,7 +103,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

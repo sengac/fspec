@@ -123,10 +123,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let feature_input = args.feature.clone().ok_or_else(|| FspecCoreError::InvalidArgs {
-        command: "show-feature",
-        reason: "missing required 'feature' argument".to_string(),
-    })?;
+    let feature_input = args
+        .feature
+        .clone()
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "show-feature",
+            reason: "missing required 'feature' argument".to_string(),
+        })?;
 
     let format = args.format.as_deref().unwrap_or("text");
 
@@ -406,9 +409,17 @@ fn render_text(outcome: &Outcome) -> String {
         out.push_str("\n\n");
         out.push_str("Work Units:\n");
         for wu in &outcome.work_units {
-            out.push_str(&format!("\n  {} ({}) - {}\n", wu.id, wu.level.label(), wu.title));
+            out.push_str(&format!(
+                "\n  {} ({}) - {}\n",
+                wu.id,
+                wu.level.label(),
+                wu.title
+            ));
             for s in &wu.scenarios {
-                out.push_str(&format!("    {}:{} - {}\n", outcome.file_basename, s.line, s.name));
+                out.push_str(&format!(
+                    "    {}:{} - {}\n",
+                    outcome.file_basename, s.line, s.name
+                ));
             }
         }
     }
@@ -525,7 +536,12 @@ fn work_unit_to_json(wu: &WorkUnitEntry) -> Value {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -548,8 +564,14 @@ mod tests {
 
     #[test]
     fn extract_work_unit_id_accepts_canonical_form() {
-        assert_eq!(extract_work_unit_id("AUTH-001"), Some("AUTH-001".to_string()));
-        assert_eq!(extract_work_unit_id("@AUTH-001"), Some("AUTH-001".to_string()));
+        assert_eq!(
+            extract_work_unit_id("AUTH-001"),
+            Some("AUTH-001".to_string())
+        );
+        assert_eq!(
+            extract_work_unit_id("@AUTH-001"),
+            Some("AUTH-001".to_string())
+        );
         assert_eq!(extract_work_unit_id("RPC-304"), Some("RPC-304".to_string()));
     }
 

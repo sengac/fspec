@@ -288,10 +288,7 @@ fn scenario_returns_structured_error_when_category_unknown() {
     write_tags_file(tmp.path(), &two_categories_json());
 
     // @step When I dispatch list-tags with category='No Such Category'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "category": "No Such Category" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "category": "No Such Category" })));
 
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected success=false, got {result:?}");
@@ -473,14 +470,14 @@ fn scenario_json_format_emits_two_space_indent() {
 
     // @step Then the first tag entry has tag='@critical' and description='Critical features'
     assert_eq!(tags[0]["tag"].as_str(), Some("@critical"));
-    assert_eq!(
-        tags[0]["description"].as_str(),
-        Some("Critical features")
-    );
+    assert_eq!(tags[0]["description"].as_str(), Some("Critical features"));
 
     // @step Then the DispatchResult.data uses 2-space indentation
     assert!(
-        result.data.lines().any(|l| l.starts_with("  \"categories\"")),
+        result
+            .data
+            .lines()
+            .any(|l| l.starts_with("  \"categories\"")),
         "expected line starting with two-space indent + \"categories\"; got:\n{}",
         result.data
     );
@@ -507,8 +504,8 @@ fn scenario_shared_infrastructure_modules_exist_under_fspec_core() {
     let crate_src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
 
     // @step Then the module io::ensure::ensure_tags_file exists and is publicly accessible from the crate root
-    let ensure_src = fs::read_to_string(crate_src.join("io/ensure.rs"))
-        .expect("io/ensure.rs readable");
+    let ensure_src =
+        fs::read_to_string(crate_src.join("io/ensure.rs")).expect("io/ensure.rs readable");
     assert!(
         ensure_src.contains("pub fn ensure_tags_file"),
         "io/ensure.rs must declare `pub fn ensure_tags_file`; got:\n{ensure_src}"
@@ -535,6 +532,6 @@ fn scenario_shared_infrastructure_modules_exist_under_fspec_core() {
         "commands/list_tags.rs must no longer be a NotYetPorted stub"
     );
 }
-    // @step And the first categories entry has name='Phase Tags' and a tags array of length 1
-    // @step And the first tag entry has tag='@critical' and description='Critical features'
-    // @step And the DispatchResult.data uses 2-space indentation
+// @step And the first categories entry has name='Phase Tags' and a tags array of length 1
+// @step And the first tag entry has tag='@critical' and description='Critical features'
+// @step And the DispatchResult.data uses 2-space indentation

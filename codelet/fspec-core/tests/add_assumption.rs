@@ -33,8 +33,20 @@ fn read_work_units(project_root: &Path) -> Value {
 
 fn seed_unit(id: &str, status: &str, assumptions: Option<Vec<&str>>) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog","specifying","testing","implementing","validating","done","blocked"] {
-        let arr: Vec<Value> = if *st == status { vec![Value::String(id.to_string())] } else { vec![] };
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
+        let arr: Vec<Value> = if *st == status {
+            vec![Value::String(id.to_string())]
+        } else {
+            vec![]
+        };
         states.insert((*st).to_string(), Value::Array(arr));
     }
     let mut wu = serde_json::Map::new();
@@ -42,8 +54,14 @@ fn seed_unit(id: &str, status: &str, assumptions: Option<Vec<&str>>) -> String {
     wu.insert("title".into(), Value::String("title".into()));
     wu.insert("type".into(), Value::String("story".into()));
     wu.insert("status".into(), Value::String(status.to_string()));
-    wu.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
-    wu.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
+    wu.insert(
+        "createdAt".into(),
+        Value::String("2026-06-01T00:00:00.000Z".into()),
+    );
+    wu.insert(
+        "updatedAt".into(),
+        Value::String("2026-06-01T00:00:00.000Z".into()),
+    );
     if let Some(items) = assumptions {
         let arr: Vec<Value> = items.iter().map(|s| Value::String(s.to_string())).collect();
         wu.insert("assumptions".into(), Value::Array(arr));
@@ -52,7 +70,8 @@ fn seed_unit(id: &str, status: &str, assumptions: Option<Vec<&str>>) -> String {
         "version": "0.7.1",
         "workUnits": { id: Value::Object(wu) },
         "states": Value::Object(states),
-    })).unwrap()
+    }))
+    .unwrap()
 }
 
 #[test]
@@ -82,7 +101,9 @@ fn first_add_seeds_assumptions_array_on_clean_specifying_unit() {
     );
 
     // @step And spec/work-units.json on disk shows AUTH-001.updatedAt is a freshly bumped ISO-8601 timestamp
-    let updated = v["workUnits"]["AUTH-001"]["updatedAt"].as_str().expect("updatedAt");
+    let updated = v["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .expect("updatedAt");
     assert!(updated.len() == 24 && updated.ends_with('Z'));
     assert!(!updated.starts_with("2026-06-01"));
 }
@@ -91,7 +112,10 @@ fn first_add_seeds_assumptions_array_on_clean_specifying_unit() {
 fn second_add_preserves_insertion_order() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and assumptions=['A1']
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), &seed_unit("AUTH-001", "specifying", Some(vec!["A1"])));
+    write_work_units(
+        tmp.path(),
+        &seed_unit("AUTH-001", "specifying", Some(vec!["A1"])),
+    );
 
     // @step When I dispatch add-assumption with workUnitId='AUTH-001' and assumption='A2'
     let result = dispatch_command(req(
@@ -108,7 +132,9 @@ fn second_add_preserves_insertion_order() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.assumptions=['A1', 'A2']
     let v = read_work_units(tmp.path());
-    let arr = v["workUnits"]["AUTH-001"]["assumptions"].as_array().expect("assumptions");
+    let arr = v["workUnits"]["AUTH-001"]["assumptions"]
+        .as_array()
+        .expect("assumptions");
     assert_eq!(arr.len(), 2);
     assert_eq!(arr[0].as_str(), Some("A1"));
     assert_eq!(arr[1].as_str(), Some("A2"));
@@ -132,7 +158,10 @@ fn missing_work_unit_surfaces_canonical_error() {
 
     // @step And the error message contains the substring "Work unit 'NOPE-001' does not exist"
     let err = result.error.unwrap_or_default();
-    assert!(err.contains("Work unit 'NOPE-001' does not exist"), "got: {err}");
+    assert!(
+        err.contains("Work unit 'NOPE-001' does not exist"),
+        "got: {err}"
+    );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
     let post_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
@@ -184,7 +213,10 @@ fn auto_creates_work_units_then_reports_missing_source_error() {
 
     // @step And the error message contains the substring "Work unit 'AUTH-001' does not exist"
     let err = result.error.unwrap_or_default();
-    assert!(err.contains("Work unit 'AUTH-001' does not exist"), "got: {err}");
+    assert!(
+        err.contains("Work unit 'AUTH-001' does not exist"),
+        "got: {err}"
+    );
 
     // @step And spec/work-units.json now exists on disk with the canonical empty initial structure
     assert!(tmp.path().join("spec/work-units.json").exists());

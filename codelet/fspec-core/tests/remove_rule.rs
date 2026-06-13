@@ -36,7 +36,15 @@ fn read_work_units(project_root: &Path) -> Value {
 
 fn seed_with_rules(id: &str, status: &str, rules: Value) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<Value> = if *st == status {
             vec![Value::String(id.to_string())]
         } else {
@@ -49,8 +57,14 @@ fn seed_with_rules(id: &str, status: &str, rules: Value) -> String {
     wu.insert("title".into(), Value::String("title".into()));
     wu.insert("type".into(), Value::String("story".into()));
     wu.insert("status".into(), Value::String(status.to_string()));
-    wu.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
-    wu.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
+    wu.insert(
+        "createdAt".into(),
+        Value::String("2026-06-01T00:00:00.000Z".into()),
+    );
+    wu.insert(
+        "updatedAt".into(),
+        Value::String("2026-06-01T00:00:00.000Z".into()),
+    );
     if !matches!(rules, Value::Null) {
         wu.insert("rules".into(), rules);
     }
@@ -72,7 +86,10 @@ fn soft_deletes_rule_by_stable_id_and_bumps_remaining_count() {
         {"id": 0, "text": "r0", "deleted": false, "createdAt": "2026-06-01T00:00:00.000Z"},
         {"id": 1, "text": "r1", "deleted": false, "createdAt": "2026-06-01T00:00:00.000Z"}
     ]);
-    write_work_units(tmp.path(), &seed_with_rules("AUTH-001", "specifying", rules));
+    write_work_units(
+        tmp.path(),
+        &seed_with_rules("AUTH-001", "specifying", rules),
+    );
 
     // @step When I dispatch remove-rule with workUnitId='AUTH-001' and index=0
     let result = dispatch_command(req(
@@ -92,7 +109,9 @@ fn soft_deletes_rule_by_stable_id_and_bumps_remaining_count() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].deleted=true
     let v = read_work_units(tmp.path());
-    let rules = v["workUnits"]["AUTH-001"]["rules"].as_array().expect("rules");
+    let rules = v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .expect("rules");
     assert_eq!(rules[0]["deleted"].as_bool(), Some(true));
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].deletedAt is a freshly bumped ISO-8601 timestamp
@@ -104,7 +123,9 @@ fn soft_deletes_rule_by_stable_id_and_bumps_remaining_count() {
     assert_eq!(rules[1]["deleted"].as_bool(), Some(false));
 
     // @step And spec/work-units.json on disk shows AUTH-001.updatedAt is a freshly bumped ISO-8601 timestamp
-    let updated = v["workUnits"]["AUTH-001"]["updatedAt"].as_str().expect("updatedAt");
+    let updated = v["workUnits"]["AUTH-001"]["updatedAt"]
+        .as_str()
+        .expect("updatedAt");
     assert!(updated.len() == 24 && updated.ends_with('Z'));
     assert!(!updated.starts_with("2026-06-01"));
 }
@@ -116,7 +137,10 @@ fn already_deleted_rule_is_idempotent_and_does_not_write_to_disk() {
     let rules = json!([
         {"id": 0, "text": "r0", "deleted": true, "createdAt": "x", "deletedAt": "x"}
     ]);
-    write_work_units(tmp.path(), &seed_with_rules("AUTH-001", "specifying", rules));
+    write_work_units(
+        tmp.path(),
+        &seed_with_rules("AUTH-001", "specifying", rules),
+    );
     let pre_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
 
     // @step When I dispatch remove-rule with workUnitId='AUTH-001' and index=0
@@ -151,7 +175,10 @@ fn stable_id_semantics_removes_by_id_not_position() {
         {"id": 0, "text": "r0", "deleted": true, "createdAt": "x", "deletedAt": "x"},
         {"id": 1, "text": "r1", "deleted": false, "createdAt": "2026-06-01T00:00:00.000Z"}
     ]);
-    write_work_units(tmp.path(), &seed_with_rules("AUTH-001", "specifying", rules));
+    write_work_units(
+        tmp.path(),
+        &seed_with_rules("AUTH-001", "specifying", rules),
+    );
 
     // @step When I dispatch remove-rule with workUnitId='AUTH-001' and index=1
     let result = dispatch_command(req(
@@ -171,7 +198,9 @@ fn stable_id_semantics_removes_by_id_not_position() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[1].id=1 with deleted=true
     let v = read_work_units(tmp.path());
-    let rules = v["workUnits"]["AUTH-001"]["rules"].as_array().expect("rules");
+    let rules = v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .expect("rules");
     assert_eq!(rules[1]["id"].as_u64(), Some(1));
     assert_eq!(rules[1]["deleted"].as_bool(), Some(true));
 }
@@ -181,7 +210,10 @@ fn unknown_rule_id_surfaces_canonical_error() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and rules=[{id:0,text:'r0',deleted:false,createdAt:'x'}]
     let tmp = TempDir::new().expect("tempdir");
     let rules = json!([{"id": 0, "text": "r0", "deleted": false, "createdAt": "x"}]);
-    write_work_units(tmp.path(), &seed_with_rules("AUTH-001", "specifying", rules));
+    write_work_units(
+        tmp.path(),
+        &seed_with_rules("AUTH-001", "specifying", rules),
+    );
     let pre_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
 
     // @step When I dispatch remove-rule with workUnitId='AUTH-001' and index=99
@@ -209,7 +241,10 @@ fn unknown_rule_id_surfaces_canonical_error() {
 fn empty_rules_array_surfaces_canonical_no_rules_error() {
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying and no rules field
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), &seed_with_rules("AUTH-001", "specifying", Value::Null));
+    write_work_units(
+        tmp.path(),
+        &seed_with_rules("AUTH-001", "specifying", Value::Null),
+    );
     let pre_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
 
     // @step When I dispatch remove-rule with workUnitId='AUTH-001' and index=0
@@ -237,7 +272,10 @@ fn empty_rules_array_surfaces_canonical_no_rules_error() {
 fn missing_work_unit_surfaces_canonical_error() {
     // @step Given a project root tempdir with spec/work-units.json containing only NOT-001 status=specifying
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), &seed_with_rules("NOT-001", "specifying", Value::Null));
+    write_work_units(
+        tmp.path(),
+        &seed_with_rules("NOT-001", "specifying", Value::Null),
+    );
 
     // @step When I dispatch remove-rule with workUnitId='NOPE-001' and index=0
     let result = dispatch_command(req(

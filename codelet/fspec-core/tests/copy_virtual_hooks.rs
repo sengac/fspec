@@ -101,7 +101,10 @@ fn scenario_copies_all_source_hooks_into_empty_target() {
     // @step Given spec/work-units.json contains AUTH-001 with virtualHooks in order: 'lint' (post-implementing), 'test' (post-implementing), 'eslint' (pre-validating)
     let tmp = TempDir::new().expect("tempdir");
     let store = build_store(&[
-        ("AUTH-001", Some(vec![lint_hook(), test_hook(), eslint_hook()])),
+        (
+            "AUTH-001",
+            Some(vec![lint_hook(), test_hook(), eslint_hook()]),
+        ),
         // @step Given spec/work-units.json contains AUTH-002 with no virtualHooks field
         ("AUTH-002", None),
     ]);
@@ -172,7 +175,10 @@ fn scenario_copies_only_named_hook_when_hook_name_supplied() {
     // @step Given spec/work-units.json contains AUTH-001 with virtualHooks 'lint', 'test', 'eslint'
     let tmp = TempDir::new().expect("tempdir");
     let store = build_store(&[
-        ("AUTH-001", Some(vec![lint_hook(), test_hook(), eslint_hook()])),
+        (
+            "AUTH-001",
+            Some(vec![lint_hook(), test_hook(), eslint_hook()]),
+        ),
         // @step Given spec/work-units.json contains AUTH-002 with no virtualHooks
         ("AUTH-002", None),
     ]);
@@ -356,10 +362,7 @@ fn scenario_missing_from_argument_is_rejected() {
     assert!(!tmp.path().join("spec").exists());
 
     // @step When I dispatch copy-virtual-hooks with to='AUTH-002' and no from key
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "to": "AUTH-002" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "to": "AUTH-002" })));
 
     // @step Then the dispatcher returns success=false
     assert!(
@@ -384,10 +387,7 @@ fn scenario_missing_to_argument_is_rejected() {
     assert!(!tmp.path().join("spec").exists());
 
     // @step When I dispatch copy-virtual-hooks with from='AUTH-001' and no to key
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "from": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "from": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=false
     assert!(
@@ -409,10 +409,7 @@ fn scenario_result_json_shape_preserves_field_order() {
 
     // @step Given spec/work-units.json contains AUTH-001 with virtualHook 'lint' and AUTH-002 with no hooks
     let tmp = TempDir::new().expect("tempdir");
-    let store = build_store(&[
-        ("AUTH-001", Some(vec![lint_hook()])),
-        ("AUTH-002", None),
-    ]);
+    let store = build_store(&[("AUTH-001", Some(vec![lint_hook()])), ("AUTH-002", None)]);
     seed_work_units(tmp.path(), store);
 
     // @step When I dispatch copy-virtual-hooks with from='AUTH-001' and to='AUTH-002'

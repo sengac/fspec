@@ -16,9 +16,7 @@
 //! All three quirks are tested explicitly by
 //! `cli_list_attachments::scenario_clap_exposes_list_attachments_with_flag_aware_help`.
 
-use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommonError,
-};
+use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommonError};
 
 const ARGS: &[CommandArgument] = &[CommandArgument {
     name: "workUnitId",

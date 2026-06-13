@@ -36,7 +36,12 @@ pub struct Prefix {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
@@ -70,6 +75,11 @@ mod tests {
             "futureField": 42
         });
         let p: Prefix = serde_json::from_value(v).unwrap();
-        assert_eq!(p.extra.get("futureField").and_then(serde_json::Value::as_i64), Some(42));
+        assert_eq!(
+            p.extra
+                .get("futureField")
+                .and_then(serde_json::Value::as_i64),
+            Some(42)
+        );
     }
 }

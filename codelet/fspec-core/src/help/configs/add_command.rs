@@ -74,7 +74,9 @@ const COMMON_ERRORS: &[CommonError] = &[
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
     CommonPatternEntry::Bullet("Use PascalCase for command names (RegisterUser, PlaceOrder)"),
     CommonPatternEntry::Bullet("Commands represent user INTENTIONS (imperative verbs)"),
-    CommonPatternEntry::Bullet("Commands typically trigger domain events (PlaceOrder → OrderPlaced)"),
+    CommonPatternEntry::Bullet(
+        "Commands typically trigger domain events (PlaceOrder → OrderPlaced)",
+    ),
     CommonPatternEntry::Bullet("Use --actor to specify WHO executes the command"),
     CommonPatternEntry::Bullet("Group related commands using --bounded-context flag"),
 ];

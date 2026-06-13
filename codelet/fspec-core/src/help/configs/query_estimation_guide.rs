@@ -5,9 +5,7 @@
 //! when piped to non-TTY. Captured fixture:
 //! `codelet/fspec/tests/fixtures/help/query-estimation-guide.txt`.
 
-use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption,
-};
+use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOption};
 
 const EX1_OUTPUT: &str = "Based on 5 similar work units:\n  Suggested estimate: 5 points\n  Range: 3-8 points\n  Average actual: 5.2 points";
 

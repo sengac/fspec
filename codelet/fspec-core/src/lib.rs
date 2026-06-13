@@ -25,10 +25,12 @@ pub mod canonical;
 pub mod commands;
 pub mod dispatch;
 pub mod error;
+pub mod generators;
 pub mod help;
 pub mod io;
 pub mod js_compat;
 pub mod types;
+pub mod utils;
 
 pub use dispatch::{dispatch_command, DispatchRequest, DispatchResult};
 pub use error::FspecCoreError;

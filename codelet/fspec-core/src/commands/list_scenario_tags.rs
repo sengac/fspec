@@ -109,14 +109,20 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let file = args.file.clone().ok_or_else(|| FspecCoreError::InvalidArgs {
-        command: "list-scenario-tags",
-        reason: "missing required 'file' argument".to_string(),
-    })?;
-    let scenario_name = args.scenario.clone().ok_or_else(|| FspecCoreError::InvalidArgs {
-        command: "list-scenario-tags",
-        reason: "missing required 'scenario' argument".to_string(),
-    })?;
+    let file = args
+        .file
+        .clone()
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "list-scenario-tags",
+            reason: "missing required 'file' argument".to_string(),
+        })?;
+    let scenario_name = args
+        .scenario
+        .clone()
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "list-scenario-tags",
+            reason: "missing required 'scenario' argument".to_string(),
+        })?;
 
     let result = load_scenario_tags(project_root, &file, &scenario_name, args.show_categories);
 
@@ -351,7 +357,12 @@ fn render_text(scenario_name: &str, result: &ListScenarioTagsResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

@@ -86,10 +86,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         None => {
             return Err(FspecCoreError::InvalidArgs {
                 command: "add-architecture-note",
-                reason: format!(
-                    "Work unit '{}' does not exist",
-                    args.work_unit_id
-                ),
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
             });
         }
     };
@@ -147,7 +144,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Bump work-unit updatedAt and top-level meta.lastUpdated (TS L59-64).
     wu.updated_at = now.clone();
     if let Some(meta) = data.meta.as_mut() {
-        meta.last_updated = now.clone();
+        meta.last_updated = now;
     }
 
     // Single atomic write at the end (parity with TS fileManager.transaction).
@@ -192,7 +189,12 @@ fn wrap_system_reminder(body: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

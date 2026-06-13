@@ -1,0 +1,7 @@
+# Pinned because the `merman-core` dependency (Rust-native Mermaid parser used
+# for diagram validation in fspec-core: add-diagram, generate-foundation-md,
+# add-attachment) declares `rust-version = "1.95"`. Cargo's resolver hard-errors
+# when building it on an older rustc. 1.95.0 is the minimum that satisfies the
+# whole workspace; the code itself compiles cleanly on it.
+[toolchain]
+channel = "1.95.0"

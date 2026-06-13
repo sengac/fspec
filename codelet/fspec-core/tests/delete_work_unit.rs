@@ -108,7 +108,10 @@ fn dispatcher_rejects_deletion_of_missing_work_unit() {
 
     // @step And spec/work-units.json still contains the AUTH-001 work unit
     let data = read_work_units(tmp.path());
-    assert!(data["workUnits"].get("AUTH-001").is_some(), "AUTH-001 must be preserved");
+    assert!(
+        data["workUnits"].get("AUTH-001").is_some(),
+        "AUTH-001 must be preserved"
+    );
 }
 
 #[test]
@@ -150,7 +153,10 @@ fn dispatcher_refuses_to_delete_work_unit_with_children() {
 
     // @step And spec/work-units.json still contains the AUTH-999 work unit
     let data = read_work_units(tmp.path());
-    assert!(data["workUnits"].get("AUTH-999").is_some(), "AUTH-999 must be preserved");
+    assert!(
+        data["workUnits"].get("AUTH-999").is_some(),
+        "AUTH-999 must be preserved"
+    );
 }
 
 #[test]
@@ -192,7 +198,10 @@ fn dispatcher_refuses_to_delete_with_dependencies_without_cascade() {
 
     // @step And spec/work-units.json still contains the AUTH-001 work unit
     let data = read_work_units(tmp.path());
-    assert!(data["workUnits"].get("AUTH-001").is_some(), "AUTH-001 must be preserved");
+    assert!(
+        data["workUnits"].get("AUTH-001").is_some(),
+        "AUTH-001 must be preserved"
+    );
 }
 
 #[test]
@@ -240,7 +249,10 @@ fn dispatcher_cascades_blocks_references_and_emits_warning() {
         .and_then(Value::as_array)
         .map(|a| a.iter().any(|v| v.as_str() == Some("AUTH-001")))
         .unwrap_or(false);
-    assert!(!still_listed, "API-001.blockedBy must no longer list AUTH-001; got {data}");
+    assert!(
+        !still_listed,
+        "API-001.blockedBy must no longer list AUTH-001; got {data}"
+    );
 
     // @step And the DispatchResult.data contains the substring '⚠ This work unit blocks 1 work unit(s): API-001'
     assert!(
@@ -353,7 +365,10 @@ fn dispatcher_removes_unit_from_parent_children() {
         .and_then(Value::as_array)
         .map(|a| a.iter().any(|v| v.as_str() == Some("AUTH-CHILD")))
         .unwrap_or(false);
-    assert!(!still_child, "AUTH-PARENT.children must no longer list AUTH-CHILD; got {data}");
+    assert!(
+        !still_child,
+        "AUTH-PARENT.children must no longer list AUTH-CHILD; got {data}"
+    );
 
     // @step And spec/work-units.json no longer contains the AUTH-CHILD work unit
     assert!(
@@ -397,7 +412,10 @@ fn dispatcher_removes_unit_from_state_index() {
         .as_array()
         .map(|a| a.iter().any(|v| v.as_str() == Some("AUTH-001")))
         .unwrap_or(false);
-    assert!(!still_listed, "states.specifying must no longer list AUTH-001; got {data}");
+    assert!(
+        !still_listed,
+        "states.specifying must no longer list AUTH-001; got {data}"
+    );
 }
 
 #[test]

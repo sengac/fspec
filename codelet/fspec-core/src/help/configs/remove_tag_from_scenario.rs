@@ -5,9 +5,7 @@
 //! when piped to non-TTY. Fixture:
 //! `codelet/fspec/tests/fixtures/help/remove-tag-from-scenario.txt`.
 
-use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommonError,
-};
+use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommonError};
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {

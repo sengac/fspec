@@ -170,7 +170,11 @@ fn invalid_gherkin_returns_invalid_gherkin_syntax_prefix() {
 
     // @step Given a temp project root contains spec/features/broken.feature with the bytes 'this is not gherkin'
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/broken.feature", "this is not gherkin");
+    write_file(
+        tmp.path(),
+        "spec/features/broken.feature",
+        "this is not gherkin",
+    );
 
     // @step When I dispatch show-feature with feature='broken' and format='text'
     // (We dispatch with format='json' to assert against the structured
@@ -212,7 +216,8 @@ fn feature_level_wu_tag_attaches_to_scenarios_without_their_own_wu_tag() {
     //   6: (blank)
     //   7: Scenario: B
     //   8:   Given step b
-    let body = "@AUTH-001\nFeature: Auth\n\nScenario: A\n  Given step a\n\nScenario: B\n  Given step b\n";
+    let body =
+        "@AUTH-001\nFeature: Auth\n\nScenario: A\n  Given step a\n\nScenario: B\n  Given step b\n";
     write_file(tmp.path(), "spec/features/auth.feature", body);
 
     // @step And spec/work-units.json contains AUTH-001 with title 'Login' and status 'implementing'
@@ -239,7 +244,10 @@ fn feature_level_wu_tag_attaches_to_scenarios_without_their_own_wu_tag() {
 
     // @step And the data field contains the exact line '  AUTH-001 (feature-level) - Login'
     assert!(
-        result.data.lines().any(|l| l == "  AUTH-001 (feature-level) - Login"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "  AUTH-001 (feature-level) - Login"),
         "missing AUTH-001 header line; got:\n{}",
         result.data
     );
@@ -288,7 +296,10 @@ fn scenario_level_wu_tag_overrides_feature_level_for_tagged_scenario() {
 
     // @step And the AUTH-001 block in the data field has level 'feature-level' and lists only scenario 'Y'
     assert!(
-        result.data.lines().any(|l| l == "  AUTH-001 (feature-level) - Login"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "  AUTH-001 (feature-level) - Login"),
         "missing AUTH-001 feature-level header; got:\n{}",
         result.data
     );
@@ -315,7 +326,10 @@ fn scenario_level_wu_tag_overrides_feature_level_for_tagged_scenario() {
 
     // @step And the AUTH-002 block in the data field has level 'scenario-level' and lists only scenario 'X'
     assert!(
-        result.data.lines().any(|l| l == "  AUTH-002 (scenario-level) - Logout"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "  AUTH-002 (scenario-level) - Logout"),
         "missing AUTH-002 scenario-level header; got:\n{}",
         result.data
     );
@@ -443,8 +457,8 @@ fn output_path_writes_rendered_content_to_disk_and_data_still_echoes_it() {
     assert!(result.success, "{result:?}");
 
     // @step And the file <project_root>/out/snapshot.txt exists with the same bytes as the data field
-    let written = fs::read_to_string(tmp.path().join("out/snapshot.txt"))
-        .expect("output file written");
+    let written =
+        fs::read_to_string(tmp.path().join("out/snapshot.txt")).expect("output file written");
     // The dispatcher emits the same rendered content into `data` so callers
     // can echo it as well.
     assert_eq!(

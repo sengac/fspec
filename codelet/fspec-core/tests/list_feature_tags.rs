@@ -64,7 +64,10 @@ fn scenario_returns_error_when_feature_file_does_not_exist() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected dispatcher success=true, got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatcher success=true, got {result:?}"
+    );
 
     let data = parse_data(&result.data);
 
@@ -203,7 +206,11 @@ fn scenario_excludes_scenario_level_tags_from_returned_tags() {
 
     // @step Then the parsed JSON has tags=['@critical'] containing exactly one entry
     let tags = data["tags"].as_array().expect("tags array");
-    assert_eq!(tags.len(), 1, "expected exactly one feature-level tag, got {tags:?}");
+    assert_eq!(
+        tags.len(),
+        1,
+        "expected exactly one feature-level tag, got {tags:?}"
+    );
     assert_eq!(tags[0].as_str(), Some("@critical"));
 
     // @step Then the tags array does NOT contain '@smoke'
@@ -444,9 +451,7 @@ fn scenario_json_format_two_space_indent() {
 
     // @step Then the DispatchResult.data contains the exact substring "\"tags\": [\n    \"@critical\"\n  ]"
     assert!(
-        result
-            .data
-            .contains("\"tags\": [\n    \"@critical\"\n  ]"),
+        result.data.contains("\"tags\": [\n    \"@critical\"\n  ]"),
         "expected 2-space indented tags array; got:\n{}",
         result.data
     );

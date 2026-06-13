@@ -129,9 +129,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // declaration order (id, title, description, ...extra). Re-read the
     // raw file and pluck the requested object as a Value. If anything
     // goes wrong we fall back to serializing the typed Epic.
-    let epic_value = read_raw_epic(project_root, &args.epic_id).unwrap_or_else(|| {
-        serde_json::to_value(&epic).unwrap_or(Value::Null)
-    });
+    let epic_value = read_raw_epic(project_root, &args.epic_id)
+        .unwrap_or_else(|| serde_json::to_value(&epic).unwrap_or(Value::Null));
 
     // Work-units read-failures are silently swallowed (TS bare `catch {}`
     // at `src/commands/show-epic.ts:81-83`). `read_work_units_or_empty`
@@ -169,12 +168,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     match args.format.as_deref() {
-        Some("json") => serde_json::to_string_pretty(&result).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        Some("json") => {
+            serde_json::to_string_pretty(&result).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "show-epic",
                 reason: format!("failed to serialize result: {e}"),
-            }
-        }),
+            })
+        }
         // Default to text — use the typed Epic for stable field access.
         _ => Ok(render_text(&epic, &result)),
     }
@@ -228,7 +227,10 @@ fn render_text(epic: &Epic, result: &ShowEpicResult) -> String {
     }
     out.push('\n');
     out.push_str("Progress:\n");
-    out.push_str(&format!("  Total work units: {}\n", result.total_work_units));
+    out.push_str(&format!(
+        "  Total work units: {}\n",
+        result.total_work_units
+    ));
     out.push_str(&format!("  Completed: {}\n", result.completed_work_units));
     // f64 Display picks the shortest round-trip representation, so 50.0
     // renders as "50" and 33.33 renders as "33.33" — matching TS's
@@ -243,7 +245,12 @@ fn render_text(epic: &Epic, result: &ShowEpicResult) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
@@ -271,8 +278,7 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case() {
-        let a: ShowEpicArgs =
-            serde_json::from_str(r#"{"epicId":"auth","format":"json"}"#).unwrap();
+        let a: ShowEpicArgs = serde_json::from_str(r#"{"epicId":"auth","format":"json"}"#).unwrap();
         assert_eq!(a.epic_id, "auth");
         assert_eq!(a.format.as_deref(), Some("json"));
     }

@@ -32,8 +32,7 @@ fn write_prefix(project_root: &Path, prefix: &str) {
     let spec = project_root.join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
     let body = format!(
-        "{{\"prefixes\":{{\"{p}\":{{\"prefix\":\"{p}\",\"description\":\"desc\",\"createdAt\":\"2026-06-01T00:00:00.000Z\"}}}}}}",
-        p = prefix
+        "{{\"prefixes\":{{\"{prefix}\":{{\"prefix\":\"{prefix}\",\"description\":\"desc\",\"createdAt\":\"2026-06-01T00:00:00.000Z\"}}}}}}"
     );
     fs::write(spec.join("prefixes.json"), body).expect("write prefixes");
 }
@@ -62,8 +61,8 @@ fn read_wu_raw(project_root: &Path) -> String {
 }
 
 fn read_epics_value(project_root: &Path) -> Value {
-    let raw = fs::read_to_string(project_root.join("spec/epics.json"))
-        .expect("read spec/epics.json");
+    let raw =
+        fs::read_to_string(project_root.join("spec/epics.json")).expect("read spec/epics.json");
     serde_json::from_str(&raw).expect("epics.json is valid JSON")
 }
 
@@ -95,10 +94,17 @@ fn dispatcher_creates_a_minimal_bug_and_writes_work_units_json() {
     assert_eq!(wu["title"].as_str(), Some("Login crash"));
 
     // @step And the 'BUG-001' record contains a 'children' key equal to an empty array
-    assert_eq!(wu["children"], json!([]), "children must be empty array; got {wu}");
+    assert_eq!(
+        wu["children"],
+        json!([]),
+        "children must be empty array; got {wu}"
+    );
 
     // @step And the 'BUG-001' record does NOT contain a 'parent' key
-    assert!(wu.get("parent").is_none(), "parent key must be omitted; got {wu}");
+    assert!(
+        wu.get("parent").is_none(),
+        "parent key must be omitted; got {wu}"
+    );
 
     // @step And the states.backlog array contains 'BUG-001'
     let backlog = data["states"]["backlog"].as_array().expect("backlog array");
@@ -128,18 +134,32 @@ fn dispatcher_writes_new_bug_with_canonical_key_order() {
 
     // @step And in the on-disk JSON for 'BUG-001' the keys appear in the order id, title, type, status, createdAt, updatedAt, description, children
     let raw = read_wu_raw(tmp.path());
-    let expected_order = ["id", "title", "type", "status", "createdAt", "updatedAt", "description", "children"];
+    let expected_order = [
+        "id",
+        "title",
+        "type",
+        "status",
+        "createdAt",
+        "updatedAt",
+        "description",
+        "children",
+    ];
     let mut last = 0usize;
     for key in expected_order {
         let needle = format!("\"{key}\"");
-        let idx = raw.find(&needle).unwrap_or_else(|| panic!("key {key} missing in:\n{raw}"));
+        let idx = raw
+            .find(&needle)
+            .unwrap_or_else(|| panic!("key {key} missing in:\n{raw}"));
         assert!(idx >= last, "key {key} out of order in:\n{raw}");
         last = idx;
     }
 
     // @step And the 'BUG-001' record has description='Crashes on submit'
     let data = read_wu_value(tmp.path());
-    assert_eq!(data["workUnits"]["BUG-001"]["description"].as_str(), Some("Crashes on submit"));
+    assert_eq!(
+        data["workUnits"]["BUG-001"]["description"].as_str(),
+        Some("Crashes on submit")
+    );
 }
 
 #[test]
@@ -163,11 +183,16 @@ fn dispatcher_fails_when_foundation_missing() {
     assert!(msg.contains("Project foundation not found"), "got: {msg}");
 
     // @step And the error message contains the substring "fspec create-bug BUG \"Login crash\""
-    assert!(msg.contains("fspec create-bug BUG \"Login crash\""), "got: {msg}");
+    assert!(
+        msg.contains("fspec create-bug BUG \"Login crash\""),
+        "got: {msg}"
+    );
 
     // @step And spec/work-units.json does NOT contain any 'BUG-001' work unit
-    assert!(!tmp.path().join("spec/work-units.json").exists() ||
-        !read_wu_raw(tmp.path()).contains("BUG-001"));
+    assert!(
+        !tmp.path().join("spec/work-units.json").exists()
+            || !read_wu_raw(tmp.path()).contains("BUG-001")
+    );
 }
 
 #[test]
@@ -199,7 +224,10 @@ fn dispatcher_rejects_unregistered_prefix() {
     write_foundation(tmp.path());
 
     // @step When I dispatch create-bug with prefix='BUG' and title='Login crash'
-    let result = dispatch_command(req(tmp.path(), json!({"prefix": "BUG", "title": "Login crash"})));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"prefix": "BUG", "title": "Login crash"}),
+    ));
 
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "{result:?}");
@@ -232,7 +260,10 @@ fn dispatcher_rejects_missing_parent() {
 
     // @step And the error message contains the substring "Parent bug 'BUG-999' does not exist"
     let msg = result.error.as_ref().expect("error must be set");
-    assert!(msg.contains("Parent bug 'BUG-999' does not exist"), "got: {msg}");
+    assert!(
+        msg.contains("Parent bug 'BUG-999' does not exist"),
+        "got: {msg}"
+    );
 }
 
 #[test]
@@ -268,7 +299,10 @@ fn dispatcher_rejects_exceeding_max_nesting_depth() {
 
     // @step And the error message contains the substring 'Maximum nesting depth (3) exceeded'
     let msg = result.error.as_ref().expect("error must be set");
-    assert!(msg.contains("Maximum nesting depth (3) exceeded"), "got: {msg}");
+    assert!(
+        msg.contains("Maximum nesting depth (3) exceeded"),
+        "got: {msg}"
+    );
 }
 
 #[test]
@@ -334,15 +368,24 @@ fn dispatcher_nests_bug_under_parent_and_links_to_epic() {
     assert_eq!(wu["epic"].as_str(), Some("auth"));
 
     // @step And the 'BUG-002' record does NOT contain a 'children' key
-    assert!(wu.get("children").is_none(), "children must be omitted when parent given; got {wu}");
+    assert!(
+        wu.get("children").is_none(),
+        "children must be omitted when parent given; got {wu}"
+    );
 
     // @step And the 'BUG-001' record's children array contains 'BUG-002'
-    let parent_children = data["workUnits"]["BUG-001"]["children"].as_array().expect("children array");
-    assert!(parent_children.iter().any(|v| v.as_str() == Some("BUG-002")));
+    let parent_children = data["workUnits"]["BUG-001"]["children"]
+        .as_array()
+        .expect("children array");
+    assert!(parent_children
+        .iter()
+        .any(|v| v.as_str() == Some("BUG-002")));
 
     // @step And spec/epics.json epic 'auth' workUnits array contains 'BUG-002'
     let epics = read_epics_value(tmp.path());
-    let wus = epics["epics"]["auth"]["workUnits"].as_array().expect("epic workUnits array");
+    let wus = epics["epics"]["auth"]["workUnits"]
+        .as_array()
+        .expect("epic workUnits array");
     assert!(wus.iter().any(|v| v.as_str() == Some("BUG-002")));
 }
 
@@ -365,14 +408,21 @@ fn dispatcher_generates_next_id_from_high_water_mark() {
     );
 
     // @step When I dispatch create-bug with prefix='BUG' and title='Login crash'
-    let result = dispatch_command(req(tmp.path(), json!({"prefix": "BUG", "title": "Login crash"})));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"prefix": "BUG", "title": "Login crash"}),
+    ));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "{result:?}");
 
     // @step And the new work unit id is 'BUG-008'
     let data = read_wu_value(tmp.path());
-    assert!(data["workUnits"].get("BUG-008").is_some(), "expected BUG-008; got {}", data["workUnits"]);
+    assert!(
+        data["workUnits"].get("BUG-008").is_some(),
+        "expected BUG-008; got {}",
+        data["workUnits"]
+    );
 
     // @step And prefixCounters['BUG'] equals 8
     assert_eq!(data["prefixCounters"]["BUG"].as_i64(), Some(8));
@@ -388,21 +438,40 @@ fn dispatcher_response_emits_verbatim_bug_research_guidance_system_reminder() {
     write_prefix(tmp.path(), "BUG");
 
     // @step When I dispatch create-bug with prefix='BUG' and title='Login Crash'
-    let result = dispatch_command(req(tmp.path(), json!({"prefix": "BUG", "title": "Login Crash"})));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"prefix": "BUG", "title": "Login Crash"}),
+    ));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "{result:?}");
 
     // @step And the dispatcher response contains the line 'Bug BUG-001 created successfully.'
-    let blob = format!("{}\n{}", result.data, result.system_reminder.clone().unwrap_or_default());
-    assert!(blob.contains("Bug BUG-001 created successfully."), "got:\n{blob}");
+    let blob = format!(
+        "{}\n{}",
+        result.data,
+        result.system_reminder.clone().unwrap_or_default()
+    );
+    assert!(
+        blob.contains("Bug BUG-001 created successfully."),
+        "got:\n{blob}"
+    );
 
     // @step And the dispatcher response contains the substring 'CRITICAL: Research existing code FIRST before fixing bugs.'
-    assert!(blob.contains("CRITICAL: Research existing code FIRST before fixing bugs."), "got:\n{blob}");
+    assert!(
+        blob.contains("CRITICAL: Research existing code FIRST before fixing bugs."),
+        "got:\n{blob}"
+    );
 
     // @step And the dispatcher response contains the substring 'search-scenarios --query="login crash"'
-    assert!(blob.contains("search-scenarios --query=\"login crash\""), "got:\n{blob}");
+    assert!(
+        blob.contains("search-scenarios --query=\"login crash\""),
+        "got:\n{blob}"
+    );
 
     // @step And the dispatcher response contains the substring 'DO NOT mention this reminder to the user explicitly.'
-    assert!(blob.contains("DO NOT mention this reminder to the user explicitly."), "got:\n{blob}");
+    assert!(
+        blob.contains("DO NOT mention this reminder to the user explicitly."),
+        "got:\n{blob}"
+    );
 }

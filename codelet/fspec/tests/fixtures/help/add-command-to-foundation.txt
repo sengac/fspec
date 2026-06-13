@@ -1,0 +1,68 @@
+
+ADD-COMMAND-TO-FOUNDATION
+Add a command to a foundation bounded context in Big Picture Event Storm
+
+WHEN TO USE
+  Use during Big Picture Event Storming to add commands (user intentions or actions) to specific bounded contexts in the foundation domain model.
+
+PREREQUISITES
+  • foundation.json must exist
+  • Big Picture Event Storm must be initialized
+  • Target bounded context must already exist
+
+USAGE
+  fspec add-command-to-foundation <context-name> <command-name> [--description <text>]
+
+ARGUMENTS
+  <<context-name>> (required)
+    Name of the bounded context (must already exist)
+  <<command-name>> (required)
+    Name of the command to add (e.g., "CreateWorkUnit", "UpdateStatus")
+
+OPTIONS
+  -d, --description <text>
+    Optional description explaining the command's intent
+
+COMMON PATTERNS
+  • Use imperative verb + noun for command names (CreateWorkUnit, UpdateStatus)
+  • Commands represent user intentions or system actions
+  • Add commands during Big Picture Event Storm sessions
+  • Commands typically trigger domain events (CreateWorkUnit → WorkUnitCreated)
+  • Use descriptions to document command purpose and behavior
+
+EXAMPLES
+  1. Add CreateWorkUnit command to Work Management bounded context
+  $ fspec add-command-to-foundation "Work Management" "CreateWorkUnit"
+  ✓ Added command "CreateWorkUnit" to "Work Management" bounded context
+
+  2. Add command with description
+  $ fspec add-command-to-foundation "Work Management" "UpdateStatus" --description "Changes work unit status"
+  ✓ Added command "UpdateStatus" to "Work Management" bounded context
+
+  3. Add AuthenticateUser command to Identity bounded context
+  $ fspec add-command-to-foundation "Identity" "AuthenticateUser"
+  ✓ Added command "AuthenticateUser" to "Identity" bounded context
+
+COMMON ERRORS
+  ✗ Bounded context 'Foo' not found
+    Fix: Create the bounded context first: fspec add-foundation-bounded-context "Foo"
+
+  ✗ foundation.json not found
+    Fix: Initialize foundation first: fspec discover-foundation
+
+RELATED COMMANDS
+  fspec remove-command-from-foundation
+  fspec add-foundation-bounded-context
+  fspec add-aggregate-to-foundation
+  fspec add-domain-event-to-foundation
+  fspec show-foundation-event-storm
+  fspec generate-foundation-md
+
+NOTES
+  • Commands are stored in foundation.json eventStorm.items array
+  • Each command is linked to a bounded context via boundedContextId
+  • Commands have color="blue" by default (Event Storming convention)
+  • FOUNDATION.md is automatically regenerated after adding command
+  • Foundation commands define STRATEGIC model, work unit commands are TACTICAL
+  • Commands should use imperative naming convention (verb + noun)
+

@@ -56,10 +56,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     if !foundation_path.exists() {
         return Err(FspecCoreError::InvalidArgs {
             command: "show-foundation-event-storm",
-            reason: format!(
-                "foundation.json not found at {}",
-                foundation_path.display()
-            ),
+            reason: format!("foundation.json not found at {}", foundation_path.display()),
         });
     }
 
@@ -157,7 +154,12 @@ fn serde_json_to_string(v: &Value) -> Result<String, FspecCoreError> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

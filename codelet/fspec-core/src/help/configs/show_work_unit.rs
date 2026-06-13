@@ -8,8 +8,8 @@
 //! locks every byte of this output against the fixture.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {

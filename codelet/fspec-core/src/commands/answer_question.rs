@@ -83,7 +83,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .work_units
         .get(&args.work_unit_id)
         .map(|w| w.status.as_str())
-        .expect("work unit exists");
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "answer-question",
+            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+        })?;
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "answer-question",
@@ -96,10 +99,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Validate questions array exists and is non-empty.
     let questions_len = {
-        let wu = data
-            .work_units
-            .get(&args.work_unit_id)
-            .expect("work unit exists");
+        let wu =
+            data.work_units
+                .get(&args.work_unit_id)
+                .ok_or_else(|| FspecCoreError::InvalidArgs {
+                    command: "answer-question",
+                    reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+                })?;
         match wu.extra.get("questions") {
             Some(Value::Array(arr)) if !arr.is_empty() => arr.len(),
             _ => {
@@ -125,10 +131,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Pull out the question text and validate the entry shape.
     let idx = args.index as usize;
     let question_text = {
-        let wu = data
-            .work_units
-            .get(&args.work_unit_id)
-            .expect("work unit exists");
+        let wu =
+            data.work_units
+                .get(&args.work_unit_id)
+                .ok_or_else(|| FspecCoreError::InvalidArgs {
+                    command: "answer-question",
+                    reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+                })?;
         let arr = match wu.extra.get("questions") {
             Some(Value::Array(a)) => a,
             _ => unreachable!("questions presence already validated"),
@@ -148,8 +157,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             _ => {
                 return Err(FspecCoreError::InvalidArgs {
                     command: "answer-question",
-                    reason: "Question format is invalid. Expected QuestionItem object."
-                        .to_string(),
+                    reason: "Question format is invalid. Expected QuestionItem object.".to_string(),
                 });
             }
         }
@@ -161,10 +169,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut added_to: Option<String> = None;
     let mut added_content: Option<String> = None;
 
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
+    let wu =
+        data.work_units
+            .get_mut(&args.work_unit_id)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "answer-question",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            })?;
 
     // Mark the question selected and (optionally) record the answer.
     {
@@ -172,7 +183,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             .extra
             .get_mut("questions")
             .and_then(Value::as_array_mut)
-            .expect("questions presence already validated");
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "answer-question",
+                reason: format!("Work unit {} has no questions", args.work_unit_id),
+            })?;
         let entry = &mut arr[idx];
         if let Value::Object(obj) = entry {
             obj.insert("selected".to_string(), Value::Bool(true));

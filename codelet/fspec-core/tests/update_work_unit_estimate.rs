@@ -90,7 +90,10 @@ fn dispatcher_estimates_task_without_feature_file() {
 
     // @step And spec/work-units.json work unit 'TASK-001' has estimate 3
     let on_disk = read_work_units(tmp.path());
-    assert_eq!(on_disk["workUnits"]["TASK-001"]["estimate"].as_i64(), Some(3));
+    assert_eq!(
+        on_disk["workUnits"]["TASK-001"]["estimate"].as_i64(),
+        Some(3)
+    );
 
     // @step And the updatedAt of 'TASK-001' is set to a non-empty ISO-8601 string
     let updated_at = on_disk["workUnits"]["TASK-001"]["updatedAt"]
@@ -263,7 +266,10 @@ fn dispatcher_estimates_story_with_clean_feature_file() {
 
     // @step And spec/work-units.json work unit 'AUTH-001' has estimate 5
     let on_disk = read_work_units(tmp.path());
-    assert_eq!(on_disk["workUnits"]["AUTH-001"]["estimate"].as_i64(), Some(5));
+    assert_eq!(
+        on_disk["workUnits"]["AUTH-001"]["estimate"].as_i64(),
+        Some(5)
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -287,7 +293,13 @@ fn dispatcher_is_the_single_source_of_truth_for_estimate() {
     //  dispatcher path — the single source of truth both front doors converge on — succeeds.)
 
     // @step Then both invocations produce the same success result and the same on-disk estimate 3
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let on_disk = read_work_units(tmp.path());
-    assert_eq!(on_disk["workUnits"]["TASK-001"]["estimate"].as_i64(), Some(3));
+    assert_eq!(
+        on_disk["workUnits"]["TASK-001"]["estimate"].as_i64(),
+        Some(3)
+    );
 }

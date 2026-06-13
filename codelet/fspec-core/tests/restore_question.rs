@@ -77,7 +77,11 @@ fn work_units_with(status: &str, extras_json: &str) -> String {
     "blocked": {blocked}
   }}
 }}"#,
-        maybe_comma = if extras_json.trim().is_empty() { "" } else { ",\n      " },
+        maybe_comma = if extras_json.trim().is_empty() {
+            ""
+        } else {
+            ",\n      "
+        },
         extras_json = extras_json.trim(),
     )
 }

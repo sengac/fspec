@@ -173,7 +173,10 @@ fn dispatcher_rejects_missing_work_unit_ids() {
 
     // Sanity: disk untouched on failure.
     let post_bytes = fs::read(tmp.path().join("spec/work-units.json")).unwrap();
-    assert_eq!(pre_bytes, post_bytes, "work-units.json must NOT be mutated on failure");
+    assert_eq!(
+        pre_bytes, post_bytes,
+        "work-units.json must NOT be mutated on failure"
+    );
 }
 
 #[test]

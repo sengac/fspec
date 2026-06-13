@@ -67,19 +67,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut data = ensure_work_units_file(project_root)?;
 
     // Existence check (mirrors src/commands/compact-work-unit.ts:70-72).
-    if !data.work_units.contains_key(&id) {
-        return Err(FspecCoreError::InvalidArgs {
-            command: "compact-work-unit",
-            reason: format!("Work unit '{id}' does not exist"),
-        });
-    }
-
     // Force gate for non-done status (mirrors :78-86).
-    let status = data
-        .work_units
-        .get(&id)
-        .map(|w| w.status.as_str())
-        .expect("work unit exists");
+    let status = match data.work_units.get(&id) {
+        Some(w) => w.status.as_str(),
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "compact-work-unit",
+                reason: format!("Work unit '{id}' does not exist"),
+            });
+        }
+    };
     if status != "done" && !force {
         return Err(FspecCoreError::InvalidArgs {
             command: "compact-work-unit",
@@ -97,7 +94,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         let wu = data
             .work_units
             .get_mut(&id)
-            .expect("work unit exists");
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "compact-work-unit",
+                reason: format!("Work unit '{id}' does not exist"),
+            })?;
 
         // Compact each array (mirrors :103-125). `compact_array_field` ensures
         // the key exists as an array (matching the unconditional TS
@@ -130,7 +130,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         // Bump the work unit timestamp (mirrors :135).
         wu.updated_at = now.clone();
 
-        (rules_removed, examples_removed, questions_removed, notes_removed)
+        (
+            rules_removed,
+            examples_removed,
+            questions_removed,
+            notes_removed,
+        )
     };
 
     // Bump meta.lastUpdated when present (mirrors :138-140).
@@ -179,7 +184,10 @@ fn compact_array_field(extra: &mut Map<String, Value>, key: &str) -> (usize, usi
     if !entry.is_array() {
         *entry = Value::Array(Vec::new());
     }
-    let arr = entry.as_array_mut().expect("ensured array above");
+    let Some(arr) = entry.as_array_mut() else {
+        // Unreachable: `entry` was just ensured to be an array above.
+        return (0, 0);
+    };
 
     let original = arr.len();
     arr.retain(|item| {
@@ -208,7 +216,12 @@ fn array_len(extra: &Map<String, Value>, key: &str) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

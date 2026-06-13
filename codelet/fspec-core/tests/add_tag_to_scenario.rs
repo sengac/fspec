@@ -92,7 +92,11 @@ fn write_tags_json(project_root: &Path, body: &str) {
 fn add_single_tag_to_scenario_with_no_tags() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login with valid credentials' with no tags
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", &feature_with_scenario_no_tags());
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        &feature_with_scenario_no_tags(),
+    );
 
     // @step When I dispatch add-tag-to-scenario with file='spec/features/login.feature' scenario='Login with valid credentials' tags=['@smoke']
     let result = dispatch_command(req(

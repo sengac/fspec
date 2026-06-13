@@ -203,8 +203,7 @@ where
         }
     }
 
-    let total_dependencies =
-        total_blocks + total_blocked_by + total_depends_on + total_relates_to;
+    let total_dependencies = total_blocks + total_blocked_by + total_depends_on + total_relates_to;
     let avg_raw = if !work_units.is_empty() {
         total_dependencies as f64 / work_units.len() as f64
     } else {
@@ -256,8 +255,7 @@ fn array_entries<'a>(wu: &'a WorkUnit, field: &str) -> &'a [Value] {
 fn calculate_max_chain_depth(work_units: &[&WorkUnit]) -> usize {
     let mut max_depth = 0_usize;
     for wu in work_units {
-        let depth =
-            calculate_depth(work_units, &wu.id, &mut std::collections::HashSet::new());
+        let depth = calculate_depth(work_units, &wu.id, &mut std::collections::HashSet::new());
         if depth > max_depth {
             max_depth = depth;
         }
@@ -324,7 +322,12 @@ fn round_half_away_from_zero(x: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
@@ -354,8 +357,7 @@ mod tests {
 
     #[test]
     fn args_parse_format_json() {
-        let a: QueryDependencyStatsArgs =
-            serde_json::from_str(r#"{"format":"json"}"#).unwrap();
+        let a: QueryDependencyStatsArgs = serde_json::from_str(r#"{"format":"json"}"#).unwrap();
         assert_eq!(a.format.as_deref(), Some("json"));
     }
 

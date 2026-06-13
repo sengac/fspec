@@ -88,11 +88,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // ---- Load tags.json ----
-    let raw =
-        std::fs::read_to_string(&tags_json_path).map_err(|source| FspecCoreError::Io {
-            command: "update-tag",
-            source,
-        })?;
+    let raw = std::fs::read_to_string(&tags_json_path).map_err(|source| FspecCoreError::Io {
+        command: "update-tag",
+        source,
+    })?;
     let mut tags_data: TagsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "tags.json".to_string(),
@@ -131,13 +130,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // ---- Branch: category change vs description-only ----
     let current_category_name = tags_data.categories[current_cat_index].name.clone();
 
-    let moving_category = category_arg
-        .map(|c| c != current_category_name)
-        .unwrap_or(false);
-
-    if moving_category {
+    // Cross-category move only when an explicit category different from the
+    // current one is supplied; otherwise fall through to the description-only
+    // path. (Equivalent to the prior `moving_category` boolean gate.)
+    if let Some(target_name) = category_arg.filter(|c| *c != current_category_name) {
         // Cross-category move. Mirrors L76-97.
-        let target_name = category_arg.expect("category_arg present when moving");
         let target_index = tags_data
             .categories
             .iter()
@@ -162,11 +159,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         };
 
         // Remove from current. Mirrors L88.
-        let mut removed = tags_data.categories[current_cat_index].tags.remove(tag_index);
+        let mut removed = tags_data.categories[current_cat_index]
+            .tags
+            .remove(tag_index);
 
         // Decide final description. Mirrors L91-94.
         let final_description = description_arg
-            .map(|s| s.to_string())
+            .map(str::to_string)
             .unwrap_or(original_description);
         removed.description = final_description;
         removed.extra = serde_json::Map::new(); // Match TS: TS pushes a fresh
@@ -289,7 +288,7 @@ fn generate_tags_md(tags: &TagsData) -> String {
     }
 
     if let Some(stats) = tags.extra.get("statistics") {
-        if let Some(last_updated) = stats.get("lastUpdated").and_then(|v| v.as_str()) {
+        if let Some(last_updated) = stats.get("lastUpdated").and_then(serde_json::Value::as_str) {
             out.push_str(&format!("_Last updated: {last_updated}_\n"));
         }
     }
@@ -299,7 +298,12 @@ fn generate_tags_md(tags: &TagsData) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use crate::types::tags::Tag;
     use serde_json::json;

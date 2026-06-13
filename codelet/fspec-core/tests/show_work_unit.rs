@@ -54,7 +54,15 @@ fn build_workunits(
         }
         fields.push_str(&format!(r#","{k}":{v}"#));
     }
-    let all_states = ["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"];
+    let all_states = [
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ];
     let mut state_pairs = Vec::new();
     for st in &all_states {
         if *st == status {
@@ -76,7 +84,6 @@ fn build_workunits(
 fn minimal_unit(id: &str, title: &str, status: &str) -> String {
     build_workunits(id, title, "story", status, &[])
 }
-
 
 // Helper that clears FSPEC_DISABLE_REMINDERS for tests that need reminders ON.
 fn unset_disable_reminders() {
@@ -116,8 +123,14 @@ fn returns_minimal_work_unit_with_empty_linked_features() {
 
     // @step Then the JSON payload omits both systemReminders and systemReminder (backlog status suppresses the missing-estimate reminder)
     let obj = data.as_object().expect("root object");
-    assert!(!obj.contains_key("systemReminders"), "must omit systemReminders for backlog");
-    assert!(!obj.contains_key("systemReminder"), "must omit systemReminder for backlog");
+    assert!(
+        !obj.contains_key("systemReminders"),
+        "must omit systemReminders for backlog"
+    );
+    assert!(
+        !obj.contains_key("systemReminder"),
+        "must omit systemReminder for backlog"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -198,7 +211,13 @@ fn projects_active_rules_and_omits_soft_deleted() {
     ]"#;
     write_work_units(
         tmp.path(),
-        &build_workunits("AUTH-001", "t", "story", "implementing", &[("rules", rules)]),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "implementing",
+            &[("rules", rules)],
+        ),
     );
 
     // @step When I dispatch show-work-unit with workUnitId='AUTH-001' and format='json'
@@ -218,7 +237,10 @@ fn projects_active_rules_and_omits_soft_deleted() {
 
     // @step Then the JSON payload does NOT contain a deletedRules field
     let obj = data.as_object().expect("root object");
-    assert!(!obj.contains_key("deletedRules"), "deletedRules must be omitted");
+    assert!(
+        !obj.contains_key("deletedRules"),
+        "deletedRules must be omitted"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -237,7 +259,13 @@ fn projects_active_examples_and_omits_soft_deleted() {
     ]"#;
     write_work_units(
         tmp.path(),
-        &build_workunits("AUTH-001", "t", "story", "implementing", &[("examples", examples)]),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "implementing",
+            &[("examples", examples)],
+        ),
     );
 
     // @step When I dispatch show-work-unit with workUnitId='AUTH-001' and format='json'
@@ -273,7 +301,13 @@ fn filters_questions_by_deleted_and_selected_flags() {
     ]"#;
     write_work_units(
         tmp.path(),
-        &build_workunits("AUTH-001", "t", "story", "implementing", &[("questions", questions)]),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "implementing",
+            &[("questions", questions)],
+        ),
     );
 
     // @step When I dispatch show-work-unit with workUnitId='AUTH-001' and format='json'
@@ -309,7 +343,13 @@ fn projects_active_architecture_notes_and_omits_soft_deleted() {
     ]"#;
     write_work_units(
         tmp.path(),
-        &build_workunits("AUTH-001", "t", "story", "implementing", &[("architectureNotes", notes)]),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "implementing",
+            &[("architectureNotes", notes)],
+        ),
     );
 
     // @step When I dispatch show-work-unit with workUnitId='AUTH-001' and format='json'
@@ -323,7 +363,9 @@ fn projects_active_architecture_notes_and_omits_soft_deleted() {
     let data = parse_data(&result.data);
 
     // @step Then the JSON payload's architectureNotes array equals ["[0] N1", "[1] N2"]
-    let arr = data["architectureNotes"].as_array().expect("architectureNotes array");
+    let arr = data["architectureNotes"]
+        .as_array()
+        .expect("architectureNotes array");
     let strings: Vec<&str> = arr.iter().map(|v| v.as_str().unwrap_or("")).collect();
     assert_eq!(strings, vec!["[0] N1", "[1] N2"]);
 }
@@ -341,7 +383,13 @@ fn rejects_legacy_bare_string_question_entries() {
     let questions = r#"["bare string"]"#;
     write_work_units(
         tmp.path(),
-        &build_workunits("AUTH-001", "t", "story", "implementing", &[("questions", questions)]),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "implementing",
+            &[("questions", questions)],
+        ),
     );
 
     // @step When I dispatch show-work-unit with workUnitId='AUTH-001' and format='json'
@@ -401,16 +449,28 @@ fn emits_soft_delete_count_notice_for_mixed_rules() {
     let data = parse_data(&result.data);
 
     // @step Then the JSON payload's systemReminders array contains the bare string "3 active items (1 deleted)"
-    let arr = data["systemReminders"].as_array().expect("systemReminders array");
-    let has = arr
-        .iter()
-        .any(|v| v.as_str().map(|s| s.contains("3 active items (1 deleted)")).unwrap_or(false));
+    let arr = data["systemReminders"]
+        .as_array()
+        .expect("systemReminders array");
+    let has = arr.iter().any(|v| {
+        v.as_str()
+            .map(|s| s.contains("3 active items (1 deleted)"))
+            .unwrap_or(false)
+    });
     assert!(has, "missing soft-delete count notice; got: {arr:?}");
 
     // @step Then the JSON payload's systemReminder field is a single <system-reminder>…</system-reminder> block containing the substring "3 active items (1 deleted)"
-    let block = data["systemReminder"].as_str().expect("systemReminder string");
-    assert!(block.starts_with("<system-reminder>"), "must start with <system-reminder>: {block}");
-    assert!(block.ends_with("</system-reminder>"), "must end with </system-reminder>: {block}");
+    let block = data["systemReminder"]
+        .as_str()
+        .expect("systemReminder string");
+    assert!(
+        block.starts_with("<system-reminder>"),
+        "must start with <system-reminder>: {block}"
+    );
+    assert!(
+        block.ends_with("</system-reminder>"),
+        "must end with </system-reminder>: {block}"
+    );
     assert!(
         block.contains("3 active items (1 deleted)"),
         "wrapped block missing notice substring: {block}"
@@ -446,11 +506,18 @@ fn inherits_feature_level_work_unit_tags_onto_scenarios() {
     let data = parse_data(&result.data);
 
     // @step Then the JSON payload's linkedFeatures array has exactly one entry whose file ends with 'spec/features/auth.feature'
-    let arr = data["linkedFeatures"].as_array().expect("linkedFeatures array");
-    assert_eq!(arr.len(), 1, "expected exactly one linked feature, got {arr:?}");
+    let arr = data["linkedFeatures"]
+        .as_array()
+        .expect("linkedFeatures array");
+    assert_eq!(
+        arr.len(),
+        1,
+        "expected exactly one linked feature, got {arr:?}"
+    );
     let file = arr[0]["file"].as_str().expect("file string");
     assert!(
-        file.ends_with("spec/features/auth.feature") || file.ends_with("spec\\features\\auth.feature"),
+        file.ends_with("spec/features/auth.feature")
+            || file.ends_with("spec\\features\\auth.feature"),
         "file path mismatch: {file}"
     );
 
@@ -461,7 +528,10 @@ fn inherits_feature_level_work_unit_tags_onto_scenarios() {
         .map(|v| v.get("name").and_then(|n| n.as_str()).unwrap_or(""))
         .collect();
     assert!(names.contains(&"Login"), "Login must be present: {names:?}");
-    assert!(!names.contains(&"Logout"), "Logout must be excluded: {names:?}");
+    assert!(
+        !names.contains(&"Logout"),
+        "Logout must be excluded: {names:?}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -521,13 +591,23 @@ fn consolidates_multiple_system_reminders_into_single_block() {
     let data = parse_data(&result.data);
 
     // @step Then the JSON payload's systemReminders array contains at least two entries (missing-estimate AND empty-example-mapping)
-    let arr = data["systemReminders"].as_array().expect("systemReminders array");
+    let arr = data["systemReminders"]
+        .as_array()
+        .expect("systemReminders array");
     assert!(arr.len() >= 2, "expected >=2 reminders; got {arr:?}");
 
     // @step Then the JSON payload's systemReminder field is a single <system-reminder>…</system-reminder> block whose body joins the reminders with a blank line
-    let block = data["systemReminder"].as_str().expect("systemReminder string");
-    assert!(block.starts_with("<system-reminder>"), "must start with <system-reminder>: {block}");
-    assert!(block.ends_with("</system-reminder>"), "must end with </system-reminder>: {block}");
+    let block = data["systemReminder"]
+        .as_str()
+        .expect("systemReminder string");
+    assert!(
+        block.starts_with("<system-reminder>"),
+        "must start with <system-reminder>: {block}"
+    );
+    assert!(
+        block.ends_with("</system-reminder>"),
+        "must end with </system-reminder>: {block}"
+    );
     // a blank-line separator (\n\n) should appear inside the consolidated block
     assert!(
         block.contains("\n\n"),
@@ -552,7 +632,13 @@ fn emits_large_estimate_reminder_with_create_feature_file_first_branch() {
     let tmp = TempDir::new().expect("tempdir");
     write_work_units(
         tmp.path(),
-        &build_workunits("AUTH-001", "t", "story", "implementing", &[("estimate", "21")]),
+        &build_workunits(
+            "AUTH-001",
+            "t",
+            "story",
+            "implementing",
+            &[("estimate", "21")],
+        ),
     );
 
     // @step Given there is no spec/features/ directory or no feature file tagged @AUTH-001
@@ -572,10 +658,16 @@ fn emits_large_estimate_reminder_with_create_feature_file_first_branch() {
     let data = parse_data(&result.data);
 
     // @step Then the JSON payload's systemReminders array contains a reminder whose body contains the exact substring "LARGE ESTIMATE WARNING"
-    let arr = data["systemReminders"].as_array().expect("systemReminders array");
+    let arr = data["systemReminders"]
+        .as_array()
+        .expect("systemReminders array");
     let large_warn = arr
         .iter()
-        .find(|v| v.as_str().map(|s| s.contains("LARGE ESTIMATE WARNING")).unwrap_or(false))
+        .find(|v| {
+            v.as_str()
+                .map(|s| s.contains("LARGE ESTIMATE WARNING"))
+                .unwrap_or(false)
+        })
         .cloned()
         .unwrap_or_else(|| panic!("missing LARGE ESTIMATE WARNING reminder; got: {arr:?}"));
 
@@ -624,8 +716,14 @@ fn honours_fspec_disable_reminders_env_gate() {
 
     // @step Then the JSON payload omits both systemReminders and systemReminder
     let obj = data.as_object().expect("root object");
-    assert!(!obj.contains_key("systemReminders"), "systemReminders must be omitted under FSPEC_DISABLE_REMINDERS=1");
-    assert!(!obj.contains_key("systemReminder"), "systemReminder must be omitted under FSPEC_DISABLE_REMINDERS=1");
+    assert!(
+        !obj.contains_key("systemReminders"),
+        "systemReminders must be omitted under FSPEC_DISABLE_REMINDERS=1"
+    );
+    assert!(
+        !obj.contains_key("systemReminder"),
+        "systemReminder must be omitted under FSPEC_DISABLE_REMINDERS=1"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -672,25 +770,46 @@ fn text_format_renders_multi_section_dump_with_type_status_epic_and_dependency_l
     let out = &result.data;
 
     // @step Then the DispatchResult.data contains the line "AUTH-001"
-    assert!(out.lines().any(|l| l.contains("AUTH-001")), "missing AUTH-001 line; got:\n{out}");
+    assert!(
+        out.lines().any(|l| l.contains("AUTH-001")),
+        "missing AUTH-001 line; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the line "Type: story"
-    assert!(out.contains("Type: story"), "missing Type: story; got:\n{out}");
+    assert!(
+        out.contains("Type: story"),
+        "missing Type: story; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the line "Status: backlog"
-    assert!(out.contains("Status: backlog"), "missing Status: backlog; got:\n{out}");
+    assert!(
+        out.contains("Status: backlog"),
+        "missing Status: backlog; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the substring "Epic: auth"
-    assert!(out.contains("Epic: auth"), "missing Epic: auth; got:\n{out}");
+    assert!(
+        out.contains("Epic: auth"),
+        "missing Epic: auth; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the substring "Parent: RPC-003"
-    assert!(out.contains("Parent: RPC-003"), "missing Parent: RPC-003; got:\n{out}");
+    assert!(
+        out.contains("Parent: RPC-003"),
+        "missing Parent: RPC-003; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the substring "Blocks: X-1, X-2"
-    assert!(out.contains("Blocks: X-1, X-2"), "missing Blocks: X-1, X-2; got:\n{out}");
+    assert!(
+        out.contains("Blocks: X-1, X-2"),
+        "missing Blocks: X-1, X-2; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the line "Rules:"
-    assert!(out.lines().any(|l| l.trim_end() == "Rules:"), "missing Rules: header; got:\n{out}");
+    assert!(
+        out.lines().any(|l| l.trim_end() == "Rules:"),
+        "missing Rules: header; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the line "  [0] must be 8+ chars"
     assert!(
@@ -699,7 +818,10 @@ fn text_format_renders_multi_section_dump_with_type_status_epic_and_dependency_l
     );
 
     // @step Then the DispatchResult.data contains the line "Examples:"
-    assert!(out.lines().any(|l| l.trim_end() == "Examples:"), "missing Examples: header; got:\n{out}");
+    assert!(
+        out.lines().any(|l| l.trim_end() == "Examples:"),
+        "missing Examples: header; got:\n{out}"
+    );
 
     // @step Then the DispatchResult.data contains the line "  [0] happy path"
     assert!(
@@ -742,7 +864,15 @@ fn json_format_emits_two_space_indented_payload_with_canonical_field_set() {
 
     // @step Then the DispatchResult.data parses as JSON whose root contains id, title, type, status, createdAt, updatedAt, linkedFeatures
     let data = parse_data(&result.data);
-    for k in ["id", "title", "type", "status", "createdAt", "updatedAt", "linkedFeatures"] {
+    for k in [
+        "id",
+        "title",
+        "type",
+        "status",
+        "createdAt",
+        "updatedAt",
+        "linkedFeatures",
+    ] {
         assert!(
             data.get(k).is_some(),
             "missing root field `{k}`; got: {data}"
@@ -797,7 +927,9 @@ fn returns_error_when_work_unit_id_missing_from_args() {
     let msg = result.error.as_ref().expect("error message");
     let lower = msg.to_lowercase();
     assert!(
-        lower.contains("workunitid") || lower.contains("work unit id") || lower.contains("workunit"),
+        lower.contains("workunitid")
+            || lower.contains("work unit id")
+            || lower.contains("workunit"),
         "error must mention missing workUnitId; got: {msg}"
     );
 }
@@ -812,8 +944,7 @@ fn shared_infrastructure_delegation_uses_gherkin_crate() {
     // (precondition: this test only runs if the crate builds successfully)
 
     // @step When I inspect codelet/fspec-core/src/commands/show_work_unit.rs
-    let src_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/commands/show_work_unit.rs");
+    let src_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/commands/show_work_unit.rs");
     let src = fs::read_to_string(&src_path).expect("commands/show_work_unit.rs readable");
 
     // @step Then the file does NOT contain the substring "FspecCoreError::NotYetPorted"

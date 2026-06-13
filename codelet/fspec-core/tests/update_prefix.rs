@@ -50,8 +50,7 @@ fn write_epics(project_root: &Path, raw: &str) {
 }
 
 fn read_prefixes_raw(project_root: &Path) -> String {
-    fs::read_to_string(project_root.join("spec/prefixes.json"))
-        .expect("read spec/prefixes.json")
+    fs::read_to_string(project_root.join("spec/prefixes.json")).expect("read spec/prefixes.json")
 }
 
 const AUTH_DESC_OLD: &str = r#"{
@@ -216,7 +215,10 @@ fn dispatcher_updates_epic_id_when_epic_exists() {
     // @step Then spec/prefixes.json now has AUTH.updatedAt set to a non-empty ISO-8601 UTC timestamp
     let updated_at = auth["updatedAt"].as_str().expect("updatedAt present");
     assert!(!updated_at.is_empty(), "updatedAt must be non-empty");
-    assert!(iso_8601_shape_ok(updated_at), "updatedAt shape: {updated_at}");
+    assert!(
+        iso_8601_shape_ok(updated_at),
+        "updatedAt shape: {updated_at}"
+    );
 }
 
 #[test]
@@ -287,7 +289,10 @@ fn dispatcher_rejects_unknown_epic_id_and_leaves_prefixes_untouched() {
 
     // @step Then spec/prefixes.json is byte-identical to its pre-call content
     let after = read_prefixes_raw(tmp.path());
-    assert_eq!(before, after, "prefixes.json must be untouched on epic error");
+    assert_eq!(
+        before, after,
+        "prefixes.json must be untouched on epic error"
+    );
 }
 
 #[test]

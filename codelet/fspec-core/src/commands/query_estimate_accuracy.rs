@@ -336,10 +336,7 @@ fn compute_aggregate(data: &RawData, by_prefix: bool) -> AllResult {
                 prefix,
                 PrefixBucket {
                     avg_accuracy: format!("{avg:.1} avg iterations"),
-                    recommendation: format!(
-                        "{count} sample{}",
-                        if count > 1 { "s" } else { "" }
-                    ),
+                    recommendation: format!("{count} sample{}", if count > 1 { "s" } else { "" }),
                 },
             );
         }
@@ -399,10 +396,9 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case() {
-        let a: Args = serde_json::from_str(
-            r#"{"workUnitId":"AUTH-001","byPrefix":true,"format":"json"}"#,
-        )
-        .unwrap();
+        let a: Args =
+            serde_json::from_str(r#"{"workUnitId":"AUTH-001","byPrefix":true,"format":"json"}"#)
+                .unwrap();
         assert_eq!(a.work_unit_id.as_deref(), Some("AUTH-001"));
         assert!(a.by_prefix);
         assert_eq!(a.format.as_deref(), Some("json"));

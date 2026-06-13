@@ -206,7 +206,7 @@ fn build_categories(
                         });
                     }
                 }
-                category_tags.sort_by(|a, b| b.count.cmp(&a.count));
+                category_tags.sort_by_key(|t| std::cmp::Reverse(t.count));
                 if !category_tags.is_empty() {
                     categories.push(CategoryStats {
                         name: cat.name.clone(),
@@ -225,7 +225,7 @@ fn build_categories(
             })
             .collect();
         if !unregistered_tags.is_empty() {
-            unregistered_tags.sort_by(|a, b| b.count.cmp(&a.count));
+            unregistered_tags.sort_by_key(|t| std::cmp::Reverse(t.count));
             categories.push(CategoryStats {
                 name: "Unregistered".to_string(),
                 tags: unregistered_tags,
@@ -250,7 +250,7 @@ fn build_categories(
                 count: *count,
             })
             .collect();
-        all_tags.sort_by(|a, b| b.count.cmp(&a.count));
+        all_tags.sort_by_key(|t| std::cmp::Reverse(t.count));
         categories.push(CategoryStats {
             name: "Unregistered".to_string(),
             tags: all_tags,
@@ -305,7 +305,11 @@ fn render_text(result: &TagStatsResult) -> String {
 
         for category in &result.categories {
             out.push('\n');
-            out.push_str(&format!("{} ({} tags)\n", category.name, category.tags.len()));
+            out.push_str(&format!(
+                "{} ({} tags)\n",
+                category.name,
+                category.tags.len()
+            ));
             for tc in &category.tags {
                 let padded = pad_end(&tc.tag, 30);
                 out.push_str(&format!("  {padded} {}\n", tc.count));
@@ -382,7 +386,12 @@ fn parse_feature_tags(content: &str) -> Option<Vec<String>> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

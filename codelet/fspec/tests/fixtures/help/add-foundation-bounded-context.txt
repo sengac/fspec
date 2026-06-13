@@ -1,0 +1,67 @@
+
+ADD-FOUNDATION-BOUNDED-CONTEXT
+Add bounded context to foundation-level Big Picture Event Storm for strategic domain boundaries
+
+WHEN TO USE
+  Use during Big Picture Event Storming (foundation level) to identify major strategic boundaries (Bounded Contexts) in your domain architecture.
+
+PREREQUISITES
+  • spec/foundation.json must exist
+  • Bounded context should represent a strategic domain boundary
+  • Should be used for high-level domain architecture (not work unit-level)
+
+USAGE
+  fspec add-foundation-bounded-context <text>
+
+ARGUMENTS
+  <text> (required)
+    Bounded context name (e.g., "Work Management", "Specification", "Testing & Validation")
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Foundation bounded contexts are strategic (Big Picture level)
+  • Work unit bounded contexts are tactical (Process Modeling level)
+  • Typically 3-8 major bounded contexts for most domains
+  • Each bounded context has its own ubiquitous language
+  • Foundation Event Storm informs tag ontology generation
+  • Auto-regenerates FOUNDATION.md after adding bounded context
+
+EXAMPLES
+  1. Add bounded context to foundation Event Storm
+  $ fspec add-foundation-bounded-context "Work Management"
+  ✓ Added bounded context "Work Management" to foundation Event Storm
+✓ Regenerated FOUNDATION.md
+
+  2. Add specification bounded context
+  $ fspec add-foundation-bounded-context "Specification"
+  ✓ Added bounded context "Specification" to foundation Event Storm
+✓ Regenerated FOUNDATION.md
+
+  3. Add testing bounded context
+  $ fspec add-foundation-bounded-context "Testing & Validation"
+  ✓ Added bounded context "Testing & Validation" to foundation Event Storm
+✓ Regenerated FOUNDATION.md
+
+COMMON ERRORS
+  ✗ spec/foundation.json not found
+    Fix: Run foundation discovery first: fspec discover-foundation
+
+RELATED COMMANDS
+  fspec remove-foundation-bounded-context
+  fspec add-aggregate-to-foundation
+  fspec add-domain-event-to-foundation
+  fspec add-command-to-foundation
+  fspec show-foundation-event-storm
+  fspec add-bounded-context
+
+NOTES
+  • Foundation-level bounded contexts define strategic domain architecture
+  • Used for Big Picture Event Storming (not Process Modeling)
+  • Bounded contexts assigned stable IDs starting from 1
+  • Stored in foundation.json eventStorm section
+  • Auto-regenerates FOUNDATION.md documentation
+  • Use show-foundation-event-storm to view all foundation Event Storm items
+  • Foundation bounded contexts used for tag derivation (EXMAP-004)
+

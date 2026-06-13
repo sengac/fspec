@@ -113,7 +113,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         let current = work_units_data
             .work_units
             .get(&args.work_unit_id)
-            .map(|wu| wu.type_str())
+            .map(crate::types::work_unit::WorkUnit::type_str)
             .unwrap_or("story");
         let reason = format!(
             "Work unit type is immutable and cannot be changed after creation.\n\n\
@@ -169,18 +169,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // ── Mutation phase ─────────────────────────────────────────────────
     // Round-trip the raw work-units object so existing entries keep their
     // exact key order. Fall back to the typed data on any read failure.
-    let mut wu_top: Map<String, Value> = read_raw_object(
-        &project_root.join("spec").join("work-units.json"),
-    )
-    .unwrap_or_else(|| {
-        serde_json::to_value(&work_units_data)
-            .ok()
-            .and_then(|v| match v {
-                Value::Object(m) => Some(m),
-                _ => None,
-            })
-            .unwrap_or_default()
-    });
+    let mut wu_top: Map<String, Value> =
+        read_raw_object(&project_root.join("spec").join("work-units.json")).unwrap_or_else(|| {
+            serde_json::to_value(&work_units_data)
+                .ok()
+                .and_then(|v| match v {
+                    Value::Object(m) => Some(m),
+                    _ => None,
+                })
+                .unwrap_or_default()
+        });
 
     // Old epic (for the move) — read from the typed data BEFORE mutation.
     let old_epic = work_units_data
@@ -207,10 +205,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             unit.insert("title".to_string(), Value::String(title.to_string()));
         }
         if let Some(desc) = args.description.as_deref() {
-            unit.insert(
-                "description".to_string(),
-                Value::String(desc.to_string()),
-            );
+            unit.insert("description".to_string(), Value::String(desc.to_string()));
         }
         if let Some(epic) = args.epic.as_deref() {
             unit.insert("epic".to_string(), Value::String(epic.to_string()));
@@ -261,7 +256,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 *children = Value::Array(Vec::new());
             }
             if let Value::Array(arr) = children {
-                if !arr.iter().any(|c| c.as_str() == Some(args.work_unit_id.as_str())) {
+                if !arr
+                    .iter()
+                    .any(|c| c.as_str() == Some(args.work_unit_id.as_str()))
+                {
                     arr.push(Value::String(args.work_unit_id.clone()));
                 }
             }
@@ -284,17 +282,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // final work-units transaction).
     if let Some(new_epic) = args.epic.as_deref() {
         let mut epics_top: Map<String, Value> =
-            read_raw_object(&project_root.join("spec").join("epics.json"))
-                .unwrap_or_default();
+            read_raw_object(&project_root.join("spec").join("epics.json")).unwrap_or_default();
         if let Some(epics_obj) = epics_top.get_mut("epics").and_then(Value::as_object_mut) {
             // Remove from old epic. TS (update-work-unit.ts:94-98) has NO
             // `oldEpic !== epic` guard: a same-epic re-assignment still
             // removes-then-re-appends, moving the id to the END of the epic's
             // workUnits array. Reproduce that bug-for-bug.
             if let Some(old) = old_epic.as_deref() {
-                if let Some(old_obj) =
-                    epics_obj.get_mut(old).and_then(Value::as_object_mut)
-                {
+                if let Some(old_obj) = epics_obj.get_mut(old).and_then(Value::as_object_mut) {
                     if let Some(Value::Array(units)) = old_obj.get_mut("workUnits") {
                         units.retain(|u| u.as_str() != Some(args.work_unit_id.as_str()));
                     }
@@ -309,7 +304,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                     *units = Value::Array(Vec::new());
                 }
                 if let Value::Array(arr) = units {
-                    if !arr.iter().any(|u| u.as_str() == Some(args.work_unit_id.as_str())) {
+                    if !arr
+                        .iter()
+                        .any(|u| u.as_str() == Some(args.work_unit_id.as_str()))
+                    {
                         arr.push(Value::String(args.work_unit_id.clone()));
                     }
                 }
@@ -372,7 +370,12 @@ fn read_raw_object(path: &Path) -> Option<Map<String, Value>> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -401,7 +404,10 @@ mod tests {
         let data = crate::types::work_unit::WorkUnitsData::initial("x");
         let mut visited = std::collections::HashSet::new();
         assert!(would_create_circular_reference(
-            &data, "AUTH-001", "AUTH-001", &mut visited
+            &data,
+            "AUTH-001",
+            "AUTH-001",
+            &mut visited
         ));
     }
 
@@ -417,9 +423,13 @@ mod tests {
             "states": { "backlog": ["A","B"], "specifying": [], "testing": [],
                 "implementing": [], "validating": [], "done": [], "blocked": [] }
         }"#;
-        let data: crate::types::work_unit::WorkUnitsData =
-            serde_json::from_str(raw).unwrap();
+        let data: crate::types::work_unit::WorkUnitsData = serde_json::from_str(raw).unwrap();
         let mut visited = std::collections::HashSet::new();
-        assert!(!would_create_circular_reference(&data, "A", "B", &mut visited));
+        assert!(!would_create_circular_reference(
+            &data,
+            "A",
+            "B",
+            &mut visited
+        ));
     }
 }

@@ -130,7 +130,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let entry = data
         .prefixes
         .get_mut(&prefix)
-        .expect("prefix existence checked above");
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "update-prefix",
+            reason: format!("Failed to update prefix: Prefix {prefix} not found"),
+        })?;
 
     if let Some(description) = args.description {
         entry.description = description;
@@ -168,7 +171,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// see that module for the millisecond-precision rationale.
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -194,10 +202,9 @@ mod tests {
 
     #[test]
     fn args_parse_full_object_with_camel_case_epic_id() {
-        let a: UpdatePrefixArgs = serde_json::from_str(
-            r#"{"prefix":"AUTH","description":"new","epicId":"auth-epic"}"#,
-        )
-        .unwrap();
+        let a: UpdatePrefixArgs =
+            serde_json::from_str(r#"{"prefix":"AUTH","description":"new","epicId":"auth-epic"}"#)
+                .unwrap();
         assert_eq!(a.prefix.as_deref(), Some("AUTH"));
         assert_eq!(a.description.as_deref(), Some("new"));
         assert_eq!(a.epic_id.as_deref(), Some("auth-epic"));

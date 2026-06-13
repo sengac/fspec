@@ -4,7 +4,9 @@
 //! See `add_attachment.rs` for the three TS quirks (comma-joined workflow,
 //! double-`fspec` related commands, `Fix: undefined`).
 
-use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError};
+use super::super::{
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
+};
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {

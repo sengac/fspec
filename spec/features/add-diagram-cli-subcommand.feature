@@ -58,7 +58,7 @@ Feature: fspec add-diagram CLI subcommand (Rust port)
     And stderr contains the substring 'Error:'
     And stderr contains the substring 'Diagram code cannot be empty'
 
-  Scenario: CLI rejects an invalid mermaid subgraph identifier (Framing A regex check)
+  Scenario: CLI rejects an invalid mermaid subgraph identifier (merman pre-check)
     Given spec/foundation.json exists with architectureDiagrams=[]
     When I run `./codelet/target/release/fspec add-diagram Architecture "Bad" "graph TB\n  subgraph Id!!!\n  end"`
     Then the command exits with code 1

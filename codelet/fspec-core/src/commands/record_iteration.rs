@@ -91,10 +91,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // TS reads the file directly (no ensure helper); surface any IO error
     // through the canonical wrapper.
-    let raw = std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
-        command: "record-iteration",
-        reason: wrap_failure(&format_io_error(&e, &work_units_path.display().to_string())),
-    })?;
+    let raw =
+        std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
+            command: "record-iteration",
+            reason: wrap_failure(&format_io_error(&e, &work_units_path.display().to_string())),
+        })?;
 
     let mut data: WorkUnitsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
@@ -103,21 +104,20 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
 
     // Validate the work unit exists (mirrors src/commands/record-iteration.ts:34-36).
-    if !data.work_units.contains_key(work_unit_id) {
-        return Err(FspecCoreError::InvalidArgs {
-            command: "record-iteration",
-            reason: wrap_failure(&format!("Work unit {work_unit_id} not found")),
-        });
-    }
+    let wu = match data.work_units.get_mut(work_unit_id) {
+        Some(wu) => wu,
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "record-iteration",
+                reason: wrap_failure(&format!("Work unit {work_unit_id} not found")),
+            });
+        }
+    };
 
     let now = iso8601_now();
 
     // Increment: `iterations = (iterations || 0) + 1` (TS treats a non-numeric
     // or absent value as 0 via the `|| 0` short-circuit).
-    let wu = data
-        .work_units
-        .get_mut(work_unit_id)
-        .expect("work unit exists");
 
     let current = wu
         .extra
@@ -159,8 +159,7 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case() {
-        let a: RecordIterationArgs =
-            serde_json::from_str(r#"{"workUnitId":"AUTH-001"}"#).unwrap();
+        let a: RecordIterationArgs = serde_json::from_str(r#"{"workUnitId":"AUTH-001"}"#).unwrap();
         assert_eq!(a.work_unit_id.as_deref(), Some("AUTH-001"));
     }
 

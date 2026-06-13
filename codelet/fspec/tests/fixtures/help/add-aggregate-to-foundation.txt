@@ -1,0 +1,67 @@
+
+ADD-AGGREGATE-TO-FOUNDATION
+Add an aggregate to a foundation bounded context in Big Picture Event Storm
+
+WHEN TO USE
+  Use during Big Picture Event Storming to add aggregates (business entities with state and behavior) to specific bounded contexts in the foundation domain model.
+
+PREREQUISITES
+  • foundation.json must exist
+  • Big Picture Event Storm must be initialized
+  • Target bounded context must already exist
+
+USAGE
+  fspec add-aggregate-to-foundation <context-name> <aggregate-name> [--description <text>]
+
+ARGUMENTS
+  <<context-name>> (required)
+    Name of the bounded context (must already exist)
+  <<aggregate-name>> (required)
+    Name of the aggregate to add (e.g., "WorkUnit", "User", "Order")
+
+OPTIONS
+  -d, --description <text>
+    Optional description explaining the aggregate's purpose
+
+COMMON PATTERNS
+  • Add aggregates during Big Picture Event Storm sessions
+  • Group related aggregates within same bounded context
+  • Aggregates typically map to core business entities (User, Order, WorkUnit, etc.)
+  • Each aggregate should have clear state and behavior boundaries
+  • Use descriptions to document aggregate responsibilities
+
+EXAMPLES
+  1. Add WorkUnit aggregate to Work Management bounded context
+  $ fspec add-aggregate-to-foundation "Work Management" "WorkUnit"
+  ✓ Added aggregate "WorkUnit" to "Work Management" bounded context
+
+  2. Add aggregate with description
+  $ fspec add-aggregate-to-foundation "Work Management" "WorkUnit" --description "Tracks a discrete piece of work"
+  ✓ Added aggregate "WorkUnit" to "Work Management" bounded context
+
+  3. Add User aggregate to Identity bounded context
+  $ fspec add-aggregate-to-foundation "Identity" "User"
+  ✓ Added aggregate "User" to "Identity" bounded context
+
+COMMON ERRORS
+  ✗ Bounded context 'Foo' not found
+    Fix: Create the bounded context first: fspec add-foundation-bounded-context "Foo"
+
+  ✗ foundation.json not found
+    Fix: Initialize foundation first: fspec discover-foundation
+
+RELATED COMMANDS
+  fspec remove-aggregate-from-foundation
+  fspec add-foundation-bounded-context
+  fspec add-domain-event-to-foundation
+  fspec add-command-to-foundation
+  fspec show-foundation-event-storm
+  fspec generate-foundation-md
+
+NOTES
+  • Aggregates are stored in foundation.json eventStorm.items array
+  • Each aggregate is linked to a bounded context via boundedContextId
+  • Aggregates have color="yellow" by default (Event Storming convention)
+  • FOUNDATION.md is automatically regenerated after adding aggregate
+  • Foundation aggregates define STRATEGIC model, work unit aggregates are TACTICAL
+

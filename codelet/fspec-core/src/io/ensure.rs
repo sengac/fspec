@@ -154,17 +154,14 @@ pub fn ensure_epics_file(cwd: &Path) -> Result<EpicsData, FspecCoreError> {
 /// [`FspecCoreError::FoundationMissing`] whose `Display` is the VERBATIM
 /// `userMessage + "\n" + systemReminder` block (byte-for-byte parity with the
 /// TypeScript implementation), parameterised by `original_command`.
-pub fn check_foundation_exists(
-    cwd: &Path,
-    original_command: &str,
-) -> Result<(), FspecCoreError> {
+pub fn check_foundation_exists(cwd: &Path, original_command: &str) -> Result<(), FspecCoreError> {
     let path = cwd.join("spec").join("foundation.json");
     if path.exists() {
         return Ok(());
     }
-    Err(FspecCoreError::FoundationMissing(build_foundation_missing_error(
-        original_command,
-    )))
+    Err(FspecCoreError::FoundationMissing(
+        build_foundation_missing_error(original_command),
+    ))
 }
 
 /// Build the foundation-missing message — verbatim port of
@@ -339,7 +336,11 @@ fn epoch_to_ymdhms(secs: u64) -> (i32, u32, u32, u32, u32, u32) {
     let s = seconds_of_day % 60;
 
     let z = days + 719_468;
-    let era = if z >= 0 { z / 146_097 } else { (z - 146_096) / 146_097 };
+    let era = if z >= 0 {
+        z / 146_097
+    } else {
+        (z - 146_096) / 146_097
+    };
     let doe = (z - era * 146_097) as u32; // [0, 146096]
     let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365; // [0, 399]
     let y = yoe as i64 + era * 400;
@@ -354,7 +355,12 @@ fn epoch_to_ymdhms(secs: u64) -> (i32, u32, u32, u32, u32, u32) {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use tempfile::TempDir;
 

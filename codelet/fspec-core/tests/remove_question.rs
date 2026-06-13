@@ -76,7 +76,11 @@ fn work_units_with(status: &str, extras_json: &str) -> String {
     "blocked": {blocked}
   }}
 }}"#,
-        maybe_comma = if extras_json.trim().is_empty() { "" } else { ",\n      " },
+        maybe_comma = if extras_json.trim().is_empty() {
+            ""
+        } else {
+            ",\n      "
+        },
         extras_json = extras_json.trim(),
     )
 }
@@ -252,7 +256,10 @@ fn returns_idempotent_success_when_the_question_is_already_deleted() {
 
     // @step And the dispatcher output contains message='Item ID 0 already deleted'
     let parsed: Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert_eq!(parsed["message"].as_str(), Some("Item ID 0 already deleted"));
+    assert_eq!(
+        parsed["message"].as_str(),
+        Some("Item ID 0 already deleted")
+    );
 
     // @step And spec/work-units.json on disk shows the question with id=0 still has deletedAt='1999-01-01T00:00:00.000Z'
     let on_disk = read_work_units(tmp.path());

@@ -37,8 +37,7 @@ const OPTS: &[CommandOption] = &[
     },
     CommandOption {
         flag: "--add-to-assumptions",
-        description:
-            "Also add answer as an assumption (deprecated: use --add-to assumption)",
+        description: "Also add answer as an assumption (deprecated: use --add-to assumption)",
         default_value: None,
     },
 ];

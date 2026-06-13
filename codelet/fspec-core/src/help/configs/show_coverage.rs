@@ -6,8 +6,8 @@
 //! `codelet/fspec/tests/fixtures/help/show-coverage.txt`.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const EX1_OUT: &str = "Coverage Report: user-authentication.feature\nCoverage: 50% (1/2 scenarios)\n\n## Scenarios\n### ✅ Login with valid credentials (FULLY COVERED)\n- **Test**: src/__tests__/auth.test.ts:45-62\n- **Implementation**: src/auth/login.ts:10,11,12,23,24\n\n### ❌ Login with invalid credentials (NOT COVERED)\n- No test mappings";

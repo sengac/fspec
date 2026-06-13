@@ -65,9 +65,7 @@ fn coverage_fully_covered(n_total: usize, n_covered: usize) -> String {
         ));
     }
     for i in n_covered..n_total {
-        scenarios.push(format!(
-            r#"{{ "name": "S{i}", "testMappings": [] }}"#
-        ));
+        scenarios.push(format!(r#"{{ "name": "S{i}", "testMappings": [] }}"#));
     }
     let percent = if n_total == 0 {
         0
@@ -84,7 +82,10 @@ fn coverage_fully_covered(n_total: usize, n_covered: usize) -> String {
     "totalLinesCovered": 0
   }}"#
     );
-    make_coverage(&format!("[\n    {}\n  ]", scenarios.join(",\n    ")), &stats)
+    make_coverage(
+        &format!("[\n    {}\n  ]", scenarios.join(",\n    ")),
+        &stats,
+    )
 }
 
 /// Write referenced test+impl files for `n_covered` scenarios so warnings don't fire.
@@ -105,7 +106,11 @@ fn scenario_bare_feature_name_resolves_and_renders_markdown() {
     let tmp = TempDir::new().expect("tempdir");
     write_referenced_files(tmp.path(), 4);
     let body = coverage_fully_covered(5, 4);
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", &body);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        &body,
+    );
 
     // @step When I dispatch show-coverage with featureName='user-login' (no format)
     let result = dispatch_command(req(tmp.path(), json!({"featureName": "user-login"})));
@@ -115,14 +120,19 @@ fn scenario_bare_feature_name_resolves_and_renders_markdown() {
 
     // @step And the rendered string starts with the line '# Coverage Report: user-login.feature'
     assert!(
-        result.data.starts_with("# Coverage Report: user-login.feature"),
+        result
+            .data
+            .starts_with("# Coverage Report: user-login.feature"),
         "rendered must start with title; got:\n{}",
         result.data
     );
 
     // @step And the rendered string contains the line '**Coverage**: 80% (4/5 scenarios)'
     assert!(
-        result.data.lines().any(|l| l == "**Coverage**: 80% (4/5 scenarios)"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "**Coverage**: 80% (4/5 scenarios)"),
         "rendered must contain coverage line; got:\n{}",
         result.data
     );
@@ -136,10 +146,17 @@ fn scenario_trailing_feature_extension_tolerated() {
     let tmp = TempDir::new().expect("tempdir");
     write_referenced_files(tmp.path(), 4);
     let body = coverage_fully_covered(5, 4);
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", &body);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        &body,
+    );
 
     // @step When I dispatch show-coverage with featureName='user-login.feature'
-    let result_with_ext = dispatch_command(req(tmp.path(), json!({"featureName": "user-login.feature"})));
+    let result_with_ext = dispatch_command(req(
+        tmp.path(),
+        json!({"featureName": "user-login.feature"}),
+    ));
     let result_bare = dispatch_command(req(tmp.path(), json!({"featureName": "user-login"})));
 
     // @step Then the call returns Ok(rendered_string)
@@ -172,7 +189,9 @@ fn scenario_missing_coverage_file_io_error() {
 
     // @step And the error's message contains "Suggestion: Run 'fspec create-feature' to create the feature with coverage tracking"
     assert!(
-        err.contains("Suggestion: Run 'fspec create-feature' to create the feature with coverage tracking"),
+        err.contains(
+            "Suggestion: Run 'fspec create-feature' to create the feature with coverage tracking"
+        ),
         "error must include create-feature suggestion; got: {err}"
     );
 }
@@ -183,7 +202,11 @@ fn scenario_invalid_json_invalid_args_error() {
 
     // @step Given a temp project root contains spec/features/broken.feature.coverage with the bytes '{ not json'
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/broken.feature.coverage", "{ not json");
+    write_file(
+        tmp.path(),
+        "spec/features/broken.feature.coverage",
+        "{ not json",
+    );
 
     // @step When I dispatch show-coverage with featureName='broken'
     let result = dispatch_command(req(tmp.path(), json!({"featureName": "broken"})));
@@ -242,9 +265,13 @@ fn scenario_markdown_summary_section_order() {
     let p_covered = after.find("Covered").expect("Covered");
     let p_uncovered = after.find("Uncovered").expect("Uncovered");
     let p_test_files = after.find("Test Files").expect("Test Files");
-    let p_impl_files = after.find("Implementation Files").expect("Implementation Files");
+    let p_impl_files = after
+        .find("Implementation Files")
+        .expect("Implementation Files");
     let p_test_lines = after.find("Test Lines").expect("Test Lines");
-    let p_impl_lines = after.find("Implementation Lines").expect("Implementation Lines");
+    let p_impl_lines = after
+        .find("Implementation Lines")
+        .expect("Implementation Lines");
     let p_total_lines = after.find("Total Lines").expect("Total Lines");
     assert!(p_total < p_covered);
     assert!(p_covered < p_uncovered);
@@ -288,7 +315,10 @@ fn scenario_per_scenario_fully_covered_label() {
     // @step Then the rendered string contains the line '### ✅ Login (FULLY COVERED)'
     assert!(result.success, "got {result:?}");
     assert!(
-        result.data.lines().any(|l| l == "### ✅ Login (FULLY COVERED)"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "### ✅ Login (FULLY COVERED)"),
         "must contain Fully Covered scenario block; got:\n{}",
         result.data
     );
@@ -338,14 +368,19 @@ fn scenario_per_scenario_partially_covered_label() {
 
     // @step Then the rendered string contains the line '### ⚠️ Logout (PARTIALLY COVERED)'
     assert!(
-        result.data.lines().any(|l| l == "### ⚠️ Logout (PARTIALLY COVERED)"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "### ⚠️ Logout (PARTIALLY COVERED)"),
         "must contain Partially Covered block; got:\n{}",
         result.data
     );
 
     // @step And the rendered string contains the line '- **Implementation**: ⚠️  No implementation mappings'
     assert!(
-        result.data.contains("- **Implementation**: ⚠️  No implementation mappings"),
+        result
+            .data
+            .contains("- **Implementation**: ⚠️  No implementation mappings"),
         "must contain no-impl-mappings bullet; got:\n{}",
         result.data
     );
@@ -394,7 +429,10 @@ fn scenario_per_scenario_uncovered_label_and_gaps_section() {
     );
 
     // @step And the gaps section contains the bullet '- Reset'
-    let gaps_idx = result.data.find("## ⚠️  Coverage Gaps").expect("gaps section");
+    let gaps_idx = result
+        .data
+        .find("## ⚠️  Coverage Gaps")
+        .expect("gaps section");
     let after = &result.data[gaps_idx..];
     assert!(
         after.contains("- Reset"),
@@ -442,7 +480,9 @@ fn scenario_missing_file_warnings_section() {
 
     // @step And the rendered string contains the line '⚠️  File not found: src/__tests__/deleted.test.ts'
     assert!(
-        result.data.contains("⚠️  File not found: src/__tests__/deleted.test.ts"),
+        result
+            .data
+            .contains("⚠️  File not found: src/__tests__/deleted.test.ts"),
         "must contain file-not-found warning; got:\n{}",
         result.data
     );
@@ -473,7 +513,10 @@ fn scenario_legacy_coverage_no_stats_calculated_silently() {
 
     // @step And the rendered string contains the line '**Coverage**: 100% (4/4 scenarios)'
     assert!(
-        result.data.lines().any(|l| l == "**Coverage**: 100% (4/4 scenarios)"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "**Coverage**: 100% (4/4 scenarios)"),
         "must contain 100% coverage line; got:\n{}",
         result.data
     );
@@ -564,7 +607,10 @@ fn scenario_line_counting_test_and_impl_ranges() {
 
     // @step And the rendered markdown contains the line '- Implementation Lines: 154'
     assert!(
-        result.data.lines().any(|l| l == "- Implementation Lines: 154"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "- Implementation Lines: 154"),
         "impl lines must be 154 (5 + 149); got:\n{}",
         result.data
     );
@@ -730,7 +776,10 @@ fn scenario_project_wide_aggregates_totals() {
 
     // @step And the rendered string contains the line '**Overall Coverage**: 75% (3/4 scenarios)'
     assert!(
-        result.data.lines().any(|l| l == "**Overall Coverage**: 75% (3/4 scenarios)"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "**Overall Coverage**: 75% (3/4 scenarios)"),
         "must contain overall coverage line; got:\n{}",
         result.data
     );
@@ -756,10 +805,15 @@ fn scenario_project_summary_section_order() {
     );
 
     // @step And inside Project Summary the lines appear in this order: 'Total Features: 2', 'Total Scenarios: 4', 'Covered: 3', 'Uncovered: 1'
-    let ps = result.data.find("## Project Summary").expect("Project Summary");
+    let ps = result
+        .data
+        .find("## Project Summary")
+        .expect("Project Summary");
     let after = &result.data[ps..];
     let p_features = after.find("Total Features: 2").expect("Total Features: 2");
-    let p_scenarios = after.find("Total Scenarios: 4").expect("Total Scenarios: 4");
+    let p_scenarios = after
+        .find("Total Scenarios: 4")
+        .expect("Total Scenarios: 4");
     let p_covered = after.find("Covered: 3").expect("Covered: 3");
     let p_uncovered = after.find("Uncovered: 1").expect("Uncovered: 1");
     assert!(p_features < p_scenarios);
@@ -960,7 +1014,11 @@ fn scenario_project_wide_silently_skips_invalid_json() {
   }
 }"#;
     write_file(tmp.path(), "spec/features/good.feature.coverage", good);
-    write_file(tmp.path(), "spec/features/bad.feature.coverage", "{ not json");
+    write_file(
+        tmp.path(),
+        "spec/features/bad.feature.coverage",
+        "{ not json",
+    );
 
     // @step When I dispatch show-coverage with no featureName
     let result = dispatch_command(req(tmp.path(), json!({})));
@@ -984,7 +1042,10 @@ fn scenario_project_wide_silently_skips_invalid_json() {
 
     // @step And the rendered string contains the line '**Overall Coverage**: 100% (1/1 scenarios)'
     assert!(
-        result.data.lines().any(|l| l == "**Overall Coverage**: 100% (1/1 scenarios)"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "**Overall Coverage**: 100% (1/1 scenarios)"),
         "must show 100% overall; got:\n{}",
         result.data
     );
@@ -1041,7 +1102,9 @@ fn scenario_project_wide_empty_features_dir_is_error() {
 
     // @step And the error's message contains "Suggestion: Run 'fspec create-feature' to create features with coverage tracking"
     assert!(
-        err.contains("Suggestion: Run 'fspec create-feature' to create features with coverage tracking"),
+        err.contains(
+            "Suggestion: Run 'fspec create-feature' to create features with coverage tracking"
+        ),
         "error must include create-feature suggestion; got: {err}"
     );
 }
@@ -1069,7 +1132,10 @@ fn scenario_project_wide_zero_scenarios_no_nan() {
 
     // @step And the rendered string contains the line '**Overall Coverage**: 0% (0/0 scenarios)'
     assert!(
-        result.data.lines().any(|l| l == "**Overall Coverage**: 0% (0/0 scenarios)"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "**Overall Coverage**: 0% (0/0 scenarios)"),
         "must contain 0% overall with no NaN; got:\n{}",
         result.data
     );
@@ -1106,7 +1172,12 @@ fn scenario_project_wide_json_key_order() {
     let agg_keys: Vec<&str> = agg.keys().map(|s| s.as_str()).collect();
     assert_eq!(
         agg_keys,
-        vec!["totalFeatures", "totalScenarios", "coveredScenarios", "coveragePercent"],
+        vec![
+            "totalFeatures",
+            "totalScenarios",
+            "coveredScenarios",
+            "coveragePercent"
+        ],
         "aggregated keys order; got: {agg_keys:?}"
     );
 
@@ -1146,7 +1217,10 @@ fn scenario_invalid_args_json_returns_invalid_args_error() {
     let result = dispatch_command(request);
 
     // @step Then the call returns Err(FspecCoreError::InvalidArgs)
-    assert!(!result.success, "expected failure on malformed args_json; got {result:?}");
+    assert!(
+        !result.success,
+        "expected failure on malformed args_json; got {result:?}"
+    );
 
     // @step And the error's command field equals 'show-coverage'
     let err = result.error.unwrap_or_default();
@@ -1198,8 +1272,7 @@ fn scenario_coverage_types_module_publicly_accessible() {
     );
 
     // @step And commands/show_coverage.rs no longer returns FspecCoreError::NotYetPorted
-    let show_cov_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/commands/show_coverage.rs");
+    let show_cov_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/commands/show_coverage.rs");
     let show_cov_src = fs::read_to_string(&show_cov_path).expect("show_coverage.rs readable");
     assert!(
         !show_cov_src.contains("NotYetPorted"),

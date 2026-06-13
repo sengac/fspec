@@ -51,7 +51,11 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
 ];
 
-const RELATED: &[&str] = &["add-virtual-hook", "list-virtual-hooks", "clear-virtual-hooks"];
+const RELATED: &[&str] = &[
+    "add-virtual-hook",
+    "list-virtual-hooks",
+    "clear-virtual-hooks",
+];
 
 const NOTES: &[&str] = &[
     "Hook name is auto-generated from command (e.g., \"<quality-check-commands>\" → based on actual tool)",

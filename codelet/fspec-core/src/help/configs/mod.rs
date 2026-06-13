@@ -108,3 +108,16 @@ pub mod record_iteration;
 pub mod repair_work_units;
 pub mod update_work_unit;
 pub mod update_work_unit_estimate;
+// Batch 13 (2026-06-12) — foundation mutation commands
+pub mod add_aggregate_to_foundation;
+pub mod add_capability;
+pub mod add_command_to_foundation;
+pub mod add_foundation_bounded_context;
+pub mod add_persona;
+pub mod remove_aggregate_from_foundation;
+pub mod remove_capability;
+pub mod remove_command_from_foundation;
+pub mod remove_foundation_bounded_context;
+pub mod remove_persona;
+// RPC-233 — generate-foundation-md
+pub mod generate_foundation_md;

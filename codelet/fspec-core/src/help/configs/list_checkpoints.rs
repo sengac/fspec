@@ -74,10 +74,7 @@ const RELATED: &[&str] = &[
     "fspec update-work-unit-status - Auto-creates checkpoints",
 ];
 
-const PREREQUISITES: &[&str] = &[
-    "Work unit must exist",
-    "Git repository must be initialized",
-];
+const PREREQUISITES: &[&str] = &["Work unit must exist", "Git repository must be initialized"];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "list-checkpoints",

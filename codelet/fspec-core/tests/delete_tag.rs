@@ -106,12 +106,19 @@ fn deletes_tag_and_regenerates_tags_md_when_no_feature_files_reference_it() {
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@deprecated"})));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     // @step And the dispatcher output contains the substring 'Successfully deleted tag @deprecated from registry'
     assert!(
-        result.data.contains("Successfully deleted tag @deprecated from registry"),
-        "missing canonical success substring; got:\n{}", result.data
+        result
+            .data
+            .contains("Successfully deleted tag @deprecated from registry"),
+        "missing canonical success substring; got:\n{}",
+        result.data
     );
 
     // @step And spec/tags.json on disk no longer contains a tag named '@deprecated' in any category
@@ -137,12 +144,18 @@ fn blocks_deletion_when_tag_referenced_and_force_not_set() {
     write_tags(tmp.path(), CANONICAL_CRITICAL_PHASE);
 
     // @step And spec/features/auth.feature contains the substring '@critical'
-    write_feature(tmp.path(), "spec/features/auth.feature",
-        "@critical\nFeature: Auth\n  Scenario: ok\n    Given x\n");
+    write_feature(
+        tmp.path(),
+        "spec/features/auth.feature",
+        "@critical\nFeature: Auth\n  Scenario: ok\n    Given x\n",
+    );
 
     // @step And spec/features/billing.feature contains the substring '@critical'
-    write_feature(tmp.path(), "spec/features/billing.feature",
-        "@critical\nFeature: Billing\n  Scenario: ok\n    Given x\n");
+    write_feature(
+        tmp.path(),
+        "spec/features/billing.feature",
+        "@critical\nFeature: Billing\n  Scenario: ok\n    Given x\n",
+    );
 
     let before = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
 
@@ -150,7 +163,11 @@ fn blocks_deletion_when_tag_referenced_and_force_not_set() {
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@critical"})));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     let msg = result.error.as_ref().expect("error msg");
 
@@ -161,17 +178,29 @@ fn blocks_deletion_when_tag_referenced_and_force_not_set() {
     );
 
     // @step And the error message contains the substring 'spec/features/auth.feature'
-    assert!(msg.contains("spec/features/auth.feature"), "missing auth.feature in usage list; got: {msg}");
+    assert!(
+        msg.contains("spec/features/auth.feature"),
+        "missing auth.feature in usage list; got: {msg}"
+    );
 
     // @step And the error message contains the substring 'spec/features/billing.feature'
-    assert!(msg.contains("spec/features/billing.feature"), "missing billing.feature in usage list; got: {msg}");
+    assert!(
+        msg.contains("spec/features/billing.feature"),
+        "missing billing.feature in usage list; got: {msg}"
+    );
 
     // @step And the error message contains the substring 'Use --force to delete anyway'
-    assert!(msg.contains("Use --force to delete anyway"), "missing --force tail; got: {msg}");
+    assert!(
+        msg.contains("Use --force to delete anyway"),
+        "missing --force tail; got: {msg}"
+    );
 
     // @step And spec/tags.json content on disk is unchanged from before the call
     let after = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
-    assert_eq!(before, after, "tags.json MUST be unchanged on blocked deletion");
+    assert_eq!(
+        before, after,
+        "tags.json MUST be unchanged on blocked deletion"
+    );
 }
 
 #[test]
@@ -183,40 +212,67 @@ fn forces_deletion_with_warning_prefix_when_force_set_and_tag_in_use() {
     write_tags(tmp.path(), CANONICAL_CRITICAL_PHASE);
 
     // @step And spec/features/auth.feature contains the substring '@critical'
-    write_feature(tmp.path(), "spec/features/auth.feature",
-        "@critical\nFeature: Auth\n  Scenario: ok\n    Given x\n");
+    write_feature(
+        tmp.path(),
+        "spec/features/auth.feature",
+        "@critical\nFeature: Auth\n  Scenario: ok\n    Given x\n",
+    );
 
     // @step And spec/features/billing.feature contains the substring '@critical'
-    write_feature(tmp.path(), "spec/features/billing.feature",
-        "@critical\nFeature: Billing\n  Scenario: ok\n    Given x\n");
+    write_feature(
+        tmp.path(),
+        "spec/features/billing.feature",
+        "@critical\nFeature: Billing\n  Scenario: ok\n    Given x\n",
+    );
 
     // @step When I dispatch delete-tag with tag '@critical' and --force
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@critical", "force": true})));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     // @step And the dispatcher output contains the substring 'Warning: Tag @critical is still used in 2 file(s):'
     assert!(
-        result.data.contains("Warning: Tag @critical is still used in 2 file(s):"),
-        "missing canonical warning prefix; got:\n{}", result.data
+        result
+            .data
+            .contains("Warning: Tag @critical is still used in 2 file(s):"),
+        "missing canonical warning prefix; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output contains the substring 'spec/features/auth.feature'
-    assert!(result.data.contains("spec/features/auth.feature"), "missing auth.feature in warning; got:\n{}", result.data);
+    assert!(
+        result.data.contains("spec/features/auth.feature"),
+        "missing auth.feature in warning; got:\n{}",
+        result.data
+    );
 
     // @step And the dispatcher output contains the substring 'spec/features/billing.feature'
-    assert!(result.data.contains("spec/features/billing.feature"), "missing billing.feature in warning; got:\n{}", result.data);
+    assert!(
+        result.data.contains("spec/features/billing.feature"),
+        "missing billing.feature in warning; got:\n{}",
+        result.data
+    );
 
     // @step And the dispatcher output contains the substring 'Successfully deleted tag @critical from registry'
     assert!(
-        result.data.contains("Successfully deleted tag @critical from registry"),
-        "missing canonical success line; got:\n{}", result.data
+        result
+            .data
+            .contains("Successfully deleted tag @critical from registry"),
+        "missing canonical success line; got:\n{}",
+        result.data
     );
 
     // @step And spec/tags.json on disk no longer contains a tag named '@critical' in any category
     let on_disk = read_tags(tmp.path());
-    assert!(!category_has_tag(&on_disk, "@critical"), "@critical must be removed despite --force usage warning");
+    assert!(
+        !category_has_tag(&on_disk, "@critical"),
+        "@critical must be removed despite --force usage warning"
+    );
 }
 
 #[test]
@@ -232,24 +288,33 @@ fn dry_run_reports_intended_deletion_without_mutating_disk() {
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@critical", "dryRun": true})));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     // @step And the dispatcher output contains the substring 'Would delete tag @critical from category "Status Tags"'
     assert!(
-        result.data.contains("Would delete tag @critical from category \"Status Tags\""),
-        "missing canonical dry-run message; got:\n{}", result.data
+        result
+            .data
+            .contains("Would delete tag @critical from category \"Status Tags\""),
+        "missing canonical dry-run message; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output does not contain the substring 'Updated: spec/tags.json'
     assert!(
         !result.data.contains("Updated: spec/tags.json"),
-        "dry-run MUST suppress 'Updated:' line; got:\n{}", result.data
+        "dry-run MUST suppress 'Updated:' line; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output does not contain the substring 'Regenerated: spec/TAGS.md'
     assert!(
         !result.data.contains("Regenerated: spec/TAGS.md"),
-        "dry-run MUST suppress 'Regenerated:' line; got:\n{}", result.data
+        "dry-run MUST suppress 'Regenerated:' line; got:\n{}",
+        result.data
     );
 
     // @step And spec/tags.json content on disk is unchanged from before the call
@@ -269,7 +334,11 @@ fn rejects_when_tags_json_does_not_exist() {
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@deprecated"})));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'spec/tags.json not found'
     let msg = result.error.as_ref().expect("error msg");
@@ -303,7 +372,11 @@ fn rejects_when_tag_not_found_in_any_category() {
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@nonexistent"})));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Tag @nonexistent not found in registry'
     let msg = result.error.as_ref().expect("error msg");
@@ -350,12 +423,19 @@ fn preserves_aux_fields_and_does_not_bump_last_updated() {
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@critical"})));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     let on_disk = read_tags(tmp.path());
 
     // @step And spec/tags.json on disk still contains combinationExamples, usageGuidelines, and references with their original payloads
-    assert_eq!(on_disk["combinationExamples"][0]["title"].as_str(), Some("demo"));
+    assert_eq!(
+        on_disk["combinationExamples"][0]["title"].as_str(),
+        Some("demo")
+    );
     assert_eq!(
         on_disk["usageGuidelines"]["requiredCombinations"]["title"].as_str(),
         Some("req")
@@ -385,7 +465,11 @@ fn escalates_malformed_tags_json_as_structured_parse_error() {
     let result = dispatch_command(req(tmp.path(), json!({"tag": "@critical"})));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Failed to parse tags.json'
     let msg = result.error.as_ref().expect("error msg");
@@ -396,7 +480,10 @@ fn escalates_malformed_tags_json_as_structured_parse_error() {
 
     // @step And spec/tags.json content on disk is unchanged from before the call
     let after = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
-    assert_eq!(before, after, "tags.json MUST be untouched on parse failure");
+    assert_eq!(
+        before, after,
+        "tags.json MUST be untouched on parse failure"
+    );
 }
 
 #[test]
@@ -412,20 +499,25 @@ fn dry_run_suppresses_updated_and_regenerated_lines() {
 
     // @step Then the dispatcher output contains the substring 'Would delete tag @critical from category "Status Tags"'
     assert!(
-        result.data.contains("Would delete tag @critical from category \"Status Tags\""),
-        "missing canonical dry-run message; got:\n{}", result.data
+        result
+            .data
+            .contains("Would delete tag @critical from category \"Status Tags\""),
+        "missing canonical dry-run message; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output does not contain the substring 'Updated: spec/tags.json'
     assert!(
         !result.data.contains("Updated: spec/tags.json"),
-        "dry-run MUST suppress 'Updated:' line; got:\n{}", result.data
+        "dry-run MUST suppress 'Updated:' line; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output does not contain the substring 'Regenerated: spec/TAGS.md'
     assert!(
         !result.data.contains("Regenerated: spec/TAGS.md"),
-        "dry-run MUST suppress 'Regenerated:' line; got:\n{}", result.data
+        "dry-run MUST suppress 'Regenerated:' line; got:\n{}",
+        result.data
     );
 }
 
@@ -442,19 +534,24 @@ fn renders_multi_line_success_block_on_non_dry_run_delete() {
 
     // @step Then the dispatcher output contains the substring '✓ Successfully deleted tag @deprecated from registry'
     assert!(
-        result.data.contains("✓ Successfully deleted tag @deprecated from registry"),
-        "missing canonical success line; got:\n{}", result.data
+        result
+            .data
+            .contains("✓ Successfully deleted tag @deprecated from registry"),
+        "missing canonical success line; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output contains the substring 'Updated: spec/tags.json'
     assert!(
         result.data.contains("Updated: spec/tags.json"),
-        "missing Updated line; got:\n{}", result.data
+        "missing Updated line; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output contains the substring 'Regenerated: spec/TAGS.md'
     assert!(
         result.data.contains("Regenerated: spec/TAGS.md"),
-        "missing Regenerated line; got:\n{}", result.data
+        "missing Regenerated line; got:\n{}",
+        result.data
     );
 }

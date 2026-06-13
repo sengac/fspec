@@ -55,7 +55,10 @@ struct AddBoundedContextArgs {
     text: String,
     #[serde(default)]
     description: Option<String>,
-    #[serde(default, deserialize_with = "crate::js_compat::deserialize_present_value")]
+    #[serde(
+        default,
+        deserialize_with = "crate::js_compat::deserialize_present_value"
+    )]
     timestamp: Option<Value>,
     #[serde(default)]
     bounded_context: Option<String>,
@@ -73,7 +76,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // [description], [timestamp], [boundedContext]). `id`, `deleted`,
     // `createdAt` are appended by `append_event_storm_item`.
     let mut item_body = Map::new();
-    item_body.insert("type".to_string(), Value::String("bounded_context".to_string()));
+    item_body.insert(
+        "type".to_string(),
+        Value::String("bounded_context".to_string()),
+    );
     item_body.insert("color".to_string(), Value::Null);
     item_body.insert("text".to_string(), Value::String(args.text.clone()));
     if let Some(desc) = args.description.as_deref() {
@@ -86,8 +92,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         item_body.insert("boundedContext".to_string(), Value::String(bc.to_string()));
     }
 
-    let item_id =
-        append_event_storm_item(project_root, "add-bounded-context", &args.work_unit_id, item_body)?;
+    let item_id = append_event_storm_item(
+        project_root,
+        "add-bounded-context",
+        &args.work_unit_id,
+        item_body,
+    )?;
 
     let mut result = Map::new();
     result.insert("success".to_string(), Value::Bool(true));
@@ -123,10 +133,8 @@ fn append_event_storm_item(
         });
     }
 
-    let raw = std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io {
-        command,
-        source,
-    })?;
+    let raw =
+        std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io { command, source })?;
     let mut root: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
         file: "work-units.json".to_string(),
         reason: e.to_string(),
@@ -155,9 +163,7 @@ fn append_event_storm_item(
         if st == "done" || st == "blocked" {
             return Err(FspecCoreError::InvalidArgs {
                 command,
-                reason: format!(
-                    "Cannot add Event Storm items to work unit in {st} state"
-                ),
+                reason: format!("Cannot add Event Storm items to work unit in {st} state"),
             });
         }
     }
@@ -173,28 +179,34 @@ fn append_event_storm_item(
             reason: format!("Work unit {work_unit_id} not found"),
         })?;
 
-    let es_entry = wu
-        .entry("eventStorm".to_string())
-        .or_insert_with(|| {
-            let mut es = Map::new();
-            es.insert("level".to_string(), Value::String("process_modeling".to_string()));
-            es.insert("items".to_string(), Value::Array(Vec::new()));
-            es.insert("nextItemId".to_string(), Value::from(0u64));
-            Value::Object(es)
-        });
+    let es_entry = wu.entry("eventStorm".to_string()).or_insert_with(|| {
+        let mut es = Map::new();
+        es.insert(
+            "level".to_string(),
+            Value::String("process_modeling".to_string()),
+        );
+        es.insert("items".to_string(), Value::Array(Vec::new()));
+        es.insert("nextItemId".to_string(), Value::from(0u64));
+        Value::Object(es)
+    });
     if !es_entry.is_object() {
         let mut es = Map::new();
-        es.insert("level".to_string(), Value::String("process_modeling".to_string()));
+        es.insert(
+            "level".to_string(),
+            Value::String("process_modeling".to_string()),
+        );
         es.insert("items".to_string(), Value::Array(Vec::new()));
         es.insert("nextItemId".to_string(), Value::from(0u64));
         *es_entry = Value::Object(es);
     }
-    let es = es_entry.as_object_mut().expect("eventStorm is an object");
+    let es = es_entry
+        .as_object_mut()
+        .ok_or_else(|| FspecCoreError::ParseJson {
+            file: "work-units.json".to_string(),
+            reason: "eventStorm must be an object".to_string(),
+        })?;
 
-    let item_id = es
-        .get("nextItemId")
-        .and_then(Value::as_u64)
-        .unwrap_or(0);
+    let item_id = es.get("nextItemId").and_then(Value::as_u64).unwrap_or(0);
 
     // Append id, deleted, createdAt in TS spread order.
     item_body.insert("id".to_string(), Value::from(item_id));
@@ -221,7 +233,12 @@ fn append_event_storm_item(
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

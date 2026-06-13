@@ -350,7 +350,11 @@ fn keep_file_preserves_file_on_disk_but_removes_array_entry() {
     );
 
     // @step And the file spec/attachments/AUTH-001/keep.pdf exists on disk
-    write_file(tmp.path(), "spec/attachments/AUTH-001/keep.pdf", b"pdf-bytes");
+    write_file(
+        tmp.path(),
+        "spec/attachments/AUTH-001/keep.pdf",
+        b"pdf-bytes",
+    );
 
     // @step When I dispatch remove-attachment with workUnitId='AUTH-001' fileName='keep.pdf' keepFile=true
     let result = dispatch_command(req(
@@ -471,7 +475,7 @@ fn auto_creates_work_units_json_when_missing_then_reports_missing_work_unit_erro
     assert!(p.exists(), "spec/work-units.json must be auto-created");
     let v = read_work_units(tmp.path());
     assert!(
-        v.get("workUnits").map(|w| w.is_object()).unwrap_or(false),
+        v.get("workUnits").map(Value::is_object).unwrap_or(false),
         "expected workUnits object: {v}"
     );
 }

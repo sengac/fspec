@@ -70,12 +70,19 @@ fn scenario_creates_spec_fspec_hooks_json_when_missing_and_writes_a_single_entry
     assert!(result.success, "expected success=true, got {result:?}");
 
     // @step Then spec/fspec-hooks.json exists after the call
-    assert!(tmp.path().join("spec/fspec-hooks.json").exists(), "config file must be created");
+    assert!(
+        tmp.path().join("spec/fspec-hooks.json").exists(),
+        "config file must be created"
+    );
 
     // @step Then the on-disk JSON parses to a top-level object whose 'hooks' key contains exactly the event 'pre-implementing'
     let v = read_hooks_json(tmp.path());
     let hooks = v["hooks"].as_object().expect("hooks object");
-    assert_eq!(hooks.len(), 1, "expected exactly one event key, got {hooks:?}");
+    assert_eq!(
+        hooks.len(),
+        1,
+        "expected exactly one event key, got {hooks:?}"
+    );
     assert!(hooks.contains_key("pre-implementing"));
 
     // @step Then the 'pre-implementing' array has exactly one entry with name='lint', command='spec/hooks/lint.sh', blocking=false
@@ -86,7 +93,10 @@ fn scenario_creates_spec_fspec_hooks_json_when_missing_and_writes_a_single_entry
     assert_eq!(arr[0]["blocking"].as_bool(), Some(false));
 
     // @step Then the entry on disk does NOT contain a 'timeout' field
-    assert!(arr[0].get("timeout").is_none(), "timeout must be omitted when not supplied");
+    assert!(
+        arr[0].get("timeout").is_none(),
+        "timeout must be omitted when not supplied"
+    );
 }
 
 #[test]

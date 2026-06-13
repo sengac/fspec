@@ -4,7 +4,7 @@
 //! Byte-for-byte parity with `node dist/index.js add-policy --help`.
 
 use super::super::{
-    CommandArgument, CommonError, CommandExample, CommandHelpConfig, CommandOption,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
     CommonPatternEntry,
 };
 

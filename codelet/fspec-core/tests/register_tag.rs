@@ -109,7 +109,9 @@ fn auto_creates_tags_json_and_registers_new_tag_in_existing_category() {
 
     // @step And the dispatcher output contains the substring 'Successfully registered @api in Technical Tags'
     assert!(
-        result.data.contains("Successfully registered @api in Technical Tags"),
+        result
+            .data
+            .contains("Successfully registered @api in Technical Tags"),
         "missing canonical success substring; got:\n{}",
         result.data
     );
@@ -144,7 +146,11 @@ fn rejects_duplicate_tag_across_all_categories() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Tag @cli is already registered in Component Tags'
     let msg = result.error.as_ref().expect("error msg");
@@ -155,7 +161,10 @@ fn rejects_duplicate_tag_across_all_categories() {
 
     // @step And spec/tags.json content on disk is unchanged from before the call
     let after = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
-    assert_eq!(before, after, "tags.json must be unchanged on duplicate-tag failure");
+    assert_eq!(
+        before, after,
+        "tags.json must be unchanged on duplicate-tag failure"
+    );
 }
 
 #[test]
@@ -176,12 +185,18 @@ fn rejects_tag_missing_leading_at_character() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Invalid tag format: "InvalidTag". Valid format is @lowercase-with-hyphens'
     let msg = result.error.as_ref().expect("error msg");
     assert!(
-        msg.contains(r#"Invalid tag format: "InvalidTag". Valid format is @lowercase-with-hyphens"#),
+        msg.contains(
+            r#"Invalid tag format: "InvalidTag". Valid format is @lowercase-with-hyphens"#
+        ),
         "missing invalid-tag-format substring; got: {msg}"
     );
 }
@@ -204,7 +219,11 @@ fn normalises_uppercase_tag_to_lowercase_and_reports_conversion() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success; got error={:?}",
+        result.error
+    );
 
     // @step And the Technical Tags category on disk contains a tag with name '@api-integration'
     let on_disk = read_tags(tmp.path());
@@ -242,7 +261,11 @@ fn rejects_tag_containing_characters_outside_allowed_regex() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Invalid tag format: "@x_underscore". Valid format is @lowercase-with-hyphens'
     let msg = result.error.as_ref().expect("error msg");
@@ -272,7 +295,11 @@ fn rejects_unknown_category_with_canonical_available_list() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Invalid category: "NonExistent Category". Available categories: Phase Tags, Component Tags, Feature Group Tags, Technical Tags, Platform Tags, Priority Tags, Status Tags, Testing Tags, Automation Tags'
     let msg = result.error.as_ref().expect("error msg");
@@ -301,11 +328,17 @@ fn matches_category_case_insensitively_but_writes_canonical_name() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success; got error={:?}",
+        result.error
+    );
 
     // @step And the dispatcher output contains the substring 'Successfully registered @custom in Technical Tags'
     assert!(
-        result.data.contains("Successfully registered @custom in Technical Tags"),
+        result
+            .data
+            .contains("Successfully registered @custom in Technical Tags"),
         "missing canonical case-insensitive success substring; got:\n{}",
         result.data
     );
@@ -348,7 +381,11 @@ fn sorts_tags_alphabetically_within_matched_category_after_insert() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success; got error={:?}",
+        result.error
+    );
 
     // @step And the Phase Tags category on disk contains tags in the order '@aaa', '@bcd', '@mid', '@zed'
     let on_disk = read_tags(tmp.path());
@@ -402,7 +439,11 @@ fn preserves_auxiliary_top_level_fields_and_bumps_statistics_last_updated() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success; got error={:?}",
+        result.error
+    );
 
     let on_disk = read_tags(tmp.path());
 
@@ -448,7 +489,11 @@ fn escalates_malformed_tags_json_as_structured_parse_error() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Failed to parse tags.json'
     let msg = result.error.as_ref().expect("error msg");
@@ -459,5 +504,8 @@ fn escalates_malformed_tags_json_as_structured_parse_error() {
 
     // @step And spec/tags.json content on disk is unchanged from before the call
     let after = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
-    assert_eq!(before, after, "tags.json must be untouched on parse failure");
+    assert_eq!(
+        before, after,
+        "tags.json must be untouched on parse failure"
+    );
 }

@@ -228,13 +228,19 @@ fn remove_reference(data: &mut WorkUnitsData, target: &str, field: &str, id: &st
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
     fn args_parse_camel_case() {
         let a: DeleteWorkUnitArgs =
-            serde_json::from_str(r#"{"workUnitId":"AUTH-001","cascadeDependencies":true}"#).unwrap();
+            serde_json::from_str(r#"{"workUnitId":"AUTH-001","cascadeDependencies":true}"#)
+                .unwrap();
         assert_eq!(a.work_unit_id, "AUTH-001");
         assert_eq!(a.cascade_dependencies, Some(true));
     }
@@ -249,7 +255,10 @@ mod tests {
     fn str_array_reads_string_arrays_and_tolerates_absence() {
         let mut m = Map::new();
         m.insert("blocks".into(), serde_json::json!(["A", "B"]));
-        assert_eq!(str_array(&m, "blocks"), vec!["A".to_string(), "B".to_string()]);
+        assert_eq!(
+            str_array(&m, "blocks"),
+            vec!["A".to_string(), "B".to_string()]
+        );
         assert!(str_array(&m, "missing").is_empty());
     }
 }

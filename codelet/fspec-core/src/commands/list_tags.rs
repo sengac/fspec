@@ -65,11 +65,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // within each category alphabetically by tag.name (mirroring the
     // TS `localeCompare` call). Insertion order of categories
     // themselves is preserved verbatim — never re-sorted.
-    let projected: Vec<CategoryEntry> = tags_data
-        .categories
-        .iter()
-        .map(project_category)
-        .collect();
+    let projected: Vec<CategoryEntry> = tags_data.categories.iter().map(project_category).collect();
 
     // Optional --category filter: exact-match against category.name.
     // On miss, emit the canonical `Category not found: <name>.
@@ -89,9 +85,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
                 .join(", ");
             return Err(FspecCoreError::InvalidArgs {
                 command: "list-tags",
-                reason: format!(
-                    "Category not found: {filter}. Available categories: {available}"
-                ),
+                reason: format!("Category not found: {filter}. Available categories: {available}"),
             });
         }
         matched
@@ -216,7 +210,12 @@ fn render_text(categories: &[CategoryEntry]) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
     use tempfile::TempDir;
@@ -227,7 +226,9 @@ mod tests {
         std::fs::write(spec.join("tags.json"), raw).unwrap();
     }
 
-    fn poll(f: impl std::future::Future<Output = Result<String, FspecCoreError>>) -> Result<String, FspecCoreError> {
+    fn poll(
+        f: impl std::future::Future<Output = Result<String, FspecCoreError>>,
+    ) -> Result<String, FspecCoreError> {
         let mut fut = Box::pin(f);
         let waker = std::task::Waker::noop();
         let mut cx = std::task::Context::from_waker(waker);
@@ -266,7 +267,8 @@ mod tests {
                 { "name": "@zed", "description": "Z desc" },
                 { "name": "@aaa", "description": "A desc" }
             ]
-        })).unwrap();
+        }))
+        .unwrap();
         let p = project_category(&cat);
         assert_eq!(p.tags.len(), 2);
         assert_eq!(p.tags[0].tag, "@aaa");
@@ -287,7 +289,8 @@ mod tests {
                     "scope": "wide"
                 }
             ]
-        })).unwrap();
+        }))
+        .unwrap();
         let p = project_category(&cat);
         let serialised = serde_json::to_value(&p.tags[0]).unwrap();
         assert!(serialised.get("usage").is_none());
@@ -377,8 +380,9 @@ mod tests {
         make_tags_file(tmp.path(), raw);
         let err = poll(run(r#"{"category":"Nope"}"#, tmp.path())).unwrap_err();
         assert!(
-            err.to_string()
-                .contains("Category not found: Nope. Available categories: Phase Tags, Component Tags"),
+            err.to_string().contains(
+                "Category not found: Nope. Available categories: Phase Tags, Component Tags"
+            ),
             "unexpected error: {err}"
         );
     }

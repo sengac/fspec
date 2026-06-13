@@ -144,8 +144,7 @@ fn idempotent_re_restore_returns_success_without_writing_to_disk() {
     }]);
     let pre = seed_one("AUTH-001", "specifying", Some(examples));
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch restore-example with workUnitId='AUTH-001' and index=0
     let result = dispatch_command(req(
@@ -171,8 +170,7 @@ fn idempotent_re_restore_returns_success_without_writing_to_disk() {
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 
@@ -209,8 +207,7 @@ fn status_guard_rejects_restore_example_when_work_unit_is_not_in_specifying() {
     ]);
     let pre = seed_one("AUTH-001", "backlog", Some(examples));
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch restore-example with workUnitId='AUTH-001' and index=0
     let result = dispatch_command(req(
@@ -229,8 +226,7 @@ fn status_guard_rejects_restore_example_when_work_unit_is_not_in_specifying() {
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 
@@ -240,8 +236,7 @@ fn missing_examples_array_reports_has_no_examples() {
     let tmp = TempDir::new().expect("tempdir");
     let pre = seed_one("AUTH-001", "specifying", None);
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch restore-example with workUnitId='AUTH-001' and index=0
     let result = dispatch_command(req(
@@ -260,8 +255,7 @@ fn missing_examples_array_reports_has_no_examples() {
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 
@@ -275,8 +269,7 @@ fn unknown_example_id_reports_example_with_id_not_found() {
     ]);
     let pre = seed_one("AUTH-001", "specifying", Some(examples));
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch restore-example with workUnitId='AUTH-001' and index=1
     let result = dispatch_command(req(
@@ -295,8 +288,7 @@ fn unknown_example_id_reports_example_with_id_not_found() {
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 
@@ -326,7 +318,7 @@ fn auto_creates_spec_work_units_json_when_missing_then_reports_missing_work_unit
     assert!(p.exists(), "spec/work-units.json must be auto-created");
     let v = read_work_units(tmp.path());
     assert!(
-        v.get("workUnits").map(|w| w.is_object()).unwrap_or(false),
+        v.get("workUnits").map(Value::is_object).unwrap_or(false),
         "expected workUnits object: {v}"
     );
 }

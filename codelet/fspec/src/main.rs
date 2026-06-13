@@ -117,6 +117,18 @@ mod record_iteration;
 mod repair_work_units;
 mod update_work_unit;
 mod update_work_unit_estimate;
+// Batch 13 (2026-06-12) — foundation mutation commands
+mod add_capability;
+mod remove_capability;
+mod add_persona;
+mod remove_persona;
+mod add_foundation_bounded_context;
+mod remove_foundation_bounded_context;
+mod add_aggregate_to_foundation;
+mod remove_aggregate_from_foundation;
+mod add_command_to_foundation;
+mod remove_command_from_foundation;
+mod generate_foundation_md;
 
 use std::path::PathBuf;
 
@@ -1276,6 +1288,93 @@ enum Mode {
         #[arg(value_name = "output")]
         output: String,
     },
+    // Batch 13 (2026-06-12) — foundation mutation commands
+    /// RPC-173: add a capability to foundation.json / .draft.
+    #[command(name = "add-capability", about = "Add a capability to foundation.json or foundation.json.draft")]
+    AddCapability {
+        #[arg(value_name = "name")]
+        name: String,
+        #[arg(value_name = "description")]
+        description: String,
+    },
+    /// RPC-269: remove a capability from foundation.json / .draft.
+    #[command(name = "remove-capability", about = "Remove a capability from foundation.json or foundation.json.draft")]
+    RemoveCapability {
+        #[arg(value_name = "name")]
+        name: String,
+    },
+    /// RPC-186: add a user persona to foundation.json / .draft.
+    #[command(name = "add-persona", about = "Add a user persona to foundation.json or foundation.json.draft")]
+    AddPersona {
+        #[arg(value_name = "name")]
+        name: String,
+        #[arg(value_name = "description")]
+        description: String,
+        #[arg(long = "goal", value_name = "GOAL")]
+        goal: Vec<String>,
+    },
+    /// RPC-277: remove a persona from foundation.json / .draft.
+    #[command(name = "remove-persona", about = "Remove a persona from foundation.json or foundation.json.draft")]
+    RemovePersona {
+        #[arg(value_name = "name")]
+        name: String,
+    },
+    /// RPC-183: add a bounded context to the foundation Big Picture Event Storm.
+    #[command(name = "add-foundation-bounded-context", about = "Add a bounded context to foundation Big Picture Event Storm")]
+    AddFoundationBoundedContext {
+        #[arg(value_name = "text")]
+        text: String,
+    },
+    /// RPC-274: remove a bounded context from the foundation Big Picture Event Storm (soft-delete).
+    #[command(name = "remove-foundation-bounded-context", about = "Remove a bounded context from foundation Big Picture Event Storm (soft-delete)")]
+    RemoveFoundationBoundedContext {
+        #[arg(value_name = "context-name")]
+        context_name: String,
+        #[arg(long)]
+        cascade: bool,
+    },
+    /// RPC-166: add an aggregate to a foundation bounded context.
+    #[command(name = "add-aggregate-to-foundation", about = "Add an aggregate to a foundation bounded context in Big Picture Event Storm")]
+    AddAggregateToFoundation {
+        #[arg(value_name = "context-name")]
+        context_name: String,
+        #[arg(value_name = "aggregate-name")]
+        aggregate_name: String,
+        #[arg(short = 'd', long = "description", value_name = "text")]
+        description: Option<String>,
+    },
+    /// RPC-266: remove an aggregate from a foundation bounded context (soft-delete).
+    #[command(name = "remove-aggregate-from-foundation", about = "Remove an aggregate from a foundation bounded context (soft-delete)")]
+    RemoveAggregateFromFoundation {
+        #[arg(value_name = "context-name")]
+        context_name: String,
+        #[arg(value_name = "aggregate-name")]
+        aggregate_name: String,
+    },
+    /// RPC-175: add a command to a foundation bounded context.
+    #[command(name = "add-command-to-foundation", about = "Add a command to a foundation bounded context in Big Picture Event Storm")]
+    AddCommandToFoundation {
+        #[arg(value_name = "context-name")]
+        context_name: String,
+        #[arg(value_name = "command-name")]
+        command_name: String,
+        #[arg(short = 'd', long = "description", value_name = "text")]
+        description: Option<String>,
+    },
+    /// RPC-270: remove a command from a foundation bounded context (soft-delete).
+    #[command(name = "remove-command-from-foundation", about = "Remove a command from a foundation bounded context (soft-delete)")]
+    RemoveCommandFromFoundation {
+        #[arg(value_name = "context-name")]
+        context_name: String,
+        #[arg(value_name = "command-name")]
+        command_name: String,
+    },
+    /// RPC-233: generate FOUNDATION.md from foundation.json.
+    #[command(name = "generate-foundation-md", about = "Generate FOUNDATION.md from foundation.json")]
+    GenerateFoundationMd {
+        #[arg(long = "output", value_name = "path")]
+        output: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -1762,6 +1861,51 @@ async fn main() -> std::process::ExitCode {
             export_dependencies::run,
             export_dependencies::CliArgs { format, output }
         ),
+        // Batch 13 (2026-06-12) — foundation mutation commands
+        Some(Mode::AddCapability { name, description }) => forward!(
+            add_capability::run,
+            add_capability::CliArgs { name, description }
+        ),
+        Some(Mode::RemoveCapability { name }) => forward!(
+            remove_capability::run,
+            remove_capability::CliArgs { name }
+        ),
+        Some(Mode::AddPersona { name, description, goal }) => forward!(
+            add_persona::run,
+            add_persona::CliArgs { name, description, goals: goal }
+        ),
+        Some(Mode::RemovePersona { name }) => forward!(
+            remove_persona::run,
+            remove_persona::CliArgs { name }
+        ),
+        Some(Mode::AddFoundationBoundedContext { text }) => forward!(
+            add_foundation_bounded_context::run,
+            add_foundation_bounded_context::CliArgs { text }
+        ),
+        Some(Mode::RemoveFoundationBoundedContext { context_name, cascade }) => forward!(
+            remove_foundation_bounded_context::run,
+            remove_foundation_bounded_context::CliArgs { context_name, cascade }
+        ),
+        Some(Mode::AddAggregateToFoundation { context_name, aggregate_name, description }) => forward!(
+            add_aggregate_to_foundation::run,
+            add_aggregate_to_foundation::CliArgs { context_name, aggregate_name, description }
+        ),
+        Some(Mode::RemoveAggregateFromFoundation { context_name, aggregate_name }) => forward!(
+            remove_aggregate_from_foundation::run,
+            remove_aggregate_from_foundation::CliArgs { context_name, aggregate_name }
+        ),
+        Some(Mode::AddCommandToFoundation { context_name, command_name, description }) => forward!(
+            add_command_to_foundation::run,
+            add_command_to_foundation::CliArgs { context_name, command_name, description }
+        ),
+        Some(Mode::RemoveCommandFromFoundation { context_name, command_name }) => forward!(
+            remove_command_from_foundation::run,
+            remove_command_from_foundation::CliArgs { context_name, command_name }
+        ),
+        Some(Mode::GenerateFoundationMd { output }) => forward!(
+            generate_foundation_md::run,
+            generate_foundation_md::CliArgs { output }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -2199,6 +2343,33 @@ fn intercept_ts_help() -> Option<u8> {
         "export-work-units" => format_command_help(&configs::export_work_units::CONFIG),
         "export-example-map" => format_command_help(&configs::export_example_map::CONFIG),
         "export-dependencies" => format_command_help(&configs::export_dependencies::CONFIG),
+        // Batch 13 (2026-06-12) — foundation mutation commands
+        "add-capability" => format_command_help(&configs::add_capability::CONFIG),
+        "remove-capability" => format_command_help(&configs::remove_capability::CONFIG),
+        "add-persona" => format_command_help(&configs::add_persona::CONFIG),
+        "remove-persona" => format_command_help(&configs::remove_persona::CONFIG),
+        "add-foundation-bounded-context" => {
+            format_command_help(&configs::add_foundation_bounded_context::CONFIG)
+        }
+        "remove-foundation-bounded-context" => {
+            format_command_help(&configs::remove_foundation_bounded_context::CONFIG)
+        }
+        "add-aggregate-to-foundation" => {
+            format_command_help(&configs::add_aggregate_to_foundation::CONFIG)
+        }
+        "remove-aggregate-from-foundation" => {
+            format_command_help(&configs::remove_aggregate_from_foundation::CONFIG)
+        }
+        "add-command-to-foundation" => {
+            format_command_help(&configs::add_command_to_foundation::CONFIG)
+        }
+        "remove-command-from-foundation" => {
+            format_command_help(&configs::remove_command_from_foundation::CONFIG)
+        }
+        // RPC-233 — generate-foundation-md
+        "generate-foundation-md" => {
+            format_command_help(&configs::generate_foundation_md::CONFIG)
+        }
         // RPC-265 follow-up: register-tag has no custom `-help.ts` in TS;
         // `node dist/index.js register-tag --help` falls through to bare
         // Commander.js. The earlier Rust port introduced a rich

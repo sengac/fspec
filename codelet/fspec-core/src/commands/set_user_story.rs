@@ -92,12 +92,15 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut data = ensure_work_units_file(project_root)?;
 
     // Validate work unit exists (mirrors src/commands/set-user-story.ts:25-27).
-    if !data.work_units.contains_key(&args.work_unit_id) {
-        return Err(FspecCoreError::InvalidArgs {
-            command: "set-user-story",
-            reason: format!("Work unit '{}' does not exist", args.work_unit_id),
-        });
-    }
+    let wu = match data.work_units.get_mut(&args.work_unit_id) {
+        Some(wu) => wu,
+        None => {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "set-user-story",
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
+            });
+        }
+    };
 
     let now = iso8601_now();
 
@@ -109,11 +112,6 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     user_story.insert("role".to_string(), Value::String(args.role.clone()));
     user_story.insert("action".to_string(), Value::String(args.action.clone()));
     user_story.insert("benefit".to_string(), Value::String(args.benefit.clone()));
-
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
 
     // Overwrite any prior value verbatim (parity with TS direct assignment).
     wu.extra
@@ -134,7 +132,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Build the four-line success block emitted by the TS CLI wrapper at
     // `src/commands/set-user-story.ts:54-57`. Returned in
     // `DispatchResult.data` and printed verbatim by the CLI bridge.
-    Ok(render_success(&args.work_unit_id, &args.role, &args.action, &args.benefit))
+    Ok(render_success(
+        &args.work_unit_id,
+        &args.role,
+        &args.action,
+        &args.benefit,
+    ))
 }
 
 /// Render the canonical four-line success block.
@@ -149,7 +152,12 @@ fn render_success(work_unit_id: &str, role: &str, action: &str, benefit: &str) -
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -166,10 +174,9 @@ mod tests {
 
     #[test]
     fn args_parse_fails_without_work_unit_id() {
-        let err = serde_json::from_str::<SetUserStoryArgs>(
-            r#"{"role":"x","action":"y","benefit":"z"}"#,
-        )
-        .unwrap_err();
+        let err =
+            serde_json::from_str::<SetUserStoryArgs>(r#"{"role":"x","action":"y","benefit":"z"}"#)
+                .unwrap_err();
         let msg = err.to_string();
         assert!(
             msg.to_lowercase().contains("workunitid"),

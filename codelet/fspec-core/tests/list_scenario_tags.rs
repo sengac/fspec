@@ -75,10 +75,22 @@ fn scenario_returns_file_not_found_when_feature_file_missing() {
         result.success,
         "OUTER dispatcher must succeed (no FspecCoreError envelope); got {result:?}"
     );
-    assert!(result.error.is_none(), "outer error must be None; got {:?}", result.error);
+    assert!(
+        result.error.is_none(),
+        "outer error must be None; got {:?}",
+        result.error
+    );
     let data = parse_data(&result.data);
-    assert_eq!(data["success"].as_bool(), Some(false), "inner success=false; got {data}");
-    assert_eq!(data["tags"].as_array().map(Vec::len), Some(0), "tags array empty; got {data}");
+    assert_eq!(
+        data["success"].as_bool(),
+        Some(false),
+        "inner success=false; got {data}"
+    );
+    assert_eq!(
+        data["tags"].as_array().map(Vec::len),
+        Some(0),
+        "tags array empty; got {data}"
+    );
     assert_eq!(
         data["error"].as_str(),
         Some("File not found: spec/features/nope.feature"),
@@ -109,7 +121,10 @@ fn scenario_returns_invalid_gherkin_syntax_error_for_malformed_feature() {
     ));
 
     // @step Then DispatchResult.data parses to JSON with success=false, tags=[], and error starting with 'Invalid Gherkin syntax:'
-    assert!(result.success, "OUTER dispatcher must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "OUTER dispatcher must succeed; got {result:?}"
+    );
     assert!(result.error.is_none(), "outer error must be None");
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(false));
@@ -141,7 +156,10 @@ fn scenario_returns_scenario_not_found_error_for_absent_name() {
     ));
 
     // @step Then DispatchResult.data parses to JSON with success=false, tags=[], and error exactly equal to "Scenario 'Nope' not found in spec/features/login.feature"
-    assert!(result.success, "OUTER dispatcher must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "OUTER dispatcher must succeed; got {result:?}"
+    );
     assert!(result.error.is_none(), "outer error must be None");
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(false));
@@ -173,15 +191,25 @@ fn scenario_returns_empty_tags_with_sentinel_message_when_scenario_has_no_tags()
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected outer success=true, got {result:?}");
+    assert!(
+        result.success,
+        "expected outer success=true, got {result:?}"
+    );
     let data = parse_data(&result.data);
-    assert_eq!(data["success"].as_bool(), Some(true), "inner success=true; got {data}");
+    assert_eq!(
+        data["success"].as_bool(),
+        Some(true),
+        "inner success=true; got {data}"
+    );
 
     // @step Then the parsed JSON has tags array of length 0
     assert_eq!(data["tags"].as_array().map(Vec::len), Some(0));
 
     // @step Then the parsed JSON has message field equal to 'No tags found on this scenario'
-    assert_eq!(data["message"].as_str(), Some("No tags found on this scenario"));
+    assert_eq!(
+        data["message"].as_str(),
+        Some("No tags found on this scenario")
+    );
 }
 
 #[test]
@@ -204,7 +232,10 @@ fn scenario_returns_tags_array_with_at_prefix_preserved() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected outer success=true, got {result:?}");
+    assert!(
+        result.success,
+        "expected outer success=true, got {result:?}"
+    );
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(true));
 
@@ -228,7 +259,8 @@ fn scenario_show_categories_enriches_tags_with_categories() {
 
     // @step Given the project root contains spec/features/login.feature with a Scenario 'Login with valid credentials' tagged '@smoke'
     let tmp = TempDir::new().expect("tempdir");
-    let body = "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
+    let body =
+        "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
     write_feature(tmp.path(), "spec/features/login.feature", body);
 
     // @step Given the project root contains spec/tags.json with a category 'Testing Tags' whose tags include {name:'@smoke'}
@@ -254,12 +286,17 @@ fn scenario_show_categories_enriches_tags_with_categories() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected outer success=true, got {result:?}");
+    assert!(
+        result.success,
+        "expected outer success=true, got {result:?}"
+    );
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(true));
 
     // @step Then the parsed JSON categorizedTags array contains exactly one entry with tag='@smoke' and category='Testing Tags'
-    let cats = data["categorizedTags"].as_array().expect("categorizedTags array");
+    let cats = data["categorizedTags"]
+        .as_array()
+        .expect("categorizedTags array");
     assert_eq!(cats.len(), 1);
     assert_eq!(cats[0]["tag"].as_str(), Some("@smoke"));
     assert_eq!(cats[0]["category"].as_str(), Some("Testing Tags"));
@@ -271,7 +308,8 @@ fn scenario_show_categories_labels_unknown_tags_as_unknown() {
 
     // @step Given the project root contains spec/features/login.feature with a Scenario 'Login with valid credentials' tagged '@custom'
     let tmp = TempDir::new().expect("tempdir");
-    let body = "Feature: User Login\n\n  @custom\n  Scenario: Login with valid credentials\n    Given x\n";
+    let body =
+        "Feature: User Login\n\n  @custom\n  Scenario: Login with valid credentials\n    Given x\n";
     write_feature(tmp.path(), "spec/features/login.feature", body);
 
     // @step Given the project root contains spec/tags.json with a category 'Testing Tags' whose tags include {name:'@smoke'} (no '@custom')
@@ -297,12 +335,17 @@ fn scenario_show_categories_labels_unknown_tags_as_unknown() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected outer success=true, got {result:?}");
+    assert!(
+        result.success,
+        "expected outer success=true, got {result:?}"
+    );
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(true));
 
     // @step Then the parsed JSON categorizedTags array contains exactly one entry with tag='@custom' and category='Unknown'
-    let cats = data["categorizedTags"].as_array().expect("categorizedTags array");
+    let cats = data["categorizedTags"]
+        .as_array()
+        .expect("categorizedTags array");
     assert_eq!(cats.len(), 1);
     assert_eq!(cats[0]["tag"].as_str(), Some("@custom"));
     assert_eq!(cats[0]["category"].as_str(), Some("Unknown"));
@@ -314,7 +357,8 @@ fn scenario_show_categories_degrades_when_registry_missing() {
 
     // @step Given the project root contains spec/features/login.feature with a Scenario 'Login with valid credentials' tagged '@smoke'
     let tmp = TempDir::new().expect("tempdir");
-    let body = "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
+    let body =
+        "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
     write_feature(tmp.path(), "spec/features/login.feature", body);
 
     // @step Given the project root has NO spec/tags.json file
@@ -332,7 +376,10 @@ fn scenario_show_categories_degrades_when_registry_missing() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected outer success=true, got {result:?}");
+    assert!(
+        result.success,
+        "expected outer success=true, got {result:?}"
+    );
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(true));
 
@@ -342,7 +389,11 @@ fn scenario_show_categories_degrades_when_registry_missing() {
     assert_eq!(tags[0].as_str(), Some("@smoke"));
 
     // @step Then the parsed JSON does NOT contain a top-level 'categorizedTags' field
-    assert!(data.get("categorizedTags").is_none(), "missing-registry must NOT include categorizedTags; got: {}", result.data);
+    assert!(
+        data.get("categorizedTags").is_none(),
+        "missing-registry must NOT include categorizedTags; got: {}",
+        result.data
+    );
 }
 
 #[test]
@@ -351,7 +402,8 @@ fn scenario_show_categories_degrades_when_registry_invalid() {
 
     // @step Given the project root contains spec/features/login.feature with a Scenario 'Login with valid credentials' tagged '@smoke'
     let tmp = TempDir::new().expect("tempdir");
-    let body = "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
+    let body =
+        "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
     write_feature(tmp.path(), "spec/features/login.feature", body);
 
     // @step Given the project root contains spec/tags.json with the malformed bytes '{ not json'
@@ -369,7 +421,10 @@ fn scenario_show_categories_degrades_when_registry_invalid() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected outer success=true, got {result:?}");
+    assert!(
+        result.success,
+        "expected outer success=true, got {result:?}"
+    );
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(true));
 
@@ -379,7 +434,11 @@ fn scenario_show_categories_degrades_when_registry_invalid() {
     assert_eq!(tags[0].as_str(), Some("@smoke"));
 
     // @step Then the parsed JSON does NOT contain a top-level 'categorizedTags' field
-    assert!(data.get("categorizedTags").is_none(), "invalid-registry must NOT include categorizedTags; got: {}", result.data);
+    assert!(
+        data.get("categorizedTags").is_none(),
+        "invalid-registry must NOT include categorizedTags; got: {}",
+        result.data
+    );
 }
 
 #[test]
@@ -402,7 +461,10 @@ fn scenario_excludes_scenarios_nested_inside_rule_blocks() {
     ));
 
     // @step Then DispatchResult.data parses to JSON with success=false and error containing the substring "Scenario 'Login with valid credentials' not found"
-    assert!(result.success, "OUTER dispatcher must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "OUTER dispatcher must succeed; got {result:?}"
+    );
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(false));
     let inner_err = data["error"].as_str().unwrap_or_default();
@@ -432,7 +494,10 @@ fn scenario_excludes_scenario_outline_keyword() {
     ));
 
     // @step Then DispatchResult.data parses to JSON with success=false and error containing the substring "Scenario 'Login with valid credentials' not found"
-    assert!(result.success, "OUTER dispatcher must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "OUTER dispatcher must succeed; got {result:?}"
+    );
     let data = parse_data(&result.data);
     assert_eq!(data["success"].as_bool(), Some(false));
     let inner_err = data["error"].as_str().unwrap_or_default();

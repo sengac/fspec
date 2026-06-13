@@ -83,7 +83,9 @@ fn dispatcher_removes_an_existing_diagram_by_title() {
 
     // @step And the response message contains the substring "Deleted diagram 'Component Flow' from section 'Architecture'"
     assert!(
-        result.data.contains("Deleted diagram 'Component Flow' from section 'Architecture'"),
+        result
+            .data
+            .contains("Deleted diagram 'Component Flow' from section 'Architecture'"),
         "missing canonical success text; got:\n{}",
         result.data
     );
@@ -164,7 +166,10 @@ fn dispatcher_removes_only_middle_entry_from_three_diagrams() {
 
     // @step Given spec/foundation.json contains diagrams titled 'First', 'Middle', 'Last' in that order
     let tmp = TempDir::new().expect("tempdir");
-    write_foundation(tmp.path(), &foundation_with_diagrams(&["First", "Middle", "Last"]));
+    write_foundation(
+        tmp.path(),
+        &foundation_with_diagrams(&["First", "Middle", "Last"]),
+    );
 
     // @step When I dispatch delete-diagram with section='Architecture' title='Middle'
     let result = dispatch_command(req(

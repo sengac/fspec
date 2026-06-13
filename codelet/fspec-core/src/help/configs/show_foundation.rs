@@ -11,10 +11,8 @@ const EXAMPLE_1_OUTPUT: &str =
     "{\n  \"projectName\": \"fspec\",\n  \"version\": \"1.0.0\",\n  \"sections\": {...}\n}";
 const EXAMPLE_2_OUTPUT: &str =
     "Available sections:\n  - Architecture Diagrams\n  - System Overview\n  - Project Goals";
-const EXAMPLE_3_OUTPUT: &str =
-    "{\n  \"Architecture Diagrams\": [\n    {...}\n  ]\n}";
-const EXAMPLE_4_OUTPUT: &str =
-    "1: {\n2:   \"System Overview\": {\n3:     ...\n4:   }\n5: }";
+const EXAMPLE_3_OUTPUT: &str = "{\n  \"Architecture Diagrams\": [\n    {...}\n  ]\n}";
+const EXAMPLE_4_OUTPUT: &str = "1: {\n2:   \"System Overview\": {\n3:     ...\n4:   }\n5: }";
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
     name: "section",
@@ -58,7 +56,11 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const RELATED: &[&str] = &["update-foundation", "add-diagram", "validate-foundation-schema"];
+const RELATED: &[&str] = &[
+    "update-foundation",
+    "add-diagram",
+    "validate-foundation-schema",
+];
 
 const NOTES: &[&str] = &[
     "foundation.json is the machine-readable source of truth",

@@ -63,8 +63,16 @@ fn minimal_work_units(id: &str, status: &str) -> String {
 }}"#,
         id = id,
         status = status,
-        specifying = if status == "specifying" { format!("\"{id}\"") } else { String::new() },
-        blocked = if status == "blocked" { format!("\"{id}\"") } else { String::new() },
+        specifying = if status == "specifying" {
+            format!("\"{id}\"")
+        } else {
+            String::new()
+        },
+        blocked = if status == "blocked" {
+            format!("\"{id}\"")
+        } else {
+            String::new()
+        },
     )
 }
 
@@ -105,7 +113,10 @@ fn adds_a_question_with_human_mention_to_a_specifying_work_unit() {
         .expect("questions must be an array");
     assert_eq!(questions.len(), 1);
     assert_eq!(questions[0]["id"].as_u64(), Some(0));
-    assert_eq!(questions[0]["text"].as_str(), Some("@human: Support OAuth?"));
+    assert_eq!(
+        questions[0]["text"].as_str(),
+        Some("@human: Support OAuth?")
+    );
     assert_eq!(questions[0]["deleted"].as_bool(), Some(false));
     assert_eq!(questions[0]["selected"].as_bool(), Some(false));
 
@@ -174,26 +185,25 @@ fn honors_existing_next_question_id_by_reusing_it_and_bumping_by_one() {
 
     // @step Given spec/work-units.json contains work unit 'AUTH-001' in 'specifying' status with nextQuestionId=3
     let tmp = TempDir::new().expect("tempdir");
-    let raw = format!(
-        r#"{{
+    let raw = r#"{
   "version": "0.7.1",
-  "meta": {{ "version": "1.0.0", "lastUpdated": "2026-06-01T00:00:00.000Z" }},
-  "workUnits": {{
-    "AUTH-001": {{
+  "meta": { "version": "1.0.0", "lastUpdated": "2026-06-01T00:00:00.000Z" },
+  "workUnits": {
+    "AUTH-001": {
       "id": "AUTH-001",
       "title": "Test",
       "status": "specifying",
       "nextQuestionId": 3,
       "createdAt": "2026-06-01T00:00:00.000Z",
       "updatedAt": "2026-06-01T00:00:00.000Z"
-    }}
-  }},
-  "states": {{
+    }
+  },
+  "states": {
     "backlog": [], "specifying": ["AUTH-001"], "testing": [],
     "implementing": [], "validating": [], "done": [], "blocked": []
-  }}
-}}"#
-    );
+  }
+}"#
+    .to_string();
     write_work_units(tmp.path(), &raw);
 
     // @step When I dispatch add-question with workUnitId 'AUTH-001' and question 'New question'

@@ -30,18 +30,22 @@
 //! 10. Bump `updatedAt`, set `meta.lastUpdated` if `meta` exists.
 //! 11. Single `write_json_atomic` write at the end.
 //!
-//! ## Scope simplifications (deliberate divergence from TS)
+//! ## Mermaid validation (TS parity)
 //!
-//! - **No Mermaid syntax validation.** The TS path conditionally invokes
-//!   `validateMermaidAttachment` for `.mmd` / `.mermaid` / `.md` files.
-//!   Pulling jsdom + mermaid into `fspec-core` is inappropriate; the port
-//!   omits the validation entirely. Documented in the work unit's
-//!   architecture notes (RPC-170).
+//! When the source file extension is `.mmd` / `.mermaid` / `.md`, the file's
+//! Mermaid content is validated via the shared
+//! [`crate::utils::mermaid_validation`] (real `merman` parser) BEFORE any copy
+//! or work-units.json mutation, mirroring the TS `validateMermaidAttachment`
+//! call. A `.md` file with no ` ```mermaid ` fences is accepted as plain
+//! markdown.
+//!
+//! ## Scope simplification (deliberate divergence from TS)
+//!
 //! - **No Unicode-whitespace fuzzy path resolution (BUG-130).** The TS
 //!   `resolveFilePath` helper rescans the parent directory for filenames
 //!   whose code points differ only by U+202F vs U+0020 (a macOS-specific
 //!   pasted-screenshot quirk). The Rust port treats `options.filePath`
-//!   verbatim. Also documented in RPC-170's architecture notes.
+//!   verbatim. Documented in RPC-170's architecture notes.
 //!
 //! ## Rendered output (success)
 //!
@@ -111,6 +115,20 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             // resolved one.
             reason: format!("Source file '{}' does not exist", args.file_path),
         });
+    }
+
+    // Mermaid validation (TS parity): for .mmd/.mermaid/.md sources, validate
+    // the diagram(s) via the real merman parser BEFORE any copy or mutation,
+    // so an invalid diagram aborts with no filesystem/JSON side effects.
+    if crate::utils::mermaid_validation::should_validate_mermaid(&source_abs) {
+        if let Err(reason) =
+            crate::utils::mermaid_validation::validate_mermaid_attachment(&source_abs)
+        {
+            return Err(FspecCoreError::InvalidArgs {
+                command: "add-attachment",
+                reason: format!("Invalid Mermaid in '{}': {reason}", args.file_path),
+            });
+        }
     }
 
     // basename(resolvedPath)
@@ -194,7 +212,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         // the JSON back — work-units.json is byte-equal to its pre-call
         // state. The destination file on disk MAY have been over-written;
         // that mirrors TS behaviour.
-        if arr.iter().any(|v| v.as_str() == Some(relative_path.as_str())) {
+        if arr
+            .iter()
+            .any(|v| v.as_str() == Some(relative_path.as_str()))
+        {
             return Err(FspecCoreError::InvalidArgs {
                 command: "add-attachment",
                 reason: format!(
@@ -233,15 +254,19 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
     fn args_parse_with_camel_case() {
-        let a: AddAttachmentArgs = serde_json::from_str(
-            r#"{"workUnitId":"AUTH-001","filePath":"./diagram.png"}"#,
-        )
-        .unwrap();
+        let a: AddAttachmentArgs =
+            serde_json::from_str(r#"{"workUnitId":"AUTH-001","filePath":"./diagram.png"}"#)
+                .unwrap();
         assert_eq!(a.work_unit_id, "AUTH-001");
         assert_eq!(a.file_path, "./diagram.png");
         assert!(a.description.is_none());

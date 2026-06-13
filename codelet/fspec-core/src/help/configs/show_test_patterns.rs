@@ -72,7 +72,11 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const RELATED: &[&str] = &["show-coverage", "compare-implementations", "search-scenarios"];
+const RELATED: &[&str] = &[
+    "show-coverage",
+    "compare-implementations",
+    "search-scenarios",
+];
 
 const NOTES: &[&str] = &[
     "Analyzes test files from coverage data",

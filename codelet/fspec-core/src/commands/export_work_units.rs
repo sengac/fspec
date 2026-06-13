@@ -93,10 +93,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // TS reads the file directly (no ensure helper); surface any IO error
     // through the canonical wrapper.
-    let raw = std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
-        command: "export-work-units",
-        reason: wrap_failure(&format_io_error(&e, &work_units_path.display().to_string())),
-    })?;
+    let raw =
+        std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
+            command: "export-work-units",
+            reason: wrap_failure(&format_io_error(&e, &work_units_path.display().to_string())),
+        })?;
 
     let data: WorkUnitsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
@@ -159,10 +160,9 @@ mod tests {
 
     #[test]
     fn args_tolerate_ignored_status_filter() {
-        let a: ExportWorkUnitsArgs = serde_json::from_str(
-            r#"{"format":"json","output":"out.json","status":"done"}"#,
-        )
-        .unwrap();
+        let a: ExportWorkUnitsArgs =
+            serde_json::from_str(r#"{"format":"json","output":"out.json","status":"done"}"#)
+                .unwrap();
         assert_eq!(a.status.as_deref(), Some("done"));
     }
 }

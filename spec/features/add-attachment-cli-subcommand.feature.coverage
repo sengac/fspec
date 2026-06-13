@@ -274,7 +274,7 @@
       ]
     },
     {
-      "name": "CLI exits 2 when the workUnitId positional argument is missing",
+      "name": "CLI exits 1 when the workUnitId positional argument is missing (Commander usage-error parity)",
       "testMappings": [
         {
           "file": "codelet/fspec/tests/cli_add_attachment.rs",
@@ -365,7 +365,7 @@
       ]
     },
     {
-      "name": "CLI exits 2 when the filePath positional argument is missing",
+      "name": "CLI exits 1 when the filePath positional argument is missing (Commander usage-error parity)",
       "testMappings": [
         {
           "file": "codelet/fspec/tests/cli_add_attachment.rs",

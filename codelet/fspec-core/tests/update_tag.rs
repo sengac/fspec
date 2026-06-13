@@ -98,7 +98,11 @@ fn updates_only_description_when_only_description_provided() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     // @step And the Phase Tags category on disk contains a tag with name '@critical' and description 'Critical paths only'
     let on_disk = read_tags(tmp.path());
@@ -110,7 +114,8 @@ fn updates_only_description_when_only_description_provided() {
     // @step And the dispatcher output contains the substring 'Successfully updated @critical'
     assert!(
         result.data.contains("Successfully updated @critical"),
-        "missing canonical success substring; got:\n{}", result.data
+        "missing canonical success substring; got:\n{}",
+        result.data
     );
 }
 
@@ -133,7 +138,11 @@ fn moves_tag_to_different_category_preserving_description() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     let on_disk = read_tags(tmp.path());
 
@@ -173,7 +182,11 @@ fn moves_tag_to_different_category_and_overrides_description() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     // @step And the Priority Tags category on disk contains a tag with name '@critical' and description 'High priority work'
     let on_disk = read_tags(tmp.path());
@@ -210,7 +223,11 @@ fn sorts_tags_alphabetically_within_target_category_after_move() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     // @step And the Priority Tags category on disk contains tags in the order '@aaa', '@critical', '@mid', '@zed'
     let on_disk = read_tags(tmp.path());
@@ -246,7 +263,11 @@ fn preserves_insertion_order_on_description_only_update() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     // @step And the Phase Tags category on disk contains tags in the order '@zed', '@aaa', '@mid'
     let on_disk = read_tags(tmp.path());
@@ -268,13 +289,14 @@ fn rejects_when_no_category_or_description_provided() {
     let before = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
 
     // @step When I dispatch update-tag with tag '@critical' and no category or description
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({"tag": "@critical"}),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({"tag": "@critical"})));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'No updates specified. Use --category and/or --description'
     let msg = result.error.as_ref().expect("error msg");
@@ -285,7 +307,10 @@ fn rejects_when_no_category_or_description_provided() {
 
     // @step And spec/tags.json content on disk is unchanged from before the call
     let after = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
-    assert_eq!(before, after, "tags.json MUST be unchanged on 'no updates' rejection");
+    assert_eq!(
+        before, after,
+        "tags.json MUST be unchanged on 'no updates' rejection"
+    );
 }
 
 #[test]
@@ -303,7 +328,11 @@ fn rejects_when_tags_json_does_not_exist() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'spec/tags.json not found'
     let msg = result.error.as_ref().expect("error msg");
@@ -340,7 +369,11 @@ fn rejects_when_tag_not_found_in_any_category() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Tag @nonexistent not found in registry'
     let msg = result.error.as_ref().expect("error msg");
@@ -366,7 +399,11 @@ fn rejects_unknown_target_category_with_available_list() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Invalid category: Nonexistent Tags. Available categories: Phase Tags'
     let msg = result.error.as_ref().expect("error msg");
@@ -377,7 +414,10 @@ fn rejects_unknown_target_category_with_available_list() {
 
     // @step And spec/tags.json content on disk is unchanged from before the call
     let after = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
-    assert_eq!(before, after, "tags.json MUST be unchanged on invalid-category failure");
+    assert_eq!(
+        before, after,
+        "tags.json MUST be unchanged on invalid-category failure"
+    );
 }
 
 #[test]
@@ -395,7 +435,11 @@ fn treats_category_lookup_as_case_sensitive() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Invalid category: phase tags'
     let msg = result.error.as_ref().expect("error msg");
@@ -445,12 +489,19 @@ fn preserves_auxiliary_fields_and_does_not_bump_last_updated() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected success=true; got error={:?}", result.error);
+    assert!(
+        result.success,
+        "expected success=true; got error={:?}",
+        result.error
+    );
 
     let on_disk = read_tags(tmp.path());
 
     // @step And spec/tags.json on disk still contains combinationExamples, usageGuidelines, and references with their original payloads
-    assert_eq!(on_disk["combinationExamples"][0]["title"].as_str(), Some("demo"));
+    assert_eq!(
+        on_disk["combinationExamples"][0]["title"].as_str(),
+        Some("demo")
+    );
     assert_eq!(
         on_disk["usageGuidelines"]["requiredCombinations"]["title"].as_str(),
         Some("req")
@@ -483,7 +534,11 @@ fn escalates_malformed_tags_json_as_structured_parse_error() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(!result.success, "expected success=false; got data={}", result.data);
+    assert!(
+        !result.success,
+        "expected success=false; got data={}",
+        result.data
+    );
 
     // @step And the error message contains the substring 'Failed to parse tags.json'
     let msg = result.error.as_ref().expect("error msg");
@@ -494,7 +549,10 @@ fn escalates_malformed_tags_json_as_structured_parse_error() {
 
     // @step And spec/tags.json content on disk is unchanged from before the call
     let after = fs::read_to_string(tmp.path().join("spec/tags.json")).unwrap();
-    assert_eq!(before, after, "tags.json MUST be untouched on parse failure");
+    assert_eq!(
+        before, after,
+        "tags.json MUST be untouched on parse failure"
+    );
 }
 
 #[test]
@@ -514,18 +572,21 @@ fn renders_multi_line_success_block() {
     // @step Then the dispatcher output contains the substring '✓ Successfully updated @critical'
     assert!(
         result.data.contains("✓ Successfully updated @critical"),
-        "missing canonical success line; got:\n{}", result.data
+        "missing canonical success line; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output contains the substring 'Updated: spec/tags.json'
     assert!(
         result.data.contains("Updated: spec/tags.json"),
-        "missing Updated line; got:\n{}", result.data
+        "missing Updated line; got:\n{}",
+        result.data
     );
 
     // @step And the dispatcher output contains the substring 'Regenerated: spec/TAGS.md'
     assert!(
         result.data.contains("Regenerated: spec/TAGS.md"),
-        "missing Regenerated line; got:\n{}", result.data
+        "missing Regenerated line; got:\n{}",
+        result.data
     );
 }

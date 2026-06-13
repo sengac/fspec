@@ -325,8 +325,7 @@ fn shared_infrastructure_is_reused_without_duplication() {
     // (precondition — this test only runs when the crate compiles)
 
     // @step When I inspect codelet/fspec/src/prioritize_work_unit.rs
-    let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/commands/prioritize_work_unit.rs");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/commands/prioritize_work_unit.rs");
     let src = fs::read_to_string(&path).expect("read prioritize_work_unit.rs");
 
     // @step Then the source declares it calls codelet_fspec_core::commands::prioritize_work_unit::run

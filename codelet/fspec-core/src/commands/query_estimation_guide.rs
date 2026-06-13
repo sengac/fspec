@@ -116,7 +116,11 @@ where
             Some(e) => e,
             None => continue,
         };
-        let iterations = match wu.extra.get("iterations").and_then(serde_json::Value::as_u64) {
+        let iterations = match wu
+            .extra
+            .get("iterations")
+            .and_then(serde_json::Value::as_u64)
+        {
             Some(i) => i,
             None => continue,
         };
@@ -229,7 +233,13 @@ mod tests {
     #[test]
     fn four_done_high_confidence() {
         let units: Vec<WorkUnit> = (1..=4)
-            .map(|i| make_wu(&format!("U{i}"), "done", json!({"estimate": 5, "iterations": i})))
+            .map(|i| {
+                make_wu(
+                    &format!("U{i}"),
+                    "done",
+                    json!({"estimate": 5, "iterations": i}),
+                )
+            })
             .collect();
         let result = compute_guide(units.iter());
         assert_eq!(result.patterns.len(), 1);

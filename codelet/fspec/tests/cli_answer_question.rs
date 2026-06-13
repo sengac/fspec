@@ -161,9 +161,9 @@ fn scenario_cli_defaults_add_to_to_none_no_rule_or_assumption_added() {
 
     let v = read_work_units(ws.path());
     // @step And spec/work-units.json on disk shows AUTH-001 has no rules added
-    assert!(v["workUnits"]["AUTH-001"]["rules"].as_array().map_or(true, |a| a.is_empty()));
+    assert!(v["workUnits"]["AUTH-001"]["rules"].as_array().is_none_or(Vec::is_empty));
     // @step And spec/work-units.json on disk shows AUTH-001 has no assumptions added
-    assert!(v["workUnits"]["AUTH-001"]["assumptions"].as_array().map_or(true, |a| a.is_empty()));
+    assert!(v["workUnits"]["AUTH-001"]["assumptions"].as_array().is_none_or(Vec::is_empty));
 }
 
 #[test]

@@ -136,23 +136,26 @@ fn aggregates_feature_names_scenario_counts_and_tags_sorted_by_file() {
     // @step Then the features array contains exactly two entries in order spec/features/auth.feature then spec/features/billing.feature
     assert_eq!(arr.len(), 2, "expected 2 entries, got {arr:?}");
     assert_eq!(arr[0]["file"].as_str(), Some("spec/features/auth.feature"));
-    assert_eq!(arr[1]["file"].as_str(), Some("spec/features/billing.feature"));
+    assert_eq!(
+        arr[1]["file"].as_str(),
+        Some("spec/features/billing.feature")
+    );
 
     // @step Then the auth entry has scenarioCount=3 and tags exactly ['@critical', '@auth']
     assert_eq!(arr[0]["scenarioCount"].as_u64(), Some(3));
     assert_eq!(
-        arr[0]["tags"].as_array().map(|a| {
-            a.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>()
-        }),
+        arr[0]["tags"]
+            .as_array()
+            .map(|a| { a.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>() }),
         Some(vec!["@critical", "@auth"])
     );
 
     // @step And the billing entry has scenarioCount=1 and tags exactly ['@billing']
     assert_eq!(arr[1]["scenarioCount"].as_u64(), Some(1));
     assert_eq!(
-        arr[1]["tags"].as_array().map(|a| {
-            a.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>()
-        }),
+        arr[1]["tags"]
+            .as_array()
+            .map(|a| { a.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>() }),
         Some(vec!["@billing"])
     );
 }
@@ -382,9 +385,9 @@ fn json_format_emits_two_space_indented_payload_with_canonical_field_set() {
     assert_eq!(entry["name"].as_str(), Some("User Authentication"));
     assert_eq!(entry["scenarioCount"].as_u64(), Some(2));
     assert_eq!(
-        entry["tags"].as_array().map(|a| {
-            a.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>()
-        }),
+        entry["tags"]
+            .as_array()
+            .map(|a| { a.iter().filter_map(|v| v.as_str()).collect::<Vec<_>>() }),
         Some(vec!["@critical"])
     );
 
@@ -428,16 +431,15 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         "io/feature_glob.rs must exist; missing: {}",
         feature_glob_path.display()
     );
-    let feature_glob_src = fs::read_to_string(&feature_glob_path)
-        .expect("io/feature_glob.rs readable");
+    let feature_glob_src =
+        fs::read_to_string(&feature_glob_path).expect("io/feature_glob.rs readable");
     assert!(
         feature_glob_src.contains("pub fn glob_feature_files"),
         "io/feature_glob.rs must declare `pub fn glob_feature_files`; got:\n{feature_glob_src}"
     );
 
     // @step And the error::FspecCoreError enum declares a DirectoryNotFound variant whose Display contains the substring 'Directory not found'
-    let error_src = fs::read_to_string(crate_src.join("error.rs"))
-        .expect("error.rs readable");
+    let error_src = fs::read_to_string(crate_src.join("error.rs")).expect("error.rs readable");
     assert!(
         error_src.contains("DirectoryNotFound"),
         "error.rs must declare a DirectoryNotFound variant; got:\n{error_src}"

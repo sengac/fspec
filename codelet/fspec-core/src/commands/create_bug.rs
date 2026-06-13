@@ -151,7 +151,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     bug.insert("type".to_string(), Value::String("bug".to_string()));
     bug.insert("status".to_string(), Value::String("backlog".to_string()));
     bug.insert("createdAt".to_string(), Value::String(now.clone()));
-    bug.insert("updatedAt".to_string(), Value::String(now.clone()));
+    bug.insert("updatedAt".to_string(), Value::String(now));
     if let Some(desc) = args.description.as_deref() {
         bug.insert("description".to_string(), Value::String(desc.to_string()));
     }
@@ -168,15 +168,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // entries keep their exact on-disk key order and so we can write the
     // freshly-built bug object verbatim (preserving the TS field order
     // computed above).
-    let mut top: Map<String, Value> = read_raw_work_units_object(project_root).unwrap_or_else(|| {
-        serde_json::to_value(&data)
-            .ok()
-            .and_then(|v| match v {
-                Value::Object(m) => Some(m),
-                _ => None,
-            })
-            .unwrap_or_default()
-    });
+    let mut top: Map<String, Value> =
+        read_raw_work_units_object(project_root).unwrap_or_else(|| {
+            serde_json::to_value(&data)
+                .ok()
+                .and_then(|v| match v {
+                    Value::Object(m) => Some(m),
+                    _ => None,
+                })
+                .unwrap_or_default()
+        });
 
     // Insert the new bug into workUnits.
     {
@@ -401,7 +402,12 @@ fn read_raw_epics_object(project_root: &Path) -> Option<Map<String, Value>> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

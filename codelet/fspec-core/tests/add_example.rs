@@ -193,8 +193,7 @@ fn status_guard_rejects_add_example_when_work_unit_is_not_in_specifying() {
     let tmp = TempDir::new().expect("tempdir");
     let pre = seed_one("AUTH-001", "backlog", serde_json::Map::new());
     write_work_units(tmp.path(), &pre);
-    let before_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
+    let before_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read pre");
 
     // @step When I dispatch add-example with workUnitId='AUTH-001' and example='Anything'
     let result = dispatch_command(req(
@@ -213,8 +212,7 @@ fn status_guard_rejects_add_example_when_work_unit_is_not_in_specifying() {
     );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
-    let after_bytes =
-        fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
+    let after_bytes = fs::read(tmp.path().join("spec").join("work-units.json")).expect("read post");
     assert_eq!(before_bytes, after_bytes);
 }
 
@@ -304,7 +302,11 @@ fn success_rendering_embeds_the_system_reminder_block() {
     );
 
     // @step And the rendered output contains the substring "<system-reminder>"
-    assert!(result.data.contains("<system-reminder>"), "got: {}", result.data);
+    assert!(
+        result.data.contains("<system-reminder>"),
+        "got: {}",
+        result.data
+    );
 
     // @step And the rendered output contains the substring "User story: \"As a developer...\""
     assert!(

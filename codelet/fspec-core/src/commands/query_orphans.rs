@@ -96,9 +96,7 @@ fn render_text(result: &QueryOrphansResult) -> String {
     if result.orphans.is_empty() {
         let mut out = String::new();
         out.push_str("✓ No orphaned work units found.\n");
-        out.push_str(
-            "All work units have either an epic assignment or dependency relationships.",
-        );
+        out.push_str("All work units have either an epic assignment or dependency relationships.");
         return out;
     }
     let mut out = String::new();
@@ -165,7 +163,11 @@ where
             id: wu.id.clone(),
             title: wu.title.clone(),
             status: wu.status.as_str().to_string(),
-            suggested_actions: SUGGESTED_ACTIONS.iter().copied().map(String::from).collect(),
+            suggested_actions: SUGGESTED_ACTIONS
+                .iter()
+                .copied()
+                .map(String::from)
+                .collect(),
         });
     }
 

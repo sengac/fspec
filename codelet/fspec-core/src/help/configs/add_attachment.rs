@@ -12,7 +12,9 @@
 //!      reads `err.fix` (which is `undefined`) producing `Fix: undefined`.
 //!      We use the literal string "undefined" here.
 
-use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError};
+use super::super::{
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
+};
 
 const ARGS: &[CommandArgument] = &[
     CommandArgument {

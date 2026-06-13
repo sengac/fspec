@@ -4,9 +4,7 @@
 //! The output of `format_command_help(&CONFIG)` is byte-for-byte identical
 //! to `node dist/index.js list-hooks --help` when piped to a non-TTY.
 
-use super::super::{
-    CommandExample, CommandHelpConfig, CommonError,
-};
+use super::super::{CommandExample, CommandHelpConfig, CommonError};
 
 const EXAMPLE_1_OUTPUT: &str = "Configured Hooks:\n\npre-update-work-unit-status:\n  - validate-feature-file\n  - check-blockers\n\npost-implementing:\n  - run-tests\n  - lint-code\n\npost-validating:\n  - notify-slack";
 

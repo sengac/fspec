@@ -65,9 +65,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     })?;
 
     let arr_present_and_has_entry = {
-        let arr_opt = data
-            .get("architectureDiagrams")
-            .and_then(|v| v.as_array());
+        let arr_opt = data.get("architectureDiagrams").and_then(|v| v.as_array());
         arr_opt
             .map(|arr| {
                 arr.iter()

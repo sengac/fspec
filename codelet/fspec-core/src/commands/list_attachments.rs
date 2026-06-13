@@ -88,13 +88,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // the canonical "Failed to parse work-units.json" substring.
     let data = ensure_work_units_file(project_root)?;
 
-    let work_unit = data
-        .work_units
-        .get(&work_unit_id)
-        .ok_or_else(|| FspecCoreError::InvalidArgs {
-            command: "list-attachments",
-            reason: format!("Work unit '{work_unit_id}' does not exist"),
-        })?;
+    let work_unit =
+        data.work_units
+            .get(&work_unit_id)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "list-attachments",
+                reason: format!("Work unit '{work_unit_id}' does not exist"),
+            })?;
 
     // Extract the attachments array from the round-tripped `extra` map.
     // The `WorkUnit` struct does NOT (yet) model `attachments` as a typed
@@ -193,7 +193,11 @@ fn epoch_to_ymdhms(secs: u64) -> (i32, u32, u32, u32, u32, u32) {
     let s = seconds_of_day % 60;
 
     let z = days + 719_468;
-    let era = if z >= 0 { z / 146_097 } else { (z - 146_096) / 146_097 };
+    let era = if z >= 0 {
+        z / 146_097
+    } else {
+        (z - 146_096) / 146_097
+    };
     let doe = (z - era * 146_097) as u32;
     let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
     let y = yoe as i64 + era * 400;
@@ -257,13 +261,17 @@ fn render_text(work_unit_id: &str, entries: &[AttachmentEntry]) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
     fn args_parse_with_camel_case_work_unit_id() {
-        let a: ListAttachmentsArgs =
-            serde_json::from_str(r#"{"workUnitId":"AUTH-001"}"#).unwrap();
+        let a: ListAttachmentsArgs = serde_json::from_str(r#"{"workUnitId":"AUTH-001"}"#).unwrap();
         assert_eq!(a.work_unit_id.as_deref(), Some("AUTH-001"));
         assert!(a.format.is_none());
     }
@@ -343,9 +351,7 @@ mod tests {
         assert!(out
             .lines()
             .any(|l| l == "  ✗ spec/attachments/AUTH-001/missing.png"));
-        assert!(out
-            .lines()
-            .any(|l| l == "    File not found on filesystem"));
+        assert!(out.lines().any(|l| l == "    File not found on filesystem"));
         assert!(!out.contains("Size:"));
     }
 }

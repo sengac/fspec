@@ -5,8 +5,8 @@
 //! Captured fixture: `codelet/fspec/tests/fixtures/help/remove-dependency.txt`.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const ARGS: &[CommandArgument] = &[

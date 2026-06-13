@@ -61,12 +61,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Validate work unit exists — error message MUST match TS
     // `Work unit '<id>' does not exist` (src/commands/show-deleted.ts:36).
-    let work_unit = data.work_units.get(&work_unit_id).ok_or_else(|| {
-        FspecCoreError::InvalidArgs {
-            command: "show-deleted",
-            reason: format!("Work unit '{work_unit_id}' does not exist"),
-        }
-    })?;
+    let work_unit =
+        data.work_units
+            .get(&work_unit_id)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "show-deleted",
+                reason: format!("Work unit '{work_unit_id}' does not exist"),
+            })?;
 
     // Walk the four soft-delete arrays in the canonical order. Each array
     // is stored on the WorkUnit's `extra` Map (we deliberately do NOT model
@@ -123,7 +124,9 @@ fn collect_deleted_items(extra: &serde_json::Map<String, Value>) -> Vec<DeletedI
             continue;
         };
         for entry in arr {
-            let Some(obj) = entry.as_object() else { continue };
+            let Some(obj) = entry.as_object() else {
+                continue;
+            };
             // `deleted: true` is the truthiness gate (TS `.filter(r => r.deleted)`).
             // Missing field or `false` both fail the filter.
             if obj.get("deleted").and_then(Value::as_bool) != Some(true) {
@@ -175,7 +178,10 @@ fn render_text(work_unit_id: &str, items: &[DeletedItem]) -> String {
     ));
     for item in items {
         match &item.deleted_at {
-            Some(ts) => out.push_str(&format!("  [{}] {} (deleted: {})\n", item.id, item.text, ts)),
+            Some(ts) => out.push_str(&format!(
+                "  [{}] {} (deleted: {})\n",
+                item.id, item.text, ts
+            )),
             None => out.push_str(&format!("  [{}] {}\n", item.id, item.text)),
         }
     }
@@ -185,11 +191,21 @@ fn render_text(work_unit_id: &str, items: &[DeletedItem]) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde_json::json;
 
-    fn extra_with(rules: Value, examples: Value, questions: Value, arch: Value) -> serde_json::Map<String, Value> {
+    fn extra_with(
+        rules: Value,
+        examples: Value,
+        questions: Value,
+        arch: Value,
+    ) -> serde_json::Map<String, Value> {
         let mut m = serde_json::Map::new();
         if !rules.is_null() {
             m.insert("rules".into(), rules);

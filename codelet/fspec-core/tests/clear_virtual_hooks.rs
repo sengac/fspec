@@ -107,10 +107,7 @@ fn scenario_returns_error_when_work_unit_does_not_exist() {
     seed_work_units(tmp.path(), auth001_no_hooks());
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-999'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-999" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-999" })));
 
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected success=false, got {result:?}");
@@ -132,10 +129,7 @@ fn scenario_returns_error_when_auto_created_store_is_empty() {
     assert!(!tmp.path().join("spec").exists());
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-001'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected success=false, got {result:?}");
@@ -164,10 +158,7 @@ fn scenario_clears_all_hooks_from_unit_with_three_virtual_hooks() {
     let original_updated_at = "2026-06-01T00:00:00.000Z";
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-001'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
@@ -215,10 +206,7 @@ fn scenario_clearing_unit_with_no_virtual_hooks_returns_cleared_count_zero() {
     seed_work_units(tmp.path(), auth001_no_hooks());
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-001'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
@@ -252,10 +240,7 @@ fn scenario_clearing_unit_with_empty_virtual_hooks_returns_cleared_count_zero() 
     seed_work_units(tmp.path(), auth001_empty_hooks());
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-001'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
@@ -298,10 +283,7 @@ fn scenario_script_files_are_unlinked_for_each_cleared_hook() {
     assert!(test_script.exists());
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-001'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
@@ -331,10 +313,7 @@ fn scenario_missing_script_files_are_silently_ignored() {
     assert!(!tmp.path().join("spec/hooks/.virtual").exists());
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-001'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
@@ -370,7 +349,9 @@ fn scenario_missing_work_unit_id_argument_is_rejected() {
     let msg = result.error.as_ref().expect("error message expected");
     let lower = msg.to_lowercase();
     assert!(
-        lower.contains("workunitid") || lower.contains("work unit id") || lower.contains("workunit"),
+        lower.contains("workunitid")
+            || lower.contains("work unit id")
+            || lower.contains("workunit"),
         "error message should mention workUnitId; got: {msg}"
     );
 }
@@ -384,10 +365,7 @@ fn scenario_result_json_shape_preserves_field_order() {
     seed_work_units(tmp.path(), auth001_no_hooks());
 
     // @step When I dispatch clear-virtual-hooks with workUnitId='AUTH-001'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({ "workUnitId": "AUTH-001" }),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "AUTH-001" })));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");

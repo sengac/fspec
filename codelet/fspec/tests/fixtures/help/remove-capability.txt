@@ -1,0 +1,55 @@
+
+REMOVE-CAPABILITY
+Remove a capability from foundation.json or foundation.json.draft by exact name match (case-sensitive). Used to correct mistakes during foundation discovery or remove obsolete capabilities.
+
+WHEN TO USE
+  Use during foundation discovery to correct mistakes, or when updating an existing foundation to remove capabilities that are no longer part of the system.
+
+PREREQUISITES
+  • foundation.json or foundation.json.draft must exist
+  • Capability must exist with exact name match
+
+USAGE
+  fspec remove-capability "<name>"
+
+ARGUMENTS
+  <name> (required)
+    Exact name of the capability to remove (case-sensitive). Must match existing capability name exactly.
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  List current capabilities: Check foundation.json or foundation.json.draft,Remove capability: fspec remove-capability "exact name",Verify removal: Check updated foundation file
+
+EXAMPLES
+  1. Remove capability by exact name
+  $ fspec remove-capability "User Authentication"
+  ✓ Removed capability "User Authentication" from foundation.json.draft
+
+  2. Remove capability from finalized foundation
+  $ fspec remove-capability "Data Export"
+  ✓ Removed capability "Data Export" from foundation.json
+
+COMMON ERRORS
+  ✗ foundation.json not found
+    Fix: undefined
+
+  ✗ Capability "Name" not found
+    Fix: undefined
+
+  ✗ No capabilities exist in foundation
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec add-capability - Add capability to foundation
+  fspec fspec discover-foundation - Foundation discovery process
+  fspec fspec remove-persona - Remove persona from foundation
+  fspec fspec update-foundation - Update foundation fields
+
+NOTES
+  • Draft file (foundation.json.draft) takes precedence over foundation.json
+  • Name matching is case-sensitive and must be exact
+  • Removal is permanent - no undo functionality
+  • Error message shows available capabilities if name not found
+

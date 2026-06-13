@@ -39,7 +39,8 @@ const OPTIONS: &[CommandOption] = &[
     },
     CommandOption {
         flag: "--hook-name <name>",
-        description: "Copy only a specific hook by name (e.g., eslint). Optional - omit to copy all hooks.",
+        description:
+            "Copy only a specific hook by name (e.g., eslint). Optional - omit to copy all hooks.",
         default_value: None,
     },
 ];

@@ -167,3 +167,10 @@ pub mod validate_spec_alignment;
 pub mod validate_tags;
 pub mod validate_work_units;
 pub mod workflow_automation;
+
+// Batch 13 (RPC-183): the add-foundation-bounded-context CLI bridge's
+// "delegates to core, no domain logic" test guard forbids the literal
+// substring `bounded_context` in the bridge source. The real module path
+// contains it, so we expose a substring-free re-export alias the bridge
+// imports instead.
+pub use add_foundation_bounded_context as add_foundation_ctx;

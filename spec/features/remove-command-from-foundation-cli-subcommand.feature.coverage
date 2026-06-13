@@ -1,0 +1,242 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "lines": "102-127",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/remove_command_from_foundation.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI successfully soft-deletes a command and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "lines": "129-161",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_command_from_foundation.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects a missing command with exit 1 and the TS-parity error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "lines": "163-198",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_command_from_foundation.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_command_from_foundation.rs",
+          "lines": "200-257",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_command_from_foundation.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_remove_command_from_foundation.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/remove_command_from_foundation.rs",
+      "codelet/fspec/src/remove_command_from_foundation.rs"
+    ],
+    "totalLinesCovered": 314
+  }
+}

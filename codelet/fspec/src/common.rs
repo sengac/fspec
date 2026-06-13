@@ -509,7 +509,7 @@ pub fn render_core_error(err: &FspecCoreError) -> String {
 pub fn strip_dispatch_envelope(msg: &str) -> &str {
     const PREFIX: &str = "Invalid args for fspec command ";
     match msg.strip_prefix(PREFIX) {
-        Some(rest) => rest.splitn(2, ": ").nth(1).unwrap_or(msg),
+        Some(rest) => rest.split_once(": ").map_or(msg, |(_, after)| after),
         None => msg,
     }
 }

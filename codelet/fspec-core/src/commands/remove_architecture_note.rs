@@ -113,10 +113,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         None => {
             return Err(FspecCoreError::InvalidArgs {
                 command: "remove-architecture-note",
-                reason: format!(
-                    "Work unit '{}' does not exist",
-                    args.work_unit_id
-                ),
+                reason: format!("Work unit '{}' does not exist", args.work_unit_id),
             });
         }
     };
@@ -173,16 +170,20 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Soft-delete: set deleted=true and deletedAt=iso8601_now() (TS L62-64).
     let now = iso8601_now();
-    let note_obj = notes_array[position]
-        .as_object_mut()
-        .expect("notes are objects");
+    let note_obj =
+        notes_array[position]
+            .as_object_mut()
+            .ok_or_else(|| FspecCoreError::ParseJson {
+                file: "work-units.json".to_string(),
+                reason: "architecture note must be an object".to_string(),
+            })?;
     note_obj.insert("deleted".to_string(), Value::Bool(true));
     note_obj.insert("deletedAt".to_string(), Value::String(now.clone()));
 
     // Bump work-unit updatedAt and top-level meta.lastUpdated (TS L69-74).
     wu.updated_at = now.clone();
     if let Some(meta) = data.meta.as_mut() {
-        meta.last_updated = now.clone();
+        meta.last_updated = now;
     }
 
     // Single atomic write (parity with TS fileManager.transaction).
@@ -212,7 +213,12 @@ fn render_success(idempotent_id: Option<u64>) -> String {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
@@ -225,18 +231,15 @@ mod tests {
 
     #[test]
     fn args_parse_nan_string() {
-        let a: RemoveArchitectureNoteArgs = serde_json::from_str(
-            r#"{"workUnitId":"AUTH-001","index":"NaN"}"#,
-        )
-        .unwrap();
+        let a: RemoveArchitectureNoteArgs =
+            serde_json::from_str(r#"{"workUnitId":"AUTH-001","index":"NaN"}"#).unwrap();
         assert!(matches!(a.index, TsIndex::Nan));
         assert_eq!(a.index.display(), "NaN");
     }
 
     #[test]
     fn args_parse_fails_without_work_unit_id() {
-        let err =
-            serde_json::from_str::<RemoveArchitectureNoteArgs>(r#"{"index":0}"#).unwrap_err();
+        let err = serde_json::from_str::<RemoveArchitectureNoteArgs>(r#"{"index":0}"#).unwrap_err();
         let msg = err.to_string();
         assert!(
             msg.to_lowercase().contains("workunitid"),

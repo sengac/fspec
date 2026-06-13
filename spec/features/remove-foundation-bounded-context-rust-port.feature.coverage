@@ -1,0 +1,223 @@
+{
+  "scenarios": [
+    {
+      "name": "Remove a childless bounded context soft-deletes it",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_foundation_bounded_context.rs",
+          "lines": "67-103",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refuse to remove a non-empty bounded context without --cascade",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_foundation_bounded_context.rs",
+          "lines": "105-139",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove a non-empty bounded context with --cascade soft-deletes context and children",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_foundation_bounded_context.rs",
+          "lines": "141-179",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing a name with no matching non-deleted bounded context errors",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_foundation_bounded_context.rs",
+          "lines": "181-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An already soft-deleted bounded context is treated as not found",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_foundation_bounded_context.rs",
+          "lines": "213-243",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing against a foundation with no eventStorm field errors",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_foundation_bounded_context.rs",
+          "lines": "245-265",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/remove_foundation_bounded_context.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs"
+    ],
+    "totalLinesCovered": 305
+  }
+}

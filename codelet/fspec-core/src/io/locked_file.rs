@@ -34,11 +34,7 @@ use crate::error::FspecCoreError;
 /// The `file_label` is used in error messages and MUST match what the TS
 /// implementation uses (e.g. `"work-units.json"`) so cross-frontend assertions
 /// keep working.
-pub fn read_or_init_json<T>(
-    path: &Path,
-    default: &T,
-    file_label: &str,
-) -> Result<T, FspecCoreError>
+pub fn read_or_init_json<T>(path: &Path, default: &T, file_label: &str) -> Result<T, FspecCoreError>
 where
     T: DeserializeOwned + Serialize,
 {
@@ -94,6 +90,31 @@ where
 /// Uses the canonical write-temp-then-rename pattern. The lock on the temp
 /// file serializes concurrent writers within a single process.
 pub fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), FspecCoreError> {
+    write_json_atomic_inner(path, value, false)
+}
+
+/// Atomically write `value` as pretty-printed JSON (2-space indent) **with a
+/// single trailing newline** to `path`.
+///
+/// This matches the TS foundation-mutation commands that write
+/// `JSON.stringify(foundation, null, 2) + '\n'` (e.g. `add-capability`,
+/// `remove-capability`, `add-persona`, `remove-persona`). The plain
+/// [`write_json_atomic`] omits the trailing newline for byte-exact parity with
+/// `JSON.stringify(...)` callers (`work-units.json`, the `FileManager`
+/// eventStorm commands, etc.). Use this variant ONLY where the TS source
+/// explicitly appends `'\n'`.
+pub fn write_json_atomic_trailing_newline<T: Serialize>(
+    path: &Path,
+    value: &T,
+) -> Result<(), FspecCoreError> {
+    write_json_atomic_inner(path, value, true)
+}
+
+fn write_json_atomic_inner<T: Serialize>(
+    path: &Path,
+    value: &T,
+    trailing_newline: bool,
+) -> Result<(), FspecCoreError> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).map_err(|source| FspecCoreError::Io {
             command: "write_json_atomic",
@@ -119,22 +140,28 @@ pub fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), Fsp
             command: "write_json_atomic",
             source,
         })?;
-        let serialized = serde_json::to_string_pretty(value).map_err(|e| {
-            FspecCoreError::InvalidArgs {
+        let serialized =
+            serde_json::to_string_pretty(value).map_err(|e| FspecCoreError::InvalidArgs {
                 command: "write_json_atomic",
                 reason: format!("failed to serialize JSON: {e}"),
-            }
-        })?;
+            })?;
         tmp.write_all(serialized.as_bytes())
             .map_err(|source| FspecCoreError::Io {
                 command: "write_json_atomic",
                 source,
             })?;
         // Parity with TS `JSON.stringify(data, null, 2)`+`writeFile`: NO
-        // trailing newline. Adding a final `\n` would diverge from the
-        // byte-exact TS output for every command that writes through this
+        // trailing newline by default. Adding a final `\n` would diverge from
+        // the byte-exact TS output for every command that writes through this
         // helper (`spec/work-units.json`, `spec/prefixes.json`,
-        // `spec/epics.json`, `spec/tags.json`).
+        // `spec/epics.json`, `spec/tags.json`). The `trailing_newline` flag is
+        // set ONLY for TS foundation commands that append `'\n'` explicitly.
+        if trailing_newline {
+            tmp.write_all(b"\n").map_err(|source| FspecCoreError::Io {
+                command: "write_json_atomic",
+                source,
+            })?;
+        }
         tmp.sync_all().map_err(|source| FspecCoreError::Io {
             command: "write_json_atomic",
             source,
@@ -152,7 +179,12 @@ pub fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), Fsp
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
     use serde::Deserialize;
     use tempfile::TempDir;

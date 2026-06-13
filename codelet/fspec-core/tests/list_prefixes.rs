@@ -80,9 +80,7 @@ fn parse_data(data: &str) -> Value {
 }
 
 fn first_prefix(data: &Value) -> &Value {
-    &data["prefixes"]
-        .as_array()
-        .expect("prefixes array")[0]
+    &data["prefixes"].as_array().expect("prefixes array")[0]
 }
 
 // ---------- scenarios ----------
@@ -422,7 +420,10 @@ fn json_format_emits_two_space_indent_with_canonical_field_set() {
         result.data
     );
     assert!(
-        result.data.lines().any(|l| l.starts_with("      \"prefix\"")),
+        result
+            .data
+            .lines()
+            .any(|l| l.starts_with("      \"prefix\"")),
         "expected a line starting with six-space indent + \"prefix\"; got:\n{}",
         result.data
     );
@@ -459,8 +460,8 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
     let crate_src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
 
     // @step Then the modules io::ensure::read_prefixes_or_empty and io::ensure::read_work_units_or_empty exist and are publicly accessible from the crate root
-    let ensure_src = fs::read_to_string(crate_src.join("io/ensure.rs"))
-        .expect("io/ensure.rs readable");
+    let ensure_src =
+        fs::read_to_string(crate_src.join("io/ensure.rs")).expect("io/ensure.rs readable");
     assert!(
         ensure_src.contains("pub fn read_prefixes_or_empty"),
         "io/ensure.rs must declare `pub fn read_prefixes_or_empty`; got:\n{ensure_src}"

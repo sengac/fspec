@@ -101,7 +101,11 @@ fn remove_single_tag_from_multi_tag_scenario() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' tagged @smoke @critical @regression
     let tmp = TempDir::new().expect("tempdir");
     let path = "spec/features/login.feature";
-    write_feature(tmp.path(), path, &feature_scenario_tagged(&["@smoke", "@critical", "@regression"]));
+    write_feature(
+        tmp.path(),
+        path,
+        &feature_scenario_tagged(&["@smoke", "@critical", "@regression"]),
+    );
 
     // @step When I dispatch remove-tag-from-scenario with file='spec/features/login.feature' scenario='Login' tags=['@critical']
     let result = dispatch_command(req(
@@ -187,7 +191,10 @@ fn requested_tag_absent_from_scenario_is_idempotent_success() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected idempotent success; got {result:?}");
+    assert!(
+        result.success,
+        "expected idempotent success; got {result:?}"
+    );
 
     // @step And the returned data contains valid=true
     let data = data_value(&result);
@@ -209,7 +216,11 @@ fn remove_all_tags_from_a_scenario() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' tagged @smoke @critical
     let tmp = TempDir::new().expect("tempdir");
     let path = "spec/features/login.feature";
-    write_feature(tmp.path(), path, &feature_scenario_tagged(&["@smoke", "@critical"]));
+    write_feature(
+        tmp.path(),
+        path,
+        &feature_scenario_tagged(&["@smoke", "@critical"]),
+    );
 
     // @step When I dispatch remove-tag-from-scenario with file='spec/features/login.feature' scenario='Login' tags=['@smoke','@critical']
     let result = dispatch_command(req(
@@ -252,7 +263,10 @@ fn missing_scenario_is_idempotent_success() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected idempotent success; got {result:?}");
+    assert!(
+        result.success,
+        "expected idempotent success; got {result:?}"
+    );
 
     // @step And the returned data contains valid=true
     let data = data_value(&result);

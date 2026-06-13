@@ -24,7 +24,12 @@ const EXAMPLES: &[CommandExample] = &[CommandExample {
     output: Some("✓ Example added successfully"),
 }];
 
-const RELATED: &[&str] = &["add-rule", "add-question", "generate-scenarios", "remove-example"];
+const RELATED: &[&str] = &[
+    "add-rule",
+    "add-question",
+    "generate-scenarios",
+    "remove-example",
+];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "add-example",

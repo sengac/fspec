@@ -86,11 +86,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         command: "remove-hook",
         source,
     })?;
-    let parsed: Value =
-        serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
-            file: "fspec-hooks.json".to_string(),
-            reason: e.to_string(),
-        })?;
+    let parsed: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
+        file: "fspec-hooks.json".to_string(),
+        reason: e.to_string(),
+    })?;
 
     // Top-level must be a JSON object — preserve its key insertion order.
     let mut config = match parsed {
@@ -185,10 +184,7 @@ mod tests {
         });
         assert!(arr.is_empty());
         // Event key must still exist on the hooks object.
-        assert!(config["hooks"]
-            .as_object()
-            .unwrap()
-            .contains_key("pre"));
+        assert!(config["hooks"].as_object().unwrap().contains_key("pre"));
     }
 
     #[test]
@@ -223,7 +219,10 @@ mod tests {
                 .is_none_or(|n| n != "b")
         });
         let s = serde_json::to_string(&arr[0]).unwrap();
-        assert!(s.contains("\"condition\""), "extras must round-trip; got {s}");
+        assert!(
+            s.contains("\"condition\""),
+            "extras must round-trip; got {s}"
+        );
         assert!(s.contains("\"timeout\":120"));
     }
 }

@@ -10,7 +10,7 @@
 //! captured fixture asserts this byte-for-byte.
 
 use super::super::{
-    CommandArgument, CommonError, CommandExample, CommandHelpConfig, CommandOption, CommonPattern,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
     CommonPatternEntry,
 };
 

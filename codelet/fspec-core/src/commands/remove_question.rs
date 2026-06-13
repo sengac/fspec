@@ -126,7 +126,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .work_units
         .get(&args.work_unit_id)
         .map(|w| w.status.as_str())
-        .expect("work unit exists");
+        .unwrap_or("");
     if status_str != "specifying" {
         return Err(FspecCoreError::InvalidArgs {
             command: "remove-question",
@@ -138,11 +138,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Locate the questions array (immutable scan).
-    let wu_ref = data.work_units.get(&args.work_unit_id).expect("work unit exists");
-    let questions = wu_ref
-        .extra
-        .get("questions")
-        .and_then(|v| v.as_array());
+    let questions = data
+        .work_units
+        .get(&args.work_unit_id)
+        .and_then(|wu| wu.extra.get("questions"))
+        .and_then(Value::as_array);
     let questions = match questions {
         Some(arr) if !arr.is_empty() => arr.clone(),
         _ => {
@@ -160,7 +160,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let pos = match target_id {
         Some(id) => questions
             .iter()
-            .position(|q| q.get("id").and_then(|v| v.as_u64()) == Some(id)),
+            .position(|q| q.get("id").and_then(Value::as_u64) == Some(id)),
         None => None,
     };
     let pos = match pos {
@@ -176,18 +176,15 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let q = &questions[pos];
     let removed_text = q
         .get("text")
-        .and_then(|v| v.as_str())
+        .and_then(Value::as_str)
         .unwrap_or("")
         .to_string();
-    let already_deleted = q
-        .get("deleted")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false);
+    let already_deleted = q.get("deleted").and_then(Value::as_bool).unwrap_or(false);
 
     // Compute remainingCount in either path.
     let count_non_deleted = |arr: &[Value]| -> usize {
         arr.iter()
-            .filter(|q| !q.get("deleted").and_then(|v| v.as_bool()).unwrap_or(false))
+            .filter(|q| !q.get("deleted").and_then(Value::as_bool).unwrap_or(false))
             .count()
     };
 
@@ -207,24 +204,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // Mutate: soft-delete in place.
     let now = iso8601_now();
-    let wu = data
-        .work_units
-        .get_mut(&args.work_unit_id)
-        .expect("work unit exists");
-
-    let entry = wu
-        .extra
-        .get_mut("questions")
-        .and_then(|v| v.as_array_mut())
-        .expect("questions array exists (verified above)");
-    if let Some(q_mut) = entry.get_mut(pos).and_then(|v| v.as_object_mut()) {
-        q_mut.insert("deleted".to_string(), Value::Bool(true));
-        q_mut.insert("deletedAt".to_string(), Value::String(now.clone()));
+    let mut remaining = 0_usize;
+    if let Some(wu) = data.work_units.get_mut(&args.work_unit_id) {
+        if let Some(entry) = wu.extra.get_mut("questions").and_then(Value::as_array_mut) {
+            if let Some(q_mut) = entry.get_mut(pos).and_then(Value::as_object_mut) {
+                q_mut.insert("deleted".to_string(), Value::Bool(true));
+                q_mut.insert("deletedAt".to_string(), Value::String(now.clone()));
+            }
+            // Snapshot for the post-write remainingCount.
+            remaining = count_non_deleted(entry);
+        }
+        wu.updated_at = now;
     }
-    // Snapshot for the post-write remainingCount.
-    let remaining = count_non_deleted(entry);
-
-    wu.updated_at = now;
 
     // Single atomic write.
     let path = project_root.join("spec").join("work-units.json");
@@ -244,7 +235,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]

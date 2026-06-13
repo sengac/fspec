@@ -109,7 +109,10 @@ fn returns_epic_not_found_when_id_not_registered() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step When I dispatch show-epic with epicId='nonexistent'
     let result = dispatch_command(req(tmp.path(), json!({ "epicId": "nonexistent" })));
@@ -165,7 +168,10 @@ fn aggregates_work_unit_completion_progress() {
     );
 
     // @step When I dispatch show-epic with epicId='auth' and format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "json" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "json" }),
+    ));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
@@ -174,7 +180,9 @@ fn aggregates_work_unit_completion_progress() {
     let data = parse_data(&result.data);
     assert_eq!(data["totalWorkUnits"].as_u64(), Some(2));
     assert_eq!(data["completedWorkUnits"].as_u64(), Some(1));
-    let pct = data["completionPercentage"].as_f64().expect("completionPercentage f64");
+    let pct = data["completionPercentage"]
+        .as_f64()
+        .expect("completionPercentage f64");
     assert!((pct - 50.0).abs() < 1e-9, "expected 50; got {pct}");
 
     // @step Then the result.epic.id equals 'auth'
@@ -187,13 +195,19 @@ fn treats_missing_work_units_as_zero_counts() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json does NOT exist
     assert!(!tmp.path().join("spec/work-units.json").exists());
 
     // @step When I dispatch show-epic with epicId='auth' and format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "json" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "json" }),
+    ));
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "{result:?}");
@@ -202,7 +216,9 @@ fn treats_missing_work_units_as_zero_counts() {
     let data = parse_data(&result.data);
     assert_eq!(data["totalWorkUnits"].as_u64(), Some(0));
     assert_eq!(data["completedWorkUnits"].as_u64(), Some(0));
-    let pct = data["completionPercentage"].as_f64().expect("completionPercentage f64");
+    let pct = data["completionPercentage"]
+        .as_f64()
+        .expect("completionPercentage f64");
     assert!((pct - 0.0).abs() < 1e-9, "expected 0; got {pct}");
 }
 
@@ -212,13 +228,19 @@ fn treats_malformed_work_units_as_zero_counts() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json exists but contains the malformed bytes '{ not json'
     write_work_units(tmp.path(), "{ not json");
 
     // @step When I dispatch show-epic with epicId='auth' and format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "json" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "json" }),
+    ));
 
     // @step Then the dispatcher returns success=true
     assert!(
@@ -230,7 +252,9 @@ fn treats_malformed_work_units_as_zero_counts() {
     let data = parse_data(&result.data);
     assert_eq!(data["totalWorkUnits"].as_u64(), Some(0));
     assert_eq!(data["completedWorkUnits"].as_u64(), Some(0));
-    let pct = data["completionPercentage"].as_f64().expect("completionPercentage f64");
+    let pct = data["completionPercentage"]
+        .as_f64()
+        .expect("completionPercentage f64");
     assert!((pct - 0.0).abs() < 1e-9, "expected 0; got {pct}");
 }
 
@@ -240,7 +264,10 @@ fn completion_percentage_one_third_rounds_to_33_33() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json contains AUTH-001 (epic=auth, status=done), AUTH-002 (epic=auth, status=backlog), AUTH-003 (epic=auth, status=backlog)
     write_work_units(
@@ -253,14 +280,19 @@ fn completion_percentage_one_third_rounds_to_33_33() {
     );
 
     // @step When I dispatch show-epic with epicId='auth' and format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "json" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "json" }),
+    ));
     assert!(result.success, "{result:?}");
 
     // @step Then the result has totalWorkUnits=3, completedWorkUnits=1, completionPercentage=33.33
     let data = parse_data(&result.data);
     assert_eq!(data["totalWorkUnits"].as_u64(), Some(3));
     assert_eq!(data["completedWorkUnits"].as_u64(), Some(1));
-    let pct = data["completionPercentage"].as_f64().expect("completionPercentage f64");
+    let pct = data["completionPercentage"]
+        .as_f64()
+        .expect("completionPercentage f64");
     assert!(
         (pct - 33.33).abs() < 1e-9,
         "expected 33.33 (2-decimal rounding); got {pct}"
@@ -273,7 +305,10 @@ fn completion_percentage_two_thirds_rounds_to_66_67() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json contains AUTH-001 (epic=auth, status=done), AUTH-002 (epic=auth, status=done), AUTH-003 (epic=auth, status=backlog)
     write_work_units(
@@ -286,14 +321,19 @@ fn completion_percentage_two_thirds_rounds_to_66_67() {
     );
 
     // @step When I dispatch show-epic with epicId='auth' and format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "json" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "json" }),
+    ));
     assert!(result.success, "{result:?}");
 
     // @step Then the result has totalWorkUnits=3, completedWorkUnits=2, completionPercentage=66.67
     let data = parse_data(&result.data);
     assert_eq!(data["totalWorkUnits"].as_u64(), Some(3));
     assert_eq!(data["completedWorkUnits"].as_u64(), Some(2));
-    let pct = data["completionPercentage"].as_f64().expect("completionPercentage f64");
+    let pct = data["completionPercentage"]
+        .as_f64()
+        .expect("completionPercentage f64");
     assert!(
         (pct - 66.67).abs() < 1e-9,
         "expected 66.67 (2-decimal rounding); got {pct}"
@@ -306,7 +346,10 @@ fn completion_percentage_returns_100_when_all_done() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json contains AUTH-001 (epic=auth, status=done) and AUTH-002 (epic=auth, status=done)
     write_work_units(
@@ -315,14 +358,19 @@ fn completion_percentage_returns_100_when_all_done() {
     );
 
     // @step When I dispatch show-epic with epicId='auth' and format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "json" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "json" }),
+    ));
     assert!(result.success, "{result:?}");
 
     // @step Then the result has totalWorkUnits=2, completedWorkUnits=2, completionPercentage=100
     let data = parse_data(&result.data);
     assert_eq!(data["totalWorkUnits"].as_u64(), Some(2));
     assert_eq!(data["completedWorkUnits"].as_u64(), Some(2));
-    let pct = data["completionPercentage"].as_f64().expect("completionPercentage f64");
+    let pct = data["completionPercentage"]
+        .as_f64()
+        .expect("completionPercentage f64");
     assert!((pct - 100.0).abs() < 1e-9, "expected 100; got {pct}");
 }
 
@@ -349,7 +397,10 @@ fn text_format_renders_epic_header_and_progress() {
     );
 
     // @step When I dispatch show-epic with epicId='auth' and format='text'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "text" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "text" }),
+    ));
     assert!(result.success, "{result:?}");
 
     // @step Then the DispatchResult.data contains the line 'Epic: auth'
@@ -368,7 +419,10 @@ fn text_format_renders_epic_header_and_progress() {
 
     // @step Then the DispatchResult.data contains the line 'Description: Login features'
     assert!(
-        result.data.lines().any(|l| l == "Description: Login features"),
+        result
+            .data
+            .lines()
+            .any(|l| l == "Description: Login features"),
         "missing 'Description: Login features' line; got:\n{}",
         result.data
     );
@@ -408,13 +462,19 @@ fn text_format_omits_description_when_missing() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication' and no description field
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json does NOT exist
     assert!(!tmp.path().join("spec/work-units.json").exists());
 
     // @step When I dispatch show-epic with epicId='auth' and format='text'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "text" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "text" }),
+    ));
     assert!(result.success, "{result:?}");
 
     // @step Then the DispatchResult.data contains the line 'Epic: auth'
@@ -451,7 +511,10 @@ fn text_format_renders_title_n_a_when_title_missing() {
     assert!(!tmp.path().join("spec/work-units.json").exists());
 
     // @step When I dispatch show-epic with epicId='auth' and format='text'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "text" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "text" }),
+    ));
     assert!(result.success, "{result:?}");
 
     // @step Then the DispatchResult.data contains the line 'Title: N/A'
@@ -468,7 +531,10 @@ fn default_format_is_text() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json does NOT exist
     assert!(!tmp.path().join("spec/work-units.json").exists());
@@ -500,13 +566,19 @@ fn json_format_emits_two_space_indent_with_canonical_fields() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step Given spec/work-units.json does NOT exist
     assert!(!tmp.path().join("spec/work-units.json").exists());
 
     // @step When I dispatch show-epic with epicId='auth' and format='json'
-    let result = dispatch_command(req(tmp.path(), json!({ "epicId": "auth", "format": "json" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "epicId": "auth", "format": "json" }),
+    ));
     assert!(result.success, "{result:?}");
 
     // @step Then the DispatchResult.data parses as JSON whose root object has an 'epic' object key
@@ -520,7 +592,9 @@ fn json_format_emits_two_space_indent_with_canonical_fields() {
     // @step Then the root object has totalWorkUnits=0, completedWorkUnits=0, completionPercentage=0
     assert_eq!(data["totalWorkUnits"].as_u64(), Some(0));
     assert_eq!(data["completedWorkUnits"].as_u64(), Some(0));
-    let pct = data["completionPercentage"].as_f64().expect("completionPercentage f64");
+    let pct = data["completionPercentage"]
+        .as_f64()
+        .expect("completionPercentage f64");
     assert!((pct - 0.0).abs() < 1e-9, "expected 0; got {pct}");
 
     // @step Then the root.epic object has id='auth' and title='Authentication'
@@ -541,7 +615,10 @@ fn missing_epic_id_surfaces_invalid_args_error() {
 
     // @step Given spec/epics.json contains epic 'auth' with title 'Authentication'
     let tmp = TempDir::new().expect("tempdir");
-    write_epics(tmp.path(), &epics_raw_single("auth", Some("Authentication"), None));
+    write_epics(
+        tmp.path(),
+        &epics_raw_single("auth", Some("Authentication"), None),
+    );
 
     // @step When I dispatch show-epic with no epicId argument
     let result = dispatch_command(req(tmp.path(), json!({})));
@@ -566,16 +643,16 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
     let crate_src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
 
     // @step Then the module io::ensure::read_work_units_or_empty exists and is publicly accessible from the crate root
-    let ensure_src = fs::read_to_string(crate_src.join("io/ensure.rs"))
-        .expect("io/ensure.rs readable");
+    let ensure_src =
+        fs::read_to_string(crate_src.join("io/ensure.rs")).expect("io/ensure.rs readable");
     assert!(
         ensure_src.contains("pub fn read_work_units_or_empty"),
         "io/ensure.rs must declare `pub fn read_work_units_or_empty`; got:\n{ensure_src}"
     );
 
     // @step Then types::epic::Epic exists with id, title, description and a flatten extra map
-    let epic_src = fs::read_to_string(crate_src.join("types/epic.rs"))
-        .expect("types/epic.rs readable");
+    let epic_src =
+        fs::read_to_string(crate_src.join("types/epic.rs")).expect("types/epic.rs readable");
     assert!(
         epic_src.contains("pub struct Epic"),
         "types/epic.rs must declare `pub struct Epic`; got:\n{epic_src}"
@@ -585,7 +662,8 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         "Epic.id must be String; got:\n{epic_src}"
     );
     assert!(
-        epic_src.contains("title: Option<String>") && epic_src.contains("description: Option<String>"),
+        epic_src.contains("title: Option<String>")
+            && epic_src.contains("description: Option<String>"),
         "Epic must expose Option<String> title and description; got:\n{epic_src}"
     );
     assert!(

@@ -110,18 +110,21 @@ fn export_a_work_unit_with_full_example_mapping_data() {
         );
     }
     for w in positions.windows(2) {
-        assert!(w[0] < w[1], "field order violated: {positions:?}\n{written}");
+        assert!(
+            w[0] < w[1],
+            "field order violated: {positions:?}\n{written}"
+        );
     }
 
     // @step And the rules, examples, questions, and assumptions arrays each contain their single item verbatim
     let parsed: Value = serde_json::from_str(&written).expect("emap.json is JSON");
     assert_eq!(parsed["workUnitId"].as_str(), Some("AUTH-001"));
     assert_eq!(parsed["title"].as_str(), Some("title AUTH-001"));
-    assert_eq!(parsed["rules"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(parsed["rules"].as_array().map(Vec::len), Some(1));
     assert_eq!(parsed["rules"][0]["text"].as_str(), Some("r1"));
-    assert_eq!(parsed["examples"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(parsed["examples"].as_array().map(Vec::len), Some(1));
     assert_eq!(parsed["examples"][0]["text"].as_str(), Some("e1"));
-    assert_eq!(parsed["questions"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(parsed["questions"].as_array().map(Vec::len), Some(1));
     assert_eq!(parsed["questions"][0]["selected"].as_bool(), Some(false));
     assert_eq!(parsed["assumptions"][0].as_str(), Some("a1"));
 
@@ -246,5 +249,8 @@ fn dispatcher_and_core_produce_identical_file_content() {
     // @step Then the written file content is the same as exporting via the dispatcher path
     let a = fs::read_to_string(tmp.path().join("a.json")).expect("read a.json");
     let b = fs::read_to_string(tmp.path().join("b.json")).expect("read b.json");
-    assert_eq!(a, b, "both export paths must produce identical file content");
+    assert_eq!(
+        a, b,
+        "both export paths must produce identical file content"
+    );
 }

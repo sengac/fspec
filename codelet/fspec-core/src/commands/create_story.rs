@@ -100,10 +100,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // 1. Foundation must exist. The original command string mirrors the TS
     //    `fspec create-story <prefix> "<title>"` at create-story.ts:38.
-    let original_command = format!(
-        "fspec create-story {} \"{}\"",
-        args.prefix, args.title
-    );
+    let original_command = format!("fspec create-story {} \"{}\"", args.prefix, args.title);
     check_foundation_exists(project_root, &original_command)?;
 
     // 2. Validate title (non-empty after trim).
@@ -172,7 +169,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     story.insert("type".to_string(), Value::String("story".to_string()));
     story.insert("status".to_string(), Value::String("backlog".to_string()));
     story.insert("createdAt".to_string(), Value::String(now.clone()));
-    story.insert("updatedAt".to_string(), Value::String(now.clone()));
+    story.insert("updatedAt".to_string(), Value::String(now));
     if let Some(desc) = args.description.as_deref() {
         story.insert("description".to_string(), Value::String(desc.to_string()));
     }
@@ -189,11 +186,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // entries keep their exact on-disk key order and so we can write the
     // freshly-built story object verbatim (preserving the TS field order
     // computed above).
-    let mut top: Map<String, Value> = read_raw_work_units_object(project_root)
-        .unwrap_or_else(|| serde_json::to_value(&data).ok().and_then(|v| match v {
-            Value::Object(m) => Some(m),
-            _ => None,
-        }).unwrap_or_default());
+    let mut top: Map<String, Value> =
+        read_raw_work_units_object(project_root).unwrap_or_else(|| {
+            serde_json::to_value(&data)
+                .ok()
+                .and_then(|v| match v {
+                    Value::Object(m) => Some(m),
+                    _ => None,
+                })
+                .unwrap_or_default()
+        });
 
     // Insert the new story into workUnits.
     {
@@ -266,10 +268,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Update epic's workUnits array if epic provided (separate file).
     if let Some(epic) = args.epic.as_deref() {
         let mut epics_top = read_raw_epics_object(project_root).unwrap_or_default();
-        if let Some(epics_obj) = epics_top
-            .get_mut("epics")
-            .and_then(Value::as_object_mut)
-        {
+        if let Some(epics_obj) = epics_top.get_mut("epics").and_then(Value::as_object_mut) {
             if let Some(epic_obj) = epics_obj.get_mut(epic).and_then(Value::as_object_mut) {
                 let work_units = epic_obj
                     .entry("workUnits".to_string())
@@ -354,10 +353,7 @@ fn system_reminder(next_id: &str) -> String {
 
 /// Compute the next `<PREFIX>-NNN` id and the numeric high-water-mark.
 /// Mirrors `generateNextId` at create-story.ts:176-204.
-fn generate_next_id(
-    data: &crate::types::work_unit::WorkUnitsData,
-    prefix: &str,
-) -> (String, u64) {
+fn generate_next_id(data: &crate::types::work_unit::WorkUnitsData, prefix: &str) -> (String, u64) {
     let stored = data
         .extra
         .get("prefixCounters")
@@ -419,7 +415,12 @@ fn read_raw_epics_object(project_root: &Path) -> Option<Map<String, Value>> {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::expect_used,
+        clippy::panic,
+        clippy::useless_vec
+    )]
     use super::*;
 
     #[test]
