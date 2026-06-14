@@ -153,6 +153,18 @@ mod delete_step;
 mod update_scenario;
 mod update_step;
 
+// Batch 16 (2026-06-14) — validation + search + coverage + generator/retag bridges.
+mod generate_tags_md;
+mod retag;
+mod search_implementation;
+mod search_scenarios;
+mod unlink_coverage;
+mod validate;
+mod validate_foundation_schema;
+mod validate_hooks;
+mod validate_tags;
+mod validate_work_units;
+
 use std::path::PathBuf;
 
 use clap::error::{ContextKind, ContextValue, ErrorKind};
@@ -1580,6 +1592,87 @@ enum Mode {
         #[arg(long = "keyword", value_name = "keyword", overrides_with = "keyword")]
         keyword: Option<String>,
     },
+    // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag.
+    /// RPC-324: validate feature-file tags against spec/tags.json.
+    #[command(name = "validate-tags", about = "Validate that all tags used in feature files are registered")]
+    ValidateTags {
+        #[arg(value_name = "file")]
+        file: Option<String>,
+        #[arg(long = "verbose")]
+        verbose: bool,
+        #[arg(long = "summary")]
+        summary: bool,
+    },
+    /// RPC-325: validate work-units.json data integrity.
+    #[command(name = "validate-work-units", about = "Validate work units data integrity")]
+    ValidateWorkUnits {
+        #[arg(long = "fix")]
+        fix: bool,
+    },
+    /// RPC-322: validate hook configuration and verify scripts exist.
+    #[command(name = "validate-hooks", about = "Validate hook configuration and verify that all hook scripts exist")]
+    ValidateHooks {},
+    /// RPC-321: validate foundation.json against its JSON schema.
+    #[command(name = "validate-foundation-schema", about = "Validate foundation.json against its JSON schema using Ajv")]
+    ValidateFoundationSchema {},
+    /// RPC-320: validate Gherkin syntax in feature files.
+    #[command(name = "validate", about = "Validate Gherkin syntax in feature files using @cucumber/gherkin parser")]
+    Validate {
+        #[arg(value_name = "file")]
+        file: Option<String>,
+        #[arg(short = 'v', long = "verbose")]
+        verbose: bool,
+    },
+    /// RPC-297: search scenarios across all feature files.
+    #[command(name = "search-scenarios", about = "Search for scenarios across all feature files")]
+    SearchScenarios {
+        #[arg(long = "query", value_name = "pattern")]
+        query: String,
+        #[arg(long = "regex")]
+        regex: bool,
+        #[arg(long = "json")]
+        json: bool,
+    },
+    /// RPC-296: search implementation files linked via coverage data.
+    #[command(name = "search-implementation", about = "Search implementation files for a specific function")]
+    SearchImplementation {
+        #[arg(long = "function", value_name = "name")]
+        function: String,
+        #[arg(long = "show-work-units")]
+        show_work_units: bool,
+        #[arg(long = "json")]
+        json: bool,
+    },
+    /// RPC-311: remove test/impl mappings from a scenario's coverage sidecar.
+    #[command(name = "unlink-coverage", about = "Remove test or implementation mappings from a scenario")]
+    UnlinkCoverage {
+        #[arg(value_name = "feature-name")]
+        feature_name: String,
+        #[arg(long = "scenario", value_name = "name")]
+        scenario: String,
+        #[arg(long = "test-file", value_name = "path")]
+        test_file: Option<String>,
+        #[arg(long = "impl-file", value_name = "path")]
+        impl_file: Option<String>,
+        #[arg(long = "all")]
+        all: bool,
+    },
+    /// RPC-236: render spec/TAGS.md from spec/tags.json.
+    #[command(name = "generate-tags-md", about = "Generate TAGS.md from spec/tags.json")]
+    GenerateTagsMd {
+        #[arg(long = "output", value_name = "output")]
+        output: Option<String>,
+    },
+    /// RPC-293: bulk-rename a tag across all feature files.
+    #[command(name = "retag", about = "Rename a tag across all feature files")]
+    Retag {
+        #[arg(long = "from", value_name = "tag")]
+        from: Option<String>,
+        #[arg(long = "to", value_name = "tag")]
+        to: Option<String>,
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
 }
 
 #[tokio::main]
@@ -2207,6 +2300,47 @@ async fn main() -> std::process::ExitCode {
             update_step::run,
             update_step::CliArgs { feature, scenario, current_step, text, keyword }
         ),
+        // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag
+        Some(Mode::ValidateTags { file, verbose, summary }) => forward!(
+            validate_tags::run,
+            validate_tags::CliArgs { file, verbose, summary }
+        ),
+        Some(Mode::ValidateWorkUnits { fix }) => forward!(
+            validate_work_units::run,
+            validate_work_units::CliArgs { fix }
+        ),
+        Some(Mode::ValidateHooks {}) => forward!(
+            validate_hooks::run,
+            validate_hooks::CliArgs {}
+        ),
+        Some(Mode::ValidateFoundationSchema {}) => forward!(
+            validate_foundation_schema::run,
+            validate_foundation_schema::CliArgs
+        ),
+        Some(Mode::Validate { file, verbose }) => forward!(
+            validate::run,
+            validate::CliArgs { file, verbose }
+        ),
+        Some(Mode::SearchScenarios { query, regex, json }) => forward!(
+            search_scenarios::run,
+            search_scenarios::CliArgs { query, regex, json }
+        ),
+        Some(Mode::SearchImplementation { function, show_work_units, json }) => forward!(
+            search_implementation::run,
+            search_implementation::CliArgs { function, show_work_units, json }
+        ),
+        Some(Mode::UnlinkCoverage { feature_name, scenario, test_file, impl_file, all }) => forward!(
+            unlink_coverage::run,
+            unlink_coverage::CliArgs { feature_name, scenario, test_file, impl_file, all }
+        ),
+        Some(Mode::GenerateTagsMd { output }) => forward!(
+            generate_tags_md::run,
+            generate_tags_md::CliArgs { output }
+        ),
+        Some(Mode::Retag { from, to, dry_run }) => forward!(
+            retag::run,
+            retag::CliArgs { from, to, dry_run }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -2710,6 +2844,19 @@ fn intercept_ts_help() -> Option<u8> {
         "delete-step" => format_command_help(&configs::delete_step::CONFIG),
         "update-scenario" => format_command_help(&configs::update_scenario::CONFIG),
         "update-step" => format_command_help(&configs::update_step::CONFIG),
+        // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag
+        "validate-tags" => format_command_help(&configs::validate_tags::CONFIG),
+        "validate-work-units" => format_command_help(&configs::validate_work_units::CONFIG),
+        "validate-hooks" => format_command_help(&configs::validate_hooks::CONFIG),
+        "validate-foundation-schema" => {
+            format_command_help(&configs::validate_foundation_schema::CONFIG)
+        }
+        "validate" => format_command_help(&configs::validate::CONFIG),
+        "search-scenarios" => format_command_help(&configs::search_scenarios::CONFIG),
+        "search-implementation" => format_command_help(&configs::search_implementation::CONFIG),
+        "unlink-coverage" => format_command_help(&configs::unlink_coverage::CONFIG),
+        "generate-tags-md" => format_command_help(&configs::generate_tags_md::CONFIG),
+        "retag" => format_command_help(&configs::retag::CONFIG),
         // RPC-218: delete-features has no custom -help.ts in TS; the reference
         // is bare Commander.js output. Emit the byte-exact static string,
         // mirroring the `list-foundation-sections` / `register-tag` special-cases.

@@ -1,0 +1,24 @@
+
+VALIDATE-WORK-UNITS
+Validate work unit data integrity and relationships
+
+WHEN TO USE
+  Use to check for data integrity issues like missing dependencies, invalid status transitions, or orphaned work units.
+
+USAGE
+  fspec validate-work-units [options]
+
+OPTIONS
+  --fix
+    Automatically fix issues where possible
+
+EXAMPLES
+  1. Validate all work units
+  $ fspec validate-work-units
+  ✓ All work units valid
+  Checked 42 work units
+
+RELATED COMMANDS
+  fspec repair-work-units
+  fspec check
+

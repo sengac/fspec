@@ -1,0 +1,57 @@
+
+VALIDATE-HOOKS
+Validate hook configuration and verify that all hook scripts exist
+
+WHEN TO USE
+  Use this command to verify that your hook configuration is valid and all hook scripts exist at the specified paths. Essential before relying on hooks for workflow automation.
+
+PREREQUISITES
+  • Hook configuration file exists (spec/fspec-hooks.json)
+  • At least one hook is configured
+
+USAGE
+  fspec validate-hooks
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  Create hook script → chmod +x script → fspec add-hook → fspec validate-hooks → Test hook execution
+
+EXAMPLES
+  1. When all hooks are valid
+  $ fspec validate-hooks
+  ✓ All hooks are valid
+
+  2. When hook scripts are missing
+  $ fspec validate-hooks
+  ✗ Hook validation failed
+
+Hook command not found: spec/hooks/validate-feature.sh
+Hook command not found: spec/hooks/lint.sh
+
+Fix these issues before using hooks.
+
+  3. When no hooks are configured
+  $ fspec validate-hooks
+  No hooks configured (nothing to validate)
+
+COMMON ERRORS
+  ✗ Hook command not found: spec/hooks/my-hook.sh
+    Fix: Create the hook script at the specified path or update the hook configuration to point to the correct path. Remember: paths must be relative to project root.
+
+  ✗ Failed to load hook configuration
+    Fix: Check that spec/fspec-hooks.json exists and contains valid JSON. Run fspec add-hook to create the file if missing.
+
+RELATED COMMANDS
+  fspec list-hooks
+  fspec add-hook
+  fspec remove-hook
+
+NOTES
+  • Validates that all hook scripts exist at specified paths
+  • Does NOT execute hooks (only checks existence)
+  • Does NOT validate hook script syntax or permissions
+  • Exit code 0 = valid, non-zero = errors found
+  • Run after adding or modifying hooks
+

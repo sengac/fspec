@@ -1,0 +1,216 @@
+{
+  "scenarios": [
+    {
+      "name": "validate-work-units --help is byte-for-byte identical to the TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "lines": "55-84",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_work_units.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints success and exits 0 for a clean store",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "lines": "85-119",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_work_units.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints errors to stderr and exits 1 for a corrupt store",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "lines": "120-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_work_units.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "lines": "158-218",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_work_units.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_validate_work_units.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/validate_work_units.rs"
+    ],
+    "totalLinesCovered": 300
+  }
+}

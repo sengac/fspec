@@ -74,4 +74,14 @@ pub enum FspecCoreError {
     /// and `"<system-reminder>"`.
     #[error("{0}")]
     FoundationMissing(String),
+
+    /// A runtime failure that surfaces a fully-formed, agent-facing message
+    /// VERBATIM (no wrapping prefix). Used to reproduce the uncaught-TypeError
+    /// crash messages the TypeScript `validate-work-units` `.action` catch
+    /// block prints (e.g. `Cannot convert undefined or null to object`,
+    /// `Cannot read properties of undefined (reading 'children')`). The CLI
+    /// bridge renders these as `✗ Failed to validate work units: {self}` to
+    /// match the TS reference byte-for-byte.
+    #[error("{0}")]
+    Message(String),
 }

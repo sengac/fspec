@@ -1,0 +1,68 @@
+
+SEARCH-SCENARIOS
+Search for scenarios across all feature files by text or regex pattern
+
+WHEN TO USE
+  Finding scenarios with specific keywords across multiple features,Locating test scenarios that mention particular functionality,Searching for scenarios related to a specific component or feature,Pattern-based scenario discovery for refactoring or analysis
+
+USAGE
+  fspec search-scenarios --query=<pattern> [options]
+
+OPTIONS
+  --query <pattern>
+    Search pattern (literal text or regex)
+  --regex
+    Enable regex pattern matching (default: literal)
+  --json
+    Output results in JSON format
+
+COMMON PATTERNS
+  • undefined
+    Example: undefined
+    undefined
+
+  • undefined
+    Example: undefined
+    undefined
+
+
+EXAMPLES
+  1. Find scenarios containing "validation"
+  $ fspec search-scenarios --query="validation"
+  ┌────────────────────────────────────────────────────────────┐
+│ Scenario                    │ Feature File              │
+├────────────────────────────────────────────────────────────┤
+│ Validate user input         │ user-registration.feature │
+│ Validation error messages   │ form-validation.feature   │
+└────────────────────────────────────────────────────────────┘
+
+  2. Find scenarios matching regex pattern
+  $ fspec search-scenarios --query="valid.*" --regex
+  Found 15 scenarios matching pattern: valid.*
+  - Validate user credentials
+  - Valid email format check
+  - Validation workflow
+
+  3. Output in JSON format
+  $ fspec search-scenarios --query="login" --json
+  {
+  "scenarios": [
+    {
+      "name": "Login with valid credentials",
+      "featureFile": "spec/features/user-auth.feature",
+      "workUnitId": "AUTH-001"
+    }
+  ]
+}
+
+RELATED COMMANDS
+  fspec get-scenarios
+  fspec search-implementation
+  fspec compare-implementations
+
+NOTES
+  • Searches scenario names only (not step text)
+  • Regex mode uses JavaScript RegExp syntax
+  • Case-insensitive by default
+  • Results include feature file path and work unit ID for traceability
+

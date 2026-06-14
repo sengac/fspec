@@ -1,0 +1,40 @@
+
+RETAG
+Replace one tag with another across all feature files
+
+USAGE
+  fspec retag <old-tag> <new-tag> [options]
+
+ARGUMENTS
+  <old-tag> (required)
+    Tag to replace
+  <new-tag> (required)
+    New tag name
+
+OPTIONS
+  --dry-run
+    Preview changes without making modifications
+
+EXAMPLES
+  1. Replace @wip with @in-progress in all features
+  $ fspec retag @wip @in-progress
+  ✓ Replaced @wip with @in-progress in 5 feature files
+✓ Updated 12 scenarios
+
+  2. Preview tag replacement
+  $ fspec retag @old @new --dry-run
+  [DRY RUN] Would replace @old with @new in:
+  - spec/features/login.feature (2 occurrences)
+  - spec/features/checkout.feature (1 occurrence)
+
+RELATED COMMANDS
+  fspec register-tag
+  fspec update-tag
+  fspec validate-tags
+
+NOTES
+  • Both tags must be registered in spec/tags.json
+  • Updates both feature-level and scenario-level tags
+  • Run validate-tags after retagging to verify changes
+  • Use --dry-run to preview before making changes
+

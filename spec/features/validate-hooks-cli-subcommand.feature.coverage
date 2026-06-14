@@ -1,0 +1,216 @@
+{
+  "scenarios": [
+    {
+      "name": "validate-hooks --help is byte-for-byte identical to the TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_hooks.rs",
+          "lines": "57-86",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_hooks.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints success and exits 0 when all hook scripts exist",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_hooks.rs",
+          "lines": "87-110",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_hooks.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI reports missing scripts and exits 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_hooks.rs",
+          "lines": "111-139",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_hooks.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI reports a load failure and exits 1 when the config is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_hooks.rs",
+          "lines": "140-162",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_hooks.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_hooks.rs",
+          "lines": "163-209",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_hooks.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_validate_hooks.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/validate_hooks.rs"
+    ],
+    "totalLinesCovered": 273
+  }
+}

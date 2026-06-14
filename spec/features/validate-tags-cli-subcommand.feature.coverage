@@ -1,0 +1,310 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes validate-tags as a subcommand with file argument and flags",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_tags.rs",
+          "lines": "79-109",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_tags.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 0 with no output for a single valid file and no flags",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_tags.rs",
+          "lines": "110-132",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_tags.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 and prints a violation block for an unregistered tag",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_tags.rs",
+          "lines": "133-166",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_tags.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --verbose prints a passing line per valid file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_tags.rs",
+          "lines": "167-193",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_tags.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --summary prints only the summary count lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_tags.rs",
+          "lines": "194-231",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_tags.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_tags.rs",
+          "lines": "232-282",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_tags.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_validate_tags.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/validate_tags.rs"
+    ],
+    "totalLinesCovered": 402
+  }
+}

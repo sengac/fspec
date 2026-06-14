@@ -1,0 +1,196 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI validates a single valid file and exits 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate.rs",
+          "lines": "56-76",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 against a syntactically broken file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate.rs",
+          "lines": "77-103",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 2 when no feature files are found",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate.rs",
+          "lines": "104-124",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clap exposes validate as a subcommand and prints help byte-identical to the TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate.rs",
+          "lines": "125-161",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_validate.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/validate.rs"
+    ],
+    "totalLinesCovered": 222
+  }
+}

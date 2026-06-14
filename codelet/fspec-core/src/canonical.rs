@@ -979,6 +979,17 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "delete-features",  // RPC-218
     "update-scenario",  // RPC-314
     "update-step",      // RPC-315
+    // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag
+    "validate-tags",               // RPC-324
+    "validate-work-units",         // RPC-325
+    "validate-hooks",              // RPC-322
+    "validate-foundation-schema",  // RPC-321
+    "validate",                    // RPC-320
+    "search-scenarios",            // RPC-297
+    "search-implementation",       // RPC-296
+    "unlink-coverage",             // RPC-311
+    "generate-tags-md",            // RPC-236
+    "retag",                       // RPC-293
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

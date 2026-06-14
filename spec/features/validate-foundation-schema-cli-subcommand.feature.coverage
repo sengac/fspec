@@ -1,0 +1,164 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI validates a valid foundation and exits 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_foundation_schema.rs",
+          "lines": "63-83",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_foundation_schema.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 and writes to stderr when foundation.json is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_foundation_schema.rs",
+          "lines": "84-107",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_foundation_schema.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 when foundation.json violates the schema",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_foundation_schema.rs",
+          "lines": "108-128",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_foundation_schema.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clap exposes validate-foundation-schema as a subcommand and prints help byte-identical to the TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_foundation_schema.rs",
+          "lines": "129-159",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/validate_foundation_schema.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_validate_foundation_schema.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/validate_foundation_schema.rs"
+    ],
+    "totalLinesCovered": 181
+  }
+}

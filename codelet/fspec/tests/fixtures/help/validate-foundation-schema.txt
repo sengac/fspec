@@ -1,0 +1,27 @@
+
+VALIDATE-FOUNDATION-SCHEMA
+Validate foundation.json against its JSON schema using Ajv
+
+USAGE
+  fspec validate-foundation-schema
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Validate foundation.json structure
+  $ fspec validate-foundation-schema
+  ✓ foundation.json is valid
+✓ All required fields present
+✓ All diagrams have valid structure
+
+RELATED COMMANDS
+  fspec show-foundation-schema
+  fspec show-foundation
+  fspec update-foundation
+
+NOTES
+  • Uses Ajv for JSON Schema validation
+  • Checks required fields, types, and structure
+  • Run after any manual edits to foundation.json
+

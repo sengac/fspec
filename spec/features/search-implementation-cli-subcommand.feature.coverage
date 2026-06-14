@@ -1,0 +1,380 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes search-implementation as a subcommand and prints flag help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_search_implementation.rs",
+          "lines": "90-123",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/search_implementation.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI without --function flag exits non-zero",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_search_implementation.rs",
+          "lines": "124-139",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/search_implementation.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI default output prints the green summary line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_search_implementation.rs",
+          "lines": "140-162",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/search_implementation.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --json prints the 2-space JSON envelope to stdout",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_search_implementation.rs",
+          "lines": "163-188",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/search_implementation.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "search-implementation --help is byte-for-byte identical to the TS formatCommandHelp reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_search_implementation.rs",
+          "lines": "189-218",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/search_implementation.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_search_implementation.rs",
+          "lines": "219-248",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/search_implementation.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_search_implementation.rs",
+          "lines": "249-290",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/search_implementation.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_search_implementation.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/search_implementation.rs"
+    ],
+    "totalLinesCovered": 453
+  }
+}

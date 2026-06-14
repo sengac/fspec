@@ -10,7 +10,11 @@ pub mod foundation_md;
 mod foundation_md_diagrams;
 mod foundation_md_util;
 pub mod foundation_schema;
+pub mod tags_md;
+pub mod tags_schema;
 
 pub use foundation_md::generate_foundation_md;
 pub use foundation_md_util::validate_mermaid;
 pub use foundation_schema::{format_errors, validate_foundation};
+pub use tags_md::generate_tags_md;
+pub use tags_schema::{format_tags_errors, validate_tags};

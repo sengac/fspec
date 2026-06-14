@@ -1,0 +1,58 @@
+
+VALIDATE
+Validate Gherkin syntax in feature files using @cucumber/gherkin parser
+
+WHEN TO USE
+  Use this command to verify that your feature files have correct Gherkin syntax before committing. Essential step in ACDD workflow before moving from specifying to testing phase.
+
+USAGE
+  fspec validate [file] [options]
+
+ARGUMENTS
+  [file] (optional)
+    Specific feature file to validate (e.g., spec/features/login.feature). If omitted, validates all .feature files in spec/features/
+
+OPTIONS
+  -v, --verbose
+    Show detailed validation output including line numbers and suggestions
+
+TYPICAL WORKFLOW
+  Write feature file → fspec validate → Fix errors → Repeat until valid → Move to testing phase
+
+EXAMPLES
+  1. Validate all feature files
+  $ fspec validate
+  ✓ spec/features/login.feature is valid
+✓ spec/features/signup.feature is valid
+
+Validated 2 files: 2 valid, 0 invalid
+
+  2. Validate specific feature file
+  $ fspec validate spec/features/login.feature
+  ✓ spec/features/login.feature is valid
+
+  3. Validate with detailed output
+  $ fspec validate --verbose
+  ✓ spec/features/login.feature is valid
+  - 3 scenarios, 12 steps
+  - Tags: @critical, @authentication
+
+COMMON ERRORS
+  ✗ expected: #EOF, #StepLine, got 'And user should see dashboard'
+    Fix: Check indentation - steps must be indented (usually 4 spaces)
+
+  ✗ expected: #Feature, got 'Scenario'
+    Fix: Feature keyword must come before Scenario. Add Feature: line at top.
+
+RELATED COMMANDS
+  fspec format
+  fspec create-feature
+  fspec check
+  fspec validate-tags
+
+NOTES
+  • Uses official @cucumber/gherkin parser for validation
+  • Exit code 0 = all valid, non-zero = errors found
+  • Run before committing feature files
+  • Part of fspec check command
+

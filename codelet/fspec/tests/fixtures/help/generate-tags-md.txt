@@ -1,0 +1,26 @@
+
+GENERATE-TAGS-MD
+Generate spec/TAGS.md from tags.json
+
+USAGE
+  fspec generate-tags-md
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Generate human-readable tag documentation
+  $ fspec generate-tags-md
+  ✓ Generated spec/TAGS.md from tags.json
+✓ Tags grouped by category
+
+RELATED COMMANDS
+  fspec list-tags
+  fspec register-tag
+  fspec validate-tags
+
+NOTES
+  • TAGS.md is human-readable documentation
+  • tags.json is the machine-readable source of truth
+  • Generated file includes all registered tags grouped by category
+

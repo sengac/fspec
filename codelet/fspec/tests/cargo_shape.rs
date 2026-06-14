@@ -643,6 +643,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "delete_features.rs",
         "update_scenario.rs",
         "update_step.rs",
+        // Batch 16 (2026-06-14): validation + search + coverage + generator/retag bridges.
+        "validate_tags.rs",
+        "validate_work_units.rs",
+        "validate_hooks.rs",
+        "validate_foundation_schema.rs",
+        "validate.rs",
+        "search_scenarios.rs",
+        "search_implementation.rs",
+        "unlink_coverage.rs",
+        "generate_tags_md.rs",
+        "retag.rs",
     ]
     .iter()
     .copied()
@@ -660,7 +671,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 129 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 139 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code

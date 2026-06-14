@@ -146,3 +146,16 @@ pub mod delete_scenario;
 pub mod delete_step;
 pub mod update_scenario;
 pub mod update_step;
+
+// Batch 16 (2026-06-14) — validation + search + coverage + generator/retag.
+// All ten have rich `-help.ts` in TS → normal CommandHelpConfig modules.
+pub mod generate_tags_md;
+pub mod retag;
+pub mod search_implementation;
+pub mod search_scenarios;
+pub mod unlink_coverage;
+pub mod validate;
+pub mod validate_foundation_schema;
+pub mod validate_hooks;
+pub mod validate_tags;
+pub mod validate_work_units;

@@ -1,0 +1,336 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "lines": "98-119",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI generates TAGS.md and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "lines": "125-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI forwards the --output flag to a custom path",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "lines": "154-177",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI reports a missing tags.json with exit 1 and the TS-parity error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "lines": "183-208",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_tags_md.rs",
+          "lines": "214-255",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_tags_md.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_generate_tags_md.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/generate_tags_md.rs"
+    ],
+    "totalLinesCovered": 378
+  }
+}

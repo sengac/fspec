@@ -1,0 +1,39 @@
+
+VALIDATE-TAGS
+Validate that all tags in feature files are registered in spec/tags.json and enforce tag placement rules
+
+WHEN TO USE
+  Use to ensure all tags used in feature files are properly registered and correctly placed. Validates that work unit ID tags appear only at feature level (not scenario level). Run before committing to catch unregistered tags and placement violations.
+
+USAGE
+  fspec validate-tags
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Validate all tags
+  $ fspec validate-tags
+  ✓ All tags in spec/features/login.feature are registered
+✓ All tags in spec/features/signup.feature are registered
+
+✓ 2 files passed
+
+COMMON ERRORS
+  ✗ Tag @my-tag is not registered
+    Fix: Register the tag: fspec register-tag @my-tag "Category" "Description"
+
+  ✗ Work unit ID tag @AUTH-001 must be at feature level, not scenario level
+    Fix: Move the work unit ID tag from scenario-level to feature-level tags. Use coverage files (*.feature.coverage) for fine-grained scenario traceability instead of scenario-level work unit tags.
+
+RELATED COMMANDS
+  fspec register-tag
+  fspec list-tags
+  fspec check
+
+NOTES
+  • Part of fspec check command
+  • Exit code 0 = all valid, non-zero = unregistered tags found or placement violations
+  • Work unit ID tags (e.g., AUTH-001, COV-005) must be at feature level only
+  • Use coverage files for linking scenarios to implementation (two-tier linking system)
+

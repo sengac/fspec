@@ -1,0 +1,75 @@
+
+SEARCH-IMPLEMENTATION
+Search implementation code for specific function usage across work units
+
+WHEN TO USE
+  Finding all places where a specific utility function is used,Impact analysis before refactoring a function,Identifying code reuse opportunities,Detecting manual implementations that could use existing utilities
+
+USAGE
+  fspec search-implementation --function=<name> [options]
+
+OPTIONS
+  --function <name>
+    Function name to search for
+  --show-work-units
+    Display which work units use each file
+  --json
+    Output results in JSON format
+
+COMMON PATTERNS
+  • undefined
+    Example: undefined
+    undefined
+
+  • undefined
+    Example: undefined
+    undefined
+
+
+EXAMPLES
+  1. Find all uses of loadConfig function
+  $ fspec search-implementation --function=loadConfig
+  Found loadConfig in 8 files:
+
+src/commands/init.ts (line 45)
+src/commands/validate.ts (line 23)
+src/utils/config-manager.ts (line 12)
+...
+
+  2. Show which work units use the function
+  $ fspec search-implementation --function=loadConfig --show-work-units
+  loadConfig usage across work units:
+
+src/commands/init.ts
+  └─ INIT-001: Initialize fspec project
+
+src/commands/validate.ts
+  └─ CLI-003: Validate feature files
+
+src/utils/config-manager.ts
+  └─ CONFIG-001: Configuration utilities
+
+  3. Search with pattern matching
+  $ fspec search-implementation --function="readFile|writeFile" --json
+  {
+  "function": "readFile|writeFile",
+  "files": [
+    {
+      "path": "src/commands/create-feature.ts",
+      "lines": [23, 45],
+      "workUnits": ["CLI-001"]
+    }
+  ]
+}
+
+RELATED COMMANDS
+  fspec compare-implementations
+  fspec search-scenarios
+  fspec show-coverage
+
+NOTES
+  • Searches implementation files linked in coverage data
+  • Uses simple text search (not AST analysis)
+  • Supports regex patterns for advanced matching
+  • Helps identify opportunities to replace manual code with existing utilities
+
