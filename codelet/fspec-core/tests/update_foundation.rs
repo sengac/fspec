@@ -45,7 +45,9 @@ fn valid_foundation() -> Value {
         },
         "solutionSpace": {
             "overview": "Solution overview",
-            "capabilities": []
+            "capabilities": [
+                { "name": "Core Capability", "description": "What the system does" }
+            ]
         }
     })
 }

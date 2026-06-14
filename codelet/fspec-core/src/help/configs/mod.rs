@@ -133,3 +133,16 @@ pub mod remove_domain_event_from_foundation;
 pub mod remove_schedule;
 pub mod resume_schedule;
 pub mod update_foundation;
+
+// Batch 15 (2026-06-14) — feature-file (.feature) mutation commands.
+// delete-features has NO custom -help.ts in TS → bare Commander.js help is
+// hard-coded in main.rs (DELETE_FEATURES_HELP), so no config module here.
+pub mod add_architecture;
+pub mod add_background;
+pub mod add_scenario;
+pub mod add_step;
+pub mod create_feature;
+pub mod delete_scenario;
+pub mod delete_step;
+pub mod update_scenario;
+pub mod update_step;

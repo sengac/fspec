@@ -169,7 +169,7 @@ mod tests {
             serde_json::from_str(r#"{"qualityCommands":["eslint .","prettier --check ."]}"#)
                 .unwrap();
         assert_eq!(
-            a.quality_commands.as_ref().map(Vec::as_slice),
+            a.quality_commands.as_deref(),
             Some(["eslint .".to_string(), "prettier --check .".to_string()].as_slice())
         );
     }

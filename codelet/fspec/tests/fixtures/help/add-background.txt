@@ -1,0 +1,72 @@
+
+ADD-BACKGROUND
+Add or update Background (user story) section in a feature file
+
+WHEN TO USE
+  Use this command to add a Background section containing the user story to a feature file. Background sections provide context for all scenarios in the feature.
+
+PREREQUISITES
+  • Feature file must exist in spec/features/ directory
+
+USAGE
+  fspec add-background <feature> <text>
+
+ARGUMENTS
+  <feature> (required)
+    Feature file name or path (e.g., "login" or "spec/features/login.feature")
+  <text> (required)
+    User story text in format: "As a [role] I want to [action] So that [benefit]"
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • User Story Format
+    Example: fspec add-background login "As a [role]\nI want to [action]\nSo that [benefit]"
+    undefined
+
+  • Update Existing Background
+    Example: # Running add-background again replaces the existing Background
+fspec add-background login "As a premium user\nI want to login with SSO\nSo that I can use corporate credentials"
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Create feature: fspec create-feature login → 2. Add background: fspec add-background login "As a user..." → 3. Add scenarios → 4. Validate: fspec validate
+
+EXAMPLES
+  1. Add user story to login feature
+  $ fspec add-background login "As a user\nI want to login securely\nSo that I can access my account"
+  ✓ Added background to login
+
+  2. Add background to user-auth feature
+  $ fspec add-background user-auth "As a developer\nI want to implement JWT authentication\nSo that users can access protected resources"
+  ✓ Added background to user-auth
+
+  3. Add background using full feature path
+  $ fspec add-background spec/features/api.feature "As an API consumer\nI want RESTful endpoints\nSo that I can integrate with the system"
+  ✓ Added background to spec/features/api.feature
+
+COMMON ERRORS
+  ✗ Error: Background text cannot be empty
+    Fix: Provide text for the Background section as the second argument
+
+  ✗ Error: Feature file not found: login
+    Fix: Ensure the feature file exists in spec/features/ directory. Create with: fspec create-feature login
+
+  ✗ Error: Invalid Gherkin syntax in feature file: ...
+    Fix: Feature file has syntax errors. Run: fspec validate spec/features/<feature>.feature
+
+RELATED COMMANDS
+  fspec create-feature
+  fspec show-feature
+  fspec add-scenario
+  fspec validate
+
+NOTES
+  • Background sections appear before all scenarios in a feature
+  • If a Background already exists, it will be replaced
+  • Background title is always "User Story"
+  • Use \n for multi-line user stories in the command
+  • The feature file is validated before and after modification
+

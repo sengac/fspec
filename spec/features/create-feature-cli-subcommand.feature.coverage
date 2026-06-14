@@ -1,0 +1,191 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI creates a feature file and prints the success lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "lines": "50-78",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_feature.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints the prefill system-reminder on stdout",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "lines": "85-104",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_feature.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI fails with exit 1 and Error prefix when the file already exists",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "lines": "111-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_feature.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "lines": "142-162",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_feature.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_feature.rs",
+          "lines": "169-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_feature.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_create_feature.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/create_feature.rs"
+    ],
+    "totalLinesCovered": 233
+  }
+}

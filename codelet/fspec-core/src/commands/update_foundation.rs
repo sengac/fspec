@@ -25,7 +25,7 @@
 //! field-specific `<system-reminder>` (the same field-by-field guidance
 //! `discover-foundation` produces). This is now ported here verbatim:
 //! [`scan_draft_for_next_field_reminder`] reproduces `scanDraftForNextField`
-//! + `generateFieldReminder`, including the agent-aware "ULTRATHINK" vs
+//! and `generateFieldReminder`, including the agent-aware "ULTRATHINK" vs
 //! "Think a lot" branch keyed off the resolved agent's `supportsMetaCognition`
 //! capability (FSPEC_AGENT env var > spec/fspec-config.json `agent` field >
 //! safe default — only `claude` and `antigravity` enable meta-cognition).
@@ -326,6 +326,7 @@ fn validate_problem_impact(content: &str) -> Option<String> {
 ///   1. `FSPEC_AGENT` env var
 ///   2. `spec/fspec-config.json` `agent` field
 ///   3. safe default (`supportsMetaCognition = false`)
+///
 /// Only `claude` and `antigravity` enable meta-cognition in the agent registry
 /// (`src/utils/agentRegistry.ts`).
 fn agent_supports_meta_cognition(project_root: &Path) -> bool {

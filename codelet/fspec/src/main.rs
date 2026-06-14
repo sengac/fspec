@@ -141,6 +141,17 @@ mod dependencies;
 mod get_scenarios;
 mod update_foundation;
 mod configure_tools;
+// Batch 15 (2026-06-14) — feature-file (.feature) mutation command bridges.
+mod add_architecture;
+mod add_background;
+mod add_scenario;
+mod add_step;
+mod create_feature;
+mod delete_features;
+mod delete_scenario;
+mod delete_step;
+mod update_scenario;
+mod update_step;
 
 use std::path::PathBuf;
 
@@ -1477,6 +1488,98 @@ enum Mode {
         #[arg(long = "reconfigure")]
         reconfigure: bool,
     },
+    /// RPC-212: create a new feature file from a template.
+    #[command(name = "create-feature", about = "Create a new feature file with proper Gherkin structure template")]
+    CreateFeature {
+        #[arg(value_name = "name")]
+        name: String,
+    },
+    /// RPC-190: add a scenario to an existing feature file.
+    #[command(name = "add-scenario", about = "Add a new scenario to an existing feature file")]
+    AddScenario {
+        #[arg(value_name = "file")]
+        file: String,
+        #[arg(value_name = "scenario-name")]
+        scenario_name: String,
+    },
+    /// RPC-192: add a step to a scenario in a feature file.
+    #[command(name = "add-step", about = "Add a step to a scenario in a feature file")]
+    AddStep {
+        #[arg(value_name = "file")]
+        file: String,
+        #[arg(value_name = "scenario")]
+        scenario: String,
+        #[arg(value_name = "type")]
+        r#type: String,
+        #[arg(value_name = "text")]
+        text: String,
+    },
+    /// RPC-171: add or update the Background (user story) section.
+    #[command(name = "add-background", about = "Add or update Background (user story) section in a feature file")]
+    AddBackground {
+        #[arg(value_name = "feature")]
+        feature: String,
+        #[arg(value_name = "text")]
+        text: String,
+    },
+    /// RPC-167: add architecture notes to a feature file via doc strings.
+    #[command(name = "add-architecture", about = "Add architecture notes to a feature file using doc strings")]
+    AddArchitecture {
+        #[arg(value_name = "feature")]
+        file: String,
+        #[arg(value_name = "text")]
+        notes: String,
+    },
+    /// RPC-219: delete a scenario from a feature file.
+    #[command(name = "delete-scenario", about = "Delete a scenario from a feature file")]
+    DeleteScenario {
+        #[arg(value_name = "feature")]
+        file: String,
+        #[arg(value_name = "scenario")]
+        scenario: String,
+    },
+    /// RPC-221: delete a step from a scenario.
+    #[command(name = "delete-step", about = "Delete a step from a scenario")]
+    DeleteStep {
+        #[arg(value_name = "feature")]
+        file: String,
+        #[arg(value_name = "scenario")]
+        scenario: String,
+        #[arg(value_name = "step")]
+        step: String,
+    },
+    /// RPC-218: bulk delete feature files by tag.
+    #[command(name = "delete-features", about = "Bulk delete feature files by tag")]
+    DeleteFeatures {
+        #[arg(long = "tag", value_name = "tag")]
+        tag: Vec<String>,
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
+    /// RPC-314: update a scenario name in a feature file.
+    #[command(name = "update-scenario", about = "Update a scenario name in a feature file")]
+    UpdateScenario {
+        #[arg(value_name = "feature")]
+        file: String,
+        #[arg(value_name = "old-name")]
+        old_name: String,
+        #[arg(value_name = "new-name")]
+        new_name: String,
+    },
+    /// RPC-315: update step text or keyword in a scenario.
+    #[command(name = "update-step", about = "Update step text or keyword in a scenario by finding and replacing the current step")]
+    UpdateStep {
+        #[arg(value_name = "feature")]
+        feature: String,
+        #[arg(value_name = "scenario")]
+        scenario: String,
+        #[arg(value_name = "current-step")]
+        current_step: String,
+        #[arg(long = "text", value_name = "text", overrides_with = "text")]
+        text: Option<String>,
+        #[arg(long = "keyword", value_name = "keyword", overrides_with = "keyword")]
+        keyword: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -2063,6 +2166,47 @@ async fn main() -> std::process::ExitCode {
             configure_tools::run,
             configure_tools::CliArgs { test_command, quality_commands, reconfigure }
         ),
+        // Batch 15 (2026-06-14) — feature-file (.feature) mutation commands
+        Some(Mode::CreateFeature { name }) => forward!(
+            create_feature::run,
+            create_feature::CliArgs { name }
+        ),
+        Some(Mode::AddScenario { file, scenario_name }) => forward!(
+            add_scenario::run,
+            add_scenario::CliArgs { feature: file, scenario: scenario_name }
+        ),
+        Some(Mode::AddStep { file, scenario, r#type, text }) => forward!(
+            add_step::run,
+            add_step::CliArgs { feature: file, scenario, step_type: r#type, text }
+        ),
+        Some(Mode::AddBackground { feature, text }) => forward!(
+            add_background::run,
+            add_background::CliArgs { feature, text }
+        ),
+        Some(Mode::AddArchitecture { file, notes }) => forward!(
+            add_architecture::run,
+            add_architecture::CliArgs { feature: file, text: notes }
+        ),
+        Some(Mode::DeleteScenario { file, scenario }) => forward!(
+            delete_scenario::run,
+            delete_scenario::CliArgs { feature: file, scenario }
+        ),
+        Some(Mode::DeleteStep { file, scenario, step }) => forward!(
+            delete_step::run,
+            delete_step::CliArgs { feature: file, scenario, step }
+        ),
+        Some(Mode::DeleteFeatures { tag, dry_run }) => forward!(
+            delete_features::run,
+            delete_features::CliArgs { tags: tag, dry_run }
+        ),
+        Some(Mode::UpdateScenario { file, old_name, new_name }) => forward!(
+            update_scenario::run,
+            update_scenario::CliArgs { file, old_name, new_name }
+        ),
+        Some(Mode::UpdateStep { feature, scenario, current_step, text, keyword }) => forward!(
+            update_step::run,
+            update_step::CliArgs { feature, scenario, current_step, text, keyword }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -2556,6 +2700,23 @@ fn intercept_ts_help() -> Option<u8> {
         "get-scenarios" => format_command_help(&configs::get_scenarios::CONFIG),
         "update-foundation" => format_command_help(&configs::update_foundation::CONFIG),
         "configure-tools" => format_command_help(&configs::configure_tools::CONFIG),
+        // Batch 15 (2026-06-14) — feature-file (.feature) mutation commands
+        "create-feature" => format_command_help(&configs::create_feature::CONFIG),
+        "add-scenario" => format_command_help(&configs::add_scenario::CONFIG),
+        "add-step" => format_command_help(&configs::add_step::CONFIG),
+        "add-background" => format_command_help(&configs::add_background::CONFIG),
+        "add-architecture" => format_command_help(&configs::add_architecture::CONFIG),
+        "delete-scenario" => format_command_help(&configs::delete_scenario::CONFIG),
+        "delete-step" => format_command_help(&configs::delete_step::CONFIG),
+        "update-scenario" => format_command_help(&configs::update_scenario::CONFIG),
+        "update-step" => format_command_help(&configs::update_step::CONFIG),
+        // RPC-218: delete-features has no custom -help.ts in TS; the reference
+        // is bare Commander.js output. Emit the byte-exact static string,
+        // mirroring the `list-foundation-sections` / `register-tag` special-cases.
+        "delete-features" => {
+            print!("{}", DELETE_FEATURES_HELP);
+            return Some(0);
+        }
         // RPC-265 follow-up: register-tag has no custom `-help.ts` in TS;
         // `node dist/index.js register-tag --help` falls through to bare
         // Commander.js. The earlier Rust port introduced a rich
@@ -2605,6 +2766,23 @@ Arguments:
   description  Tag description
 
 Options:
+  -h, --help   Display help for command
+";
+
+/// Byte-exact TS reference output of
+/// `node dist/index.js delete-features --help` piped to non-TTY.
+///
+/// The TS reference (`src/commands/delete-features-by-tag.ts`) has NO custom
+/// `-help.ts`; Commander.js emits its default Usage/Description/Options block.
+/// Captured fixture: `codelet/fspec/tests/fixtures/help/delete-features.txt`.
+const DELETE_FEATURES_HELP: &str = "\
+Usage: fspec delete-features [options]
+
+Bulk delete feature files by tag
+
+Options:
+  --tag <tag>  Filter by tag (can specify multiple times for AND logic)
+  --dry-run    Preview deletions without making changes
   -h, --help   Display help for command
 ";
 

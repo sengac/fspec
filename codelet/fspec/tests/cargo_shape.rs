@@ -632,6 +632,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "get_scenarios.rs",
         "update_foundation.rs",
         "configure_tools.rs",
+        // Batch 15 (2026-06-14): feature-file (.feature) mutation command bridges.
+        "create_feature.rs",
+        "add_scenario.rs",
+        "add_step.rs",
+        "add_background.rs",
+        "add_architecture.rs",
+        "delete_scenario.rs",
+        "delete_step.rs",
+        "delete_features.rs",
+        "update_scenario.rs",
+        "update_step.rs",
     ]
     .iter()
     .copied()
@@ -649,7 +660,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 119 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 129 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
@@ -718,8 +729,11 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // Batch 13 (10 foundation mutation commands) added 10 clap variants +
     // forward! arms + help-intercept arms + mod decls, pushing main.rs to
     // ~2440 lines. Cap raised from 2300 → 2500.
+    // Batch 15 (10 feature-file mutation commands) added 10 clap variants +
+    // forward! arms + help-intercept arms + mod decls + DELETE_FEATURES_HELP,
+    // pushing main.rs to ~2800 lines. Cap raised from 2500 → 3000.
     let common_cap: usize = 900;
-    let main_cap: usize = 2500;
+    let main_cap: usize = 3000;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);

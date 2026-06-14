@@ -1,0 +1,32 @@
+
+DELETE-SCENARIO
+Delete a scenario from a feature file
+
+USAGE
+  fspec delete-scenario <file> <scenario> [options]
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <scenario> (required)
+    Scenario name to delete
+
+OPTIONS
+  --force
+    Skip confirmation
+
+EXAMPLES
+  1. Delete scenario and update coverage file
+  $ fspec delete-scenario spec/features/login.feature "Deprecated scenario"
+  ✓ Deleted scenario "Deprecated scenario" from login.feature
+  Updated coverage file
+
+RELATED COMMANDS
+  fspec add-scenario
+  fspec delete-scenarios
+
+NOTES
+  • Scenario name must match exactly (case-sensitive)
+  • Automatically removes scenario from .feature.coverage file if it exists
+  • Coverage statistics (totalScenarios, coveredScenarios, coveragePercent) are recalculated
+

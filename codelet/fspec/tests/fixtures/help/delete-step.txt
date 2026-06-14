@@ -1,0 +1,28 @@
+
+DELETE-STEP
+Delete a step from a scenario
+
+USAGE
+  fspec delete-step <file> <scenario> <index> [options]
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <scenario> (required)
+    Scenario name
+  <index> (required)
+    Step index (0-based)
+
+OPTIONS
+  --force
+    Skip confirmation
+
+EXAMPLES
+  1. Delete step
+  $ fspec delete-step spec/features/login.feature "Login with valid credentials" 2
+  ✓ Deleted step from scenario
+
+RELATED COMMANDS
+  fspec add-step
+  fspec update-step
+

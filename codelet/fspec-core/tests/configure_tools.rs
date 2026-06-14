@@ -110,9 +110,9 @@ fn reconfigure_flag_short_circuits_without_writing_config() {
 
     // @step Then the dispatcher result contains the substring 'RECONFIGURE TOOLS'
     let haystack = if result.success {
-        result.data.clone()
+        result.data
     } else {
-        result.error.clone().unwrap_or_default()
+        result.error.unwrap_or_default()
     };
     assert!(
         haystack.contains("RECONFIGURE TOOLS"),

@@ -1,0 +1,256 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI successfully renames a scenario and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_scenario.rs",
+          "lines": "58-93",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_scenario.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI surfaces a missing-file error with stderr Error prefix and exit 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_scenario.rs",
+          "lines": "95-122",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_scenario.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI surfaces a not-found scenario error with exit 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_scenario.rs",
+          "lines": "124-151",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_scenario.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_scenario.rs",
+          "lines": "153-178",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_scenario.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_scenario.rs",
+          "lines": "180-224",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_scenario.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_update_scenario.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/update_scenario.rs"
+    ],
+    "totalLinesCovered": 323
+  }
+}

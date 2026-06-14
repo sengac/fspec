@@ -70,7 +70,7 @@ fn dispatch_with_format_json_and_no_tags_returns_every_scenario_across_all_featu
 
     // @step Then the returned scenarios array has six elements
     assert_eq!(
-        data["scenarios"].as_array().map(|a| a.len()),
+        data["scenarios"].as_array().map(Vec::len),
         Some(6),
         "expected six scenarios; got:\n{}",
         result.data

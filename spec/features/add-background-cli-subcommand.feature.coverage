@@ -1,0 +1,262 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI successfully adds a Background and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_background.rs",
+          "lines": "55-89",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_background.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI resolves a bare feature name by basename",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_background.rs",
+          "lines": "91-126",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_background.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI surfaces empty-text error with stderr Error prefix and exit 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_background.rs",
+          "lines": "128-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_background.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI surfaces not-found error with exit 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_background.rs",
+          "lines": "154-178",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_background.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI help output matches captured TypeScript fixture byte-for-byte",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_background.rs",
+          "lines": "180-205",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_background.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_background.rs",
+          "lines": "207-251",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_background.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_add_background.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/add_background.rs"
+    ],
+    "totalLinesCovered": 342
+  }
+}

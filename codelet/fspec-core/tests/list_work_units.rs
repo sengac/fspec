@@ -546,20 +546,20 @@ async fn dispatch_command_does_not_hang_when_called_from_inside_a_tokio_runtime(
 /// Scenario: Dispatching an unported command from inside a tokio runtime returns NotYetPorted instead of hanging
 #[tokio::test]
 async fn dispatch_command_returns_not_yet_ported_when_called_from_inside_a_tokio_runtime() {
-    // @step Given the canonical command map registers 'add-architecture' as a Phase 1 stub
-    // (precondition: 'add-architecture' is in CANONICAL_COMMANDS and is_ported('add-architecture') == false;
-    //  verified in dispatcher_test.rs. We use add-architecture instead of add-rule/add-persona because those
+    // @step Given the canonical command map registers 'audit-coverage' as a Phase 1 stub
+    // (precondition: 'audit-coverage' is in CANONICAL_COMMANDS and is_ported('audit-coverage') == false;
+    //  verified in dispatcher_test.rs. We use audit-coverage instead of add-rule/add-architecture because those
     //  have been ported and now return a real arg-parsing error rather than the
     //  NotYetPorted stub message this regression test was written to catch.)
 
     // @step Given the test is running inside an active tokio runtime via #[tokio::test]
     // (precondition satisfied by the #[tokio::test] attribute on this test fn)
 
-    // @step When I invoke dispatch_command for the 'add-architecture' command via tokio::task::spawn_blocking
+    // @step When I invoke dispatch_command for the 'audit-coverage' command via tokio::task::spawn_blocking
     let started = std::time::Instant::now();
     let result = tokio::task::spawn_blocking(|| {
         dispatch_command(DispatchRequest {
-            command: "add-architecture".to_string(),
+            command: "audit-coverage".to_string(),
             args_json: "{}".to_string(),
             project_root: std::path::PathBuf::from("/tmp/fspec-rpc327"),
         })

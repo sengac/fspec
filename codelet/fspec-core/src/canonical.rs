@@ -968,6 +968,17 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "get-scenarios",                       // RPC-237
     "update-foundation",                   // RPC-312
     "configure-tools",                     // RPC-208
+    // Batch 15 (2026-06-14) — feature-file (.feature) mutation commands
+    "create-feature",   // RPC-212
+    "add-scenario",     // RPC-190
+    "add-step",         // RPC-192
+    "add-background",   // RPC-171
+    "add-architecture", // RPC-167
+    "delete-scenario",  // RPC-219
+    "delete-step",      // RPC-221
+    "delete-features",  // RPC-218
+    "update-scenario",  // RPC-314
+    "update-step",      // RPC-315
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

@@ -1,0 +1,30 @@
+
+ADD-SCENARIO
+Add a new scenario to an existing feature file
+
+USAGE
+  fspec add-scenario <file> <scenario-name>
+
+ARGUMENTS
+  <file> (required)
+    Feature file path (e.g., spec/features/login.feature)
+  <scenario-name> (required)
+    Name of the scenario (e.g., "Login with invalid password")
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Add new scenario
+  $ fspec add-scenario spec/features/login.feature "Login with invalid password"
+  ✓ Added scenario "Login with invalid password" to spec/features/login.feature
+
+RELATED COMMANDS
+  fspec add-step
+  fspec create-feature
+  fspec delete-scenario
+
+NOTES
+  • Creates scenario with placeholder Given/When/Then steps
+  • Scenario is added at the end of the feature file
+

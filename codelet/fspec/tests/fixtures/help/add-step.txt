@@ -1,0 +1,30 @@
+
+ADD-STEP
+Add a step to a scenario in a feature file
+
+USAGE
+  fspec add-step <file> <scenario> <type> <text>
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <scenario> (required)
+    Scenario name
+  <type> (required)
+    Step type: given, when, then, and, or but
+  <text> (required)
+    Step text (e.g., "I am logged in")
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Add given step
+  $ fspec add-step spec/features/login.feature "Login with valid credentials" given "I am on the login page"
+  ✓ Added step to scenario
+
+RELATED COMMANDS
+  fspec add-scenario
+  fspec update-step
+  fspec delete-step
+

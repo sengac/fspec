@@ -107,8 +107,12 @@ pub fn sanitize_for_gherkin(content: &str) -> String {
         // concerned. Pipe lines and `@` tag lines DO terminate a
         // description because the next scenario's table or tag run
         // begins there.
-        let ends_block_strong =
-            trimmed.starts_with('|') || is_step_keyword_prefix(trimmed) || trimmed.starts_with('@');
+        // A description ends only at a real scenario-starting construct: a
+        // step keyword or a tag line. Pipe table rows do NOT terminate a
+        // description here — an orphaned `Examples:` block plus its table
+        // (left behind after a `Scenario Outline` is deleted) is absorbed by
+        // `@cucumber/gherkin` as description text, so we keep collecting it.
+        let ends_block_strong = is_step_keyword_prefix(trimmed) || trimmed.starts_with('@');
         let comment = trimmed.starts_with('#');
 
         let mut rewritten: Option<String> = None;
@@ -116,8 +120,16 @@ pub fn sanitize_for_gherkin(content: &str) -> String {
         if matches!(state, State::InDescription) && !trimmed.is_empty() && !comment {
             if ends_block_strong {
                 state = State::Outside;
-            } else if line_starts_with_keyword(trimmed) {
+            } else if line_starts_with_keyword(trimmed)
+                || trimmed.starts_with('|')
+                || trimmed.starts_with("Examples:")
+            {
                 // Rewrite: preserve indentation, then ZWSP, then trimmed text.
+                // Covers three cases the strict `description_line` rule rejects
+                // but `@cucumber/gherkin` accepts as description prose:
+                //   1. a Gherkin keyword used without a trailing colon,
+                //   2. an orphaned `Examples:` header sitting in a description,
+                //   3. orphaned pipe table rows belonging to such a block.
                 let mut s = String::with_capacity(indent_len + 3 + trimmed.len());
                 s.push_str(&line[..indent_len]);
                 s.push('\u{200B}');
@@ -132,9 +144,11 @@ pub fn sanitize_for_gherkin(content: &str) -> String {
 
         // Step-table escape preprocessing operates independently of
         // description state — pipe tables can appear under any step
-        // keyword or Examples header.
+        // keyword or Examples header. Skip it when the line was already
+        // rewritten into description prose (a ZWSP-prefixed orphan row).
+        let was_rewritten = rewritten.is_some();
         let mut s_to_push = rewritten.unwrap_or_else(|| line.to_string());
-        if trimmed.starts_with('|') {
+        if !was_rewritten && trimmed.starts_with('|') {
             s_to_push = rewrite_table_row_escapes(&s_to_push);
         }
 
@@ -365,5 +379,49 @@ mod tests {
     fn sanitizer_preserves_line_endings() {
         let src = "Feature: T\r\n  As a user.\r\n\r\n  Scenario: A\r\n    Given x\r\n";
         assert_eq!(sanitize_for_gherkin(src), src);
+    }
+
+    #[test]
+    fn orphaned_examples_block_in_description_parses_via_sanitiser() {
+        // Left behind after a `Scenario Outline` body is deleted: an
+        // `Examples:` header plus its table sit in the feature description
+        // with no owning Scenario Outline. `@cucumber/gherkin` absorbs them
+        // as description text; the strict Rust parser rejects them.
+        let src = concat!(
+            "Feature: F\n",
+            "\n",
+            "    Examples:\n",
+            "      | x |\n",
+            "      | 1 |\n",
+            "\n",
+            "  Scenario: Other\n",
+            "    Given y\n",
+        );
+        assert!(Feature::parse(src, GherkinEnv::default()).is_err());
+        let f = parse_feature_lenient(src).expect("lenient parse");
+        assert_eq!(f.name.as_str(), "F");
+        // The real scenario after the orphaned block survives as a scenario.
+        assert_eq!(f.scenarios.len(), 1);
+        assert_eq!(f.scenarios[0].name.as_str(), "Other");
+    }
+
+    #[test]
+    fn legitimate_scenario_outline_examples_still_parses() {
+        // A valid Scenario Outline whose Examples follows its steps must NOT
+        // be mistaken for an orphaned block (its table is reached in the
+        // Outside state, after the step keyword). Forces the lenient fallback
+        // via a description-prose keyword elsewhere in the file.
+        let src = concat!(
+            "Feature: F\n",
+            "  Background note line\n",
+            "\n",
+            "  Scenario Outline: SO\n",
+            "    Given <x>\n",
+            "    Examples:\n",
+            "      | x |\n",
+            "      | 1 |\n",
+        );
+        let f = parse_feature_lenient(src).expect("lenient parse");
+        assert_eq!(f.name.as_str(), "F");
     }
 }

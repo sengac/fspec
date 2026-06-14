@@ -1,0 +1,42 @@
+
+CREATE-FEATURE
+Create a new feature file with proper Gherkin structure template
+
+WHEN TO USE
+  Use when starting a new feature specification in ACDD workflow. Creates a well-structured template with Background section, placeholder scenarios, and proper formatting.
+
+USAGE
+  fspec create-feature <name>
+
+ARGUMENTS
+  <name> (required)
+    Feature name in sentence case (e.g., "User Authentication")
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Create new feature file
+  $ fspec create-feature "User Authentication"
+  ✓ Created spec/features/user-authentication.feature
+
+  2. Create feature with multi-word name
+  $ fspec create-feature "Payment Processing"
+  ✓ Created spec/features/payment-processing.feature
+
+RELATED COMMANDS
+  fspec add-scenario
+  fspec add-step
+  fspec validate
+  fspec format
+
+NOTES
+  • Filename is automatically kebab-cased from the feature name
+  • Creates spec/features/ directory if it doesn't exist
+  • Template includes Background section placeholder
+  • Template includes one example Scenario placeholder
+  • File is created with proper Gherkin formatting
+  • Automatically creates corresponding .feature.coverage file for coverage tracking
+  • Detects placeholder text ([role], [action], [benefit]) and provides CLI commands to fix
+  • Returns structured information about prefill detection, coverage file creation, and file naming
+

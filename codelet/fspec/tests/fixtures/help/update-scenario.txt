@@ -1,0 +1,32 @@
+
+UPDATE-SCENARIO
+Update a scenario name in a feature file
+
+USAGE
+  fspec update-scenario <file> <old-name> <new-name>
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <old-name> (required)
+    Current scenario name
+  <new-name> (required)
+    New scenario name
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Rename scenario and preserve coverage mappings
+  $ fspec update-scenario spec/features/login.feature "Old name" "New name"
+  ✓ Updated scenario name
+
+RELATED COMMANDS
+  fspec add-scenario
+  fspec delete-scenario
+
+NOTES
+  • Automatically renames scenario in .feature.coverage file if it exists
+  • All test mappings and implementation mappings are preserved during rename
+  • Use this command instead of manual delete + create to preserve coverage links
+

@@ -1,0 +1,8 @@
+Usage: fspec delete-features [options]
+
+Bulk delete feature files by tag
+
+Options:
+  --tag <tag>  Filter by tag (can specify multiple times for AND logic)
+  --dry-run    Preview deletions without making changes
+  -h, --help   Display help for command

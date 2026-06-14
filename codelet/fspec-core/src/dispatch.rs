@@ -457,6 +457,17 @@ fn run_ported(
             "update-foundation" => commands::update_foundation::run(args_json, project_root).await,
             // RPC-208 — configure-tools
             "configure-tools" => commands::configure_tools::run(args_json, project_root).await,
+            // Batch 15 (2026-06-14) — feature-file (.feature) mutation commands
+            "create-feature" => commands::create_feature::run(args_json, project_root).await,
+            "add-scenario" => commands::add_scenario::run(args_json, project_root).await,
+            "add-step" => commands::add_step::run(args_json, project_root).await,
+            "add-background" => commands::add_background::run(args_json, project_root).await,
+            "add-architecture" => commands::add_architecture::run(args_json, project_root).await,
+            "delete-scenario" => commands::delete_scenario::run(args_json, project_root).await,
+            "delete-step" => commands::delete_step::run(args_json, project_root).await,
+            "delete-features" => commands::delete_features::run(args_json, project_root).await,
+            "update-scenario" => commands::update_scenario::run(args_json, project_root).await,
+            "update-step" => commands::update_step::run(args_json, project_root).await,
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -476,14 +487,14 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
     poll_sync_future(async move {
         match name {
             // "add-aggregate-to-foundation" — ported (RPC-166, Batch 13). Handled by `run_ported`.
-            "add-architecture" => commands::add_architecture::run(args_json).await,
+            // "add-architecture" — ported (RPC-167, Batch 15). Handled by `run_ported`.
             // "add-architecture-note" — ported (RPC-168, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-assumption" — ported (RPC-169, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-attachment" — ported (RPC-170, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-background" => commands::add_background::run(args_json).await,
+            // "add-background" — ported (RPC-171, Batch 15). Handled by `run_ported`.
             // "add-bounded-context" — ported (RPC-172, Batch 11). Handled by `run_ported`.
             // "add-capability" — ported (RPC-173, Batch 13). Handled by `run_ported`.
             // "add-command" — ported (RPC-174, Batch 11). Handled by `run_ported`.
@@ -509,9 +520,9 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "add-rule" — ported (RPC-189, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-scenario" => commands::add_scenario::run(args_json).await,
+            // "add-scenario" — ported (RPC-190, Batch 15). Handled by `run_ported`.
             // "add-schedule" — ported (RPC-191, Batch 14). Handled by `run_ported`.
-            "add-step" => commands::add_step::run(args_json).await,
+            // "add-step" — ported (RPC-192, Batch 15). Handled by `run_ported`.
             // "add-tag-to-feature" — ported (RPC-193, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-tag-to-scenario" — ported (RPC-194, Batch 9). Handled by `run_ported`
@@ -540,7 +551,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "create-bug" — ported (RPC-210, Batch 11). Handled by `run_ported`.
             // "create-epic" — ported (RPC-211, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "create-feature" => commands::create_feature::run(args_json).await,
+            // "create-feature" — ported (RPC-212, Batch 15). Handled by `run_ported`.
             // "create-prefix" — ported (RPC-213, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "create-story" — ported (RPC-214, Batch 11). Handled by `run_ported`.
@@ -549,10 +560,10 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "delete-epic" — ported (RPC-217, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "delete-features" => commands::delete_features::run(args_json).await,
-            "delete-scenario" => commands::delete_scenario::run(args_json).await,
+            // "delete-features" — ported (RPC-218, Batch 15). Handled by `run_ported`.
+            // "delete-scenario" — ported (RPC-219, Batch 15). Handled by `run_ported`.
             "delete-scenarios" => commands::delete_scenarios::run(args_json).await,
-            "delete-step" => commands::delete_step::run(args_json).await,
+            // "delete-step" — ported (RPC-221, Batch 15). Handled by `run_ported`.
             // "delete-tag" — ported (RPC-222, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "delete-work-unit" — ported (RPC-223, Batch 12). Handled by `run_ported`
@@ -701,8 +712,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "update-foundation" — ported (RPC-312, Batch 14). Handled by `run_ported`.
             // "update-prefix" — ported (RPC-313, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "update-scenario" => commands::update_scenario::run(args_json).await,
-            "update-step" => commands::update_step::run(args_json).await,
+            // "update-scenario" — ported (RPC-314, Batch 15). Handled by `run_ported`.
+            // "update-step" — ported (RPC-315, Batch 15). Handled by `run_ported`.
             // "update-tag" — ported (RPC-316, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "update-work-unit" — ported (RPC-317, Batch 12). Handled by `run_ported`
