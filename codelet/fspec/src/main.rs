@@ -1604,11 +1604,15 @@ enum Mode {
         summary: bool,
     },
     /// RPC-325: validate work-units.json data integrity.
+    ///
+    /// NOTE: the `--fix` option appears in `--help` (rich help, byte-parity
+    /// with the TS reference) but is DOCUMENTED-ONLY. The TS Commander
+    /// registration declares no functional flags, so `--fix` is rejected at
+    /// runtime as an unknown option. The clap variant therefore declares NO
+    /// fields — passing `--fix` raises `UnknownArgument` →
+    /// `error: unknown option '--fix'`, exit 1 (parity, RPC-325 rule [9]).
     #[command(name = "validate-work-units", about = "Validate work units data integrity")]
-    ValidateWorkUnits {
-        #[arg(long = "fix")]
-        fix: bool,
-    },
+    ValidateWorkUnits {},
     /// RPC-322: validate hook configuration and verify scripts exist.
     #[command(name = "validate-hooks", about = "Validate hook configuration and verify that all hook scripts exist")]
     ValidateHooks {},
@@ -2305,9 +2309,9 @@ async fn main() -> std::process::ExitCode {
             validate_tags::run,
             validate_tags::CliArgs { file, verbose, summary }
         ),
-        Some(Mode::ValidateWorkUnits { fix }) => forward!(
+        Some(Mode::ValidateWorkUnits {}) => forward!(
             validate_work_units::run,
-            validate_work_units::CliArgs { fix }
+            validate_work_units::CliArgs {}
         ),
         Some(Mode::ValidateHooks {}) => forward!(
             validate_hooks::run,

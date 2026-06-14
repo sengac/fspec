@@ -137,7 +137,7 @@ fn dispatcher_flags_a_work_unit_whose_parent_is_missing() {
     // @step When I dispatch the validate-work-units command against that project root
     let result = dispatch_command(req(tmp.path(), json!({})));
 
-    // @step Then the dispatcher returns failure carrying the V8 TypeError message
+    // @step Then the dispatcher returns failure with the message 'Cannot read properties of undefined (reading 'children')'
     assert!(!result.success, "{result:?}");
     assert_eq!(
         result.error.as_deref(),
@@ -455,13 +455,42 @@ fn dispatcher_reports_schema_errors_for_a_missing_work_units_field() {
     // @step When I dispatch the validate-work-units command against that project root
     let result = dispatch_command(req(tmp.path(), json!({})));
 
-    // @step Then the dispatcher returns failure carrying the V8 TypeError message
+    // @step Then the dispatcher returns failure with the message 'Cannot convert undefined or null to object'
     assert!(!result.success, "{result:?}");
     assert_eq!(
         result.error.as_deref(),
         Some("Cannot convert undefined or null to object"),
         "{result:?}"
     );
+}
+
+#[test]
+fn dispatcher_treats_an_empty_workunits_array_as_valid() {
+    // Scenario: Dispatcher treats an empty workUnits array as a valid (empty) store
+    //
+    // In JS `typeof [] === 'object'` and `Object.keys([])` returns `[]` without
+    // throwing, so the TS reference reports `✓ All work units are valid`
+    // (exit 0) for `workUnits: []`. Parity requires the Rust port to coerce the
+    // array via `Object.entries` semantics rather than collapsing every
+    // non-object value into the missing-workUnits TypeError.
+
+    // @step Given spec/work-units.json contains an empty workUnits array and a states object
+    let tmp = TempDir::new().expect("tempdir");
+    write_raw_work_units(
+        tmp.path(),
+        r#"{ "version": "0.7.1", "workUnits": [], "states": { "backlog": [], "specifying": [], "testing": [], "implementing": [], "validating": [], "done": [], "blocked": [] } }"#,
+    );
+
+    // @step When I dispatch the validate-work-units command against that project root
+    let result = dispatch_command(req(tmp.path(), json!({})));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "expected success=true, got {result:?}");
+    let data = parse_data(&result);
+
+    // @step Then the result reports valid=true with no errors
+    assert_eq!(data["valid"].as_bool(), Some(true), "got {data}");
+    assert!(errors(&data).is_empty(), "expected no errors; got {data}");
 }
 
 #[test]

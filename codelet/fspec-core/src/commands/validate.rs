@@ -384,17 +384,16 @@ fn get_suggestion(error_message: &str) -> Option<String> {
     None
 }
 
-/// Helper used by tests to assert the JSON shape without going through the
-/// async dispatcher.
-#[cfg(test)]
-fn parse_payload(s: &str) -> serde_json::Value {
-    serde_json::from_str(s).expect("payload is JSON")
-}
-
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
     use super::*;
+
+    /// Helper used by tests to assert the JSON shape without going through the
+    /// async dispatcher.
+    fn parse_payload(s: &str) -> serde_json::Value {
+        serde_json::from_str(s).expect("payload is JSON")
+    }
 
     #[test]
     fn extract_line_parses_gherkin_prefix() {

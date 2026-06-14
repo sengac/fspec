@@ -80,34 +80,47 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     let mut checks: Vec<&'static str> = Vec::new();
 
     // ---- Check 1: schema shape ----
+    // TS: `if (!workUnits || typeof workUnits !== 'object')` and the same for
+    // `states`. In JS `typeof []` is `'object'`, `typeof null` is `'object'`
+    // but `!null` is truthy — so the check fires for missing/null/scalars and
+    // passes for objects AND arrays. `is_js_object_like` reproduces that, so an
+    // empty `workUnits: []` is treated as valid (parity) instead of crashing.
     checks.push("schema");
-    let work_units_opt = data.get("workUnits").and_then(Value::as_object);
-    let states_opt = data.get("states").and_then(Value::as_object);
+    let work_units_val = data.get("workUnits");
+    let states_val = data.get("states");
+    if !is_js_object_like(work_units_val) {
+        errors.push(
+            "Invalid work units data structure: missing or invalid workUnits field".to_string(),
+        );
+    }
+    if !is_js_object_like(states_val) {
+        errors.push(
+            "Invalid work units data structure: missing or invalid states field".to_string(),
+        );
+    }
 
     // ---- TS crash parity (Check 2) ----
-    // The TypeScript reference does NOT short-circuit after the schema check.
-    // Check 2 calls `Object.keys(workUnitsData.workUnits)`, which throws when
-    // `workUnits` is missing/non-object → uncaught TypeError rendered by the
+    // Check 2 calls `Object.keys(workUnitsData.workUnits)`, which throws ONLY
+    // when `workUnits` is null/undefined → uncaught TypeError rendered by the
     // `.action` catch as `✗ Failed to validate work units: Cannot convert
-    // undefined or null to object` (exit 1). Reproduce that VERBATIM before any
-    // structured error can be surfaced.
-    let work_units: Map<String, Value> = match &work_units_opt {
-        Some(m) => (*m).clone(),
+    // undefined or null to object` (exit 1). For every other type JS coerces to
+    // enumerable own entries (arrays → index keys, strings → char-index keys,
+    // scalars → none), so we reproduce `Object.entries` semantics rather than
+    // collapsing all non-object types to the throw.
+    let work_units = match js_object_entries(work_units_val) {
+        Some(entries) => entries,
         None => {
             return Err(FspecCoreError::Message(
                 "Cannot convert undefined or null to object".to_string(),
             ));
         }
     };
-    let states: Map<String, Value> = match &states_opt {
-        Some(m) => (*m).clone(),
-        None => {
-            errors.push(
-                "Invalid work units data structure: missing or invalid states field".to_string(),
-            );
-            Map::new()
-        }
-    };
+    // `states` is only ever index-dereferenced (never `Object.keys`-ed), so a
+    // nullish value does not throw here — it throws later at Check 5 and only if
+    // there is a work unit to iterate. Coerce with the same JS-entries
+    // semantics; a nullish `states` yields an empty map.
+    let states_is_nullish = matches!(states_val, None | Some(Value::Null));
+    let states = js_object_entries(states_val).unwrap_or_default();
 
     // ---- Check 2: unique ids (JSON object keys are inherently unique) ----
     checks.push("uniqueIds");
@@ -183,7 +196,7 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     // '<status>')`, where `<status>` is that unit's status value. With zero
     // work units the loop body never runs, so no crash (handled by the normal
     // structured "missing states" error). Reproduce the crash VERBATIM.
-    if states_opt.is_none() {
+    if states_is_nullish {
         if let Some((_id, wu)) = work_units.iter().next() {
             let status = wu.get("status").and_then(Value::as_str).unwrap_or("");
             return Err(FspecCoreError::Message(format!(
@@ -327,6 +340,38 @@ fn json_type_name(v: &Value) -> &'static str {
         Value::String(_) => "string",
         Value::Array(_) => "object",
         Value::Object(_) => "object",
+    }
+}
+
+/// JS `!!value && typeof value === 'object'` — true for objects and arrays
+/// (matching `typeof [] === 'object'`), false for missing/null/scalars (the
+/// `!value` guard rejects `null` even though `typeof null === 'object'`).
+fn is_js_object_like(value: Option<&Value>) -> bool {
+    matches!(value, Some(Value::Object(_)) | Some(Value::Array(_)))
+}
+
+/// Reproduce JS `Object.entries(value)` enumerable-own-property semantics.
+///
+/// Returns `None` only for `null`/`undefined` (where `Object.keys` throws);
+/// otherwise the coerced entry map: objects as-is, arrays/strings keyed by
+/// stringified index, scalars (number/bool) as the empty map.
+fn js_object_entries(value: Option<&Value>) -> Option<Map<String, Value>> {
+    match value {
+        None | Some(Value::Null) => None,
+        Some(Value::Object(m)) => Some(m.clone()),
+        Some(Value::Array(arr)) => Some(
+            arr.iter()
+                .enumerate()
+                .map(|(i, v)| (i.to_string(), v.clone()))
+                .collect(),
+        ),
+        Some(Value::String(s)) => Some(
+            s.chars()
+                .enumerate()
+                .map(|(i, c)| (i.to_string(), Value::String(c.to_string())))
+                .collect(),
+        ),
+        Some(_) => Some(Map::new()),
     }
 }
 

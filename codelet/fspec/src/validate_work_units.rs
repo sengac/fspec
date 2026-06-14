@@ -30,21 +30,21 @@ use anyhow::{Context, Result};
 use codelet_fspec_core::commands::validate_work_units;
 use serde_json::{json, Value};
 
-/// Strongly-typed args. The documented-only `--fix` flag has no functional
-/// behaviour (parity with the TS reference), so the JSON shape is `{}`.
+/// Strongly-typed args. The TS reference declares no functional flags; the
+/// documented-only `--fix` lives in `--help` text but is rejected at runtime
+/// as an unknown option (handled by clap in `main.rs`), so this struct is
+/// empty and the JSON shape passed to the core is `{}`.
 #[derive(Debug, Default)]
-pub struct CliArgs {
-    /// Documented-only flag; carried for help/flag parity, no behaviour.
-    pub fix: bool,
-}
+pub struct CliArgs {}
 
 /// Entry point invoked from `main.rs` for the `validate-work-units` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
+    let _ = args;
     let project_root: PathBuf =
         env::current_dir().context("resolve current working directory")?;
 
-    let args_json = json!({ "fix": args.fix }).to_string();
+    let args_json = json!({}).to_string();
 
     let json_text = match validate_work_units::run(&args_json, &project_root).await {
         Ok(s) => s,

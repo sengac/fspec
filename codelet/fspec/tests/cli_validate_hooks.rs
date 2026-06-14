@@ -100,14 +100,15 @@ fn scenario_cli_all_scripts_exist_prints_success_exits_0() {
     // @step Then the command exits 0
     assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
 
-    // @step Then the CLI produces no output (parity: the TS .action discards the result)
-    assert!(stdout.is_empty(), "expected silent stdout; got:\n{stdout}");
-    assert!(stderr.is_empty(), "expected silent stderr; got:\n{stderr}");
+    // @step Then stdout contains the substring '✓ All hooks are valid'
+    assert!(
+        stdout.contains("✓ All hooks are valid"),
+        "expected success message on stdout; got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI is silent and exits 0 even when hook scripts are missing
-// (parity with the TS .action which discards the validateHooks result)
+// Scenario: CLI reports missing scripts and exits 1
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
@@ -122,14 +123,24 @@ fn scenario_cli_missing_scripts_reports_and_exits_1() {
     // @step When I run `./codelet/target/release/fspec validate-hooks`
     let (code, stdout, stderr) = run_validate_hooks(ws.path());
 
-    // @step Then the command exits 0 and produces no output (TS parity: result discarded)
-    assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
-    assert!(stdout.is_empty(), "expected silent stdout; got:\n{stdout}");
-    assert!(stderr.is_empty(), "expected silent stderr; got:\n{stderr}");
+    // @step Then the command exits with code 1
+    assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
+
+    // @step Then stdout contains the substring '✗ Hook validation failed'
+    assert!(
+        stdout.contains("✗ Hook validation failed"),
+        "expected failure header on stdout; got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the substring 'Hook command not found: spec/hooks/lint.sh'
+    assert!(
+        stdout.contains("Hook command not found: spec/hooks/lint.sh"),
+        "expected the missing-script line on stdout; got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI is silent and exits 0 when the config is missing
+// Scenario: CLI reports a load failure and exits 1 when the config is missing
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
@@ -141,10 +152,14 @@ fn scenario_cli_missing_config_reports_load_failure_exits_1() {
     // @step When I run `./codelet/target/release/fspec validate-hooks`
     let (code, stdout, stderr) = run_validate_hooks(ws.path());
 
-    // @step Then the command exits 0 and produces no output (TS parity: result discarded)
-    assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
-    assert!(stdout.is_empty(), "expected silent stdout; got:\n{stdout}");
-    assert!(stderr.is_empty(), "expected silent stderr; got:\n{stderr}");
+    // @step Then the command exits with code 1
+    assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
+
+    // @step Then stdout contains the substring 'Failed to load hook configuration'
+    assert!(
+        stdout.contains("Failed to load hook configuration"),
+        "expected the load-failure message on stdout; got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -178,8 +193,8 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
     let (code, stdout, stderr) = run_validate_hooks(ws.path());
     assert_eq!(
-        code, 0,
-        "CLI is silent and always exits 0 (TS .action discards the result); stdout={stdout}, stderr={stderr}"
+        code, 1,
+        "CLI must agree the config is invalid by exiting 1; stdout={stdout}, stderr={stderr}"
     );
 
     // @step Then the CLI bridge module codelet/fspec/src/validate_hooks.rs contains NO inline validation logic — its only computation is JSON arg marshalling

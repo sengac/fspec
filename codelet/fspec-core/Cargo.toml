@@ -15,6 +15,7 @@ indexmap = { version = "2", features = ["serde"] }
 chrono = { workspace = true }
 chrono-tz = { workspace = true }
 croner = { workspace = true }
+jsonschema = { workspace = true }
 fs2 = "0.4"
 gherkin.workspace = true
 regex.workspace = true

@@ -145,6 +145,12 @@ chrono = { version = "0.4", features = ["serde"] }
 chrono-tz = "0.10"
 croner = "2"
 regex = "1"
+# RPC-321/RPC-236/RPC-233/RPC-312: real, spec-compliant JSON Schema
+# validator (the de-facto-standard Rust crate, 4M+ downloads/month — the
+# Rust analogue of the TypeScript Ajv used by `src/validators/json-schema.ts`).
+# Replaces the previous hand-rolled draft-07 subset validator so foundation
+# and tags schema validation share ONE real engine.
+jsonschema = { version = "0.46", default-features = false }
 ctrlc = "3.4"
 once_cell = "1.19"
 lazy_static = "1.4"

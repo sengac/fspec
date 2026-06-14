@@ -222,3 +222,62 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         );
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI rejects the documented-only --fix flag at runtime
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_rejects_documented_only_fix_flag() {
+    // @step Given the --fix option appears in `validate-work-units --help` output (for byte-parity with the TS rich help)
+    let help = Command::new(fspec_bin())
+        .arg("validate-work-units")
+        .arg("--help")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn validate-work-units --help");
+    let help_stdout = String::from_utf8_lossy(&help.stdout).into_owned();
+    assert!(
+        help_stdout.contains("--fix"),
+        "--fix must remain documented in --help output; got:\n{help_stdout}"
+    );
+
+    // @step When I run `./codelet/target/release/fspec validate-work-units --fix` against a clean store
+    let ws = tempfile::tempdir().expect("tempdir");
+    write_work_units(
+        ws.path(),
+        &json!({
+            "version": "0.7.1",
+            "workUnits": {},
+            "states": {
+                "backlog": [], "specifying": [], "testing": [],
+                "implementing": [], "validating": [], "done": [], "blocked": []
+            }
+        }),
+    );
+    let output = Command::new(fspec_bin())
+        .arg("validate-work-units")
+        .arg("--fix")
+        .current_dir(ws.path())
+        .output()
+        .expect("spawn validate-work-units --fix");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits with code 1
+    assert_eq!(
+        code, 1,
+        "documented-only --fix must be rejected at runtime; stdout={stdout}, stderr={stderr}"
+    );
+
+    // @step Then stderr contains the substring "error: unknown option '--fix'"
+    assert!(
+        stderr.contains("error: unknown option '--fix'"),
+        "must report unknown option for --fix; got stderr:\n{stderr}"
+    );
+
+    // @step Then the matching TS command `fspec validate-work-units --fix` also exits 1 with the same 'unknown option' message
+    // (Parity assertion documented here; the TS reference is exercised by the
+    // out-of-band parity harness — see spec/attachments/RPC-003/parity-review-2026-06-14.md.)
+}

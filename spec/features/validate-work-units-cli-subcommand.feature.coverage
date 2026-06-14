@@ -199,18 +199,45 @@
           ]
         }
       ]
+    },
+    {
+      "name": "CLI rejects the documented-only --fix flag at runtime",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_validate_work_units.rs",
+          "lines": "226-296",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/main.rs",
+              "lines": [
+                1606,
+                1607,
+                1608,
+                1609,
+                1610,
+                1611,
+                1612,
+                1613,
+                1614,
+                1615
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec/tests/cli_validate_work_units.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/validate_work_units.rs"
+      "codelet/fspec/src/validate_work_units.rs",
+      "codelet/fspec/src/main.rs"
     ],
-    "totalLinesCovered": 300
+    "totalLinesCovered": 381
   }
 }
