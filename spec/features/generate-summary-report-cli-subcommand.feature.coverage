@@ -1,0 +1,189 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI generate-summary-report writes the report and prints the success message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "lines": "65-90",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI generate-summary-report --format json writes the json report",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "lines": "91-113",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI generate-summary-report fails when the work units file is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "lines": "114-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI generate-summary-report --help prints the help fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "lines": "132-155",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/generate_summary_report.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec-core function as the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_generate_summary_report.rs",
+          "lines": "156-181",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/generate_summary_report.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_generate_summary_report.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/generate_summary_report.rs",
+      "codelet/fspec-core/src/help/configs/generate_summary_report.rs"
+    ],
+    "totalLinesCovered": 209
+  }
+}

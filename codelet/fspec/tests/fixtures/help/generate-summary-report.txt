@@ -1,0 +1,27 @@
+
+GENERATE-SUMMARY-REPORT
+Generate a comprehensive project summary report
+
+WHEN TO USE
+  Use to create status reports for stakeholders showing progress, metrics, and health indicators.
+
+USAGE
+  fspec generate-summary-report [options]
+
+OPTIONS
+  --output <file>
+    Output file path (markdown format)
+  --format <format>
+    Output format: markdown, json, or html
+
+EXAMPLES
+  1. Generate report
+  $ fspec generate-summary-report --output report.md
+  ✓ Generated summary report: report.md
+  42 work units, 87% complete
+
+RELATED COMMANDS
+  fspec query-metrics
+  fspec board
+  fspec query-work-units
+

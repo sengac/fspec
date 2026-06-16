@@ -40,6 +40,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::FspecCoreError;
+use crate::io::io_error::format_io_error;
 use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
 use crate::types::work_unit::WorkUnitsData;
@@ -139,17 +140,6 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         command: "record-iteration",
         reason: wrap_failure(&format!("failed to serialize result: {e}")),
     })
-}
-
-/// Format a `std::io::Error` into the canonical TS Node `Error.message` shape
-/// for filesystem read failures: `ENOENT: no such file or directory, open
-/// '<path>'`. Mirrors the `format_io_error` helper in `query_work_units.rs`.
-fn format_io_error(e: &std::io::Error, path: &str) -> String {
-    if e.kind() == std::io::ErrorKind::NotFound {
-        format!("ENOENT: no such file or directory, open '{path}'")
-    } else {
-        format!("{e}")
-    }
 }
 
 #[cfg(test)]

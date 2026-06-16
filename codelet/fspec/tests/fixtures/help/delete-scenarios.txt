@@ -1,0 +1,8 @@
+Usage: fspec delete-scenarios [options]
+
+Bulk delete scenarios by tag across multiple files
+
+Options:
+  --tag <tag>  Filter by tag (can specify multiple times for AND logic)
+  --dry-run    Preview deletions without making changes
+  -h, --help   Display help for command

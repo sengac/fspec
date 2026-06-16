@@ -1,0 +1,70 @@
+
+GENERATE-COVERAGE
+Generate or update .feature.coverage files for existing .feature files. Creates new coverage files or updates existing ones with missing scenarios.
+
+WHEN TO USE
+  Use this command when: 1) Setting up coverage tracking for existing features, 2) You added new scenarios to existing .feature files and need to update .coverage files, 3) .feature.coverage files were accidentally deleted. Essential for reverse ACDD setup and maintaining coverage sync.
+
+WHEN NOT TO USE
+  Do not use for creating new features (use fspec create-feature instead, which auto-creates coverage files). This command is safe to run anytime - it preserves existing test mappings.
+
+PREREQUISITES
+  • Valid .feature files must exist in spec/features/
+  • Feature files must have valid Gherkin syntax (run fspec validate first)
+
+USAGE
+  fspec generate-coverage [options]
+
+OPTIONS
+  --dry-run
+    Preview what coverage files would be created without actually creating them
+
+COMMON PATTERNS
+  • Reverse ACDD Setup: Run generate-coverage to create empty coverage structures, then use link-coverage to map scenarios to tests
+  • Post-Recovery: After accidentally deleting coverage files, run generate-coverage to recreate empty structures
+  • Project Migration: When adding coverage tracking to existing fspec project, use --dry-run first to preview
+
+TYPICAL WORKFLOW
+  1. Run fspec generate-coverage --dry-run to preview → 2. Review what will be created → 3. Run fspec generate-coverage to create files → 4. Verify with fspec show-coverage
+
+EXAMPLES
+  1. Generate or update coverage files for all .feature files
+  $ fspec generate-coverage
+  ✓ Created 2, Updated 1, Skipped 3
+
+Created: user-authentication.feature.coverage, user-registration.feature.coverage
+Updated: existing-feature.feature.coverage (added 2 missing scenarios)
+Skipped: already-up-to-date.feature.coverage
+
+  2. Preview what would be created without creating files
+  $ fspec generate-coverage --dry-run
+  [DRY RUN] Would generate coverage for:
+  - user-authentication.feature (3 scenarios)
+  - user-registration.feature (2 scenarios)
+
+Would create 2 coverage files
+
+COMMON ERRORS
+  ✗ Error: No feature files found in spec/features/
+    Fix: Ensure you have .feature files in spec/features/ directory. Create features with: fspec create-feature
+
+  ✗ Error: Invalid Gherkin syntax in feature file
+    Fix: Fix Gherkin syntax errors first. Run: fspec validate to identify issues.
+
+RELATED COMMANDS
+  fspec create-feature
+  fspec link-coverage
+  fspec show-coverage
+  fspec audit-coverage
+
+NOTES
+  • Coverage files are automatically created by fspec create-feature for new features
+  • This command creates new coverage files AND updates existing ones with missing scenarios
+  • Automatically removes stale scenarios (in coverage but not in feature file)
+  • Existing test mappings are preserved when updating coverage files
+  • New scenarios are added with empty testMappings arrays
+  • Coverage statistics are recalculated after adding/removing scenarios
+  • Safe to run anytime - idempotent and preserves existing data
+  • Use --dry-run to preview before making changes
+  • Returns status: created, updated, skipped, or recreated (if invalid JSON)
+

@@ -1,0 +1,8 @@
+Usage: fspec board [options]
+
+Display Kanban board of work units
+
+Options:
+  --format <format>  Output format: text or json (default: "text")
+  --limit <limit>    Max items per column (default: "25")
+  -h, --help         Display help for command

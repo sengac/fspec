@@ -1,0 +1,571 @@
+{
+  "scenarios": [
+    {
+      "name": "test-only mode appends a test mapping and recalculates stats",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "109-153",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "impl-only mode adds an implementation mapping to an existing test mapping",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "155-229",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                158,
+                159,
+                160,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "both mode appends a test mapping carrying its implementation mapping",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "231-272",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "impl-file without test-file surfaces a flag-combination error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "274-301",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "test-file without test-lines surfaces a flag-combination error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "303-330",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing test file without skip-validation errors",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "332-360",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skip-validation downgrades a missing file to a warning",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "362-404",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing coverage sidecar errors with a generate-coverage suggestion",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "406-443",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A scenario absent from the sidecar errors with available scenarios listed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "445-483",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Step validation fails when a required step comment is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "485-525",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skip-step-validation is rejected for a story work unit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "527-573",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Written sidecar preserves unknown top-level fields and is atomic 2-space JSON",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/link_coverage.rs",
+          "lines": "575-622",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/link_coverage.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580,
+                581,
+                582,
+                583,
+                584,
+                585,
+                586,
+                587,
+                588,
+                589,
+                590,
+                591,
+                592,
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600,
+                601,
+                602,
+                603,
+                604,
+                605,
+                606,
+                607,
+                608,
+                609,
+                610,
+                611,
+                612,
+                613,
+                614,
+                615,
+                616,
+                617,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628,
+                629,
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/link_coverage.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/link_coverage.rs"
+    ],
+    "totalLinesCovered": 866
+  }
+}

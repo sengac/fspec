@@ -13,6 +13,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::error::FspecCoreError;
+use crate::io::io_error::format_io_error;
 use crate::types::work_unit::{WorkUnit, WorkUnitsData};
 
 /// CLI / dispatcher arguments accepted by `query-work-units`. Field names
@@ -106,19 +107,6 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// the dispatcher error path and the CLI stderr path.
 fn wrap_failure(inner: &str) -> String {
     format!("Failed to query work units: {inner}")
-}
-
-/// Format a std::io::Error into the canonical TS Node `Error.message` shape
-/// for filesystem read failures: `ENOENT: no such file or directory, open
-/// '<path>'`. Other IO errors fall back to the Rust Display so we still see
-/// a useful message but without leaking the os-error noise that TS doesn't
-/// emit.
-fn format_io_error(e: &std::io::Error, path: &str) -> String {
-    if e.kind() == std::io::ErrorKind::NotFound {
-        format!("ENOENT: no such file or directory, open '{path}'")
-    } else {
-        format!("{e}")
-    }
 }
 
 fn apply_filters(units: &mut Vec<&WorkUnit>, args: &QueryWorkUnitsArgs) {

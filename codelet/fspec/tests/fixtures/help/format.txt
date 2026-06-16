@@ -1,0 +1,42 @@
+
+FORMAT
+Format feature files with custom AST-based Gherkin formatter
+
+WHEN TO USE
+  Use to ensure consistent formatting across all feature files. Automatically formats indentation, spacing, and structure according to Gherkin best practices.
+
+USAGE
+  fspec format [file]
+
+ARGUMENTS
+  [file] (optional)
+    Specific feature file to format. If omitted, formats all .feature files in spec/features/
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Format all feature files
+  $ fspec format
+  ✓ Formatted spec/features/login.feature
+✓ Formatted spec/features/signup.feature
+
+Formatted 2 files
+
+  2. Format specific file
+  $ fspec format spec/features/login.feature
+  ✓ Formatted spec/features/login.feature
+
+RELATED COMMANDS
+  fspec validate
+  fspec create-feature
+  fspec check
+
+NOTES
+  • Uses custom AST-based formatter (NOT prettier-plugin-gherkin)
+  • Automatically fixes indentation (2 spaces for scenarios, 4 for steps)
+  • Preserves doc strings (""") and data tables (|)
+  • Maintains tag formatting
+  • Safe to run multiple times (idempotent)
+  • Run before committing feature files
+

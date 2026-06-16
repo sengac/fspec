@@ -159,3 +159,15 @@ pub mod validate_foundation_schema;
 pub mod validate_hooks;
 pub mod validate_tags;
 pub mod validate_work_units;
+
+// Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report.
+// delete-scenarios has bare-Commander help (hard-coded in main.rs), so no
+// config module here.
+pub mod audit_coverage;
+pub mod check;
+pub mod compare_implementations;
+pub mod format;
+pub mod generate_coverage;
+pub mod generate_summary_report;
+pub mod import_example_map;
+pub mod link_coverage;

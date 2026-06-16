@@ -39,6 +39,12 @@ pub struct WorkUnitsData {
     pub meta: Option<Meta>,
     pub work_units: IndexMap<String, WorkUnit>,
     pub states: WorkUnitStates,
+    /// Whether the on-disk file carried a top-level `states` key. The TS
+    /// runtime round-trips work-units.json via `JSON.parse`/`JSON.stringify`,
+    /// so a file that never had `states` keeps it absent. We only synthesise
+    /// `states` for freshly-created files (`initial`); reading a `states`-less
+    /// file and writing it back must NOT inject one (RPC-238 parity fix).
+    pub states_present: bool,
     /// Everything else (`migrationHistory`, `prefixCounters`, future fields)
     /// is preserved transparently.
     pub extra: serde_json::Map<String, serde_json::Value>,
@@ -64,6 +70,7 @@ impl WorkUnitsData {
             meta: Some(Meta::new("1.0.0", now_iso.into())),
             work_units: IndexMap::new(),
             states: default_states(),
+            states_present: true,
             extra: serde_json::Map::new(),
             field_order: Vec::new(),
         }
@@ -126,6 +133,11 @@ impl serde::Serialize for WorkUnitsData {
             if seen.contains(*key) {
                 continue;
             }
+            // Do NOT synthesise a `states` key for a file that never had one —
+            // TS round-trips the file verbatim (RPC-238 parity fix).
+            if *key == "states" && !self.states_present {
+                continue;
+            }
             if let Some(v) = typed_value(key)? {
                 seen.insert((*key).to_string());
                 ordered.push(((*key).to_string(), v));
@@ -183,12 +195,14 @@ impl<'de> serde::Deserialize<'de> for WorkUnitsData {
             Some(serde_json::Value::Null) | None => default_states(),
             Some(value) => serde_json::from_value(value).map_err(DeError::custom)?,
         };
+        let states_present = field_order.iter().any(|k| k == "states");
 
         Ok(WorkUnitsData {
             version,
             meta,
             work_units,
             states,
+            states_present,
             extra: raw,
             field_order,
         })
@@ -488,8 +502,20 @@ impl serde::Serialize for WorkUnit {
                     .epic
                     .as_ref()
                     .map(|e| serde_json::Value::String(e.clone())),
-                "createdAt" => Some(serde_json::Value::String(self.created_at.clone())),
-                "updatedAt" => Some(serde_json::Value::String(self.updated_at.clone())),
+                "createdAt" => {
+                    if self.created_at.is_empty() {
+                        None
+                    } else {
+                        Some(serde_json::Value::String(self.created_at.clone()))
+                    }
+                }
+                "updatedAt" => {
+                    if self.updated_at.is_empty() {
+                        None
+                    } else {
+                        Some(serde_json::Value::String(self.updated_at.clone()))
+                    }
+                }
                 _ => None,
             }
         };
@@ -582,8 +608,13 @@ impl<'de> serde::Deserialize<'de> for WorkUnit {
         let title = take_string(&mut raw, "title")?;
         let r#type = take_optional_string(&mut raw, "type")?;
         let epic = take_optional_string(&mut raw, "epic")?;
-        let created_at = take_string(&mut raw, "createdAt")?;
-        let updated_at = take_string(&mut raw, "updatedAt")?;
+        // `createdAt`/`updatedAt` are optional on read for parity with the TS
+        // runtime, which `JSON.parse`s work-units.json without schema
+        // validation — a unit missing these fields renders fine (e.g. `board`)
+        // rather than throwing. Absent → empty sentinel; the serializer skips
+        // empty values so write-back never injects a spurious `""` key.
+        let created_at = take_optional_string(&mut raw, "createdAt")?.unwrap_or_default();
+        let updated_at = take_optional_string(&mut raw, "updatedAt")?.unwrap_or_default();
 
         let status: WorkUnitStatus = match raw.remove("status") {
             Some(v) => serde_json::from_value(v).map_err(DeError::custom)?,

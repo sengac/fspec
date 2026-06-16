@@ -654,6 +654,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "unlink_coverage.rs",
         "generate_tags_md.rs",
         "retag.rs",
+        // Batch 17 (2026-06-15): coverage/board/check/format/compare/import/report bridges.
+        "audit_coverage.rs",
+        "board.rs",
+        "check.rs",
+        "compare_implementations.rs",
+        "delete_scenarios.rs",
+        "format.rs",
+        "generate_coverage.rs",
+        "generate_summary_report.rs",
+        "import_example_map.rs",
+        "link_coverage.rs",
     ]
     .iter()
     .copied()
@@ -671,7 +682,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 139 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 149 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
@@ -743,8 +754,11 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // Batch 15 (10 feature-file mutation commands) added 10 clap variants +
     // forward! arms + help-intercept arms + mod decls + DELETE_FEATURES_HELP,
     // pushing main.rs to ~2800 lines. Cap raised from 2500 → 3000.
+    // Batch 17 (10 coverage/board/check/format/compare/import/report commands)
+    // added 10 clap variants + forward! arms + help-intercept arms + mod decls
+    // + DELETE_SCENARIOS_HELP, pushing main.rs to ~3150 lines. Cap 3000 → 3300.
     let common_cap: usize = 900;
-    let main_cap: usize = 3000;
+    let main_cap: usize = 3300;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);

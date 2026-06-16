@@ -1,0 +1,26 @@
+
+IMPORT-EXAMPLE-MAP
+Import Example Mapping data from JSON file to work unit
+
+USAGE
+  fspec import-example-map <workUnitId> <file>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <file> (required)
+    JSON file path containing Example Mapping data
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Import Example Mapping
+  $ fspec import-example-map AUTH-001 example-map.json
+  ✓ Imported Example Mapping data to AUTH-001
+  3 rules, 5 examples, 2 questions
+
+RELATED COMMANDS
+  fspec export-example-map
+  fspec show-work-unit
+

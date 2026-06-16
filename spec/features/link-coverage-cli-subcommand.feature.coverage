@@ -1,0 +1,212 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_link_coverage.rs",
+          "lines": "86-110",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/link_coverage.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI links a test mapping and prints the success message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_link_coverage.rs",
+          "lines": "117-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/link_coverage.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI without a valid flag combination exits 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_link_coverage.rs",
+          "lines": "156-180",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/link_coverage.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 when the coverage sidecar is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_link_coverage.rs",
+          "lines": "187-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/link_coverage.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_link_coverage.rs",
+          "lines": "218-236",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/link_coverage.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_link_coverage.rs",
+          "lines": "243-300",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/link_coverage.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_link_coverage.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/link_coverage.rs"
+    ],
+    "totalLinesCovered": 285
+  }
+}

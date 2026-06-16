@@ -990,6 +990,17 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "unlink-coverage",             // RPC-311
     "generate-tags-md",            // RPC-236
     "retag",                       // RPC-293
+    // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
+    "audit-coverage",              // RPC-197
+    "board",                       // RPC-199
+    "check",                       // RPC-201
+    "compare-implementations",     // RPC-207
+    "delete-scenarios",            // RPC-220
+    "format",                      // RPC-230
+    "generate-coverage",           // RPC-231
+    "link-coverage",               // RPC-240
+    "generate-summary-report",     // RPC-235
+    "import-example-map",          // RPC-238
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

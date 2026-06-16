@@ -32,12 +32,12 @@ fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
 
     // @step And the dispatcher's command map records "add-rule" as ported by RPC-XXX
     // (verified indirectly via the canonical_list test; here we trust the lookup.
-    //  We deliberately pick a command that is still in the stub state — `audit-coverage`
-    //  maps to RPC-197 in the per-command mapping and is NOT in PORTED_COMMANDS, so its
+    //  We deliberately pick a command that is still in the stub state — `auto-advance`
+    //  maps to RPC-198 in the per-command mapping and is NOT in PORTED_COMMANDS, so its
     //  stub still returns NotYetPorted. This test asserts the stub path; once
-    //  `audit-coverage` itself is ported, swap to another unported canonical command.)
-    let stub_command = "audit-coverage";
-    let stub_rpc = "RPC-197";
+    //  `auto-advance` itself is ported, swap to another unported canonical command.)
+    let stub_command = "auto-advance";
+    let stub_rpc = "RPC-198";
 
     // @step When the LLM emits Fspec with command="add-rule" and any args_json
     let start = std::time::Instant::now();

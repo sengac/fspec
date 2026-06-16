@@ -45,6 +45,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 
 use crate::error::FspecCoreError;
+use crate::io::io_error::format_io_error;
 use crate::types::work_unit::{WorkUnit, WorkUnitsData};
 
 /// CLI / dispatcher arguments accepted by `export-work-units`. Mirrors the TS
@@ -133,16 +134,6 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         command: "export-work-units",
         reason: wrap_failure(&format!("failed to serialize result: {e}")),
     })
-}
-
-/// Format a `std::io::Error` into the canonical TS Node `Error.message` shape
-/// for filesystem failures: `ENOENT: no such file or directory, open '<path>'`.
-fn format_io_error(e: &std::io::Error, path: &str) -> String {
-    if e.kind() == std::io::ErrorKind::NotFound {
-        format!("ENOENT: no such file or directory, open '{path}'")
-    } else {
-        format!("{e}")
-    }
 }
 
 #[cfg(test)]

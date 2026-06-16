@@ -34,6 +34,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::error::FspecCoreError;
+use crate::io::io_error::format_io_error;
 use crate::types::work_unit::{WorkUnit, WorkUnitsData};
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -144,19 +145,6 @@ fn load_work_units(project_root: &Path) -> Result<WorkUnitsData, FspecCoreError>
         command: "query-metrics",
         reason: wrap(format!("Unexpected token in JSON: {e}")),
     })
-}
-
-/// Format a std::io::Error into the canonical TS Node `Error.message` shape
-/// for filesystem read failures: `ENOENT: no such file or directory, open
-/// '<path>'`. Other IO errors fall back to the Rust Display so we still
-/// surface a useful message without leaking the os-error noise that TS
-/// never emits.
-fn format_io_error(e: &std::io::Error, path: &str) -> String {
-    if e.kind() == std::io::ErrorKind::NotFound {
-        format!("ENOENT: no such file or directory, open '{path}'")
-    } else {
-        format!("{e}")
-    }
 }
 
 fn wrap(msg: impl Into<String>) -> String {

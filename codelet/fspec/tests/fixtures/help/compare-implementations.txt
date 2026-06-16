@@ -1,0 +1,74 @@
+
+COMPARE-IMPLEMENTATIONS
+Compare implementation approaches across work units to identify patterns and inconsistencies
+
+WHEN TO USE
+  Reviewing implementation consistency across similar features,Identifying naming convention differences,Detecting architectural pattern divergence,Finding opportunities for code reuse or refactoring
+
+USAGE
+  fspec compare-implementations --tag=<tag> [options]
+
+OPTIONS
+  --tag <tag>
+    Filter work units by tag (e.g., @authentication, @cli)
+  --show-coverage
+    Include test and implementation file paths from coverage data
+  --json
+    Output results in JSON format
+
+COMMON PATTERNS
+  • undefined
+    Example: undefined
+    undefined
+
+  • undefined
+    Example: undefined
+    undefined
+
+
+EXAMPLES
+  1. Compare authentication implementations
+  $ fspec compare-implementations --tag=@authentication
+  Comparing 5 work units tagged with @authentication:
+
+AUTH-001: User Login
+  Pattern: JWT-based authentication
+  Naming: camelCase
+
+AUTH-002: OAuth Integration
+  Pattern: Token-based authentication
+  Naming: camelCase
+
+⚠️  Naming Convention Differences:
+  - AUTH-003 uses snake_case instead of camelCase
+  - Consider standardizing on camelCase
+
+✓  Architectural Consistency:
+  - All use token-based auth pattern
+  - Consistent error handling approach
+
+  2. Compare with coverage information
+  $ fspec compare-implementations --tag=@cli --show-coverage
+  CLI-001: Create Feature Command
+  Tests: src/__tests__/create-feature.test.ts
+  Implementation: src/commands/create-feature.ts
+  Pattern: Commander.js with async/await
+
+CLI-002: Validate Command
+  Tests: src/__tests__/validate.test.ts
+  Implementation: src/commands/validate.ts
+  Pattern: Commander.js with async/await
+
+✓  Consistent test and implementation patterns across all CLI commands
+
+RELATED COMMANDS
+  fspec search-implementation
+  fspec show-test-patterns
+  fspec search-scenarios
+
+NOTES
+  • Automatically detects naming convention differences (camelCase, snake_case, kebab-case)
+  • Highlights architectural pattern divergence
+  • Uses coverage files to analyze actual implementation
+  • Side-by-side comparison helps identify best practices
+

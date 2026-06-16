@@ -1,0 +1,175 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI dry-run previews deletions without removing scenarios",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "lines": "64-94",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI deletes matching scenarios and prints the success message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "lines": "98-122",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI with no --tag exits 1 with stderr Error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "lines": "126-145",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "lines": "149-179",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_scenarios.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI help output matches the captured bare-Commander fixture byte-for-byte",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_scenarios.rs",
+          "lines": "185-206",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/main.rs",
+              "lines": [
+                3124,
+                3125,
+                3126,
+                3127,
+                3128,
+                3129,
+                3130,
+                3131,
+                3132,
+                3133
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_delete_scenarios.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/delete_scenarios.rs",
+      "codelet/fspec/src/main.rs"
+    ],
+    "totalLinesCovered": 207
+  }
+}

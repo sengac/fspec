@@ -1,0 +1,106 @@
+
+AUDIT-COVERAGE
+Verify that test files and implementation files referenced in coverage mappings actually exist
+
+WHEN TO USE
+  Use this command after refactoring to verify file paths are still correct, or periodically to detect broken coverage links. Essential before deploying or after moving files. Catches issues where tests/implementation were deleted but coverage file was not updated.
+
+USAGE
+  fspec audit-coverage <feature-name> [options]
+
+ARGUMENTS
+  <feature-name> (required)
+    Feature file name (without path or extension), e.g., "user-authentication"
+
+OPTIONS
+  --fix
+    Automatically remove broken mappings from coverage file
+
+COMMON PATTERNS
+  • After Refactoring
+    Example: # Moved test files to new directory structure
+mv src/__tests__/auth/* src/auth/__tests__/
+
+# Audit all features to find broken links
+fspec list-features --format=json | jq -r '.[].name' | while read feature; do
+  fspec audit-coverage "$feature"
+done
+    undefined
+
+  • Fix Broken Links Automatically
+    Example: # After deleting obsolete test files
+fspec audit-coverage user-authentication
+# Shows broken links
+
+# Auto-fix (removes broken mappings)
+fspec audit-coverage user-authentication --fix
+    undefined
+
+  • CI/CD Validation
+    Example: # In CI pipeline, fail if any coverage links are broken
+fspec audit-coverage user-authentication || exit 1
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Refactor/move files → 2. fspec audit-coverage → 3. Fix broken paths manually OR use --fix → 4. Verify with fspec show-coverage
+
+EXAMPLES
+  1. Audit coverage for specific feature
+  $ fspec audit-coverage user-authentication
+  Auditing: user-authentication.feature
+
+✓ Login with valid credentials
+  ✓ Test file exists: src/__tests__/auth.test.ts
+  ✓ Implementation file exists: src/auth/login.ts
+
+✗ Login with invalid credentials
+  ✗ Test file missing: src/__tests__/auth-error.test.ts
+  ✓ Implementation file exists: src/auth/login.ts
+
+Audit Summary:
+- 2 scenarios checked
+- 1 fully valid
+- 1 has broken links
+
+Run with --fix to remove broken mappings
+
+  2. Audit and automatically fix broken links
+  $ fspec audit-coverage user-authentication --fix
+  Auditing: user-authentication.feature
+
+✗ Login with invalid credentials
+  ✗ Test file missing: src/__tests__/auth-error.test.ts
+  Removed broken test mapping
+
+✓ Fixed 1 broken mapping
+
+  3. Audit coverage after moving files
+  $ fspec audit-coverage dashboard
+  Auditing: dashboard.feature
+
+✓ View dashboard metrics
+  ✓ Test file exists: src/__tests__/dashboard.test.ts
+  ✓ Implementation file exists: src/dashboard/metrics.ts
+
+All mappings valid! ✅
+
+COMMON ERRORS
+  ✗ Error: Feature file user-authentication.feature not found
+    Fix: Check feature name matches file name. Run: fspec list-features
+
+  ✗ Error: Coverage file user-authentication.feature.coverage not found
+    Fix: Coverage file should auto-create with fspec create-feature.
+
+RELATED COMMANDS
+  fspec show-coverage
+  fspec link-coverage
+  fspec unlink-coverage
+
+NOTES
+  • Does NOT validate that line numbers are correct, only that files exist
+  • Use --fix to automatically remove broken mappings (backup first!)
+  • Run after moving or renaming files to catch stale references
+  • Essential part of refactoring workflow to maintain coverage integrity
+  • Does not modify feature files, only .coverage files
+

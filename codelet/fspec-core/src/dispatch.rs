@@ -485,6 +485,23 @@ fn run_ported(
             "unlink-coverage" => commands::unlink_coverage::run(args_json, project_root).await,
             "generate-tags-md" => commands::generate_tags_md::run(args_json, project_root).await,
             "retag" => commands::retag::run(args_json, project_root).await,
+            // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
+            "audit-coverage" => commands::audit_coverage::run(args_json, project_root).await,
+            "board" => commands::board::run(args_json, project_root).await,
+            "check" => commands::check::run(args_json, project_root).await,
+            "compare-implementations" => {
+                commands::compare_implementations::run(args_json, project_root).await
+            }
+            "delete-scenarios" => commands::delete_scenarios::run(args_json, project_root).await,
+            "format" => commands::format::run(args_json, project_root).await,
+            "generate-coverage" => commands::generate_coverage::run(args_json, project_root).await,
+            "link-coverage" => commands::link_coverage::run(args_json, project_root).await,
+            "generate-summary-report" => {
+                commands::generate_summary_report::run(args_json, project_root).await
+            }
+            "import-example-map" => {
+                commands::import_example_map::run(args_json, project_root).await
+            }
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -548,11 +565,11 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "answer-question" — ported (RPC-196, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "audit-coverage" => commands::audit_coverage::run(args_json).await,
+            // "audit-coverage" — ported (RPC-197, Batch 17). Handled by `run_ported`.
             "auto-advance" => commands::auto_advance::run(args_json).await,
-            "board" => commands::board::run(args_json).await,
+            // "board" — ported (RPC-199, Batch 17). Handled by `run_ported`.
             "bootstrap" => commands::bootstrap::run(args_json).await,
-            "check" => commands::check::run(args_json).await,
+            // "check" — ported (RPC-201, Batch 17). Handled by `run_ported`.
             "checkpoint" => commands::checkpoint::run(args_json).await,
             "cleanup-checkpoints" => commands::cleanup_checkpoints::run(args_json).await,
             // "clear-dependencies" — ported (RPC-204, Batch 7). Handled by `run_ported`
@@ -561,7 +578,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "compact-work-unit" — ported (RPC-206, Batch 12). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "compare-implementations" => commands::compare_implementations::run(args_json).await,
+            // "compare-implementations" — ported (RPC-207, Batch 17). Handled by `run_ported`.
             // "configure-tools" — ported (RPC-208, Batch 14). Handled by `run_ported`.
             // "copy-virtual-hooks" — ported (RPC-209, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -579,7 +596,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "delete-features" — ported (RPC-218, Batch 15). Handled by `run_ported`.
             // "delete-scenario" — ported (RPC-219, Batch 15). Handled by `run_ported`.
-            "delete-scenarios" => commands::delete_scenarios::run(args_json).await,
+            // "delete-scenarios" — ported (RPC-220, Batch 17). Handled by `run_ported`.
             // "delete-step" — ported (RPC-221, Batch 15). Handled by `run_ported`.
             // "delete-tag" — ported (RPC-222, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -591,19 +608,19 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "export-dependencies" — ported (RPC-227, Batch 12). Handled by `run_ported`.
             // "export-example-map" — ported (RPC-228, Batch 12). Handled by `run_ported`.
             // "export-work-units" — ported (RPC-229, Batch 12). Handled by `run_ported`.
-            "format" => commands::format::run(args_json).await,
-            "generate-coverage" => commands::generate_coverage::run(args_json).await,
+            // "format" — ported (RPC-230, Batch 17). Handled by `run_ported`.
+            // "generate-coverage" — ported (RPC-231, Batch 17). Handled by `run_ported`.
             "generate-example-mapping-from-event-storm" => {
                 commands::generate_example_mapping_from_event_storm::run(args_json).await
             }
             // "generate-foundation-md" — ported (RPC-233). Handled by `run_ported`.
             "generate-scenarios" => commands::generate_scenarios::run(args_json).await,
-            "generate-summary-report" => commands::generate_summary_report::run(args_json).await,
+            // "generate-summary-report" — ported (RPC-235, Batch 17). Handled by `run_ported`.
             // "generate-tags-md" — ported (RPC-236, Batch 16). Handled by `run_ported`.
             // "get-scenarios" — ported (RPC-237, Batch 14). Handled by `run_ported`.
-            "import-example-map" => commands::import_example_map::run(args_json).await,
+            // "import-example-map" — ported (RPC-238, Batch 17). Handled by `run_ported`.
             "init" => commands::init::run(args_json).await,
-            "link-coverage" => commands::link_coverage::run(args_json).await,
+            // "link-coverage" — ported (RPC-240, Batch 17). Handled by `run_ported`.
             // "list-attachments" — ported (RPC-241). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "list-checkpoints" — ported (RPC-242). Handled by `run_ported`

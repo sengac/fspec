@@ -165,6 +165,18 @@ mod validate_hooks;
 mod validate_tags;
 mod validate_work_units;
 
+// Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
+mod audit_coverage;
+mod board;
+mod check;
+mod compare_implementations;
+mod delete_scenarios;
+mod format;
+mod generate_coverage;
+mod generate_summary_report;
+mod import_example_map;
+mod link_coverage;
+
 use std::path::PathBuf;
 
 use clap::error::{ContextKind, ContextValue, ErrorKind};
@@ -1677,6 +1689,93 @@ enum Mode {
         #[arg(long = "dry-run")]
         dry_run: bool,
     },
+    // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
+    /// RPC-197: verify coverage-mapped test/impl files exist.
+    #[command(name = "audit-coverage", about = "Verify that test files and implementation files referenced in coverage mappings actually exist")]
+    AuditCoverage {
+        #[arg(value_name = "feature-name")]
+        feature_name: String,
+    },
+    /// RPC-199: display Kanban board of work units grouped by status.
+    #[command(name = "board", about = "Display Kanban board of all work units grouped by status")]
+    Board {
+        #[arg(long = "format", value_name = "format")]
+        format: Option<String>,
+        #[arg(long = "limit", value_name = "limit")]
+        limit: Option<usize>,
+    },
+    /// RPC-201: run all validation checks (Gherkin, tags, formatting).
+    #[command(name = "check", about = "Run all validation checks: Gherkin syntax, tag compliance, and formatting")]
+    Check {
+        #[arg(short = 'v', long = "verbose")]
+        verbose: bool,
+    },
+    /// RPC-207: compare implementation approaches across work units.
+    #[command(name = "compare-implementations", about = "Compare implementation approaches across work units to identify patterns and inconsistencies")]
+    CompareImplementations {
+        #[arg(long = "tag", value_name = "tag")]
+        tag: String,
+        #[arg(long = "show-coverage")]
+        show_coverage: bool,
+        #[arg(long = "json")]
+        json: bool,
+    },
+    /// RPC-220: bulk delete scenarios by tag across multiple files.
+    #[command(name = "delete-scenarios", about = "Bulk delete scenarios by tag across multiple files")]
+    DeleteScenarios {
+        #[arg(long = "tag", value_name = "tag")]
+        tags: Vec<String>,
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
+    /// RPC-230: format feature files with the AST-based Gherkin formatter.
+    #[command(name = "format", about = "Format feature files with custom AST-based Gherkin formatter")]
+    Format {
+        #[arg(value_name = "file")]
+        file: Option<String>,
+    },
+    /// RPC-231: generate/update .feature.coverage files.
+    #[command(name = "generate-coverage", about = "Generate or update .feature.coverage files for existing .feature files")]
+    GenerateCoverage {
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
+    /// RPC-240: link scenarios to test/impl files for traceability.
+    #[command(name = "link-coverage", about = "Link Gherkin scenarios to test files and implementation code for full traceability")]
+    LinkCoverage {
+        #[arg(value_name = "feature-name")]
+        feature_name: String,
+        #[arg(long = "scenario", value_name = "name")]
+        scenario: String,
+        #[arg(long = "test-file", value_name = "path")]
+        test_file: Option<String>,
+        #[arg(long = "test-lines", value_name = "range")]
+        test_lines: Option<String>,
+        #[arg(long = "impl-file", value_name = "path")]
+        impl_file: Option<String>,
+        #[arg(long = "impl-lines", value_name = "lines")]
+        impl_lines: Option<String>,
+        #[arg(long = "skip-validation")]
+        skip_validation: bool,
+        #[arg(long = "skip-step-validation")]
+        skip_step_validation: bool,
+    },
+    /// RPC-235: generate a comprehensive project summary report.
+    #[command(name = "generate-summary-report", about = "Generate a comprehensive project summary report")]
+    GenerateSummaryReport {
+        #[arg(long = "format", value_name = "format")]
+        format: Option<String>,
+        #[arg(long = "output", value_name = "file")]
+        output: Option<String>,
+    },
+    /// RPC-238: import Example Mapping data from JSON into a work unit.
+    #[command(name = "import-example-map", about = "Import Example Mapping data from JSON file to work unit")]
+    ImportExampleMap {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(value_name = "file")]
+        file: String,
+    },
 }
 
 #[tokio::main]
@@ -2345,6 +2444,65 @@ async fn main() -> std::process::ExitCode {
             retag::run,
             retag::CliArgs { from, to, dry_run }
         ),
+        // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
+        Some(Mode::AuditCoverage { feature_name }) => forward!(
+            audit_coverage::run,
+            audit_coverage::CliArgs { feature_name }
+        ),
+        Some(Mode::Board { format, limit }) => forward!(
+            board::run,
+            board::CliArgs { format, limit }
+        ),
+        Some(Mode::Check { verbose }) => forward!(
+            check::run,
+            check::CliArgs { verbose }
+        ),
+        Some(Mode::CompareImplementations { tag, show_coverage, json }) => forward!(
+            compare_implementations::run,
+            compare_implementations::CliArgs { tag, show_coverage, json }
+        ),
+        Some(Mode::DeleteScenarios { tags, dry_run }) => forward!(
+            delete_scenarios::run,
+            delete_scenarios::CliArgs { tags, dry_run }
+        ),
+        Some(Mode::Format { file }) => forward!(
+            format::run,
+            format::CliArgs { file }
+        ),
+        Some(Mode::GenerateCoverage { dry_run }) => forward!(
+            generate_coverage::run,
+            generate_coverage::CliArgs { dry_run }
+        ),
+        Some(Mode::LinkCoverage {
+            feature_name,
+            scenario,
+            test_file,
+            test_lines,
+            impl_file,
+            impl_lines,
+            skip_validation,
+            skip_step_validation,
+        }) => forward!(
+            link_coverage::run,
+            link_coverage::CliArgs {
+                feature_name,
+                scenario,
+                test_file,
+                test_lines,
+                impl_file,
+                impl_lines,
+                skip_validation,
+                skip_step_validation,
+            }
+        ),
+        Some(Mode::GenerateSummaryReport { format, output }) => forward!(
+            generate_summary_report::run,
+            generate_summary_report::CliArgs { format, output }
+        ),
+        Some(Mode::ImportExampleMap { work_unit_id, file }) => forward!(
+            import_example_map::run,
+            import_example_map::CliArgs { work_unit_id, file }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -2861,6 +3019,34 @@ fn intercept_ts_help() -> Option<u8> {
         "unlink-coverage" => format_command_help(&configs::unlink_coverage::CONFIG),
         "generate-tags-md" => format_command_help(&configs::generate_tags_md::CONFIG),
         "retag" => format_command_help(&configs::retag::CONFIG),
+        // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
+        "audit-coverage" => format_command_help(&configs::audit_coverage::CONFIG),
+        // RPC-199 parity fix: `board` has NO custom `-help.ts` in TS;
+        // `fspec board --help` falls through to bare Commander.js output (the
+        // earlier rich CommandHelpConfig diverged ~60 lines from the TS
+        // reference). Emit the byte-exact static string, mirroring the
+        // `delete-scenarios` / `register-tag` special-cases below.
+        "board" => {
+            print!("{}", BOARD_HELP);
+            return Some(0);
+        }
+        "check" => format_command_help(&configs::check::CONFIG),
+        "compare-implementations" => {
+            format_command_help(&configs::compare_implementations::CONFIG)
+        }
+        "format" => format_command_help(&configs::format::CONFIG),
+        "generate-coverage" => format_command_help(&configs::generate_coverage::CONFIG),
+        "link-coverage" => format_command_help(&configs::link_coverage::CONFIG),
+        "generate-summary-report" => {
+            format_command_help(&configs::generate_summary_report::CONFIG)
+        }
+        "import-example-map" => format_command_help(&configs::import_example_map::CONFIG),
+        // RPC-220: delete-scenarios has no custom -help.ts in TS; the reference
+        // is bare Commander.js output (mirrors the delete-features special-case).
+        "delete-scenarios" => {
+            print!("{}", DELETE_SCENARIOS_HELP);
+            return Some(0);
+        }
         // RPC-218: delete-features has no custom -help.ts in TS; the reference
         // is bare Commander.js output. Emit the byte-exact static string,
         // mirroring the `list-foundation-sections` / `register-tag` special-cases.
@@ -2935,6 +3121,42 @@ Options:
   --tag <tag>  Filter by tag (can specify multiple times for AND logic)
   --dry-run    Preview deletions without making changes
   -h, --help   Display help for command
+";
+
+/// Byte-exact TS reference output of
+/// `node dist/index.js delete-scenarios --help` piped to non-TTY.
+///
+/// The TS reference (`src/commands/delete-scenarios-by-tag.ts`) has NO custom
+/// `-help.ts`; Commander.js emits its default Usage/Description/Options block.
+/// Captured fixture: `codelet/fspec/tests/fixtures/help/delete-scenarios.txt`.
+const DELETE_SCENARIOS_HELP: &str = "\
+Usage: fspec delete-scenarios [options]
+
+Bulk delete scenarios by tag across multiple files
+
+Options:
+  --tag <tag>  Filter by tag (can specify multiple times for AND logic)
+  --dry-run    Preview deletions without making changes
+  -h, --help   Display help for command
+";
+
+/// Byte-exact TS reference output of
+/// `node dist/index.js board --help` piped to non-TTY.
+///
+/// The TS reference (`src/commands/display-board.ts:90-96`) registers `board`
+/// with plain Commander.js and has NO custom `-help.ts`, so `fspec board
+/// --help` emits Commander's default Usage/Description/Options block. The
+/// earlier Rust port wrongly introduced a rich `CommandHelpConfig`; this
+/// reproduces the real TS bytes (RPC-199 parity fix).
+const BOARD_HELP: &str = "\
+Usage: fspec board [options]
+
+Display Kanban board of work units
+
+Options:
+  --format <format>  Output format: text or json (default: \"text\")
+  --limit <limit>    Max items per column (default: \"25\")
+  -h, --help         Display help for command
 ";
 
 /// Byte-exact TS reference output of
