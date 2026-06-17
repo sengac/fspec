@@ -24,6 +24,10 @@ regex.workspace = true
 # pure-regex pre-check with real syntax validation.
 merman-core = "0.8.0-alpha.1"
 codelet-git = { path = "../git" }
+# RPC-334: shared serde_json parse-error diagnostics (vendored, trimmed
+# format_serde_error). Renders a caret-pointed snippet under the offending
+# token for corrupted fspec state files.
+codelet-fspec-json-error = { workspace = true }
 
 [dev-dependencies]
 tempfile.workspace = true

@@ -101,7 +101,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut data: WorkUnitsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
             command: "record-iteration",
-            reason: wrap_failure(&format!("Unexpected token in JSON: {e}")),
+            reason: wrap_failure(&crate::io::json_error::parse_json_reason(&raw, &e)),
         })?;
 
     // Validate the work unit exists (mirrors src/commands/record-iteration.ts:34-36).

@@ -138,7 +138,7 @@ fn append_event_storm_item(
         std::fs::read_to_string(&path).map_err(|source| FspecCoreError::Io { command, source })?;
     let mut root: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
         file: "work-units.json".to_string(),
-        reason: e.to_string(),
+        reason: crate::io::json_error::parse_json_reason(&raw, &e),
     })?;
 
     // [2] Validate work unit exists.

@@ -100,7 +100,7 @@ fn scenario_dispatcher_empty_workspace_returns_empty_patterns() {
 
     // @step And the returned JSON has patterns=[]
     let data = parse_data(&result.data);
-    assert_eq!(data["patterns"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["patterns"].as_array().map(Vec::len), Some(0));
 
     // @step And spec/work-units.json exists after the call (auto-created by ensure_work_units_file)
     assert!(tmp.path().join("spec/work-units.json").exists());
@@ -127,7 +127,7 @@ fn scenario_dispatcher_ignores_non_done_units() {
     let data = parse_data(&result.data);
 
     // @step Then the returned JSON has patterns=[]
-    assert_eq!(data["patterns"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["patterns"].as_array().map(Vec::len), Some(0));
 }
 
 #[test]
@@ -147,7 +147,7 @@ fn scenario_dispatcher_skips_done_unit_missing_iterations() {
     let data = parse_data(&result.data);
 
     // @step Then the returned JSON has patterns=[]
-    assert_eq!(data["patterns"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["patterns"].as_array().map(Vec::len), Some(0));
 }
 
 #[test]
@@ -167,7 +167,7 @@ fn scenario_dispatcher_skips_done_unit_missing_estimate() {
     let data = parse_data(&result.data);
 
     // @step Then the returned JSON has patterns=[]
-    assert_eq!(data["patterns"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["patterns"].as_array().map(Vec::len), Some(0));
 }
 
 #[test]
@@ -407,7 +407,7 @@ fn scenario_cli_format_json_empty_workspace_prints_empty_array() {
     // @step And stdout parses as JSON whose root object has patterns=[]
     let parsed: Value = serde_json::from_str(&stdout)
         .unwrap_or_else(|e| panic!("stdout must parse as JSON: {e}\nstdout:\n{stdout}"));
-    assert_eq!(parsed["patterns"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(parsed["patterns"].as_array().map(Vec::len), Some(0));
 }
 
 #[test]

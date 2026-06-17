@@ -88,7 +88,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut data: WorkUnitsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "work-units.json".to_string(),
-            reason: e.to_string(),
+            reason: crate::io::json_error::parse_json_reason(&raw, &e),
         })?;
 
     // Validate work unit exists (mirrors src/commands/add-command.ts:69-75).

@@ -54,7 +54,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     })?;
     let data: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
         command: "generate-summary-report",
-        reason: format!("Failed to generate summary report: {e}"),
+        reason: format!(
+            "Failed to generate summary report: {}",
+            crate::io::json_error::parse_json_reason(&raw, &e)
+        ),
     })?;
 
     // Collect work units (Object.values(data.workUnits)). A missing or

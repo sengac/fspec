@@ -1,0 +1,233 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes remove-init-files as a subcommand and prints --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "lines": "64-89",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_init_files.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI removes claude agent files and prints the success summary",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "lines": "91-117",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_init_files.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --keep-config preserves spec/fspec-config.json",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "lines": "119-136",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_init_files.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 when no agent installation is detected",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "lines": "138-154",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_init_files.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "lines": "156-203",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_init_files.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "remove-init-files --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_init_files.rs",
+          "lines": "207-231",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_init_files.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_remove_init_files.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/remove_init_files.rs"
+    ],
+    "totalLinesCovered": 282
+  }
+}

@@ -96,7 +96,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "fspec-config.json".to_string(),
-            reason: e.to_string(),
+            reason: crate::io::json_error::parse_json_reason(&raw, &e),
         })?
     } else {
         json!({ "agent": "claude" })

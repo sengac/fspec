@@ -1,0 +1,717 @@
+{
+  "scenarios": [
+    {
+      "name": "Returns empty suggestions array when work-units.json is auto-created in an empty workspace",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "78-103",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sequential IDs in the same prefix produce a medium-confidence dependsOn suggestion",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "105-142",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Test work unit depends on a matching Build work unit with high confidence",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "144-181",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A feature work unit depends on a same-prefix infrastructure work unit with high confidence",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "183-220",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Specific patterns override the generic sequential suggestion for the same pair",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "222-259",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing dependsOn relationship excludes the sequential suggestion",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "261-284",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The unimplemented same-epic relatesTo rule produces no suggestions",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "286-309",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JSON suggestion field declaration order is from, to, type, reason, confidence",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "311-339",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "311-339",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default text output renders a numbered summary",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "341-374",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default text output renders the empty sentinel when there are no suggestions",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "376-392",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Escalates malformed work-units.json as a structured parse error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/suggest_dependencies.rs",
+          "lines": "394-412",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/suggest_dependencies.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/suggest_dependencies.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/suggest_dependencies.rs"
+    ],
+    "totalLinesCovered": 868
+  }
+}

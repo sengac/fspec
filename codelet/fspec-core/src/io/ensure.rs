@@ -247,10 +247,8 @@ pub fn read_prefixes_or_empty(cwd: &Path) -> Result<PrefixesData, FspecCoreError
         command: "read_prefixes_or_empty",
         source,
     })?;
-    serde_json::from_str::<PrefixesData>(&raw).map_err(|e| FspecCoreError::ParseJson {
-        file: "prefixes.json".to_string(),
-        reason: e.to_string(),
-    })
+    serde_json::from_str::<PrefixesData>(&raw)
+        .map_err(|e| crate::io::json_error::parse_json_diagnostic("prefixes.json", &raw, &e))
 }
 
 /// Read `spec/work-units.json` WITHOUT auto-creating it AND silently
@@ -305,10 +303,8 @@ pub fn read_epics_or_empty(cwd: &Path) -> Result<EpicsData, FspecCoreError> {
         command: "read_epics_or_empty",
         source,
     })?;
-    serde_json::from_str::<EpicsData>(&raw).map_err(|e| FspecCoreError::ParseJson {
-        file: "epics.json".to_string(),
-        reason: e.to_string(),
-    })
+    serde_json::from_str::<EpicsData>(&raw)
+        .map_err(|e| crate::io::json_error::parse_json_diagnostic("epics.json", &raw, &e))
 }
 
 /// Best-effort RFC-3339 timestamp without a heavy time dep. Used purely for

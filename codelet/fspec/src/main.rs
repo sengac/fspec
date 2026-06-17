@@ -177,6 +177,18 @@ mod generate_summary_report;
 mod import_example_map;
 mod link_coverage;
 
+// Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
+mod auto_advance;
+mod discover_event_storm;
+mod generate_example_mapping_from_event_storm;
+mod remove_init_files;
+mod suggest_dependencies;
+mod validate_spec_alignment;
+mod workflow_automation;
+mod checkpoint;
+mod cleanup_checkpoints;
+mod restore_checkpoint;
+
 use std::path::PathBuf;
 
 use clap::error::{ContextKind, ContextValue, ErrorKind};
@@ -1776,6 +1788,96 @@ enum Mode {
         #[arg(value_name = "file")]
         file: String,
     },
+    // Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
+    /// RPC-225: scaffold an Event Storm session on a work unit.
+    #[command(name = "discover-event-storm", about = "Start Event Storming discovery for a work unit")]
+    DiscoverEventStorm {
+        #[arg(value_name = "work-unit-id")]
+        work_unit_id: String,
+    },
+    /// RPC-232: transform an Event Storm into Example Mapping entries.
+    #[command(name = "generate-example-mapping-from-event-storm", about = "Transform Event Storm artifacts into Example Mapping rules, examples, and questions")]
+    GenerateExampleMappingFromEventStorm {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+    },
+    /// RPC-309: suggest dependencies between work units.
+    #[command(name = "suggest-dependencies", about = "Suggest dependencies between work units based on heuristics")]
+    SuggestDependencies {
+        #[arg(long = "output", value_name = "format")]
+        output: Option<String>,
+    },
+    /// RPC-323: validate spec/test/impl alignment for a work unit.
+    #[command(name = "validate-spec-alignment", about = "Validate that specifications align with tests and implementation")]
+    ValidateSpecAlignment {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(long = "fix")]
+        fix: bool,
+    },
+    /// RPC-276: remove fspec init files for the detected agent.
+    #[command(name = "remove-init-files", about = "Remove fspec initialization files created by init")]
+    RemoveInitFiles {
+        #[arg(long = "keep-config")]
+        keep_config: bool,
+        #[arg(long = "no-keep-config")]
+        no_keep_config: bool,
+    },
+    /// RPC-198: auto-advance a work unit through its lifecycle.
+    #[command(name = "auto-advance", about = "Automatically advance work units through their lifecycle")]
+    AutoAdvance {
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
+    /// RPC-326: drive workflow automation actions for a work unit.
+    #[command(name = "workflow-automation", about = "Run workflow automation actions for a work unit")]
+    WorkflowAutomation {
+        #[arg(value_name = "action")]
+        action: String,
+        #[arg(value_name = "work-unit-id")]
+        work_unit_id: String,
+        #[arg(long = "event", value_name = "event")]
+        event: Option<String>,
+        #[arg(long = "from-state", value_name = "state")]
+        from_state: Option<String>,
+    },
+    /// RPC-202: create a manual git checkpoint for a work unit.
+    #[command(name = "checkpoint", about = "Create a manual checkpoint for safe experimentation")]
+    Checkpoint {
+        #[arg(value_name = "work-unit-id")]
+        work_unit_id: String,
+        #[arg(value_name = "checkpoint-name")]
+        checkpoint_name: String,
+    },
+    /// RPC-203: prune old checkpoints for a work unit.
+    #[command(name = "cleanup-checkpoints", about = "Clean up old checkpoints for a work unit, keeping the most recent N")]
+    CleanupCheckpoints {
+        #[arg(value_name = "work-unit-id")]
+        work_unit_id: String,
+        // Parity with TS Commander.js `requiredOption('--keep-last <number>')`
+        // (`src/commands/cleanup-checkpoints.ts:113`): the option is REQUIRED,
+        // and Commander reports its absence (`required option '--keep-last
+        // <number>' not specified`) even when the positional is also missing.
+        // `allow_hyphen_values` lets clap accept a negative value (e.g. `-3`)
+        // as the option's argument so it reaches our domain validation (which
+        // emits the `--keep-last must be a positive number` message) instead
+        // of clap treating `-3` as an unknown flag.
+        #[arg(
+            long = "keep-last",
+            value_name = "number",
+            required = true,
+            allow_hyphen_values = true
+        )]
+        keep_last: String,
+    },
+    /// RPC-288: restore a checkpoint for a work unit.
+    #[command(name = "restore-checkpoint", about = "Restore a checkpoint for a work unit")]
+    RestoreCheckpoint {
+        #[arg(value_name = "work-unit-id")]
+        work_unit_id: String,
+        #[arg(value_name = "checkpoint-name")]
+        checkpoint_name: String,
+    },
 }
 
 #[tokio::main]
@@ -2503,6 +2605,55 @@ async fn main() -> std::process::ExitCode {
             import_example_map::run,
             import_example_map::CliArgs { work_unit_id, file }
         ),
+        // Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
+        Some(Mode::DiscoverEventStorm { work_unit_id }) => forward!(
+            discover_event_storm::run,
+            discover_event_storm::CliArgs { work_unit_id }
+        ),
+        Some(Mode::GenerateExampleMappingFromEventStorm { work_unit_id }) => forward!(
+            generate_example_mapping_from_event_storm::run,
+            generate_example_mapping_from_event_storm::CliArgs { work_unit_id }
+        ),
+        Some(Mode::SuggestDependencies { output }) => forward!(
+            suggest_dependencies::run,
+            suggest_dependencies::CliArgs { output }
+        ),
+        Some(Mode::ValidateSpecAlignment { work_unit_id, fix }) => forward!(
+            validate_spec_alignment::run,
+            validate_spec_alignment::CliArgs { work_unit_id, fix }
+        ),
+        Some(Mode::RemoveInitFiles { keep_config, no_keep_config }) => forward!(
+            remove_init_files::run,
+            remove_init_files::CliArgs {
+                keep_config: if no_keep_config {
+                    Some(false)
+                } else if keep_config {
+                    Some(true)
+                } else {
+                    None
+                }
+            }
+        ),
+        Some(Mode::AutoAdvance { dry_run }) => forward!(
+            auto_advance::run,
+            auto_advance::CliArgs { dry_run }
+        ),
+        Some(Mode::WorkflowAutomation { action, work_unit_id, event, from_state }) => forward!(
+            workflow_automation::run,
+            workflow_automation::CliArgs { action, work_unit_id, event, from_state }
+        ),
+        Some(Mode::Checkpoint { work_unit_id, checkpoint_name }) => forward!(
+            checkpoint::run,
+            checkpoint::CliArgs { work_unit_id, checkpoint_name }
+        ),
+        Some(Mode::CleanupCheckpoints { work_unit_id, keep_last }) => forward!(
+            cleanup_checkpoints::run,
+            cleanup_checkpoints::CliArgs { work_unit_id, keep_last }
+        ),
+        Some(Mode::RestoreCheckpoint { work_unit_id, checkpoint_name }) => forward!(
+            restore_checkpoint::run,
+            restore_checkpoint::CliArgs { work_unit_id, checkpoint_name }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -3041,6 +3192,21 @@ fn intercept_ts_help() -> Option<u8> {
             format_command_help(&configs::generate_summary_report::CONFIG)
         }
         "import-example-map" => format_command_help(&configs::import_example_map::CONFIG),
+        // Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
+        "discover-event-storm" => format_command_help(&configs::discover_event_storm::CONFIG),
+        "generate-example-mapping-from-event-storm" => {
+            format_command_help(&configs::generate_example_mapping_from_event_storm::CONFIG)
+        }
+        "suggest-dependencies" => format_command_help(&configs::suggest_dependencies::CONFIG),
+        "validate-spec-alignment" => {
+            format_command_help(&configs::validate_spec_alignment::CONFIG)
+        }
+        "remove-init-files" => format_command_help(&configs::remove_init_files::CONFIG),
+        "auto-advance" => format_command_help(&configs::auto_advance::CONFIG),
+        "workflow-automation" => format_command_help(&configs::workflow_automation::CONFIG),
+        "checkpoint" => format_command_help(&configs::checkpoint::CONFIG),
+        "cleanup-checkpoints" => format_command_help(&configs::cleanup_checkpoints::CONFIG),
+        "restore-checkpoint" => format_command_help(&configs::restore_checkpoint::CONFIG),
         // RPC-220: delete-scenarios has no custom -help.ts in TS; the reference
         // is bare Commander.js output (mirrors the delete-features special-case).
         "delete-scenarios" => {

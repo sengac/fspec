@@ -190,7 +190,7 @@ fn scenario_dispatcher_excludes_empty_or_missing_blocks() {
     let data = parse_data(&result.data);
 
     // @step Then the returned JSON has bottlenecks=[]
-    assert_eq!(data["bottlenecks"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["bottlenecks"].as_array().map(Vec::len), Some(0));
 }
 
 #[test]
@@ -210,7 +210,7 @@ fn scenario_dispatcher_single_block_below_threshold() {
     let data = parse_data(&result.data);
 
     // @step Then the returned JSON has bottlenecks=[] (score 1 is below threshold)
-    assert_eq!(data["bottlenecks"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["bottlenecks"].as_array().map(Vec::len), Some(0));
 }
 
 #[test]
@@ -465,7 +465,7 @@ fn scenario_cli_output_json_empty_workspace_prints_empty_array() {
     // @step And stdout parses as JSON whose root object has bottlenecks=[]
     let parsed: Value = serde_json::from_str(&stdout)
         .unwrap_or_else(|e| panic!("stdout must parse as JSON: {e}\nstdout:\n{stdout}"));
-    assert_eq!(parsed["bottlenecks"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(parsed["bottlenecks"].as_array().map(Vec::len), Some(0));
 }
 
 #[test]

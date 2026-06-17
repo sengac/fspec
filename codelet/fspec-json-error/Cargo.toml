@@ -1,0 +1,14 @@
+[package]
+name = "codelet-fspec-json-error"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Human-friendly serde_json parse-error formatter for fspec. Vendored and trimmed from format_serde_error 0.3.0 (MIT, Alexander Thaller); serde_json-only, no color/yaml/toml, with the issue #20 small-context panic fixed. Renders the offending JSON line with a caret pointing at the exact error column."
+
+[dependencies]
+serde_json.workspace = true
+unicode-segmentation = "1"
+
+[lints]
+workspace = true

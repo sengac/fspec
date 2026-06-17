@@ -1,0 +1,140 @@
+
+WORKFLOW-AUTOMATION
+Workflow automation utilities for work units (record iterations, auto-advance state, validate spec alignment)
+
+WHEN TO USE
+  Use this command for workflow automation and metrics tracking. Essential for AI agents to track progress, measure efficiency (iterations), auto-advance work unit states after successful events, and validate alignment between work units and Gherkin specs.
+
+PREREQUISITES
+  • spec/work-units.json exists with work units
+  • Work unit is in appropriate state for action
+
+USAGE
+  fspec workflow-automation <action> [work-unit-id] [options]
+
+Actions:
+  record-iteration     - Increment iteration counter for work unit
+  auto-advance         - Auto-advance state after event (tests-pass, validation-pass, specs-complete)
+  validate-alignment   - Check if work unit has corresponding Gherkin scenarios
+
+ARGUMENTS
+  <action> (required)
+    Action to perform: record-iteration, auto-advance, validate-alignment
+  <work-unit-id> (required)
+    Work unit ID (required for all actions)
+
+OPTIONS
+  --event <event>
+    Event triggering state change: tests-pass, validation-pass, specs-complete (used with auto-advance)
+  --from-state <state>
+    Current state before transition (used with auto-advance for safety check)
+
+COMMON PATTERNS
+  • TDD Cycle Tracking
+    Example: # Start testing phase
+fspec update-work-unit-status AUTH-001 testing
+
+# Red: write failing test
+<test-command>  # Tests fail
+fspec workflow-automation record-iteration AUTH-001
+
+# Green: implement code
+<test-command>  # Tests pass
+fspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing
+
+# Now in implementing state, ready for next feature
+    undefined
+
+  • ACDD State Automation
+    Example: # Specifying → Testing (after specs complete)
+fspec workflow-automation auto-advance AUTH-001 --event specs-complete --from-state specifying
+
+# Testing → Implementing (after tests pass)
+fspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing
+
+# Validating → Done (after validation passes)
+fspec workflow-automation auto-advance AUTH-001 --event validation-pass --from-state validating
+    undefined
+
+  • Spec Alignment Validation
+    Example: # After creating feature files, validate alignment
+fspec workflow-automation validate-alignment AUTH-001
+
+# If not aligned, add @AUTH-001 tag to scenarios
+fspec add-scenario user-authentication "Login flow" --tags @AUTH-001
+
+# Re-validate
+fspec workflow-automation validate-alignment AUTH-001
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Start work: fspec update-work-unit-status <id> testing → 2. Write tests (red) → 3. Record iteration: fspec workflow-automation record-iteration <id> → 4. Implement (green) → 5. Tests pass → 6. Auto-advance: fspec workflow-automation auto-advance <id> --event tests-pass --from-state testing → 7. Validate alignment: fspec workflow-automation validate-alignment <id>
+
+EXAMPLES
+  1. Increment iteration counter (tracks red→green cycles)
+  $ fspec workflow-automation record-iteration AUTH-001
+  ✓ Recorded iteration for AUTH-001
+  Total iterations: 3
+
+  2. Auto-advance from testing → implementing after tests pass
+  $ fspec workflow-automation auto-advance AUTH-001 --event tests-pass --from-state testing
+  ✓ Advanced AUTH-001 from testing → implementing
+  Event: tests-pass
+  Updated: 2025-01-15T10:30:00Z
+
+  3. Auto-advance from validating → done after validation passes
+  $ fspec workflow-automation auto-advance AUTH-001 --event validation-pass --from-state validating
+  ✓ Advanced AUTH-001 from validating → done
+  Event: validation-pass
+
+  4. Check if work unit has corresponding Gherkin scenarios
+  $ fspec workflow-automation validate-alignment AUTH-001
+  ✓ Work unit AUTH-001 is aligned with specifications
+  Scenarios found: 5
+  Features:
+    - spec/features/user-authentication.feature
+    - spec/features/session-management.feature
+
+COMMON ERRORS
+  ✗ Error: Work unit does not exist
+    Fix: Verify work unit ID. Run: fspec list-work-units
+
+  ✗ Error: Invalid transition: tests-pass from implementing
+    Fix: tests-pass event only valid from "testing" state. Check current state with: fspec show-work-unit <id>
+
+  ✗ Error: Work unit is in state "implementing", expected "testing"
+    Fix: State mismatch. Verify current state before auto-advance. Use --from-state to ensure safety.
+
+  ✗ Error: No scenarios found for work unit AUTH-001
+    Fix: Work unit has no @AUTH-001 tagged scenarios. Add tag to scenarios or create feature file.
+
+RELATED COMMANDS
+  fspec update-work-unit-status
+  fspec show-work-unit
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+  fspec list-features
+  fspec add-scenario
+
+NOTES
+  • Metrics tracked:
+  •   - iterations: Number of red→green cycles (TDD iterations)
+  • State transitions (auto-advance):
+  •   - specs-complete: specifying → testing
+  •   - tests-pass: testing → implementing
+  •   - validation-pass: validating → done
+  • Auto-advance safety:
+  •   - Requires --from-state to verify current state before transition
+  •   - Prevents invalid state transitions
+  •   - Updates stateHistory with timestamp
+  • Spec alignment:
+  •   - Searches for @WORK-UNIT-ID tags in feature files
+  •   - Returns count of matching scenarios and feature files
+  •   - Essential for reverse ACDD to track specification coverage
+  • Iteration tracking:
+  •   - Increments on each red→green cycle
+  •   - Useful metric for complexity/difficulty assessment
+  •   - High iteration count may indicate unclear requirements
+

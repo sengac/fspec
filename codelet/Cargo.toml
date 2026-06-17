@@ -16,6 +16,10 @@ members = [
     # a synchronous dispatcher entry point so the standalone fspec Rust
     # binary's agent loop no longer hangs on Fspec tool dispatch.
     "fspec-core",
+    # RPC-334: vendored+trimmed serde_json error formatter (human-friendly
+    # caret diagnostics for corrupted state files). Replaces the V8-emulation
+    # parse-error wording with native serde_json diagnostics.
+    "fspec-json-error",
     "fspec-tui",
     "git",
     "graph",
@@ -53,6 +57,7 @@ codelet-core = { path = "core" }
 # TOOL-019 / RPC-003: pure-Rust home for the future port of the TypeScript
 # fspec CLI commands. Phase 1 only ships command stubs + a dispatcher.
 codelet-fspec-core = { path = "fspec-core" }
+codelet-fspec-json-error = { path = "fspec-json-error" }
 codelet-fspec-tui = { path = "fspec-tui" }
 codelet-git = { path = "git" }
 codelet-graph = { path = "graph" }

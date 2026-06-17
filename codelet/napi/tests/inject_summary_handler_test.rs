@@ -1,3 +1,4 @@
+#![cfg(not(feature = "noop"))]
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/inject-summary-handler.feature
 //!

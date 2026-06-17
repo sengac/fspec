@@ -89,7 +89,7 @@ fn scenario_dispatcher_dry_run_reports_matches_without_modifying_files() {
 
     // @step And the dispatcher scenarios array lists the two matching scenarios
     assert_eq!(
-        data["scenarios"].as_array().map(|a| a.len()),
+        data["scenarios"].as_array().map(Vec::len),
         Some(2),
         "got data: {data}"
     );

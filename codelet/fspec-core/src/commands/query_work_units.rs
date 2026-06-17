@@ -67,7 +67,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let data: WorkUnitsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
             command: "query-work-units",
-            reason: wrap_failure(&format!("Unexpected token in JSON: {e}")),
+            reason: wrap_failure(&crate::io::json_error::parse_json_reason(&raw, &e)),
         })?;
 
     // Cycle-time mode: single work-unit, ignore filters.

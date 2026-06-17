@@ -1,0 +1,106 @@
+
+VALIDATE-SPEC-ALIGNMENT
+Validate alignment between feature specifications, tests, and implementation
+
+WHEN TO USE
+  Use in the validating phase to ensure specifications, tests, and implementation are aligned. This command checks that scenarios have corresponding tests and implementation, helping maintain ACDD discipline.
+
+PREREQUISITES
+  • Feature files must exist in spec/features/
+  • Work units should be tagged in scenarios with @WORK-UNIT-ID
+
+USAGE
+  fspec validate-spec-alignment [feature-files...] [options]
+
+ARGUMENTS
+  [feature-files] (optional)
+    Feature files to validate (default: all in spec/features). Can be file paths or feature names.
+
+OPTIONS
+  --fix
+    Automatically fix alignment issues (e.g., create missing coverage mappings)
+
+COMMON PATTERNS
+  • Validate before moving to done
+    Example: # Check alignment before marking work unit done
+fspec validate-spec-alignment
+
+# If issues found, fix them
+fspec link-coverage user-auth --scenario "Valid login" --test-file src/__tests__/auth.test.ts --test-lines 10-25
+
+# Re-validate
+fspec validate-spec-alignment
+
+# Move to done
+fspec update-work-unit-status AUTH-001 done
+    undefined
+
+  • Auto-fix alignment issues
+    Example: # Run with --fix to automatically resolve issues
+fspec validate-spec-alignment --fix
+
+# Review changes
+fspec show-coverage user-auth
+    undefined
+
+  • Validate specific epic
+    Example: # Validate all features in an epic
+fspec list-features --epic AUTH | xargs fspec validate-spec-alignment
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Complete implementation → 2. Link coverage: fspec link-coverage <feature> → 3. Validate alignment: fspec validate-spec-alignment → 4. Fix any issues → 5. Move to done: fspec update-work-unit-status <id> done
+
+EXAMPLES
+  1. Validate alignment for all feature files
+  $ fspec validate-spec-alignment
+  ✓ All specs are aligned with tests and implementation
+
+Alignment summary:
+  Features checked: 12
+  Scenarios checked: 45
+  Scenarios with tests: 45
+  Test coverage: 100%
+
+  2. Validate specific feature file
+  $ fspec validate-spec-alignment spec/features/auth/login.feature
+  ✓ All specs are aligned with tests and implementation
+
+  3. Validate and auto-fix alignment issues
+  $ fspec validate-spec-alignment spec/features/auth/*.feature --fix
+  ✓ Fixed 2 alignment issues
+✓ All specs are aligned with tests and implementation
+
+  4. Example with alignment issues found
+  $ fspec validate-spec-alignment
+  ✗ Found 3 alignment issues
+  - Scenario "Valid user login" has no test mapping
+  - Scenario "Invalid credentials" test has no implementation
+  - Feature file "checkout.feature" has no @WORK-UNIT-ID tags
+
+COMMON ERRORS
+  ✗ Found 3 alignment issues
+    Fix: Review listed issues and either:
+1. Add test mappings: fspec link-coverage <feature> --scenario "<name>" --test-file <file> --test-lines <range>
+2. Add implementation: fspec link-coverage <feature> --scenario "<name>" --test-file <file> --impl-file <file> --impl-lines <lines>
+3. Tag scenarios: fspec add-tag-to-scenario <feature> "<scenario>" @WORK-UNIT-ID
+
+  ✗ Feature file not found: spec/features/nonexistent.feature
+    Fix: Check feature file path or use: fspec list-features
+
+RELATED COMMANDS
+  fspec validate
+  fspec link-coverage
+  fspec show-coverage
+  fspec audit-coverage
+  fspec update-work-unit-status
+
+NOTES
+  • Checks that feature scenarios have corresponding test mappings
+  • Verifies that tests have implementation mappings
+  • Ensures scenarios are tagged with work unit IDs for traceability
+  • --fix option attempts to automatically resolve common issues
+  • Exit code 1 if alignment issues found (suitable for CI/CD)
+  • Part of ACDD workflow - run before moving to done state
+

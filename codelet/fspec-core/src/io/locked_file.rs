@@ -57,10 +57,8 @@ where
             source,
         })?;
 
-        return serde_json::from_str(&buf).map_err(|e| FspecCoreError::ParseJson {
-            file: file_label.to_string(),
-            reason: e.to_string(),
-        });
+        return serde_json::from_str(&buf)
+            .map_err(|e| crate::io::json_error::parse_json_diagnostic(file_label, &buf, &e));
     }
 
     // Slow path: file missing → create with default. Ensure parent exists.
@@ -79,10 +77,8 @@ where
         command: "read_or_init_json",
         source,
     })?;
-    serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
-        file: file_label.to_string(),
-        reason: e.to_string(),
-    })
+    serde_json::from_str(&raw)
+        .map_err(|e| crate::io::json_error::parse_json_diagnostic(file_label, &raw, &e))
 }
 
 /// Atomically write `value` as pretty-printed JSON (2-space indent) to `path`.

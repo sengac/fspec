@@ -271,6 +271,9 @@ fn scenario_codelet_fspec_is_registered_as_a_workspace_member() {
         // TOOL-019 / RPC-003: pure-Rust home for the future port of the
         // TypeScript fspec CLI commands.
         "fspec-core",
+        // RPC-334: vendored+trimmed serde_json caret-diagnostic formatter.
+        // Sorts between `fspec-core` and `fspec-tui`.
+        "fspec-json-error",
         "fspec-tui",
         "git",
         // Knowledge-graph crate; sorts between `git` and `napi`.
@@ -665,6 +668,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "generate_summary_report.rs",
         "import_example_map.rs",
         "link_coverage.rs",
+        // Batch 18 (2026-06-16): event-storm/analysis/work-unit-status + checkpoint trio bridges.
+        "discover_event_storm.rs",
+        "generate_example_mapping_from_event_storm.rs",
+        "suggest_dependencies.rs",
+        "validate_spec_alignment.rs",
+        "remove_init_files.rs",
+        "auto_advance.rs",
+        "workflow_automation.rs",
+        "checkpoint.rs",
+        "cleanup_checkpoints.rs",
+        "restore_checkpoint.rs",
     ]
     .iter()
     .copied()
@@ -682,7 +696,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 149 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 159 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
@@ -757,8 +771,11 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // Batch 17 (10 coverage/board/check/format/compare/import/report commands)
     // added 10 clap variants + forward! arms + help-intercept arms + mod decls
     // + DELETE_SCENARIOS_HELP, pushing main.rs to ~3150 lines. Cap 3000 → 3300.
+    // Batch 18 (10 commands: 7 event-storm/analysis/status + 3 checkpoint) add
+    // 10 mod decls + 10 Mode variants + 10 forward! arms + 10 help-intercept
+    // arms, pushing main.rs to ~3340 lines. Cap raised from 3300 → 3500.
     let common_cap: usize = 900;
-    let main_cap: usize = 3300;
+    let main_cap: usize = 3500;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);

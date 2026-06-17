@@ -1001,6 +1001,18 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "link-coverage",               // RPC-240
     "generate-summary-report",     // RPC-235
     "import-example-map",          // RPC-238
+    // Batch 18 (2026-06-16) — auto-advance/workflow/analysis/event-storm/init
+    // (checkpoint trio RPC-202/203/288 wired separately once W1b lands)
+    "discover-event-storm",                      // RPC-225
+    "generate-example-mapping-from-event-storm", // RPC-232
+    "suggest-dependencies",                      // RPC-309
+    "validate-spec-alignment",                   // RPC-323
+    "remove-init-files",                         // RPC-276
+    "auto-advance",                              // RPC-198
+    "workflow-automation",                       // RPC-326
+    "checkpoint",                                // RPC-202
+    "cleanup-checkpoints",                       // RPC-203
+    "restore-checkpoint",                        // RPC-288
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

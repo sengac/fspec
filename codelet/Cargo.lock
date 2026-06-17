@@ -1227,6 +1227,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "chrono-tz",
+ "codelet-fspec-json-error",
  "codelet-git",
  "croner",
  "fs2",
@@ -1241,6 +1242,14 @@ dependencies = [
  "tempfile",
  "thiserror 1.0.69",
  "tokio",
+]
+
+[[package]]
+name = "codelet-fspec-json-error"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "unicode-segmentation",
 ]
 
 [[package]]

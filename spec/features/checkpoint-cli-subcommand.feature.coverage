@@ -1,0 +1,326 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes checkpoint as a subcommand with two positionals",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "lines": "72-98",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/checkpoint.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI creates a checkpoint and exits 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "lines": "100-121",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/checkpoint.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 when the working tree is clean",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "lines": "123-134",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/checkpoint.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved after adding checkpoint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "lines": "136-161",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/checkpoint.rs",
+              "lines": [
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "lines": "163-209",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/checkpoint.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "checkpoint --help is byte-for-byte identical to TS",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_checkpoint.rs",
+          "lines": "211-240",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/checkpoint.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_checkpoint.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/checkpoint.rs",
+      "codelet/fspec-core/src/help/configs/checkpoint.rs"
+    ],
+    "totalLinesCovered": 377
+  }
+}

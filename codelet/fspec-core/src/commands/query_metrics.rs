@@ -143,7 +143,7 @@ fn load_work_units(project_root: &Path) -> Result<WorkUnitsData, FspecCoreError>
     })?;
     serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
         command: "query-metrics",
-        reason: wrap(format!("Unexpected token in JSON: {e}")),
+        reason: wrap(crate::io::json_error::parse_json_reason(&raw, &e)),
     })
 }
 

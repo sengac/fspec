@@ -1,0 +1,138 @@
+
+SUGGEST-DEPENDENCIES
+Auto-suggest dependency relationships based on work unit metadata (sequential IDs, build/test pairs, infrastructure patterns)
+
+WHEN TO USE
+  Use this command when setting up new work units or auditing existing relationships. Especially valuable after bulk work unit creation to quickly establish dependencies based on naming conventions and sequential IDs. Reduces manual relationship mapping effort.
+
+PREREQUISITES
+  • spec/work-units.json exists with multiple work units
+
+USAGE
+  fspec suggest-dependencies [options]
+
+OPTIONS
+  --output <format>
+    Output format: json or text
+    Default: text
+
+COMMON PATTERNS
+  • Bulk Dependency Setup
+    Example: # Create work units with sequential IDs
+fspec create-story AUTH "Setup auth infrastructure"
+fspec create-story AUTH "Add login endpoint"
+fspec create-story AUTH "Add logout endpoint"
+
+# Get suggestions
+fspec suggest-dependencies
+
+# Apply HIGH confidence suggestions automatically
+fspec add-dependency AUTH-002 --depends-on AUTH-001
+fspec add-dependency AUTH-003 --depends-on AUTH-001
+    undefined
+
+  • Test/Build Pattern Recognition
+    Example: # Create build and test work units
+fspec create-task BUILD "Build authentication module"
+fspec create-task TEST "Test authentication module"
+
+# Get suggestions (will detect test depends on build)
+fspec suggest-dependencies
+
+# Apply suggested dependency
+fspec add-dependency TEST-001 --depends-on BUILD-001
+    undefined
+
+  • Infrastructure-First Pattern
+    Example: # Create schema and feature work
+fspec create-task SCHEMA "Database schema setup"
+fspec create-story ADD "Add user management features"
+
+# Get suggestions (will detect feature depends on schema)
+fspec suggest-dependencies
+
+# Apply infrastructure dependency
+fspec add-dependency ADD-001 --depends-on SCHEMA-001
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Create work units with consistent naming → 2. Run suggestions: fspec suggest-dependencies → 3. Review suggestions (prioritize HIGH confidence) → 4. Apply dependencies: fspec add-dependency <from-id> --depends-on=<to-id> → 5. Verify: fspec show-work-unit <id>
+
+EXAMPLES
+  1. Get dependency suggestions based on patterns
+  $ fspec suggest-dependencies
+  Found 5 dependency suggestion(s):
+
+1. AUTH-002 → AUTH-001 (dependsOn)
+   ● sequential IDs in AUTH prefix suggest AUTH-002 depends on AUTH-001
+   Confidence: MEDIUM
+
+2. TEST-AUTH-001 → BUILD-AUTH-001 (dependsOn)
+   ● test work depends on build work: "Test authentication" depends on "Build authentication"
+   Confidence: HIGH
+
+3. FEAT-001 → SCHEMA-001 (dependsOn)
+   ● infrastructure work (schema/migration) should complete before feature work: "Add user features" depends on "Database schema setup"
+   Confidence: HIGH
+
+To apply a suggestion: fspec add-dependency <from-id> --depends-on=<to-id>
+
+  2. Output suggestions as JSON for automation
+  $ fspec suggest-dependencies --output json
+  {
+  "suggestions": [
+    {
+      "from": "AUTH-002",
+      "to": "AUTH-001",
+      "type": "dependsOn",
+      "reason": "sequential IDs in AUTH prefix suggest AUTH-002 depends on AUTH-001",
+      "confidence": "medium"
+    },
+    {
+      "from": "TEST-AUTH-001",
+      "to": "BUILD-AUTH-001",
+      "type": "dependsOn",
+      "reason": "test work depends on build work",
+      "confidence": "high"
+    }
+  ]
+}
+
+  3. Show only high-confidence suggestions
+  $ fspec suggest-dependencies | grep HIGH
+  2. TEST-AUTH-001 → BUILD-AUTH-001 (dependsOn)
+   ● test work depends on build work: "Test authentication" depends on "Build authentication"
+   Confidence: HIGH
+
+COMMON ERRORS
+  ✗ Error: No dependency suggestions found
+    Fix: No patterns detected (sequential IDs, build/test pairs, infrastructure keywords). Suggestions require consistent naming conventions.
+
+  ✗ Error: work-units.json not found
+    Fix: Run: fspec init to create work-units.json file
+
+  ✗ Error: Invalid work-units.json format
+    Fix: Check for JSON syntax errors in spec/work-units.json
+
+RELATED COMMANDS
+  fspec add-dependency
+  fspec query-bottlenecks
+  fspec query-orphans
+  fspec remove-dependency
+  fspec show-work-unit
+  fspec validate-dependencies
+
+NOTES
+  • Suggestion Rules:
+  •   1. Sequential IDs: AUTH-002 depends on AUTH-001 (same prefix)
+  •   2. Build/Test pairs: "Test X" depends on "Build X"
+  •   3. Infrastructure-first: Features depend on schema/migration work
+  •   4. Same epic: Suggests relatesTo (low confidence)
+  •   5. Circular dependencies are automatically filtered out
+  • Confidence levels:
+  •   HIGH: Build/test pairs, infrastructure patterns (apply immediately)
+  •   MEDIUM: Sequential IDs (review before applying)
+  • Existing dependencies are excluded from suggestions
+  • Specific patterns (build/test, infrastructure) override generic sequential suggestions
+

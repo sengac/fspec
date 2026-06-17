@@ -73,7 +73,7 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
     })?;
     let data: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
         file: "work-units.json".to_string(),
-        reason: e.to_string(),
+        reason: crate::io::json_error::parse_json_reason(&raw, &e),
     })?;
 
     let mut errors: Vec<String> = Vec::new();

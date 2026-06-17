@@ -14,6 +14,11 @@
 //! `cargo test -p codelet-napi --test session_bindings_smoke`
 //! resolves to a real cargo test target.
 
+// Under `--all-features` cargo enables `noop` (which cfg-removes the
+// `session_bindings` module) AND `__full_runtime` (which selects this test
+// target). Those features are mutually exclusive by design, so compile this
+// test to empty whenever `noop` is active.
+#![cfg(not(feature = "noop"))]
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 

@@ -120,7 +120,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut foundation: Value =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: file_name.to_string(),
-            reason: e.to_string(),
+            reason: crate::io::json_error::parse_json_reason(&raw, &e),
         })?;
 
     let root_obj = match foundation.as_object_mut() {

@@ -1,0 +1,69 @@
+
+DISCOVER-EVENT-STORM
+Emit Event Storm guidance for domain discovery through collaborative workshop
+
+WHEN TO USE
+  Use BEFORE Example Mapping when domain complexity is high, events/commands/policies are unclear, or you need to model complex business workflows collaboratively.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit should be in specifying status
+  • High domain complexity or unclear requirements
+
+USAGE
+  fspec discover-event-storm <workUnitId>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID to conduct Event Storm discovery on
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Run discover-event-storm BEFORE Example Mapping for complex domains
+  • Follow free-form collaborative session (not field-by-field like discover-foundation)
+  • Capture artifacts using add-domain-event, add-command, add-policy, add-hotspot
+  • Stop when shared understanding is reached (~25 minutes)
+  • Transform to Example Mapping: fspec generate-example-mapping-from-event-storm
+
+EXAMPLES
+  1. Start Event Storm discovery session for authentication work unit
+  $ fspec discover-event-storm AUTH-001
+  ✓ Event Storm guidance emitted
+
+Follow the guidance to capture domain events, commands, policies, and hotspots.
+
+  2. Start Event Storm discovery for checkout feature
+  $ fspec discover-event-storm CHECKOUT-001
+  ✓ Event Storm guidance emitted
+
+COMMON ERRORS
+  ✗ Work unit not found
+    Fix: Ensure work unit exists: fspec show-work-unit <id>
+
+  ✗ Work unit not in specifying status
+    Fix: Move work unit to specifying: fspec update-work-unit-status <id> specifying
+
+  ✗ spec/work-units.json not found
+    Fix: Initialize fspec first: fspec init
+
+RELATED COMMANDS
+  fspec add-domain-event
+  fspec add-command
+  fspec add-policy
+  fspec add-hotspot
+  fspec add-aggregate
+  fspec add-bounded-context
+  fspec add-external-system
+  fspec show-event-storm
+  fspec generate-example-mapping-from-event-storm
+
+NOTES
+  • Event Storm is a workshop technique invented by Alberto Brandolini
+  • Use sticky notes metaphor: orange (events), blue (commands), purple (policies), red (hotspots)
+  • Two levels: Big Picture (foundation) and Process Modeling (work unit)
+  • Guidance emitted as system-reminder for AI agents
+  • Free-form session - use commands in any order as needed
+  • Stop when: all major events captured, commands identified, policies documented, hotspots recorded
+

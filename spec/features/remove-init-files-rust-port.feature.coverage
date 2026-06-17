@@ -1,0 +1,224 @@
+{
+  "scenarios": [
+    {
+      "name": "Removes agent files and config when the config names claude",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "lines": "63-112",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detects a toml agent by its detection directory when no config is present",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "lines": "114-145",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "keepConfig=true preserves spec/fspec-config.json",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "lines": "147-184",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Errors when no agent installation is detected",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "lines": "186-203",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Force removal is idempotent when an agent file is already absent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "lines": "205-232",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Errors when the config names an unknown agent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "lines": "234-252",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "lines": [
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Does not touch project files",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_init_files.rs",
+          "lines": "254-283",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_init_files.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/remove_init_files.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/remove_init_files.rs"
+    ],
+    "totalLinesCovered": 311
+  }
+}

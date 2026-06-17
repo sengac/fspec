@@ -1,0 +1,68 @@
+
+CHECKPOINT
+Create a manual checkpoint for a work unit, capturing all file changes (including untracked files) as a git stash. Checkpoints enable safe experimentation by providing rollback points you can restore later.
+
+WHEN TO USE
+  Use checkpoints before trying experimental approaches or risky refactoring, creating a baseline before multiple experiments, saving progress before switching contexts, or before making changes you might want to revert.
+
+PREREQUISITES
+  • Work unit must exist (created with 'fspec create-story', 'fspec create-bug', or 'fspec create-task')
+  • Working directory should have uncommitted changes to capture
+  • Project must be a git repository
+
+USAGE
+  fspec checkpoint <workUnitId> <checkpointName>
+
+ARGUMENTS
+  <workUnitId> (required)
+    The ID of the work unit to create a checkpoint for (e.g., AUTH-001, UI-002)
+  <checkpointName> (required)
+    User-provided name for the checkpoint (e.g., "baseline", "before-refactor"). Name should be descriptive of why you're creating this checkpoint.
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  Working on implementation: Make changes to code,Create checkpoint: fspec checkpoint AUTH-001 baseline,Try approach A: Make experimental changes,Doesn't work: fspec restore-checkpoint AUTH-001 baseline,Try approach B: Make different changes,Works: Continue with approach B,Cleanup: fspec cleanup-checkpoints AUTH-001 --keep-last 5
+
+EXAMPLES
+  1. Create checkpoint before refactoring
+  $ fspec checkpoint AUTH-001 before-refactor
+  ✓ Created checkpoint "before-refactor" for AUTH-001
+  Captured 3 file(s)
+
+  2. Create baseline for experiments
+  $ fspec checkpoint UI-002 baseline
+  ✓ Created checkpoint "baseline" for UI-002
+  Captured 5 file(s)
+
+  3. Create checkpoint before risky change
+  $ fspec checkpoint BUG-003 working-version
+  ✓ Created checkpoint "working-version" for BUG-003
+  Captured 2 file(s)
+
+COMMON ERRORS
+  ✗ Work unit 'AUTH-001' does not exist
+    Fix: undefined
+
+  ✗ Working directory is clean (no changes to checkpoint)
+    Fix: undefined
+
+  ✗ Not a git repository
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec restore-checkpoint - Restore a checkpoint
+  fspec fspec list-checkpoints - List all checkpoints
+  fspec fspec cleanup-checkpoints - Delete old checkpoints
+  fspec fspec update-work-unit-status - Auto-creates checkpoints
+
+NOTES
+  • Checkpoints capture ALL changes including untracked files (respecting .gitignore)
+  • Checkpoints persist until explicitly deleted (no automatic expiration)
+  • Manual checkpoints are marked with 📌 emoji in listings
+  • Automatic checkpoints (from status changes) are marked with 🤖 emoji
+  • Checkpoint names should be descriptive (avoid generic names like "temp", "test")
+  • Use cleanup-checkpoints to manage checkpoint retention
+  • Checkpoints use git stash with format: fspec-checkpoint:{workUnitId}:{checkpointName}:{timestamp}
+

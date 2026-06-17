@@ -171,3 +171,18 @@ pub mod generate_coverage;
 pub mod generate_summary_report;
 pub mod import_example_map;
 pub mod link_coverage;
+
+// Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status commands.
+// (checkpoint trio RPC-202/203/288 help configs registered separately once W1b lands)
+pub mod auto_advance;
+pub mod discover_event_storm;
+pub mod generate_example_mapping_from_event_storm;
+pub mod remove_init_files;
+pub mod suggest_dependencies;
+pub mod validate_spec_alignment;
+pub mod workflow_automation;
+
+// Batch 18 (2026-06-16) — checkpoint trio (RPC-202/203/288).
+pub mod checkpoint;
+pub mod cleanup_checkpoints;
+pub mod restore_checkpoint;

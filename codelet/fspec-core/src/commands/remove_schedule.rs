@@ -107,7 +107,7 @@ fn load_or_default(path: &Path) -> Result<SchedulesData, FspecCoreError> {
     match std::fs::read_to_string(path) {
         Ok(raw) => serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "schedules.json".to_string(),
-            reason: e.to_string(),
+            reason: crate::io::json_error::parse_json_reason(&raw, &e),
         }),
         Err(_) => Ok(SchedulesData::default()),
     }

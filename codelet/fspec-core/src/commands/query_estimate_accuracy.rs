@@ -234,7 +234,8 @@ fn read_work_units(project_root: &Path) -> Result<RawData, FspecCoreError> {
     serde_json::from_str::<RawData>(&raw).map_err(|e| FspecCoreError::InvalidArgs {
         command: "query-estimate-accuracy",
         reason: format!(
-            "Failed to query estimate accuracy: Failed to parse work-units.json: {e}. The file may be corrupted or contain invalid JSON."
+            "Failed to query estimate accuracy: {}",
+            crate::io::json_error::parse_json_diagnostic("work-units.json", &raw, &e)
         ),
     })
 }

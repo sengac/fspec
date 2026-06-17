@@ -502,6 +502,34 @@ fn run_ported(
             "import-example-map" => {
                 commands::import_example_map::run(args_json, project_root).await
             }
+            // Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
+            "discover-event-storm" => {
+                commands::discover_event_storm::run(args_json, project_root).await
+            }
+            "generate-example-mapping-from-event-storm" => {
+                commands::generate_example_mapping_from_event_storm::run(args_json, project_root)
+                    .await
+            }
+            "suggest-dependencies" => {
+                commands::suggest_dependencies::run(args_json, project_root).await
+            }
+            "validate-spec-alignment" => {
+                commands::validate_spec_alignment::run(args_json, project_root).await
+            }
+            "remove-init-files" => {
+                commands::remove_init_files::run(args_json, project_root).await
+            }
+            "auto-advance" => commands::auto_advance::run(args_json, project_root).await,
+            "workflow-automation" => {
+                commands::workflow_automation::run(args_json, project_root).await
+            }
+            "checkpoint" => commands::checkpoint::run(args_json, project_root).await,
+            "cleanup-checkpoints" => {
+                commands::cleanup_checkpoints::run(args_json, project_root).await
+            }
+            "restore-checkpoint" => {
+                commands::restore_checkpoint::run(args_json, project_root).await
+            }
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -566,12 +594,11 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "answer-question" — ported (RPC-196, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "audit-coverage" — ported (RPC-197, Batch 17). Handled by `run_ported`.
-            "auto-advance" => commands::auto_advance::run(args_json).await,
-            // "board" — ported (RPC-199, Batch 17). Handled by `run_ported`.
+            // "auto-advance" — ported (RPC-198, Batch 18). Handled by `run_ported`.
             "bootstrap" => commands::bootstrap::run(args_json).await,
             // "check" — ported (RPC-201, Batch 17). Handled by `run_ported`.
-            "checkpoint" => commands::checkpoint::run(args_json).await,
-            "cleanup-checkpoints" => commands::cleanup_checkpoints::run(args_json).await,
+            // "checkpoint" — ported (RPC-202, Batch 18). Handled by `run_ported`.
+            // "cleanup-checkpoints" — ported (RPC-203, Batch 18). Handled by `run_ported`.
             // "clear-dependencies" — ported (RPC-204, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "clear-virtual-hooks" — ported (RPC-205, Batch 10). Handled by `run_ported`
@@ -603,16 +630,14 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "delete-work-unit" — ported (RPC-223, Batch 12). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "dependencies" — ported (RPC-224, Batch 14). Handled by `run_ported`.
-            "discover-event-storm" => commands::discover_event_storm::run(args_json).await,
+            // "discover-event-storm" — ported (RPC-225, Batch 18). Handled by `run_ported`.
             "discover-foundation" => commands::discover_foundation::run(args_json).await,
             // "export-dependencies" — ported (RPC-227, Batch 12). Handled by `run_ported`.
             // "export-example-map" — ported (RPC-228, Batch 12). Handled by `run_ported`.
             // "export-work-units" — ported (RPC-229, Batch 12). Handled by `run_ported`.
             // "format" — ported (RPC-230, Batch 17). Handled by `run_ported`.
             // "generate-coverage" — ported (RPC-231, Batch 17). Handled by `run_ported`.
-            "generate-example-mapping-from-event-storm" => {
-                commands::generate_example_mapping_from_event_storm::run(args_json).await
-            }
+            // "generate-example-mapping-from-event-storm" — ported (RPC-232, Batch 18). Handled by `run_ported`.
             // "generate-foundation-md" — ported (RPC-233). Handled by `run_ported`.
             "generate-scenarios" => commands::generate_scenarios::run(args_json).await,
             // "generate-summary-report" — ported (RPC-235, Batch 17). Handled by `run_ported`.
@@ -685,7 +710,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "remove-foundation-bounded-context" — ported (RPC-274, Batch 13). Handled by `run_ported`.
             // "remove-hook" — ported (RPC-275, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-init-files" => commands::remove_init_files::run(args_json).await,
+            // "remove-init-files" — ported (RPC-276, Batch 18). Handled by `run_ported`.
             // "remove-persona" — ported (RPC-277, Batch 13). Handled by `run_ported`.
             // "remove-question" — ported (RPC-278, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -704,7 +729,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "research" => commands::research::run(args_json).await,
             // "restore-architecture-note" — ported (RPC-287, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "restore-checkpoint" => commands::restore_checkpoint::run(args_json).await,
+            // "restore-checkpoint" — ported (RPC-288, Batch 18). Handled by `run_ported`.
             // "restore-example" — ported (RPC-289, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "restore-question" — ported (RPC-290, Batch 9). Handled by `run_ported`
@@ -739,7 +764,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "show-work-unit" — ported (RPC-308). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "suggest-dependencies" => commands::suggest_dependencies::run(args_json).await,
+            // "suggest-dependencies" — ported (RPC-309, Batch 18). Handled by `run_ported`.
             // "tag-stats" — ported (RPC-310). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "unlink-coverage" — ported (RPC-311, Batch 16). Handled by `run_ported`.
@@ -758,10 +783,10 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "validate" — ported (RPC-320, Batch 16). Handled by `run_ported`.
             // "validate-foundation-schema" — ported (RPC-321, Batch 16). Handled by `run_ported`.
             // "validate-hooks" — ported (RPC-322, Batch 16). Handled by `run_ported`.
-            "validate-spec-alignment" => commands::validate_spec_alignment::run(args_json).await,
+            // "validate-spec-alignment" — ported (RPC-323, Batch 18). Handled by `run_ported`.
             // "validate-tags" — ported (RPC-324, Batch 16). Handled by `run_ported`.
             // "validate-work-units" — ported (RPC-325, Batch 16). Handled by `run_ported`.
-            "workflow-automation" => commands::workflow_automation::run(args_json).await,
+            // "workflow-automation" — ported (RPC-326, Batch 18). Handled by `run_ported`.
             // Unreachable: canonical lookup already validated the
             // command exists, and every canonical entry has a stub.
             other => Err(FspecCoreError::UnknownCommand {

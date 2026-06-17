@@ -157,7 +157,7 @@ fn scenario_cli_format_json_prints_canonical_empty_stats() {
     }
 
     // @step Then the parsed JSON workUnits is the empty array
-    assert_eq!(parsed["workUnits"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(parsed["workUnits"].as_array().map(Vec::len), Some(0));
 
     // @step Then the parsed JSON has workUnitsWithRules=0, workUnitsWithExamples=0, workUnitsWithQuestions=0, workUnitsWithAssumptions=0
     assert_eq!(parsed["workUnitsWithRules"].as_u64(), Some(0));
@@ -298,7 +298,7 @@ fn scenario_returns_empty_stats_when_work_units_auto_created_in_empty_workspace(
     let data: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
 
     // @step Then the returned JSON has workUnits=[] (empty array)
-    assert_eq!(data["workUnits"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(0));
 
     // @step Then the returned JSON has workUnitsWithRules=0, workUnitsWithExamples=0, workUnitsWithQuestions=0, workUnitsWithAssumptions=0
     assert_eq!(data["workUnitsWithRules"].as_u64(), Some(0));
@@ -442,7 +442,7 @@ fn scenario_work_unit_id_filter_narrows_to_single_work_unit() {
     let data: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-001'
-    assert_eq!(data["workUnits"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
     assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-001"));
 
     // @step Then the returned JSON has workUnitsWithRules=1 and workUnitsWithQuestions=0
@@ -500,7 +500,7 @@ fn scenario_has_questions_true_keeps_only_units_with_questions() {
     let data: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-001'
-    assert_eq!(data["workUnits"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
     assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-001"));
 }
 
@@ -524,7 +524,7 @@ fn scenario_has_questions_false_keeps_only_units_with_zero_questions() {
     let data: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-002'
-    assert_eq!(data["workUnits"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
     assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-002"));
 }
 
@@ -548,7 +548,7 @@ fn scenario_questions_for_alice_keeps_only_units_mentioning_alice() {
     let data: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-001'
-    assert_eq!(data["workUnits"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
     assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-001"));
 }
 

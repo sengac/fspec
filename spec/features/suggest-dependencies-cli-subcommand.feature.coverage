@@ -1,0 +1,270 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes suggest-dependencies as a subcommand and prints --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "lines": "61-86",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI without options prints the empty sentinel against an empty workspace",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "lines": "88-104",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI with --output=json prints empty suggestions array",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "lines": "106-124",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI text output lists a sequential suggestion",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "lines": "126-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "lines": "151-171",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "lines": "173-229",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "suggest-dependencies --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_suggest_dependencies.rs",
+          "lines": "233-257",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/suggest_dependencies.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_suggest_dependencies.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/suggest_dependencies.rs"
+    ],
+    "totalLinesCovered": 331
+  }
+}

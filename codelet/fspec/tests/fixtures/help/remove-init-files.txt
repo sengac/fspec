@@ -1,0 +1,42 @@
+
+REMOVE-INIT-FILES
+Remove fspec initialization files for installed agents
+
+WHEN TO USE
+  Use when you want to uninstall fspec or switch to a different agent. Auto-detects installed agents and removes their configuration files.
+
+PREREQUISITES
+  • At least one agent must be installed (detected via spec/fspec-config.json or file detection)
+
+USAGE
+  fspec remove-init-files
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  detect-agent → remove-files → confirmation,Common pattern: fspec remove-init-files (then fspec init --agent=newagent to switch)
+
+EXAMPLES
+  1. Remove fspec init files for detected agent
+  $ fspec remove-init-files
+  ✓ Successfully removed fspec init files
+  - Removed spec/CLAUDE.md
+  - Removed .claude/commands/fspec.md
+  - Removed spec/fspec-config.json
+
+  2. When no agent detected
+  $ fspec remove-init-files
+  ✗ No fspec agent installation detected. Nothing to remove.
+
+RELATED COMMANDS
+  fspec init
+
+NOTES
+  • Auto-detects installed agent using spec/fspec-config.json or file detection
+  • Removes agent-specific files: spec/<AGENT>.md and slash command files
+  • Also removes spec/fspec-config.json
+  • Silently skips files that are already deleted (idempotent behavior)
+  • Does NOT remove spec/features/, spec/work-units.json, or other project files
+  • Use fspec init to reinstall after removal
+

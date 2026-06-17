@@ -89,7 +89,7 @@ fn generate(project_root: &Path, output_path: Option<&str>) -> Result<String, Fs
     let foundation: Value =
         serde_json::from_str(&content).map_err(|e| FspecCoreError::ParseJson {
             file: "foundation.json".to_string(),
-            reason: e.to_string(),
+            reason: crate::io::json_error::parse_json_reason(&content, &e),
         })?;
 
     // Validate foundation.json against the bundled generic-foundation schema

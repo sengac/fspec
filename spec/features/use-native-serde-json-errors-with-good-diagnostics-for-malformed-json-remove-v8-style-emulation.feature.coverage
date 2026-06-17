@@ -1,0 +1,196 @@
+{
+  "scenarios": [
+    {
+      "name": "Shared funnel surfaces a caret-pointed diagnostic naming the file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "lines": "47-81",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/io/locked_file.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "auto-advance keeps its outer wrapper but drops the fabricated V8 prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "lines": "83-113",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/auto_advance.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single-line input places the caret under the exact error column",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "lines": "115-136",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/io/json_error.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lenient parse sites stay silent on malformed input",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "lines": "138-174",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/list_hooks.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A serde error with no location falls back to the bare message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/json_parse_diagnostics.rs",
+          "lines": "176-193",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/io/json_error.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/json_parse_diagnostics.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/io/locked_file.rs",
+      "codelet/fspec-core/src/commands/auto_advance.rs",
+      "codelet/fspec-core/src/io/json_error.rs",
+      "codelet/fspec-core/src/commands/list_hooks.rs"
+    ],
+    "totalLinesCovered": 240
+  }
+}

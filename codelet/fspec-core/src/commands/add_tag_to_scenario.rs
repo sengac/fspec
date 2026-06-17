@@ -321,7 +321,8 @@ fn find_scenario<'a>(feature: &'a gherkin::Feature, name: &str) -> Option<&'a gh
 fn load_registered_tags(project_root: &Path) -> Result<Vec<String>, String> {
     let path = project_root.join("spec").join("tags.json");
     let body = std::fs::read_to_string(&path).map_err(|e| format!("{}: {}", path.display(), e))?;
-    let v: Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
+    let v: Value = serde_json::from_str(&body)
+        .map_err(|e| crate::io::json_error::parse_json_reason(&body, &e))?;
     let mut tags: Vec<String> = Vec::new();
     if let Some(cats) = v.get("categories").and_then(Value::as_array) {
         for cat in cats {

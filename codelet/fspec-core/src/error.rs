@@ -50,8 +50,14 @@ pub enum FspecCoreError {
     /// JSON parse failure for one of the canonical fspec state files. The
     /// message MUST contain `"Failed to parse <file>"` for parity with the
     /// TypeScript implementation (`src/utils/ensure-files.ts:49-52`).
+    ///
+    /// RPC-334: the corruption-guidance sentence now leads and the `reason`
+    /// (typically a caret-pointed snippet rendered by
+    /// [`crate::io::json_error`]) trails on its own line(s), so the multi-line
+    /// diagnostic reads cleanly. The substrings `"Failed to parse <file>"` and
+    /// `"The file may be corrupted or contain invalid JSON."` are preserved.
     #[error(
-        "Failed to parse {file}: {reason}. The file may be corrupted or contain invalid JSON."
+        "Failed to parse {file}: The file may be corrupted or contain invalid JSON.\n{reason}"
     )]
     ParseJson { file: String, reason: String },
 
@@ -84,4 +90,17 @@ pub enum FspecCoreError {
     /// match the TS reference byte-for-byte.
     #[error("{0}")]
     Message(String),
+
+    /// JSON parse failure that the CLI bridge surfaces as an uncaught
+    /// `SyntaxError` (parity with the TypeScript `JSON.parse` throwing a
+    /// `SyntaxError` that crashes the process and prints `SyntaxError: <msg>`).
+    /// Unlike [`FspecCoreError::ParseJson`], the Display carries NO
+    /// `"Failed to parse <file>"` framing — the wrapped string IS the message
+    /// body — because the command that uses this path (`workflow-automation`)
+    /// lets the SyntaxError propagate uncaught. RPC-334: the body is the
+    /// caret-pointed diagnostic snippet from [`crate::io::json_error`]; the
+    /// `SyntaxError:` stream prefix (applied by the bridge by matching on this
+    /// variant) is the parity-relevant part we keep.
+    #[error("{0}")]
+    JsonSyntax(String),
 }

@@ -123,7 +123,7 @@ fn scenario_cli_json_prints_2_space_json_envelope_to_stdout() {
     assert!(parsed.get("coverage").is_some(), "missing coverage");
 
     // @step And the JSON.workUnits array has 2 elements
-    assert_eq!(parsed["workUnits"].as_array().map(|a| a.len()), Some(2));
+    assert_eq!(parsed["workUnits"].as_array().map(Vec::len), Some(2));
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -147,11 +147,11 @@ fn scenario_cli_show_coverage_includes_deduplicated_coverage_file_paths() {
     let parsed: Value = serde_json::from_str(stdout.trim()).expect("stdout must be JSON");
 
     // @step And the JSON.coverage array has one entry
-    assert_eq!(parsed["coverage"].as_array().map(|a| a.len()), Some(1));
+    assert_eq!(parsed["coverage"].as_array().map(Vec::len), Some(1));
 
     // @step And the JSON coverage[0].testFiles array has one element
     assert_eq!(
-        parsed["coverage"][0]["testFiles"].as_array().map(|a| a.len()),
+        parsed["coverage"][0]["testFiles"].as_array().map(Vec::len),
         Some(1)
     );
 }

@@ -81,7 +81,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?;
         serde_json::from_str::<Value>(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "foundation.json.draft".to_string(),
-            reason: e.to_string(),
+            reason: crate::io::json_error::parse_json_reason(&raw, &e),
         })?
     } else {
         ensure_foundation_file(project_root)?

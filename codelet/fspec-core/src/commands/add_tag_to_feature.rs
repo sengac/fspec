@@ -281,7 +281,8 @@ fn is_regular_tag(tag: &str) -> bool {
 fn load_registered_tags(project_root: &Path) -> Result<HashSet<String>, String> {
     let path = project_root.join("spec").join("tags.json");
     let body = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
-    let parsed: Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
+    let parsed: Value = serde_json::from_str(&body)
+        .map_err(|e| crate::io::json_error::parse_json_reason(&body, &e))?;
     let mut out = HashSet::new();
     if let Some(cats) = parsed.get("categories").and_then(Value::as_array) {
         for cat in cats {

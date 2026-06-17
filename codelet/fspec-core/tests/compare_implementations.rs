@@ -89,7 +89,7 @@ fn scenario_dispatcher_summarises_work_units_carrying_the_tag() {
 
     // @step Then the dispatcher returns workUnits with length 2
     assert_eq!(
-        data["workUnits"].as_array().map(|a| a.len()),
+        data["workUnits"].as_array().map(Vec::len),
         Some(2),
         "got data: {data}"
     );
@@ -99,12 +99,12 @@ fn scenario_dispatcher_summarises_work_units_carrying_the_tag() {
 
     // @step And the namingConventionDifferences array is empty
     assert_eq!(
-        data["namingConventionDifferences"].as_array().map(|a| a.len()),
+        data["namingConventionDifferences"].as_array().map(Vec::len),
         Some(0)
     );
 
     // @step And the coverage array is empty
-    assert_eq!(data["coverage"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["coverage"].as_array().map(Vec::len), Some(0));
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -128,7 +128,7 @@ fn scenario_dispatcher_includes_deduplicated_coverage_file_paths() {
 
     // @step Then the dispatcher returns coverage with one entry
     assert_eq!(
-        data["coverage"].as_array().map(|a| a.len()),
+        data["coverage"].as_array().map(Vec::len),
         Some(1),
         "got data: {data}"
     );
@@ -165,13 +165,13 @@ fn scenario_dispatcher_returns_empty_work_units_when_no_tag_matches() {
 
     // @step Then the dispatcher returns workUnits with length 0
     assert_eq!(
-        data["workUnits"].as_array().map(|a| a.len()),
+        data["workUnits"].as_array().map(Vec::len),
         Some(0),
         "got data: {data}"
     );
 
     // @step And the coverage array is empty
-    assert_eq!(data["coverage"].as_array().map(|a| a.len()), Some(0));
+    assert_eq!(data["coverage"].as_array().map(Vec::len), Some(0));
 }
 
 // ─────────────────────────────────────────────────────────────────────────

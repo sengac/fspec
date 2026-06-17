@@ -98,7 +98,7 @@ fn load_work_units(project_root: &Path) -> Result<WorkUnitsData, FspecCoreError>
     })?;
     serde_json::from_str::<WorkUnitsData>(&raw).map_err(|e| FspecCoreError::ParseJson {
         file: "work-units.json".to_string(),
-        reason: e.to_string(),
+        reason: crate::io::json_error::parse_json_reason(&raw, &e),
     })
 }
 

@@ -167,7 +167,7 @@ fn scenario_cli_prints_json_array_of_active_items_on_success() {
     // @step Then stdout parses as a JSON array of length 2
     let parsed: serde_json::Value = serde_json::from_str(&stdout)
         .unwrap_or_else(|e| panic!("stdout must be valid JSON: {e}\nstdout:\n{stdout}"));
-    assert_eq!(parsed.as_array().map(|a| a.len()), Some(2));
+    assert_eq!(parsed.as_array().map(Vec::len), Some(2));
 
     // @step Then the parsed array[0] has id=0
     assert_eq!(parsed[0]["id"].as_u64(), Some(0));
@@ -219,7 +219,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step Then the DispatchResult.data parses as a JSON array of length 1
     let parsed: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert_eq!(parsed.as_array().map(|a| a.len()), Some(1));
+    assert_eq!(parsed.as_array().map(Vec::len), Some(1));
 
     // @step Then the CLI bridge module codelet/fspec/src/show_event_storm.rs contains NO inline filter or rendering logic — its only computation is JSON arg marshalling and stdout printing
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/show_event_storm.rs");
@@ -385,7 +385,7 @@ fn scenario_returns_active_items_as_pretty_printed_json_array() {
 
     // @step Then the DispatchResult.data parses as a JSON array of length 2
     let parsed: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert_eq!(parsed.as_array().map(|a| a.len()), Some(2));
+    assert_eq!(parsed.as_array().map(Vec::len), Some(2));
 
     // @step Then the parsed array[0] has id=0 and type='event'
     assert_eq!(parsed[0]["id"].as_u64(), Some(0));
@@ -426,7 +426,7 @@ fn scenario_filters_out_soft_deleted_items() {
 
     // @step Then the DispatchResult.data parses as a JSON array of length 2
     let parsed: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert_eq!(parsed.as_array().map(|a| a.len()), Some(2));
+    assert_eq!(parsed.as_array().map(Vec::len), Some(2));
 
     // @step Then the parsed array[0] has id=0
     assert_eq!(parsed[0]["id"].as_u64(), Some(0));
@@ -458,7 +458,7 @@ fn scenario_treats_missing_deleted_field_as_retained() {
 
     // @step Then the DispatchResult.data parses as a JSON array of length 1
     let parsed: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert_eq!(parsed.as_array().map(|a| a.len()), Some(1));
+    assert_eq!(parsed.as_array().map(Vec::len), Some(1));
 }
 
 #[test]
@@ -484,7 +484,7 @@ fn scenario_returns_empty_array_when_event_storm_items_empty() {
 
     // @step Then the DispatchResult.data parses as the empty JSON array
     let parsed: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert_eq!(parsed.as_array().map(|a| a.len()), Some(0));
+    assert_eq!(parsed.as_array().map(Vec::len), Some(0));
 }
 
 #[test]

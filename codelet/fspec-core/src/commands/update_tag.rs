@@ -95,7 +95,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut tags_data: TagsData =
         serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
             file: "tags.json".to_string(),
-            reason: e.to_string(),
+            reason: crate::io::json_error::parse_json_reason(&raw, &e),
         })?;
 
     // ---- Locate the tag (linear scan, case-sensitive exact-match) ----

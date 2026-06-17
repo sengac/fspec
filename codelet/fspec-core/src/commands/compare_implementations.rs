@@ -63,7 +63,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         ))
     })?;
     let data: Value = serde_json::from_str(&raw).map_err(|e| {
-        FspecCoreError::Message(format!("Failed to query work units: {e}"))
+        FspecCoreError::Message(format!(
+            "Failed to query work units: {}",
+            crate::io::json_error::parse_json_reason(&raw, &e)
+        ))
     })?;
 
     // Filter by tag and project down to `{tags}` (TS: wu => ({ tags })).

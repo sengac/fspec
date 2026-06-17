@@ -67,7 +67,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 let count = value
                     .get("workUnits")
                     .and_then(Value::as_array)
-                    .map(|a| a.len())
+                    .map(Vec::len)
                     .unwrap_or(0);
                 println!("✓ Compared {count} work units tagged with {}", args.tag);
             }

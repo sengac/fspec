@@ -110,7 +110,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let coverage: CoverageFile =
         serde_json::from_str(&content).map_err(|e| FspecCoreError::InvalidArgs {
             command: "audit-coverage",
-            reason: format!("invalid JSON in coverage file: {e}"),
+            reason: format!(
+                "invalid JSON in coverage file: {}",
+                crate::io::json_error::parse_json_reason(&content, &e)
+            ),
         })?;
 
     // Collect every referenced file (test + impl), recording which ones are

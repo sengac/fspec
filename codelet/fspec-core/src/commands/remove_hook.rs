@@ -88,7 +88,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     })?;
     let parsed: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::ParseJson {
         file: "fspec-hooks.json".to_string(),
-        reason: e.to_string(),
+        reason: crate::io::json_error::parse_json_reason(&raw, &e),
     })?;
 
     // Top-level must be a JSON object — preserve its key insertion order.
