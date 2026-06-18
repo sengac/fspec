@@ -23,6 +23,7 @@
 //!     to stderr prefixed with `✗ Init failed:`.
 
 use std::env;
+use std::io::IsTerminal;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -30,6 +31,7 @@ use codelet_fspec_core::commands::init;
 use serde_json::{json, Value};
 
 use crate::common::render_core_error;
+use crate::init_selector::{run_interactive_selector, AgentSelectorState};
 
 /// Args mirrored from the TS Commander.js registration for `init`: the
 /// repeatable `--agent <agent>` option collected into a list.
@@ -43,7 +45,26 @@ pub struct CliArgs {
 pub async fn run(args: CliArgs) -> Result<u8> {
     let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
-    let args_json = json!({ "agent": args.agents }).to_string();
+    // Interactive mode: no --agent flag. On a real TTY, show the ratatui agent
+    // selector (parity with the Ink `AgentSelector`); off a TTY, fall through to
+    // fspec_core which returns the exact TS TTY-guard error. The LLM dispatcher
+    // never reaches this branch — it calls fspec_core::init::run directly.
+    let mut agents = args.agents;
+    if agents.is_empty() && std::io::stdin().is_terminal() {
+        let available = init::available_agents();
+        let detected = init::detect_agents(&project_root);
+        let state = AgentSelectorState::new(available, &detected);
+        match run_interactive_selector(state).context("run interactive agent selector")? {
+            Some(selected) => agents = vec![selected],
+            None => {
+                // Esc / q / Ctrl-C — parity with result.cancelled handling.
+                println!("Init cancelled");
+                return Ok(0);
+            }
+        }
+    }
+
+    let args_json = json!({ "agent": agents }).to_string();
 
     match init::run(&args_json, &project_root).await {
         Ok(rendered) => {
@@ -56,7 +77,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 return Ok(0);
             }
 
-            let agent_names = args.agents.join(", ");
+            let agent_names = agents.join(", ");
             println!("✓ Installed fspec for {agent_names}");
 
             if let Some(files) = data["filesInstalled"].as_array() {

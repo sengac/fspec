@@ -193,6 +193,7 @@ mod discover_foundation;
 mod update_work_unit_status;
 mod generate_scenarios;
 mod init;
+mod init_selector;
 mod research;
 mod bootstrap;
 mod report_bug_to_github;
