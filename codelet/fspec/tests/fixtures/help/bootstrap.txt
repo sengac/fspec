@@ -1,0 +1,47 @@
+
+BOOTSTRAP
+Load complete fspec documentation and workflow guidance for AI agents. Internally calls all help section functions to provide comprehensive context.
+
+WHEN TO USE
+  Use this command at the start of EVERY fspec session to load complete workflow documentation into AI agent context. Required before using any fspec commands. This is typically called automatically by the /fspec slash command in Claude Code.
+
+PREREQUISITES
+  • fspec must be installed and accessible
+  • Run from project root directory
+  • Foundation file (spec/foundation.json) should exist (will prompt to create if missing)
+  • Tool configuration recommended (fspec configure-tools)
+
+USAGE
+  fspec bootstrap [options]
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  1. Start session: fspec bootstrap
+2. Load context into AI agent memory
+3. Begin work: fspec board (view Kanban)
+4. Follow ACDD workflow: discovery → specifying → testing → implementing → validating → done
+
+EXAMPLES
+  1. Load complete fspec documentation
+  $ fspec bootstrap
+  # fspec Command - Kanban-Based Project Management
+
+[Complete workflow documentation output...]
+
+Step 1: Load fspec Context
+...
+
+RELATED COMMANDS
+  fspec configure-tools
+  fspec discover-foundation
+  fspec board
+  fspec help
+
+NOTES
+  • Outputs comprehensive documentation by calling: getSpecsHelpContent(), getWorkHelpContent(), getDiscoveryHelpContent(), getMetricsHelpContent(), getSetupHelpContent(), getHooksHelpContent()
+  • Typically invoked by /fspec slash command automatically
+  • Output is designed for AI agent context loading, not human reading
+  • Includes ACDD workflow, Example Mapping guidance, and all command documentation
+

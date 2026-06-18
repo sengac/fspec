@@ -1,0 +1,137 @@
+
+REVERSE
+Interactive reverse ACDD strategy planning command. Analyzes project state, detects gaps (missing features, tests, coverage), suggests strategic approaches, and guides AI step-by-step through gap-filling workflow.
+
+WHEN TO USE
+  Use this command when: 1) You have an existing codebase without fspec specifications, 2) Features exist but tests are missing, 3) Tests exist but feature files are missing, 4) Coverage mappings are incomplete. This is a planning/guidance tool that helps AI choose the right reverse ACDD strategy.
+
+WHEN NOT TO USE
+  Do not use for: 1) New projects (use forward ACDD: create-feature → tests → implementation), 2) Executing reverse ACDD work directly (this command only guides, AI must execute using other fspec commands). Not for projects already using full ACDD workflow.
+
+PREREQUISITES
+  • Project must have at least some code (tests, features, or implementation)
+  • For Strategy A: Test files must exist
+  • For Strategy B: Feature files must exist
+  • For Strategy C: Both tests and features must exist
+  • For Strategy D: Implementation files must exist
+
+USAGE
+  fspec reverse [options]
+
+OPTIONS
+  --strategy=<A|B|C|D>
+    Choose reverse ACDD strategy: A=Spec Gap Filling (tests → features), B=Test Gap Filling (features → tests), C=Coverage Mapping (link existing), D=Full Reverse ACDD (code → everything)
+  --continue
+    Continue to next step in current strategy execution. Increments step counter and emits guidance for next file/scenario.
+  --status
+    Show current session status: phase, chosen strategy, progress (step N of M), gaps detected, files remaining.
+  --reset
+    Delete session file and start fresh. Use when you want to abandon current session and re-analyze project.
+  --complete
+    Mark session as complete and delete session file. Validates all steps finished before completing.
+  --dry-run
+    Preview gap analysis without creating session file. Shows what would be detected and suggested strategy.
+
+COMMON PATTERNS
+  • Strategy A (Spec Gap Filling): Tests exist → Create features from test assertions → Link coverage with --skip-validation
+  • Strategy B (Test Gap Filling): Features exist → Create test skeletons → Link coverage with --skip-validation
+  • Strategy C (Coverage Mapping): Both exist → Link existing tests to scenarios using fspec link-coverage
+  • Strategy D (Full Reverse ACDD): Raw code only → Analyze implementation → Create features → Create tests → Create work units
+  • Check progress anytime: fspec reverse --status shows current phase, strategy, and step progress
+  • Made a mistake: fspec reverse --reset deletes session and lets you start fresh
+
+TYPICAL WORKFLOW
+  1. Run fspec reverse (analyze and detect gaps) → 2. Run fspec reverse --strategy=A (choose strategy) → 3. Do the work for step 1 using other fspec commands → 4. Run fspec reverse --continue (get next step) → 5. Repeat until all steps done → 6. Run fspec reverse --complete (finalize)
+
+EXAMPLES
+  1. Initial analysis: detect gaps and suggest strategy
+  $ fspec reverse
+  <system-reminder>
+Gap analysis complete.
+Detected: 3 test files without features
+Suggested: Strategy A (Spec Gap Filling)
+To choose this strategy, run: fspec reverse --strategy=A
+</system-reminder>
+
+Found 3 test files without feature files
+Suggested Strategy: A (Spec Gap Filling)
+Estimated Effort: 6-9 story points
+
+  2. Choose Strategy A and receive first step guidance
+  $ fspec reverse --strategy=A
+  <system-reminder>
+Step 1 of 3
+Strategy: A (Spec Gap Filling)
+After completing this step, run: fspec reverse --continue
+</system-reminder>
+
+Read test file: src/__tests__/auth.test.ts
+Then create feature file
+Then run fspec link-coverage with --skip-validation
+
+  3. Move to next step after completing current one
+  $ fspec reverse --continue
+  <system-reminder>
+Step 2 of 3
+Process file: src/__tests__/user.test.ts
+After completing this step, run: fspec reverse --continue
+</system-reminder>
+
+Process test file: src/__tests__/user.test.ts...
+
+  4. Check current session status and progress
+  $ fspec reverse --status
+  Phase: executing
+Strategy: A (Spec Gap Filling)
+Progress: Step 2 of 3
+Gaps Detected: 3 test files without features
+Files:
+  [✓] src/__tests__/auth.test.ts (completed)
+  [→] src/__tests__/user.test.ts (in progress)
+  [ ] src/__tests__/product.test.ts (pending)
+
+  5. Finalize session after completing all steps
+  $ fspec reverse --complete
+  <system-reminder>
+Session completed successfully.
+All gaps filled.
+</system-reminder>
+
+✓ Reverse ACDD session complete
+
+  6. Preview analysis without creating session
+  $ fspec reverse --dry-run
+  DRY-RUN MODE: Analysis complete, no session created.
+Detected: 3 test files without features
+Suggested: Strategy A (Spec Gap Filling)
+Estimated Effort: 6-9 story points
+
+COMMON ERRORS
+  ✗ Error: Existing reverse session detected
+    Fix: Use: fspec reverse --continue (to continue), fspec reverse --status (to check progress), fspec reverse --reset (to start over), or fspec reverse --complete (to finalize)
+
+  ✗ Error: No active reverse session
+    Fix: Start a new session by running: fspec reverse (analyzes project and suggests strategy)
+
+  ✗ Error: Cannot complete: not all steps are finished
+    Fix: Continue working through remaining steps with: fspec reverse --continue, then try --complete again
+
+RELATED COMMANDS
+  fspec create-feature
+  fspec add-scenario
+  fspec link-coverage
+  fspec unlink-coverage
+  fspec generate-coverage
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+
+NOTES
+  • This is a GUIDANCE tool, not an execution tool - AI must use other fspec commands to do the work
+  • Session state is stored in OS temp directory using project-specific hash
+  • Sessions are ephemeral - OS cleans up temp files automatically
+  • Only one session can be active per project at a time
+  • Use --dry-run to preview analysis without committing to a session
+  • Strategies are mutually exclusive - choose one, complete it, then run reverse again for other gaps
+  • Use --skip-validation flag with link-coverage when linking forward-planned coverage
+

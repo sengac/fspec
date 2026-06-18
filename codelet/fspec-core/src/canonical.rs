@@ -1013,6 +1013,15 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "checkpoint",                                // RPC-202
     "cleanup-checkpoints",                       // RPC-203
     "restore-checkpoint",                        // RPC-288
+    "reverse",                                   // RPC-294
+    "discover-foundation",                       // RPC-226
+    "update-work-unit-status",                   // RPC-319
+    "generate-scenarios",                        // RPC-234
+    "init",                                      // RPC-239
+    "research",                                  // RPC-286
+    "bootstrap",                                 // RPC-200
+    "report-bug-to-github",                      // RPC-285
+    "review",                                    // RPC-295
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

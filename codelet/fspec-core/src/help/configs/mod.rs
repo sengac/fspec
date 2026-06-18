@@ -186,3 +186,15 @@ pub mod workflow_automation;
 pub mod checkpoint;
 pub mod cleanup_checkpoints;
 pub mod restore_checkpoint;
+
+// Batch 19
+pub mod discover_foundation;
+pub mod reverse;
+pub mod update_work_unit_status;
+
+// Batch 20
+pub mod generate_scenarios;
+pub mod init;
+pub mod research;
+pub mod bootstrap;
+pub mod report_bug_to_github;

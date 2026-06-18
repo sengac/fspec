@@ -1,0 +1,143 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes bootstrap as a subcommand and prints byte-parity help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_bootstrap.rs",
+          "lines": "26-54",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/bootstrap.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints the complete documentation and exits 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_bootstrap.rs",
+          "lines": "56-85",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/bootstrap.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "bootstrap defines no positional arguments and no flags",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_bootstrap.rs",
+          "lines": "87-112",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/bootstrap.rs",
+              "lines": [
+                37,
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_bootstrap.rs",
+          "lines": "114-136",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/bootstrap.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_bootstrap.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/bootstrap.rs"
+    ],
+    "totalLinesCovered": 171
+  }
+}

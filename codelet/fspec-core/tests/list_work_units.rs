@@ -545,6 +545,11 @@ async fn dispatch_command_does_not_hang_when_called_from_inside_a_tokio_runtime(
 
 /// Scenario: Dispatching an unported command from inside a tokio runtime returns NotYetPorted instead of hanging
 #[tokio::test]
+#[ignore = "OBSOLETE as of Batch 20: same root cause as RPC-336. The TS→Rust port is \
+100% complete (162/162 canonical commands ported), so 'review' (and every other canonical \
+command) no longer returns NotYetPorted. This tokio-runtime regression test must be \
+repurposed to assert the non-hanging dispatch contract using the new arg-validation path, \
+or retired via ACDD. Tracked by RPC-336. Ignored (not deleted) to preserve the link."]
 async fn dispatch_command_returns_not_yet_ported_when_called_from_inside_a_tokio_runtime() {
     // @step Given the canonical command map registers 'review' as a Phase 1 stub
     // (precondition: 'review' is in CANONICAL_COMMANDS and is_ported('review') == false;

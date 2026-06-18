@@ -188,6 +188,15 @@ mod workflow_automation;
 mod checkpoint;
 mod cleanup_checkpoints;
 mod restore_checkpoint;
+mod reverse;
+mod discover_foundation;
+mod update_work_unit_status;
+mod generate_scenarios;
+mod init;
+mod research;
+mod bootstrap;
+mod report_bug_to_github;
+mod review;
 
 use std::path::PathBuf;
 
@@ -1878,6 +1887,107 @@ enum Mode {
         #[arg(value_name = "checkpoint-name")]
         checkpoint_name: String,
     },
+    /// RPC-294: reverse-engineer specifications from an existing codebase.
+    #[command(name = "reverse", about = "Reverse-engineer specifications from existing code")]
+    Reverse {
+        #[arg(long, value_name = "A|B|C|D")]
+        strategy: Option<String>,
+        #[arg(long = "continue")]
+        r#continue: bool,
+        #[arg(long)]
+        status: bool,
+        #[arg(long)]
+        reset: bool,
+        #[arg(long)]
+        complete: bool,
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
+    /// RPC-319: update a work unit's workflow status.
+    #[command(name = "update-work-unit-status", about = "Update a work unit's workflow status")]
+    UpdateWorkUnitStatus {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(value_name = "status")]
+        status: String,
+        #[arg(long = "blocked-reason", value_name = "reason")]
+        blocked_reason: Option<String>,
+        #[arg(long = "reason", value_name = "reason")]
+        reason: Option<String>,
+        #[arg(long = "skip-temporal-validation")]
+        skip_temporal_validation: bool,
+    },
+    /// RPC-226: interactive AI-guided foundation discovery.
+    #[command(name = "discover-foundation", about = "Discover and scaffold the project foundation")]
+    DiscoverFoundation {
+        #[arg(long = "output", value_name = "path")]
+        output: Option<String>,
+        #[arg(long = "finalize", action = clap::ArgAction::SetTrue)]
+        finalize: bool,
+        #[arg(long = "draft-path", value_name = "path")]
+        draft_path: Option<String>,
+        #[arg(
+            long = "auto-generate-md",
+            default_value_t = true,
+            action = clap::ArgAction::Set,
+            num_args = 0..=1,
+            default_missing_value = "true"
+        )]
+        auto_generate_md: bool,
+        #[arg(long = "force", action = clap::ArgAction::SetTrue)]
+        force: bool,
+    },
+    /// RPC-234: generate a context-only Gherkin scaffold from an Example Map.
+    #[command(name = "generate-scenarios", about = "Generate scenarios from a work unit's example map")]
+    GenerateScenarios {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(long = "feature", value_name = "name")]
+        feature: Option<String>,
+        #[arg(long = "ignore-possible-duplicates", action = clap::ArgAction::SetTrue)]
+        ignore_possible_duplicates: bool,
+    },
+    /// RPC-239: initialize fspec for one or more AI agents in the project.
+    #[command(name = "init", about = "Initialize fspec configuration and agent docs")]
+    Init {
+        #[arg(long = "agent", value_name = "agent")]
+        agents: Vec<String>,
+    },
+    /// RPC-286: list available research tools (EXECUTE mode deferred).
+    #[command(name = "research", about = "List available research tools")]
+    Research {
+        #[arg(long = "tool", value_name = "name")]
+        tool: Option<String>,
+        #[arg(long = "work-unit", value_name = "id")]
+        work_unit: Option<String>,
+    },
+    /// RPC-200: print the fspec bootstrap workflow document.
+    #[command(name = "bootstrap", about = "Print the fspec workflow bootstrap document")]
+    Bootstrap {},
+    /// RPC-285: build a pre-filled GitHub bug-report issue URL.
+    #[command(name = "report-bug-to-github", about = "Report a bug to the fspec GitHub repository")]
+    ReportBugToGitHub {
+        #[arg(long = "project-root", value_name = "path")]
+        project_root: Option<String>,
+        #[arg(long = "bug-description", value_name = "text")]
+        bug_description: Option<String>,
+        #[arg(long = "expected-behavior", value_name = "text")]
+        expected_behavior: Option<String>,
+        #[arg(long = "actual-behavior", value_name = "text")]
+        actual_behavior: Option<String>,
+        #[arg(long = "interactive", action = clap::ArgAction::SetTrue)]
+        interactive: bool,
+    },
+    /// RPC-295: review a work unit's ACDD compliance and produce a report.
+    #[command(name = "review", about = "Review a work unit for ACDD compliance")]
+    Review {
+        // value_name mirrors the TS Commander positional `<work-unit-id>`
+        // (`src/commands/review.ts:571`) so clap's bare `--help` usage line AND
+        // the missing-argument error (`error: missing required argument
+        // 'work-unit-id'`) match the TS reference byte-for-byte.
+        #[arg(value_name = "work-unit-id")]
+        work_unit_id: String,
+    },
 }
 
 #[tokio::main]
@@ -2654,6 +2764,74 @@ async fn main() -> std::process::ExitCode {
             restore_checkpoint::run,
             restore_checkpoint::CliArgs { work_unit_id, checkpoint_name }
         ),
+        Some(Mode::Reverse { strategy, r#continue, status, reset, complete, dry_run }) => forward!(
+            reverse::run,
+            reverse::CliArgs { strategy, r#continue, status, reset, complete, dry_run }
+        ),
+        Some(Mode::UpdateWorkUnitStatus {
+            work_unit_id,
+            status,
+            blocked_reason,
+            reason,
+            skip_temporal_validation,
+        }) => forward!(
+            update_work_unit_status::run,
+            update_work_unit_status::CliArgs {
+                work_unit_id,
+                status,
+                blocked_reason,
+                reason,
+                skip_temporal_validation,
+            }
+        ),
+        Some(Mode::DiscoverFoundation {
+            output,
+            finalize,
+            draft_path,
+            auto_generate_md,
+            force,
+        }) => forward!(
+            discover_foundation::run,
+            discover_foundation::CliArgs {
+                finalize,
+                output,
+                draft_path,
+                auto_generate_md,
+                force,
+            }
+        ),
+        Some(Mode::GenerateScenarios { work_unit_id, feature, ignore_possible_duplicates }) => {
+            forward!(
+                generate_scenarios::run,
+                generate_scenarios::CliArgs { work_unit_id, feature, ignore_possible_duplicates }
+            )
+        }
+        Some(Mode::Init { agents }) => forward!(init::run, init::CliArgs { agents }),
+        Some(Mode::Research { tool, work_unit }) => forward!(
+            research::run,
+            research::CliArgs { tool, work_unit }
+        ),
+        Some(Mode::Bootstrap {}) => forward!(bootstrap::run, bootstrap::CliArgs {}),
+        Some(Mode::ReportBugToGitHub {
+            project_root,
+            bug_description,
+            expected_behavior,
+            actual_behavior,
+            interactive,
+        }) => forward!(
+            report_bug_to_github::run,
+            report_bug_to_github::CliArgs {
+                project_root,
+                bug_description,
+                expected_behavior,
+                actual_behavior,
+                interactive,
+            }
+        ),
+        Some(Mode::Review { work_unit_id }) => forward!(
+            review::run,
+            review::CliArgs { work_unit_id }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -3207,6 +3385,18 @@ fn intercept_ts_help() -> Option<u8> {
         "checkpoint" => format_command_help(&configs::checkpoint::CONFIG),
         "cleanup-checkpoints" => format_command_help(&configs::cleanup_checkpoints::CONFIG),
         "restore-checkpoint" => format_command_help(&configs::restore_checkpoint::CONFIG),
+        "reverse" => format_command_help(&configs::reverse::CONFIG),
+        "discover-foundation" => format_command_help(&configs::discover_foundation::CONFIG),
+        "update-work-unit-status" => {
+            format_command_help(&configs::update_work_unit_status::CONFIG)
+        }
+        "generate-scenarios" => format_command_help(&configs::generate_scenarios::CONFIG),
+        "init" => format_command_help(&configs::init::CONFIG),
+        "research" => format_command_help(&configs::research::CONFIG),
+        "bootstrap" => format_command_help(&configs::bootstrap::CONFIG),
+        "report-bug-to-github" => {
+            format_command_help(&configs::report_bug_to_github::CONFIG)
+        }
         // RPC-220: delete-scenarios has no custom -help.ts in TS; the reference
         // is bare Commander.js output (mirrors the delete-features special-case).
         "delete-scenarios" => {

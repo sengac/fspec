@@ -1,0 +1,311 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes init as a subcommand and prints --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_init.rs",
+          "lines": "44-70",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/init.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI installs the claude agent and prints the success summary",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_init.rs",
+          "lines": "72-112",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/init.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI installs multiple agents from repeated --agent flags",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_init.rs",
+          "lines": "114-137",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/init.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI without --agent fails because the shell is non-TTY",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_init.rs",
+          "lines": "139-155",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/init.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects an unknown agent id",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_init.rs",
+          "lines": "157-173",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/init.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_init.rs",
+          "lines": "175-216",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/init.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "init --help is byte-for-byte identical to the TS reference output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_init.rs",
+          "lines": "220-244",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/init.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_init.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/init.rs",
+      "codelet/fspec-core/src/help/configs/init.rs"
+    ],
+    "totalLinesCovered": 375
+  }
+}

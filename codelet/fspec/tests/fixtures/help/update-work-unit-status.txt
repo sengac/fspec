@@ -1,0 +1,73 @@
+
+UPDATE-WORK-UNIT-STATUS
+Move a work unit through the ACDD workflow by updating its status
+
+WHEN TO USE
+  Use this command when moving work through ACDD workflow stages: from backlog to specifying (writing feature files), to testing (writing tests), to implementing (writing code), to validating (quality checks), and finally to done.
+
+PREREQUISITES
+  • Work unit must exist (create with fspec create-story, create-bug, or create-task)
+  • For transition to testing: All Example Mapping questions must be answered
+  • For transition to implementing: Tests must be written
+  • For transition to active states: All blocking dependencies must be completed (status: done)
+
+USAGE
+  fspec update-work-unit-status <id> <status>
+
+ARGUMENTS
+  <id> (required)
+    Work unit ID (e.g., AUTH-001)
+  <status> (required)
+    New status: backlog, specifying, testing, implementing, validating, done, blocked
+
+OPTIONS
+  undefined
+    Reason for status change (optional, added to state history)
+  undefined
+    Reason for blocked status (required when status is "blocked")
+  undefined
+    Skip temporal ordering validation (for reverse ACDD or importing existing work)
+
+TYPICAL WORKFLOW
+  backlog → specifying (Example Mapping + feature file) → testing (write failing tests) → implementing (make tests pass) → validating (run all tests + quality checks) → done
+
+EXAMPLES
+  1. Move to specifying (start Example Mapping and write feature files)
+  $ fspec update-work-unit-status AUTH-001 specifying
+  ✓ Work unit AUTH-001 status updated to specifying
+
+  2. Mark work unit as blocked with reason
+  $ fspec update-work-unit-status AUTH-001 blocked --blocked-reason="Waiting for API design"
+  ✓ Work unit AUTH-001 status updated to blocked
+
+  3. Import existing work and skip temporal validation
+  $ fspec update-work-unit-status LEGACY-001 testing --skip-temporal-validation
+  ✓ Work unit LEGACY-001 status updated to testing
+
+  4. Attempt to start work on blocked work unit (will fail)
+  $ fspec update-work-unit-status UI-001 implementing
+  ✗ Cannot start work on UI-001: work unit is blocked by incomplete dependencies.
+
+Active blockers:
+  - AUTH-001 (status: implementing)
+
+Complete blocking work units or remove dependencies before starting work.
+
+RELATED COMMANDS
+  fspec show-work-unit
+  fspec list-work-units
+  fspec board
+  fspec auto-advance
+
+NOTES
+  • ACDD enforces strict workflow: you cannot skip states
+  • FEAT-011: Temporal ordering is enforced - files must be created AFTER entering their required state
+  • Moving to testing: feature files must be created AFTER entering specifying state
+  • Moving to implementing: test files must be created AFTER entering testing state
+  • Use --skip-temporal-validation for reverse ACDD or importing existing work
+  • Status "blocked" can be used from any state when progress is prevented
+  • Moving to testing requires all Example Mapping questions to be answered first
+  • Cannot move to active states (specifying, testing, implementing, validating) if work unit has incomplete blocking dependencies
+  • Use "fspec remove-dependency" to remove blockers or complete blocking work units first
+  • Backward movement is allowed: can move from implementing → testing → specifying when mistakes discovered
+

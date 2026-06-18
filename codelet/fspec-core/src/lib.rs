@@ -32,6 +32,7 @@ pub mod js_compat;
 pub mod types;
 pub mod utils;
 pub mod validators;
+pub mod virtual_hooks_exec;
 
 pub use dispatch::{dispatch_command, DispatchRequest, DispatchResult};
 pub use error::FspecCoreError;

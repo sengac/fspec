@@ -21,6 +21,12 @@ fn req(command: &str) -> DispatchRequest {
 }
 
 #[test]
+#[ignore = "OBSOLETE as of Batch 20: the TS→Rust port is 100% complete (162/162 \
+canonical commands in PORTED_COMMANDS), so no known command returns NotYetPorted \
+anymore. The NotYetPorted machinery still exists for safety but is unreachable via \
+dispatch for canonical names. This acceptance scenario must be formally retired/ \
+repurposed in spec/features/fspec-tool-rust-dispatcher.feature via ACDD — tracked as \
+a follow-up. Ignored (not deleted) to preserve the scenario→test link until retirement."]
 fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
     // Scenario: Standalone Rust binary returns NotYetPorted error for a known unported command
 

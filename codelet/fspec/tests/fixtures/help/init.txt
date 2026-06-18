@@ -1,0 +1,69 @@
+
+INIT
+Initialize fspec in a project with AI agent integration (supports 18 agents)
+
+WHEN TO USE
+  Use once when setting up fspec in a new project. Shows interactive menu to select AI agent(s), or use --agent flag to specify directly.
+
+PREREQUISITES
+  • Project should have package.json or be a git repository
+
+USAGE
+  fspec init [options]
+
+OPTIONS
+  --agent <agent>
+    Specify agent directly: claude, cursor, windsurf, cline, aider, etc. (18 agents supported)
+  --yes
+    Skip confirmation prompts
+
+EXAMPLES
+  1. Interactive agent selection (menu)
+  $ fspec init
+  ? Select your AI agent(s):
+  ❯◯ Claude Code
+   ◯ Cursor
+   ◯ Windsurf
+   ...
+
+  2. Initialize with Claude Code directly
+  $ fspec init --agent=claude
+  ✓ Installed fspec for Claude Code
+
+Next steps:
+Run /fspec in Claude Code to activate
+
+  3. Initialize with Cursor directly
+  $ fspec init --agent=cursor
+  ✓ Installed fspec for Cursor
+
+Next steps:
+Open .cursor/commands/ in Cursor to activate
+
+RELATED COMMANDS
+  fspec create-feature
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+
+NOTES
+  • Supports 18 AI agents: Claude Code, Cursor, Windsurf, Cline, Aider, and more
+  • Creates agent-specific slash command (e.g., .claude/commands/fspec.md)
+  • Creates agent-specific workflow docs (e.g., spec/CLAUDE.md)
+  • Creates spec/fspec-config.json for runtime agent detection
+  • Embeds current fspec version in slash command file as "fspec --sync-version <version>" command
+  • Version sync command runs as first command to auto-update files on version mismatch
+  • On version mismatch: updates both slash command file AND spec doc file, shows restart message, exits 1
+  • On version match WITHOUT tool config: emits system-reminders about missing config, exits 1 (blocks workflow)
+  • On version match WITH tool config: emits tool configuration system-reminders, exits 0 (continues workflow)
+  • Shows agent-specific activation instructions (customized per agent)
+  • Auto-detects existing agent installations and prompts to switch when different agent requested
+  • Updating config file automatically when switching agents (preserves project files)
+  • Interactive mode pre-selects detected agent for easy confirmation or switching
+  • Same agent reinstall is idempotent (refreshes files without prompts)
+  • Can be run multiple times with different --agent to support multiple agents
+  • Use "fspec remove-init-files" to uninstall or clean up before switching
+  • Use "fspec reverse" command for reverse ACDD workflow on existing codebases
+  • Creates spec/ directory structure
+  • Initializes tags.json and foundation.json
+

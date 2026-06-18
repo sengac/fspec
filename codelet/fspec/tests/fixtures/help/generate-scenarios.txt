@@ -1,0 +1,53 @@
+
+GENERATE-SCENARIOS
+Generate Gherkin scenarios from Example Mapping data (rules, examples, questions)
+
+WHEN TO USE
+  Use after completing Example Mapping when all questions are answered and ready to create feature file scenarios.
+
+PREREQUISITES
+  • Work unit must have rules and examples
+  • All questions should be answered
+  • Work unit must have a title (for default naming) OR --feature flag must be provided
+
+USAGE
+  fspec generate-scenarios <workUnitId> [--feature=<name>]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+
+OPTIONS
+  undefined
+    Override feature file name (without .feature extension). Defaults to work unit title converted to kebab-case.
+
+EXAMPLES
+  1. Generate scenarios using work unit title as feature file name
+  $ fspec generate-scenarios AUTH-001
+  ✓ Generated 3 scenarios in spec/features/user-authentication.feature
+
+Scenario: Login with valid email...
+Scenario: Login with invalid email...
+
+  2. Generate scenarios with explicit feature file name
+  $ fspec generate-scenarios AUTH-001 --feature=login
+  ✓ Generated 3 scenarios in spec/features/login.feature
+
+RELATED COMMANDS
+  fspec add-rule
+  fspec add-example
+  fspec add-question
+  fspec show-work-unit
+  fspec create-feature
+
+NOTES
+  • Feature files are named after CAPABILITIES (what IS), not work unit IDs
+  • Defaults to work unit title converted to kebab-case (e.g., "User Authentication" → user-authentication.feature)
+  • Use --feature flag to override the default name
+  • Throws error if work unit has no title and --feature not provided
+  • Generates scenarios based on examples
+  • Scenario titles are automatically cleaned (removes prefixes like REPRODUCTION:, MISSING:, ERROR WHEN:, etc.)
+  • Original example text is preserved as a comment above each scenario
+  • Uses intelligent step extraction to generate Given/When/Then steps from example text
+  • Falls back to [placeholders] if example cannot be parsed (triggers prefill detection)
+

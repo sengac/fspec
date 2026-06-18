@@ -6,5 +6,6 @@
 pub mod coverage;
 pub mod epic;
 pub mod prefix;
+pub mod reverse_session;
 pub mod tags;
 pub mod work_unit;

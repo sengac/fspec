@@ -1,0 +1,103 @@
+
+DISCOVER-FOUNDATION
+Interactive AI-guided workflow to discover project foundation field-by-field with system-reminders
+
+WHEN TO USE
+  Use when starting a new project with fspec to bootstrap foundation.json. Creates draft with placeholders, then guides AI field-by-field using system-reminders and chaining to next field after each fspec update-foundation command.
+
+USAGE
+  fspec discover-foundation [options]
+
+OPTIONS
+  --output <path>
+    Output path for final foundation.json (default: spec/foundation.json)
+  --finalize
+    Finalize foundation.json from edited draft file
+  --draft-path <path>
+    Path to draft file (default: spec/foundation.json.draft)
+
+COMMON PATTERNS
+  • CLI tools: AI analyzes CLI framework usage, command definitions, identifies command-line user persona
+  • Web apps: AI analyzes routes, UI components, identifies End User and API Consumer personas
+  • Libraries: AI analyzes exports and API, identifies Developer persona
+
+EXAMPLES
+  1. Create draft and receive guidance for first field
+  $ fspec discover-foundation
+  ✓ Generated spec/foundation.json.draft
+
+Draft created. To complete foundation, you must ULTRATHINK the entire codebase.
+
+Analyze EVERYTHING: code structure, entry points, user interactions, documentation.
+Understand HOW it works, then determine WHY it exists and WHAT users can do.
+
+I will guide you field-by-field.
+
+<system-reminder>
+Field 1/8: project.name
+
+Analyze project configuration to determine project name. Confirm with human.
+
+Run: fspec update-foundation projectName "<name>"
+</system-reminder>
+
+  2. Fill first field, command chains to next field
+  $ fspec update-foundation projectName "fspec"
+  ✓ Updated "projectName" in foundation.json.draft
+  Updated: spec/foundation.json.draft
+
+<system-reminder>
+Field 2/8: project.vision (elevator pitch)
+
+ULTRATHINK: Read ALL code, understand the system deeply. What is the core PURPOSE?
+Focus on WHY this exists, not HOW it works.
+
+Ask human to confirm vision.
+
+Run: fspec update-foundation projectVision "your vision"
+</system-reminder>
+
+  3. Validate complete draft and create final foundation.json
+  $ fspec discover-foundation --finalize
+  ✓ Generated spec/foundation.json
+✓ Foundation discovered and validated successfully
+
+Discovery complete!
+
+Created: spec/foundation.json, spec/FOUNDATION.md
+
+Foundation is ready.
+
+  4. Finalize with incomplete draft shows detailed validation errors
+  $ fspec discover-foundation --finalize
+  ✗ Foundation validation failed
+
+Schema validation failed. Missing required: solutionSpace.capabilities, personas[0].name
+
+Fix by running appropriate commands:
+  - For simple fields: fspec update-foundation <section> "<value>"
+  - For capabilities: fspec add-capability "<name>" "<description>"
+  - For personas: fspec add-persona "<name>" "<description>" --goal "<goal>"
+
+Then re-run: fspec discover-foundation --finalize
+
+RELATED COMMANDS
+  fspec update-foundation
+  fspec show-foundation
+  fspec generate-foundation-md
+
+NOTES
+  • AI-driven feedback loop: command guides AI field-by-field with system-reminders
+  • After each fspec update-foundation, command automatically chains to next unfilled field
+  • Draft file contains [DETECTED: value] for code-inferred values requiring verification
+  • Draft file contains [QUESTION: text] placeholders for AI to fill via commands
+  • AI must NEVER manually edit draft - system detects manual edits and reverts changes
+  • Focuses on ULTRATHINK (deep analysis), WHY (problems), WHAT (capabilities), not HOW
+  • System-reminders are invisible to user but visible to AI for guidance
+  • Generated foundation.json uses v2.0.0 generic schema
+  • Finalization validates draft against schema and auto-generates FOUNDATION.md
+  • Draft file is automatically deleted after successful finalization
+  • Validation errors show detailed feedback with missing fields and fix commands
+  • Error messages list exact field paths (e.g., "Missing required: personas[0].name")
+  • Includes command examples for each error type (update-foundation, add-capability, add-persona)
+
