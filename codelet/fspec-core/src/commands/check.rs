@@ -8,19 +8,25 @@
 //!      and placed correctly (delegates to the SAME logic the `validate-tags`
 //!      command uses, surfaced here through its `{results, validCount,
 //!      invalidCount}` envelope).
-//!   3. **Formatting** — *SKIPPED* (see Framing-A divergence below).
+//!   3. **Formatting** — every feature file is parsed, re-serialised through
+//!      the AST-based formatter ([`crate::io::gherkin_format::format_feature`]),
+//!      and compared byte-for-byte against the on-disk content. A file whose
+//!      bytes differ from its canonical formatting is reported as a `FAIL`
+//!      (error: `Formatting check failed: <file> needs formatting`). Files that
+//!      fail to parse are skipped here — the Gherkin sub-check already reports
+//!      them.
 //!
-//! ## Framing-A divergence (RPC-201, APPROVED Option B)
+//! ## Formatting sub-check (RPC-332)
 //!
-//! The TS `check` runs a third format sub-check that re-serialises each
-//! feature file through `formatGherkinDocument` and compares byte-for-byte.
-//! That formatter is being ported separately on another worker (RPC-230,
-//! `io/gherkin_format.rs`) and is not yet wired into fspec-core. Per the
-//! approved decision we SKIP the format sub-check here: `formatStatus` is
-//! reported as `"SKIP"` and never contributes to the success determination.
-//! Overall success therefore depends only on Gherkin syntax + tag validation
-//! (a `FAIL` in either fails the run; `SKIP` never fails). When the formatter
-//! lands, a follow-up can re-enable this sub-check.
+//! Now that the gherkin formatter has reached byte-parity (RPC-330), the
+//! format sub-check is wired in (replacing the earlier Framing-A `SKIP`
+//! divergence). `formatStatus` starts at `"PASS"` and flips to `"FAIL"` only
+//! when at least one feature file is not in canonical form. Unlike the TS
+//! original — which wraps the whole formatter setup in a try/catch and
+//! degrades `formatStatus` to `"SKIP"` on a global throw — the Rust formatter
+//! has no such global failure mode, so `formatStatus` is only ever `"PASS"` or
+//! `"FAIL"`. Overall success requires a non-`FAIL` Gherkin, tag, AND format
+//! status.
 //!
 //! ## Result envelope
 //!
@@ -151,12 +157,34 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         }
     }
 
-    // ---- 3. Formatting (SKIPPED — Framing-A divergence, see module doc) ----
-    let format_status = "SKIP";
+    // ---- 3. Formatting ----
+    // For each feature file: parse, re-serialise via the AST formatter, and
+    // compare byte-for-byte against the on-disk content. A difference means
+    // the file needs formatting. Files that fail to parse are skipped here
+    // (the Gherkin sub-check above already reports them). Parity with the TS
+    // `check` formatting sub-check at src/commands/check.ts:91-120.
+    let mut format_status = "PASS";
+    for file in &files {
+        let abs = project_root.join(file);
+        let content = match std::fs::read_to_string(&abs) {
+            Ok(c) => c,
+            Err(_) => continue,
+        };
+        let feature = match parse_feature_lenient(&content) {
+            Ok(f) => f,
+            Err(_) => continue,
+        };
+        let formatted = crate::io::gherkin_format::format_feature(&feature, &content);
+        if formatted != content {
+            format_status = "FAIL";
+            errors.push(format!("Formatting check failed: {file} needs formatting"));
+        }
+    }
 
     // ---- Determine overall success ----
-    // A FAIL in any contributing check fails the run; SKIP never fails.
-    let success = gherkin_status != "FAIL" && tag_status != "FAIL";
+    // A FAIL in any contributing check fails the run.
+    let success =
+        gherkin_status != "FAIL" && tag_status != "FAIL" && format_status != "FAIL";
 
     let mut payload = json!({
         "success": success,
@@ -227,22 +255,75 @@ mod tests {
         assert_eq!(v["message"], "No feature files found");
     }
 
+    /// Compute the canonical formatted form of a feature source so test
+    /// fixtures can be guaranteed byte-identical to what the format sub-check
+    /// expects. Uses the SAME parse→format pipeline the production code uses.
+    fn canonical(body: &str) -> String {
+        let feature = parse_feature_lenient(body).unwrap();
+        crate::io::gherkin_format::format_feature(&feature, body)
+    }
+
     #[tokio::test]
     async fn valid_features_pass() {
         let ws = tempfile::tempdir().unwrap();
         write_tags(ws.path());
-        write(
-            ws.path(),
-            "spec/features/a.feature",
-            "@comp @grp\nFeature: A\n\n  Scenario: A\n    Given x\n",
-        );
+        let body = canonical("@comp @grp\nFeature: A\n\n  Scenario: A\n    Given x\n");
+        write(ws.path(), "spec/features/a.feature", &body);
         let out = run("{}", ws.path()).await.unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
         assert_eq!(v["gherkinStatus"], "PASS");
         assert_eq!(v["tagStatus"], "PASS");
-        assert_eq!(v["formatStatus"], "SKIP");
+        assert_eq!(v["formatStatus"], "PASS");
         assert_eq!(v["success"], true);
         assert_eq!(v["message"], "All checks passed");
+    }
+
+    #[tokio::test]
+    async fn well_formatted_feature_format_passes() {
+        let ws = tempfile::tempdir().unwrap();
+        write_tags(ws.path());
+        let body = canonical("@comp @grp\nFeature: Well Formatted\n\n  Scenario: S\n    Given a\n    When b\n    Then c\n");
+        write(ws.path(), "spec/features/wf.feature", &body);
+        let out = run("{}", ws.path()).await.unwrap();
+        let v: Value = serde_json::from_str(&out).unwrap();
+        assert_eq!(v["formatStatus"], "PASS");
+        assert_eq!(v["success"], true);
+    }
+
+    #[tokio::test]
+    async fn unformatted_feature_format_fails() {
+        let ws = tempfile::tempdir().unwrap();
+        write_tags(ws.path());
+        // Valid Gherkin but NOT canonical: extra blank lines / odd indentation.
+        write(
+            ws.path(),
+            "spec/features/messy.feature",
+            "@comp @grp\nFeature: Messy\n\n\n  Scenario: S\n        Given a\n",
+        );
+        let out = run("{}", ws.path()).await.unwrap();
+        let v: Value = serde_json::from_str(&out).unwrap();
+        assert_eq!(v["gherkinStatus"], "PASS");
+        assert_eq!(v["formatStatus"], "FAIL");
+        assert_eq!(v["success"], false);
+        let errors = v["errors"].as_array().unwrap();
+        assert!(errors.iter().any(|e| e.as_str()
+            == Some("Formatting check failed: spec/features/messy.feature needs formatting")));
+    }
+
+    #[tokio::test]
+    async fn multi_paragraph_description_canonical_passes() {
+        let ws = tempfile::tempdir().unwrap();
+        write_tags(ws.path());
+        // Multi-paragraph feature description (guards RPC-330 regression).
+        let body = canonical(
+            "@comp @grp\nFeature: Described\n  Paragraph A line one.\n\n  Paragraph B line two.\n\n  Scenario: S\n    Given x\n",
+        );
+        write(ws.path(), "spec/features/desc.feature", &body);
+        let out = run("{}", ws.path()).await.unwrap();
+        let v: Value = serde_json::from_str(&out).unwrap();
+        assert_eq!(v["gherkinStatus"], "PASS");
+        assert_eq!(v["formatStatus"], "PASS");
+        assert_eq!(v["success"], true);
     }
 
     #[tokio::test]

@@ -46,10 +46,11 @@ Feature: list-work-units dispatcher hangs agent loop when invoked from inside to
     Given the test is a plain #[test] with no surrounding tokio runtime
 
 
-  Scenario: Dispatching an unported command from inside a tokio runtime returns NotYetPorted instead of hanging
-    Given the canonical command map registers 'add-rule' as a Phase 1 stub
-    When I invoke dispatch_command for the 'add-rule' command via tokio::task::spawn_blocking
+  Scenario: Dispatching a ported command with invalid args from inside a tokio runtime returns a structured error without hanging
+    Given the canonical command 'add-rule' is ported (is_ported returns true)
+    When I invoke dispatch_command for the 'add-rule' command with empty args_json via tokio::task::spawn_blocking
     Then the DispatchResult has success=false within 2 seconds
     Given the test is running inside an active tokio runtime via #[tokio::test]
-    Then the error message contains the substring 'not yet ported'
+    Then the error message contains the substring 'Invalid args'
+    And the error message does NOT contain the substring 'not yet ported'
 

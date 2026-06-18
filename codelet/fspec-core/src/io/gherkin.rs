@@ -263,6 +263,71 @@ fn line_starts_with_keyword(trimmed: &str) -> bool {
     false
 }
 
+/// Re-derive a cucumber-compatible `(line, message)` pair from the source
+/// `content` plus the gherkin-0.16 [`ParseError`] (RPC-329).
+///
+/// gherkin-0.16's `ParseError` exposes only `Display` (`"Error at L:C:
+/// {expected:?}"`) with private fields, so this formatter reconstructs the
+/// `@cucumber/gherkin` reference message from the source content directly.
+///
+/// SCOPE: the no-Feature-keyword class only. When `content` has no line whose
+/// trimmed text starts with `"Feature:"`, this returns `(0, message)` where
+/// `message` begins `"Parser errors:\n"` and carries one entry per non-blank,
+/// non-comment (`#`), non-tag (`@`) source line:
+///
+/// ```text
+/// (<line>:<col>): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got '<trimmed>'
+/// ```
+///
+/// where `<line>` is 1-based, `<col>` is leading-whitespace count + 1, and
+/// `<trimmed>` is the line with leading whitespace and trailing CR/LF removed.
+/// The first entry is appended directly after `"Parser errors:\n"` (parity with
+/// the TS reference; rendered as `  Line 0: Parser errors:\n(1:1): ...`).
+///
+/// Files that DO contain a `Feature:` keyword but fail later are out of scope:
+/// gherkin-0.16's private fields and divergent recovery algorithm prevent
+/// faithful reconstruction, so this preserves the current gherkin-0.16-derived
+/// behavior — `(line_from_display, err.to_string())`.
+pub fn format_parse_error_cucumber(content: &str, err: &ParseError) -> (usize, String) {
+    let has_feature_keyword = content
+        .lines()
+        .any(|line| line.trim_start().starts_with("Feature:"));
+
+    if has_feature_keyword {
+        // Out of scope — carry over the gherkin-0.16 Display string and the
+        // line number derived from its `"Error at <line>:<col>:"` prefix.
+        let display = err.to_string();
+        let line = display
+            .strip_prefix("Error at ")
+            .and_then(|rest| rest.split(':').next())
+            .and_then(|n| n.trim().parse::<usize>().ok())
+            .unwrap_or(0);
+        return (line, display);
+    }
+
+    // In-scope no-Feature-keyword class: rebuild the cucumber message.
+    let mut message = String::from("Parser errors:");
+    for (idx, line) in content.lines().enumerate() {
+        let trimmed_start = line.trim_start();
+        if trimmed_start.is_empty()
+            || trimmed_start.starts_with('#')
+            || trimmed_start.starts_with('@')
+        {
+            continue;
+        }
+        let line_no = idx + 1;
+        let indent = line.len() - trimmed_start.len();
+        let col = indent + 1;
+        let text = trimmed_start.trim_end_matches(['\r', '\n']);
+        message.push('\n');
+        message.push_str(&format!(
+            "({line_no}:{col}): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got '{text}'"
+        ));
+    }
+
+    (0, message)
+}
+
 /// Rewrite a step-table row so unknown escape sequences (`\"`, `\'`,
 /// `\t`, …) are doubled into `\\X`. The strict parser only accepts
 /// `\n`, `\|`, and `\\` inside cells; everything else aborts the row.
@@ -423,5 +488,49 @@ mod tests {
         );
         let f = parse_feature_lenient(src).expect("lenient parse");
         assert_eq!(f.name.as_str(), "F");
+    }
+
+    #[test]
+    fn format_parse_error_cucumber_no_feature_keyword_byte_identical() {
+        // Example 3: format_parse_error_cucumber maps a no-Feature-keyword
+        // content + gherkin ParseError into (0, cucumber-vocab message)
+        // byte-identical to the captured TS fixture.
+        let content = "Scenario: orphaned\n  Given x\n  Then y\n";
+        let err = Feature::parse(content, GherkinEnv::default())
+            .expect_err("no-Feature-keyword content must fail to parse");
+
+        let (line, message) = format_parse_error_cucumber(content, &err);
+
+        assert_eq!(line, 0, "no-Feature-keyword class must report line 0");
+        assert_eq!(
+            message,
+            concat!(
+                "Parser errors:\n",
+                "(1:1): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'Scenario: orphaned'\n",
+                "(2:3): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'Given x'\n",
+                "(3:3): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'Then y'"
+            ),
+            "message must be byte-identical to the TS reference fixture"
+        );
+    }
+
+    #[test]
+    fn format_parse_error_cucumber_with_feature_keyword_is_out_of_scope() {
+        // Files WITH a Feature keyword that fail later keep gherkin-0.16 text.
+        let content = "Feature: X\n  Scenario: S\n    Given a\n  |bad table\n";
+        let err = Feature::parse(content, GherkinEnv::default())
+            .expect_err("malformed feature must fail to parse");
+
+        let (_line, message) = format_parse_error_cucumber(content, &err);
+
+        assert!(
+            !message.contains("Parser errors:"),
+            "out-of-scope class must NOT use the cucumber formatter; got:\n{message}"
+        );
+        assert_eq!(
+            message,
+            err.to_string(),
+            "out-of-scope class must carry over the gherkin-0.16 Display text"
+        );
     }
 }

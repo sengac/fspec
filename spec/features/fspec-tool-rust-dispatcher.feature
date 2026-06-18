@@ -59,18 +59,15 @@ Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool
     I want to have Fspec tool dispatches return clean per-command errors instead of a generic 'callback not registered' failure that hangs the loop
     So that the LLM can recover, see exactly which command was attempted and which work unit ports it, and continue the session
 
-  Scenario: Standalone Rust binary returns NotYetPorted error for a known unported command
-    Given the agent session is running inside the standalone fspec Rust binary
-    And the NAPI chunk callback is NOT registered (is_global_chunk_callback_registered returns false)
-    And the dispatcher's command map records "add-rule" as ported by RPC-XXX
-    When the LLM emits Fspec with command="add-rule" and any args_json
-    Then the dispatcher returns FspecResult with success=false
-    And the error message contains the literal substring "add-rule"
+  Scenario: NotYetPorted error renders the full agent-facing contract when constructed directly
+    Given the TS to Rust port is complete so no canonical command reaches the NotYetPorted path via dispatch
+    And the NotYetPorted error variant is retained as a safety mechanism in the public API
+    When a NotYetPorted error is constructed directly with command "some-cmd" and work unit "RPC-999"
+    Then rendering the error yields a message containing the literal substring "some-cmd"
     And the error message contains the literal substring "not yet ported"
-    And the error message contains the porting work unit ID "RPC-XXX"
+    And the error message contains the porting work unit ID "RPC-999"
     And the error message contains the substring "standalone fspec binary"
-    And the agent loop emits a normal Done chunk for the turn within 1 second
-    And the agent loop does NOT hang waiting for a JS callback
+    And the invariant holds that every command in CANONICAL_COMMANDS reports is_ported true
 
   Scenario: Standalone Rust binary returns UnknownCommand error for a name not in the map
     Given the agent session is running inside the standalone fspec Rust binary

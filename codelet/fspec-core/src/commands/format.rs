@@ -84,7 +84,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             Err(_) => continue,
         };
 
-        let formatted = format_feature(&feature);
+        let formatted = format_feature(&feature, &content);
 
         std::fs::write(&abs, formatted).map_err(|source| FspecCoreError::Io {
             command: "format",

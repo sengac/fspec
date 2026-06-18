@@ -11,7 +11,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use codelet_fspec_core::{dispatch_command, DispatchRequest};
+use codelet_fspec_core::{dispatch_command, canonical::is_ported, DispatchRequest};
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
@@ -543,30 +543,23 @@ async fn dispatch_command_does_not_hang_when_called_from_inside_a_tokio_runtime(
     assert_eq!(ids_in(&data), vec!["AUTH-001", "AUTH-002", "DASH-001"]);
 }
 
-/// Scenario: Dispatching an unported command from inside a tokio runtime returns NotYetPorted instead of hanging
+/// Scenario: Dispatching a ported command with invalid args from inside a tokio runtime returns a structured error without hanging
 #[tokio::test]
-#[ignore = "OBSOLETE as of Batch 20: same root cause as RPC-336. The TS→Rust port is \
-100% complete (162/162 canonical commands ported), so 'review' (and every other canonical \
-command) no longer returns NotYetPorted. This tokio-runtime regression test must be \
-repurposed to assert the non-hanging dispatch contract using the new arg-validation path, \
-or retired via ACDD. Tracked by RPC-336. Ignored (not deleted) to preserve the link."]
-async fn dispatch_command_returns_not_yet_ported_when_called_from_inside_a_tokio_runtime() {
-    // @step Given the canonical command map registers 'review' as a Phase 1 stub
-    // (precondition: 'review' is in CANONICAL_COMMANDS and is_ported('review') == false;
-    //  verified in dispatcher_test.rs. We use review instead of add-rule/add-architecture/audit-coverage
-    //  because those have been ported and now return a real arg-parsing error rather than the
-    //  NotYetPorted stub message this regression test was written to catch.)
+async fn dispatch_ported_command_with_invalid_args_from_tokio_runtime_returns_structured_error_without_hanging(
+) {
+    // @step Given the canonical command 'add-rule' is ported (is_ported returns true)
+    assert!(
+        is_ported("add-rule"),
+        "precondition: 'add-rule' must be ported for this scenario"
+    );
 
-    // @step Given the test is running inside an active tokio runtime via #[tokio::test]
-    // (precondition satisfied by the #[tokio::test] attribute on this test fn)
-
-    // @step When I invoke dispatch_command for the 'review' command via tokio::task::spawn_blocking
+    // @step When I invoke dispatch_command for the 'add-rule' command with empty args_json via tokio::task::spawn_blocking
     let started = std::time::Instant::now();
     let result = tokio::task::spawn_blocking(|| {
         dispatch_command(DispatchRequest {
-            command: "review".to_string(),
+            command: "add-rule".to_string(),
             args_json: "{}".to_string(),
-            project_root: std::path::PathBuf::from("/tmp/fspec-rpc327"),
+            project_root: PathBuf::from("/tmp/fspec-rpc336"),
         })
     })
     .await
@@ -576,15 +569,24 @@ async fn dispatch_command_returns_not_yet_ported_when_called_from_inside_a_tokio
     // @step Then the DispatchResult has success=false within 2 seconds
     assert!(
         elapsed < std::time::Duration::from_secs(2),
-        "dispatch_command for unported stub from inside tokio runtime took {elapsed:?} — regression: nested block_on hanging"
+        "dispatch_command for a ported command from inside tokio runtime took {elapsed:?} — regression: nested block_on hanging"
     );
     assert!(!result.success, "{result:?}");
 
-    // @step Then the error message contains the substring 'not yet ported'
+    // @step Given the test is running inside an active tokio runtime via #[tokio::test]
+    // (precondition satisfied by the #[tokio::test] attribute on this test fn)
+
+    // @step Then the error message contains the substring 'Invalid args'
     let msg = result.error.as_ref().expect("error message expected");
     assert!(
-        msg.contains("not yet ported"),
-        "error message missing canonical 'not yet ported' substring: {msg}"
+        msg.contains("Invalid args"),
+        "error message missing 'Invalid args' substring: {msg}"
+    );
+
+    // @step And the error message does NOT contain the substring 'not yet ported'
+    assert!(
+        !msg.contains("not yet ported"),
+        "a ported command must not return a NotYetPorted message: {msg}"
     );
 }
 

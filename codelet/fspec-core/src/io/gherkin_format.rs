@@ -33,9 +33,18 @@ const INDENT: &str = "  ";
 
 /// Format a parsed [`Feature`] back to canonical feature-file text with a
 /// single trailing newline.
-pub fn format_feature(feature: &Feature) -> String {
+///
+/// `source` is the RAW feature-file text the `feature` was parsed from. It is
+/// required because the `gherkin-0.16.0` parser collapses the blank lines
+/// between description paragraphs (its `description = (description_line ** _)`
+/// rule treats blank lines as a *separator* and discards them), so the parsed
+/// `Feature.description` field is lossy. To preserve inter-paragraph blank
+/// lines we re-extract each feature/scenario/Background/Rule description
+/// verbatim from `source` (mirroring
+/// `commands::show_acceptance_criteria::extract_description_verbatim`).
+pub fn format_feature(feature: &Feature, source: &str) -> String {
     let mut lines: Vec<String> = Vec::new();
-    format_feature_into(feature, &mut lines);
+    format_feature_into(feature, source, &mut lines);
     let mut out = lines.join("\n");
     out.push('\n');
     out
@@ -45,7 +54,88 @@ fn indent(level: usize) -> String {
     INDENT.repeat(level)
 }
 
-fn format_feature_into(feature: &Feature, lines: &mut Vec<String>) {
+/// Re-extract a description block verbatim from the raw `source`, preserving
+/// the inter-paragraph blank lines the parser discarded.
+///
+/// `start_line` is the 1-based line of the owning header keyword
+/// (`feature.position.line` etc.); `end_line_exclusive` is the 1-based line of
+/// the first child construct that terminates the description (a step,
+/// Scenario, Rule, Examples table, …) when known. Leading and trailing blank
+/// lines are stripped (parser parity), and the block ends early at the first
+/// comment (`#`) or tag (`@`) line — internal blank lines are kept. Returns
+/// `None` when no description text is present.
+///
+/// Faithful mirror of
+/// `commands::show_acceptance_criteria::extract_description_verbatim`; kept
+/// local so the `io` layer does not depend on the `commands` layer.
+fn extract_description_verbatim(
+    source: &str,
+    start_line: usize,
+    end_line_exclusive: Option<usize>,
+) -> Option<String> {
+    let lines: Vec<&str> = source.split('\n').collect();
+    // 0-based start: `start_line` is the 1-based header line, so index
+    // `start_line` is the first line AFTER the header.
+    let start_idx = start_line;
+    let end_idx_exclusive = end_line_exclusive
+        .map(|n| n.saturating_sub(1))
+        .unwrap_or(lines.len());
+    if start_idx >= end_idx_exclusive || start_idx >= lines.len() {
+        return None;
+    }
+    let slice = &lines[start_idx..end_idx_exclusive.min(lines.len())];
+
+    // Strip leading blank lines (parser `_` consumer skips leading whitespace
+    // before the first description line).
+    let mut start = 0usize;
+    while start < slice.len() && slice[start].chars().all(char::is_whitespace) {
+        start += 1;
+    }
+    // Walk forward and stop at the first comment or tag line — both terminate
+    // description blocks in both Gherkin parsers.
+    let mut end = start;
+    while end < slice.len() {
+        let trimmed = slice[end].trim_start();
+        if trimmed.starts_with('#') || trimmed.starts_with('@') {
+            break;
+        }
+        end += 1;
+    }
+    // Strip trailing blank lines (parser `__` consumer trims trailing
+    // whitespace/newlines).
+    while end > start && slice[end - 1].chars().all(char::is_whitespace) {
+        end -= 1;
+    }
+    if start >= end {
+        return None;
+    }
+    let joined = slice[start..end].join("\n");
+    if joined.trim().is_empty() {
+        None
+    } else {
+        Some(joined)
+    }
+}
+
+/// Emit a description block: prefer the verbatim text re-extracted from
+/// `source` (blank-line preserving) and fall back to the lossy parsed
+/// `parsed` field only when raw extraction finds nothing.
+fn format_description_block(
+    source: &str,
+    start_line: usize,
+    end_line_exclusive: Option<usize>,
+    parsed: Option<&String>,
+    lines: &mut Vec<String>,
+    indent_level: usize,
+) {
+    let verbatim = extract_description_verbatim(source, start_line, end_line_exclusive)
+        .or_else(|| parsed.cloned());
+    if let Some(desc) = &verbatim {
+        format_description(desc, lines, indent_level);
+    }
+}
+
+fn format_feature_into(feature: &Feature, source: &str, lines: &mut Vec<String>) {
     // Tags — each on its own line (no indentation at feature level).
     for tag in &feature.tags {
         lines.push(format!("@{tag}"));
@@ -54,10 +144,23 @@ fn format_feature_into(feature: &Feature, lines: &mut Vec<String>) {
     // Feature keyword and name.
     lines.push(format!("Feature: {}", feature.name));
 
-    // Description (free-form prose under the Feature header, indent level 1).
-    if let Some(desc) = &feature.description {
-        format_description(desc, lines, 1);
-    }
+    // Description (free-form prose under the Feature header, indent level 1),
+    // re-extracted verbatim so inter-paragraph blank lines survive. The block
+    // ends at the first child construct (Background → Scenario → Rule).
+    let feature_desc_end = feature
+        .background
+        .as_ref()
+        .map(|bg| bg.position.line)
+        .or_else(|| feature.scenarios.first().map(|s| s.position.line))
+        .or_else(|| feature.rules.first().map(|r| r.position.line));
+    format_description_block(
+        source,
+        feature.position.line,
+        feature_desc_end,
+        feature.description.as_ref(),
+        lines,
+        1,
+    );
 
     // Children: a Background (if any) then scenarios then rules, in the order
     // the TS formatter walks `feature.children`. The Rust AST splits these
@@ -67,17 +170,17 @@ fn format_feature_into(feature: &Feature, lines: &mut Vec<String>) {
     // blank line before EVERY feature child, so we do the same unconditionally.
     if let Some(bg) = &feature.background {
         push_blank_before_child(lines);
-        format_background(bg, lines, 0);
+        format_background(bg, source, lines, 0);
     }
 
     for scenario in &feature.scenarios {
         push_blank_before_child(lines);
-        format_scenario(scenario, lines, 0);
+        format_scenario(scenario, source, lines, 0);
     }
 
     for rule in &feature.rules {
         push_blank_before_child(lines);
-        format_rule(rule, lines, 0);
+        format_rule(rule, source, lines, 0);
     }
 }
 
@@ -86,20 +189,26 @@ fn push_blank_before_child(lines: &mut Vec<String>) {
     lines.push(String::new());
 }
 
-fn format_background(bg: &Background, lines: &mut Vec<String>, base_indent: usize) {
+fn format_background(bg: &Background, source: &str, lines: &mut Vec<String>, base_indent: usize) {
     let ind = indent(base_indent + 1);
     lines.push(format!("{ind}Background: {}", bg.name));
 
-    if let Some(desc) = &bg.description {
-        format_description(desc, lines, base_indent + 2);
-    }
+    // Description ends at the first step of the Background.
+    format_description_block(
+        source,
+        bg.position.line,
+        bg.steps.first().map(|s| s.position.line),
+        bg.description.as_ref(),
+        lines,
+        base_indent + 2,
+    );
 
     for step in &bg.steps {
         format_step(step, lines, base_indent + 2);
     }
 }
 
-fn format_scenario(scenario: &Scenario, lines: &mut Vec<String>, base_indent: usize) {
+fn format_scenario(scenario: &Scenario, source: &str, lines: &mut Vec<String>, base_indent: usize) {
     let ind = indent(base_indent + 1);
 
     // Tags.
@@ -110,9 +219,21 @@ fn format_scenario(scenario: &Scenario, lines: &mut Vec<String>, base_indent: us
     // Keyword (raw keyword, e.g. "Scenario" or "Scenario Outline").
     lines.push(format!("{ind}{}: {}", scenario.keyword.trim(), scenario.name));
 
-    if let Some(desc) = &scenario.description {
-        format_description(desc, lines, base_indent + 2);
-    }
+    // Description ends at the first step (or first Examples table when the
+    // scenario has no steps), re-extracted verbatim to keep blank lines.
+    let scenario_desc_end = scenario
+        .steps
+        .first()
+        .map(|s| s.position.line)
+        .or_else(|| scenario.examples.first().map(|e| e.position.line));
+    format_description_block(
+        source,
+        scenario.position.line,
+        scenario_desc_end,
+        scenario.description.as_ref(),
+        lines,
+        base_indent + 2,
+    );
 
     for step in &scenario.steps {
         format_step(step, lines, base_indent + 2);
@@ -125,7 +246,7 @@ fn format_scenario(scenario: &Scenario, lines: &mut Vec<String>, base_indent: us
     }
 }
 
-fn format_rule(rule: &Rule, lines: &mut Vec<String>, base_indent: usize) {
+fn format_rule(rule: &Rule, source: &str, lines: &mut Vec<String>, base_indent: usize) {
     let ind = indent(base_indent + 1);
 
     for tag in &rule.tags {
@@ -134,9 +255,20 @@ fn format_rule(rule: &Rule, lines: &mut Vec<String>, base_indent: usize) {
 
     lines.push(format!("{ind}Rule: {}", rule.name));
 
-    if let Some(desc) = &rule.description {
-        format_description(desc, lines, base_indent + 2);
-    }
+    // Description ends at the Rule's first child (Background → Scenario).
+    let rule_desc_end = rule
+        .background
+        .as_ref()
+        .map(|bg| bg.position.line)
+        .or_else(|| rule.scenarios.first().map(|s| s.position.line));
+    format_description_block(
+        source,
+        rule.position.line,
+        rule_desc_end,
+        rule.description.as_ref(),
+        lines,
+        base_indent + 2,
+    );
 
     // Rule children: a Background then scenarios. TS inserts a blank line
     // before each child when `index > 0 || rule.description`.
@@ -147,7 +279,7 @@ fn format_rule(rule: &Rule, lines: &mut Vec<String>, base_indent: usize) {
         if idx > 0 || has_desc {
             lines.push(String::new());
         }
-        format_background(bg, lines, base_indent + 1);
+        format_background(bg, source, lines, base_indent + 1);
         idx += 1;
     }
 
@@ -155,7 +287,7 @@ fn format_rule(rule: &Rule, lines: &mut Vec<String>, base_indent: usize) {
         if idx > 0 || has_desc {
             lines.push(String::new());
         }
-        format_scenario(scenario, lines, base_indent + 1);
+        format_scenario(scenario, source, lines, base_indent + 1);
         idx += 1;
     }
 }
@@ -379,7 +511,7 @@ mod tests {
     #[test]
     fn renormalises_step_indentation_to_four_spaces() {
         let src = "Feature: One\n\n  Scenario: A\n  Given x\n  When y\n  Then z\n";
-        let out = format_feature(&parse(src));
+        let out = format_feature(&parse(src), src);
         assert!(out.contains("    Given x"), "got:\n{out}");
         assert!(out.contains("    When y"), "got:\n{out}");
         assert!(out.contains("    Then z"), "got:\n{out}");
@@ -388,7 +520,7 @@ mod tests {
     #[test]
     fn single_trailing_newline() {
         let src = "Feature: One\n\n  Scenario: A\n    Given x\n";
-        let out = format_feature(&parse(src));
+        let out = format_feature(&parse(src), src);
         assert!(out.ends_with('\n'));
         assert!(!out.ends_with("\n\n"));
     }
@@ -396,15 +528,15 @@ mod tests {
     #[test]
     fn idempotent() {
         let src = "Feature: One\n\n  Scenario: A\n  Given x\n  When y\n  Then z\n";
-        let once = format_feature(&parse(src));
-        let twice = format_feature(&parse(&once));
+        let once = format_feature(&parse(src), src);
+        let twice = format_feature(&parse(&once), &once);
         assert_eq!(once, twice, "format must be idempotent");
     }
 
     #[test]
     fn preserves_tags() {
         let src = "@foo\n@bar\nFeature: One\n\n  @baz\n  Scenario: A\n    Given x\n";
-        let out = format_feature(&parse(src));
+        let out = format_feature(&parse(src), src);
         assert!(out.contains("@foo\n@bar\nFeature: One"), "got:\n{out}");
         assert!(out.contains("  @baz\n  Scenario: A"), "got:\n{out}");
     }
@@ -412,7 +544,7 @@ mod tests {
     #[test]
     fn aligns_table_columns() {
         let src = "Feature: T\n\n  Scenario: A\n    Given a table\n      | a | bbbb |\n      | cccc | d |\n";
-        let out = format_feature(&parse(src));
+        let out = format_feature(&parse(src), src);
         assert!(out.contains("| a    | bbbb |"), "got:\n{out}");
         assert!(out.contains("| cccc | d    |"), "got:\n{out}");
     }
@@ -420,7 +552,7 @@ mod tests {
     #[test]
     fn blank_line_before_each_child() {
         let src = "Feature: T\n  Scenario: A\n    Given x\n  Scenario: B\n    Given y\n";
-        let out = format_feature(&parse(src));
+        let out = format_feature(&parse(src), src);
         assert!(out.contains("Feature: T\n\n  Scenario: A"), "got:\n{out}");
         assert!(out.contains("    Given x\n\n  Scenario: B"), "got:\n{out}");
     }
@@ -428,7 +560,7 @@ mod tests {
     #[test]
     fn docstring_has_no_spurious_blank_lines() {
         let src = "Feature: D\n\n  Scenario: A\n    Given step:\n      \"\"\"\n      line1\n      line2\n      \"\"\"\n    Then ok\n";
-        let out = format_feature(&parse(src));
+        let out = format_feature(&parse(src), src);
         // No blank line immediately after the opening delimiter or before the
         // closing delimiter (the RPC-230 parity bug).
         assert!(out.contains("      \"\"\"\n      line1\n"), "got:\n{out}");
@@ -440,19 +572,130 @@ mod tests {
     #[test]
     fn docstring_is_idempotent() {
         let src = "Feature: D\n\n  Scenario: A\n    Given step:\n      \"\"\"\n      line1\n      line2\n      \"\"\"\n    Then ok\n";
-        let once = format_feature(&parse(src));
-        let twice = format_feature(&parse(&once));
+        let once = format_feature(&parse(src), src);
+        let twice = format_feature(&parse(&once), &once);
         assert_eq!(once, twice, "docstring formatting must be idempotent");
     }
 
     #[test]
     fn docstring_media_type_preserved_on_opening_line() {
         let src = "Feature: D\n\n  Scenario: A\n    Given step:\n      \"\"\"json\n      {\"a\": 1}\n      \"\"\"\n    Then ok\n";
-        let out = format_feature(&parse(src));
+        let out = format_feature(&parse(src), src);
         assert!(out.contains("      \"\"\"json\n"), "media type must stay on opening line, got:\n{out}");
         assert!(out.contains("      {\"a\": 1}\n"), "content must be dedented, got:\n{out}");
         // And it must be idempotent.
-        let twice = format_feature(&parse(&out));
+        let twice = format_feature(&parse(&out), &out);
         assert_eq!(out, twice, "media-type docstring must be idempotent");
+    }
+
+    // ====================================================================
+    // RPC-330: Gherkin Description Blank-Line Preservation in Formatter
+    //
+    // Feature: spec/features/gherkin-description-formatting.feature
+    //
+    // These tests assert that `fspec format` (exercised here through the
+    // formatter entry point `format_feature` over a parsed source) preserves
+    // blank lines between paragraphs inside feature/scenario descriptions.
+    // They are RED until the formatter re-extracts description text from the
+    // raw source instead of the lossy parsed `description` field.
+    // ====================================================================
+
+    #[test]
+    fn rpc330_preserves_blank_line_between_feature_description_paragraphs() {
+        // @step Given a feature file whose Feature header is followed by this description:
+        let src = "Feature: Multi paragraph\n\n  First paragraph of the feature description.\n\n  Second paragraph of the feature description.\n\n  Scenario: A\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the feature description retains exactly one blank line between the two paragraphs:
+        assert_eq!(
+            out,
+            "Feature: Multi paragraph\n  First paragraph of the feature description.\n\n  Second paragraph of the feature description.\n\n  Scenario: A\n    Given x\n",
+            "full formatted output must match TS-parity layout (no leading blank after Feature header, inter-paragraph blank preserved), got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn rpc330_preserves_blank_line_between_scenario_description_paragraphs() {
+        // @step Given a feature file with a scenario whose header is followed by this description:
+        let src = "Feature: Scenario desc\n\n  Scenario: Has prose\n    First paragraph of the scenario description.\n\n    Second paragraph of the scenario description.\n\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the scenario description retains exactly one blank line between the two paragraphs:
+        assert!(
+            out.contains(
+                "    First paragraph of the scenario description.\n\n    Second paragraph of the scenario description.\n"
+            ),
+            "blank line between scenario description paragraphs was dropped, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn rpc330_single_paragraph_description_is_unchanged() {
+        // @step Given a feature file with a single-line feature description and no internal blank lines:
+        let src = "Feature: One line desc\n\n  Only one paragraph here.\n\n  Scenario: A\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the description is emitted with no leading or internal blank line and is byte-identical to the input layout:
+        assert_eq!(
+            out,
+            "Feature: One line desc\n  Only one paragraph here.\n\n  Scenario: A\n    Given x\n",
+            "single-paragraph description must have no leading/internal blank line, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn rpc330_collapses_more_than_two_blank_lines_to_two() {
+        // @step Given a feature file whose feature description separates "Paragraph one." and "Paragraph two." by four consecutive blank lines
+        let src = "Feature: Excessive blanks\n\n  Paragraph one.\n\n\n\n\n  Paragraph two.\n\n  Scenario: A\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the two paragraphs are separated by exactly two blank lines:
+        assert!(
+            out.contains("  Paragraph one.\n\n\n  Paragraph two.\n"),
+            "four blank lines must collapse to exactly two, got:\n{out}"
+        );
+        assert!(
+            !out.contains("  Paragraph one.\n\n\n\n  Paragraph two.\n"),
+            "must not emit three or more blank lines between paragraphs, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn rpc330_step_docstring_with_internal_blank_line_is_not_regressed() {
+        // @step Given a feature file with a step doc string whose body contains a blank line:
+        let src = "Feature: Docstring intact\n\n  Scenario: A\n    Given step:\n      \"\"\"\n      line one\n\n      line three\n      \"\"\"\n    Then ok\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the step doc string body is emitted unchanged with no spurious blanks added or removed:
+        assert!(
+            out.contains("      \"\"\"\n      line one\n\n      line three\n      \"\"\"\n"),
+            "step doc string body must be preserved exactly, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn rpc330_multi_paragraph_description_is_idempotent() {
+        // @step Given a feature file with a two-paragraph feature description that has already been formatted once
+        let src = "Feature: Multi paragraph\n\n  First paragraph of the feature description.\n\n  Second paragraph of the feature description.\n\n  Scenario: A\n    Given x\n";
+        let once = format_feature(&parse(src), src);
+
+        // @step When the formatter formats the feature file a second time
+        let twice = format_feature(&parse(&once), &once);
+
+        // @step Then the output of the second run is byte-identical to the output of the first run
+        assert_eq!(
+            once, twice,
+            "multi-paragraph description formatting must be idempotent"
+        );
     }
 }

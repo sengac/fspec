@@ -7,7 +7,7 @@
 
 use std::path::PathBuf;
 
-use codelet_fspec_core::{dispatch_command, DispatchRequest};
+use codelet_fspec_core::{dispatch_command, DispatchRequest, FspecCoreError};
 
 /// Helper — build a DispatchRequest with empty args targeting a throwaway
 /// project root. Phase 1 stubs never touch the filesystem, so the path is
@@ -21,48 +21,25 @@ fn req(command: &str) -> DispatchRequest {
 }
 
 #[test]
-#[ignore = "OBSOLETE as of Batch 20: the TS→Rust port is 100% complete (162/162 \
-canonical commands in PORTED_COMMANDS), so no known command returns NotYetPorted \
-anymore. The NotYetPorted machinery still exists for safety but is unreachable via \
-dispatch for canonical names. This acceptance scenario must be formally retired/ \
-repurposed in spec/features/fspec-tool-rust-dispatcher.feature via ACDD — tracked as \
-a follow-up. Ignored (not deleted) to preserve the scenario→test link until retirement."]
-fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
-    // Scenario: Standalone Rust binary returns NotYetPorted error for a known unported command
+fn notyetported_error_renders_full_agent_facing_contract_when_constructed_directly() {
+    // Scenario: NotYetPorted error renders the full agent-facing contract when constructed directly
 
-    // @step Given the agent session is running inside the standalone fspec Rust binary
-    // (no setup needed — dispatch_command is the standalone path by construction)
+    // @step Given the TS to Rust port is complete so no canonical command reaches the NotYetPorted path via dispatch
+    // (the port is 100% complete — asserted by the CANONICAL_COMMANDS invariant step below)
 
-    // @step And the NAPI chunk callback is NOT registered (is_global_chunk_callback_registered returns false)
-    // (precondition satisfied by reaching dispatch_command — agent_loop only delegates here on the false branch)
+    // @step And the NotYetPorted error variant is retained as a safety mechanism in the public API
+    // (FspecCoreError::NotYetPorted remains part of the public crate API even though
+    //  dispatch never reaches it for a canonical command)
 
-    // @step And the dispatcher's command map records "add-rule" as ported by RPC-XXX
-    // (verified indirectly via the canonical_list test; here we trust the lookup.
-    //  We deliberately pick a command that is still in the stub state — `review`
-    //  maps to RPC-295 in the per-command mapping and is NOT in PORTED_COMMANDS, so its
-    //  stub still returns NotYetPorted. This test asserts the stub path; once
-    //  `review` itself is ported, swap to another unported canonical command.)
-    let stub_command = "review";
-    let stub_rpc = "RPC-295";
+    // @step When a NotYetPorted error is constructed directly with command "some-cmd" and work unit "RPC-999"
+    let err = FspecCoreError::NotYetPorted {
+        command: "some-cmd",
+        work_unit: "RPC-999",
+    };
+    let msg = err.to_string();
 
-    // @step When the LLM emits Fspec with command="add-rule" and any args_json
-    let start = std::time::Instant::now();
-    let result = dispatch_command(req(stub_command));
-    let elapsed = start.elapsed();
-
-    // @step Then the dispatcher returns FspecResult with success=false
-    assert!(!result.success, "expected success=false, got {result:?}");
-
-    let msg = result
-        .error
-        .as_ref()
-        .expect("expected an error message for unported command");
-
-    // @step And the error message contains the literal substring "add-rule"
-    assert!(
-        msg.contains(stub_command),
-        "missing '{stub_command}' in error message: {msg}"
-    );
+    // @step Then rendering the error yields a message containing the literal substring "some-cmd"
+    assert!(msg.contains("some-cmd"), "missing 'some-cmd' in error message: {msg}");
 
     // @step And the error message contains the literal substring "not yet ported"
     assert!(
@@ -70,16 +47,8 @@ fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
         "missing 'not yet ported' in error message: {msg}"
     );
 
-    // @step And the error message contains the porting work unit ID "RPC-XXX"
-    let rpc_pattern = regex::Regex::new(r"RPC-\d+").expect("valid regex");
-    assert!(
-        rpc_pattern.is_match(msg),
-        "missing RPC-### work unit ID in error message: {msg}"
-    );
-    assert!(
-        msg.contains(stub_rpc),
-        "expected {stub_command}'s mapped work unit {stub_rpc} in error message: {msg}"
-    );
+    // @step And the error message contains the porting work unit ID "RPC-999"
+    assert!(msg.contains("RPC-999"), "missing 'RPC-999' in error message: {msg}");
 
     // @step And the error message contains the substring "standalone fspec binary"
     assert!(
@@ -87,23 +56,14 @@ fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
         "missing 'standalone fspec binary' in error message: {msg}"
     );
 
-    // @step And the agent loop emits a normal Done chunk for the turn within 1 second
-    // (proxy assertion: dispatch_command itself returns synchronously well under 1s.
-    //  The Done-chunk emission is the agent_loop's responsibility after this result
-    //  is converted to FspecHandlerResult — verified by the agent_loop integration
-    //  test in tests/agent_loop_wiring_test.rs.)
-    assert!(
-        elapsed < std::time::Duration::from_secs(1),
-        "dispatch_command took {elapsed:?}, expected <1s"
-    );
-
-    // @step And the agent loop does NOT hang waiting for a JS callback
-    // (proxy assertion: dispatch_command returned without blocking on any external
-    //  callback channel — there is no JS callback path in this code path at all.)
-    assert!(
-        result.error.is_some(),
-        "result must be a structured error, not a blocking sentinel"
-    );
+    // @step And the invariant holds that every command in CANONICAL_COMMANDS reports is_ported true
+    for cmd in CANONICAL_COMMANDS {
+        assert!(
+            is_ported(cmd.name),
+            "canonical command '{}' is not in PORTED_COMMANDS — the TS→Rust port regressed",
+            cmd.name
+        );
+    }
 }
 
 #[test]

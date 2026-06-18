@@ -57,8 +57,10 @@ fn write_tags(root: &Path, component: &[&str], feature_group: &[&str], other: &[
 }
 
 // A minimal valid feature carrying a registered component + feature-group tag.
+// Text is in CANONICAL formatted form (each tag on its own line, matching the
+// AST formatter's output) so the `check` formatting sub-check reports PASS.
 fn valid_feature(name: &str) -> String {
-    format!("@comp @grp\nFeature: {name}\n\n  Scenario: A\n    Given x\n")
+    format!("@comp\n@grp\nFeature: {name}\n\n  Scenario: A\n    Given x\n")
 }
 
 fn parse_data(result: &codelet_fspec_core::DispatchResult) -> Value {

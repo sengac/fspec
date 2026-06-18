@@ -26,12 +26,17 @@
 //!
 //! ## RPC-329 known divergence
 //!
-//! The embedded raw parser-error TEXT diverges from `@cucumber/gherkin`
-//! (tracked separately under RPC-329). The error CLASSIFICATION, exit codes,
-//! `Suggestion` lines, and the two content-heuristic messages all match TS;
-//! only the verbatim parser message text differs. We surface the gherkin
-//! crate's `Display` string as the message (sibling-command precedent:
-//! `add_scenario.rs`).
+//! The no-Feature-keyword malformed-file class now matches `@cucumber/gherkin`:
+//! its parse error is reformatted by
+//! [`crate::io::gherkin::format_parse_error_cucumber`] to report Line 0 with the
+//! cucumber token vocabulary (`Parser errors:` + per-line `expected: #EOF,
+//! #Language, …` entries), which also fires the Add-Feature-keyword suggestion.
+//! Files that DO contain a `Feature:` keyword but fail later remain out of scope
+//! (documented carry-over): gherkin-0.16's private `ParseError` fields and
+//! divergent recovery prevent faithful reconstruction, so their raw text stays
+//! gherkin-0.16-derived (sibling-command precedent: `add_scenario.rs`). The
+//! error CLASSIFICATION, exit codes, `Suggestion` lines, and the two
+//! content-heuristic messages all match TS.
 
 use std::path::Path;
 
@@ -40,7 +45,7 @@ use serde_json::json;
 
 use crate::error::FspecCoreError;
 use crate::io::feature_glob::glob_feature_files;
-use crate::io::gherkin::parse_feature_lenient;
+use crate::io::gherkin::{format_parse_error_cucumber, parse_feature_lenient};
 
 /// CLI arguments accepted by `validate`. Mirrors the Commander.js registration
 /// at `src/commands/validate.ts:256-265`: an optional positional `[file]` and
@@ -225,8 +230,13 @@ fn validate_file(project_root: &Path, file_path: &str, verbose: bool) -> FileRes
     // matches).
     match parse_feature_lenient(&content) {
         Err(parse_err) => {
-            let message = parse_err.to_string();
-            let line = extract_line(&message);
+            // RPC-329: delegate to the shared cucumber-compatible formatter.
+            // For the no-Feature-keyword class it returns (0, cucumber-vocab
+            // message); for files WITH a Feature keyword it carries over the
+            // gherkin-0.16 Display string + its derived line number. The
+            // formatted message feeds get_suggestion so the Add-Feature-keyword
+            // suggestion fires on the reformatted text.
+            let (line, message) = format_parse_error_cucumber(&content, &parse_err);
             let suggestion = get_suggestion(&message);
             FileResult {
                 file: file_path.to_string(),
@@ -271,17 +281,6 @@ fn validate_file(project_root: &Path, file_path: &str, verbose: bool) -> FileRes
 fn feature_child_count(feature: &gherkin::Feature) -> usize {
     let background = usize::from(feature.background.is_some());
     background + feature.scenarios.len() + feature.rules.len()
-}
-
-/// Extract a 1-based line number from the gherkin crate's `ParseError`
-/// `Display` string, which is `"Error at <line>:<col>: {expected:?}"`. Returns
-/// 0 when the prefix is absent (parity with TS `parseError.location?.line || 0`).
-fn extract_line(message: &str) -> usize {
-    message
-        .strip_prefix("Error at ")
-        .and_then(|rest| rest.split(':').next())
-        .and_then(|n| n.trim().parse::<usize>().ok())
-        .unwrap_or(0)
 }
 
 /// Port of the TS `checkForCommonIssues` content heuristics
@@ -393,12 +392,6 @@ mod tests {
     /// async dispatcher.
     fn parse_payload(s: &str) -> serde_json::Value {
         serde_json::from_str(s).expect("payload is JSON")
-    }
-
-    #[test]
-    fn extract_line_parses_gherkin_prefix() {
-        assert_eq!(extract_line("Error at 5:3: {\"#EOF\"}"), 5);
-        assert_eq!(extract_line("some other message"), 0);
     }
 
     #[test]
