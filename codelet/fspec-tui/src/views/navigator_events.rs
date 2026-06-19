@@ -73,6 +73,16 @@ impl Navigator {
                 }
                 EventResult::consumed()
             }
+            // RPC-345: Tab→SwitchToProviders flips back into the
+            // ProviderSettings mode-view via Action::OpenProviderSettingsView
+            // (already handled at navigator.rs:111-112 → ViewMode::ProviderSettings).
+            // Reciprocal of the SwitchToModels arm above.
+            ModelSelectorEvent::SwitchToProviders => {
+                if let Some(tx) = self.action_tx.as_ref() {
+                    let _ = tx.send(Action::OpenProviderSettingsView);
+                }
+                EventResult::consumed()
+            }
         }
     }
 
