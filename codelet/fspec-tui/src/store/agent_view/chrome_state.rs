@@ -86,7 +86,7 @@ impl AgentViewStore {
     /// Persist `reduction` (already computed as
     /// `((1.0 - compression_ratio) * 100.0).round() as i32`) so the
     /// SessionHeader can render `[X%: COMPACTED {reduction}%]` on the
-    /// next frame. Called by `dispatch_rpc045.rs` on
+    /// next frame. Called by `dispatch_stream_chunks.rs` on
     /// `StreamChunk::CompactionComplete`.
     pub fn set_compaction_reduction(&mut self, session_id: SessionId, reduction: i32) {
         self.compaction_reduction_by_session

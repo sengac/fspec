@@ -370,7 +370,7 @@
           "lines": "187-202",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 1,
                 2,
@@ -1124,7 +1124,7 @@
       "codelet/core/src/session_manager_handle.rs",
       "codelet/fspec-tui/src/transport/mod.rs",
       "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
       "codelet/fspec-tui/src/components/model_selector_dialog.rs",
       "codelet/fspec-tui/src/components/mod.rs",
       "src/tui/components/ModelSelectorScreen.tsx"

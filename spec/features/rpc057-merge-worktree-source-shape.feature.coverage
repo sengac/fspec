@@ -727,14 +727,14 @@
       ]
     },
     {
-      "name": "/merge-worktree slash command wiring lives in dispatch_rpc057.rs",
+      "name": "/merge-worktree slash command wiring lives in dispatch_merge_worktree.rs",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc057.rs",
           "lines": "371-395",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 1,
                 2,
@@ -1055,7 +1055,7 @@
       "codelet/fspec-tui/src/transport/embedded.rs",
       "codelet/fspec-tui/src/transport/websocket.rs",
       "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc057.rs"
+      "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs"
     ],
     "totalLinesCovered": 1335
   }

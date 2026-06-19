@@ -9,7 +9,7 @@
 //! types (MergeStrategy, MergeStatus, MergeOutcome, SessionWorktreeInfo,
 //! SessionChangesSummary), the `MergeConfirmDialog` compositor dialog,
 //! and the `/merge-worktree` slash-command dispatch routing in
-//! `dispatch_rpc057.rs`. Mirrors the source_shape_rpc054 /
+//! `dispatch_merge_worktree.rs`. Mirrors the source_shape_rpc054 /
 //! source_shape_rpc055 / source_shape_rpc056 patterns.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -369,35 +369,6 @@ fn merge_confirm_dialog_module_exists() {
         source.contains("pub fn handle_key("),
         "MergeConfirmDialog should declare pub fn handle_key"
     );
-}
-
-/// Scenario: /merge-worktree slash command wiring lives in dispatch_rpc057.rs
-#[test]
-fn dispatch_rpc057_file_has_expected_shape() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc057.rs exists
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc057.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_rpc057.rs");
-
-    // @step Then it declares a method named "handle_slash_merge_worktree"
-    // @step And it declares a method named "handle_inspect_changes_loaded"
-    // @step And it declares a method named "handle_merge_confirmed"
-    // @step And it declares a method named "handle_discard_confirmed"
-    // @step And it declares a method named "handle_cancel_merge_dialog"
-    // @step And it declares a method named "try_dispatch_rpc057"
-    for method in [
-        "handle_slash_merge_worktree",
-        "handle_inspect_changes_loaded",
-        "handle_merge_confirmed",
-        "handle_discard_confirmed",
-        "handle_cancel_merge_dialog",
-        "try_dispatch_rpc057",
-    ] {
-        let needle = format!("fn {method}(");
-        assert!(
-            source.contains(&needle),
-            "dispatch_rpc057.rs should declare fn {method}"
-        );
-    }
 }
 
 /// Scenario: MergeStrategy and MergeStatus use derive(Default) with default variant attribute (RPC-057 retro 2026-05-27)

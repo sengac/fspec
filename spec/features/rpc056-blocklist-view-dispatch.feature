@@ -18,9 +18,9 @@ Feature: /blocklist view + blocklist RPC surface
   provenance (source: "system" | "project") so the view can
   render the same source tag the TS BlocklistListView does.
   2. Replacing the `SlashCommandAction::Blocklist` notice fallback in
-  dispatch_rpc020.rs::handle_slash_command with a real
+  dispatch_slash_commands.rs::handle_slash_command with a real
   `Action::OpenBlocklistView` dispatch routed through a new
-  app/dispatch_rpc056.rs file, mirroring the dispatch_rpc054
+  app/dispatch_blocklist.rs file, mirroring the dispatch_provider_settings
   (/provider) pattern.
   3. Adding a Navigator-owned `BlocklistView` child view that paints a
   two-pane layout (rule list + details), supports j/k navigation,

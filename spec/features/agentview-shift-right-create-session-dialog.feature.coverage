@@ -8,7 +8,7 @@
           "lines": "108-130",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 39,
                 40,
@@ -42,7 +42,7 @@
           "lines": "134-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 39,
                 40,
@@ -76,7 +76,7 @@
           "lines": "157-183",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 39,
                 40,
@@ -616,7 +616,7 @@
           "lines": "484-500",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 31,
                 32,
@@ -669,7 +669,7 @@
           "lines": "504-534",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 38,
                 39,
@@ -1352,7 +1352,7 @@
           "lines": "757-786",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 16,
                 17,
@@ -1376,7 +1376,7 @@
           "lines": "788-829",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 38,
                 39,
@@ -1407,7 +1407,7 @@
           "lines": "776-831",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 38,
                 39,
@@ -1443,7 +1443,7 @@
           "lines": "729-771",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 27,
                 28,
@@ -1527,7 +1527,7 @@
           "lines": "870-911",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 59,
                 60,
@@ -1575,7 +1575,7 @@
           "lines": "971-1010",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 53,
                 54,
@@ -1645,7 +1645,7 @@
           "lines": "1042-1086",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 53,
                 54,
@@ -1688,7 +1688,7 @@
           "lines": "1090-1112",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 53,
                 54,
@@ -1732,9 +1732,9 @@
       "codelet/fspec-tui/tests/shift_right_create_session_dialog_rpc097.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+      "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
       "codelet/fspec-tui/src/components/create_session_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+      "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
       "codelet/fspec-tui/src/views/navigator.rs",
       "codelet/fspec-tui/src/store/agent_view/navigation.rs"
     ],

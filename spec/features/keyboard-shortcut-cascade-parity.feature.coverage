@@ -144,7 +144,7 @@
           "lines": "234-267",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -188,7 +188,7 @@
           "lines": "270-294",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -232,7 +232,7 @@
           "lines": "349-368",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
               "lines": [
                 37,
                 38,
@@ -301,7 +301,7 @@
           "lines": "406-488",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc025.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 36,
                 37,
@@ -442,7 +442,7 @@
           "lines": "491-529",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc025.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_history_recall.rs",
               "lines": [
                 76,
                 77,
@@ -484,8 +484,8 @@
     "implFiles": [
       "codelet/fspec-tui/src/views/agent/dispatch.rs",
       "codelet/fspec-tui/src/app/events.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc025.rs"
+      "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
+      "codelet/fspec-tui/src/app/dispatch_history_recall.rs"
     ],
     "totalLinesCovered": 748
   }

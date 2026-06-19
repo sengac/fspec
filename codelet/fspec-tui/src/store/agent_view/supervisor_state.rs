@@ -13,7 +13,7 @@
 //!   renderer ("[Subordinate of: <short-id>]").
 //! * `supervisor_pending_count_by_session: HashMap<SessionId, usize>`
 //!   — incremented by `StreamChunk::SupervisorPendingInjection` in
-//!   `dispatch_rpc045::handle_stream_chunk_state_updates`. Read by
+//!   `dispatch_stream_chunks::handle_stream_chunk_state_updates`. Read by
 //!   the SessionFooter left-aligned chip ("[N pending from
 //!   supervisor]"). Resettable via `set_supervisor_pending_count` for
 //!   the case where the subordinate consumes the message and the
@@ -66,7 +66,7 @@ impl AgentViewStore {
     }
 
     /// RPC-061: bump the pending count for `session` by 1. Invoked by
-    /// `dispatch_rpc045::handle_stream_chunk_state_updates` on a
+    /// `dispatch_stream_chunks::handle_stream_chunk_state_updates` on a
     /// `StreamChunk::SupervisorPendingInjection`.
     pub fn apply_supervisor_pending_injection(&mut self, session: &SessionId) {
         let entry = self

@@ -684,7 +684,7 @@ fn agent_view_store_exposes_set_work_unit_context() {
 // RPC-097 re-review (2026-05-31): BoardView first-press regression
 // ─────────────────────────────────────────────────────────────────────
 // The original RPC-097 fix only patched the AgentView dispatch path
-// (dispatch_rpc024.rs). BoardView's Shift+Right goes through a SEPARATE
+// (dispatch_session_cycle.rs). BoardView's Shift+Right goes through a SEPARATE
 // path (app/dispatch.rs::Action::OpenAgentView arm) that was untouched
 // and still relied on the orphan request_create_session_dialog() flag
 // setter — requiring TWO presses (one to enter Agent mode, one to fire

@@ -103,8 +103,8 @@ fn new_mode_view_files_exist_with_documented_surface() {
     let agent_rs = fspec_tui_src().join("views").join("agent.rs");
     assert!(count_lines(&agent_rs) < 300);
 
-    // @step And codelet/fspec-tui/src/app/dispatch_rpc026.rs line count is < 300
-    let dispatch026 = fspec_tui_src().join("app").join("dispatch_rpc026.rs");
+    // @step And codelet/fspec-tui/src/app/dispatch_resume_search_views.rs line count is < 300
+    let dispatch026 = fspec_tui_src().join("app").join("dispatch_resume_search_views.rs");
     assert!(count_lines(&dispatch026) < 300);
 }
 
@@ -151,37 +151,6 @@ fn old_popup_files_removed_and_identifiers_gone() {
     assert!(violations.is_empty(), "violations: {violations:?}");
 }
 
-/// Scenario: dispatch_rpc026.rs surface lists the renamed mode-view helpers
-#[test]
-fn dispatch_rpc026_module_has_documented_surface() {
-    // @step Given codelet/fspec-tui/src/app/dispatch_rpc026.rs after RPC-026 lands
-    let path = fspec_tui_src().join("app").join("dispatch_rpc026.rs");
-    let body = read_raw(&path);
-    assert!(count_lines(&path) < 300);
-    // @step And the file declares "fn handle_open_resume_view"
-    assert!(body.contains("fn handle_open_resume_view"));
-    // @step And the file declares "fn handle_close_resume_view"
-    assert!(body.contains("fn handle_close_resume_view"));
-    // @step And the file declares "fn handle_open_search_view"
-    assert!(body.contains("fn handle_open_search_view"));
-    // @step And the file declares "fn handle_close_search_view"
-    assert!(body.contains("fn handle_close_search_view"));
-    // @step And the file declares "fn handle_session_list_loaded"
-    assert!(body.contains("fn handle_session_list_loaded"));
-    // @step And the file declares "fn handle_attach_to_session"
-    assert!(body.contains("fn handle_attach_to_session"));
-    // @step And the file declares "fn handle_search_history"
-    assert!(body.contains("fn handle_search_history"));
-    // @step And the file declares "fn handle_history_search_results"
-    assert!(body.contains("fn handle_history_search_results"));
-    // @step And the file declares "fn handle_insert_into_input"
-    assert!(body.contains("fn handle_insert_into_input"));
-    // @step And the file declares "fn handle_request_delete_session"
-    assert!(body.contains("fn handle_request_delete_session"));
-    // @step And the file declares "fn handle_confirm_delete_session"
-    assert!(body.contains("fn handle_confirm_delete_session"));
-}
-
 /// Scenario: AgentView gains resume_view/search_view fields
 #[test]
 fn agent_view_orchestrator_owns_the_new_mode_view_fields() {
@@ -201,8 +170,8 @@ fn agent_view_orchestrator_owns_the_new_mode_view_fields() {
 /// Scenario: handle_slash_command dispatches the renamed Action variants
 #[test]
 fn handle_slash_command_dispatches_open_resume_view_and_open_search_view() {
-    // @step Given codelet/fspec-tui/src/app/dispatch_rpc020.rs after RPC-026 lands
-    let path = fspec_tui_src().join("app").join("dispatch_rpc020.rs");
+    // @step Given codelet/fspec-tui/src/app/dispatch_slash_commands.rs after RPC-026 lands
+    let path = fspec_tui_src().join("app").join("dispatch_slash_commands.rs");
     let body = read_raw(&path);
     assert!(count_lines(&path) < 300);
     // @step And the file routes "SlashCommandAction::Resume" through handle_open_resume_view

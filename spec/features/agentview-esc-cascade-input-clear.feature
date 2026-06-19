@@ -6,7 +6,7 @@ Feature: AgentView Esc Cascade Input Clear
   RPC-095 — Esc-cascade level 6 (input clear) extension to the RPC-051 cascade.
 
   TS reference: src/tui/components/AgentView.tsx:4731-4773
-  Rust implementation: codelet/fspec-tui/src/app/dispatch_rpc051.rs
+  Rust implementation: codelet/fspec-tui/src/app/dispatch_esc_cascade.rs
 
   Adds two new branches BEFORE the existing L5 BackToBoard fallback:
   - L6: input.trim() non-empty → clear input, stay on AgentView

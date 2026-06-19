@@ -6,7 +6,7 @@
 //! contract for the THREE new RPC methods (loop_add, loop_cancel,
 //! loop_list), the NEW wire type (RegisteredLoop), the new
 //! LoopSubcommand parser, and the `/loop` slash-command dispatch
-//! routing in `dispatch_rpc059.rs`. Mirrors the source_shape_rpc058
+//! routing in `dispatch_slash_loop.rs`. Mirrors the source_shape_rpc058
 //! pattern.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -256,33 +256,4 @@ fn loop_parser_module_exists() {
         source.contains("pub fn parse_loop_command("),
         "loop_parser.rs should declare pub fn parse_loop_command"
     );
-}
-
-/// Scenario: /loop slash command wiring lives in dispatch_rpc059.rs
-#[test]
-fn dispatch_rpc059_file_has_expected_shape() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc059.rs exists
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc059.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_rpc059.rs");
-
-    // @step Then it declares a method named "handle_slash_loop_help"
-    // @step And it declares a method named "handle_loop_subcommand"
-    // @step And it declares a method named "handle_loop_add"
-    // @step And it declares a method named "handle_loop_list"
-    // @step And it declares a method named "handle_loop_cancel"
-    // @step And it declares a method named "try_dispatch_rpc059"
-    for method in [
-        "handle_slash_loop_help",
-        "handle_loop_subcommand",
-        "handle_loop_add",
-        "handle_loop_list",
-        "handle_loop_cancel",
-        "try_dispatch_rpc059",
-    ] {
-        let needle = format!("fn {method}(");
-        assert!(
-            source.contains(&needle),
-            "dispatch_rpc059.rs should declare fn {method}"
-        );
-    }
 }

@@ -5,12 +5,12 @@
 //!   - spec/features/work-unit-attach-binding.feature
 //!   - spec/features/slash-command-detach-and-work-unit-binding.feature
 //!
-//! Factored out of `app/dispatch.rs` and `app/dispatch_rpc020.rs` so
+//! Factored out of `app/dispatch.rs` and `app/dispatch_slash_commands.rs` so
 //! both orchestrator files stay under the 300-LoC ceiling pinned by
 //! `slash-command-detach-source-shape.feature`.
 //!
 //! Mirrors the spawned-task + action-bus round-trip pattern from
-//! `dispatch_rpc046::/clear` and `dispatch_rpc026::/resume`.
+//! `dispatch_slash_clear::/clear` and `dispatch_resume_search_views::/resume`.
 
 use codelet_rpc_types::{SessionId, WorkUnitContext};
 

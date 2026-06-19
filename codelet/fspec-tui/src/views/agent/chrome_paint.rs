@@ -67,7 +67,7 @@ pub fn paint_header_and_role(
         reasoning_tokens: tokens.reasoning_tokens,
         // RPC-100 — source the post-compaction reduction percentage
         // from the per-session slot populated by
-        // `dispatch_rpc045.rs::CompactionComplete`. `Some(_)` widens
+        // `dispatch_stream_chunks.rs::CompactionComplete`. `Some(_)` widens
         // the SessionHeader bracket to `[X%: COMPACTED Y%]`; `None`
         // keeps the plain `[X%]` form. Mirrors TS AgentView.tsx:946-979.
         compaction_reduction: sid.and_then(|s| store.compaction_reduction_for(s)),

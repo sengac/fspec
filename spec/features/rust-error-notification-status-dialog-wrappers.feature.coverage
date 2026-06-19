@@ -2343,7 +2343,7 @@
           "lines": "410-508",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc079.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
               "lines": [
                 1,
                 2,
@@ -2399,7 +2399,7 @@
           "lines": "522-580",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc079.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
               "lines": [
                 55,
                 56,
@@ -2436,7 +2436,7 @@
               ]
             },
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc079.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
               "lines": [
                 57,
                 58,
@@ -2464,7 +2464,7 @@
       "codelet/fspec-tui/src/components/error_dialog.rs",
       "codelet/fspec-tui/src/components/notification_dialog.rs",
       "codelet/fspec-tui/src/components/status_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc079.rs",
+      "codelet/fspec-tui/src/app/dispatch_dialog_dismiss.rs",
       "codelet/fspec-tui/src/app/events.rs"
     ],
     "totalLinesCovered": 2863

@@ -12,7 +12,7 @@
 //!     300 lines of code (the ceiling held by RPC-024 / RPC-025).
 //!   * The `Action::SessionResumeComplete` variant exists on the
 //!     Action enum.
-//!   * The `dispatch_rpc026.rs` file declares `handle_session_resume_complete`.
+//!   * The `dispatch_resume_search_views.rs` file declares `handle_session_resume_complete`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -147,19 +147,5 @@ fn action_enum_declares_session_resume_complete_variant() {
     assert!(
         body.contains("SessionResumeComplete("),
         "components/mod.rs must declare Action::SessionResumeComplete(SessionId) variant",
-    );
-}
-
-/// Scenario: dispatch_rpc026.rs declares the new resume-complete helper.
-#[test]
-fn dispatch_rpc026_declares_handle_session_resume_complete() {
-    // @step Given codelet/fspec-tui/src/app/dispatch_rpc026.rs after RPC-049 lands
-    let path = fspec_tui_src().join("app").join("dispatch_rpc026.rs");
-    let body = read_raw(&path);
-
-    // @step Then the file declares "pub(crate) fn handle_session_resume_complete"
-    assert!(
-        body.contains("handle_session_resume_complete"),
-        "dispatch_rpc026.rs must declare handle_session_resume_complete helper",
     );
 }

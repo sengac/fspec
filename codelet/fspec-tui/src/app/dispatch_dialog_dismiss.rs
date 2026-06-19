@@ -1,16 +1,14 @@
-//! RPC-079 — App::dispatch routing for `Action::DismissDialog(id)`
-//! and ErrorDialog promotion on LLM provider Error chunks.
+//! App::dispatch routing for `Action::DismissDialog(id)`
+//! and ErrorDialog promotion on LLM provider Error chunks. Introduced: RPC-079.
 //!
 //! Feature: spec/features/rust-error-notification-status-dialog-wrappers.feature
 //!
-//! Factored into its own file (mirroring the dispatch_rpcNNN.rs
-//! pattern from RPC-063 / RPC-061 / RPC-060 / etc.) so
-//! `app/dispatch.rs` stays under the 300-LoC ceiling pinned by the
-//! source-shape regression tests.
+//! Factored into its own file so `app/dispatch.rs` stays under the
+//! 300-LoC ceiling.
 //!
 //! Two responsibilities:
 //!
-//! - `try_dispatch_rpc079` — matches `Action::DismissDialog(id)` and
+//! - `try_dispatch_dialog_dismiss` — matches `Action::DismissDialog(id)` and
 //!   calls `self.compositor.remove(&id)`. Returns `true` when the
 //!   action was consumed; `false` otherwise so the caller can fall
 //!   through to the next dispatch helper in `app/dispatch.rs`.
@@ -40,7 +38,7 @@ impl App {
     /// identified by its stable id off the compositor. Returns `true`
     /// when the action matched; `false` otherwise (so the main
     /// `dispatch.rs` `_` arm can chain into the next try_dispatch_*).
-    pub(crate) fn try_dispatch_rpc079(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_dialog_dismiss(&mut self, action: &Action) -> bool {
         if let Action::DismissDialog(id) = action {
             let _ = self.compositor.remove(id);
             true

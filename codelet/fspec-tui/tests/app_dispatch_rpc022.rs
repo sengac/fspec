@@ -303,17 +303,17 @@ async fn action_model_selected_against_no_session_manager_is_silent_no_op() {
     // If we reach this line, neither dispatch nor drain panicked.
 }
 
-/// Scenario: dispatch_rpc022.rs stays under 300 lines
+/// Scenario: dispatch_model_thinking_dialogs.rs stays under 300 lines
 #[test]
-fn dispatch_rpc022_rs_stays_under_300_lines() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc022.rs after RPC-022 lands
+fn dispatch_model_thinking_dialogs_rs_stays_under_300_lines() {
+    // @step Given the file codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs after RPC-022 lands
     let path = common::workspace_root()
         .join("fspec-tui")
         .join("src")
         .join("app")
-        .join("dispatch_rpc022.rs");
+        .join("dispatch_model_thinking_dialogs.rs");
     // @step When a test counts the line-count of the file
     let lines = common::read_to_string_or_panic(&path).lines().count();
     // @step Then the file has fewer than 300 lines
-    assert!(lines < 300, "dispatch_rpc022.rs has {lines} lines");
+    assert!(lines < 300, "dispatch_model_thinking_dialogs.rs has {lines} lines");
 }

@@ -18,8 +18,8 @@ Feature: /loop RPC surface source shape
   - The LoopSubcommand enum + parse_loop_command MUST live in
     codelet/fspec-tui/src/app/loop_parser.rs.
   - All slash-command wiring for /loop MUST live in
-    codelet/fspec-tui/src/app/dispatch_rpc059.rs (mirrors
-    dispatch_rpc058) so the orchestrator dispatch.rs stays under the
+    codelet/fspec-tui/src/app/dispatch_slash_loop.rs (mirrors
+    dispatch_slash_schedule) so the orchestrator dispatch.rs stays under the
     300-LoC ceiling.
 
   These tests run against source files at compile/parse time — they
@@ -40,7 +40,7 @@ Feature: /loop RPC surface source shape
   #   5. FspecBackend trait MUST expose async variants of all three methods.
   #   6. EmbeddedFspecBackend AND WebSocketFspecBackend MUST forward each method to the tarpc client.
   #   7. LoopSubcommand enum + parse_loop_command MUST live in codelet/fspec-tui/src/app/loop_parser.rs.
-  #   8. All /loop wiring MUST live in codelet/fspec-tui/src/app/dispatch_rpc059.rs.
+  #   8. All /loop wiring MUST live in codelet/fspec-tui/src/app/dispatch_slash_loop.rs.
   #
   # ========================================
 
@@ -91,11 +91,11 @@ Feature: /loop RPC surface source shape
     And LoopSubcommand has variants named Add, Cancel, List, Help
     And it declares a public fn named "parse_loop_command" taking &str and returning LoopSubcommand
 
-  Scenario: /loop slash command wiring lives in dispatch_rpc059.rs
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc059.rs exists
+  Scenario: /loop slash command wiring lives in dispatch_slash_loop.rs
+    Given the file codelet/fspec-tui/src/app/dispatch_slash_loop.rs exists
     Then it declares a method named "handle_slash_loop_help"
     And it declares a method named "handle_loop_subcommand"
     And it declares a method named "handle_loop_add"
     And it declares a method named "handle_loop_list"
     And it declares a method named "handle_loop_cancel"
-    And it declares a method named "try_dispatch_rpc059"
+    And it declares a method named "try_dispatch_slash_loop"

@@ -22,7 +22,7 @@ Feature: /role slash command end-to-end (UI dialog)
   SetRole(text). `/role clear` (case-insensitive) → ClearRole. `/role `
   (trailing-space empty arg) → OpenRoleDialog.
 
-  [E] Dispatch wiring (codelet/fspec-tui/src/app/dispatch_rpc063.rs):
+  [E] Dispatch wiring (codelet/fspec-tui/src/app/dispatch_role_dialog.rs):
   SlashCommandAction::Role arm AND SlashCommandParse::OpenRoleDialog
   arm both route to handle_open_role_dialog(), which reads the current
   role from AgentViewStore::role_for(current_session) and pushes a

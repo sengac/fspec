@@ -482,14 +482,14 @@
       ]
     },
     {
-      "name": "/schedule slash command wiring lives in dispatch_rpc058.rs",
+      "name": "/schedule slash command wiring lives in dispatch_slash_schedule.rs",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc058.rs",
           "lines": "321-352",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 1,
                 2,
@@ -752,7 +752,7 @@
       "codelet/fspec-tui/src/transport/embedded.rs",
       "codelet/fspec-tui/src/transport/websocket.rs",
       "codelet/fspec-tui/src/app/schedule_parser.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc058.rs"
+      "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs"
     ],
     "totalLinesCovered": 903
   }

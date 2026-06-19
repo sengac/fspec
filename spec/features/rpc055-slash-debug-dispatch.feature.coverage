@@ -8,7 +8,7 @@
           "lines": "100-131",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc055.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -45,7 +45,7 @@
           "lines": "137-158",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc055.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -82,7 +82,7 @@
           "lines": "164-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc055.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -119,7 +119,7 @@
           "lines": "191-234",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc055.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -156,7 +156,7 @@
           "lines": "241-292",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc055.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -193,7 +193,7 @@
           "lines": "303-337",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc055.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
               "lines": [
                 35,
                 36,
@@ -282,7 +282,7 @@
           "lines": "438-475",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 90,
                 91,
@@ -303,9 +303,9 @@
       "codelet/fspec-tui/tests/slash_debug_rpc055.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc055.rs",
+      "codelet/fspec-tui/src/app/dispatch_slash_debug.rs",
       "codelet/fspec-tui/src/views/agent.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc045.rs"
+      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs"
     ],
     "totalLinesCovered": 446
   }

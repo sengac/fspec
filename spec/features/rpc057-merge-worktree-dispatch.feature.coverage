@@ -8,7 +8,7 @@
           "lines": "104-126",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 43,
                 44,
@@ -58,7 +58,7 @@
           "lines": "132-169",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 78,
                 79,
@@ -97,7 +97,7 @@
           "lines": "174-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 100,
                 101,
@@ -476,7 +476,7 @@
           "lines": "355-407",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 115,
                 116,
@@ -523,7 +523,7 @@
           "lines": "411-447",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 204,
                 205,
@@ -561,7 +561,7 @@
           "lines": "451-506",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 225,
                 226,
@@ -605,7 +605,7 @@
           "lines": "510-546",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 115,
                 116,
@@ -652,7 +652,7 @@
           "lines": "551-597",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 147,
                 148,
@@ -689,7 +689,7 @@
           "lines": "601-632",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 147,
                 148,
@@ -726,7 +726,7 @@
           "lines": "636-677",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
               "lines": [
                 169,
                 170,
@@ -747,7 +747,7 @@
       "codelet/fspec-tui/tests/merge_worktree_rpc057.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc057.rs",
+      "codelet/fspec-tui/src/app/dispatch_merge_worktree.rs",
       "codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs"
     ],
     "totalLinesCovered": 1020

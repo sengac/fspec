@@ -838,7 +838,7 @@
       "codelet/fspec-tui/src/views/agent/spinner.rs",
       "codelet/fspec-tui/src/views/agent/input_transition.rs",
       "codelet/fspec-tui/src/views/agent/multiline_input.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+      "codelet/fspec-tui/src/app/dispatch_esc_cascade.rs",
       "codelet/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 1081

@@ -98,7 +98,7 @@ pub struct AgentViewStore {
     pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
 
     // ── RPC-100 per-session compaction reduction percentage ─────────────
-    // Populated by `dispatch_rpc045.rs::handle_stream_chunk_state_updates`
+    // Populated by `dispatch_stream_chunks.rs::handle_stream_chunk_state_updates`
     // when a `StreamChunk::CompactionComplete` arrives, and cleared on
     // `SessionStateChange { state: Cleared }`. Read by
     // `views/agent/chrome_paint.rs::paint_header_and_role` to render the

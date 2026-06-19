@@ -30,7 +30,7 @@
 //!                             (canonical Rust equivalent of the local
 //!                             open-session list cleanup — mirrors the
 //!                             pattern at handle_confirm_delete_session
-//!                             dispatch_rpc026.rs:249). Without it the
+//!                             dispatch_resume_search_views.rs:249). Without it the
 //!                             destroyed SessionContext stays in
 //!                             open_sessions and Shift+Left/Right cycle
 //!                             via navigate_prev/navigate_next /
@@ -101,7 +101,7 @@ impl App {
                     // Step 3: AgentViewStore::open_sessions removal
                     // (canonical Rust local cleanup — mirrors the
                     // pattern at handle_confirm_delete_session
-                    // dispatch_rpc026.rs:249). The Rust cycle source is
+                    // dispatch_resume_search_views.rs:249). The Rust cycle source is
                     // `open_sessions` (NOT the backend SessionManager
                     // IndexMap that TS reads via
                     // `sessionGetNext/Prev`), so this synchronous

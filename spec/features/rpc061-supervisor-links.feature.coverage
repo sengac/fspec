@@ -8,7 +8,7 @@
           "lines": "85-104",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -213,7 +213,7 @@
           "lines": "110-143",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -336,7 +336,7 @@
           "lines": "149-181",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -459,7 +459,7 @@
           "lines": "184-209",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -582,7 +582,7 @@
           "lines": "216-238",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 115,
                 116,
@@ -643,7 +643,7 @@
           "lines": "274-302",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -873,7 +873,7 @@
           "lines": "415-442",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 91,
                 92,
@@ -900,12 +900,12 @@
       "codelet/fspec-tui/tests/supervisor_links_rpc061.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+      "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
       "codelet/fspec-tui/src/store/agent_view/supervisor_state.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
       "codelet/fspec-tui/src/views/agent/header_build.rs",
       "codelet/fspec-tui/src/views/agent/footer.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc026.rs"
+      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 982
   }

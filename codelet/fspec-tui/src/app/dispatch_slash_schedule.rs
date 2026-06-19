@@ -1,5 +1,5 @@
-//! RPC-058 — App::dispatch routing for the `/schedule …` slash command
-//! family.
+//! App::dispatch routing for the `/schedule …` slash command
+//! family. Introduced: RPC-058.
 //!
 //! Factored into its own file to keep `app/dispatch.rs` under the
 //! 300-LoC ceiling. Each helper here mirrors the established RPC-054 /
@@ -192,7 +192,7 @@ impl App {
 
     /// Route RPC-058 Action variants through their helpers. Called from
     /// the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc058(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_slash_schedule(&mut self, action: &Action) -> bool {
         match action {
             Action::ScheduleSubcommandParsed(sub) => {
                 self.handle_schedule_subcommand(sub.clone());

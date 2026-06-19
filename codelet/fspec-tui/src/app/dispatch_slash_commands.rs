@@ -34,7 +34,7 @@ impl App {
                 }
             }
             SlashCommandAction::Clear => {
-                // RPC-046: handler body lives in dispatch_rpc046.rs.
+                // RPC-046: handler body lives in dispatch_slash_clear.rs.
                 self.handle_slash_clear();
             }
             SlashCommandAction::Quit => {
@@ -97,7 +97,7 @@ impl App {
             SlashCommandAction::Detach => {
                 // RPC-050: /detach handler — three documented paths
                 // (no session / no binding / Ok-Err round-trip) live
-                // in dispatch_rpc050.rs::handle_slash_detach.
+                // in dispatch_work_unit_binding.rs::handle_slash_detach.
                 self.handle_slash_detach();
             }
             SlashCommandAction::Provider => {
@@ -108,30 +108,30 @@ impl App {
                 let _ = self.action_tx.send(Action::OpenProviderSettingsView);
             }
             SlashCommandAction::Debug => {
-                // RPC-055: handler body lives in dispatch_rpc055.rs.
+                // RPC-055: handler body lives in dispatch_slash_debug.rs.
                 self.handle_slash_debug();
             }
             SlashCommandAction::Blocklist => {
-                // RPC-056: open the BlocklistView. dispatch_rpc056.rs
+                // RPC-056: open the BlocklistView. dispatch_blocklist.rs
                 // handles the round-trip via Action::OpenBlocklistView
                 // → backend.blocklist_list() → Action::BlocklistRulesLoaded.
                 let _ = self.action_tx.send(Action::OpenBlocklistView);
             }
             SlashCommandAction::MergeWorktree => {
-                // RPC-057: handler body lives in dispatch_rpc057.rs.
+                // RPC-057: handler body lives in dispatch_merge_worktree.rs.
                 self.handle_slash_merge_worktree();
             }
             SlashCommandAction::Schedule => {
-                // RPC-058: handler body lives in dispatch_rpc058.rs.
+                // RPC-058: handler body lives in dispatch_slash_schedule.rs.
                 // Bare popup pick emits the static help notice.
                 self.handle_slash_schedule_help();
             }
             SlashCommandAction::Loop => {
-                // RPC-059: dispatch_rpc059.rs::handle_slash_loop_help.
+                // RPC-059: dispatch_slash_loop.rs::handle_slash_loop_help.
                 self.handle_slash_loop_help();
             }
             SlashCommandAction::Isolation => {
-                // RPC-060: routed via try_dispatch_rpc060 in app/dispatch.rs.
+                // RPC-060: routed via try_dispatch_create_session_dialog in app/dispatch.rs.
                 let _ = self.action_tx.send(Action::OpenCreateSessionDialog {
                     preselect: Some(CreateSessionOption::Isolated),
                 });
@@ -227,12 +227,12 @@ impl App {
             }
             SlashCommandParse::ScheduleSubcommand(sub) => {
                 // RPC-058: route the parsed `/schedule …` subcommand
-                // through the dedicated dispatcher in dispatch_rpc058.rs.
+                // through the dedicated dispatcher in dispatch_slash_schedule.rs.
                 let _ = self.action_tx.send(Action::ScheduleSubcommandParsed(sub));
                 return;
             }
             SlashCommandParse::LoopSubcommand(sub) => {
-                // RPC-059: route to dispatch_rpc059.rs.
+                // RPC-059: route to dispatch_slash_loop.rs.
                 let _ = self.action_tx.send(Action::LoopSubcommandParsed(sub));
                 return;
             }
@@ -266,7 +266,7 @@ impl App {
         }
         // RPC-052: clear the durable pending-input draft now that the
         // text has been submitted. Fire-and-forget — errors silently
-        // logged via tracing. Helper lives in dispatch_rpc052.rs.
+        // logged via tracing. Helper lives in dispatch_pending_input.rs.
         self.spawn_clear_pending_input(session.clone());
         // RPC-025: fire-and-forget persistence_add_history + reset the
         // per-session HistoryNavState so the next Shift+↑ pulls a fresh
@@ -277,7 +277,7 @@ impl App {
 
 /// RPC-047: format a `CompactionResult` into the user-facing scrollback
 /// notice line. Single-sourced so the `/compact` success branch AND the
-/// `StreamChunk::CompactionComplete` handler (in `dispatch_rpc045.rs`)
+/// `StreamChunk::CompactionComplete` handler (in `dispatch_stream_chunks.rs`)
 /// produce byte-identical output.
 ///
 /// Example output:

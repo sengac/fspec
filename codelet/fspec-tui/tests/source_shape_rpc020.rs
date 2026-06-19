@@ -273,7 +273,7 @@ fn existing_ts_slash_and_file_search_components_are_untouched() {
 // first-pass Rust port invented a `SlashCommandAction::Providers`
 // variant + a `{ action: Providers, description: "Open provider
 // settings" }` registry entry + a `SlashCommandAction::Provider |
-// SlashCommandAction::Providers` arm in `dispatch_rpc020.rs`. None of
+// SlashCommandAction::Providers` arm in `dispatch_slash_commands.rs`. None of
 // that exists in the canonical TS source, so it MUST be deleted.
 //
 // These tests lock the deletion in place: any future regression that
@@ -324,27 +324,27 @@ fn slash_command_action_enum_has_no_providers_variant() {
     );
 }
 
-/// Scenario: dispatch_rpc020.rs has no Providers arm
+/// Scenario: dispatch_slash_commands.rs has no Providers arm
 #[test]
-fn dispatch_rpc020_has_no_providers_arm() {
-    // @step Given codelet/fspec-tui/src/app/dispatch_rpc020.rs after the 2026-06-01 revision
-    let path = fspec_tui_src().join("app").join("dispatch_rpc020.rs");
+fn dispatch_slash_commands_has_no_providers_arm() {
+    // @step Given codelet/fspec-tui/src/app/dispatch_slash_commands.rs after the 2026-06-01 revision
+    let path = fspec_tui_src().join("app").join("dispatch_slash_commands.rs");
     // @step When the file is read
     let source = read_raw(&path);
 
     // @step Then it contains exactly one arm matching "SlashCommandAction::Provider =>"
     assert!(
         source.contains("SlashCommandAction::Provider =>"),
-        "dispatch_rpc020.rs must have a single `SlashCommandAction::Provider =>` arm"
+        "dispatch_slash_commands.rs must have a single `SlashCommandAction::Provider =>` arm"
     );
     // @step And it does NOT contain "SlashCommandAction::Providers"
     assert!(
         !source.contains("SlashCommandAction::Providers"),
-        "dispatch_rpc020.rs must NOT reference SlashCommandAction::Providers"
+        "dispatch_slash_commands.rs must NOT reference SlashCommandAction::Providers"
     );
     // @step And it does NOT contain "| SlashCommandAction::Providers"
     assert!(
         !source.contains("| SlashCommandAction::Providers"),
-        "dispatch_rpc020.rs must NOT have a `| SlashCommandAction::Providers` arm"
+        "dispatch_slash_commands.rs must NOT have a `| SlashCommandAction::Providers` arm"
     );
 }

@@ -59,7 +59,7 @@ impl App {
 
     /// Route the RPC-337 model-selector actions. Called from the
     /// catch-all arm of `App::dispatch`. Returns `true` if handled.
-    pub(crate) fn try_dispatch_rpc337(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_model_selector(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenModelSelectorView => self.handle_open_model_selector_view(),
             Action::RefreshModelSelector => self.handle_refresh_model_selector(),

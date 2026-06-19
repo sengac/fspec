@@ -1,5 +1,5 @@
-//! RPC-059 — App::dispatch routing for the `/loop …` slash command
-//! family.
+//! App::dispatch routing for the `/loop …` slash command
+//! family. Introduced: RPC-059.
 //!
 //! Factored into its own file to keep `app/dispatch.rs` under the
 //! 300-LoC ceiling. Each helper here mirrors the established RPC-058
@@ -123,7 +123,7 @@ impl App {
 
     /// Route RPC-059 Action variants through their helpers. Called from
     /// the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc059(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_slash_loop(&mut self, action: &Action) -> bool {
         match action {
             Action::LoopSubcommandParsed(sub) => {
                 self.handle_loop_subcommand(sub.clone());

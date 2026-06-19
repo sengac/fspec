@@ -8,7 +8,7 @@
           "lines": "87-114",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 59,
                 60,
@@ -56,7 +56,7 @@
           "lines": "153-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 179,
                 180,
@@ -99,7 +99,7 @@
           "lines": "215-274",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 179,
                 180,
@@ -142,7 +142,7 @@
           "lines": "277-320",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 217,
                 218,
@@ -166,7 +166,7 @@
           "lines": "322-366",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 217,
                 218,
@@ -317,7 +317,7 @@
           "lines": "551-603",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 237,
                 238,
@@ -343,7 +343,7 @@
           "lines": "606-654",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 65,
                 66,
@@ -401,7 +401,7 @@
       "codelet/fspec-tui/tests/search_view_rpc064.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
       "codelet/fspec-tui/src/views/agent/dispatch.rs",
       "codelet/fspec-tui/src/views/agent/search_history_view_render.rs",
       "codelet/fspec-tui/src/views/agent/search_history_view.rs"

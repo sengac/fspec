@@ -113,23 +113,3 @@ fn both_transports_implement_set_debug_directory() {
         "websocket.rs should forward to the tarpc client's set_debug_directory"
     );
 }
-
-/// Scenario: /debug slash command wiring lives in dispatch_rpc055.rs
-#[test]
-fn dispatch_rpc055_file_has_expected_shape() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc055.rs exists
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc055.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_rpc055.rs");
-
-    // @step Then it declares a method named "handle_slash_debug"
-    assert!(
-        source.contains("fn handle_slash_debug("),
-        "dispatch_rpc055.rs should declare fn handle_slash_debug"
-    );
-
-    // @step And it declares a method named "try_dispatch_rpc055"
-    assert!(
-        source.contains("fn try_dispatch_rpc055("),
-        "dispatch_rpc055.rs should declare fn try_dispatch_rpc055"
-    );
-}

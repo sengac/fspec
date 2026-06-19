@@ -1,10 +1,9 @@
-//! RPC-061 — App::dispatch routing for supervisor / subordinate links.
+//! App::dispatch routing for supervisor / subordinate links. Introduced: RPC-061.
 //!
 //! Feature: spec/features/rpc061-supervisor-links.feature
 //!
-//! Factored into its own file (mirroring the dispatch_rpc05X / 060
-//! pattern) so `app/dispatch.rs` stays under the 300-LoC ceiling pinned
-//! by `rpc024-source-shape.feature`.
+//! Factored into its own file so `app/dispatch.rs` stays under the
+//! 300-LoC ceiling.
 //!
 //! Three responsibilities:
 //!
@@ -90,7 +89,7 @@ impl App {
 
     /// Route RPC-061 Action variants through their helpers. Called from
     /// the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc061(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_supervisor_links(&mut self, action: &Action) -> bool {
         match action {
             Action::SupervisorsLoaded(session_id, supervisors) => {
                 self.handle_supervisors_loaded(session_id.clone(), supervisors.clone());

@@ -1,10 +1,10 @@
-//! RPC-060 — App::dispatch routing for the CreateSessionDialog +
-//! isolated-session creation actions.
+//! App::dispatch routing for the CreateSessionDialog +
+//! isolated-session creation actions. Introduced: RPC-060.
 //!
 //! Feature: spec/features/rpc060-isolated-session-dialog.feature
 //!
-//! Factored into its own file (mirroring the dispatch_rpc05X pattern)
-//! to keep `app/dispatch.rs` under the 300-LoC ceiling. The /isolation
+//! Factored into its own file to keep `app/dispatch.rs` under the
+//! 300-LoC ceiling. The /isolation
 //! slash command pick dispatches `Action::OpenCreateSessionDialog`,
 //! the dialog itself emits `CreateSessionSubmitted` / `CreateSessionCancelled`,
 //! and the dispatch helpers below fan out:
@@ -112,7 +112,7 @@ impl App {
 
     /// Route RPC-060 Action variants through their helpers. Called from
     /// the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc060(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_create_session_dialog(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenCreateSessionDialog { preselect } => {
                 self.handle_open_create_session_dialog(*preselect);

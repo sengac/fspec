@@ -12,12 +12,12 @@ Feature: /blocklist RPC surface source shape
   (trait + tarpc service + backend trait + both transport forwarders),
   BlocklistRuleInfo MUST exist as a public wire type in codelet-rpc-types,
   ViewMode::Blocklist MUST exist on the Navigator, and the slash-command
-  dispatch wiring MUST live in its own dispatch_rpc056.rs file so the
-  orchestrator dispatch_rpc020.rs stays under the 300-LoC ceiling.
+  dispatch wiring MUST live in its own dispatch_blocklist.rs file so the
+  orchestrator dispatch_slash_commands.rs stays under the 300-LoC ceiling.
 
   These tests run against source files at compile time — they catch
   refactors that accidentally collapse the dual-transport layering or
-  inline the /blocklist wiring back into dispatch_rpc020.rs.
+  inline the /blocklist wiring back into dispatch_slash_commands.rs.
   """
 
   Background: User Story
@@ -60,9 +60,9 @@ Feature: /blocklist RPC surface source shape
     Given the file codelet/fspec-tui/src/views/navigator.rs is compiled
     Then ViewMode declares a variant named "Blocklist"
 
-  Scenario: /blocklist slash command wiring lives in dispatch_rpc056.rs
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc056.rs exists
+  Scenario: /blocklist slash command wiring lives in dispatch_blocklist.rs
+    Given the file codelet/fspec-tui/src/app/dispatch_blocklist.rs exists
     Then it declares a method named "handle_open_blocklist_view"
     And it declares a method named "handle_close_blocklist_view"
     And it declares a method named "handle_blocklist_rules_loaded"
-    And it declares a method named "try_dispatch_rpc056"
+    And it declares a method named "try_dispatch_blocklist"

@@ -65,14 +65,14 @@
       ]
     },
     {
-      "name": "dispatch_rpc020.rs has no Providers arm",
+      "name": "dispatch_slash_commands.rs has no Providers arm",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc054.rs",
           "lines": "299-322",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 103,
                 104,
@@ -667,7 +667,7 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/views/agent/slash_commands.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
       "codelet/fspec-tui/src/views/provider_settings/mod.rs",
       "codelet/fspec-tui/src/components/mod.rs",
       "codelet/fspec-tui/src/views/provider_settings/list.rs"

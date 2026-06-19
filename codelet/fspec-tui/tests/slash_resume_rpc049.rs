@@ -14,8 +14,8 @@
 //! `Action::EmitSessionNotice` to the originating session.
 //!
 //! Mirrors the spawned-task + action-bus round-trip pattern established
-//! by `dispatch_rpc020.rs::handle_slash_command(Clear/Compact)` and
-//! `dispatch_rpc026.rs::handle_confirm_delete_session`.
+//! by `dispatch_slash_commands.rs::handle_slash_command(Clear/Compact)` and
+//! `dispatch_resume_search_views.rs::handle_confirm_delete_session`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 

@@ -152,7 +152,7 @@
           "lines": "113-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 17,
                 18,
@@ -196,7 +196,7 @@
           "lines": "139-155",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 17,
                 18,
@@ -240,7 +240,7 @@
           "lines": "158-185",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 17,
                 18,
@@ -370,7 +370,7 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/app/dispatch.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc024.rs"
+      "codelet/fspec-tui/src/app/dispatch_session_cycle.rs"
     ],
     "totalLinesCovered": 654
   }

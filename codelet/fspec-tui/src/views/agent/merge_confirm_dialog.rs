@@ -6,7 +6,7 @@
 //! purpose-built for the /merge-worktree flow: it carries a
 //! [`SessionChangesSummary`] payload (rendered inline) and emits typed
 //! [`MergeConfirmDialogOutcome::Merge`] / [`Discard`] / [`Cancel`]
-//! variants that the dispatch_rpc057 layer routes into
+//! variants that the dispatch_merge_worktree layer routes into
 //! `Action::MergeConfirmed` / `DiscardConfirmed` / `CancelMergeDialog`.
 //!
 //! Renders via the shared `dialog_theme` renderer (rounded yellow border,
@@ -216,7 +216,7 @@ impl MergeConfirmDialog {
 // ─────────────────────────────────────────────────────────────────────
 // Component impl so the dialog can be pushed onto the App's compositor
 // with a stable id and Foreground priority. The dialog's `handle_key`
-// is invoked from the App's keyboard-routing layer (dispatch_rpc057);
+// is invoked from the App's keyboard-routing layer (dispatch_merge_worktree);
 // here we expose only the id/priority/render shape that the
 // `Compositor` cares about.
 // ─────────────────────────────────────────────────────────────────────

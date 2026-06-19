@@ -8,7 +8,7 @@
           "lines": "84-136",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 1,
                 2,
@@ -210,14 +210,14 @@
       ]
     },
     {
-      "name": "dispatch_rpc050.rs declares the new RPC-050 helpers",
+      "name": "dispatch_work_unit_binding.rs declares the new RPC-050 helpers",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc050.rs",
           "lines": "165-194",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 21,
                 22,
@@ -372,7 +372,7 @@
       "codelet/fspec-tui/tests/source_shape_rpc050.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+      "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
       "codelet/fspec-tui/src/components/mod.rs"
     ],
     "totalLinesCovered": 422

@@ -11,8 +11,8 @@ Feature: /detach and work-unit binding source-shape invariants
   * No file under `codelet/fspec-tui/src/` matches "codelet_napi" (post-RPC-002 invariant).
   * Every file under `codelet/fspec-tui/src/app/`, `codelet/fspec-tui/src/views/agent/`, and `codelet/fspec-tui/src/store/agent_view/` is strictly less than 300 lines of code.
   * `codelet/fspec-tui/src/app/dispatch.rs` is strictly less than 300 lines of code.
-  * `codelet/fspec-tui/src/app/dispatch_rpc020.rs` is strictly less than 300 lines of code.
-  * The new dispatch_rpc050.rs file exists and declares the three RPC-050 helpers.
+  * `codelet/fspec-tui/src/app/dispatch_slash_commands.rs` is strictly less than 300 lines of code.
+  * The new dispatch_work_unit_binding.rs file exists and declares the three RPC-050 helpers.
   * The components::Action enum declares the three new variants.
   """
 
@@ -22,7 +22,7 @@ Feature: /detach and work-unit binding source-shape invariants
   #
   # BUSINESS RULES:
   #   1. No new file may push the directory ceiling above 300 LoC
-  #   2. The new dispatch helpers must live in app/dispatch_rpc050.rs (not in dispatch.rs or dispatch_rpc020.rs)
+  #   2. The new dispatch helpers must live in app/dispatch_work_unit_binding.rs (not in dispatch.rs or dispatch_slash_commands.rs)
   #   3. The Action enum must declare AttachWorkUnitToSession, WorkUnitAttached, WorkUnitDetached
   #
   # ========================================
@@ -36,7 +36,7 @@ Feature: /detach and work-unit binding source-shape invariants
     Then no file under codelet/fspec-tui/src/ matches "codelet_napi"
     And every file under codelet/fspec-tui/src/app/, codelet/fspec-tui/src/views/agent/, and codelet/fspec-tui/src/store/agent_view/ is strictly less than 300 lines of code
     And codelet/fspec-tui/src/app/dispatch.rs is strictly less than 300 lines of code
-    And codelet/fspec-tui/src/app/dispatch_rpc020.rs is strictly less than 300 lines of code
+    And codelet/fspec-tui/src/app/dispatch_slash_commands.rs is strictly less than 300 lines of code
 
   Scenario: components::Action declares the new RPC-050 variants
     Given codelet/fspec-tui/src/components/mod.rs after RPC-050 lands
@@ -44,8 +44,8 @@ Feature: /detach and work-unit binding source-shape invariants
     And the file declares "WorkUnitAttached(" as an Action variant
     And the file declares "WorkUnitDetached(" as an Action variant
 
-  Scenario: dispatch_rpc050.rs declares the new RPC-050 helpers
-    Given codelet/fspec-tui/src/app/dispatch_rpc050.rs after RPC-050 lands
+  Scenario: dispatch_work_unit_binding.rs declares the new RPC-050 helpers
+    Given codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs after RPC-050 lands
     Then the file declares "handle_attach_work_unit_to_session"
     And the file declares "handle_work_unit_attached"
     And the file declares "handle_work_unit_detached"

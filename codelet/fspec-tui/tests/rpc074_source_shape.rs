@@ -42,8 +42,8 @@ fn read(path: &Path) -> String {
 
 #[test]
 fn rust_source_files_do_not_contain_ts_divergent_clear_strings() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc046.rs is read into memory
-    let dispatch_path = workspace_root().join("fspec-tui/src/app/dispatch_rpc046.rs");
+    // @step Given the file codelet/fspec-tui/src/app/dispatch_slash_clear.rs is read into memory
+    let dispatch_path = workspace_root().join("fspec-tui/src/app/dispatch_slash_clear.rs");
     let dispatch_body = read(&dispatch_path);
 
     // @step And the file codelet/core/src/session_manager_handle.rs is read into memory
@@ -59,18 +59,18 @@ fn rust_source_files_do_not_contain_ts_divergent_clear_strings() {
     let dispatch_has_error_clear_failed = dispatch_body.contains("[error] /clear failed:");
     let handle_has_quoted_history_cleared = handle_body.contains("\"history cleared\"");
 
-    // @step Then dispatch_rpc046.rs contains neither literal
+    // @step Then dispatch_slash_clear.rs contains neither literal
     assert!(
         !dispatch_has_history_cleared,
-        "TS parity (RPC-074): dispatch_rpc046.rs must not contain `history cleared`"
+        "TS parity (RPC-074): dispatch_slash_clear.rs must not contain `history cleared`"
     );
     assert!(
         !dispatch_has_notice_clear,
-        "TS parity (RPC-074): dispatch_rpc046.rs must not contain `[notice] /clear`"
+        "TS parity (RPC-074): dispatch_slash_clear.rs must not contain `[notice] /clear`"
     );
     assert!(
         !dispatch_has_error_clear_failed,
-        "TS parity (RPC-074): dispatch_rpc046.rs must not push `[error] /clear failed: ...` lines (errors go to tracing::error! only)"
+        "TS parity (RPC-074): dispatch_slash_clear.rs must not push `[error] /clear failed: ...` lines (errors go to tracing::error! only)"
     );
 
     // @step And session_manager_handle.rs does not contain the literal string "\"history cleared\""

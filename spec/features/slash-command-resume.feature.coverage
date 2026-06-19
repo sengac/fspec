@@ -8,7 +8,7 @@
           "lines": "95-128",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 56,
                 57,
@@ -97,7 +97,7 @@
           "lines": "135-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 130,
                 131,
@@ -133,7 +133,7 @@
           "lines": "183-208",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 115,
                 116,
@@ -160,7 +160,7 @@
           "lines": "217-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 56,
                 57,
@@ -250,7 +250,7 @@
       "codelet/fspec-tui/tests/slash_resume_rpc049.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc026.rs"
+      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 303
   }

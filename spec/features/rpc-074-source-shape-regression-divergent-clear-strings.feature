@@ -25,8 +25,8 @@ Feature: RPC-074 source-shape regression — divergent /clear strings absent
     So that no future card can quietly reintroduce them and break TS parity
 
   Scenario: Rust source files do not contain TS-divergent /clear strings
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc046.rs is read into memory
+    Given the file codelet/fspec-tui/src/app/dispatch_slash_clear.rs is read into memory
     And the file codelet/core/src/session_manager_handle.rs is read into memory
     When the test searches both files for the literal strings "history cleared" and "[notice] /clear"
-    Then dispatch_rpc046.rs contains neither literal
+    Then dispatch_slash_clear.rs contains neither literal
     And session_manager_handle.rs does not contain the literal string "\"history cleared\""

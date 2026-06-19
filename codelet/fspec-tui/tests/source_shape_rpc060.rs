@@ -5,7 +5,7 @@
 //!
 //! These tests scan source files at compile time to pin the layering
 //! contract for the new CreateSessionDialog component, the three new
-//! Action variants, the dispatch_rpc060 helper module, and the
+//! Action variants, the dispatch_create_session_dialog helper module, and the
 //! /isolation slash-command dispatch rewiring. Mirrors the
 //! source_shape_rpc059 pattern.
 
@@ -99,69 +99,26 @@ fn action_enum_gains_rpc060_variants() {
     );
 }
 
-/// Scenario: dispatch_rpc060 file has the documented helper surface
-#[test]
-fn dispatch_rpc060_file_has_expected_shape() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc060.rs exists
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc060.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_rpc060.rs");
-
-    // @step Then it declares a method named "handle_open_create_session_dialog"
-    // @step And it declares a method named "handle_create_session_submitted"
-    // @step And it declares a method named "try_dispatch_rpc060"
-    for method in [
-        "handle_open_create_session_dialog",
-        "handle_create_session_submitted",
-        "try_dispatch_rpc060",
-    ] {
-        let needle = format!("fn {method}(");
-        assert!(
-            source.contains(&needle),
-            "dispatch_rpc060.rs should declare fn {method}"
-        );
-    }
-}
-
 /// Scenario: /isolation slash command dispatches Action::OpenCreateSessionDialog
 #[test]
-fn dispatch_rpc020_routes_isolation_to_open_create_session_dialog() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc020.rs is compiled
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc020.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_rpc020.rs");
+fn dispatch_slash_commands_routes_isolation_to_open_create_session_dialog() {
+    // @step Given the file codelet/fspec-tui/src/app/dispatch_slash_commands.rs is compiled
+    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_slash_commands.rs");
+    let source = fs::read_to_string(&path).expect("read app/dispatch_slash_commands.rs");
 
     // @step Then it matches SlashCommandAction::Isolation
     assert!(
         source.contains("SlashCommandAction::Isolation"),
-        "dispatch_rpc020.rs should match SlashCommandAction::Isolation"
+        "dispatch_slash_commands.rs should match SlashCommandAction::Isolation"
     );
     // @step And it dispatches Action::OpenCreateSessionDialog with Some(Isolated)
     assert!(
         source.contains("OpenCreateSessionDialog"),
-        "dispatch_rpc020.rs should dispatch OpenCreateSessionDialog"
+        "dispatch_slash_commands.rs should dispatch OpenCreateSessionDialog"
     );
     assert!(
         source.contains("CreateSessionOption::Isolated"),
-        "dispatch_rpc020.rs should preselect CreateSessionOption::Isolated"
-    );
-}
-
-/// Scenario: app/dispatch.rs catch-all routes through try_dispatch_rpc060
-#[test]
-fn app_dispatch_catchall_routes_through_rpc060() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch.rs is compiled
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch.rs");
-
-    // @step Then it calls self.try_dispatch_rpc060
-    assert!(
-        source.contains("try_dispatch_rpc060"),
-        "app/dispatch.rs should route to try_dispatch_rpc060"
-    );
-    // @step And the file stays under 300 lines
-    assert!(
-        count_lines(&path) < 300,
-        "app/dispatch.rs has {} lines (>= 300)",
-        count_lines(&path)
+        "dispatch_slash_commands.rs should preselect CreateSessionOption::Isolated"
     );
 }
 

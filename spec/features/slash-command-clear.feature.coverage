@@ -8,7 +8,7 @@
           "lines": "107-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -63,7 +63,7 @@
           "lines": "130-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -118,7 +118,7 @@
           "lines": "212-241",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -173,7 +173,7 @@
           "lines": "248-304",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 33,
                 34,
@@ -223,7 +223,7 @@
           "lines": "248-304",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 27,
                 28,
@@ -245,8 +245,8 @@
       "codelet/fspec-tui/tests/slash_clear_rpc046.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc046.rs"
+      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "codelet/fspec-tui/src/app/dispatch_slash_clear.rs"
     ],
     "totalLinesCovered": 520
   }

@@ -9,7 +9,7 @@ Feature: ProviderSettingsView — App dispatch wiring for the /provider slash co
 
   """
   Wiring from the SlashCommandAction::Provider variant through
-  App::dispatch_rpc054 round-trips into the backend, back through Action
+  App::dispatch_provider_settings round-trips into the backend, back through Action
   variants, and into the ProviderSettingsView state owned by the
   Navigator. This file covers the dispatch surface; the in-view key
   handling is in rpc054-provider-settings-view.feature.

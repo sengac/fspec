@@ -8,7 +8,7 @@
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -187,7 +187,7 @@
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -366,7 +366,7 @@
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -545,7 +545,7 @@
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -724,7 +724,7 @@
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -903,7 +903,7 @@
           "lines": "1-200",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 1,
                 2,
@@ -1083,7 +1083,7 @@
       "codelet/fspec-tui/tests/rpc026_app_dispatch.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc026.rs"
+      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 2178
   }

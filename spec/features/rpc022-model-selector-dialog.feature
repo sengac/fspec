@@ -22,7 +22,7 @@ Feature: ModelSelectorDialog component for picking provider + model
 
   Pushed onto the Compositor by App::dispatch when the user types
   `/model` + Enter (handled by parse_slash_command in
-  app/dispatch_rpc022.rs). On Enter inside a model row the dialog emits
+  app/dispatch_model_thinking_dialogs.rs). On Enter inside a model row the dialog emits
   Action::ModelSelected(SessionId, provider_key, model_id) and removes
   itself from the Compositor. On Esc it removes itself with no side
   effects.

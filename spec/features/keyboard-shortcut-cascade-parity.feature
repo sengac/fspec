@@ -32,7 +32,7 @@ Feature: Keyboard shortcut parity (Shift+up/down history, Ctrl+R search, Esc int
   `self.emit(Action::BackToBoard)` in its default Esc arm with
   `self.emit(Action::AgentEscPressed)`.
   - `app/dispatch.rs` routes the new variant through
-  `app/dispatch_rpc051.rs::handle_agent_esc_pressed`, which reads
+  `app/dispatch_esc_cascade.rs::handle_agent_esc_pressed`, which reads
   `agent_view_store.session_status_for(current_session)` and either
   spawns `backend.interrupt(id)` (Running/Compacting) or dispatches
   `Action::BackToBoard` (everything else, including no session).

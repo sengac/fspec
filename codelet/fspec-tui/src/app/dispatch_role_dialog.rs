@@ -1,13 +1,11 @@
-//! RPC-063 — App::dispatch routing for the `/role` slash command's
-//! dialog-open path.
+//! App::dispatch routing for the `/role` slash command's
+//! dialog-open path. Introduced: RPC-063.
 //!
 //! Feature: spec/features/role-slash-command-end-to-end-ui-dialog.feature
 //! Feature: spec/features/role-dialog-component.feature
 //!
-//! Factored into its own file (mirroring the dispatch_rpcNNN.rs
-//! pattern from RPC-061 / RPC-060 / etc.) so `app/dispatch_rpc020.rs`
-//! AND `app/dispatch.rs` both stay under the 300-LoC ceiling pinned
-//! by the source-shape regression tests.
+//! Factored into its own file so `app/dispatch_slash_commands.rs`
+//! AND `app/dispatch.rs` both stay under the 300-LoC ceiling.
 //!
 //! One responsibility:
 //!

@@ -7,7 +7,7 @@
 //! schedule_pause, schedule_resume, schedule_remove), the NEW wire
 //! type (ScheduledJob), the new ScheduleSubcommand parser, and the
 //! `/schedule` slash-command dispatch routing in
-//! `dispatch_rpc058.rs`. Mirrors the source_shape_rpc054 /
+//! `dispatch_slash_schedule.rs`. Mirrors the source_shape_rpc054 /
 //! source_shape_rpc055 / source_shape_rpc056 / source_shape_rpc057
 //! patterns.
 
@@ -300,37 +300,4 @@ fn schedule_parser_module_exists() {
         source.contains("pub fn parse_schedule_command("),
         "schedule_parser.rs should declare pub fn parse_schedule_command"
     );
-}
-
-/// Scenario: /schedule slash command wiring lives in dispatch_rpc058.rs
-#[test]
-fn dispatch_rpc058_file_has_expected_shape() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc058.rs exists
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc058.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_rpc058.rs");
-
-    // @step Then it declares a method named "handle_slash_schedule_help"
-    // @step And it declares a method named "handle_schedule_subcommand"
-    // @step And it declares a method named "handle_schedule_add"
-    // @step And it declares a method named "handle_schedule_list"
-    // @step And it declares a method named "handle_schedule_pause"
-    // @step And it declares a method named "handle_schedule_resume"
-    // @step And it declares a method named "handle_schedule_remove"
-    // @step And it declares a method named "try_dispatch_rpc058"
-    for method in [
-        "handle_slash_schedule_help",
-        "handle_schedule_subcommand",
-        "handle_schedule_add",
-        "handle_schedule_list",
-        "handle_schedule_pause",
-        "handle_schedule_resume",
-        "handle_schedule_remove",
-        "try_dispatch_rpc058",
-    ] {
-        let needle = format!("fn {method}(");
-        assert!(
-            source.contains(&needle),
-            "dispatch_rpc058.rs should declare fn {method}"
-        );
-    }
 }

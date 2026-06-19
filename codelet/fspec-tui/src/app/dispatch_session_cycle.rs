@@ -45,7 +45,7 @@ impl App {
     ///      `navigator.active_view = ViewMode::Board`. The view
     ///      switch to AgentView only happens AFTER the user confirms
     ///      the dialog (see `handle_create_session_submitted` in
-    ///      dispatch_rpc060.rs). This is the RPC-097 reopen #1
+    ///      dispatch_create_session_dialog.rs). This is the RPC-097 reopen #1
     ///      contract, mirroring the canonical TS behavior in
     ///      `src/tui/views/BoardView.tsx` where `setViewMode('agent')`
     ///      is called from inside the dialog's `onConfirm` callback,

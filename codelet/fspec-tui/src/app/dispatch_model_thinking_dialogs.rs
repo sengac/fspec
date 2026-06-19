@@ -209,7 +209,7 @@ impl App {
     /// helpers. Called from the catch-all arm of `App::dispatch`'s
     /// match so the orchestrator file `app/dispatch.rs` stays under
     /// the 300-LoC ceiling. Returns `true` if the action was handled.
-    pub(crate) fn try_dispatch_rpc022(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_model_thinking_dialogs(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenModelDialog => self.handle_open_model_dialog(),
             Action::OpenThinkingDialog => self.handle_open_thinking_dialog(),
@@ -227,7 +227,7 @@ impl App {
             Action::SessionRoleLoaded(s, r) => {
                 self.handle_session_role_loaded(s.clone(), r.clone());
             }
-            // RPC-050 work-unit binding — helpers in dispatch_rpc050.rs.
+            // RPC-050 work-unit binding — helpers in dispatch_work_unit_binding.rs.
             Action::AttachWorkUnitToSession(id) => {
                 self.handle_attach_work_unit_to_session(id.clone());
             }
@@ -235,11 +235,11 @@ impl App {
                 self.handle_work_unit_attached(s.clone(), ctx.clone());
             }
             Action::WorkUnitDetached(s) => self.handle_work_unit_detached(s.clone()),
-            // RPC-051 Esc cascade — helper in dispatch_rpc051.rs.
+            // RPC-051 Esc cascade — helper in dispatch_esc_cascade.rs.
             Action::AgentEscPressed => self.handle_agent_esc_pressed(),
             // RPC-098 ESC exit-confirmation dispatcher.
             Action::AgentExitChoice { choice } => self.handle_agent_exit_choice(*choice),
-            // RPC-052 pending-input debounce + hydration — helpers in dispatch_rpc052.rs.
+            // RPC-052 pending-input debounce + hydration — helpers in dispatch_pending_input.rs.
             Action::PendingInputChanged(text) => {
                 self.handle_pending_input_changed(text.clone());
             }

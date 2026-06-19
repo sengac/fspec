@@ -22,7 +22,7 @@ Feature: /resume source-shape regression
   * `codelet/fspec-tui/src/app/dispatch.rs` is strictly less than
   300 lines of code.
   * The Action enum gains a `SessionResumeComplete(SessionId)` variant.
-  * The dispatch_rpc026 helper file declares
+  * The dispatch_resume_search_views helper file declares
   `handle_session_resume_complete`.
   """
 
@@ -41,6 +41,6 @@ Feature: /resume source-shape regression
     Given codelet/fspec-tui/src/components/mod.rs after RPC-049 lands
     Then the file declares "SessionResumeComplete(" as an Action variant
 
-  Scenario: dispatch_rpc026 declares the handle_session_resume_complete helper
-    Given codelet/fspec-tui/src/app/dispatch_rpc026.rs after RPC-049 lands
+  Scenario: dispatch_resume_search_views declares the handle_session_resume_complete helper
+    Given codelet/fspec-tui/src/app/dispatch_resume_search_views.rs after RPC-049 lands
     Then the file declares "handle_session_resume_complete"

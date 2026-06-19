@@ -28,10 +28,10 @@
 //!   - `Action::SeedPendingInput { session_id, text }` → `handle_seed_pending_input`
 //!     (routed from `app/dispatch.rs`).
 //!   - `Action::SessionCreated(id)` arm in `app/dispatch.rs` and
-//!     `handle_attach_to_session` in `app/dispatch_rpc026.rs` BOTH
+//!     `handle_attach_to_session` in `app/dispatch_resume_search_views.rs` BOTH
 //!     call `spawn_hydrate_pending_input(id)` after the session is
 //!     registered in the AgentViewStore.
-//!   - `handle_input_submitted` in `app/dispatch_rpc020.rs` spawns a
+//!   - `handle_input_submitted` in `app/dispatch_slash_commands.rs` spawns a
 //!     `backend.set_pending_input(session, None)` clear after the
 //!     send_input + persistence path so the durable draft is purged
 //!     on submit.
@@ -107,7 +107,7 @@ impl App {
     /// RPC-052: clear the durable per-session pending-input draft
     /// after an `Action::InputSubmitted` lands. Fire-and-forget —
     /// errors are silently logged via tracing. Called from
-    /// `handle_input_submitted` in `app/dispatch_rpc020.rs` so the
+    /// `handle_input_submitted` in `app/dispatch_slash_commands.rs` so the
     /// caller stays under the 300-LoC ceiling.
     pub(crate) fn spawn_clear_pending_input(&mut self, session_id: SessionId) {
         if tokio::runtime::Handle::try_current().is_err() {

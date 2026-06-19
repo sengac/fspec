@@ -9,7 +9,7 @@
 //!   * `chrome_paint::paint_header_and_role` hardcodes
 //!     `compaction_reduction: None`, so the `[X%: COMPACTED Y%]`
 //!     suffix never renders even after a `CompactionComplete` chunk.
-//!   * The `CompactionComplete` arm of `dispatch_rpc045::handle_stream_chunk_state_updates`
+//!   * The `CompactionComplete` arm of `dispatch_stream_chunks::handle_stream_chunk_state_updates`
 //!     does not persist the reduction percentage on a per-session slot.
 //!   * `SessionStateChange { state: Cleared }` does not reset
 //!     `TokenState` or the (missing) per-session `compaction_reduction`.
@@ -114,7 +114,7 @@ fn focus_s1(app: &mut App) {
 }
 
 /// Drain every pending Action queued onto `action_tx` (e.g. by
-/// `dispatch_rpc045.rs::CompactionComplete` enqueueing an
+/// `dispatch_stream_chunks.rs::CompactionComplete` enqueueing an
 /// `EmitSessionNotice`) and re-dispatch them so side-effects land
 /// before the next render.
 fn drain_actions(app: &mut App) {

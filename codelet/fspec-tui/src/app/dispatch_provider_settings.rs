@@ -1,5 +1,6 @@
-//! RPC-054 — App::dispatch routing for the provider-credentials surface
+//! App::dispatch routing for the provider-credentials surface
 //! that backs the new `ProviderSettingsView` (`/provider` slash command).
+//! Introduced: RPC-054.
 //!
 //! Factored into its own file to keep `app/dispatch.rs` under the
 //! 300-LoC ceiling. Each helper here mirrors the established RPC-049 /
@@ -225,7 +226,7 @@ impl App {
 
     /// Route the RPC-054 Action variants through their helpers.
     /// Called from the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc054(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_provider_settings(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenProviderSettingsView => {
                 self.handle_open_provider_settings_view();

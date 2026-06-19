@@ -1,5 +1,5 @@
-//! RPC-056 — App::dispatch routing for the BlocklistView surface that
-//! backs the `/blocklist` slash command.
+//! App::dispatch routing for the BlocklistView surface that
+//! backs the `/blocklist` slash command. Introduced: RPC-056.
 //!
 //! Factored into its own file to keep `app/dispatch.rs` under the
 //! 300-LoC ceiling. Each helper here mirrors the established RPC-054
@@ -37,7 +37,7 @@ impl App {
 
     /// RPC-056: spawn `backend.blocklist_list()` and route the result
     /// into the view via `Action::BlocklistRulesLoaded`. Mirrors
-    /// `spawn_list_provider_credentials` from dispatch_rpc054.rs.
+    /// `spawn_list_provider_credentials` from dispatch_provider_settings.rs.
     fn spawn_blocklist_list(&mut self) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
@@ -80,7 +80,7 @@ impl App {
 
     /// Route the RPC-056 Action variants through their helpers.
     /// Called from the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc056(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_blocklist(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenBlocklistView => {
                 self.handle_open_blocklist_view();

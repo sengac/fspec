@@ -8,7 +8,7 @@
           "lines": "106-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc056.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
               "lines": [
                 24,
                 25,
@@ -431,7 +431,7 @@
           "lines": "339-362",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc056.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
               "lines": [
                 32,
                 33,
@@ -646,7 +646,7 @@
       "codelet/fspec-tui/tests/blocklist_view_rpc056.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc056.rs",
+      "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
       "codelet/fspec-tui/src/views/blocklist/mod.rs",
       "codelet/fspec-tui/src/store/agent_view/blocklist_state.rs"
     ],

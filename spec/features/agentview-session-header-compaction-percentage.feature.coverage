@@ -104,7 +104,7 @@
           "lines": "213-251",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 129,
                 130,
@@ -246,7 +246,7 @@
           "lines": "325-387",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 57,
                 58,
@@ -295,7 +295,7 @@
           "lines": "389-422",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
               "lines": [
                 129,
                 130,
@@ -338,7 +338,7 @@
     "implFiles": [
       "codelet/fspec-tui/src/store/agent_view/token_state.rs",
       "codelet/fspec-tui/src/views/agent/header_build.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
       "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
       "codelet/fspec-tui/src/store/agent_view/chrome_state.rs",
       "codelet/fspec-tui/src/store/agent_view.rs"

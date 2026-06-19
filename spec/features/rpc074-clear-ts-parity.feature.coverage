@@ -8,7 +8,7 @@
           "lines": "111-145",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 40,
                 41,
@@ -45,7 +45,7 @@
           "lines": "153-173",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 40,
                 41,
@@ -83,7 +83,7 @@
       "codelet/fspec-tui/tests/slash_clear_rpc046.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc046.rs"
+      "codelet/fspec-tui/src/app/dispatch_slash_clear.rs"
     ],
     "totalLinesCovered": 98
   }

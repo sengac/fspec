@@ -8,7 +8,7 @@
           "lines": "80-124",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 21,
                 22,
@@ -81,7 +81,7 @@
           "lines": "131-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
               "lines": [
                 30,
                 31,
@@ -130,7 +130,7 @@
       "codelet/fspec-tui/tests/work_unit_binding_rpc050.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+      "codelet/fspec-tui/src/app/dispatch_work_unit_binding.rs",
       "codelet/fspec-tui/src/views/agent.rs"
     ],
     "totalLinesCovered": 180

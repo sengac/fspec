@@ -96,7 +96,7 @@
           "lines": "129-184",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 213,
                 214,
@@ -123,7 +123,7 @@
           "lines": "186-222",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 224,
                 225,
@@ -152,7 +152,7 @@
           "lines": "224-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 55,
                 56,
@@ -187,8 +187,8 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/app/slash_parser.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc022.rs"
+      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs"
     ],
     "totalLinesCovered": 253
   }

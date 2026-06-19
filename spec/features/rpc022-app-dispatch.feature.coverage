@@ -8,7 +8,7 @@
           "lines": "53-83",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 135,
                 136,
@@ -48,7 +48,7 @@
           "lines": "84-110",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 163,
                 164,
@@ -85,7 +85,7 @@
           "lines": "111-141",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 188,
                 189,
@@ -117,7 +117,7 @@
           "lines": "142-170",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 188,
                 189,
@@ -149,7 +149,7 @@
           "lines": "171-198",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 208,
                 209,
@@ -200,7 +200,7 @@
           "lines": "249-278",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 216,
                 217,
@@ -234,7 +234,7 @@
           "lines": "279-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 141,
                 142,
@@ -261,14 +261,14 @@
       ]
     },
     {
-      "name": "dispatch_rpc022.rs stays under 300 lines",
+      "name": "dispatch_model_thinking_dialogs.rs stays under 300 lines",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
           "lines": "301-315",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
               "lines": [
                 1,
                 2,
@@ -560,7 +560,7 @@
       "codelet/fspec-tui/tests/app_dispatch_rpc022.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+      "codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs",
       "codelet/fspec-tui/src/components/model_selector_dialog.rs"
     ],
     "totalLinesCovered": 670

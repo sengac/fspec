@@ -428,7 +428,7 @@ pub enum Action {
         codelet_rpc_types::SessionStatus,
     ),
     /// RPC-046: emitted by spawned tokio tasks (currently the /clear
-    /// `backend.clear_history` round-trip in `dispatch_rpc020`) to
+    /// `backend.clear_history` round-trip in `dispatch_slash_commands`) to
     /// route a `[notice]` / `[error]` scrollback line back to the
     /// ORIGINATING session — regardless of which session is currently
     /// focused when the response arrives. App::dispatch handles this
@@ -742,13 +742,13 @@ pub enum Action {
     CancelMergeDialog,
     /// RPC-058: user submitted a `/schedule …` slash command. The App
     /// catch-all dispatcher routes this to
-    /// `dispatch_rpc058::handle_schedule_subcommand` which fans out to
+    /// `dispatch_slash_schedule::handle_schedule_subcommand` which fans out to
     /// the matching backend round-trip + notice formatter.
     ScheduleSubcommandParsed(crate::app::schedule_parser::ScheduleSubcommand),
     /// RPC-059: a `/loop …` submit-line input has been parsed into a
     /// [`crate::app::loop_parser::LoopSubcommand`] enum value. The
     /// catch-all dispatcher routes this to
-    /// `dispatch_rpc059::handle_loop_subcommand` which fans out to the
+    /// `dispatch_slash_loop::handle_loop_subcommand` which fans out to the
     /// matching backend round-trip + notice formatter.
     LoopSubcommandParsed(crate::app::loop_parser::LoopSubcommand),
 
@@ -816,7 +816,7 @@ pub enum Action {
     /// RPC-079: request the Compositor pop the dialog identified by
     /// the given stable id. Emitted by `NotificationDialog` and
     /// `StatusDialog` (Complete state) when their auto-dismiss timer
-    /// fires. `App::dispatch` routes this via `try_dispatch_rpc079`
+    /// fires. `App::dispatch` routes this via `try_dispatch_dialog_dismiss`
     /// which calls `compositor.remove(&id)` and triggers a redraw.
     DismissDialog(String),
 }

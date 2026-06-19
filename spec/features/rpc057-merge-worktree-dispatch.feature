@@ -20,9 +20,9 @@ Feature: /merge-worktree flow + worktree RPC surface
        * list_session_worktrees() -> Vec<SessionWorktreeInfo>
        * inspect_session_changes(session_id) -> Result<SessionChangesSummary>
   2. Replacing the `SlashCommandAction::MergeWorktree` notice fallback
-     in dispatch_rpc020.rs with a real `handle_slash_merge_worktree`
-     routed through a new app/dispatch_rpc057.rs file (mirroring the
-     dispatch_rpc056 pattern).
+     in dispatch_slash_commands.rs with a real `handle_slash_merge_worktree`
+     routed through a new app/dispatch_merge_worktree.rs file (mirroring the
+     dispatch_blocklist pattern).
   3. Adding a compositor-owned `MergeConfirmDialog` that paints the
      SessionChangesSummary + three buttons (Merge, Discard, Cancel).
   4. On a Conflict response, seeding the per-session input draft with a

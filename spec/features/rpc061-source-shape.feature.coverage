@@ -423,14 +423,14 @@
       ]
     },
     {
-      "name": "dispatch_rpc061.rs has the documented helper surface",
+      "name": "dispatch_supervisor_links.rs has the documented helper surface",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
           "lines": "148-174",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
               "lines": [
                 1,
                 2,
@@ -546,7 +546,7 @@
       ]
     },
     {
-      "name": "app/dispatch.rs catch-all routes through try_dispatch_rpc061",
+      "name": "app/dispatch.rs catch-all routes through try_dispatch_supervisor_links",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc061.rs",
@@ -592,7 +592,7 @@
       "codelet/fspec-tui/src/components/mod.rs",
       "codelet/fspec-tui/src/views/agent/header.rs",
       "codelet/fspec-tui/src/views/agent/footer.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc061.rs",
+      "codelet/fspec-tui/src/app/dispatch_supervisor_links.rs",
       "codelet/fspec-tui/src/app/dispatch.rs"
     ],
     "totalLinesCovered": 676

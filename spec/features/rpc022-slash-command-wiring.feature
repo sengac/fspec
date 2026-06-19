@@ -8,7 +8,7 @@ Feature: Slash-command parsing for /model, /thinking, and /role
   """
   /model and /thinking are simple verbs with no arguments — the slash
   command popup intercepts them on Enter and emits
-  `SlashCommandSelected(Model | Thinking)` which dispatch_rpc022.rs
+  `SlashCommandSelected(Model | Thinking)` which dispatch_model_thinking_dialogs.rs
   turns into a dialog push.
 
   /role is different: the user types `/role <text>` so once they type
@@ -38,7 +38,7 @@ Feature: Slash-command parsing for /model, /thinking, and /role
   @parse
   @smoke
   Scenario Outline: parse_slash_command recognises the four wired commands
-    Given the function parse_slash_command from app/dispatch_rpc022.rs
+    Given the function parse_slash_command from app/dispatch_model_thinking_dialogs.rs
     When it is called with text=<input>
     Then it returns <expected_variant>
 

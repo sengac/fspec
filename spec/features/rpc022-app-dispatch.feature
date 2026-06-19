@@ -8,8 +8,8 @@
 Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSessionRole
   """
   App::dispatch in src/app/dispatch.rs gains five new match arms wired
-  through helpers in src/app/dispatch_rpc022.rs (mirroring the
-  dispatch_rpc020.rs / dispatch_rpc024.rs / dispatch_rpc026.rs split
+  through helpers in src/app/dispatch_model_thinking_dialogs.rs (mirroring the
+  dispatch_slash_commands.rs / dispatch_session_cycle.rs / dispatch_resume_search_views.rs split
   pattern from earlier RPC cards):
 
   - Action::ModelSelected(sid, provider, model)        → handle_model_selected
@@ -23,7 +23,7 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
   set_session_model / set_thinking_level resolve so the SessionHeader
   badges repaint automatically.
 
-  In addition, App::dispatch::handle_slash_command in dispatch_rpc020.rs
+  In addition, App::dispatch::handle_slash_command in dispatch_slash_commands.rs
   is amended so SlashCommandAction::Model dispatches `Action::OpenModelDialog`
   (which spawns backend.list_providers() → Action::ListProvidersLoaded
   AND pushes a fresh ModelSelectorDialog onto the Compositor) and
@@ -120,7 +120,7 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
 
   @line-budget
   @source-shape
-  Scenario: dispatch_rpc022.rs stays under 300 lines
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc022.rs after RPC-022 lands
+  Scenario: dispatch_model_thinking_dialogs.rs stays under 300 lines
+    Given the file codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs after RPC-022 lands
     When a test counts the line-count of the file
     Then the file has fewer than 300 lines

@@ -301,26 +301,26 @@ fn rpc054_slash_command_action_enum_has_no_providers_variant() {
     );
 }
 
-/// Scenario: dispatch_rpc020.rs has no Providers arm
+/// Scenario: dispatch_slash_commands.rs has no Providers arm
 #[test]
-fn rpc054_dispatch_rpc020_has_no_providers_arm() {
-    // @step Given codelet/fspec-tui/src/app/dispatch_rpc020.rs after the 2026-06-01 revision
-    let source = read_at("codelet/fspec-tui/src/app/dispatch_rpc020.rs");
+fn rpc054_dispatch_slash_commands_has_no_providers_arm() {
+    // @step Given codelet/fspec-tui/src/app/dispatch_slash_commands.rs after the 2026-06-01 revision
+    let source = read_at("codelet/fspec-tui/src/app/dispatch_slash_commands.rs");
     // @step When the file is read
     // @step Then it contains exactly one arm matching "SlashCommandAction::Provider =>"
     let provider_arm_count = source.matches("SlashCommandAction::Provider =>").count();
     assert_eq!(
         provider_arm_count, 1,
-        "dispatch_rpc020.rs must contain exactly one `SlashCommandAction::Provider =>` arm, got {provider_arm_count}"
+        "dispatch_slash_commands.rs must contain exactly one `SlashCommandAction::Provider =>` arm, got {provider_arm_count}"
     );
     // @step And it does NOT contain "SlashCommandAction::Providers"
     assert!(
         !source.contains("SlashCommandAction::Providers"),
-        "dispatch_rpc020.rs must NOT reference SlashCommandAction::Providers"
+        "dispatch_slash_commands.rs must NOT reference SlashCommandAction::Providers"
     );
     // @step And it does NOT contain "| SlashCommandAction::Providers"
     assert!(
         !source.contains("| SlashCommandAction::Providers"),
-        "dispatch_rpc020.rs must NOT have a `| SlashCommandAction::Providers` arm"
+        "dispatch_slash_commands.rs must NOT have a `| SlashCommandAction::Providers` arm"
     );
 }

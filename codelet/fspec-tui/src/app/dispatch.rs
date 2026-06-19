@@ -246,7 +246,7 @@ impl App {
                 // RPC-025: apply a freshly loaded history snapshot.
                 self.handle_history_snapshot_loaded(session.clone(), snapshot.clone());
             }
-            // RPC-026 /resume + /search wiring → helpers in app/dispatch_rpc026.rs.
+            // RPC-026 /resume + /search wiring → helpers in app/dispatch_resume_search_views.rs.
             Action::OpenResumeView => self.handle_open_resume_view(),
             Action::CloseResumeView => self.handle_close_resume_view(),
             Action::OpenSearchView => self.handle_open_search_view(),
@@ -260,19 +260,19 @@ impl App {
             Action::ConfirmDeleteSession(id) => self.handle_confirm_delete_session(id.clone()),
             Action::EmitSessionNotice(sid, text) => self.handle_emit_session_notice(sid, text.clone()),
             Action::SessionResumeComplete(id) => self.handle_session_resume_complete(id.clone()),
-            // RPC-022/050/053/054/056/057/058/059/060/061/079: try_dispatch_* fallbacks (keep <300 LoC).
+            // Capability dispatchers: try_dispatch_* fallbacks (keep <300 LoC).
             _ => {
-                let _ = self.try_dispatch_rpc337(&action)
-                    || self.try_dispatch_rpc022(&action)
-                    || self.try_dispatch_rpc053(&action)
-                    || self.try_dispatch_rpc054(&action)
-                    || self.try_dispatch_rpc056(&action)
-                    || self.try_dispatch_rpc057(&action)
-                    || self.try_dispatch_rpc058(&action)
-                    || self.try_dispatch_rpc059(&action)
-                    || self.try_dispatch_rpc060(&action)
-                    || self.try_dispatch_rpc061(&action)
-                    || self.try_dispatch_rpc079(&action);
+                let _ = self.try_dispatch_model_selector(&action)
+                    || self.try_dispatch_model_thinking_dialogs(&action)
+                    || self.try_dispatch_pause_hitl(&action)
+                    || self.try_dispatch_provider_settings(&action)
+                    || self.try_dispatch_blocklist(&action)
+                    || self.try_dispatch_merge_worktree(&action)
+                    || self.try_dispatch_slash_schedule(&action)
+                    || self.try_dispatch_slash_loop(&action)
+                    || self.try_dispatch_create_session_dialog(&action)
+                    || self.try_dispatch_supervisor_links(&action)
+                    || self.try_dispatch_dialog_dismiss(&action);
             }
         }
         self.navigator.apply_action(&action);

@@ -21,7 +21,7 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
 
   Pushed onto the Compositor by App::dispatch when the user submits
   `/thinking` via the input (handled by parse_slash_command in
-  app/dispatch_rpc022.rs). On Enter the dialog emits
+  app/dispatch_model_thinking_dialogs.rs). On Enter the dialog emits
   Action::ThinkingLevelSelected(SessionId, ThinkingLevel) and removes
   itself from the Compositor. On Esc it removes itself with no side
   effects.

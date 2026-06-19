@@ -9,7 +9,7 @@ Feature: AgentView MultiLineInput parity: spinner/busy, placeholder, blocking, a
   Rust render loop is currently event-driven only — no idle ticks. Spinner needs an 80ms timer that fires only while is_loading || is_compacting.
   Existing pattern: scrollback_paint.rs (RPC-094 polish) wrote a manual painter rather than using ratatui's built-in widget. Reuse the same approach for spinner — write a single-line painter that takes (area, buf, frame_index, message, hint).
   InputGate { block_edits, suppress_enter } threads from agent.rs (state read) → multiline_input::handle_key. Esc/cursor moves bypass the gate (cf. TS MultiLineInput.tsx:294-296).
-  Esc-cascade extension lives in app/dispatch_rpc051.rs — add input-clear branch BEFORE the BackToBoard fallback. Requires plumbing 'input_is_nonempty' through Action::AgentEscPressed or a store query.
+  Esc-cascade extension lives in app/dispatch_esc_cascade.rs — add input-clear branch BEFORE the BackToBoard fallback. Requires plumbing 'input_is_nonempty' through Action::AgentEscPressed or a store query.
   """
 
   # ========================================

@@ -5,7 +5,7 @@
 //!
 //! Exercises the `parse_slash_command` table AND the input-submission
 //! interception in `App::handle_input_submitted` that fans
-//! /model/thinking/role through dispatch_rpc022 helpers instead of
+//! /model/thinking/role through dispatch_model_thinking_dialogs helpers instead of
 //! forwarding them to `backend.send_input`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -52,7 +52,7 @@ fn submit_input(app: &mut App, text: &str) {
 /// Scenario Outline: parse_slash_command recognises the four wired commands
 #[test]
 fn parse_slash_command_recognises_the_four_wired_commands() {
-    // @step Given the function parse_slash_command from app/dispatch_rpc022.rs
+    // @step Given the function parse_slash_command from app/dispatch_model_thinking_dialogs.rs
     // @step When it is called with text=<input>
     // @step Then it returns <expected_variant>
     assert_eq!(

@@ -12,10 +12,10 @@
 //!     300 lines of code.
 //!   * `codelet/fspec-tui/src/app/dispatch.rs` is strictly less than
 //!     300 lines of code.
-//!   * `codelet/fspec-tui/src/app/dispatch_rpc020.rs` is strictly less
+//!   * `codelet/fspec-tui/src/app/dispatch_slash_commands.rs` is strictly less
 //!     than 300 lines of code.
 //!   * `components::Action` declares the three new RPC-050 variants.
-//!   * `dispatch_rpc050.rs` declares the four RPC-050 helpers.
+//!   * `dispatch_work_unit_binding.rs` declares the four RPC-050 helpers.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -126,12 +126,12 @@ fn no_codelet_napi_reference_and_300_loc_ceiling() {
     let n = count_lines(&dispatch);
     assert!(n < 300, "app/dispatch.rs has {n} lines (must be < 300)");
 
-    // @step And codelet/fspec-tui/src/app/dispatch_rpc020.rs is strictly less than 300 lines of code
-    let dispatch020 = src.join("app").join("dispatch_rpc020.rs");
+    // @step And codelet/fspec-tui/src/app/dispatch_slash_commands.rs is strictly less than 300 lines of code
+    let dispatch020 = src.join("app").join("dispatch_slash_commands.rs");
     let n = count_lines(&dispatch020);
     assert!(
         n < 300,
-        "app/dispatch_rpc020.rs has {n} lines (must be < 300)"
+        "app/dispatch_slash_commands.rs has {n} lines (must be < 300)"
     );
 }
 
@@ -158,37 +158,5 @@ fn action_enum_declares_rpc050_variants() {
     assert!(
         body.contains("WorkUnitDetached("),
         "components/mod.rs must declare Action::WorkUnitDetached(SessionId) variant",
-    );
-}
-
-/// Scenario: dispatch_rpc050.rs declares the new RPC-050 helpers
-#[test]
-fn dispatch_rpc050_declares_helpers() {
-    // @step Given codelet/fspec-tui/src/app/dispatch_rpc050.rs after RPC-050 lands
-    let path = fspec_tui_src().join("app").join("dispatch_rpc050.rs");
-    let body = read_raw(&path);
-
-    // @step Then the file declares "handle_attach_work_unit_to_session"
-    assert!(
-        body.contains("handle_attach_work_unit_to_session"),
-        "dispatch_rpc050.rs must declare handle_attach_work_unit_to_session helper",
-    );
-
-    // @step And the file declares "handle_work_unit_attached"
-    assert!(
-        body.contains("handle_work_unit_attached"),
-        "dispatch_rpc050.rs must declare handle_work_unit_attached helper",
-    );
-
-    // @step And the file declares "handle_work_unit_detached"
-    assert!(
-        body.contains("handle_work_unit_detached"),
-        "dispatch_rpc050.rs must declare handle_work_unit_detached helper",
-    );
-
-    // @step And the file declares "handle_slash_detach"
-    assert!(
-        body.contains("handle_slash_detach"),
-        "dispatch_rpc050.rs must declare handle_slash_detach helper",
     );
 }

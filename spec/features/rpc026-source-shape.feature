@@ -30,7 +30,7 @@ Feature: Source-shape regression for RPC-026 mode-view files (RPC-021c)
     And search_history_view.rs contains no occurrences of "tui_popup" or "popup_body"
     And the first non-attribute statement in each mode view's render fn is "Clear.render(area, buf)" or "frame.render_widget(Clear, area)"
     And codelet/fspec-tui/src/views/agent.rs line count is < 300
-    And codelet/fspec-tui/src/app/dispatch_rpc026.rs line count is < 300
+    And codelet/fspec-tui/src/app/dispatch_resume_search_views.rs line count is < 300
 
   @source-shape
   Scenario: Old popup files are removed and their identifiers no longer appear

@@ -943,14 +943,14 @@
       ]
     },
     {
-      "name": "/blocklist slash command wiring lives in dispatch_rpc056.rs",
+      "name": "/blocklist slash command wiring lives in dispatch_blocklist.rs",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc056.rs",
           "lines": "229-258",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc056.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_blocklist.rs",
               "lines": [
                 1,
                 2,
@@ -1080,7 +1080,7 @@
       "codelet/fspec-tui/src/transport/websocket.rs",
       "codelet/fspec-tui/src/views/blocklist/mod.rs",
       "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc056.rs"
+      "codelet/fspec-tui/src/app/dispatch_blocklist.rs"
     ],
     "totalLinesCovered": 1123
   }

@@ -94,7 +94,7 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Scenario: App::dispatch routes Action::SupervisorsLoaded through try_dispatch_rpc061
+// Scenario: App::dispatch routes Action::SupervisorsLoaded through try_dispatch_supervisor_links
 // ─────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

@@ -213,8 +213,8 @@ fn new_modal_dialog_modules_and_dispatch_helper_exist() {
         .join("agent")
         .join("role_banner.rs")
         .exists());
-    // @step And the file codelet/fspec-tui/src/app/dispatch_rpc022.rs exists
-    assert!(src.join("app").join("dispatch_rpc022.rs").exists());
+    // @step And the file codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs exists
+    assert!(src.join("app").join("dispatch_model_thinking_dialogs.rs").exists());
 }
 
 /// Scenario: New RPC-022 modules stay under 300 lines
@@ -228,7 +228,7 @@ fn new_rpc022_modules_stay_under_300_lines() {
         .join("components")
         .join("thinking_level_dialog.rs");
     let role_banner = src_dir().join("views").join("agent").join("role_banner.rs");
-    let dispatch = src_dir().join("app").join("dispatch_rpc022.rs");
+    let dispatch = src_dir().join("app").join("dispatch_model_thinking_dialogs.rs");
     // @step When a test counts the line-count of every .rs file
     let lines_model = count_lines_path(&model_selector);
     let lines_thinking = count_lines_path(&thinking_level);
@@ -249,10 +249,10 @@ fn new_rpc022_modules_stay_under_300_lines() {
         lines_role < 300,
         "role_banner.rs has {lines_role} lines (>= 300)"
     );
-    // @step And codelet/fspec-tui/src/app/dispatch_rpc022.rs has fewer than 300 lines
+    // @step And codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs has fewer than 300 lines
     assert!(
         lines_dispatch < 300,
-        "dispatch_rpc022.rs has {lines_dispatch} lines (>= 300)"
+        "dispatch_model_thinking_dialogs.rs has {lines_dispatch} lines (>= 300)"
     );
 }
 

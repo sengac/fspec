@@ -49,14 +49,14 @@
       ]
     },
     {
-      "name": "dispatch_rpc026 declares the handle_session_resume_complete helper",
+      "name": "dispatch_resume_search_views declares the handle_session_resume_complete helper",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/source_shape_rpc049.rs",
           "lines": "109-119",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 130,
                 131,
@@ -95,7 +95,7 @@
     "implFiles": [
       "codelet/fspec-tui/src/app/dispatch.rs",
       "codelet/fspec-tui/src/components/mod.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc026.rs"
+      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs"
     ],
     "totalLinesCovered": 95
   }

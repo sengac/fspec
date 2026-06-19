@@ -6,7 +6,7 @@
 //! Card: RPC-063 (parent RPC-030).
 //!
 //! Mounted by the `/role` slash command via
-//! `App::handle_open_role_dialog` (in `app/dispatch_rpc063.rs`). The
+//! `App::handle_open_role_dialog` (in `app/dispatch_role_dialog.rs`). The
 //! dialog seeds its draft from `AgentViewStore::role_for(current_session)`
 //! and emits `Action::SetSessionRole(session_id, Some(text))` on Enter
 //! or `Action::SetSessionRole(session_id, None)` on Ctrl+D / Enter on

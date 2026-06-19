@@ -507,7 +507,7 @@ async fn enter_on_close_session_destroys_then_dispatches_back_to_board() {
             .iter()
             .all(|c| c.id != sid("s-1")),
         "Close Session must remove s-1 from AgentViewStore::open_sessions \
-         (mirrors handle_confirm_delete_session at dispatch_rpc026.rs:249 — \
+         (mirrors handle_confirm_delete_session at dispatch_resume_search_views.rs:249 — \
          without this, navigate_next/navigate_prev/first_open_session_id \
          keep surfacing the destroyed session)"
     );

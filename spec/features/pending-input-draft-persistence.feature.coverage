@@ -94,7 +94,7 @@
           "lines": "162-195",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 51,
                 52,
@@ -149,7 +149,7 @@
           "lines": "197-243",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 51,
                 52,
@@ -204,7 +204,7 @@
           "lines": "245-271",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 51,
                 52,
@@ -228,7 +228,7 @@
           "lines": "273-296",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 60,
                 61,
@@ -287,7 +287,7 @@
           "lines": "334-365",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 140,
                 141,
@@ -337,7 +337,7 @@
           "lines": "366-394",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
               "lines": [
                 88,
                 89,
@@ -359,7 +359,7 @@
           "lines": "396-438",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 94,
                 95,
@@ -400,7 +400,7 @@
           "lines": "440-477",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 94,
                 95,
@@ -441,7 +441,7 @@
           "lines": "479-512",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 120,
                 121,
@@ -476,7 +476,7 @@
           "lines": "514-556",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 75,
                 76,
@@ -505,7 +505,7 @@
           "lines": "558-583",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 148,
                 149,
@@ -545,7 +545,7 @@
           "lines": "585-645",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_session_cycle.rs",
               "lines": [
                 25,
                 26,
@@ -574,14 +574,14 @@
       ]
     },
     {
-      "name": "codelet/fspec-tui/src/app/dispatch_rpc052.rs hosts the new debounce + hydration helpers",
+      "name": "codelet/fspec-tui/src/app/dispatch_pending_input.rs hosts the new debounce + hydration helpers",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/pending_input_durability_rpc052.rs",
           "lines": "647-703",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
               "lines": [
                 1,
                 2,
@@ -772,10 +772,10 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/views/agent/dispatch.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc052.rs",
+      "codelet/fspec-tui/src/app/dispatch_pending_input.rs",
       "codelet/fspec-tui/src/app/dispatch.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc024.rs"
+      "codelet/fspec-tui/src/app/dispatch_resume_search_views.rs",
+      "codelet/fspec-tui/src/app/dispatch_session_cycle.rs"
     ],
     "totalLinesCovered": 1101
   }

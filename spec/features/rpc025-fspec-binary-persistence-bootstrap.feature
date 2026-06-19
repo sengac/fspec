@@ -14,7 +14,7 @@ Feature: RPC-025 fspec binary persistence bootstrap initialises the global data 
   Without this call, `HistoryStore::new()` returns
   `Err("Data directory not initialized")`, and the swallowing
   `if let Ok(snapshot) = backend.persistence_get_history(...)` arm
-  in `dispatch_rpc025.rs` silently drops the error — making
+  in `dispatch_history_recall.rs` silently drops the error — making
   Shift+↑/↓ appear to do nothing in the live binary even though
   the unit/integration tests pass (because the tests call
   `codelet_common::set_data_directory(temp.path())` themselves).

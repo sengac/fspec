@@ -1,6 +1,6 @@
 //! Slash command parser invoked by `handle_input_submitted` BEFORE
 //! the text is forwarded to `backend.send_input`. Extracted from
-//! `dispatch_rpc022.rs` to keep that file under the 300-LoC ceiling
+//! `dispatch_model_thinking_dialogs.rs` to keep that file under the 300-LoC ceiling
 //! after RPC-027 added `Action::SetThinkingLevelDefault` routing.
 //!
 //! RPC-048 widens this module with the `/thinking <level>` inline-arg
@@ -17,7 +17,7 @@ use super::loop_parser::{parse_loop_command, LoopSubcommand};
 use super::schedule_parser::{parse_schedule_command, ScheduleSubcommand};
 
 /// Outcome of parsing a single submitted input line. The
-/// `handle_input_submitted` arm in `dispatch_rpc020.rs` branches over
+/// `handle_input_submitted` arm in `dispatch_slash_commands.rs` branches over
 /// this enum BEFORE forwarding plain text to `backend.send_input`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SlashCommandParse {

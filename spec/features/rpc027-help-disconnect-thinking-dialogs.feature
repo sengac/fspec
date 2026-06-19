@@ -118,4 +118,4 @@ Feature: RPC-027 — HelpDialog, DisconnectDialog and ThinkingLevelDialog migrat
     Then it declares set_thinking_level_default with a default no-op implementation returning Ok(())
     Given the FspecBackend trait
     Then it declares set_thinking_level_default on both transports
-    Then dispatch_rpc022.rs routes Action::SetThinkingLevelDefault to backend.set_thinking_level_default
+    Then dispatch_model_thinking_dialogs.rs routes Action::SetThinkingLevelDefault to backend.set_thinking_level_default

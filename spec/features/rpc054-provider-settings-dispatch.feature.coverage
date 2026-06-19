@@ -8,7 +8,7 @@
           "lines": "78-116",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 23,
                 24,
@@ -149,7 +149,7 @@
           "lines": "539-572",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 23,
                 24,
@@ -193,7 +193,7 @@
           "lines": "124-153",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 50,
                 51,
@@ -250,7 +250,7 @@
           "lines": "155-214",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 90,
                 91,
@@ -357,7 +357,7 @@
           "lines": "216-259",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 180,
                 181,
@@ -419,7 +419,7 @@
           "lines": "261-312",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 180,
                 181,
@@ -496,7 +496,7 @@
           "lines": "314-374",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 225,
                 226,
@@ -590,7 +590,7 @@
           "lines": "376-430",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 260,
                 261,
@@ -694,7 +694,7 @@
           "lines": "432-498",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
               "lines": [
                 23,
                 24,
@@ -789,7 +789,7 @@
       "codelet/fspec-tui/tests/provider_settings_dispatch_rpc054.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
+      "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
       "codelet/fspec-tui/src/views/agent/slash_commands.rs",
       "codelet/fspec-tui/src/views/provider_settings/list.rs",
       "codelet/fspec-tui/src/views/provider_settings/mod.rs"

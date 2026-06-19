@@ -3,7 +3,7 @@
 //! Feature: spec/features/pause-and-hitl-dialogs.feature
 //!
 //! Hosts the impl App helpers invoked from `app/dispatch.rs` and
-//! `app/dispatch_rpc045.rs` (chunk dispatcher):
+//! `app/dispatch_stream_chunks.rs` (chunk dispatcher):
 //!
 //!   - `handle_pause_chunk(session_id)`: fired from
 //!     `handle_stream_chunk_state_updates` when
@@ -229,7 +229,7 @@ impl App {
 
     /// Route the RPC-053 Action variants through their helpers.
     /// Called from the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc053(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_pause_hitl(&mut self, action: &Action) -> bool {
         match action {
             Action::PauseChunkReceived(sid) => {
                 self.handle_pause_chunk(sid.clone());

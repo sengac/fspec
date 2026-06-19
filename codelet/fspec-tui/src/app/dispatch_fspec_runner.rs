@@ -1,8 +1,8 @@
-//! RPC-045 fspec-command runner — pure async helpers extracted from
-//! `dispatch_rpc045.rs` so that parent file honours the 300-LoC source-
+//! fspec-command runner — pure async helpers extracted from
+//! `dispatch_stream_chunks.rs` so that parent file honours the 300-LoC source-
 //! shape ceiling pinned by `source_shape_rpc049.rs`.
 //!
-//! `App::spawn_fspec_command_runner` (in `dispatch_rpc045.rs`) invokes
+//! `App::spawn_fspec_command_runner` (in `dispatch_stream_chunks.rs`) invokes
 //! [`run_fspec_command`] inside a `tokio::spawn` and forwards the result
 //! back to the originating session via `backend.send_fspec_result`. The
 //! runner is intentionally minimal — happy-path commands `list-work-units`

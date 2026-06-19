@@ -8,7 +8,7 @@
           "lines": "44-92",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
               "lines": [
                 40,
                 41,
@@ -66,7 +66,7 @@
       "codelet/fspec-tui/tests/rpc074_source_shape.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+      "codelet/fspec-tui/src/app/dispatch_slash_clear.rs",
       "codelet/core/src/session_manager_handle.rs"
     ],
     "totalLinesCovered": 85

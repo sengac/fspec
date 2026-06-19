@@ -262,7 +262,7 @@
           "lines": "307-330",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 140,
                 141,
@@ -284,7 +284,7 @@
           "lines": "332-373",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 65,
                 66,
@@ -340,7 +340,7 @@
           "lines": "375-413",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 65,
                 66,
@@ -396,7 +396,7 @@
           "lines": "415-434",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 108,
                 109,
@@ -424,7 +424,7 @@
           "lines": "436-460",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 82,
                 83,
@@ -450,7 +450,7 @@
           "lines": "462-484",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
               "lines": [
                 70,
                 71,
@@ -490,8 +490,8 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/components/create_session_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc060.rs"
+      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs"
     ],
     "totalLinesCovered": 592
   }

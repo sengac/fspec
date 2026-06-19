@@ -28,7 +28,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
   new modal dialog modules.
   7. `codelet/fspec-tui/src/views/agent/role_banner.rs` — new inline
   widget module under views/agent/.
-  8. `codelet/fspec-tui/src/app/dispatch_rpc022.rs` — new dispatch
+  8. `codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs` — new dispatch
   helper module.
   9. `codelet/fspec-tui/src/components/mod.rs::Priority` — gains a
   new `Foreground = 900` variant.
@@ -108,7 +108,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
     Then the file codelet/fspec-tui/src/components/model_selector_dialog.rs exists
     And the file codelet/fspec-tui/src/components/thinking_level_dialog.rs exists
     And the file codelet/fspec-tui/src/views/agent/role_banner.rs exists
-    And the file codelet/fspec-tui/src/app/dispatch_rpc022.rs exists
+    And the file codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs exists
 
   @line-budget
   Scenario: New RPC-022 modules stay under 300 lines
@@ -117,7 +117,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
     Then codelet/fspec-tui/src/components/model_selector_dialog.rs has fewer than 300 lines
     And codelet/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
     And codelet/fspec-tui/src/views/agent/role_banner.rs has fewer than 300 lines
-    And codelet/fspec-tui/src/app/dispatch_rpc022.rs has fewer than 300 lines
+    And codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs has fewer than 300 lines
 
   @priority-enum
   Scenario: Priority enum gains a Foreground variant numbered 900

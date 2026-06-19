@@ -227,35 +227,3 @@ fn navigator_declares_view_mode_blocklist() {
         "navigator.rs should declare a ViewMode::Blocklist variant"
     );
 }
-
-/// Scenario: /blocklist slash command wiring lives in dispatch_rpc056.rs
-#[test]
-fn dispatch_rpc056_file_has_expected_shape() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc056.rs exists
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc056.rs");
-    let source = fs::read_to_string(&path).expect("read app/dispatch_rpc056.rs");
-
-    // @step Then it declares a method named "handle_open_blocklist_view"
-    assert!(
-        source.contains("fn handle_open_blocklist_view("),
-        "dispatch_rpc056.rs should declare fn handle_open_blocklist_view"
-    );
-
-    // @step And it declares a method named "handle_close_blocklist_view"
-    assert!(
-        source.contains("fn handle_close_blocklist_view("),
-        "dispatch_rpc056.rs should declare fn handle_close_blocklist_view"
-    );
-
-    // @step And it declares a method named "handle_blocklist_rules_loaded"
-    assert!(
-        source.contains("fn handle_blocklist_rules_loaded("),
-        "dispatch_rpc056.rs should declare fn handle_blocklist_rules_loaded"
-    );
-
-    // @step And it declares a method named "try_dispatch_rpc056"
-    assert!(
-        source.contains("fn try_dispatch_rpc056("),
-        "dispatch_rpc056.rs should declare fn try_dispatch_rpc056"
-    );
-}

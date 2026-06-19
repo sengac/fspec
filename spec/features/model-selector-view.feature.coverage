@@ -8,7 +8,7 @@
           "lines": "249-261",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc337.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_selector.rs",
               "lines": [
                 20,
                 21,
@@ -505,7 +505,7 @@
           "lines": "281-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc337.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_model_selector.rs",
               "lines": [
                 37,
                 38,
@@ -551,7 +551,7 @@
       "codelet/fspec-tui/src/views/model_selector/mod.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc337.rs",
+      "codelet/fspec-tui/src/app/dispatch_model_selector.rs",
       "codelet/fspec-tui/src/views/navigator.rs",
       "codelet/fspec-tui/src/views/model_selector/mod.rs",
       "codelet/fspec-tui/src/views/model_selector/rows.rs"

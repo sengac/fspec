@@ -5,7 +5,7 @@
 //! This integration test exercises the *pure* helpers from the new
 //! `views/agent/spinner.rs`, `views/agent/input_transition.rs`, the
 //! `InputGate` extension to `multiline_input.rs`, and the L6
-//! input-clear branch added to `app/dispatch_rpc051.rs`.
+//! input-clear branch added to `app/dispatch_esc_cascade.rs`.
 //!
 //! Scenarios mapped 1:1 to feature file. Tests must FAIL before
 //! implementation lands (red phase).

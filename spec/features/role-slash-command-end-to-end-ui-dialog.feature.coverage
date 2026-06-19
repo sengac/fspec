@@ -193,7 +193,7 @@
           "lines": "110-144",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc063.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 25,
                 26,
@@ -229,7 +229,7 @@
           "lines": "146-175",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc063.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 25,
                 26,
@@ -265,7 +265,7 @@
           "lines": "177-196",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc063.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 31,
                 32,
@@ -288,7 +288,7 @@
           "lines": "198-226",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 200,
                 201,
@@ -314,7 +314,7 @@
           "lines": "228-255",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 207,
                 208,
@@ -334,7 +334,7 @@
           "lines": "257-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 197,
                 198,
@@ -354,7 +354,7 @@
           "lines": "286-317",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc063.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 35,
                 36,
@@ -375,8 +375,8 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/app/slash_parser.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc063.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc020.rs"
+      "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
+      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
     "totalLinesCovered": 475
   }

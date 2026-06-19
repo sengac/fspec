@@ -19,14 +19,14 @@ Feature: /clear slash command end-to-end
   counterpart in the TS reference (AgentView.tsx:1554-1564 handleClearCommand
   only blanks the input and calls sessionClearHistory; errors route to
   logger.error). RPC-074 removed those notice lines from
-  dispatch_rpc046::handle_slash_clear so the Rust port behaves exactly like
+  dispatch_slash_clear::handle_slash_clear so the Rust port behaves exactly like
   TS. The reactive UI reset is driven by the
   `StreamChunk::SessionStateChange { state: Cleared }` chunk emitted by
   `BackgroundSession::clear_history` (TUI-066 contract). See
   spec/features/rpc074-clear-ts-parity.feature for the parity contract.
 
-  Wiring lives in app/dispatch_rpc046.rs::handle_slash_clear. Spawned
-  tokio task pattern matches dispatch_rpc022's
+  Wiring lives in app/dispatch_slash_clear.rs::handle_slash_clear. Spawned
+  tokio task pattern matches dispatch_model_thinking_dialogs's
   handle_thinking_level_selected — clone backend, spawn .await,
   log any Err via tracing::error! (NOT via Action::EmitSessionNotice).
 

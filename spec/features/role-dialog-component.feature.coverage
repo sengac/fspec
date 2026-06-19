@@ -541,7 +541,7 @@
           "lines": "271-284",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc063.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_role_dialog.rs",
               "lines": [
                 1,
                 2,
@@ -604,7 +604,7 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/components/role_dialog.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc063.rs"
+      "codelet/fspec-tui/src/app/dispatch_role_dialog.rs"
     ],
     "totalLinesCovered": 676
   }

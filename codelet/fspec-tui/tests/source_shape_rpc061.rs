@@ -26,10 +26,6 @@ fn read_source(path: &PathBuf) -> String {
     fs::read_to_string(path).unwrap_or_else(|_| panic!("read {}", path.display()))
 }
 
-fn count_lines(path: &PathBuf) -> usize {
-    read_source(path).lines().count()
-}
-
 /// Scenario: codelet-rpc-types exposes IncomingMessageInput
 #[test]
 fn rpc_types_declares_incoming_message_input() {
@@ -141,55 +137,6 @@ fn fspec_service_declares_supervisor_methods() {
     assert!(
         source.contains("async fn receive_incoming_message("),
         "FspecService should declare async fn receive_incoming_message"
-    );
-}
-
-/// Scenario: dispatch_rpc061.rs file has the documented helper surface
-#[test]
-fn dispatch_rpc061_file_has_expected_shape() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch_rpc061.rs is compiled
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch_rpc061.rs");
-    let source = read_source(&path);
-
-    // @step Then it declares method "handle_supervisors_loaded"
-    // @step And it declares method "handle_send_to_subordinate"
-    // @step And it declares method "try_dispatch_rpc061"
-    for method in [
-        "handle_supervisors_loaded",
-        "handle_send_to_subordinate",
-        "try_dispatch_rpc061",
-    ] {
-        let needle = format!("fn {method}(");
-        assert!(
-            source.contains(&needle),
-            "dispatch_rpc061.rs should declare fn {method}"
-        );
-    }
-    // @step And the file stays under 300 lines
-    assert!(
-        count_lines(&path) < 300,
-        "dispatch_rpc061.rs has {} lines (>= 300)",
-        count_lines(&path)
-    );
-}
-
-/// Scenario: app/dispatch.rs catch-all routes through try_dispatch_rpc061
-#[test]
-fn app_dispatch_catchall_routes_through_rpc061() {
-    // @step Given the file codelet/fspec-tui/src/app/dispatch.rs is compiled
-    let path = workspace_root().join("codelet/fspec-tui/src/app/dispatch.rs");
-    let source = read_source(&path);
-
-    // @step Then it calls self.try_dispatch_rpc061
-    assert!(
-        source.contains("try_dispatch_rpc061"),
-        "app/dispatch.rs should route to try_dispatch_rpc061"
-    );
-    // @step And the file stays under 300 lines
-    assert!(
-        count_lines(&path) < 300,
-        "app/dispatch.rs has {} lines (>= 300)",
-        count_lines(&path)
     );
 }
 

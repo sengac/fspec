@@ -8,7 +8,7 @@
           "lines": "554-597",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -310,7 +310,7 @@
           "lines": "600-627",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -612,7 +612,7 @@
           "lines": "630-657",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -914,7 +914,7 @@
           "lines": "660-683",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -1216,7 +1216,7 @@
           "lines": "686-726",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -1518,7 +1518,7 @@
           "lines": "729-748",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -1820,7 +1820,7 @@
           "lines": "751-774",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -9007,7 +9007,7 @@
           "lines": "385-423",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -9309,7 +9309,7 @@
           "lines": "426-464",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -9611,7 +9611,7 @@
           "lines": "467-502",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -9913,7 +9913,7 @@
           "lines": "505-557",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -10208,14 +10208,14 @@
       ]
     },
     {
-      "name": "codelet/fspec-tui/src/app/dispatch_rpc053.rs hosts the new pause/HITL helpers",
+      "name": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs hosts the new pause/HITL helpers",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/pause_hitl_rpc053.rs",
           "lines": "936-998",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
               "lines": [
                 1,
                 2,
@@ -10518,7 +10518,7 @@
       "codelet/fspec-tui/tests/pause_hitl_rpc053.rs"
     ],
     "implFiles": [
-      "codelet/fspec-tui/src/app/dispatch_rpc053.rs",
+      "codelet/fspec-tui/src/app/dispatch_pause_hitl.rs",
       "codelet/fspec-tui/src/components/pause_dialog.rs",
       "codelet/fspec-tui/src/components/hitl_dialog.rs"
     ],

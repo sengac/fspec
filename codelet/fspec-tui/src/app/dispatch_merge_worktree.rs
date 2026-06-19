@@ -1,4 +1,4 @@
-//! RPC-057 — App::dispatch routing for the /merge-worktree flow.
+//! App::dispatch routing for the /merge-worktree flow. Introduced: RPC-057.
 //!
 //! Factored into its own file to keep `app/dispatch.rs` under the
 //! 300-LoC ceiling. Each helper here mirrors the established RPC-054 /
@@ -168,7 +168,7 @@ impl App {
 
     /// Route the RPC-057 Action variants through their helpers. Called
     /// from the catch-all arm of `App::dispatch`'s match.
-    pub(crate) fn try_dispatch_rpc057(&mut self, action: &Action) -> bool {
+    pub(crate) fn try_dispatch_merge_worktree(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenMergeConfirmDialog {
                 session_id,

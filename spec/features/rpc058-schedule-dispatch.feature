@@ -20,9 +20,9 @@ Feature: /schedule subcommand parser + dispatch
        * schedule_resume(name) -> Result<ScheduledJob>
        * schedule_remove(name) -> Result<()>
   2. Replacing the `SlashCommandAction::Schedule` notice fallback in
-     dispatch_rpc020.rs with a real `handle_slash_schedule_help`
-     routed through a new app/dispatch_rpc058.rs file (mirrors the
-     dispatch_rpc057 pattern).
+     dispatch_slash_commands.rs with a real `handle_slash_schedule_help`
+     routed through a new app/dispatch_slash_schedule.rs file (mirrors the
+     dispatch_merge_worktree pattern).
   3. Intercepting `/schedule …` (with args) in the submit-line path
      via a new ScheduleSubcommand variant on SlashCommandParse, then
      fanning the parsed subcommand out to the matching

@@ -136,8 +136,8 @@ Feature: RPC-020 source-shape regression for the slash + file search popup port
 
   @no-alias
   @ts-parity
-  Scenario: dispatch_rpc020.rs has no Providers arm
-    Given codelet/fspec-tui/src/app/dispatch_rpc020.rs after the 2026-06-01 revision
+  Scenario: dispatch_slash_commands.rs has no Providers arm
+    Given codelet/fspec-tui/src/app/dispatch_slash_commands.rs after the 2026-06-01 revision
     When the file is read
     Then it contains exactly one arm matching "SlashCommandAction::Provider =>"
     And it does NOT contain "SlashCommandAction::Providers"

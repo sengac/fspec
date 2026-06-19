@@ -676,7 +676,7 @@
           "lines": "364-400",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
               "lines": [
                 173,
                 174,
@@ -782,7 +782,7 @@
     ],
     "implFiles": [
       "codelet/fspec-tui/src/store/agent_view/session_context.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc020.rs"
+      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs"
     ],
     "totalLinesCovered": 894
   }

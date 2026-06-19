@@ -18,8 +18,8 @@ Feature: /schedule RPC surface source shape
   - The ScheduleSubcommand enum + parse_schedule_command MUST live in
     codelet/fspec-tui/src/app/schedule_parser.rs.
   - All slash-command wiring for /schedule MUST live in
-    codelet/fspec-tui/src/app/dispatch_rpc058.rs (mirrors
-    dispatch_rpc057) so the orchestrator dispatch.rs stays under the
+    codelet/fspec-tui/src/app/dispatch_slash_schedule.rs (mirrors
+    dispatch_merge_worktree) so the orchestrator dispatch.rs stays under the
     300-LoC ceiling.
 
   These tests run against source files at compile/parse time — they
@@ -40,7 +40,7 @@ Feature: /schedule RPC surface source shape
   #   5. FspecBackend trait MUST expose async variants of all five methods.
   #   6. EmbeddedFspecBackend AND WebSocketFspecBackend MUST forward each method to the tarpc client.
   #   7. ScheduleSubcommand enum + parse_schedule_command MUST live in codelet/fspec-tui/src/app/schedule_parser.rs.
-  #   8. All /schedule wiring MUST live in codelet/fspec-tui/src/app/dispatch_rpc058.rs.
+  #   8. All /schedule wiring MUST live in codelet/fspec-tui/src/app/dispatch_slash_schedule.rs.
   #
   # ========================================
 
@@ -102,8 +102,8 @@ Feature: /schedule RPC surface source shape
     And ScheduleSubcommand has variants named Add, List, Pause, Resume, Remove, Help
     And it declares a public fn named "parse_schedule_command" taking &str and returning ScheduleSubcommand
 
-  Scenario: /schedule slash command wiring lives in dispatch_rpc058.rs
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc058.rs exists
+  Scenario: /schedule slash command wiring lives in dispatch_slash_schedule.rs
+    Given the file codelet/fspec-tui/src/app/dispatch_slash_schedule.rs exists
     Then it declares a method named "handle_slash_schedule_help"
     And it declares a method named "handle_schedule_subcommand"
     And it declares a method named "handle_schedule_add"
@@ -111,4 +111,4 @@ Feature: /schedule RPC surface source shape
     And it declares a method named "handle_schedule_pause"
     And it declares a method named "handle_schedule_resume"
     And it declares a method named "handle_schedule_remove"
-    And it declares a method named "try_dispatch_rpc058"
+    And it declares a method named "try_dispatch_slash_schedule"

@@ -31,10 +31,10 @@ Feature: Pending-input draft persistence on session switch
   - codelet/fspec-tui/src/views/agent/dispatch.rs (emit PendingInputChanged on edit)
   - codelet/fspec-tui/src/app/state.rs (pending_input_save_handle field)
   - codelet/fspec-tui/src/app/dispatch.rs (route the new variants)
-  - codelet/fspec-tui/src/app/dispatch_rpc052.rs (NEW — debounce + hydration helpers)
-  - codelet/fspec-tui/src/app/mod.rs (pub mod dispatch_rpc052)
-  - codelet/fspec-tui/src/app/dispatch_rpc020.rs (clear draft after InputSubmitted)
-  - codelet/fspec-tui/src/app/dispatch_rpc026.rs (hydrate on AttachToSession)
+  - codelet/fspec-tui/src/app/dispatch_pending_input.rs (NEW — debounce + hydration helpers)
+  - codelet/fspec-tui/src/app/mod.rs (pub mod dispatch_pending_input)
+  - codelet/fspec-tui/src/app/dispatch_slash_commands.rs (clear draft after InputSubmitted)
+  - codelet/fspec-tui/src/app/dispatch_resume_search_views.rs (hydrate on AttachToSession)
   - codelet/fspec-tui/tests/common/mod.rs (MockBackend pending_input scripting)
   - codelet/fspec-tui/tests/pending_input_durability_rpc052.rs (NEW integration tests)
 
@@ -42,7 +42,7 @@ Feature: Pending-input draft persistence on session switch
 
   Dependencies:
   - RPC-037 already wired backend.{get,set}_pending_input on EmbeddedFspecBackend, WebSocketFspecBackend, MockBackend trait defaults, and FspecService.
-  - RPC-051 introduced the AgentEscPressed dispatch_rpc051.rs pattern this card mirrors.
+  - RPC-051 introduced the AgentEscPressed dispatch_esc_cascade.rs pattern this card mirrors.
   """
 
   # ========================================
@@ -218,9 +218,9 @@ Feature: Pending-input draft persistence on session switch
   # ─────────────────────────────────────────────────────────────────────
   # Source shape
   # ─────────────────────────────────────────────────────────────────────
-  Scenario: codelet/fspec-tui/src/app/dispatch_rpc052.rs hosts the new debounce + hydration helpers
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc052.rs exists
+  Scenario: codelet/fspec-tui/src/app/dispatch_pending_input.rs hosts the new debounce + hydration helpers
+    Given the file codelet/fspec-tui/src/app/dispatch_pending_input.rs exists
     When the file is compiled as part of codelet-fspec-tui
     Then it must declare impl App methods named handle_pending_input_changed, handle_seed_pending_input, and spawn_hydrate_pending_input
-    And codelet/fspec-tui/src/app/mod.rs must declare pub mod dispatch_rpc052
+    And codelet/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pending_input
     And codelet/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines

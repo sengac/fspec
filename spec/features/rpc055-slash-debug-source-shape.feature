@@ -11,12 +11,12 @@ Feature: /debug RPC surface source shape
   on: set_debug_directory MUST be declared at each layer of the dual
   transport stack (trait + tarpc service + backend trait + both transport
   forwarders) and the App's slash-command routing MUST live in its own
-  dispatch_rpc055.rs file so the orchestrator dispatch_rpc020.rs stays
+  dispatch_slash_debug.rs file so the orchestrator dispatch_slash_commands.rs stays
   under the 300-LoC ceiling.
 
   These tests run against source files at compile time — they catch
   refactors that accidentally collapse the dual-transport layering or
-  inline the /debug wiring back into dispatch_rpc020.rs.
+  inline the /debug wiring back into dispatch_slash_commands.rs.
   """
 
   Background: User Story
@@ -40,7 +40,7 @@ Feature: /debug RPC surface source shape
     Given the files codelet/fspec-tui/src/transport/embedded.rs and codelet/fspec-tui/src/transport/websocket.rs are compiled
     Then each file contains an impl of "set_debug_directory" that calls the corresponding tarpc client method
 
-  Scenario: /debug slash command wiring lives in dispatch_rpc055.rs
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc055.rs exists
+  Scenario: /debug slash command wiring lives in dispatch_slash_debug.rs
+    Given the file codelet/fspec-tui/src/app/dispatch_slash_debug.rs exists
     Then it declares a method named "handle_slash_debug"
-    And it declares a method named "try_dispatch_rpc055"
+    And it declares a method named "try_dispatch_slash_debug"

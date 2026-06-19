@@ -1,8 +1,9 @@
-//! RPC-055 — App::dispatch routing for the `/debug` slash command.
+//! App::dispatch routing for the `/debug` slash command.
+//! Introduced: RPC-055.
 //!
 //! Feature: spec/features/rpc055-slash-debug-dispatch.feature
 //!
-//! Factored into its own file so the orchestrator dispatch_rpc020.rs's
+//! Factored into its own file so the orchestrator dispatch_slash_commands.rs's
 //! `handle_slash_command` arm stays small. Mirrors the RPC-046 (`/clear`)
 //! and RPC-054 (`/provider`) patterns: spawn a tokio task, await the
 //! backend round-trip, route the success/error notice back through the
@@ -63,9 +64,9 @@ impl App {
     /// `/debug` slash command has no dedicated Action variants (it
     /// re-uses `SlashCommandSelected(Debug)` + `EmitSessionNotice` from
     /// the established patterns), but the dispatch hook is preserved
-    /// for symmetry with RPC-054's `try_dispatch_rpc054`.
+    /// for symmetry with RPC-054's `try_dispatch_provider_settings`.
     #[allow(dead_code)]
-    pub(crate) fn try_dispatch_rpc055(&mut self, _action: &Action) -> bool {
+    pub(crate) fn try_dispatch_slash_debug(&mut self, _action: &Action) -> bool {
         false
     }
 }

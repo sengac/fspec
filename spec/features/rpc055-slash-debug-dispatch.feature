@@ -14,7 +14,7 @@ Feature: /debug debug-capture wiring
   codelet-common::debug_capture (NAPI-free, per-session). The RPC-037
   surface (SessionManagerHandle::toggle_debug + FspecService::toggle_debug
   + EmbeddedFspecBackend/WebSocketFspecBackend forwarders) was wired in
-  RPC-037. The DebugStateChange chunk handler in dispatch_rpc045.rs was
+  RPC-037. The DebugStateChange chunk handler in dispatch_stream_chunks.rs was
   wired in RPC-045. The SessionHeader's [DEBUG] badge field was added in
   RPC-029 but is currently hardcoded to false.
 
@@ -25,10 +25,10 @@ Feature: /debug debug-capture wiring
        pre-session global toggle path (the TS reference calls
        `toggleDebug(debugDir)` when no session is active).
     2. Replace the `SlashCommandAction::Debug` notice fallback in
-       dispatch_rpc020.rs::handle_slash_command with a real
+       dispatch_slash_commands.rs::handle_slash_command with a real
        backend.toggle_debug(session_id, debug_dir) round-trip in a new
-       app/dispatch_rpc055.rs file, mirroring the dispatch_rpc046 (/clear)
-       and dispatch_rpc054 (/provider) patterns.
+       app/dispatch_slash_debug.rs file, mirroring the dispatch_slash_clear (/clear)
+       and dispatch_provider_settings (/provider) patterns.
     3. Replace the hardcoded `is_debug_enabled: false` in views/agent.rs
        with `agent_view_store.debug_enabled_for(session_id).unwrap_or(false)`
        so the existing SessionHeader [DEBUG] badge reflects live state.

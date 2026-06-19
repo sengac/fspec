@@ -277,7 +277,7 @@ fn space_emits_toggle_action_for_focused_rule() {
     let out = view.handle_key(key(KeyCode::Char(' ')));
 
     // @step Then the focused session's blocklist_disabled set contains "git-checkout-block"
-    // Verified via the emitted Action — the App's dispatch_rpc056
+    // Verified via the emitted Action — the App's dispatch_blocklist
     // handler is the side that mutates AgentViewStore.
     match out {
         BlocklistEvent::Emit(Action::ToggleBlocklistRule(id)) => {

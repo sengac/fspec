@@ -17,13 +17,13 @@ Feature: /merge-worktree RPC surface source shape
   - MergeConfirmDialog MUST exist as a public dialog component with the
     documented constructor + render + handle_key surface.
   - All slash-command wiring for /merge-worktree MUST live in
-    codelet/fspec-tui/src/app/dispatch_rpc057.rs (mirrors dispatch_rpc056)
-    so the orchestrator dispatch_rpc020.rs stays under the 300-LoC ceiling.
+    codelet/fspec-tui/src/app/dispatch_merge_worktree.rs (mirrors dispatch_blocklist)
+    so the orchestrator dispatch_slash_commands.rs stays under the 300-LoC ceiling.
 
   These tests run against source files at compile time — they catch
   refactors that accidentally collapse the dual-transport layering, drop
   any of the five RPC methods, or inline the /merge-worktree wiring back
-  into dispatch_rpc020.rs.
+  into dispatch_slash_commands.rs.
   """
 
   # ========================================
@@ -39,7 +39,7 @@ Feature: /merge-worktree RPC surface source shape
   #   5. FspecBackend trait MUST expose async variants of all five methods.
   #   6. EmbeddedFspecBackend AND WebSocketFspecBackend MUST forward each method to the tarpc client.
   #   7. MergeConfirmDialog MUST live in codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs.
-  #   8. All /merge-worktree wiring MUST live in codelet/fspec-tui/src/app/dispatch_rpc057.rs.
+  #   8. All /merge-worktree wiring MUST live in codelet/fspec-tui/src/app/dispatch_merge_worktree.rs.
   #
   # ========================================
 
@@ -107,14 +107,14 @@ Feature: /merge-worktree RPC surface source shape
     And MergeConfirmDialog declares a method named "render" taking (&self, Rect, &mut Buffer)
     And MergeConfirmDialog declares a method named "handle_key" taking (&mut self, KeyCode, KeyModifiers) returning MergeConfirmDialogOutcome
 
-  Scenario: /merge-worktree slash command wiring lives in dispatch_rpc057.rs
-    Given the file codelet/fspec-tui/src/app/dispatch_rpc057.rs exists
+  Scenario: /merge-worktree slash command wiring lives in dispatch_merge_worktree.rs
+    Given the file codelet/fspec-tui/src/app/dispatch_merge_worktree.rs exists
     Then it declares a method named "handle_slash_merge_worktree"
     And it declares a method named "handle_inspect_changes_loaded"
     And it declares a method named "handle_merge_confirmed"
     And it declares a method named "handle_discard_confirmed"
     And it declares a method named "handle_cancel_merge_dialog"
-    And it declares a method named "try_dispatch_rpc057"
+    And it declares a method named "try_dispatch_merge_worktree"
 
   Scenario: MergeStrategy and MergeStatus use derive(Default) with default variant attribute (RPC-057 retro 2026-05-27)
     Given the codelet workspace inherits the lint level `-D warnings` which includes `clippy::derivable_impls`

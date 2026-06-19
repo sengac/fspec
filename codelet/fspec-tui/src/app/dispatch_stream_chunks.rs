@@ -32,8 +32,8 @@ use codelet_rpc_types::{FspecRequest, SessionId, SessionState, SessionStatus, St
 use crate::components::Action;
 use crate::store::{agent_view::isolation_state::session_status_from_state, IsolationState};
 
-use super::dispatch_rpc020::format_compaction_notice;
-use super::dispatch_rpc045_fspec_runner::run_fspec_command;
+use super::dispatch_slash_commands::format_compaction_notice;
+use super::dispatch_fspec_runner::run_fspec_command;
 use super::state::App;
 
 impl App {
@@ -136,7 +136,7 @@ impl App {
                 // RPC-100: persist the reduction percentage on the
                 // per-session slot so SessionHeader renders the
                 // `[X%: COMPACTED Y%]` badge suffix. Same formula as
-                // `format_compaction_notice` in dispatch_rpc020.rs:290
+                // `format_compaction_notice` in dispatch_slash_commands.rs:290
                 // — keeping the notice line and the badge in sync.
                 let reduction =
                     ((1.0 - compaction_result.compression_ratio) * 100.0).round() as i32;

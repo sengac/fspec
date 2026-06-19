@@ -17,9 +17,9 @@ Feature: /loop subcommand parser + dispatch
        * loop_cancel(id) -> Result<bool>
        * loop_list(session_id) -> Vec<RegisteredLoop>
   2. Replacing the `SlashCommandAction::Loop` notice fallback in
-     dispatch_rpc020.rs with a real `handle_slash_loop_help` routed
-     through a new app/dispatch_rpc059.rs file (mirrors the
-     dispatch_rpc058 pattern).
+     dispatch_slash_commands.rs with a real `handle_slash_loop_help` routed
+     through a new app/dispatch_slash_loop.rs file (mirrors the
+     dispatch_slash_schedule pattern).
   3. Intercepting `/loop …` (with args) in the submit-line path
      via a new LoopSubcommand variant on SlashCommandParse, then
      fanning the parsed subcommand out to the matching

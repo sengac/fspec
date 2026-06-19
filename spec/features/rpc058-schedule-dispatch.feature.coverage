@@ -861,7 +861,7 @@
           "lines": "94-117",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 47,
                 48,
@@ -889,7 +889,7 @@
           "lines": "124-150",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 47,
                 48,
@@ -917,7 +917,7 @@
           "lines": "157-190",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 112,
                 113,
@@ -953,7 +953,7 @@
           "lines": "197-218",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 112,
                 113,
@@ -989,7 +989,7 @@
           "lines": "225-263",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 92,
                 93,
@@ -1025,7 +1025,7 @@
           "lines": "270-300",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 92,
                 93,
@@ -1061,7 +1061,7 @@
           "lines": "307-339",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 132,
                 133,
@@ -1097,7 +1097,7 @@
           "lines": "346-370",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 132,
                 133,
@@ -1133,7 +1133,7 @@
           "lines": "377-409",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 152,
                 153,
@@ -1169,7 +1169,7 @@
           "lines": "416-448",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 172,
                 173,
@@ -1207,7 +1207,7 @@
           "lines": "455-484",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/app/dispatch_rpc058.rs",
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs",
               "lines": [
                 47,
                 48,
@@ -1270,7 +1270,7 @@
     "implFiles": [
       "codelet/fspec-tui/src/app/schedule_parser.rs",
       "codelet/fspec-tui/src/app/slash_parser.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc058.rs"
+      "codelet/fspec-tui/src/app/dispatch_slash_schedule.rs"
     ],
     "totalLinesCovered": 1404
   }
