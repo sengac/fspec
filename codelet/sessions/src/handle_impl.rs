@@ -1012,13 +1012,58 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         model_id: &str,
     ) -> Result<(), String> {
         let uuid = uuid_from(session_id);
-        match self.get_session(&uuid.to_string()) {
-            Ok(session) => {
-                session.set_model(Some(provider_id.to_string()), Some(model_id.to_string()));
-                Ok(())
-            }
-            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        let session = match self.get_session(&uuid.to_string()) {
+            Ok(session) => session,
+            Err(_) => return Err(format!("Session not found: {}", session_id.value.as_str())),
+        };
+
+        // RPC-343: re-resolve the new model server-side instead of only
+        // swapping the cosmetic label strings. Mirror creation-time credential
+        // resolution for the (possibly new) provider, apply the selection to
+        // the inner request-issuing provider manager via the shared resolver,
+        // then recompute and cache the model limits. On any failure we return
+        // Err BEFORE mutating session state, so a bad model leaves the previous
+        // model and its cached limits intact.
+        let model = format!("{provider_id}/{model_id}");
+        let project_path = std::path::PathBuf::from(&session.project);
+        if let Err(e) =
+            crate::credentials::resolve_and_set_env_var(provider_id, Some(project_path.as_path()))
+        {
+            tracing::error!(
+                "set_model: failed to resolve credentials for provider {}: {}",
+                provider_id,
+                e
+            );
         }
+
+        // session.inner is a tokio::sync::Mutex. This trait method is sync and
+        // is invoked from the (idle) UI dispatch path, so take the lock without
+        // blocking: try_lock succeeds for an idle session and avoids both a
+        // sync→async bridge and the risk of deadlocking a streaming turn. If
+        // the session is mid-stream the switch is declined (state unchanged).
+        let resolved = {
+            let mut inner = session
+                .inner
+                .try_lock()
+                .map_err(|_| "Session is busy; cannot switch model right now".to_string())?;
+            crate::model_resolution::apply_model_selection(inner.provider_manager_mut(), &model)?
+        };
+
+        let compaction_threshold =
+            codelet_cli::compaction_threshold::resolve_compaction_threshold(
+                resolved.context_window as u64,
+                resolved.max_output_tokens as u64,
+                Some(model_id),
+                None,
+            ) as u32;
+
+        session.set_model(Some(provider_id.to_string()), Some(model_id.to_string()));
+        session.set_model_limits(
+            resolved.context_window,
+            resolved.max_output_tokens,
+            compaction_threshold,
+        );
+        Ok(())
     }
 
     fn set_thinking_level(

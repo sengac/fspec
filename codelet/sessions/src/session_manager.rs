@@ -481,34 +481,26 @@ impl SessionManager {
                 "PROV-007: Profile model detected, using set_model_direct for {}",
                 model
             );
-            provider_manager
-                .set_model_direct(registry_provider, model_part, None, None, None)
-                .map_err(|e| format!("Failed to set model: {}", e))?;
         } else if is_codex_model {
             tracing::info!(
                 "PROV-018: Codex model detected, using set_model_direct for {}",
                 model
             );
-            provider_manager
-                .set_model_direct(registry_provider, model_part, None, None, None)
-                .map_err(|e| format!("Failed to set codex model: {}", e))?;
         } else if is_custom_model {
             tracing::info!(
                 "PROV-096: Custom provider '{}' detected, using set_model_direct for {}",
                 registry_provider,
                 model
             );
-            provider_manager
-                .set_model_direct(registry_provider, model_part, None, None, None)
-                .map_err(|e| format!("Failed to set custom model: {}", e))?;
-        } else {
-            provider_manager
-                .select_model(model)
-                .map_err(|e| format!("Failed to select model: {}", e))?;
         }
 
-        let initial_context_window = provider_manager.context_window() as u32;
-        let initial_max_output_tokens = provider_manager.max_output_tokens() as u32;
+        // RPC-343: apply the selection via the shared resolver so creation and
+        // the mid-session set_model path can never drift.
+        let resolved =
+            crate::model_resolution::apply_model_selection(&mut provider_manager, model)?;
+
+        let initial_context_window = resolved.context_window;
+        let initial_max_output_tokens = resolved.max_output_tokens;
 
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
         inner.inject_context_reminders();

@@ -1,0 +1,82 @@
+//! RPC-343: shared model-selection resolution.
+//!
+//! Both session creation (`SessionManager::create_session_with_id`) and the
+//! mid-session model switch (`SessionManagerHandle::set_model`) must resolve a
+//! `provider/model` selection the same way — detect the model kind, apply it to
+//! the `ProviderManager`, and read back the resolved limits. Keeping that logic
+//! in one place stops the two paths from drifting (the RPC-343 bug was exactly
+//! that drift: the mid-session path re-resolved nothing).
+
+use codelet_providers::ProviderManager;
+
+/// Limits resolved for a selected model, read back from the provider manager
+/// after the selection is applied. Values are already clamped by the provider's
+/// `ModelLimitsResolver`.
+pub struct ResolvedModelLimits {
+    pub context_window: u32,
+    pub max_output_tokens: u32,
+}
+
+/// Apply a `provider/model` selection to an existing [`ProviderManager`],
+/// mirroring creation-time detection: profile / codex / custom models route
+/// through `set_model_direct`, everything else through `select_model`. Returns
+/// the resolved context window and max output tokens.
+///
+/// On error the manager state is left unchanged — both `select_model` and
+/// `set_model_direct` validate the model against the registry before mutating
+/// any internal state, so a failed call cannot leave a half-applied selection.
+pub fn apply_model_selection(
+    pm: &mut ProviderManager,
+    model: &str,
+) -> Result<ResolvedModelLimits, String> {
+    if model.is_empty() || !model.contains('/') {
+        return Err(format!(
+            "Invalid model string '{model}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')"
+        ));
+    }
+
+    // Detection mirrors SessionManager::create_session_with_id.
+    let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
+    let is_codex_model = model.starts_with("codex/");
+
+    let (registry_provider, model_part) = if is_profile_model {
+        let colon_idx = model
+            .find(':')
+            .ok_or_else(|| format!("Invalid profile model string '{model}': missing ':'"))?;
+        let slash_idx = model
+            .find('/')
+            .ok_or_else(|| format!("Invalid profile model string '{model}': missing '/'"))?;
+        (&model[..colon_idx], &model[slash_idx + 1..])
+    } else {
+        let parts: Vec<&str> = model.splitn(2, '/').collect();
+        (parts[0], parts.get(1).copied().unwrap_or(""))
+    };
+
+    if registry_provider.is_empty() || model_part.is_empty() {
+        return Err(format!(
+            "Invalid model string '{model}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')"
+        ));
+    }
+
+    let is_custom_model = !is_profile_model
+        && !is_codex_model
+        && codelet_providers::custom_provider_registered(registry_provider);
+
+    if is_profile_model || is_codex_model || is_custom_model {
+        tracing::info!(
+            target: "model_resolution",
+            model,
+            "applying model via set_model_direct (profile/codex/custom)"
+        );
+        pm.set_model_direct(registry_provider, model_part, None, None, None)
+            .map_err(|e| format!("Failed to set model: {e}"))?;
+    } else {
+        pm.select_model(model)
+            .map_err(|e| format!("Failed to select model: {e}"))?;
+    }
+
+    Ok(ResolvedModelLimits {
+        context_window: pm.context_window() as u32,
+        max_output_tokens: pm.max_output_tokens() as u32,
+    })
+}

@@ -17,6 +17,7 @@ pub mod chain_of_command;
 pub mod conversions;
 pub mod credentials;
 pub mod handle_impl;
+pub mod model_resolution;
 pub mod navigation;
 pub mod profile_sections;
 pub mod session_manager;
