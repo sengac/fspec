@@ -128,6 +128,19 @@ pub(crate) fn first_selectable_or_zero(rows: &[ModelSelectorRow]) -> usize {
     rows.iter().position(|r| r.selectable).unwrap_or(0)
 }
 
+/// Index of the first selectable row whose `model_id` matches
+/// `current_model_id`. Returns `None` when there is no current model or no
+/// matching selectable row. The `selectable` guard ensures a non-selectable
+/// header row (empty `model_id`) can never be matched.
+pub(crate) fn index_of_model(
+    rows: &[ModelSelectorRow],
+    current_model_id: Option<&str>,
+) -> Option<usize> {
+    let target = current_model_id?;
+    rows.iter()
+        .position(|r| r.selectable && r.model_id == target)
+}
+
 /// Per-token badge style: `[C]` yellow, `[R]` magenta, `[V]` blue,
 /// everything else (the `[cw]` context-window token) gray.
 pub(crate) fn badge_token_style(token: &str) -> Style {

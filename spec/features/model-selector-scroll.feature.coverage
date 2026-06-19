@@ -1,0 +1,266 @@
+{
+  "scenarios": [
+    {
+      "name": "Navigating down past the bottom scrolls the viewport to follow the cursor",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "623-646",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigating back up scrolls the viewport up with the cursor",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "648-671",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End jumps to the last row and pins it to the bottom edge",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "673-696",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mouse-wheel navigation scrolls the viewport like the Down key",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "698-734",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filtering rebuilds the list and reconciles the scroll offset",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "736-757",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A tiny or empty viewport renders gracefully without panic",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "759-773",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shrinking the terminal re-clamps the scroll offset on the next paint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "775-793",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+    ],
+    "totalLinesCovered": 303
+  }
+}
