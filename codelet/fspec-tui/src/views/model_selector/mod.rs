@@ -86,20 +86,33 @@ impl ModelSelectorView {
     }
 
     /// Fold a backend `list_providers()` result into the view. Marks the
-    /// view loaded, clears `is_refreshing`, expands every provider by
-    /// default, and rebuilds the row projection (preserving the current
-    /// selection cursor where possible).
+    /// view loaded, clears `is_refreshing`, and rebuilds the row
+    /// projection. Following TS parity (`useModelSelectorState.ts:148-150`,
+    /// `ModelSelectorScreen.tsx:93-119`) every provider starts collapsed and
+    /// only the section containing the current model is auto-expanded, so the
+    /// list fits the viewport on first open instead of overflowing.
     pub fn set_providers(&mut self, providers: Vec<ProviderInfo>) {
-        self.expanded = providers.iter().map(|p| p.key.clone()).collect();
+        // RPC-342: start all-collapsed, then expand ONLY the section that
+        // contains the current model (if any).
+        self.expanded = HashSet::new();
+        if let Some(current) = self.current_model_id.as_deref() {
+            if let Some(p) = providers
+                .iter()
+                .find(|p| p.models.iter().any(|m| m.id == current))
+            {
+                self.expanded.insert(p.key.clone());
+            }
+        }
         self.providers = providers;
         self.loaded = true;
         self.is_refreshing = false;
         self.rebuild_rows();
         // RPC-341: seed the cursor on the active-session model when it is
         // present (TS auto-expand-to-current, ModelSelectorScreen.tsx:93-119).
-        // All providers are expanded here, so the current model's row already
-        // exists. Falls back to the existing validate-or-first-selectable
-        // behavior when there is no current model or it is not loaded.
+        // The current model's section was just auto-expanded above (RPC-342),
+        // so its row already exists. Falls back to the existing
+        // validate-or-first-selectable behavior when there is no current model
+        // or it is not loaded.
         if let Some(idx) = rows::index_of_model(&self.rows, self.current_model_id.as_deref()) {
             self.selected_index = idx;
         } else if self.selected_index >= self.rows.len()
@@ -158,8 +171,19 @@ impl ModelSelectorView {
         self.selected_index
     }
 
+    /// Number of selectable model rows in the CURRENT projection (honours
+    /// the expanded set and any active filter). Used for navigation and the
+    /// filter-narrowing assertions.
     pub fn model_count(&self) -> usize {
         self.rows.iter().filter(|r| r.selectable).count()
+    }
+
+    /// Total number of models across ALL providers, independent of which
+    /// sections are expanded or filtered. RPC-342: the title shows this total
+    /// so a collapse-by-default open reads "(N models)" instead of a confusing
+    /// "(0 models)".
+    pub fn total_model_count(&self) -> usize {
+        self.providers.iter().map(|p| p.models.len()).sum()
     }
 
     pub fn title_text(&self) -> String {
@@ -168,7 +192,7 @@ impl ModelSelectorView {
         } else {
             ""
         };
-        format!("Select Model ({} models){suffix}", self.model_count())
+        format!("Select Model ({} models){suffix}", self.total_model_count())
     }
 
     fn focused_provider_key(&self) -> Option<String> {
@@ -428,7 +452,22 @@ mod tests {
             provider("openai", &["gpt-4o", "o3-mini"]),
             provider("anthropic", &["claude-sonnet"]),
         ]);
+        // Most of these shipped scenarios assume their GIVEN precondition of
+        // expanded provider groups (the pre-RPC-342 default). RPC-342 makes the
+        // real default collapse-on-load — verified separately by its own tests
+        // below — so here we restore the expanded fixture explicitly.
+        expand_all(&mut v);
         v
+    }
+
+    /// Test fixture helper: expand every provider section and reset the
+    /// selection to the first selectable row. Mirrors the pre-RPC-342
+    /// all-expanded default for scenarios whose GIVEN assumes expanded groups.
+    fn expand_all(v: &mut ModelSelectorView) {
+        v.expanded = v.providers.iter().map(|p| p.key.clone()).collect();
+        v.rebuild_rows();
+        v.selected_index = rows::first_selectable_or_zero(&v.rows);
+        v.adjust_scroll();
     }
 
     /// Scenario: Navigation skips non-selectable provider headers
@@ -487,6 +526,7 @@ mod tests {
         let mut v = ModelSelectorView::new();
         v.set_session(None);
         v.set_providers(vec![provider("openai", &["gpt-4o"])]);
+        expand_all(&mut v);
         // @step And the cursor is on a selectable model row
         v.handle_key(key(KeyCode::Home));
 
@@ -600,6 +640,7 @@ mod tests {
             provider("openai", &many),
             provider("anthropic", &["a0", "a1"]),
         ]);
+        expand_all(&mut v);
 
         // @step When the list is rendered
         // Render into a short area (8 rows total → ~4 list rows) so the
@@ -663,6 +704,7 @@ mod tests {
         let mut v = ModelSelectorView::new();
         v.set_session(Some(SessionId::new("s-1")));
         v.set_providers(vec![provider("openai", &refs)]);
+        expand_all(&mut v);
         v
     }
 
@@ -922,5 +964,128 @@ mod tests {
         // @step And the seeded row is scrolled into view
         assert!(v.selected_index >= v.scroll_offset);
         assert!(v.selected_index < v.scroll_offset + v.visible_rows);
+    }
+
+    // ---- RPC-342: collapse-by-default expansion -----------------------
+
+    /// Scenario: No current model set leaves every provider collapsed
+    #[test]
+    fn no_current_model_leaves_every_provider_collapsed() {
+        // @step Given no current model is set
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_current_model(None);
+
+        // @step When the model selector loads the "openai" and "anthropic" providers
+        v.set_providers(vec![
+            provider("openai", &["gpt-4o", "o3-mini"]),
+            provider("anthropic", &["claude-sonnet"]),
+        ]);
+
+        // @step Then the "openai" provider is collapsed
+        assert!(!v.is_expanded("openai"));
+        // @step And the "anthropic" provider is collapsed
+        assert!(!v.is_expanded("anthropic"));
+        // @step And the title reads "Select Model (3 models)"
+        assert_eq!(v.title_text(), "Select Model (3 models)");
+    }
+
+    /// Scenario: Only the current model's provider section is auto-expanded
+    #[test]
+    fn only_current_models_section_is_auto_expanded() {
+        // @step Given my current model is "claude-sonnet"
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_current_model(Some("claude-sonnet".to_string()));
+
+        // @step When the model selector loads the "openai" and "anthropic" providers
+        v.set_providers(vec![
+            provider("openai", &["gpt-4o", "o3-mini"]),
+            provider("anthropic", &["claude-sonnet"]),
+        ]);
+
+        // @step Then the "anthropic" provider is expanded
+        assert!(v.is_expanded("anthropic"));
+        // @step And the "openai" provider is collapsed
+        assert!(!v.is_expanded("openai"));
+        // @step And the cursor is on the selectable row for "claude-sonnet"
+        let row = &v.rows[v.selected_index];
+        assert!(row.selectable);
+        assert_eq!(row.model_id, "claude-sonnet");
+    }
+
+    /// Scenario: A current model in the first provider expands only that section
+    #[test]
+    fn current_model_in_first_provider_expands_only_that_section() {
+        // @step Given my current model is "gpt-4o"
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_current_model(Some("gpt-4o".to_string()));
+
+        // @step When the model selector loads the "openai" and "anthropic" providers
+        v.set_providers(vec![
+            provider("openai", &["gpt-4o", "o3-mini"]),
+            provider("anthropic", &["claude-sonnet"]),
+        ]);
+
+        // @step Then the "openai" provider is expanded
+        assert!(v.is_expanded("openai"));
+        // @step And the "anthropic" provider is collapsed
+        assert!(!v.is_expanded("anthropic"));
+    }
+
+    /// Scenario: Filtering reveals matches inside collapsed providers
+    #[test]
+    fn filtering_reveals_matches_inside_collapsed_providers() {
+        // @step Given no current model is set
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_current_model(None);
+
+        // @step And the model selector has loaded the "openai" and "anthropic" providers all collapsed
+        v.set_providers(vec![
+            provider("openai", &["gpt-4o", "o3-mini"]),
+            provider("anthropic", &["claude-sonnet"]),
+        ]);
+        assert!(!v.is_expanded("openai"));
+
+        // @step When I type the filter "o3"
+        v.handle_key(key(KeyCode::Char('/')));
+        v.handle_key(key(KeyCode::Char('o')));
+        v.handle_key(key(KeyCode::Char('3')));
+
+        // @step Then the model list shows the "o3-mini" model even though "openai" was collapsed
+        assert!(v
+            .rows
+            .iter()
+            .any(|r| r.selectable && r.model_id == "o3-mini"));
+    }
+
+    /// Scenario: Reloading providers re-applies the collapse default
+    #[test]
+    fn reloading_providers_reapplies_collapse_default() {
+        // @step Given my current model is "gpt-4o"
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_current_model(Some("gpt-4o".to_string()));
+
+        // @step And the model selector has loaded the providers with only "openai" expanded
+        v.set_providers(vec![
+            provider("openai", &["gpt-4o", "o3-mini"]),
+            provider("anthropic", &["claude-sonnet"]),
+        ]);
+        assert!(v.is_expanded("openai"));
+        assert!(!v.is_expanded("anthropic"));
+
+        // @step When the providers are reloaded
+        v.set_providers(vec![
+            provider("openai", &["gpt-4o", "o3-mini"]),
+            provider("anthropic", &["claude-sonnet"]),
+        ]);
+
+        // @step Then the "openai" provider is expanded
+        assert!(v.is_expanded("openai"));
+        // @step And the "anthropic" provider is collapsed
+        assert!(!v.is_expanded("anthropic"));
     }
 }

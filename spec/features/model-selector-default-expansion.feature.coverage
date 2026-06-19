@@ -1,0 +1,277 @@
+{
+  "scenarios": [
+    {
+      "name": "No current model set leaves every provider collapsed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "929-950",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Only the current model's provider section is auto-expanded",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "952-975",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A current model in the first provider expands only that section",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "976-995",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filtering reveals matches inside collapsed providers",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "996-1022",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reloading providers re-applies the collapse default",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "1023-1048",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/model_selector/mod.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/model_selector/mod.rs",
+      "codelet/fspec-tui/src/views/model_selector/rows.rs"
+    ],
+    "totalLinesCovered": 299
+  }
+}
