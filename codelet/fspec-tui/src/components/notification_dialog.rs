@@ -326,9 +326,10 @@ fn overlay_title_color(area: Rect, buf: &mut Buffer, title: &str, color: Color) 
             if start_x as usize + title_chars.len() > x_end as usize {
                 break;
             }
-            let matches = title_chars.iter().enumerate().all(|(i, ch)| {
-                buf[(start_x + i as u16, y)].symbol() == ch.to_string()
-            });
+            let matches = title_chars
+                .iter()
+                .enumerate()
+                .all(|(i, ch)| buf[(start_x + i as u16, y)].symbol() == ch.to_string());
             if matches {
                 for (i, _ch) in title_chars.iter().enumerate() {
                     let cell = &mut buf[(start_x + i as u16, y)];
@@ -390,8 +391,7 @@ mod tests {
 
     #[test]
     fn notification_dialog_warning_static_footer_when_auto_dismiss_zero() {
-        let mut dialog = NotificationDialog::warning("Slow")
-            .with_auto_dismiss_ms(0);
+        let mut dialog = NotificationDialog::warning("Slow").with_auto_dismiss_ms(0);
         let buf = render_to_buffer(&mut dialog);
         let text = buffer_text(&buf);
         assert!(text.contains("Warning"));

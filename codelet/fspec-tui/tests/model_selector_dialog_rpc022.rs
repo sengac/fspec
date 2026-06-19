@@ -48,6 +48,8 @@ fn provider(key: &str, display: &str, models: Vec<ModelEntry>) -> ProviderInfo {
         key: key.to_string(),
         display_name: display.to_string(),
         models,
+        profile_name: None,
+        is_unreachable: false,
     }
 }
 
@@ -85,8 +87,22 @@ fn model_selector_dialog_renders_at_priority_foreground() {
 fn model_selector_dialog_renders_via_tui_popup_adapter_pattern() {
     // @step Given a ModelSelectorDialog seeded with two providers (anthropic with [opus-4.6], openai with [gpt-5.1-codex])
     let providers = vec![
-        provider("anthropic", "anthropic", vec![model("opus-4.6", "opus-4.6", 200_000, false, false)]),
-        provider("openai", "openai", vec![model("gpt-5.1-codex", "gpt-5.1-codex", 200_000, true, false)]),
+        provider(
+            "anthropic",
+            "anthropic",
+            vec![model("opus-4.6", "opus-4.6", 200_000, false, false)],
+        ),
+        provider(
+            "openai",
+            "openai",
+            vec![model(
+                "gpt-5.1-codex",
+                "gpt-5.1-codex",
+                200_000,
+                true,
+                false,
+            )],
+        ),
     ];
     let mut dialog = ModelSelectorDialog::new(SessionId::new("s-1"), providers);
     // @step When the dialog is rendered onto a 100x30 TestBackend
@@ -130,8 +146,22 @@ fn arrow_keys_navigate_flat_list_with_wrap_around() {
     use codelet_fspec_tui::Component;
     // @step Given a ModelSelectorDialog seeded with anthropic[opus-4.6] and openai[gpt-5.1-codex]
     let providers = vec![
-        provider("anthropic", "anthropic", vec![model("opus-4.6", "opus-4.6", 200_000, false, false)]),
-        provider("openai", "openai", vec![model("gpt-5.1-codex", "gpt-5.1-codex", 200_000, true, false)]),
+        provider(
+            "anthropic",
+            "anthropic",
+            vec![model("opus-4.6", "opus-4.6", 200_000, false, false)],
+        ),
+        provider(
+            "openai",
+            "openai",
+            vec![model(
+                "gpt-5.1-codex",
+                "gpt-5.1-codex",
+                200_000,
+                true,
+                false,
+            )],
+        ),
     ];
     let mut dialog = ModelSelectorDialog::new(SessionId::new("s-1"), providers);
     // @step And the dialog is initialised with selected_index = 0 (anthropic header)
@@ -139,7 +169,10 @@ fn arrow_keys_navigate_flat_list_with_wrap_around() {
     // (skipping provider headers). The initial selectable row is the
     // opus-4.6 model row at index 1.
     let initial = dialog.selected_index();
-    assert_eq!(initial, 1, "initial selectable row should be anthropic[opus-4.6]");
+    assert_eq!(
+        initial, 1,
+        "initial selectable row should be anthropic[opus-4.6]"
+    );
     // @step When the user presses Down four times
     for _ in 0..4 {
         let _ = dialog.handle_event(&key(KeyCode::Down));
@@ -161,8 +194,22 @@ fn enter_on_a_model_row_emits_action_model_selected() {
     use codelet_fspec_tui::Component;
     // @step Given a ModelSelectorDialog seeded with anthropic[opus-4.6] and openai[gpt-5.1-codex]
     let providers = vec![
-        provider("anthropic", "anthropic", vec![model("opus-4.6", "opus-4.6", 200_000, false, false)]),
-        provider("openai", "openai", vec![model("gpt-5.1-codex", "gpt-5.1-codex", 200_000, true, false)]),
+        provider(
+            "anthropic",
+            "anthropic",
+            vec![model("opus-4.6", "opus-4.6", 200_000, false, false)],
+        ),
+        provider(
+            "openai",
+            "openai",
+            vec![model(
+                "gpt-5.1-codex",
+                "gpt-5.1-codex",
+                200_000,
+                true,
+                false,
+            )],
+        ),
     ];
     // @step And the dialog was constructed against SessionId::new("s-1")
     let mut dialog = ModelSelectorDialog::new(SessionId::new("s-1"), providers);
@@ -178,7 +225,9 @@ fn enter_on_a_model_row_emits_action_model_selected() {
         _ => panic!("expected Consumed(Some(callback))"),
     };
     // @step And the callback emits Action::ModelSelected(SessionId::new("s-1"), "openai", "gpt-5.1-codex")
-    let action = dialog.take_pending_action().expect("pending action must be set");
+    let action = dialog
+        .take_pending_action()
+        .expect("pending action must be set");
     match action {
         Action::ModelSelected(sid, provider, model_id) => {
             assert_eq!(sid, SessionId::new("s-1"));

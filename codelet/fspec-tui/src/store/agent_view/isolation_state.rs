@@ -109,12 +109,9 @@ impl AgentViewStore {
     /// chunk-driven progress update (e.g. a `CompactionProgressUpdate`
     /// StreamChunk variant — not in scope for RPC-047 but the slot is
     /// already shaped to accept it).
-    pub fn set_compaction_progress(
-        &mut self,
-        session: SessionId,
-        progress: CompactionProgress,
-    ) {
-        self.compaction_progress_by_session.insert(session, progress);
+    pub fn set_compaction_progress(&mut self, session: SessionId, progress: CompactionProgress) {
+        self.compaction_progress_by_session
+            .insert(session, progress);
     }
 
     /// Drop the per-session compaction progress entry — called when

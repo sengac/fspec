@@ -93,9 +93,15 @@ fn agent_view_footer_omits_legacy_generic_hint_and_board_view_hint() {
     // @step When the App renders against a 120x24 TestBackend
     let joined = render_agent(120, 24, session);
     // @step Then the rendered buffer does NOT contain the substring "? help"
-    assert!(!joined.contains("? help"), "legacy '? help' still present in:\n{joined}");
+    assert!(
+        !joined.contains("? help"),
+        "legacy '? help' still present in:\n{joined}"
+    );
     // @step And the rendered buffer does NOT contain the substring "switch pane"
-    assert!(!joined.contains("switch pane"), "legacy 'switch pane' still present in:\n{joined}");
+    assert!(
+        !joined.contains("switch pane"),
+        "legacy 'switch pane' still present in:\n{joined}"
+    );
     // @step And the rendered buffer does NOT contain the substring "Columns ◆ ↑↓ Work Units"
     assert!(
         !joined.contains("Columns ◆ ↑↓ Work Units"),
@@ -178,5 +184,8 @@ fn render_with_store_paints_agent_title_with_session_id() {
     let joined = render_agent(80, 24, Some(SessionId::new("s-1")));
     assert!(joined.contains("Agent"));
     // RPC-029: session id is no longer painted anywhere on the chrome.
-    assert!(!joined.contains(" Agent — s-1"), "old title should not appear");
+    assert!(
+        !joined.contains(" Agent — s-1"),
+        "old title should not appear"
+    );
 }

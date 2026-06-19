@@ -16,14 +16,16 @@ use codelet_fspec_tui::views::agent::slash_command_popup::SlashCommandPopup;
 fn render_slash_80x24(p: &SlashCommandPopup) -> Buffer {
     let backend = TestBackend::new(80, 24);
     let mut term = Terminal::new(backend).expect("Terminal::new");
-    term.draw(|f| p.render(f.area(), f.buffer_mut())).expect("draw");
+    term.draw(|f| p.render(f.area(), f.buffer_mut()))
+        .expect("draw");
     term.backend().buffer().clone()
 }
 
 fn render_file_80x24(p: &FileSearchPopup) -> Buffer {
     let backend = TestBackend::new(80, 24);
     let mut term = Terminal::new(backend).expect("Terminal::new");
-    term.draw(|f| p.render(f.area(), f.buffer_mut())).expect("draw");
+    term.draw(|f| p.render(f.area(), f.buffer_mut()))
+        .expect("draw");
     term.backend().buffer().clone()
 }
 
@@ -148,7 +150,11 @@ fn slash_command_popup_highlights_selected_match_with_inverse_cyan_black() {
     // @step And no other row carries the inverse highlight
     let label0 = format!("/{}", cmds[0].name());
     let (l0_x, l0_y) = find_text(&buf, &label0).expect("row 0 present");
-    assert_ne!(buf[(l0_x, l0_y)].bg, Color::Cyan, "row 0 must not be highlighted");
+    assert_ne!(
+        buf[(l0_x, l0_y)].bg,
+        Color::Cyan,
+        "row 0 must not be highlighted"
+    );
 }
 
 /// Scenario: SlashCommandPopup footer documents Tab/Enter Select
@@ -227,7 +233,11 @@ fn file_search_popup_empty_state_literal_renders_in_plain_text() {
     assert!(text.contains("(type to search files)"));
     // @step And the literal carries no inverse highlight
     let (lx, ly) = find_text(&buf, "(type to search files)").expect("literal present");
-    assert_ne!(buf[(lx, ly)].bg, Color::Cyan, "empty-state must not be highlighted");
+    assert_ne!(
+        buf[(lx, ly)].bg,
+        Color::Cyan,
+        "empty-state must not be highlighted"
+    );
     assert_ne!(buf[(lx, ly)].fg, Color::Black);
 }
 

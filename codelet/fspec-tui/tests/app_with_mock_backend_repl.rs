@@ -42,7 +42,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     }
 }
 
@@ -52,10 +52,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 /// reflect the seed list.
 async fn bootstrap_app_with_mock() -> (App, Arc<MockBackend>, Terminal<TestBackend>) {
     let mock = Arc::new(MockBackend::new());
-    mock.seed_work_units(vec![
-        wu("AUTH-001", "done"),
-        wu("AUTH-002", "implementing"),
-    ]);
+    mock.seed_work_units(vec![wu("AUTH-001", "done"), wu("AUTH-002", "implementing")]);
     mock.script_create_session(SessionId::new("s-mock-1"));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
@@ -111,7 +108,10 @@ async fn repl_after_first_chunk_snapshot_captures_assistant_text() {
     let buf = render_one_frame(&mut term, &mut app);
     let rows = buffer_to_rows(&buf);
     let joined = rows.join("\n");
-    assert!(joined.contains("Hello!"), "expected scrollback to include 'Hello!'");
+    assert!(
+        joined.contains("Hello!"),
+        "expected scrollback to include 'Hello!'"
+    );
     insta::assert_yaml_snapshot!("repl_after_first_chunk_rpc012", rows);
 }
 

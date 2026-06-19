@@ -26,8 +26,7 @@ use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{
-    parse_slash_command, Action, App, FspecBackend, Priority, SlashCommandParse,
-    ROLE_DIALOG_ID,
+    parse_slash_command, Action, App, FspecBackend, Priority, SlashCommandParse, ROLE_DIALOG_ID,
 };
 use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -126,7 +125,10 @@ async fn palette_pick_role_with_no_role_opens_dialog_with_empty_draft() {
 
     // @step Then a RoleDialog with id "role-dialog" is pushed onto the Compositor at Priority::Foreground
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
-    assert_eq!(app.compositor().topmost_priority(), Some(Priority::Foreground));
+    assert_eq!(
+        app.compositor().topmost_priority(),
+        Some(Priority::Foreground)
+    );
     // @step And the dialog's draft buffer is the empty string
     // Indirect verification: pressing Enter on a fresh dialog (no
     // edits) emits Action::SetSessionRole(sid, None) because an empty
@@ -171,7 +173,10 @@ async fn palette_pick_role_with_existing_role_pre_fills_dialog_draft() {
 
     // @step Then a RoleDialog with id "role-dialog" is pushed onto the Compositor at Priority::Foreground
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
-    assert_eq!(app.compositor().topmost_priority(), Some(Priority::Foreground));
+    assert_eq!(
+        app.compositor().topmost_priority(),
+        Some(Priority::Foreground)
+    );
     // @step And the dialog's draft buffer reads "You are a security reviewer"
     // Indirect verification: pressing Enter on the seeded dialog (no
     // edits) saves the seeded text verbatim.
@@ -226,7 +231,10 @@ async fn submitting_bare_slash_role_opens_the_role_dialog() {
 
     // @step Then a RoleDialog with id "role-dialog" is pushed onto the Compositor at Priority::Foreground
     assert!(app.compositor().contains(ROLE_DIALOG_ID));
-    assert_eq!(app.compositor().topmost_priority(), Some(Priority::Foreground));
+    assert_eq!(
+        app.compositor().topmost_priority(),
+        Some(Priority::Foreground)
+    );
     // @step And the dialog's draft buffer reads "Reviewer A"
     // @step And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
     assert_eq!(

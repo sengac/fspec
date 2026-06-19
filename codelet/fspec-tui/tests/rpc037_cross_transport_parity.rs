@@ -22,9 +22,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
 use codelet_rpc::SharedFspecService;
@@ -50,16 +48,18 @@ fn workspace_with_seed(cwd: &Path) {
 /// fresh deterministic `StubSessionManagerHandle`. Returns the temp dir
 /// (kept alive by caller), the service, and the handle (so tests can
 /// seed pause/HITL state).
-fn build_service() -> (TempDir, Arc<SharedFspecService>, Arc<StubSessionManagerHandle>) {
+fn build_service() -> (
+    TempDir,
+    Arc<SharedFspecService>,
+    Arc<StubSessionManagerHandle>,
+) {
     let temp = tempfile::tempdir().expect("tempdir");
     let cwd = temp.path().to_path_buf();
     workspace_with_seed(&cwd);
     let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
-    let service = Arc::new(
-        SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd),
-    );
+    let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
     (temp, service, stub)
 }
 
@@ -271,9 +271,7 @@ async fn observe_compaction_complete(
 ) -> Option<codelet_rpc_types::CompactionResult> {
     for _ in 0..16 {
         match timeout(Duration::from_secs(1), rx.recv()).await {
-            Ok(Ok((got, StreamChunk::CompactionComplete { compaction_result })))
-                if got == *sid =>
-            {
+            Ok(Ok((got, StreamChunk::CompactionComplete { compaction_result }))) if got == *sid => {
                 return Some(compaction_result);
             }
             Ok(Ok(_)) => continue,
@@ -436,7 +434,10 @@ async fn active_session_tracking_round_trips_across_transports() {
         .expect("em clear active");
     // @step Then backend.get_active_session().await returns Ok(None)
     assert_eq!(
-        websocket.get_active_session().await.expect("ws get active after clear"),
+        websocket
+            .get_active_session()
+            .await
+            .expect("ws get active after clear"),
         None
     );
 }
@@ -463,14 +464,8 @@ async fn effective_cwd_and_supervisors_safe_defaults() {
     assert!(em_cwd.is_empty(), "stub default is empty string");
 
     // @step When the engineer calls backend.get_supervisors(sid).await
-    let em_sup = embedded
-        .get_supervisors(sid.clone())
-        .await
-        .expect("em sup");
-    let ws_sup = websocket
-        .get_supervisors(sid)
-        .await
-        .expect("ws sup");
+    let em_sup = embedded.get_supervisors(sid.clone()).await.expect("em sup");
+    let ws_sup = websocket.get_supervisors(sid).await.expect("ws sup");
     // @step Then the call returns Ok(Vec::new())
     assert_eq!(em_sup, ws_sup);
     assert!(em_sup.is_empty());
@@ -802,10 +797,7 @@ async fn create_isolated_session_appears_in_list_sessions() {
     assert!(!em_info.base_commit.is_empty());
 
     // @step And backend.list_sessions().await contains a SessionInfo with id == iso_info.session_id.value and is_isolated == true
-    let em_list = embedded
-        .list_sessions()
-        .await
-        .expect("em list_sessions");
+    let em_list = embedded.list_sessions().await.expect("em list_sessions");
     assert!(em_list
         .iter()
         .any(|s| s.id == em_info.session_id.value && s.is_isolated));
@@ -815,10 +807,7 @@ async fn create_isolated_session_appears_in_list_sessions() {
         .create_isolated_session(Some("reviewer".to_string()))
         .await
         .expect("ws create_isolated_session");
-    let ws_list = websocket
-        .list_sessions()
-        .await
-        .expect("ws list_sessions");
+    let ws_list = websocket.list_sessions().await.expect("ws list_sessions");
     assert!(ws_list
         .iter()
         .any(|s| s.id == ws_info.session_id.value && s.is_isolated));
@@ -953,9 +942,7 @@ async fn happy_path_parity_byte_identical_modulo_session_id() {
     // @step And both EmbeddedFspecBackend and WebSocketFspecBackend are constructed against that service
     let (embedded, websocket) = dual_backends(service).await;
 
-    async fn run_happy_path(
-        backend: &Arc<dyn FspecBackend>,
-    ) -> Vec<StreamChunk> {
+    async fn run_happy_path(backend: &Arc<dyn FspecBackend>) -> Vec<StreamChunk> {
         let sid = backend.create_session(None).await.expect("create_session");
         let mut rx = backend.chunks_rx();
         backend
@@ -1019,9 +1006,7 @@ async fn send_input_with_thinking_forwards_when_none() {
     let mut saw_text = false;
     for _ in 0..16 {
         match timeout(Duration::from_secs(2), em_rx.recv()).await {
-            Ok(Ok((got, StreamChunk::Text { text, .. })))
-                if got == sid && text == "hi back" =>
-            {
+            Ok(Ok((got, StreamChunk::Text { text, .. }))) if got == sid && text == "hi back" => {
                 saw_text = true;
                 break;
             }
@@ -1041,9 +1026,7 @@ async fn send_input_with_thinking_forwards_when_none() {
     let mut saw_text_ws = false;
     for _ in 0..16 {
         match timeout(Duration::from_secs(2), ws_rx.recv()).await {
-            Ok(Ok((got, StreamChunk::Text { text, .. })))
-                if got == sid && text == "hi back" =>
-            {
+            Ok(Ok((got, StreamChunk::Text { text, .. }))) if got == sid && text == "hi back" => {
                 saw_text_ws = true;
                 break;
             }
@@ -1051,7 +1034,10 @@ async fn send_input_with_thinking_forwards_when_none() {
             _ => break,
         }
     }
-    assert!(saw_text_ws, "websocket must observe Text(\"hi back\") chunk");
+    assert!(
+        saw_text_ws,
+        "websocket must observe Text(\"hi back\") chunk"
+    );
 }
 
 // ============================================================================
@@ -1072,8 +1058,7 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read(path: &PathBuf) -> String {
-    std::fs::read_to_string(path)
-        .unwrap_or_else(|e| panic!("read {}: {e}", path.display()))
+    std::fs::read_to_string(path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()))
 }
 
 /// Each `(method_name, scope)` tuple — `scope` is a sub-string we expect

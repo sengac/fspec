@@ -69,6 +69,12 @@ pub struct NapiProviderModels {
     pub provider_name: String,
     /// List of models available from this provider
     pub models: Vec<NapiModelInfo>,
+    /// RPC-338: `Some(profile)` marks a local-server profile section
+    /// (mirrors `ProviderInfo.profile_name`). `None` for cloud / custom.
+    pub profile_name: Option<String>,
+    /// RPC-338: `true` when the local-server profile is unreachable
+    /// (mirrors `ProviderInfo.is_unreachable`).
+    pub is_unreachable: bool,
 }
 
 // ============================================================================
@@ -125,6 +131,8 @@ pub async fn models_list_all() -> Result<Vec<NapiProviderModels>> {
                 provider_id: provider_info.id.clone(),
                 provider_name: provider_info.name.clone(),
                 models: models.into_iter().map(to_napi_model_info).collect(),
+                profile_name: None,
+                is_unreachable: false,
             }
         })
         .collect())
@@ -248,4 +256,35 @@ pub async fn models_list_local_openai(
     OpenAIProvider::list_local_models_with_auth(&base_url, api_key.as_deref())
         .await
         .map_err(|e| Error::from_reason(format!("Failed to list local models: {}", e)))
+}
+
+// ============================================================================
+// RPC-338: NapiProviderModels profile/unreachable surface-sync fields.
+// Feature: spec/features/model-selector-profile-sections.feature
+// ============================================================================
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod rpc338_tests {
+    use super::NapiProviderModels;
+
+    /// Scenario: The napi binding mirrors the new provider fields
+    #[test]
+    fn napi_provider_models_mirrors_profile_and_reachability_fields() {
+        // @step Given the NapiProviderModels napi object binding
+        let binding = NapiProviderModels {
+            provider_id: "openai".to_string(),
+            provider_name: "openai: my-profile".to_string(),
+            models: Vec::new(),
+            profile_name: Some("my-profile".to_string()),
+            is_unreachable: false,
+        };
+
+        // @step Then it exposes a profile_name field of type Option<String>
+        let profile_name: Option<String> = binding.profile_name.clone();
+        assert_eq!(profile_name.as_deref(), Some("my-profile"));
+
+        // @step And it exposes an is_unreachable field of type bool
+        let is_unreachable: bool = binding.is_unreachable;
+        assert!(!is_unreachable);
+    }
 }

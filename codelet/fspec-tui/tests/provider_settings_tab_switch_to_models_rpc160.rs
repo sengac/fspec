@@ -11,10 +11,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use codelet_fspec_tui::components::Action;
+use codelet_fspec_tui::views::provider_settings::nav_item::ProviderDisplayInfo;
 use codelet_fspec_tui::views::{
     DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
-use codelet_fspec_tui::views::provider_settings::nav_item::ProviderDisplayInfo;
 use codelet_rpc_types::ProviderCredentialInfo;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 

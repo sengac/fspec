@@ -124,7 +124,10 @@ fn question_mark_in_board_view_still_opens_help_dialog() {
         Some("help-dialog".to_string()),
         "HelpDialog should still open from BoardView after RPC-073 fix",
     );
-    assert_eq!(app.compositor().topmost_priority(), Some(Priority::Critical));
+    assert_eq!(
+        app.compositor().topmost_priority(),
+        Some(Priority::Critical)
+    );
 }
 
 // =============================================================================
@@ -198,8 +201,7 @@ fn ctrl_d_in_agent_view_input_still_quits() {
 fn q_with_disconnect_dialog_topmost_is_intercepted_by_dialog() {
     // @step Given an App has a DisconnectDialog pushed onto the Compositor and it is the topmost critical-priority layer
     let mut app = agent_view_app();
-    app.compositor_mut()
-        .push(Box::new(DisconnectDialog::new()));
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     assert_eq!(
         app.compositor().topmost_priority(),
         Some(Priority::Critical),

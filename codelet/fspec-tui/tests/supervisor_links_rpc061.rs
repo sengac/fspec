@@ -11,14 +11,19 @@
 //!
 //! Mirrors the layout of isolated_session_dialog_rpc060.rs.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::too_many_lines
+)]
 
 use std::sync::Arc;
 use std::time::Duration;
 
-use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_fspec_tui::views::agent::SessionFooter;
 use codelet_fspec_tui::views::agent::header_build::format_subordinate_label;
+use codelet_fspec_tui::views::agent::SessionFooter;
+use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{
     CompactionProgress, IncomingMessageInput, SessionId, StreamChunk, WorkspaceInfo,
 };
@@ -77,9 +82,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -99,10 +107,7 @@ async fn supervisors_loaded_writes_into_agent_view_store() {
         .append_session(codelet_fspec_tui::SessionContext::new(sid("s-1")));
 
     // @step When Action::SupervisorsLoaded(SessionId("s-1"), vec![SessionId("sup")]) is dispatched
-    app.dispatch(Action::SupervisorsLoaded(
-        sid("s-1"),
-        vec![sid("sup")],
-    ));
+    app.dispatch(Action::SupervisorsLoaded(sid("s-1"), vec![sid("sup")]));
     drain_pending(&mut app).await;
 
     // @step Then store.supervisors_for(&SessionId("s-1")) returns &[SessionId("sup")]
@@ -173,8 +178,9 @@ async fn send_to_subordinate_err_path_emits_error_notice() {
     // @step Then within 1 second Action::EmitSessionNotice with the documented text is observed
     wait_until(
         || {
-            session_scrollback_text(&app, &sid("s-sup"))
-                .contains("[error] send to subordinate: Failed to queue supervisor input: channel closed")
+            session_scrollback_text(&app, &sid("s-sup")).contains(
+                "[error] send to subordinate: Failed to queue supervisor input: channel closed",
+            )
         },
         "error notice in s-sup scrollback",
     )
@@ -249,7 +255,8 @@ async fn supervisor_pending_injection_chunk_bumps_pending_count() {
 
     // @step And store.supervisor_pending_count_for(&SessionId("s-sub")) == 0
     assert_eq!(
-        app.agent_view_store().supervisor_pending_count_for(&sid("s-sub")),
+        app.agent_view_store()
+            .supervisor_pending_count_for(&sid("s-sub")),
         0
     );
 
@@ -260,7 +267,8 @@ async fn supervisor_pending_injection_chunk_bumps_pending_count() {
 
     // @step Then store.supervisor_pending_count_for(&SessionId("s-sub")) returns 1
     assert_eq!(
-        app.agent_view_store().supervisor_pending_count_for(&sid("s-sub")),
+        app.agent_view_store()
+            .supervisor_pending_count_for(&sid("s-sub")),
         1
     );
 }
@@ -287,7 +295,8 @@ async fn two_supervisor_pending_injection_chunks_bump_count_to_two() {
 
     // @step Then store.supervisor_pending_count_for(&SessionId("s-sub")) returns 2
     assert_eq!(
-        app.agent_view_store().supervisor_pending_count_for(&sid("s-sub")),
+        app.agent_view_store()
+            .supervisor_pending_count_for(&sid("s-sub")),
         2
     );
 }

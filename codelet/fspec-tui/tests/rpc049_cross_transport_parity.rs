@@ -20,9 +20,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
 use codelet_rpc::SharedFspecService;
@@ -39,16 +37,18 @@ fn workspace_with_seed(cwd: &Path) {
     .expect("write work-units.json");
 }
 
-fn build_service() -> (TempDir, Arc<SharedFspecService>, Arc<StubSessionManagerHandle>) {
+fn build_service() -> (
+    TempDir,
+    Arc<SharedFspecService>,
+    Arc<StubSessionManagerHandle>,
+) {
     let temp = tempfile::tempdir().expect("tempdir");
     let cwd = temp.path().to_path_buf();
     workspace_with_seed(&cwd);
     let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
-    let service = Arc::new(
-        SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd),
-    );
+    let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
     (temp, service, stub)
 }
 

@@ -83,11 +83,8 @@ async fn websocket_backend_search_files_crosses_tarpc_cleanly() {
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.search_files("README".to_string(), 10).await is invoked
     let out = backend
         .search_files("README".to_string(), 10)
@@ -123,7 +120,8 @@ async fn both_transports_return_identical_results_for_same_shared_service() {
         service,
     ));
     // @step And a WebSocketFspecBackend connected to the rpc-server
-    let ws: Arc<dyn FspecBackend> = Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
+    let ws: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.search_files("src".to_string(), 10).await is invoked on BOTH backends
     let a = embedded
         .search_files("src".to_string(), 10)
@@ -168,7 +166,8 @@ async fn search_files_honours_limit_across_transports() {
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.search_files("doc".to_string(), 5).await is invoked
     let out = backend
         .search_files("doc".to_string(), 5)

@@ -61,7 +61,10 @@ fn typing_characters_emits_filter_changed() {
     // @step Then search_view.query becomes "git"
     assert_eq!(v.query(), "git");
     // @step And three Action::SearchHistory dispatches were emitted in order ("g", "gi", "git")
-    assert_eq!(emitted, vec!["g".to_string(), "gi".to_string(), "git".to_string()]);
+    assert_eq!(
+        emitted,
+        vec!["g".to_string(), "gi".to_string(), "git".to_string()]
+    );
     // @step And backend.persistence_search_history was invoked with "git"
     // (Widget-level: emitting FilterChanged("git") IS the dispatch that App::dispatch turns into the backend call.)
     assert_eq!(emitted.last().map(String::as_str), Some("git"));

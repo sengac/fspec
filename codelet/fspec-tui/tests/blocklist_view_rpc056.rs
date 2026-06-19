@@ -106,7 +106,12 @@ async fn slash_blocklist_dispatches_open_and_fetches_rules() {
     // @step Given an App with an open session s-1 wired to a MockBackend whose blocklist_list returns two rules
     let mock = Arc::new(MockBackend::new());
     mock.seed_blocklist_rules(vec![
-        rule("git-checkout-block", "^git\\s+checkout\\b", "block", "system"),
+        rule(
+            "git-checkout-block",
+            "^git\\s+checkout\\b",
+            "block",
+            "system",
+        ),
         rule("cat-block", "^cat\\s+", "block", "project"),
     ]);
     let mut app = fresh_app(mock.clone());
@@ -149,7 +154,12 @@ fn blocklist_view_renders_two_rules_with_source_tags() {
     // @step Given a BlocklistView seeded with rules [git-checkout-block(system, block), cat-block(project, block)]
     let mut view = BlocklistView::new();
     view.set_rules(vec![
-        rule("git-checkout-block", "^git\\s+checkout\\b", "block", "system"),
+        rule(
+            "git-checkout-block",
+            "^git\\s+checkout\\b",
+            "block",
+            "system",
+        ),
         rule("cat-block", "^cat\\s+", "block", "project"),
     ]);
 
@@ -157,7 +167,10 @@ fn blocklist_view_renders_two_rules_with_source_tags() {
     let text = render_view(&mut view, &HashSet::new());
 
     // @step Then the rendered text contains "git-checkout-block"
-    assert!(text.contains("git-checkout-block"), "missing git-checkout-block: {text}");
+    assert!(
+        text.contains("git-checkout-block"),
+        "missing git-checkout-block: {text}"
+    );
     // @step And the rendered text contains "cat-block"
     assert!(text.contains("cat-block"), "missing cat-block: {text}");
     // @step And the rendered text contains "system"
@@ -315,7 +328,12 @@ fn disabled_rule_paints_dimmed_glyph_and_suffix() {
     // @step Given a BlocklistView seeded with rules [git-checkout-block(system), cat-block(project)]
     let mut view = BlocklistView::new();
     view.set_rules(vec![
-        rule("git-checkout-block", "^git\\s+checkout\\b", "block", "system"),
+        rule(
+            "git-checkout-block",
+            "^git\\s+checkout\\b",
+            "block",
+            "system",
+        ),
         rule("cat-block", "^cat\\s+", "block", "project"),
     ]);
     // @step And the focused session's blocklist_disabled set contains "git-checkout-block"
@@ -378,7 +396,12 @@ async fn session_disabled_set_persists_across_close_reopen() {
     // @step Given an App with an open session s-1 and the BlocklistView open
     let mock = Arc::new(MockBackend::new());
     mock.seed_blocklist_rules(vec![
-        rule("git-checkout-block", "^git\\s+checkout\\b", "block", "system"),
+        rule(
+            "git-checkout-block",
+            "^git\\s+checkout\\b",
+            "block",
+            "system",
+        ),
         rule("cat-block", "^cat\\s+", "block", "project"),
     ]);
     let mut app = fresh_app(mock.clone());
@@ -388,7 +411,9 @@ async fn session_disabled_set_persists_across_close_reopen() {
     drain_pending(&mut app).await;
 
     // @step And the user toggles "git-checkout-block" to disabled then presses Esc
-    app.dispatch(Action::ToggleBlocklistRule("git-checkout-block".to_string()));
+    app.dispatch(Action::ToggleBlocklistRule(
+        "git-checkout-block".to_string(),
+    ));
     drain_pending(&mut app).await;
     // Sanity check: the store carries the disabled id for the focused session.
     let disabled_in_store = app
@@ -436,7 +461,10 @@ fn category_column_renders_file_path_for_path_patterns() {
     let text = render_view(&mut view, &HashSet::new());
 
     // @step Then the rendered text contains "file_path"
-    assert!(text.contains("file_path"), "expected file_path category; got: {text}");
+    assert!(
+        text.contains("file_path"),
+        "expected file_path category; got: {text}"
+    );
 }
 
 #[test]
@@ -464,7 +492,10 @@ fn category_column_renders_bash_for_command_patterns() {
     // @step Then the rendered text contains "bash"
     assert!(text.contains("bash"), "expected bash category; got: {text}");
     // @step And the rendered text does NOT contain "file_path"
-    assert!(!text.contains("file_path"), "did not expect file_path category");
+    assert!(
+        !text.contains("file_path"),
+        "did not expect file_path category"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────

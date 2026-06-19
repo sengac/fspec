@@ -12,7 +12,7 @@
 mod common;
 
 use codelet_fspec_tui::{
-    Action, Compositor, Component, EventResult, Priority, RoleDialog, ROLE_DIALOG_ID,
+    Action, Component, Compositor, EventResult, Priority, RoleDialog, ROLE_DIALOG_ID,
 };
 use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
@@ -65,13 +65,25 @@ fn role_dialog_renders_at_priority_foreground_with_canonical_id_and_title() {
     // @step When the dialog is rendered onto an 80x24 TestBackend
     let painted = render_to_string(&mut dialog);
     // @step Then the rendered buffer contains the substring "Role"
-    assert!(painted.contains("Role"), "expected `Role` title row, got:\n{painted}");
+    assert!(
+        painted.contains("Role"),
+        "expected `Role` title row, got:\n{painted}"
+    );
     // @step And the rendered buffer contains the footer substring "Enter Save"
-    assert!(painted.contains("Enter Save"), "footer must contain `Enter Save`, got:\n{painted}");
+    assert!(
+        painted.contains("Enter Save"),
+        "footer must contain `Enter Save`, got:\n{painted}"
+    );
     // @step And the rendered buffer contains the footer substring "Ctrl+D Clear"
-    assert!(painted.contains("Ctrl+D Clear"), "footer must contain `Ctrl+D Clear`, got:\n{painted}");
+    assert!(
+        painted.contains("Ctrl+D Clear"),
+        "footer must contain `Ctrl+D Clear`, got:\n{painted}"
+    );
     // @step And the rendered buffer contains the footer substring "Esc Cancel"
-    assert!(painted.contains("Esc Cancel"), "footer must contain `Esc Cancel`, got:\n{painted}");
+    assert!(
+        painted.contains("Esc Cancel"),
+        "footer must contain `Esc Cancel`, got:\n{painted}"
+    );
 }
 
 /// Scenario: RoleDialog seeded with no role opens with an empty editable buffer
@@ -130,7 +142,9 @@ fn enter_saves_non_empty_draft_and_removes_dialog_from_compositor() {
         _ => panic!("expected Consumed(Some(callback))"),
     };
     // @step And the pending action is Action::SetSessionRole(SessionId("s-1"), Some("Reviewer B"))
-    let action = dialog.take_pending_action().expect("pending action must be set");
+    let action = dialog
+        .take_pending_action()
+        .expect("pending action must be set");
     match action {
         Action::SetSessionRole(sid, role) => {
             assert_eq!(sid, SessionId::new("s-1"));
@@ -162,7 +176,9 @@ fn enter_on_empty_draft_clears_the_role() {
         _ => panic!("expected Consumed(Some(callback))"),
     };
     // @step And the pending action is Action::SetSessionRole(SessionId("s-1"), None)
-    let action = dialog.take_pending_action().expect("pending action must be set");
+    let action = dialog
+        .take_pending_action()
+        .expect("pending action must be set");
     match action {
         Action::SetSessionRole(sid, role) => {
             assert_eq!(sid, SessionId::new("s-1"));
@@ -200,7 +216,9 @@ fn ctrl_d_clears_the_role_and_removes_dialog() {
         _ => panic!("expected Consumed(Some(callback))"),
     };
     // @step And the pending action is Action::SetSessionRole(SessionId("s-1"), None)
-    let action = dialog.take_pending_action().expect("pending action must be set");
+    let action = dialog
+        .take_pending_action()
+        .expect("pending action must be set");
     match action {
         Action::SetSessionRole(sid, role) => {
             assert_eq!(sid, SessionId::new("s-1"));

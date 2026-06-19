@@ -18,8 +18,7 @@ use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
     FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
-    IsolatedSessionInfo,
-    LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
+    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
     SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
     SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
@@ -98,8 +97,7 @@ impl WebSocketFspecBackend {
 
         let manual_reconnect = Arc::new(Notify::new());
         let initial_present = initial_client.is_some();
-        let client_slot: Arc<RwLock<Option<FspecWsClient>>> =
-            Arc::new(RwLock::new(initial_client));
+        let client_slot: Arc<RwLock<Option<FspecWsClient>>> = Arc::new(RwLock::new(initial_client));
 
         // If the initial connect failed, surface Action::Disconnected
         // immediately so the App renders the dialog from t=0.
@@ -182,25 +180,19 @@ impl SupervisorHandle {
 impl FspecBackend for WebSocketFspecBackend {
     async fn list_work_units(&self) -> Result<Vec<WorkUnitInfo>> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client.client().list_work_units(context::current()).await?)
     }
 
     async fn list_sessions(&self) -> Result<Vec<SessionInfo>> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client.client().list_sessions(context::current()).await?)
     }
 
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client
             .client()
             .create_session(context::current(), role)
@@ -209,9 +201,7 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn send_input(&self, id: SessionId, text: String) -> Result<()> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .send_input(context::current(), id, text)
@@ -221,9 +211,7 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn interrupt(&self, id: SessionId) -> Result<()> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client.client().interrupt(context::current(), id).await?;
         Ok(())
     }
@@ -281,25 +269,22 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn health(&self) -> Result<HealthInfo> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client.client().health(context::current()).await?)
     }
 
     async fn checkpoint_counts(&self) -> Result<CheckpointCounts> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
-        Ok(client.client().checkpoint_counts(context::current()).await?)
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .checkpoint_counts(context::current())
+            .await?)
     }
 
     async fn move_work_unit_up(&self, id: String) -> Result<()> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .move_work_unit_up(context::current(), id)
@@ -309,9 +294,7 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn move_work_unit_down(&self, id: String) -> Result<()> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .move_work_unit_down(context::current(), id)
@@ -321,9 +304,7 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn get_model_info(&self, session_id: SessionId) -> Result<ModelInfo> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client
             .client()
             .get_model_info(context::current(), session_id)
@@ -332,9 +313,7 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn get_thinking_level(&self, session_id: SessionId) -> Result<ThinkingLevel> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client
             .client()
             .get_thinking_level(context::current(), session_id)
@@ -343,19 +322,18 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn get_workspace_info(&self) -> Result<WorkspaceInfo> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
-        Ok(client.client().get_workspace_info(context::current()).await?)
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_workspace_info(context::current())
+            .await?)
     }
 
     async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>> {
         // RPC-020: route through the shared tarpc method, returning
         // Disconnected when the supervisor has dropped the client slot.
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client
             .client()
             .search_files(context::current(), prefix, limit)
@@ -365,9 +343,7 @@ impl FspecBackend for WebSocketFspecBackend {
     async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()> {
         // RPC-025: route through the shared tarpc method.
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .persistence_add_history(context::current(), session, text)
@@ -375,15 +351,9 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn persistence_get_history(
-        &self,
-        session: SessionId,
-        limit: u32,
-    ) -> Result<Vec<String>> {
+    async fn persistence_get_history(&self, session: SessionId, limit: u32) -> Result<Vec<String>> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .persistence_get_history(context::current(), session, limit)
@@ -393,9 +363,7 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .persistence_search_history(context::current(), query)
@@ -407,9 +375,7 @@ impl FspecBackend for WebSocketFspecBackend {
         // RPC-026: route through the shared tarpc method, returning
         // Disconnected when the supervisor has dropped the client slot.
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .persistence_delete_session(context::current(), id)
@@ -420,9 +386,7 @@ impl FspecBackend for WebSocketFspecBackend {
     async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {
         // RPC-022: route through the shared tarpc method.
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client.client().list_providers(context::current()).await?)
     }
 
@@ -433,9 +397,7 @@ impl FspecBackend for WebSocketFspecBackend {
         model_id: String,
     ) -> Result<()> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .set_session_model(context::current(), session_id, provider_id, model_id)
@@ -443,15 +405,9 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn set_thinking_level(
-        &self,
-        session_id: SessionId,
-        level: ThinkingLevel,
-    ) -> Result<()> {
+    async fn set_thinking_level(&self, session_id: SessionId, level: ThinkingLevel) -> Result<()> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .set_thinking_level(context::current(), session_id, level)
@@ -478,24 +434,16 @@ impl FspecBackend for WebSocketFspecBackend {
 
     async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client
             .client()
             .get_session_role(context::current(), session_id)
             .await?)
     }
 
-    async fn set_session_role(
-        &self,
-        session_id: SessionId,
-        role: Option<String>,
-    ) -> Result<()> {
+    async fn set_session_role(&self, session_id: SessionId, role: Option<String>) -> Result<()> {
         let guard = self.client.read().await;
-        let client = guard
-            .as_ref()
-            .ok_or(BackendError::Disconnected)?;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
             .set_session_role(context::current(), session_id, role)
@@ -668,11 +616,7 @@ impl FspecBackend for WebSocketFspecBackend {
             .await?)
     }
 
-    async fn set_pending_input(
-        &self,
-        session_id: SessionId,
-        text: Option<String>,
-    ) -> Result<()> {
+    async fn set_pending_input(&self, session_id: SessionId, text: Option<String>) -> Result<()> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
@@ -695,14 +639,20 @@ impl FspecBackend for WebSocketFspecBackend {
     async fn clear_active_session(&self) -> Result<()> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
-        client.client().clear_active_session(context::current()).await?;
+        client
+            .client()
+            .clear_active_session(context::current())
+            .await?;
         Ok(())
     }
 
     async fn get_active_session(&self) -> Result<Option<SessionId>> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
-        Ok(client.client().get_active_session(context::current()).await?)
+        Ok(client
+            .client()
+            .get_active_session(context::current())
+            .await?)
     }
 
     async fn get_effective_cwd(&self, session_id: SessionId) -> Result<String> {
@@ -747,10 +697,7 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(anyhow::Error::msg)
     }
 
-    async fn get_subordinate(
-        &self,
-        supervisor_id: SessionId,
-    ) -> Result<Option<SessionId>> {
+    async fn get_subordinate(&self, supervisor_id: SessionId) -> Result<Option<SessionId>> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client
@@ -759,10 +706,7 @@ impl FspecBackend for WebSocketFspecBackend {
             .await?)
     }
 
-    async fn get_subordinates(
-        &self,
-        supervisor_id: SessionId,
-    ) -> Result<Vec<SessionId>> {
+    async fn get_subordinates(&self, supervisor_id: SessionId) -> Result<Vec<SessionId>> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         Ok(client
@@ -804,11 +748,7 @@ impl FspecBackend for WebSocketFspecBackend {
         Ok(())
     }
 
-    async fn toggle_debug(
-        &self,
-        session_id: SessionId,
-        debug_dir: String,
-    ) -> Result<String> {
+    async fn toggle_debug(&self, session_id: SessionId, debug_dir: String) -> Result<String> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
@@ -848,11 +788,7 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn pause_triple(
-        &self,
-        session_id: SessionId,
-        choice: ApprovalChoice,
-    ) -> Result<()> {
+    async fn pause_triple(&self, session_id: SessionId, choice: ApprovalChoice) -> Result<()> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
@@ -894,11 +830,7 @@ impl FspecBackend for WebSocketFspecBackend {
             .await?)
     }
 
-    async fn send_fspec_result(
-        &self,
-        session_id: SessionId,
-        result: FspecResult,
-    ) -> Result<()> {
+    async fn send_fspec_result(&self, session_id: SessionId, result: FspecResult) -> Result<()> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
@@ -908,10 +840,7 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn create_isolated_session(
-        &self,
-        role: Option<String>,
-    ) -> Result<IsolatedSessionInfo> {
+    async fn create_isolated_session(&self, role: Option<String>) -> Result<IsolatedSessionInfo> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
@@ -982,10 +911,7 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn test_provider_connection(
-        &self,
-        provider_id: String,
-    ) -> Result<TestConnectionResult> {
+    async fn test_provider_connection(&self, provider_id: String) -> Result<TestConnectionResult> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
@@ -1185,7 +1111,9 @@ async fn run_supervisor(
         // Wait until the initial client's chunks_rx broadcast closes.
         let initial_chunks_rx = {
             let guard = client_slot.read().await;
-            guard.as_ref().map(codelet_rpc_server::FspecWsClient::chunks_rx)
+            guard
+                .as_ref()
+                .map(codelet_rpc_server::FspecWsClient::chunks_rx)
         };
         if let Some(mut rx) = initial_chunks_rx {
             loop {
@@ -1212,7 +1140,9 @@ async fn run_supervisor(
         attempt = attempt.saturating_add(1);
         // Use index = min(attempt-1, last) so attempt 5..N stays at the
         // 5000ms cap per the data-table scenario.
-        let idx = (attempt as usize).saturating_sub(1).min(BACKOFF_SCHEDULE_MS.len() - 1);
+        let idx = (attempt as usize)
+            .saturating_sub(1)
+            .min(BACKOFF_SCHEDULE_MS.len() - 1);
         let delay = Duration::from_millis(BACKOFF_SCHEDULE_MS[idx]);
 
         if action_tx.send(Action::Reconnecting(attempt)).is_err() {

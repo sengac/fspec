@@ -33,7 +33,7 @@ fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     }
 }
 
@@ -133,7 +133,7 @@ fn selected_work_unit_paints_title_and_metadata_rows_of_details_strip() {
         estimate: Some(5),
         epic: Some("authentication".to_string()),
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     };
     let mut store = BoardStore::default();
     store.replace_work_units(vec![unit]);
@@ -149,11 +149,20 @@ fn selected_work_unit_paints_title_and_metadata_rows_of_details_strip() {
         "missing 'AUTH-001: User Login' in details strip:\n{joined}"
     );
     // @step And the rendered buffer contains the substring "Epic: authentication"
-    assert!(joined.contains("Epic: authentication"), "missing 'Epic: authentication':\n{joined}");
+    assert!(
+        joined.contains("Epic: authentication"),
+        "missing 'Epic: authentication':\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Estimate: 5pts"
-    assert!(joined.contains("Estimate: 5pts"), "missing 'Estimate: 5pts':\n{joined}");
+    assert!(
+        joined.contains("Estimate: 5pts"),
+        "missing 'Estimate: 5pts':\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Status: backlog"
-    assert!(joined.contains("Status: backlog"), "missing 'Status: backlog':\n{joined}");
+    assert!(
+        joined.contains("Status: backlog"),
+        "missing 'Status: backlog':\n{joined}"
+    );
 }
 
 /// Scenario: Attachments row renders comma-joined basenames with the "A" key hint
@@ -199,12 +208,24 @@ fn box_drawing_borders_and_inner_junctions_are_painted() {
     let buf = render(120, 24, &store);
     // @step Then row 0 of the rendered buffer starts with "┌" and ends with "┐"
     let row0 = row_string(&buf, 0);
-    assert!(row0.starts_with('┌'), "row 0 must start with ┌, got `{row0}`");
-    assert!(row0.trim_end().ends_with('┐'), "row 0 must end with ┐, got `{row0}`");
+    assert!(
+        row0.starts_with('┌'),
+        "row 0 must start with ┌, got `{row0}`"
+    );
+    assert!(
+        row0.trim_end().ends_with('┐'),
+        "row 0 must end with ┐, got `{row0}`"
+    );
     // @step And the last in-bounds row of the box starts with "└" and ends with "┘"
     let last = row_string(&buf, 23);
-    assert!(last.starts_with('└'), "last row must start with └, got `{last}`");
-    assert!(last.trim_end().ends_with('┘'), "last row must end with ┘, got `{last}`");
+    assert!(
+        last.starts_with('└'),
+        "last row must start with └, got `{last}`"
+    );
+    assert!(
+        last.trim_end().ends_with('┘'),
+        "last row must end with ┘, got `{last}`"
+    );
     // @step And at least one inner row contains the glyph "├" and the glyph "┬" and the glyph "┤"
     let has_top = (1..23).any(|y| {
         let r = row_string(&buf, y);
@@ -250,7 +271,11 @@ fn focused_column_header_is_cyan_bold_and_other_columns_are_dim() {
     // @step And the cell holding "SPECIFYING" is styled with the theme.dim foreground (DarkGray)
     let (sx, sy) = find_substring(&buf, "SPECIFYING").expect("SPECIFYING must appear");
     let scell = &buf[(sx, sy)];
-    assert_eq!(scell.fg, Color::DarkGray, "SPECIFYING cell fg must be DarkGray (theme.dim)");
+    assert_eq!(
+        scell.fg,
+        Color::DarkGray,
+        "SPECIFYING cell fg must be DarkGray (theme.dim)"
+    );
 }
 
 /// Scenario: Bug cells render red and the focused selected cell flips to bg=green fg=black bold
@@ -268,15 +293,32 @@ fn bug_cells_render_red_and_focused_selected_cell_flips_to_bg_green_fg_black_bol
     // @step When the App renders BoardView against a 120x24 TestBackend
     let buf = render(120, 24, &store);
     // @step Then the cell containing "BUG-001" is styled with background Green, foreground Black and the bold modifier
-    let (x1, y1) = find_substring_in_content(&buf, "BUG-001").expect("BUG-001 must appear in content rows");
+    let (x1, y1) =
+        find_substring_in_content(&buf, "BUG-001").expect("BUG-001 must appear in content rows");
     let c1 = &buf[(x1, y1)];
-    assert_eq!(c1.bg, Color::Green, "BUG-001 selected cell bg must be Green");
-    assert_eq!(c1.fg, Color::Black, "BUG-001 selected cell fg must be Black");
-    assert!(c1.modifier.contains(Modifier::BOLD), "BUG-001 selected cell must be bold");
+    assert_eq!(
+        c1.bg,
+        Color::Green,
+        "BUG-001 selected cell bg must be Green"
+    );
+    assert_eq!(
+        c1.fg,
+        Color::Black,
+        "BUG-001 selected cell fg must be Black"
+    );
+    assert!(
+        c1.modifier.contains(Modifier::BOLD),
+        "BUG-001 selected cell must be bold"
+    );
     // @step And the cell containing "BUG-002" is styled with foreground Red
-    let (x2, y2) = find_substring_in_content(&buf, "BUG-002").expect("BUG-002 must appear in content rows");
+    let (x2, y2) =
+        find_substring_in_content(&buf, "BUG-002").expect("BUG-002 must appear in content rows");
     let c2 = &buf[(x2, y2)];
-    assert_eq!(c2.fg, Color::Red, "BUG-002 unselected bug cell fg must be Red");
+    assert_eq!(
+        c2.fg,
+        Color::Red,
+        "BUG-002 unselected bug cell fg must be Red"
+    );
 }
 
 /// Scenario: Task cells render blue with the [estimate] suffix
@@ -293,11 +335,19 @@ fn task_cells_render_blue_with_estimate_suffix() {
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "TASK-001 [3]"
-    assert!(joined.contains("TASK-001 [3]"), "missing 'TASK-001 [3]':\n{joined}");
+    assert!(
+        joined.contains("TASK-001 [3]"),
+        "missing 'TASK-001 [3]':\n{joined}"
+    );
     // @step And the cell containing "TASK-001 [3]" is styled with foreground Blue
-    let (x, y) = find_substring_in_content(&buf, "TASK-001").expect("TASK-001 must appear in content rows");
+    let (x, y) =
+        find_substring_in_content(&buf, "TASK-001").expect("TASK-001 must appear in content rows");
     let c = &buf[(x, y)];
-    assert_eq!(c.fg, Color::Blue, "TASK-001 unselected task cell fg must be Blue");
+    assert_eq!(
+        c.fg,
+        Color::Blue,
+        "TASK-001 unselected task cell fg must be Blue"
+    );
 }
 
 /// Scenario: Footer string and footer separator are still painted at the bottom

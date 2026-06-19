@@ -20,8 +20,7 @@ use async_trait::async_trait;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
     FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
-    IsolatedSessionInfo,
-    LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
+    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
     SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
     SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
@@ -186,11 +185,7 @@ pub trait FspecBackend: Send + Sync {
 
     /// RPC-022: set the per-session thinking/reasoning level.
     /// Mirrors `set_session_model` in shape.
-    async fn set_thinking_level(
-        &self,
-        session_id: SessionId,
-        level: ThinkingLevel,
-    ) -> Result<()>;
+    async fn set_thinking_level(&self, session_id: SessionId, level: ThinkingLevel) -> Result<()>;
 
     /// RPC-027: set the per-user DEFAULT thinking/reasoning level.
     /// Sister of `set_thinking_level`; persists the level so subsequent
@@ -206,7 +201,6 @@ pub trait FspecBackend: Send + Sync {
         Ok(())
     }
 
-
     /// RPC-022: read the session's current role overlay text. Both
     /// transports delegate to `FspecService::get_session_role`.
     /// Returns `Ok(None)` when no role is active OR when no session
@@ -215,11 +209,7 @@ pub trait FspecBackend: Send + Sync {
 
     /// RPC-022: set or clear the session's role overlay. Passing
     /// `None` clears.
-    async fn set_session_role(
-        &self,
-        session_id: SessionId,
-        role: Option<String>,
-    ) -> Result<()>;
+    async fn set_session_role(&self, session_id: SessionId, role: Option<String>) -> Result<()>;
 
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff
@@ -353,11 +343,7 @@ pub trait FspecBackend: Send + Sync {
     }
 
     /// RPC-037: write the per-session pending input draft.
-    async fn set_pending_input(
-        &self,
-        _session_id: SessionId,
-        _text: Option<String>,
-    ) -> Result<()> {
+    async fn set_pending_input(&self, _session_id: SessionId, _text: Option<String>) -> Result<()> {
         Ok(())
     }
 
@@ -404,18 +390,12 @@ pub trait FspecBackend: Send + Sync {
     }
 
     /// RPC-061: first subordinate of the supervisor, or None.
-    async fn get_subordinate(
-        &self,
-        _supervisor_id: SessionId,
-    ) -> Result<Option<SessionId>> {
+    async fn get_subordinate(&self, _supervisor_id: SessionId) -> Result<Option<SessionId>> {
         Ok(None)
     }
 
     /// RPC-061: every subordinate of the supervisor.
-    async fn get_subordinates(
-        &self,
-        _supervisor_id: SessionId,
-    ) -> Result<Vec<SessionId>> {
+    async fn get_subordinates(&self, _supervisor_id: SessionId) -> Result<Vec<SessionId>> {
         Ok(Vec::new())
     }
 
@@ -439,11 +419,7 @@ pub trait FspecBackend: Send + Sync {
     }
 
     /// RPC-037: toggle debug capture; returns the resolved path string.
-    async fn toggle_debug(
-        &self,
-        _session_id: SessionId,
-        _debug_dir: String,
-    ) -> Result<String> {
+    async fn toggle_debug(&self, _session_id: SessionId, _debug_dir: String) -> Result<String> {
         Ok(String::new())
     }
 
@@ -465,11 +441,7 @@ pub trait FspecBackend: Send + Sync {
     }
 
     /// RPC-037: respond to a three-choice approval pause.
-    async fn pause_triple(
-        &self,
-        _session_id: SessionId,
-        _choice: ApprovalChoice,
-    ) -> Result<()> {
+    async fn pause_triple(&self, _session_id: SessionId, _choice: ApprovalChoice) -> Result<()> {
         Ok(())
     }
 
@@ -493,19 +465,12 @@ pub trait FspecBackend: Send + Sync {
     }
 
     /// RPC-037: round-trip an FspecCommandRequest reply.
-    async fn send_fspec_result(
-        &self,
-        _session_id: SessionId,
-        _result: FspecResult,
-    ) -> Result<()> {
+    async fn send_fspec_result(&self, _session_id: SessionId, _result: FspecResult) -> Result<()> {
         Ok(())
     }
 
     /// RPC-037: create an isolated (worktree-backed) session.
-    async fn create_isolated_session(
-        &self,
-        _role: Option<String>,
-    ) -> Result<IsolatedSessionInfo> {
+    async fn create_isolated_session(&self, _role: Option<String>) -> Result<IsolatedSessionInfo> {
         Ok(IsolatedSessionInfo {
             session_id: SessionId::new(String::new()),
             worktree_path: String::new(),
@@ -554,10 +519,7 @@ pub trait FspecBackend: Send + Sync {
     }
 
     /// RPC-054: round-trip a connection test to the provider.
-    async fn test_provider_connection(
-        &self,
-        _provider_id: String,
-    ) -> Result<TestConnectionResult> {
+    async fn test_provider_connection(&self, _provider_id: String) -> Result<TestConnectionResult> {
         Ok(TestConnectionResult {
             success: true,
             error: None,

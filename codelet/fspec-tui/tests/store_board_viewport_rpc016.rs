@@ -27,7 +27,9 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 
 fn seed_backlog(n: usize) -> BoardStore {
     let mut store = BoardStore::default();
-    let units: Vec<WorkUnitInfo> = (0..n).map(|i| wu(&format!("AUTH-{i:03}"), "backlog")).collect();
+    let units: Vec<WorkUnitInfo> = (0..n)
+        .map(|i| wu(&format!("AUTH-{i:03}"), "backlog"))
+        .collect();
     store.replace_work_units(units);
     store
 }

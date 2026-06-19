@@ -16,9 +16,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use codelet_fspec_tui::{
-    Action, App, FspecBackend, ModelSelectorDialog, MODEL_SELECTOR_DIALOG_ID,
-};
+use codelet_fspec_tui::{Action, App, FspecBackend, ModelSelectorDialog, MODEL_SELECTOR_DIALOG_ID};
 use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId, ThinkingLevel};
 
 mod common;
@@ -71,7 +69,9 @@ async fn action_model_selected_spawns_set_session_model_and_refreshes_chrome() {
     // @step When the spawned task completes
     drain_pending(&mut app).await;
     assert_eq!(mock.set_session_model_calls(), prior_set_calls + 1);
-    let last = mock.last_set_session_model().expect("last set_session_model");
+    let last = mock
+        .last_set_session_model()
+        .expect("last set_session_model");
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, "openai");
     assert_eq!(last.2, "gpt-5.1-codex");
@@ -100,7 +100,9 @@ async fn action_thinking_level_selected_spawns_set_thinking_level_and_refreshes_
     // @step When the spawned task completes
     drain_pending(&mut app).await;
     assert_eq!(mock.set_thinking_level_calls(), prior + 1);
-    let last = mock.last_set_thinking_level().expect("last set_thinking_level");
+    let last = mock
+        .last_set_thinking_level()
+        .expect("last set_thinking_level");
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, ThinkingLevel::High);
     // @step Then a follow-up tokio task is spawned that calls backend.get_thinking_level(SessionId("s-1"))
@@ -217,6 +219,8 @@ fn action_list_providers_loaded_folds_into_open_model_selector_dialog() {
             supports_vision: false,
             is_custom: false,
         }],
+        profile_name: None,
+        is_unreachable: false,
     }];
     app.dispatch(Action::ListProvidersLoaded(providers));
     // @step Then the ModelSelectorDialog's provider list has length 1 with key "openai"
@@ -229,7 +233,8 @@ fn action_list_providers_loaded_folds_into_open_model_selector_dialog() {
     let backend = TestBackend::new(100, 30);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|frame| {
-        app.compositor_mut().render(frame.area(), frame.buffer_mut());
+        app.compositor_mut()
+            .render(frame.area(), frame.buffer_mut());
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();

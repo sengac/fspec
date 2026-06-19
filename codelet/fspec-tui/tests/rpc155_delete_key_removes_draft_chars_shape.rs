@@ -200,9 +200,9 @@ fn scenario_merged_backspace_delete_arm_precedes_char_arm_in_handle_edit_key() {
         .expect("handle_edit_key body must contain the merged `KeyCode::Backspace | KeyCode::Delete =>` arm (RPC-155)");
 
     // @step And the function body must contain "KeyCode::Char(c) =>"
-    let char_offset = body
-        .find("KeyCode::Char(c) =>")
-        .expect("handle_edit_key body must contain the `KeyCode::Char(c) =>` arm (RPC-155 / RPC-161)");
+    let char_offset = body.find("KeyCode::Char(c) =>").expect(
+        "handle_edit_key body must contain the `KeyCode::Char(c) =>` arm (RPC-155 / RPC-161)",
+    );
 
     // @step And the offset of "KeyCode::Backspace | KeyCode::Delete =>" must be less than the offset of "KeyCode::Char(c) =>"
     assert!(

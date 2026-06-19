@@ -196,14 +196,12 @@ fn fspec_backend_declares_loop_methods() {
 #[test]
 fn both_transports_implement_loop_methods() {
     // @step Given the files codelet/fspec-tui/src/transport/embedded.rs and codelet/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"),
-    )
-    .expect("read transport/embedded.rs");
-    let websocket = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"),
-    )
-    .expect("read transport/websocket.rs");
+    let embedded =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"))
+            .expect("read transport/embedded.rs");
+    let websocket =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"))
+            .expect("read transport/websocket.rs");
 
     // @step Then each file contains an impl of "loop_add" that calls the corresponding tarpc client method
     // @step And each file contains an impl of "loop_cancel" that calls the corresponding tarpc client method

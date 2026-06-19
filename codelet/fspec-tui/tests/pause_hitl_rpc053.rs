@@ -12,11 +12,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use codelet_fspec_tui::{
-    Action, App, Component, FspecBackend, HITL_DIALOG_ID, PAUSE_DIALOG_ID, PauseDialog,
+    Action, App, Component, FspecBackend, PauseDialog, HITL_DIALOG_ID, PAUSE_DIALOG_ID,
 };
 use codelet_rpc_types::{
-    ApprovalChoice, HitlOption, HitlRequest, PauseKind, PauseState, SessionId,
-    SessionState, StreamChunk,
+    ApprovalChoice, HitlOption, HitlRequest, PauseKind, PauseState, SessionId, SessionState,
+    StreamChunk,
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use tokio::time::timeout;

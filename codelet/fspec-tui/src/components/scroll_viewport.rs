@@ -256,7 +256,10 @@ mod tests {
         }
         assert_eq!(wv.velocity(), 5);
         // @step And after a gap of >=150ms the next step resets velocity to 1
-        let step = wv.step_at(WheelDirection::Down, t0 + Duration::from_millis(5 * 50 + 200));
+        let step = wv.step_at(
+            WheelDirection::Down,
+            t0 + Duration::from_millis(5 * 50 + 200),
+        );
         assert_eq!(step, 1);
         assert_eq!(wv.velocity(), 1);
     }

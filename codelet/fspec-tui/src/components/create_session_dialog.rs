@@ -75,10 +75,7 @@ impl CreateSessionDialog {
     /// Construct a fresh dialog. `preselect=None` defaults to
     /// `CreateSessionOption::Yes`. `work_unit=Some(_)` switches the
     /// title to the context-aware "Work on <id>?" string.
-    pub fn new(
-        preselect: Option<CreateSessionOption>,
-        work_unit: Option<WorkUnitContext>,
-    ) -> Self {
+    pub fn new(preselect: Option<CreateSessionOption>, work_unit: Option<WorkUnitContext>) -> Self {
         Self {
             id: CREATE_SESSION_DIALOG_ID.to_string(),
             selected: preselect.unwrap_or(CreateSessionOption::Yes),

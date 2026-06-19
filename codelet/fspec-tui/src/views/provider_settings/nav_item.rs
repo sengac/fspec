@@ -130,9 +130,7 @@ pub fn build_nav_items(
             }
         }
 
-        if provider.id != "openai"
-            && (provider.requires_api_key || provider.env_var.is_some())
-        {
+        if provider.id != "openai" && (provider.requires_api_key || provider.env_var.is_some()) {
             items.push(NavItem {
                 provider_id: provider.id.clone(),
                 kind: NavItemKind::ApiKey,

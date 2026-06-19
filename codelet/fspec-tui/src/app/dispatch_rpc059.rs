@@ -18,7 +18,8 @@ use super::loop_parser::LoopSubcommand;
 use super::state::App;
 
 /// Static usage block for `/loop` (matches TS `handleLoopCommand`).
-const USAGE_TEXT: &str = "[loop] Usage: /loop [interval] <prompt> | /loop cancel <id> | /loop list\n\
+const USAGE_TEXT: &str =
+    "[loop] Usage: /loop [interval] <prompt> | /loop cancel <id> | /loop list\n\
   Intervals: <N>s|<N>m|<N>h|<N>d (leading) OR ... every N <unit> (trailing)\n\
   Examples:\n\
     /loop 30s check the build\n\
@@ -204,10 +205,7 @@ fn format_loop_list(entries: &[RegisteredLoop]) -> String {
         return "[loop] No active loops.".to_string();
     }
     let mut out = String::from("[loop] Active loops:\n");
-    out.push_str(&format!(
-        "{:<10}{:<30}{:<15}\n",
-        "ID", "Prompt", "Interval"
-    ));
+    out.push_str(&format!("{:<10}{:<30}{:<15}\n", "ID", "Prompt", "Interval"));
     out.push_str(&"-".repeat(55));
     for entry in entries {
         let prompt = if entry.prompt.len() > 28 {

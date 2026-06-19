@@ -8,7 +8,12 @@
 //! `Action::EmitSessionNotice` notice formatter. Mirrors the
 //! `schedule_dispatch_rpc058.rs` test layout.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::too_many_lines
+)]
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -78,9 +83,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -226,10 +234,7 @@ fn parse_slash_command_routes_loop_submit_line_input() {
     // @step When parse_slash_command("/loop list") is invoked
     let out = parse_slash_command("/loop list");
     // @step Then it returns SlashCommandParse::LoopSubcommand(LoopSubcommand::List)
-    assert_eq!(
-        out,
-        SlashCommandParse::LoopSubcommand(LoopSubcommand::List)
-    );
+    assert_eq!(out, SlashCommandParse::LoopSubcommand(LoopSubcommand::List));
 }
 
 #[test]
@@ -237,10 +242,7 @@ fn parse_slash_command_routes_bare_loop_to_help() {
     // @step When parse_slash_command("/loop") is invoked
     let out = parse_slash_command("/loop");
     // @step Then it returns SlashCommandParse::LoopSubcommand(LoopSubcommand::Help)
-    assert_eq!(
-        out,
-        SlashCommandParse::LoopSubcommand(LoopSubcommand::Help)
-    );
+    assert_eq!(out, SlashCommandParse::LoopSubcommand(LoopSubcommand::Help));
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -395,8 +397,10 @@ async fn loop_add_success_emits_scheduled_notice() {
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[loop] scheduled every 30 seconds [job: ab12cd34]" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[loop] scheduled every 30 seconds [job: ab12cd34]"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[loop] scheduled every 30 seconds [job: ab12cd34]")
+        },
         "loop add notice",
     )
     .await;
@@ -424,8 +428,10 @@ async fn loop_add_error_emits_error_notice() {
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /loop add: Session not found: s-1" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[error] /loop add: Session not found: s-1"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[error] /loop add: Session not found: s-1")
+        },
         "add error notice",
     )
     .await;
@@ -461,8 +467,7 @@ async fn loop_cancel_success_emits_cancelled_notice() {
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[loop] cancelled a1b2c3d4" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[loop] cancelled a1b2c3d4"),
+        || session_scrollback_text(&app, &sid("s-1")).contains("[loop] cancelled a1b2c3d4"),
         "loop cancel notice",
     )
     .await;
@@ -489,8 +494,10 @@ async fn loop_cancel_unknown_emits_not_found_notice() {
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /loop cancel: Loop \"does-not-exist\" not found" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[error] /loop cancel: Loop \"does-not-exist\" not found"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[error] /loop cancel: Loop \"does-not-exist\" not found")
+        },
         "loop cancel missing notice",
     )
     .await;

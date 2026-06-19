@@ -116,7 +116,14 @@ mod tests {
     #[test]
     fn wraps_on_whitespace_when_possible() {
         let rows = wrap_to_width("hello world foo bar", 10);
-        assert_eq!(rows, vec!["hello".to_string(), "world foo".to_string(), "bar".to_string()]);
+        assert_eq!(
+            rows,
+            vec![
+                "hello".to_string(),
+                "world foo".to_string(),
+                "bar".to_string()
+            ]
+        );
     }
 
     #[test]

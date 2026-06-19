@@ -51,10 +51,7 @@ pub struct MouseTrackingToggle<W: Write + Send = std::io::Stdout> {
 
 impl MouseTrackingToggle<std::io::Stdout> {
     /// Production constructor — writes to the real `stdout()`.
-    pub fn with_stdout(
-        owner_id: impl Into<String>,
-        action_tx: UnboundedSender<Action>,
-    ) -> Self {
+    pub fn with_stdout(owner_id: impl Into<String>, action_tx: UnboundedSender<Action>) -> Self {
         Self::new(stdout(), owner_id, action_tx)
     }
 }
@@ -63,11 +60,7 @@ impl<W: Write + Send> MouseTrackingToggle<W> {
     /// Construct a toggle that writes to `writer`. The toggle starts in
     /// the ENABLED state (i.e. capture is presumed already on per the
     /// `TerminalGuard::init` lifecycle).
-    pub fn new(
-        writer: W,
-        owner_id: impl Into<String>,
-        action_tx: UnboundedSender<Action>,
-    ) -> Self {
+    pub fn new(writer: W, owner_id: impl Into<String>, action_tx: UnboundedSender<Action>) -> Self {
         Self {
             writer,
             disabled: false,

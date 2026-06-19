@@ -17,25 +17,35 @@ use super::dialog_theme::{DialogRow, MARKER_SELECTED, MARKER_UNSELECTED};
 
 /// One displayable row in the dialog. Provider headers are not
 /// selectable (`selectable = false`); model rows are.
+///
+/// RPC-337: re-scoped from `pub(super)` to `pub(crate)` so the new
+/// full-screen `views/model_selector/` mode-view can reuse the row
+/// projection + header-skipping navigation helpers.
 #[derive(Debug, Clone)]
-pub(super) struct ModelSelectorRow {
+pub(crate) struct ModelSelectorRow {
     /// Render text for the row (without the leading `▸ ` marker).
-    pub(super) label: String,
+    pub(crate) label: String,
     /// Capability/context badge suffix (e.g. `" [R] [V] [200k]"`),
     /// rendered DIM on unselected rows.
-    pub(super) badges: String,
+    pub(crate) badges: String,
     /// True for model rows (Enter emits ModelSelected); false for
     /// provider headers.
-    pub(super) selectable: bool,
+    pub(crate) selectable: bool,
     /// Provider key — populated only when `selectable` is true.
-    pub(super) provider_key: String,
+    pub(crate) provider_key: String,
     /// Model id — populated only when `selectable` is true.
-    pub(super) model_id: String,
+    pub(crate) model_id: String,
+    /// RPC-338: true for a local-server profile section header (drives the
+    /// magenta 📁 icon). Header rows only; always false for model rows.
+    pub(crate) is_profile: bool,
+    /// RPC-338: true when an (unreachable) profile header (drives the red
+    /// `(unreachable)` marker). Header rows only.
+    pub(crate) is_unreachable: bool,
 }
 
 /// Flatten a `[ProviderInfo]` list into a flat `[ModelSelectorRow]`
 /// projection: a `▼ provider_name` header followed by each model row.
-pub(super) fn build_rows(providers: &[ProviderInfo]) -> Vec<ModelSelectorRow> {
+pub(crate) fn build_rows(providers: &[ProviderInfo]) -> Vec<ModelSelectorRow> {
     let mut rows = Vec::with_capacity(providers.len() * 4);
     for provider in providers {
         rows.push(ModelSelectorRow {
@@ -48,6 +58,8 @@ pub(super) fn build_rows(providers: &[ProviderInfo]) -> Vec<ModelSelectorRow> {
             selectable: false,
             provider_key: String::new(),
             model_id: String::new(),
+            is_profile: provider.profile_name.is_some(),
+            is_unreachable: provider.is_unreachable,
         });
         for model in &provider.models {
             let label = model.display_name.clone();
@@ -72,6 +84,8 @@ pub(super) fn build_rows(providers: &[ProviderInfo]) -> Vec<ModelSelectorRow> {
                 selectable: true,
                 provider_key: provider.key.clone(),
                 model_id: model.id.clone(),
+                is_profile: false,
+                is_unreachable: false,
             });
         }
     }
@@ -134,7 +148,11 @@ pub(super) fn build_dialog_rows(
         let row = &rows[abs_i];
         let is_selected = row.selectable && abs_i == selected_index;
         let mut spans = Vec::with_capacity(3);
-        let marker = if is_selected { MARKER_SELECTED } else { MARKER_UNSELECTED };
+        let marker = if is_selected {
+            MARKER_SELECTED
+        } else {
+            MARKER_UNSELECTED
+        };
         if row.selectable {
             spans.push(Span::raw(marker.to_string()));
             spans.push(Span::raw(row.label.clone()));
@@ -161,10 +179,7 @@ pub(super) fn build_dialog_rows(
 /// Find the next selectable index when moving up. Skips non-selectable
 /// header rows; wraps around the ends. Returns `None` when no row is
 /// selectable.
-pub(super) fn move_up_skipping_headers(
-    rows: &[ModelSelectorRow],
-    current: usize,
-) -> Option<usize> {
+pub(crate) fn move_up_skipping_headers(rows: &[ModelSelectorRow], current: usize) -> Option<usize> {
     if rows.is_empty() {
         return None;
     }
@@ -181,7 +196,7 @@ pub(super) fn move_up_skipping_headers(
 
 /// Find the next selectable index when moving down. Mirror of
 /// `move_up_skipping_headers`.
-pub(super) fn move_down_skipping_headers(
+pub(crate) fn move_down_skipping_headers(
     rows: &[ModelSelectorRow],
     current: usize,
 ) -> Option<usize> {
@@ -203,7 +218,7 @@ pub(super) fn move_down_skipping_headers(
 /// `[0, len-1]`, then walks in `delta`'s sign direction until it lands
 /// on a selectable row, falling back to the first/last selectable row
 /// at the edges.
-pub(super) fn page_step_selectable(
+pub(crate) fn page_step_selectable(
     rows: &[ModelSelectorRow],
     selected_index: usize,
     delta: i32,
@@ -231,12 +246,12 @@ pub(super) fn page_step_selectable(
 }
 
 /// First selectable row index (Home).
-pub(super) fn first_selectable(rows: &[ModelSelectorRow]) -> usize {
+pub(crate) fn first_selectable(rows: &[ModelSelectorRow]) -> usize {
     rows.iter().position(|r| r.selectable).unwrap_or(0)
 }
 
 /// Last selectable row index (End).
-pub(super) fn last_selectable(rows: &[ModelSelectorRow]) -> usize {
+pub(crate) fn last_selectable(rows: &[ModelSelectorRow]) -> usize {
     rows.iter()
         .rposition(|r| r.selectable)
         .unwrap_or(rows.len().saturating_sub(1))

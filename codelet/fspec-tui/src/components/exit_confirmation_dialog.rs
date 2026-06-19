@@ -52,8 +52,7 @@ const OPTIONS: [ExitChoice; 3] = [
 ];
 
 const TITLE: &str = "Exit Session?";
-const DESCRIPTION_BUSY: &str =
-    "The agent is currently running. Choose how to exit.";
+const DESCRIPTION_BUSY: &str = "The agent is currently running. Choose how to exit.";
 const DESCRIPTION_IDLE: &str = "Choose how to exit the session.";
 const FOOTER: &str = "← → Navigate | Enter Select | Esc Cancel";
 

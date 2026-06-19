@@ -21,14 +21,14 @@
 use codelet_rpc_types::HistoryMatch;
 use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::widgets::{Clear, Widget};
+use ratatui::layout::Rect;
 
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
+use crate::views::full_screen_shell::render_full_screen_scaffold_with_title;
 
-use super::search_history_view_render::{render_body, render_footer, render_title};
+use super::search_history_view_render::{render_body, render_title};
 
 const CHROME_ROWS: u16 = 3;
 
@@ -237,23 +237,20 @@ impl SearchHistoryView {
         }
     }
 
-    /// Paint the view into the FULL area Rect. First statement is
-    /// `Clear.render(area, buf)` so the underlying AgentView pixels
-    /// are fully overwritten.
+    /// Paint the view into the FULL area Rect. Delegates the shared
+    /// scaffold (`Clear`, the 4-constraint title/separator/body/footer
+    /// split, and the optional overlay) to the full-screen shell
+    /// (RPC-339), supplying its editable-query title via a title closure
+    /// so the `(search): <query>` line and inverse cursor are preserved.
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        Clear.render(area, buf);
-        let split = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(1),
-                Constraint::Length(1),
-                Constraint::Min(0),
-                Constraint::Length(1),
-            ])
-            .split(area);
-        render_title(self, split[0], buf);
-        render_body(self, split[2], buf);
-        render_footer(self, split[3], buf);
+        render_full_screen_scaffold_with_title(
+            area,
+            buf,
+            |title_area, buf| render_title(self, title_area, buf),
+            "Enter Select | ↑↓ Navigate | Esc Cancel",
+            |body_area, buf| render_body(self, body_area, buf),
+            None,
+        );
     }
 
     /// Heuristic visible-row hint used by AgentView when computing

@@ -100,7 +100,8 @@ mod tests {
 
     #[test]
     fn collapse_whitespace_replaces_newlines_with_spaces() {
-        let out = collapse_whitespace("You are a security reviewer.\nAnalyze code for vulnerabilities.");
+        let out =
+            collapse_whitespace("You are a security reviewer.\nAnalyze code for vulnerabilities.");
         assert_eq!(
             out,
             "You are a security reviewer. Analyze code for vulnerabilities."
@@ -117,7 +118,10 @@ mod tests {
     fn render_paints_role_prefix_and_text() {
         let buf = render_banner_into(60, "You are a reviewer");
         let text = buffer_text(&buf);
-        assert!(text.starts_with("Role: "), "expected `Role: ` prefix, got {text:?}");
+        assert!(
+            text.starts_with("Role: "),
+            "expected `Role: ` prefix, got {text:?}"
+        );
         assert!(text.contains("You are a reviewer"));
     }
 

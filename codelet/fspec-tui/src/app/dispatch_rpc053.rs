@@ -33,9 +33,7 @@
 
 use std::sync::Arc;
 
-use codelet_rpc_types::{
-    ApprovalChoice, HitlRequest, HitlResponse, PauseState, SessionId,
-};
+use codelet_rpc_types::{ApprovalChoice, HitlRequest, HitlResponse, PauseState, SessionId};
 
 use crate::components::{
     hitl_dialog::{HitlDialog, HITL_DIALOG_ID},
@@ -121,31 +119,21 @@ impl App {
     }
 
     /// RPC-053: idempotent compositor push for the PauseDialog.
-    pub(crate) fn handle_open_pause_dialog(
-        &mut self,
-        session_id: SessionId,
-        state: PauseState,
-    ) {
+    pub(crate) fn handle_open_pause_dialog(&mut self, session_id: SessionId, state: PauseState) {
         if self.compositor.contains(PAUSE_DIALOG_ID) {
             return;
         }
-        let dialog =
-            PauseDialog::new(session_id, state).with_action_tx(self.action_tx.clone());
+        let dialog = PauseDialog::new(session_id, state).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
         self.should_render = true;
     }
 
     /// RPC-053: idempotent compositor push for the HitlDialog.
-    pub(crate) fn handle_open_hitl_dialog(
-        &mut self,
-        session_id: SessionId,
-        request: HitlRequest,
-    ) {
+    pub(crate) fn handle_open_hitl_dialog(&mut self, session_id: SessionId, request: HitlRequest) {
         if self.compositor.contains(HITL_DIALOG_ID) {
             return;
         }
-        let dialog = HitlDialog::new(session_id, request)
-            .with_action_tx(self.action_tx.clone());
+        let dialog = HitlDialog::new(session_id, request).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
         self.should_render = true;
     }
@@ -153,11 +141,7 @@ impl App {
     /// RPC-053: fire-and-forget `backend.pause_confirm(session, accept)`.
     /// The dialog has already removed itself via its callback by the
     /// time this dispatch arm runs. Errors are silently logged.
-    pub(crate) fn handle_pause_confirmed(
-        &mut self,
-        session_id: SessionId,
-        accept: bool,
-    ) {
+    pub(crate) fn handle_pause_confirmed(&mut self, session_id: SessionId, accept: bool) {
         // Ensure the dialog is gone even if a stale push survived.
         let _ = self.compositor.remove(PAUSE_DIALOG_ID);
         if tokio::runtime::Handle::try_current().is_err() {
@@ -180,11 +164,7 @@ impl App {
     }
 
     /// RPC-053: fire-and-forget `backend.pause_triple(session, choice)`.
-    pub(crate) fn handle_pause_triple(
-        &mut self,
-        session_id: SessionId,
-        choice: ApprovalChoice,
-    ) {
+    pub(crate) fn handle_pause_triple(&mut self, session_id: SessionId, choice: ApprovalChoice) {
         let _ = self.compositor.remove(PAUSE_DIALOG_ID);
         if tokio::runtime::Handle::try_current().is_err() {
             return;
@@ -227,11 +207,7 @@ impl App {
     }
 
     /// RPC-053: fire-and-forget `backend.send_hitl_response`.
-    pub(crate) fn handle_hitl_submitted(
-        &mut self,
-        session_id: SessionId,
-        response: HitlResponse,
-    ) {
+    pub(crate) fn handle_hitl_submitted(&mut self, session_id: SessionId, response: HitlResponse) {
         let _ = self.compositor.remove(HITL_DIALOG_ID);
         if tokio::runtime::Handle::try_current().is_err() {
             return;
@@ -264,7 +240,10 @@ impl App {
             Action::OpenPauseDialog { session_id, state } => {
                 self.handle_open_pause_dialog(session_id.clone(), state.clone());
             }
-            Action::OpenHitlDialog { session_id, request } => {
+            Action::OpenHitlDialog {
+                session_id,
+                request,
+            } => {
                 self.handle_open_hitl_dialog(session_id.clone(), request.clone());
             }
             Action::PauseConfirmed { session_id, accept } => {
@@ -276,7 +255,10 @@ impl App {
             Action::PauseResumed { session_id } => {
                 self.handle_pause_resumed(session_id.clone());
             }
-            Action::HitlSubmitted { session_id, response } => {
+            Action::HitlSubmitted {
+                session_id,
+                response,
+            } => {
                 self.handle_hitl_submitted(session_id.clone(), response.clone());
             }
             _ => return false,

@@ -23,12 +23,7 @@ pub const LOGO_WIDTH: u16 = 12;
 
 /// 4-row glyph block — sourced character-for-character from
 /// `src/tui/components/Logo.tsx`.
-pub const LOGO_ROWS: [&str; 4] = [
-    "┏┓┏┓┏┓┏┓┏┓ ",
-    "┣ ┗┓┃┃┣ ┃ ",
-    "┻ ┗┛┣┛┗┛┗┛ ",
-    " ",
-];
+pub const LOGO_ROWS: [&str; 4] = ["┏┓┏┓┏┓┏┓┏┓ ", "┣ ┗┓┃┃┣ ┃ ", "┻ ┗┛┣┛┗┛┗┛ ", " "];
 
 /// Paint the 4-row FSPEC logo into the supplied area.
 ///
@@ -46,7 +41,10 @@ pub fn render(area: Rect, buf: &mut Buffer) {
             width: area.width.min(LOGO_WIDTH),
             height: 1,
         };
-        Paragraph::new(Line::from(Span::styled(glyphs.to_string(), Style::default())))
-            .render(row_area, buf);
+        Paragraph::new(Line::from(Span::styled(
+            glyphs.to_string(),
+            Style::default(),
+        )))
+        .render(row_area, buf);
     }
 }

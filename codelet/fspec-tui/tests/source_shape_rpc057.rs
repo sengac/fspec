@@ -280,14 +280,12 @@ fn fspec_backend_declares_merge_worktree_methods() {
 #[test]
 fn both_transports_implement_merge_worktree_methods() {
     // @step Given the files codelet/fspec-tui/src/transport/embedded.rs and codelet/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"),
-    )
-    .expect("read transport/embedded.rs");
-    let websocket = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"),
-    )
-    .expect("read transport/websocket.rs");
+    let embedded =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"))
+            .expect("read transport/embedded.rs");
+    let websocket =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"))
+            .expect("read transport/websocket.rs");
 
     // @step Then each file contains an impl of "merge_session_worktree" that calls the corresponding tarpc client method
     // @step And each file contains an impl of "discard_session_worktree" that calls the corresponding tarpc client method
@@ -326,8 +324,7 @@ fn both_transports_implement_merge_worktree_methods() {
 #[test]
 fn merge_confirm_dialog_module_exists() {
     // @step Given the file codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs exists
-    let path = workspace_root()
-        .join("codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs");
+    let path = workspace_root().join("codelet/fspec-tui/src/views/agent/merge_confirm_dialog.rs");
     let source = fs::read_to_string(&path).expect("read views/agent/merge_confirm_dialog.rs");
 
     // @step Then it declares a public struct named "MergeConfirmDialog"
@@ -514,7 +511,7 @@ fn merge_strategy_and_status_use_derive_default() {
     // proof — Default::default() returning Self::FastForward / Self::NoChanges
     // is the entire behavioural contract of the manual impls that were
     // replaced.
-    use codelet_rpc_types::{MergeStrategy, MergeStatus};
+    use codelet_rpc_types::{MergeStatus, MergeStrategy};
     assert_eq!(MergeStrategy::default(), MergeStrategy::FastForward);
     assert_eq!(MergeStatus::default(), MergeStatus::NoChanges);
 }

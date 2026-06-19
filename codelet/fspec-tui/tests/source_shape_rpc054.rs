@@ -80,12 +80,12 @@ fn provider_settings_view_imports_canonical_helpers() {
     // @step Given codelet/fspec-tui/src/views/provider_settings/mod.rs
     let source = read_at("codelet/fspec-tui/src/views/provider_settings/mod.rs");
     // @step When the use statements are parsed
-    // @step Then the file imports ratatui::widgets::Clear
-    assert!(
-        source.contains("ratatui::widgets::{Clear")
-            || source.contains("ratatui::widgets::Clear"),
-        "must import ratatui::widgets::Clear"
-    );
+    // RPC-337: the Clear + 4-constraint Layout + title/footer chrome is
+    // now owned by the shared `render_full_screen_scaffold`, so this view
+    // no longer imports Clear / Layout / render_title_with_count directly.
+    // The canonical-helper assertions are superseded by the
+    // render-delegation assertion in
+    // `render_starts_with_clear_and_uses_4_constraint_layout`.
     // @step And the file imports crate::components::scroll_viewport::ensure_visible
     // (RPC-157: wrap_index dropped — list mode is clamped, no wrap-around)
     assert!(
@@ -104,10 +104,10 @@ fn provider_settings_view_imports_canonical_helpers() {
             || source.contains("confirm_dialog::ConfirmDialog"),
         "must import ConfirmDialog"
     );
-    // @step And the file imports crate::views::agent::mode_view_render::{render_title_with_count, render_footer_hint}
+    // @step And the render delegates to the shared full-screen scaffold (RPC-337)
     assert!(
-        source.contains("render_title_with_count") && source.contains("render_footer_hint"),
-        "must import render_title_with_count + render_footer_hint"
+        source.contains("render_full_screen_scaffold"),
+        "must delegate to the shared render_full_screen_scaffold (RPC-337)"
     );
 }
 
@@ -137,26 +137,25 @@ fn render_starts_with_clear_and_uses_4_constraint_layout() {
     // @step Given codelet/fspec-tui/src/views/provider_settings/mod.rs
     let source = read_at("codelet/fspec-tui/src/views/provider_settings/mod.rs");
     // @step When the source of ProviderSettingsView::render is inspected
-    let render_idx = source
-        .find("pub fn render(")
-        .expect("render fn present");
+    let render_idx = source.find("pub fn render(").expect("render fn present");
     let render_body = &source[render_idx..];
-    // @step Then the first statement is "Clear.render(area, buf);"
+    // RPC-337: render now delegates to the shared full-screen scaffold,
+    // which guarantees Clear-first + the 4-constraint
+    // [Length(1), Length(1), Min(0), Length(1)] split internally (pinned
+    // by views/full_screen_shell.rs tests). The view's render fn first
+    // statement is therefore the scaffold call rather than a literal
+    // Clear.render.
     let body_start = render_body
         .find('{')
         .map(|i| &render_body[i + 1..])
         .unwrap_or("");
     let trimmed = body_start.trim_start();
+    // @step Then render delegates to render_full_screen_scaffold (Clear + 4-constraint split owned by the shell)
     assert!(
-        trimmed.starts_with("Clear.render(area, buf);"),
-        "render() must start with `Clear.render(area, buf);`, got start: {:?}",
+        render_body.contains("render_full_screen_scaffold"),
+        "render() must delegate to render_full_screen_scaffold (RPC-337); got start: {:?}",
         &trimmed[..trimmed.len().min(80)]
     );
-    // @step And the body splits area with Layout::default().direction(Direction::Vertical).constraints([Constraint::Length(1), Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)])
-    assert!(render_body.contains("Layout::default()"));
-    assert!(render_body.contains("Direction::Vertical"));
-    assert!(render_body.contains("Constraint::Length(1)"));
-    assert!(render_body.contains("Constraint::Min(0)"));
 }
 
 /// Scenario: Every file under views/provider_settings/ stays under 300 lines

@@ -16,9 +16,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use codelet_fspec_tui::components::Action;
-use codelet_fspec_tui::views::{
-    ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
-};
+use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProviderCredentialInfo;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 

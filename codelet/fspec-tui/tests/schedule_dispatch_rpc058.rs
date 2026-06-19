@@ -8,7 +8,12 @@
 //! `Action::EmitSessionNotice` notice formatter. Mirrors the
 //! `merge_worktree_rpc057.rs` test layout.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::too_many_lines
+)]
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -83,9 +88,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -209,8 +217,10 @@ async fn schedule_list_empty_emits_no_schedules_notice() {
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] No schedules configured." is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[schedule] No schedules configured."),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[schedule] No schedules configured.")
+        },
         "no-schedules notice",
     )
     .await;
@@ -253,8 +263,10 @@ async fn schedule_add_success_emits_added_notice() {
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] added \"daily\" (agent, 0 9 * * *, UTC)" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[schedule] added \"daily\" (agent, 0 9 * * *, UTC)"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[schedule] added \"daily\" (agent, 0 9 * * *, UTC)")
+        },
         "added notice",
     )
     .await;
@@ -288,8 +300,10 @@ async fn schedule_add_error_emits_error_notice() {
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /schedule add: Timezone is required" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[error] /schedule add: Timezone is required"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[error] /schedule add: Timezone is required")
+        },
         "add error notice",
     )
     .await;
@@ -311,9 +325,11 @@ async fn schedule_pause_success_emits_paused_notice() {
     let initial = mock.schedule_pause_calls();
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::Pause { name: "daily" }) is dispatched
-    app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::Pause {
-        name: "daily".to_string(),
-    }));
+    app.dispatch(Action::ScheduleSubcommandParsed(
+        ScheduleSubcommand::Pause {
+            name: "daily".to_string(),
+        },
+    ));
     drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.schedule_pause is called exactly once with name "daily"
@@ -325,8 +341,7 @@ async fn schedule_pause_success_emits_paused_notice() {
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] paused \"daily\"" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[schedule] paused \"daily\""),
+        || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] paused \"daily\""),
         "paused notice",
     )
     .await;
@@ -346,15 +361,19 @@ async fn schedule_pause_unknown_emits_error_notice() {
     drain_pending(&mut app).await;
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::Pause { name: "unknown-job" }) is dispatched
-    app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::Pause {
-        name: "unknown-job".to_string(),
-    }));
+    app.dispatch(Action::ScheduleSubcommandParsed(
+        ScheduleSubcommand::Pause {
+            name: "unknown-job".to_string(),
+        },
+    ));
     drain_pending(&mut app).await;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /schedule pause: Schedule not found: unknown-job" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[error] /schedule pause: Schedule not found: unknown-job"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[error] /schedule pause: Schedule not found: unknown-job")
+        },
         "pause error notice",
     )
     .await;
@@ -376,9 +395,11 @@ async fn schedule_resume_success_emits_resumed_notice() {
     let initial = mock.schedule_resume_calls();
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::Resume { name: "daily" }) is dispatched
-    app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::Resume {
-        name: "daily".to_string(),
-    }));
+    app.dispatch(Action::ScheduleSubcommandParsed(
+        ScheduleSubcommand::Resume {
+            name: "daily".to_string(),
+        },
+    ));
     drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.schedule_resume is called exactly once with name "daily"
@@ -390,8 +411,7 @@ async fn schedule_resume_success_emits_resumed_notice() {
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] resumed \"daily\"" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[schedule] resumed \"daily\""),
+        || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] resumed \"daily\""),
         "resumed notice",
     )
     .await;
@@ -413,9 +433,11 @@ async fn schedule_remove_success_emits_removed_notice() {
     let initial = mock.schedule_remove_calls();
 
     // @step When Action::ScheduleSubcommandParsed(ScheduleSubcommand::Remove { name: "daily" }) is dispatched
-    app.dispatch(Action::ScheduleSubcommandParsed(ScheduleSubcommand::Remove {
-        name: "daily".to_string(),
-    }));
+    app.dispatch(Action::ScheduleSubcommandParsed(
+        ScheduleSubcommand::Remove {
+            name: "daily".to_string(),
+        },
+    ));
     drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.schedule_remove is called exactly once with name "daily"
@@ -427,8 +449,7 @@ async fn schedule_remove_success_emits_removed_notice() {
 
     // @step And within 1 second Action::EmitSessionNotice for s-1 with text "[schedule] removed \"daily\"" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[schedule] removed \"daily\""),
+        || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] removed \"daily\""),
         "removed notice",
     )
     .await;
@@ -459,8 +480,7 @@ async fn bare_schedule_submit_emits_help_notice() {
 
     // @step And Action::EmitSessionNotice for s-1 with text starting with "[schedule] Usage: /schedule" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1"))
-            .contains("[schedule] Usage: /schedule"),
+        || session_scrollback_text(&app, &sid("s-1")).contains("[schedule] Usage: /schedule"),
         "help notice from bare schedule submit",
     )
     .await;
@@ -505,8 +525,7 @@ fn parse_schedule_command_list_resolves_to_list() {
 #[test]
 fn parse_schedule_command_full_add_agent_command() {
     // @step When parse_schedule_command is invoked on "/schedule add daily --cron \"0 9 * * *\" --tz UTC --role reviewer --prompt \"daily standup\""
-    let input =
-        r#"/schedule add daily --cron "0 9 * * *" --tz UTC --role reviewer --prompt "daily standup""#;
+    let input = r#"/schedule add daily --cron "0 9 * * *" --tz UTC --role reviewer --prompt "daily standup""#;
     let result = parse_schedule_command(input);
 
     // @step Then it returns ScheduleSubcommand::Add with name "daily" and cron "0 9 * * *" and timezone "UTC" and job_type "agent" and role Some("reviewer") and prompt Some("daily standup") and command None

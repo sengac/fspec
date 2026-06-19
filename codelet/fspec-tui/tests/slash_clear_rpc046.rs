@@ -76,9 +76,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")

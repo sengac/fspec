@@ -164,7 +164,7 @@ fn t_inside_detail_summary_is_silently_ignored_rpc154() {
     // @step Given the ProviderSettingsView is in Detail { provider_id: "openai", sub: Summary { last_status: None } }
     let mut view = list_view_with(vec![pinfo("openai", "api_key", true, 4)]);
     view.handle_key(key(KeyCode::Enter)); // List → Detail::Summary
-    // @step When the user presses "t"
+                                          // @step When the user presses "t"
     let out = view.handle_key(key(KeyCode::Char('t')));
     // @step Then the emitted ProviderSettingsEvent is Consumed (no Action)
     assert!(
@@ -179,7 +179,11 @@ fn t_inside_detail_summary_is_silently_ignored_rpc154() {
         "RPC-154: `t` must NOT emit Action::TestProviderConnection — that was the Rust-only deviation; got {out:?}"
     );
     // @step And view.mode remains Detail::Summary with last_status: None
-    if let ProviderSettingsMode::Detail { sub: DetailSub::Summary { last_status }, .. } = &view.mode {
+    if let ProviderSettingsMode::Detail {
+        sub: DetailSub::Summary { last_status },
+        ..
+    } = &view.mode
+    {
         assert!(
             last_status.is_none(),
             "RPC-154: last_status must remain None — the catch-all preserves it; got {last_status:?}"
@@ -206,7 +210,11 @@ fn r_inside_detail_summary_emits_refresh_provider_models() {
     }
     // @step And the last_status is updated to RefreshingModels
     // @step And the body shows "Refreshing models…"
-    if let ProviderSettingsMode::Detail { sub: DetailSub::Summary { last_status }, .. } = &view.mode {
+    if let ProviderSettingsMode::Detail {
+        sub: DetailSub::Summary { last_status },
+        ..
+    } = &view.mode
+    {
         assert!(matches!(last_status, Some(DetailStatus::RefreshingModels)));
     } else {
         panic!("expected Detail::Summary, got {:?}", view.mode);
@@ -223,11 +231,14 @@ fn enter_inside_detail_summary_on_api_key_opens_edit_form() {
     // @step Given the ProviderSettingsView is in Detail::Summary for "anthropic" (credential_type api_key)
     let mut view = list_view_with(vec![pinfo("anthropic", "api_key", true, 1)]);
     view.handle_key(key(KeyCode::Enter)); // List → Detail::Summary
-    // @step When the user presses Enter
+                                          // @step When the user presses Enter
     view.handle_key(key(KeyCode::Enter));
     // @step Then the view's mode is Detail { provider_id: "anthropic", sub: EditApiKey { draft: "" } }
     match &view.mode {
-        ProviderSettingsMode::Detail { provider_id, sub: DetailSub::EditApiKey { draft } } => {
+        ProviderSettingsMode::Detail {
+            provider_id,
+            sub: DetailSub::EditApiKey { draft },
+        } => {
             assert_eq!(provider_id, "anthropic");
             assert!(draft.is_empty());
         }
@@ -247,14 +258,17 @@ fn typing_in_edit_api_key_grows_draft() {
     let mut view = list_view_with(vec![pinfo("anthropic", "api_key", true, 1)]);
     view.handle_key(key(KeyCode::Enter)); // → Detail::Summary
     view.handle_key(key(KeyCode::Enter)); // → Detail::EditApiKey
-    // @step When the user types "sk-test-1"
+                                          // @step When the user types "sk-test-1"
     for c in "sk-test-1".chars() {
         view.handle_key(key(KeyCode::Char(c)));
     }
     // @step Then the draft equals "sk-test-1"
     // @step And the rendered Key line shows 9 masked characters ("•" × 9)
     match &view.mode {
-        ProviderSettingsMode::Detail { sub: DetailSub::EditApiKey { draft }, .. } => {
+        ProviderSettingsMode::Detail {
+            sub: DetailSub::EditApiKey { draft },
+            ..
+        } => {
             assert_eq!(draft, "sk-test-1");
         }
         _ => panic!("expected EditApiKey"),
@@ -275,7 +289,10 @@ fn backspace_removes_last_draft_character() {
     view.handle_key(key(KeyCode::Backspace));
     // @step Then the draft equals "ab"
     match &view.mode {
-        ProviderSettingsMode::Detail { sub: DetailSub::EditApiKey { draft }, .. } => {
+        ProviderSettingsMode::Detail {
+            sub: DetailSub::EditApiKey { draft },
+            ..
+        } => {
             assert_eq!(draft, "ab");
         }
         _ => panic!("expected EditApiKey"),
@@ -304,7 +321,10 @@ fn enter_on_edit_api_key_with_draft_emits_save() {
     let out = view.handle_key(key(KeyCode::Enter));
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "anthropic", api_key: "sk-test-1" })
     match out {
-        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials { provider_id, api_key }) => {
+        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials {
+            provider_id,
+            api_key,
+        }) => {
             assert_eq!(provider_id, "anthropic");
             assert_eq!(api_key, "sk-test-1");
         }
@@ -318,8 +338,6 @@ fn enter_on_edit_api_key_with_draft_emits_save() {
 // pressing_enter_on_an_empty_edit_api_key_draft_*`. The original test
 // (which asserted `view.status.contains("API key cannot be empty")`)
 // is deleted here.
-
-
 
 // ────────────────────────────────────────────────────────────────────────
 // ConfirmDialog flow for destructive 'd'
@@ -455,7 +473,10 @@ fn esc_in_detail_oauth_notice_returns_to_list() {
     view.handle_key(key(KeyCode::Enter));
     assert!(matches!(
         view.mode,
-        ProviderSettingsMode::Detail { sub: DetailSub::OAuthNotice, .. }
+        ProviderSettingsMode::Detail {
+            sub: DetailSub::OAuthNotice,
+            ..
+        }
     ));
     // @step When the user presses Esc
     view.handle_key(key(KeyCode::Esc));
@@ -538,7 +559,6 @@ fn footer_hint_detail_oauth_notice_mode() {
     // @step Then the footer row contains "Esc: back"
     assert!(hint.contains("Esc: back"));
 }
-
 
 // ────────────────────────────────────────────────────────────────────────
 // Filter mode (TS parity)
@@ -737,7 +757,9 @@ fn provider_settings_view_module_compiles() {
         provider_id: "x".to_string(),
         sub: DetailSub::Summary { last_status: None },
     };
-    let _ = DetailSub::EditApiKey { draft: String::new() };
+    let _ = DetailSub::EditApiKey {
+        draft: String::new(),
+    };
     let _ = DetailSub::OAuthNotice;
     let _ = DetailStatus::Testing;
 }
@@ -775,9 +797,7 @@ fn test_ok_last_status_renders_green_check_with_latency() {
         for x in 0..area.width {
             let cell = &buf[(x, y)];
             line.push_str(cell.symbol());
-            if cell.symbol() == "✓"
-                && cell.style().fg == Some(Color::Green)
-            {
+            if cell.symbol() == "✓" && cell.style().fg == Some(Color::Green) {
                 has_green_ok = true;
             }
         }
@@ -823,9 +843,7 @@ fn test_err_last_status_renders_red_cross_with_error() {
         for x in 0..area.width {
             let cell = &buf[(x, y)];
             line.push_str(cell.symbol());
-            if cell.symbol() == "✗"
-                && cell.style().fg == Some(Color::Red)
-            {
+            if cell.symbol() == "✗" && cell.style().fg == Some(Color::Red) {
                 has_red_cross = true;
             }
         }

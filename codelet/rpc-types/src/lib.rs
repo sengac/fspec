@@ -363,6 +363,18 @@ pub struct ProviderInfo {
     pub key: String,
     pub display_name: String,
     pub models: Vec<ModelEntry>,
+    /// RPC-338: `Some(profile)` marks this entry as a local-server profile
+    /// section (drives the 📁 icon + `"provider: profile"` label in the
+    /// model selector). `None` for cloud / custom providers. Stays
+    /// `Option<String>` (not an enum) because `napi(object)` does not
+    /// support discriminated enums — matches the `masked_key` / `source`
+    /// convention on `ProviderCredentialInfo`.
+    pub profile_name: Option<String>,
+    /// RPC-338: `true` when a local-server profile's `/v1/models` probe
+    /// failed and it has no custom models (MODEL-004). Drives the red
+    /// `(unreachable)` marker. Defaults to `false` (reachable) so
+    /// `derive(Default)` stays valid.
+    pub is_unreachable: bool,
 }
 
 // ============================================================================
@@ -1563,5 +1575,42 @@ mod tests {
             }
             other => panic!("expected IsolationStateChange, got {other:?}"),
         }
+    }
+
+    // ========================================================================
+    // RPC-338: ProviderInfo profile/unreachable wire fields.
+    // Feature: spec/features/model-selector-profile-wire-types.feature
+    // ========================================================================
+
+    /// Scenario: ProviderInfo carries profile and reachability fields over the wire
+    #[test]
+    fn provider_info_carries_profile_and_reachability_fields() {
+        // @step Given a ProviderInfo value constructed with its derived Default
+        let info = ProviderInfo::default();
+
+        // @step Then its profile_name field is None
+        assert_eq!(info.profile_name, None);
+
+        // @step And its is_unreachable field is false
+        assert!(!info.is_unreachable);
+
+        // @step And the field profile_name has type Option<String>
+        let with_profile = ProviderInfo {
+            key: "openai:my-profile".to_string(),
+            display_name: "openai: my-profile".to_string(),
+            models: Vec::new(),
+            profile_name: Some("my-profile".to_string()),
+            is_unreachable: true,
+        };
+        let _typed: Option<String> = with_profile.profile_name.clone();
+        assert_eq!(with_profile.profile_name.as_deref(), Some("my-profile"));
+
+        // @step And the field is_unreachable has type bool
+        let _flag: bool = with_profile.is_unreachable;
+        assert!(with_profile.is_unreachable);
+
+        // The new fields must survive a JSON round-trip like every other
+        // RPC wire type.
+        round_trip(with_profile);
     }
 }

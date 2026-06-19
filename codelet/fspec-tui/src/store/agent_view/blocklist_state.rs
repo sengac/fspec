@@ -25,10 +25,7 @@ impl AgentViewStore {
 
     /// Borrow a mutable handle to the disabled-rule set for `session`,
     /// inserting a fresh empty `HashSet` when missing.
-    pub fn blocklist_disabled_for_mut(
-        &mut self,
-        session: &SessionId,
-    ) -> &mut HashSet<String> {
+    pub fn blocklist_disabled_for_mut(&mut self, session: &SessionId) -> &mut HashSet<String> {
         self.blocklist_disabled_by_session
             .entry(session.clone())
             .or_default()

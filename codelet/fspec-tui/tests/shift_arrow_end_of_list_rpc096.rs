@@ -13,9 +13,9 @@
 use std::sync::Arc;
 
 use codelet_fspec_tui::store::NavTarget;
+use codelet_fspec_tui::store::SessionContext;
 use codelet_fspec_tui::views::ViewMode;
 use codelet_fspec_tui::{Action, AgentViewStore, App, FspecBackend};
-use codelet_fspec_tui::store::SessionContext;
 use codelet_rpc_types::SessionId;
 
 mod common;
@@ -219,7 +219,8 @@ fn mid_list_shift_right_preserves_rpc024_draft_round_trip() {
     // @step And the MultiLineInput value is "midway"
     app.navigator_mut().agent.input.set_value("midway");
     // @step And open_sessions[2].input_draft is "third"
-    app.agent_view_store_mut().set_input_draft(2, "third".to_string());
+    app.agent_view_store_mut()
+        .set_input_draft(2, "third".to_string());
     // @step When the App dispatches Action::SessionNext
     app.dispatch(Action::SessionNext);
     // @step Then agent_view_store.current_session_index is 2
@@ -241,8 +242,7 @@ fn mid_list_shift_right_preserves_rpc024_draft_round_trip() {
 #[test]
 fn cycle_session_is_removed_from_public_api() {
     // @step Given the source file codelet/fspec-tui/src/store/agent_view.rs
-    let source =
-        std::fs::read_to_string("src/store/agent_view.rs").expect("read agent_view.rs");
+    let source = std::fs::read_to_string("src/store/agent_view.rs").expect("read agent_view.rs");
     // @step Then it does not contain the substring "pub fn cycle_session"
     assert!(
         !source.contains("pub fn cycle_session"),

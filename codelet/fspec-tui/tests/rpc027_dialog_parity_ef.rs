@@ -20,14 +20,16 @@ use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId};
 fn render_component_80x24<C: Component>(c: &mut C) -> Buffer {
     let backend = TestBackend::new(80, 24);
     let mut term = Terminal::new(backend).expect("Terminal::new");
-    term.draw(|f| c.render(f.area(), f.buffer_mut())).expect("draw");
+    term.draw(|f| c.render(f.area(), f.buffer_mut()))
+        .expect("draw");
     term.backend().buffer().clone()
 }
 
 fn render_confirm_80x24(c: &ConfirmDialog) -> Buffer {
     let backend = TestBackend::new(80, 24);
     let mut term = Terminal::new(backend).expect("Terminal::new");
-    term.draw(|f| c.render(f.area(), f.buffer_mut())).expect("draw");
+    term.draw(|f| c.render(f.area(), f.buffer_mut()))
+        .expect("draw");
     term.backend().buffer().clone()
 }
 
@@ -79,6 +81,8 @@ fn make_provider(key: &str, name: &str, models: Vec<ModelEntry>) -> ProviderInfo
         key: key.to_string(),
         display_name: name.to_string(),
         models,
+        profile_name: None,
+        is_unreachable: false,
     }
 }
 
@@ -148,16 +152,14 @@ fn model_selector_dialog_applies_inverse_highlight_only_to_selectable_rows() {
     let buf = render_component_80x24(&mut dialog);
 
     // First selectable should be Claude A — locate its row and verify inverse highlight
-    let (claude_a_x, claude_a_y) =
-        find_text(&buf, "Claude A").expect("Claude A row present");
+    let (claude_a_x, claude_a_y) = find_text(&buf, "Claude A").expect("Claude A row present");
     // @step Then the selected model row has background Color::Cyan and foreground Color::Black
     let sel = &buf[(claude_a_x, claude_a_y)];
     assert_eq!(sel.bg, Color::Cyan);
     assert_eq!(sel.fg, Color::Black);
 
     // @step And the provider header rows render with the default background and no highlight
-    let (anthro_x, anthro_y) =
-        find_text(&buf, "Anthropic").expect("Anthropic header present");
+    let (anthro_x, anthro_y) = find_text(&buf, "Anthropic").expect("Anthropic header present");
     let header = &buf[(anthro_x, anthro_y)];
     assert_ne!(header.bg, Color::Cyan, "header must not have Cyan bg");
 
@@ -339,10 +341,7 @@ fn confirm_dialog_button_row_uses_inverse_highlight_on_focused_button() {
 
     // @step And the spans are separated by " │ "
     let text = buffer_text(&buf);
-    assert!(
-        text.contains(" │ "),
-        "buttons must be separated by ' │ '"
-    );
+    assert!(text.contains(" │ "), "buttons must be separated by ' │ '");
 }
 
 /// Scenario: ConfirmDialog Left and Right cycle button focus

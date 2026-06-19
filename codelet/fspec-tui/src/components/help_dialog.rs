@@ -137,7 +137,10 @@ mod tests {
         let buf = render_help_dialog_80x24();
         let text = buffer_text(&buf);
         for needle in &["j/k", "Tab", "?", "q", "Enter", "Ctrl+C", "ESC"] {
-            assert!(text.contains(needle), "buffer must contain {needle}: {text}");
+            assert!(
+                text.contains(needle),
+                "buffer must contain {needle}: {text}"
+            );
         }
     }
 

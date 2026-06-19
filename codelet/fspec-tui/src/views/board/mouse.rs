@@ -73,12 +73,7 @@ pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) 
     }
 }
 
-fn handle_left_click(
-    view: &BoardView,
-    column: u16,
-    row: u16,
-    store: &BoardStore,
-) -> EventResult {
+fn handle_left_click(view: &BoardView, column: u16, row: u16, store: &BoardStore) -> EventResult {
     // Header click → focus that column.
     if let Some(headers) = view.last_column_header_areas.get() {
         for (idx, rect) in headers.iter().enumerate() {

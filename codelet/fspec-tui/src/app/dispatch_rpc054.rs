@@ -23,8 +23,7 @@ impl App {
     pub(crate) fn handle_open_provider_settings_view(&mut self) {
         // Reset to a clean list-mode view so a previous session's edit
         // state never leaks back in.
-        self.navigator.provider_settings =
-            crate::views::ProviderSettingsView::new();
+        self.navigator.provider_settings = crate::views::ProviderSettingsView::new();
         self.spawn_list_provider_credentials();
     }
 
@@ -98,9 +97,7 @@ impl App {
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_for_save, "set_provider_credentials failed");
-                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
-                        "✗ {e}"
-                    )));
+                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!("✗ {e}")));
                 }
             }
         });
@@ -125,9 +122,7 @@ impl App {
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_id, "test_provider_connection failed");
-                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
-                        "✗ {e}"
-                    )));
+                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!("✗ {e}")));
                 }
             }
         });
@@ -143,10 +138,7 @@ impl App {
         result: codelet_rpc_types::TestConnectionResult,
     ) {
         let status = if result.success {
-            format!(
-                "✓ {} ok ({}ms)",
-                provider_id, result.latency_ms
-            )
+            format!("✓ {} ok ({}ms)", provider_id, result.latency_ms)
         } else {
             format!(
                 "✗ {}",
@@ -177,9 +169,7 @@ impl App {
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_id, "refresh_models_cache failed");
-                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
-                        "✗ {e}"
-                    )));
+                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!("✗ {e}")));
                 }
             }
         });
@@ -221,9 +211,7 @@ impl App {
                 }
                 Err(e) => {
                     tracing::warn!(error = %e, provider = %provider_id, "delete_provider_credentials failed");
-                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
-                        "✗ {e}"
-                    )));
+                    let _ = action_tx.send(Action::ProviderSettingsStatus(format!("✗ {e}")));
                 }
             }
         });
@@ -248,19 +236,28 @@ impl App {
             Action::ProviderCredentialsLoaded(list) => {
                 self.handle_provider_credentials_loaded(list.clone());
             }
-            Action::SaveProviderCredentials { provider_id, api_key } => {
+            Action::SaveProviderCredentials {
+                provider_id,
+                api_key,
+            } => {
                 self.handle_save_provider_credentials(provider_id.clone(), api_key.clone());
             }
             Action::TestProviderConnection(id) => {
                 self.handle_test_provider_connection(id.clone());
             }
-            Action::ProviderTestComplete { provider_id, result } => {
+            Action::ProviderTestComplete {
+                provider_id,
+                result,
+            } => {
                 self.handle_provider_test_complete(provider_id.clone(), result.clone());
             }
             Action::RefreshProviderModels(id) => {
                 self.handle_refresh_provider_models(id.clone());
             }
-            Action::ProviderModelsRefreshed { provider_id, model_count } => {
+            Action::ProviderModelsRefreshed {
+                provider_id,
+                model_count,
+            } => {
                 self.handle_provider_models_refreshed(provider_id.clone(), *model_count);
             }
             Action::DeleteProviderCredentials(id) => {

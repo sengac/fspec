@@ -17,11 +17,17 @@ fn src_dir() -> std::path::PathBuf {
 }
 
 fn rpc_types_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc-types").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc-types")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn core_work_units() -> std::path::PathBuf {
-    common::workspace_root().join("core").join("src").join("work_units.rs")
+    common::workspace_root()
+        .join("core")
+        .join("src")
+        .join("work_units.rs")
 }
 
 fn read_raw(path: &std::path::Path) -> String {
@@ -181,7 +187,11 @@ fn new_and_modified_board_modules_stay_under_300_lines() {
     for path in &targets {
         let lines = count_lines_path(path);
         if lines >= 300 {
-            violations.push(format!("{}: {} lines >= 300 ceiling", path.display(), lines));
+            violations.push(format!(
+                "{}: {} lines >= 300 ceiling",
+                path.display(),
+                lines
+            ));
         }
     }
     // @step Then views/board.rs has fewer than 300 lines

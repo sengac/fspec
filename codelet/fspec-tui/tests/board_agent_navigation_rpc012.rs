@@ -24,7 +24,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     }
 }
 
@@ -33,7 +33,10 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
 async fn agent_view_store_is_empty_after_bootstrap_navigator() {
     // @step Given an App constructed against a MockBackend with no scripted session
     let mock = Arc::new(MockBackend::new());
-    mock.seed_work_units(vec![wu("AUTH-001", "backlog"), wu("AUTH-002", "implementing")]);
+    mock.seed_work_units(vec![
+        wu("AUTH-001", "backlog"),
+        wu("AUTH-002", "implementing"),
+    ]);
     let mut app = App::new(mock.clone());
     // @step When the developer drives App::bootstrap to completion
     app.bootstrap().await.expect("bootstrap");
@@ -60,13 +63,17 @@ async fn enter_work_unit_hands_off_to_agent_view_and_triggers_lazy_session_creat
     app.bootstrap().await.expect("bootstrap");
     // @step And BoardStore.focused_column() returns "implementing" with selection 0
     app.board_store_mut().set_focused_column("implementing");
-    app.board_store_mut().set_selected_index_for("implementing", 0);
+    app.board_store_mut()
+        .set_selected_index_for("implementing", 0);
     // @step And AgentViewStore.current_session is None
     assert!(app.agent_view_store().current_session().is_none());
     // @step When the App dispatches Action::EnterWorkUnit("AUTH-002")
     app.dispatch(Action::EnterWorkUnit("AUTH-002".to_string()));
     // @step Then AgentViewStore.current_work_unit_id equals Some("AUTH-002")
-    assert_eq!(app.agent_view_store().current_work_unit_id(), Some("AUTH-002"));
+    assert_eq!(
+        app.agent_view_store().current_work_unit_id(),
+        Some("AUTH-002")
+    );
     // @step And AgentViewStore.current_work_unit_status equals Some("implementing")
     assert_eq!(
         app.agent_view_store().current_work_unit_status(),
@@ -75,7 +82,9 @@ async fn enter_work_unit_hands_off_to_agent_view_and_triggers_lazy_session_creat
     // @step And the Navigator's active_view equals ViewMode::Agent
     assert_eq!(app.active_view(), ViewMode::Agent);
     // @step And the App spawns a pending tokio task that resolves to MockBackend.create_session_calls() == 1
-    let handle = app.next_pending_task().expect("pending create_session task");
+    let handle = app
+        .next_pending_task()
+        .expect("pending create_session task");
     handle.await.expect("pending task join");
     assert_eq!(mock.create_session_calls(), 1);
 }
@@ -163,7 +172,8 @@ async fn back_to_board_preserves_focus_and_selection() {
     let mut app = App::new(mock.clone());
     app.bootstrap().await.expect("bootstrap");
     app.board_store_mut().set_focused_column("implementing");
-    app.board_store_mut().set_selected_index_for("implementing", 0);
+    app.board_store_mut()
+        .set_selected_index_for("implementing", 0);
     app.navigator_mut().active_view = ViewMode::Agent;
     // @step And BoardStore.focused_column() returns "implementing"
     assert_eq!(app.board_store().focused_column(), "implementing");
@@ -226,8 +236,7 @@ async fn navigator_renders_board_view_as_first_landing_view() {
     // Move the stores out of the App so we can lend a `&` to board and a `&mut`
     // to agent without violating Rust's borrow rules.
     let mut agent_snapshot = std::mem::take(app.agent_view_store_mut());
-    let board_snapshot: codelet_fspec_tui::BoardStore =
-        std::mem::take(app.board_store_mut());
+    let board_snapshot: codelet_fspec_tui::BoardStore = std::mem::take(app.board_store_mut());
     // Use Navigator render directly so we don't paint the old RootView on top.
     assert_eq!(board_snapshot.column_units("backlog").len(), 1);
     // Render via mutable navigator borrow + mutable agent store borrow.
@@ -250,8 +259,19 @@ async fn navigator_renders_board_view_as_first_landing_view() {
         joined.push('\n');
     }
     // @step Then the rendered buffer contains the seven column headers BACKLOG SPECIFYING TESTING IMPLEMENTING VALIDATING DONE BLOCKED
-    for header in ["BACKLOG", "SPECIFYING", "TESTING", "IMPLEMENTING", "VALIDATING", "DONE", "BLOCKED"] {
-        assert!(joined.contains(header), "expected header {header} in:\n{joined}");
+    for header in [
+        "BACKLOG",
+        "SPECIFYING",
+        "TESTING",
+        "IMPLEMENTING",
+        "VALIDATING",
+        "DONE",
+        "BLOCKED",
+    ] {
+        assert!(
+            joined.contains(header),
+            "expected header {header} in:\n{joined}"
+        );
     }
     // @step And the rendered buffer does NOT contain the AgentView "Agent" block title
     // (We assert the body line, not "Agent" as substring — "Agent" might appear
@@ -292,8 +312,14 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel() {
     //   watch channel itself is preserved for RPC-026 attach paths.)
     // @step And a subsequent chunk for SessionId::new("s-1") is forwarded as Action::ChunkReceived (RPC-045: no filter)
     // @step And a subsequent chunk for SessionId::new("s-2") is forwarded as Action::ChunkReceived
-    mock.push_chunk(SessionId::new("s-1"), StreamChunk::text("background".to_string()));
-    mock.push_chunk(SessionId::new("s-2"), StreamChunk::text("foreground".to_string()));
+    mock.push_chunk(
+        SessionId::new("s-1"),
+        StreamChunk::text("background".to_string()),
+    );
+    mock.push_chunk(
+        SessionId::new("s-2"),
+        StreamChunk::text("foreground".to_string()),
+    );
     // Allow the subscriber task to forward.
     tokio::time::sleep(std::time::Duration::from_millis(50)).await;
     let mut saw_s2 = false;
@@ -305,8 +331,14 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel() {
             _ => {}
         }
     }
-    assert!(saw_s2, "expected ChunkReceived for s-2 (focused) on the bus");
-    assert!(saw_s1, "expected ChunkReceived for s-1 (background) on the bus per RPC-045");
+    assert!(
+        saw_s2,
+        "expected ChunkReceived for s-2 (focused) on the bus"
+    );
+    assert!(
+        saw_s1,
+        "expected ChunkReceived for s-1 (background) on the bus per RPC-045"
+    );
 }
 
 /// Scenario: Navigator renders AgentView when active_view is Agent
@@ -321,7 +353,9 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
     app.navigator_mut().active_view = ViewMode::Agent;
     // @step And AgentViewStore.current_session = Some(SessionId::new("s-1"))
     app.agent_view_store_mut()
-        .append_session(codelet_fspec_tui::SessionContext::new(SessionId::new("s-1")));
+        .append_session(codelet_fspec_tui::SessionContext::new(SessionId::new(
+            "s-1",
+        )));
     // @step When the App renders against an 80x24 TestBackend
     let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
     let mut nav = Navigator::new(
@@ -330,8 +364,7 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
     );
     nav.active_view = ViewMode::Agent;
     let mut agent_snapshot = std::mem::take(app.agent_view_store_mut());
-    let board_snapshot: codelet_fspec_tui::BoardStore =
-        std::mem::take(app.board_store_mut());
+    let board_snapshot: codelet_fspec_tui::BoardStore = std::mem::take(app.board_store_mut());
     nav.render_with_stores(
         ratatui::layout::Rect::new(0, 0, 120, 24),
         term.current_buffer_mut(),
@@ -349,8 +382,14 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
     // @step Then the rendered buffer contains the AgentView "Agent" block title
     // RPC-029: AgentView no longer paints an "Agent — <sid>" title;
     // the visible AgentView anchor is the input placeholder hint.
-    assert!(joined.contains("Type a message..."), "AgentView placeholder hint must be visible");
-    assert!(joined.contains("Agent"), "header should render 'Agent' placeholder when no model");
+    assert!(
+        joined.contains("Type a message..."),
+        "AgentView placeholder hint must be visible"
+    );
+    assert!(
+        joined.contains("Agent"),
+        "header should render 'Agent' placeholder when no model"
+    );
     // @step And the rendered buffer does NOT contain the BACKLOG SPECIFYING column headers
     assert!(!joined.contains("BACKLOG"));
 }

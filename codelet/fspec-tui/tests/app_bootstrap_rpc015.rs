@@ -19,10 +19,7 @@ use common::MockBackend;
 
 /// Drain the App's action bus until a matching action arrives or 200ms
 /// elapses; dispatch it and return Some(action) on match, None on timeout.
-async fn wait_and_dispatch<F: Fn(&Action) -> bool>(
-    app: &mut App,
-    pred: F,
-) -> Option<Action> {
+async fn wait_and_dispatch<F: Fn(&Action) -> bool>(app: &mut App, pred: F) -> Option<Action> {
     let deadline = std::time::Instant::now() + Duration::from_millis(500);
     while std::time::Instant::now() < deadline {
         if let Some(action) = app.try_recv_action() {
@@ -50,10 +47,7 @@ async fn board_store_checkpoint_counts_is_updated_by_action_checkpointcountsload
     // The bootstrap may fire the checkpoint_counts() call inline or onto
     // the bus — drain the bus and dispatch each Action until either we
     // see CheckpointCountsLoaded or the timeout elapses.
-    let _ = wait_and_dispatch(&mut app, |a| {
-        matches!(a, Action::CheckpointCountsLoaded(_))
-    })
-    .await;
+    let _ = wait_and_dispatch(&mut app, |a| matches!(a, Action::CheckpointCountsLoaded(_))).await;
     // @step And App::dispatch processes the action
     // (dispatched inside wait_and_dispatch)
     // @step Then app.board_store().checkpoint_counts() returns CheckpointCounts { manual: 2, auto: 3 }

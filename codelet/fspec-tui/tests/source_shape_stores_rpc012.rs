@@ -9,7 +9,10 @@ mod common;
 use std::path::Path;
 
 fn store_dir() -> std::path::PathBuf {
-    common::workspace_root().join("fspec-tui").join("src").join("store")
+    common::workspace_root()
+        .join("fspec-tui")
+        .join("src")
+        .join("store")
 }
 
 fn scan(dir: &Path) -> Vec<(std::path::PathBuf, String)> {
@@ -30,7 +33,10 @@ fn store_module_has_no_mutex_rwlock_atomics_or_runtime_constructors() {
     assert!(dir.exists(), "expected store/ directory to exist");
     // @step When the test scans every .rs file under that directory
     let files = scan(&dir);
-    assert!(!files.is_empty(), "expected at least one .rs file under store/");
+    assert!(
+        !files.is_empty(),
+        "expected at least one .rs file under store/"
+    );
     let forbidden = [
         // @step Then no file contains "std::sync::Mutex"
         "std::sync::Mutex",

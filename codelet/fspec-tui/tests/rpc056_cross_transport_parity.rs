@@ -36,7 +36,11 @@ fn workspace_with_seed(cwd: &Path) {
     .expect("write work-units.json");
 }
 
-fn build_service() -> (TempDir, Arc<SharedFspecService>, Arc<StubSessionManagerHandle>) {
+fn build_service() -> (
+    TempDir,
+    Arc<SharedFspecService>,
+    Arc<StubSessionManagerHandle>,
+) {
     let temp = tempfile::tempdir().expect("tempdir");
     let cwd = temp.path().to_path_buf();
     workspace_with_seed(&cwd);
@@ -71,9 +75,7 @@ fn build_service() -> (TempDir, Arc<SharedFspecService>, Arc<StubSessionManagerH
         },
     ]);
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
-    let service = Arc::new(
-        SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd),
-    );
+    let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
     (temp, service, stub)
 }
 
@@ -106,10 +108,16 @@ async fn blocklist_list_round_trips_identically_across_transports() {
     let initial = stub.blocklist_list_calls();
 
     // @step When blocklist_list is called via the embedded transport
-    let em = embedded.blocklist_list().await.expect("embedded blocklist_list");
+    let em = embedded
+        .blocklist_list()
+        .await
+        .expect("embedded blocklist_list");
 
     // @step And blocklist_list is called via the WebSocket transport
-    let ws = websocket.blocklist_list().await.expect("websocket blocklist_list");
+    let ws = websocket
+        .blocklist_list()
+        .await
+        .expect("websocket blocklist_list");
 
     // @step Then the stub's blocklist_list_calls counter equals 2
     let final_calls = stub.blocklist_list_calls();
@@ -120,8 +128,18 @@ async fn blocklist_list_round_trips_identically_across_transports() {
     );
 
     // @step And both calls return a Vec of length 3
-    assert_eq!(em.len(), 3, "embedded blocklist_list returned {} rows", em.len());
-    assert_eq!(ws.len(), 3, "websocket blocklist_list returned {} rows", ws.len());
+    assert_eq!(
+        em.len(),
+        3,
+        "embedded blocklist_list returned {} rows",
+        em.len()
+    );
+    assert_eq!(
+        ws.len(),
+        3,
+        "websocket blocklist_list returned {} rows",
+        ws.len()
+    );
 
     // @step And each entry has identical id, pattern, action, source fields across the two transports
     for (e, w) in em.iter().zip(ws.iter()) {

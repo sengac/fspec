@@ -22,7 +22,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     }
 }
 
@@ -82,17 +82,35 @@ fn board_view_renders_literal_unified_board_layout_footer_string() {
     // @step When the App renders against a 120x24 TestBackend
     let joined = render_board(120, 24, units);
     // @step Then the rendered buffer contains the substring "← → Columns"
-    assert!(joined.contains("← → Columns"), "missing '← → Columns' in:\n{joined}");
+    assert!(
+        joined.contains("← → Columns"),
+        "missing '← → Columns' in:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "↑↓ Work Units"
-    assert!(joined.contains("↑↓ Work Units"), "missing '↑↓ Work Units' in:\n{joined}");
+    assert!(
+        joined.contains("↑↓ Work Units"),
+        "missing '↑↓ Work Units' in:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "[ Priority Up"
-    assert!(joined.contains("[ Priority Up"), "missing '[ Priority Up' in:\n{joined}");
+    assert!(
+        joined.contains("[ Priority Up"),
+        "missing '[ Priority Up' in:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "] Priority Down"
-    assert!(joined.contains("] Priority Down"), "missing '] Priority Down' in:\n{joined}");
+    assert!(
+        joined.contains("] Priority Down"),
+        "missing '] Priority Down' in:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "↵ Work Agent"
-    assert!(joined.contains("↵ Work Agent"), "missing '↵ Work Agent' in:\n{joined}");
+    assert!(
+        joined.contains("↵ Work Agent"),
+        "missing '↵ Work Agent' in:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "ESC Back"
-    assert!(joined.contains("ESC Back"), "missing 'ESC Back' in:\n{joined}");
+    assert!(
+        joined.contains("ESC Back"),
+        "missing 'ESC Back' in:\n{joined}"
+    );
 }
 
 /// Scenario: BoardView footer omits the legacy `? help q quit Tab switch pane` hint
@@ -103,11 +121,20 @@ fn board_view_footer_omits_legacy_generic_hint() {
     // @step When the App renders against a 120x24 TestBackend
     let joined = render_board(120, 24, units);
     // @step Then the rendered buffer does NOT contain the substring "? help"
-    assert!(!joined.contains("? help"), "legacy '? help' still present in:\n{joined}");
+    assert!(
+        !joined.contains("? help"),
+        "legacy '? help' still present in:\n{joined}"
+    );
     // @step And the rendered buffer does NOT contain the substring "switch pane"
-    assert!(!joined.contains("switch pane"), "legacy 'switch pane' still present in:\n{joined}");
+    assert!(
+        !joined.contains("switch pane"),
+        "legacy 'switch pane' still present in:\n{joined}"
+    );
     // @step And the rendered buffer does NOT contain the substring "Tab "
-    assert!(!joined.contains("Tab "), "legacy 'Tab ' still present in:\n{joined}");
+    assert!(
+        !joined.contains("Tab "),
+        "legacy 'Tab ' still present in:\n{joined}"
+    );
 }
 
 /// Scenario: BoardView paints headers above the footer in its own area
@@ -124,11 +151,16 @@ fn board_view_paints_headers_above_footer_row_in_its_own_area() {
     assert!(
         rows[22].contains("← → Columns"),
         "expected footer on row 22, got:\nrow 21: {}\nrow 22: {}\nrow 23: {}",
-        rows[21], rows[22], rows[23]
+        rows[21],
+        rows[22],
+        rows[23]
     );
     // @step And at least one row above row 22 contains "BACKLOG"
     let backlog_row = rows[..22].iter().position(|r| r.contains("BACKLOG"));
-    assert!(backlog_row.is_some(), "expected BACKLOG on some row above 22");
+    assert!(
+        backlog_row.is_some(),
+        "expected BACKLOG on some row above 22"
+    );
     // @step And the work-unit id "AUTH-001" appears on a row strictly above the footer row
     let auth_row = rows[..22].iter().position(|r| r.contains("AUTH-001"));
     assert!(auth_row.is_some(), "expected AUTH-001 above row 22");

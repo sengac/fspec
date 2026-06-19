@@ -112,7 +112,12 @@ pub fn dialog_rect(area: Rect, dialog: &FspecDialog<'_>) -> Rect {
     let height = natural.min(area.height);
     let x = area.x + area.width.saturating_sub(width) / 2;
     let y = area.y + area.height.saturating_sub(height) / 2;
-    Rect { x, y, width, height }
+    Rect {
+        x,
+        y,
+        width,
+        height,
+    }
 }
 
 /// Paint the dialog onto `buf` inside `area`. Renders:
@@ -167,7 +172,12 @@ pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
         .bg(Color::Black);
     paint_left_aligned(
         buf,
-        Rect { x: body.x, y: body.y, width: body.width, height: 1 },
+        Rect {
+            x: body.x,
+            y: body.y,
+            width: body.width,
+            height: 1,
+        },
         &[Span::styled(dialog.title.to_string(), title_style)],
         bg_style,
     );
@@ -252,12 +262,7 @@ pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
 /// Paint a left-aligned sequence of spans into `rect`. Cells before
 /// the spans are left as already painted (caller is responsible for
 /// background). Cells after are painted with `tail_style` as spaces.
-fn paint_left_aligned(
-    buf: &mut Buffer,
-    rect: Rect,
-    spans: &[Span<'_>],
-    tail_style: Style,
-) {
+fn paint_left_aligned(buf: &mut Buffer, rect: Rect, spans: &[Span<'_>], tail_style: Style) {
     let mut x = rect.x;
     for span in spans {
         for ch in span.content.chars() {

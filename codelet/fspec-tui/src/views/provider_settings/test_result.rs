@@ -33,9 +33,7 @@ impl ProviderTestStatus {
             ProviderTestStatus::Ok { latency_ms } => {
                 (format!("✓ ok ({latency_ms}ms)"), Color::Green)
             }
-            ProviderTestStatus::Err { message } => {
-                (format!("✗ {message}"), Color::Red)
-            }
+            ProviderTestStatus::Err { message } => (format!("✗ {message}"), Color::Red),
         }
     }
 }
@@ -56,11 +54,7 @@ impl ProviderSettingsView {
     /// `provider_id` overrides the prior status. Pure state mutation:
     /// never touches `selected_index`, `scroll_offset`, `mode`,
     /// `filter`, `filter_mode`, `expanded`, `nav_items`, or `status`.
-    pub fn set_test_result(
-        &mut self,
-        provider_id: impl Into<String>,
-        status: ProviderTestStatus,
-    ) {
+    pub fn set_test_result(&mut self, provider_id: impl Into<String>, status: ProviderTestStatus) {
         self.test_result = Some(ProviderTestResult {
             provider_id: provider_id.into(),
             status,

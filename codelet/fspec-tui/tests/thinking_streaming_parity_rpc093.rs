@@ -295,11 +295,23 @@ fn second_thinking_after_tool_call_starts_fresh_chunk() {
 
     // @step Then the s-1 scrollback contains exactly three rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 3);
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 0), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 1), ChunkKind::ToolCall { .. }));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 2), ChunkKind::Thinking));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 0),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 1),
+        ChunkKind::ToolCall { .. }
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 2),
+        ChunkKind::Thinking
+    ));
     assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "first thought");
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 2), "second thought");
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 2),
+        "second thought"
+    );
 
     // @step And the chunk at index 0 has is_streaming false
     assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 0));
@@ -337,11 +349,23 @@ fn user_input_clears_in_flight_thinking_without_mutating() {
 
     // @step Then the s-1 scrollback contains exactly three rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 3);
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 0), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 1), ChunkKind::UserInput));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 2), ChunkKind::Thinking));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 0),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 1),
+        ChunkKind::UserInput
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 2),
+        ChunkKind::Thinking
+    ));
     assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "first thought");
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 2), "second thought");
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 2),
+        "second thought"
+    );
 
     // @step And the chunk at index 0 has is_streaming true (left untouched by UserInput)
     assert!(
@@ -379,8 +403,14 @@ fn thinking_inserts_before_in_flight_assistant() {
 
     // @step Then the s-1 scrollback contains exactly two rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 0), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 1), ChunkKind::AssistantText));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 0),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 1),
+        ChunkKind::AssistantText
+    ));
     assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "Hmm");
     assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 1), "Reading");
 
@@ -415,7 +445,10 @@ fn done_clears_in_flight_thinking_without_mutating_chunk() {
     // @step Then the s-1 scrollback contains exactly one rendered chunk
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
     // @step And that chunk's source.text equals "settled thought"
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "settled thought");
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 0),
+        "settled thought"
+    );
     // @step And that chunk's is_streaming flag is true (Done does not mutate the thinking chunk)
     assert!(
         nth_chunk_is_streaming(&app, &sid("s-1"), 0),
@@ -450,8 +483,14 @@ fn second_thinking_after_done_starts_fresh_chunk() {
 
     // @step Then the s-1 scrollback contains exactly two rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 0), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 1), ChunkKind::Thinking));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 0),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 1),
+        ChunkKind::Thinking
+    ));
     assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "old thought");
     assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 1), "new thought");
     // @step And the SessionContext in_flight_thinking slot is Some(1)
@@ -481,8 +520,14 @@ fn error_clears_in_flight_thinking_without_mutating_chunk() {
 
     // @step Then the s-1 scrollback contains exactly two rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 0), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 1), ChunkKind::Error));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 0),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 1),
+        ChunkKind::Error
+    ));
     assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "mid thought");
     assert_eq!(
         nth_chunk_source_text(&app, &sid("s-1"), 1),
@@ -521,8 +566,14 @@ fn interrupted_clears_in_flight_thinking_without_mutating_chunk() {
 
     // @step Then the s-1 scrollback contains exactly two rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 0), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 1), ChunkKind::Interrupted));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 0),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 1),
+        ChunkKind::Interrupted
+    ));
     assert_eq!(
         nth_chunk_source_text(&app, &sid("s-1"), 0),
         "interrupted mid-flight"
@@ -610,20 +661,47 @@ fn full_round_trip_thinking_renders_five_chunks_in_order() {
 
     // @step Then the s-1 scrollback contains exactly five rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 5);
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 0), ChunkKind::UserInput));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 1), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 2), ChunkKind::ToolCall { .. }));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 3), ChunkKind::Thinking));
-    assert!(matches!(nth_chunk_kind(&app, &sid("s-1"), 4), ChunkKind::AssistantText));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 0),
+        ChunkKind::UserInput
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 1),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 2),
+        ChunkKind::ToolCall { .. }
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 3),
+        ChunkKind::Thinking
+    ));
+    assert!(matches!(
+        nth_chunk_kind(&app, &sid("s-1"), 4),
+        ChunkKind::AssistantText
+    ));
 
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 0), "how is RPC-093 going?");
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 1), "Let me check the card");
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 0),
+        "how is RPC-093 going?"
+    );
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 1),
+        "Let me check the card"
+    );
     // tool-call chunk text already includes header + result body
     let tool_text = nth_chunk_source_text(&app, &sid("s-1"), 2);
     assert!(tool_text.contains("Fspec(show-work-unit)"));
     assert!(tool_text.contains("ok"));
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 3), "It is in specifying");
-    assert_eq!(nth_chunk_source_text(&app, &sid("s-1"), 4), "RPC-093 is in specifying.");
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 3),
+        "It is in specifying"
+    );
+    assert_eq!(
+        nth_chunk_source_text(&app, &sid("s-1"), 4),
+        "RPC-093 is in specifying."
+    );
 
     // @step And the chunk at index 1 has is_streaming false (finalised by the ToolCall at index 2)
     assert!(!nth_chunk_is_streaming(&app, &sid("s-1"), 1));
@@ -638,9 +716,16 @@ fn full_round_trip_thinking_renders_five_chunks_in_order() {
     assert_eq!(session_in_flight_assistant(&app, &sid("s-1")), None);
 
     // @step And no chunk has "[Thinking]" baked into its stored source.text
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     for (i, c) in ctx.scrollback.visible_window(1024).iter().enumerate() {
-        let stored = c.source.as_ref().map(|s| s.text.clone()).unwrap_or_default();
+        let stored = c
+            .source
+            .as_ref()
+            .map(|s| s.text.clone())
+            .unwrap_or_default();
         assert!(
             !stored.contains("[Thinking]"),
             "chunk {i} must not bake [Thinking]; got {stored:?}"

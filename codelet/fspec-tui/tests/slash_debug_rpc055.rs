@@ -54,9 +54,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -180,7 +183,8 @@ async fn debug_emits_error_notice_on_err() {
     // @step Then within 1 second s-1's scrollback contains a chunk whose text equals "[error] /debug failed: disk full"
     let text = session_scrollback_text(&app, &sid("s-1"));
     assert!(
-        text.lines().any(|l| l == "[error] /debug failed: disk full"),
+        text.lines()
+            .any(|l| l == "[error] /debug failed: disk full"),
         "expected `[error] /debug failed: disk full` line in s-1 scrollback, got {text:?}",
     );
 }
@@ -265,10 +269,7 @@ async fn debug_only_affects_focused_session_background_untouched() {
     )
     .await;
     assert_eq!(mock.toggle_debug_calls(), 1);
-    assert_eq!(
-        mock.last_toggle_debug().map(|(s, _)| s),
-        Some(sid("s-1"))
-    );
+    assert_eq!(mock.last_toggle_debug().map(|(s, _)| s), Some(sid("s-1")));
 
     drain_pending(&mut app).await;
 
@@ -391,15 +392,14 @@ fn session_header_debug_badge_appears_when_debug_enabled_is_true() {
     app.navigator_mut().active_view = ViewMode::Agent;
 
     // @step And the AgentViewStore has debug_enabled_by_session[s-1] set to true
-    app.agent_view_store_mut().set_debug_enabled(sid("s-1"), true);
+    app.agent_view_store_mut()
+        .set_debug_enabled(sid("s-1"), true);
 
     // @step When the AgentView is rendered for s-1
     let spans = header_spans(&mut app);
 
     // @step Then the SessionHeader emits a span with text " [DEBUG]" styled red bold
-    let debug_span = spans
-        .iter()
-        .find(|(text, _, _)| text.contains("[DEBUG]"));
+    let debug_span = spans.iter().find(|(text, _, _)| text.contains("[DEBUG]"));
     assert!(
         debug_span.is_some(),
         "expected [DEBUG] span in SessionHeader, got spans={spans:?}",
@@ -423,7 +423,8 @@ fn session_header_debug_badge_absent_when_debug_enabled_is_false() {
     app.navigator_mut().active_view = ViewMode::Agent;
 
     // @step And the AgentViewStore has debug_enabled_by_session[s-1] set to false
-    app.agent_view_store_mut().set_debug_enabled(sid("s-1"), false);
+    app.agent_view_store_mut()
+        .set_debug_enabled(sid("s-1"), false);
 
     // @step When the AgentView is rendered for s-1
     let spans = header_spans(&mut app);
@@ -449,10 +450,7 @@ fn debug_state_change_chunk_updates_badge_state_for_focused_session() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
     // RPC-097 fix: OpenAgentView(None) now mounts the dialog; use direct mode set when only switching view
     app.navigator_mut().active_view = ViewMode::Agent;
-    assert_eq!(
-        app.agent_view_store().debug_enabled_for(&sid("s-1")),
-        None,
-    );
+    assert_eq!(app.agent_view_store().debug_enabled_for(&sid("s-1")), None,);
 
     // @step When a StreamChunk::DebugStateChange { enabled: true } is delivered as Action::ChunkReceived(s-1, chunk)
     app.dispatch(Action::ChunkReceived(
@@ -468,9 +466,7 @@ fn debug_state_change_chunk_updates_badge_state_for_focused_session() {
 
     // @step And the SessionHeader for s-1 emits a span with text " [DEBUG]" styled red bold
     let spans = header_spans(&mut app);
-    let debug_span = spans
-        .iter()
-        .find(|(text, _, _)| text.contains("[DEBUG]"));
+    let debug_span = spans.iter().find(|(text, _, _)| text.contains("[DEBUG]"));
     assert!(
         debug_span.is_some(),
         "expected [DEBUG] span after DebugStateChange{{enabled:true}}, got spans={spans:?}",

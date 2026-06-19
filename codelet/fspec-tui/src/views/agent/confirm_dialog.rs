@@ -34,6 +34,7 @@ pub enum ConfirmDialogOutcome {
 }
 
 /// A simple confirmation overlay with up to three buttons.
+#[derive(Clone)]
 pub struct ConfirmDialog {
     title: String,
     body: String,
@@ -160,9 +161,7 @@ impl ConfirmDialog {
             // Focus state is intentionally NOT consulted: the shortcut is a
             // direct outcome dispatch, regardless of which button is focused.
             KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),
-            KeyCode::Char('n') | KeyCode::Char('N') => {
-                self.outcome_for_index(self.cancel_index())
-            }
+            KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()),
             _ => ConfirmDialogOutcome::Ignored,
         }
     }

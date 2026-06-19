@@ -25,9 +25,7 @@ pub enum DetailStatus {
 impl DetailStatus {
     pub fn to_span(&self) -> Span<'static> {
         match self {
-            DetailStatus::Testing => {
-                Span::styled("Testing…", Style::default().fg(Color::Cyan))
-            }
+            DetailStatus::Testing => Span::styled("Testing…", Style::default().fg(Color::Cyan)),
             DetailStatus::TestOk { latency_ms } => Span::styled(
                 format!("✓ ok ({latency_ms}ms)"),
                 Style::default().fg(Color::Green),
@@ -35,26 +33,22 @@ impl DetailStatus {
             DetailStatus::TestErr { error } => {
                 Span::styled(format!("✗ {error}"), Style::default().fg(Color::Red))
             }
-            DetailStatus::RefreshingModels => Span::styled(
-                "Refreshing models…",
-                Style::default().fg(Color::Cyan),
-            ),
+            DetailStatus::RefreshingModels => {
+                Span::styled("Refreshing models…", Style::default().fg(Color::Cyan))
+            }
             DetailStatus::ModelsRefreshed { count } => Span::styled(
                 format!("✓ models refreshed ({count})"),
                 Style::default().fg(Color::Green),
             ),
-            DetailStatus::SavingCredentials => Span::styled(
-                "Saving credentials…",
-                Style::default().fg(Color::Cyan),
-            ),
-            DetailStatus::CredentialsSaved => Span::styled(
-                "✓ credentials saved",
-                Style::default().fg(Color::Green),
-            ),
-            DetailStatus::Error { message } => Span::styled(
-                format!("✗ {message}"),
-                Style::default().fg(Color::Red),
-            ),
+            DetailStatus::SavingCredentials => {
+                Span::styled("Saving credentials…", Style::default().fg(Color::Cyan))
+            }
+            DetailStatus::CredentialsSaved => {
+                Span::styled("✓ credentials saved", Style::default().fg(Color::Green))
+            }
+            DetailStatus::Error { message } => {
+                Span::styled(format!("✗ {message}"), Style::default().fg(Color::Red))
+            }
         }
     }
 }

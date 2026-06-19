@@ -36,7 +36,12 @@ fn seed_list(n: u64) -> ScrollbackList {
     list
 }
 
-fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
+fn render_rows(
+    width: u16,
+    height: u16,
+    store: &mut AgentViewStore,
+    view: &mut AgentView,
+) -> Vec<String> {
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
         view.render_with_store(frame.area(), frame.buffer_mut(), store);
@@ -72,7 +77,10 @@ fn scrollback_list_push_appends_a_chunk_and_bumps_offset_in_stick_mode() {
     assert!(list.scroll_state().stick_to_bottom);
     // @step And the visible chunks include chunk #101 at the bottom
     let visible = list.visible_window(12);
-    assert!(visible.iter().any(|c| c.seq == 100), "chunk #101 (seq=100) must be visible: {visible:?}");
+    assert!(
+        visible.iter().any(|c| c.seq == 100),
+        "chunk #101 (seq=100) must be visible: {visible:?}"
+    );
 }
 
 /// Scenario: PageUp on the scrollback decrements offset by viewport_height and disables stick
@@ -154,7 +162,9 @@ fn agent_view_page_up_disables_stick_and_decrements_offset() {
     let (tx, mut rx) = unbounded_channel();
     let mut view = AgentView::new(tx);
     let mut store = AgentViewStore::default();
-    store.append_session(codelet_fspec_tui::SessionContext::new(codelet_rpc_types::SessionId::new("s-1")));
+    store.append_session(codelet_fspec_tui::SessionContext::new(
+        codelet_rpc_types::SessionId::new("s-1"),
+    ));
     {
         let ctx = store.current_session_context_mut().expect("current ctx");
         for i in 0..100u64 {
@@ -190,7 +200,9 @@ fn agent_view_vertical_layout_reserves_input_box_rows_tracking_the_textarea() {
     view.input.set_value("a\nb\nc");
 
     let mut store = AgentViewStore::default();
-    store.append_session(codelet_fspec_tui::SessionContext::new(codelet_rpc_types::SessionId::new("s-1")));
+    store.append_session(codelet_fspec_tui::SessionContext::new(
+        codelet_rpc_types::SessionId::new("s-1"),
+    ));
 
     // @step When the App renders AgentView against an 80x20 TestBackend
     let rows = render_rows(80, 20, &mut store, &mut view);
@@ -206,7 +218,10 @@ fn agent_view_vertical_layout_reserves_input_box_rows_tracking_the_textarea() {
         .expect("input area recorded after render");
     // RPC-029: the input area no longer carries a 4-sided border, so
     // it occupies exactly visible_rows() == 3 rows (no +2 border budget).
-    assert_eq!(input_height, 3, "input box should be 3 content rows after RPC-029, got {input_height}");
+    assert_eq!(
+        input_height, 3,
+        "input box should be 3 content rows after RPC-029, got {input_height}"
+    );
 
     // @step And the scrollback region occupies the remaining flex rows between the header and input
     // RPC-029: the footer row sits between scrollback and input now, so
@@ -238,7 +253,9 @@ fn agent_view_record_chunk_delegates_to_scrollback_list_push() {
     let (tx, _rx) = unbounded_channel();
     let mut view = AgentView::new(tx);
     let mut store = AgentViewStore::default();
-    store.append_session(codelet_fspec_tui::SessionContext::new(codelet_rpc_types::SessionId::new("s-1")));
+    store.append_session(codelet_fspec_tui::SessionContext::new(
+        codelet_rpc_types::SessionId::new("s-1"),
+    ));
     let chunk = codelet_rpc_types::StreamChunk::Text {
         text: "hi".to_string(),
         correlation_id: None,

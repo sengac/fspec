@@ -125,10 +125,7 @@ fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() {
     // so that combined with the follow-up "You: hi" the content OVERFLOWS
     // the 10-row viewport and stick-to-bottom must trim earlier rows.
     let body: String = "x".repeat(800);
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::error(body),
-    ));
+    app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::error(body)));
 
     // Drive a render so pre-wrap fires.
     let backend = TestBackend::new(80, 10);
@@ -288,9 +285,9 @@ fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() {
     // arrives. The TOP-FILL invariant for the AgentView scrollback
     // must hold BEFORE the modal is painted, so we drop the dialog
     // here and assert against the Navigator-rendered buffer only.
-    let _ = app.compositor_mut().remove(
-        codelet_fspec_tui::components::error_dialog::ERROR_DIALOG_ID,
-    );
+    let _ = app
+        .compositor_mut()
+        .remove(codelet_fspec_tui::components::error_dialog::ERROR_DIALOG_ID);
 
     // @step When App.render is called into an 80x24 TestBackend buffer
     let backend = TestBackend::new(80, 24);

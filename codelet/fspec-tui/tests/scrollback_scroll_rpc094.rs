@@ -23,9 +23,7 @@ use std::sync::Arc;
 use codelet_fspec_tui::views::agent::RenderedChunk;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::SessionId;
-use crossterm::event::{
-    Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind,
-};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::backend::TestBackend;
 use ratatui::text::Line;
 use ratatui::Terminal;
@@ -293,7 +291,10 @@ fn rpc094_up_arrow_with_empty_input_scrolls_scrollback_one_line() {
     );
 
     // @step When the user then presses the Down arrow key
-    let _ = app.handle_event(&Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::NONE)));
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Down,
+        KeyModifiers::NONE,
+    )));
     drain(&mut app);
 
     // @step Then the scrollback offset increases by exactly 1 visual row back to the previous position
@@ -325,7 +326,10 @@ fn rpc094_up_arrow_mid_buffer_stays_inside_input() {
     // currently sits at end-of-buffer (row=2, col=6). Step up once first.
     let _ = app.handle_event(&Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::NONE)));
     drain(&mut app);
-    let _ = app.handle_event(&Event::Key(KeyEvent::new(KeyCode::Home, KeyModifiers::NONE)));
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Home,
+        KeyModifiers::NONE,
+    )));
     drain(&mut app);
 
     let offset_before = scroll_offset(&app, &id);
@@ -429,7 +433,12 @@ fn rpc094_scrollbar_gutter_renders_when_content_exceeds_viewport() {
     // whatever scrollbar gutter the implementation defines.
     use ratatui::buffer::Buffer;
     use ratatui::layout::Rect;
-    let area = Rect { x: 0, y: 0, width: 80, height: 14 };
+    let area = Rect {
+        x: 0,
+        y: 0,
+        width: 80,
+        height: 14,
+    };
     let mut buf = Buffer::empty(area);
     app.render(area, &mut buf);
 
@@ -473,7 +482,12 @@ fn rpc094_scrollbar_gutter_is_hidden_when_content_fits_viewport() {
 
     use ratatui::buffer::Buffer;
     use ratatui::layout::Rect;
-    let area = Rect { x: 0, y: 0, width: 80, height: 14 };
+    let area = Rect {
+        x: 0,
+        y: 0,
+        width: 80,
+        height: 14,
+    };
     let mut buf = Buffer::empty(area);
     app.render(area, &mut buf);
 
@@ -502,7 +516,10 @@ fn rpc094_home_jumps_scrollback_to_first_message() {
 
     // @step When the user presses Home and the input does not consume it
     // (MultiLineInput is empty — Home is a no-op for the textarea.)
-    let _ = app.handle_event(&Event::Key(KeyEvent::new(KeyCode::Home, KeyModifiers::NONE)));
+    let _ = app.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::Home,
+        KeyModifiers::NONE,
+    )));
     drain(&mut app);
 
     // @step Then the scrollback offset becomes 0
@@ -571,10 +588,12 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //   - RPC-094 added ≤30 lines (5 variants × ~6 doc-line stanza)
     //   - RPC-098 added ≤20 lines (ExitChoice enum + AgentExitChoice variant
     //     with its doc stanza)
-    //   - Total budget = 802 baseline + 30 (RPC-094) + 20 (RPC-098) = 852
+    //   - RPC-337 added ≤25 lines (OpenModelSelectorView /
+    //     CloseModelSelectorView / RefreshModelSelector variants + docs)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 = 877
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 852,
-        "components/mod.rs has {n_components} lines — RPC-094+RPC-098 budget is +50 over baseline 802"
+        n_components <= 877,
+        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337 budget is +75 over baseline 802"
     );
 }

@@ -48,10 +48,7 @@ fn is_table_row(line: &str) -> bool {
 
 fn is_separator_cell(cell: &str) -> bool {
     let trimmed = cell.trim();
-    !trimmed.is_empty()
-        && trimmed
-            .chars()
-            .all(|c| c == '-' || c == ':' || c == ' ')
+    !trimmed.is_empty() && trimmed.chars().all(|c| c == '-' || c == ':' || c == ' ')
 }
 
 fn parse_cells(line: &str) -> Vec<String> {

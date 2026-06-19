@@ -26,9 +26,21 @@ use tempfile::TempDir;
 fn seed_repo_with_one_manual_one_auto() -> TempDir {
     let tmp = TempDir::new().expect("tempdir");
     let repo_path = tmp.path();
-    Command::new("git").args(["init"]).current_dir(repo_path).output().expect("git init");
-    Command::new("git").args(["config", "user.email", "test@example.com"]).current_dir(repo_path).output().expect("config email");
-    Command::new("git").args(["config", "user.name", "Test"]).current_dir(repo_path).output().expect("config name");
+    Command::new("git")
+        .args(["init"])
+        .current_dir(repo_path)
+        .output()
+        .expect("git init");
+    Command::new("git")
+        .args(["config", "user.email", "test@example.com"])
+        .current_dir(repo_path)
+        .output()
+        .expect("config email");
+    Command::new("git")
+        .args(["config", "user.name", "Test"])
+        .current_dir(repo_path)
+        .output()
+        .expect("config name");
     fs::write(repo_path.join("README.md"), "# x\n").expect("write README");
     fs::create_dir_all(repo_path.join("spec")).expect("mkdir spec");
     fs::write(
@@ -36,8 +48,16 @@ fn seed_repo_with_one_manual_one_auto() -> TempDir {
         r#"{"workUnits":{}}"#,
     )
     .expect("write work-units.json");
-    Command::new("git").args(["add", "."]).current_dir(repo_path).output().expect("git add");
-    Command::new("git").args(["commit", "-m", "init"]).current_dir(repo_path).output().expect("git commit");
+    Command::new("git")
+        .args(["add", "."])
+        .current_dir(repo_path)
+        .output()
+        .expect("git add");
+    Command::new("git")
+        .args(["commit", "-m", "init"])
+        .current_dir(repo_path)
+        .output()
+        .expect("git commit");
     add_ghost_checkpoint(repo_path, "AUTH-001", "baseline");
     add_ghost_checkpoint(repo_path, "AUTH-001", "AUTH-001-auto-testing");
     tmp
@@ -53,9 +73,7 @@ fn add_ghost_checkpoint(repo_path: &Path, work_unit_id: &str, name: &str) {
 /// Build a `SharedFspecService` bound to `repo_path` so `checkpoint_counts`
 /// has a cwd to read refs from.
 fn service_for(repo_path: &Path) -> Arc<SharedFspecService> {
-    let watcher = Arc::new(
-        WorkUnitsWatcher::new(repo_path).expect("WorkUnitsWatcher::new"),
-    );
+    let watcher = Arc::new(WorkUnitsWatcher::new(repo_path).expect("WorkUnitsWatcher::new"));
     Arc::new(SharedFspecService::new(watcher).with_cwd(repo_path.to_path_buf()))
 }
 
@@ -66,10 +84,15 @@ async fn embedded_backend_checkpoint_counts_delegates_through_the_shared_service
     let tmp = seed_repo_with_one_manual_one_auto();
     let service = service_for(tmp.path());
     // @step And an EmbeddedFspecBackend wrapping that shared service
-    let backend: Arc<dyn FspecBackend> =
-        Arc::new(EmbeddedFspecBackend::new(tokio::runtime::Handle::current(), service));
+    let backend: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
+        tokio::runtime::Handle::current(),
+        service,
+    ));
     // @step When backend.checkpoint_counts().await is invoked
-    let counts = backend.checkpoint_counts().await.expect("checkpoint_counts");
+    let counts = backend
+        .checkpoint_counts()
+        .await
+        .expect("checkpoint_counts");
     // @step Then the awaited result is Ok(CheckpointCounts { manual: 1, auto: 1 })
     assert_eq!(counts, CheckpointCounts { manual: 1, auto: 1 });
 }
@@ -88,7 +111,10 @@ async fn websocket_backend_checkpoint_counts_crosses_tarpc_cleanly() {
     let backend: Arc<dyn FspecBackend> =
         Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.checkpoint_counts().await is invoked
-    let counts = backend.checkpoint_counts().await.expect("checkpoint_counts");
+    let counts = backend
+        .checkpoint_counts()
+        .await
+        .expect("checkpoint_counts");
     // @step Then the awaited result is Ok(CheckpointCounts { manual: 1, auto: 1 })
     assert_eq!(counts, CheckpointCounts { manual: 1, auto: 1 });
 }

@@ -41,11 +41,10 @@ pub mod views;
 mod compositor_tests;
 
 pub use app::{parse_slash_command, synth_key, App, SlashCommandParse};
-pub use components::dialog_theme::Accent;
-pub use components::{Action, Callback, Component, EventResult, Priority};
 pub use components::create_session_dialog::{
     CreateSessionDialog, CreateSessionOption, CREATE_SESSION_DIALOG_ID,
 };
+pub use components::dialog_theme::Accent;
 pub use components::hello::HelloComponent;
 pub use components::help_dialog::HelpDialog;
 pub use components::hitl_dialog::{HitlDialog, HITL_DIALOG_ID};
@@ -53,15 +52,16 @@ pub use components::model_selector_dialog::{ModelSelectorDialog, MODEL_SELECTOR_
 pub use components::pause_dialog::{PauseDialog, PAUSE_DIALOG_ID};
 pub use components::role_dialog::{RoleDialog, ROLE_DIALOG_ID};
 pub use components::thinking_level_dialog::{ThinkingLevelDialog, THINKING_LEVEL_DIALOG_ID};
+pub use components::{Action, Callback, Component, EventResult, Priority};
 pub use compositor::Compositor;
-pub use store::{AgentViewStore, BoardStore, IsolationState, SessionContext, COLUMN_ORDER};
 pub use store::agent_view::extract_tool_args_display;
+pub use store::{AgentViewStore, BoardStore, IsolationState, SessionContext, COLUMN_ORDER};
 pub use terminal::TerminalGuard;
 pub use theme::Theme;
 pub use transport::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
-pub use views::{AgentView, BoardView, Navigator, ViewMode};
+pub use views::agent::rendered_chunk::ChunkKind;
 pub use views::agent::{
     ConfirmDialog, ConfirmDialogOutcome, RenderedChunk, ResumeSessionView,
     ResumeSessionViewOutcome, SearchHistoryView, SearchHistoryViewOutcome, SLASH_COMMANDS,
 };
-pub use views::agent::rendered_chunk::ChunkKind;
+pub use views::{AgentView, BoardView, Navigator, ViewMode};

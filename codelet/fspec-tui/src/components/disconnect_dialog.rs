@@ -98,10 +98,7 @@ impl Component for DisconnectDialog {
                 KeyCode::Char('r') => {
                     return EventResult::consumed();
                 }
-                KeyCode::Char('j')
-                | KeyCode::Char('k')
-                | KeyCode::Char('?')
-                | KeyCode::Tab => {
+                KeyCode::Char('j') | KeyCode::Char('k') | KeyCode::Char('?') | KeyCode::Tab => {
                     return EventResult::consumed();
                 }
                 _ => {}

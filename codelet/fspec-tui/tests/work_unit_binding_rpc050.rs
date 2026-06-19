@@ -180,8 +180,7 @@ async fn session_header_renders_work_unit_chip_from_per_session_context() {
     drain_pending(&mut app).await;
     // Drop legacy slots so the test asserts the PER-SESSION read path is
     // the source of truth.
-    app.agent_view_store_mut()
-        .set_current_work_unit(None, None);
+    app.agent_view_store_mut().set_current_work_unit(None, None);
     app.dispatch(Action::WorkUnitAttached(
         sid("s-1"),
         WorkUnitContext {

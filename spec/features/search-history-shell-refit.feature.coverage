@@ -1,0 +1,120 @@
+{
+  "scenarios": [
+    {
+      "name": "Refit preserves the editable query title",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc339_search_history_refit.rs",
+          "lines": "64-91",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "lines": [
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refit preserves the body match list rendering",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc339_search_history_refit.rs",
+          "lines": "96-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "lines": [
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refit preserves the empty-query placeholder and footer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc339_search_history_refit.rs",
+          "lines": "137-159",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "lines": [
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape test accepts the refit delegate",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc339_search_history_refit.rs",
+          "lines": "171-195",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_history_view.rs",
+              "lines": [
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc339_search_history_refit.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/search_history_view.rs"
+    ],
+    "totalLinesCovered": 152
+  }
+}

@@ -66,8 +66,7 @@ impl TokenState {
         // Option because the loading-spinner segment uses None to
         // suppress the `N.N tok/s` prefix entirely.
         self.cache_read_input_tokens = t.cache_read_input_tokens.unwrap_or(0) as u64;
-        self.cache_creation_input_tokens =
-            t.cache_creation_input_tokens.unwrap_or(0) as u64;
+        self.cache_creation_input_tokens = t.cache_creation_input_tokens.unwrap_or(0) as u64;
         self.reasoning_tokens = t.reasoning_tokens.unwrap_or(0) as u64;
         self.tokens_per_second = t.tokens_per_second;
 
@@ -90,13 +89,9 @@ impl TokenState {
             // Cache discount: cache_read tokens cost 10% of normal
             // (matches `TokenTracker::effective_tokens` in
             // codelet/core/src/compaction/model.rs:90-96).
-            let cache_discount =
-                ((self.cache_read_input_tokens as f64) * 0.9) as u64;
+            let cache_discount = ((self.cache_read_input_tokens as f64) * 0.9) as u64;
             let effective = self.input_tokens.saturating_sub(cache_discount);
-            let pct = ((effective as f64
-                / self.context_threshold_tokens as f64)
-                * 100.0)
-                .round();
+            let pct = ((effective as f64 / self.context_threshold_tokens as f64) * 100.0).round();
             self.context_fill_pct = if pct.is_finite() && pct >= 0.0 {
                 pct.min(u16::MAX as f64) as u16
             } else {
@@ -116,11 +111,10 @@ impl TokenState {
         // TokenUpdate chunks can recompute the percentage locally
         // without waiting for the next ContextFillUpdate. Negative /
         // non-finite values are treated as "unknown" (threshold = 0).
-        self.context_threshold_tokens =
-            if info.threshold.is_finite() && info.threshold > 0.0 {
-                info.threshold as u64
-            } else {
-                self.context_threshold_tokens
-            };
+        self.context_threshold_tokens = if info.threshold.is_finite() && info.threshold > 0.0 {
+            info.threshold as u64
+        } else {
+            self.context_threshold_tokens
+        };
     }
 }

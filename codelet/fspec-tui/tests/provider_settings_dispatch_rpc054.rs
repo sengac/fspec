@@ -16,9 +16,7 @@ use std::time::Duration;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App, FspecBackend, ViewMode};
-use codelet_rpc_types::{
-    ModelEntry, ProviderCredentialInfo, SessionId, TestConnectionResult,
-};
+use codelet_rpc_types::{ModelEntry, ProviderCredentialInfo, SessionId, TestConnectionResult};
 use tokio::time::timeout;
 
 mod common;
@@ -144,10 +142,7 @@ async fn esc_in_list_mode_returns_to_agent_view() {
     // @step And the Navigator's active_view is ViewMode::Agent
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
     // @step And the AgentView's prior session, scrollback, and input are intact
-    assert_eq!(
-        app.agent_view_store().current_session(),
-        Some(&sid("s-1"))
-    );
+    assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -245,7 +240,10 @@ async fn test_provider_connection_success_renders_ok_latency() {
     // (proven by the awaited backend call below)
     // @step And backend.test_provider_connection("openai") is awaited
     assert_eq!(mock.test_provider_connection_calls(), 1);
-    assert_eq!(mock.last_test_provider_connection().as_deref(), Some("openai"));
+    assert_eq!(
+        mock.last_test_provider_connection().as_deref(),
+        Some("openai")
+    );
 
     // @step And on Ok the action Action::ProviderTestComplete { provider_id: "openai", result: TestConnectionResult { success: true, latency_ms: 42, .. } } is dispatched
     // @step And the view's last_status updates to TestOk { latency_ms: 42 }
@@ -386,7 +384,9 @@ async fn delete_provider_credentials_clears_row() {
     drain_pending(&mut app).await;
 
     // @step When the user presses Enter
-    app.dispatch(Action::ConfirmDeleteProviderCredentials("anthropic".to_string()));
+    app.dispatch(Action::ConfirmDeleteProviderCredentials(
+        "anthropic".to_string(),
+    ));
     drain_pending(&mut app).await;
     wait_until(
         || mock.delete_provider_credentials_calls() >= 1,
@@ -473,18 +473,19 @@ async fn backend_errors_are_silently_logged_without_panicking() {
     // (reaching this line proves the App did not panic)
 
     // @step And NO scrollback notice is emitted to the AgentView
-    let ctx = app
-        .agent_view_store()
-        .session_context_for(&sid("s-1"));
+    let ctx = app.agent_view_store().session_context_for(&sid("s-1"));
     if let Some(ctx) = ctx {
         let text = ctx
             .scrollback
             .visible_window(1024)
             .iter()
             .flat_map(|c| {
-                c.lines
-                    .iter()
-                    .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+                c.lines.iter().map(|l| {
+                    l.spans
+                        .iter()
+                        .map(|s| s.content.as_ref())
+                        .collect::<String>()
+                })
             })
             .collect::<Vec<String>>()
             .join("\n");
@@ -510,14 +511,10 @@ async fn slash_providers_plural_is_not_a_command() {
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
 
     // @step When the user types "/providers" into the input and presses Enter
-    let matches = codelet_fspec_tui::views::agent::slash_commands::filter_commands(
-        "providers",
-    );
+    let matches = codelet_fspec_tui::views::agent::slash_commands::filter_commands("providers");
 
     // @step Then the SLASH_COMMANDS registry has no entry matching "providers"
-    let exact_match = matches
-        .iter()
-        .any(|c| c.name() == "providers");
+    let exact_match = matches.iter().any(|c| c.name() == "providers");
     assert!(
         !exact_match,
         "no slash command named 'providers' should exist, but got {:?}",

@@ -74,12 +74,7 @@ fn row_string(buf: &Buffer, width: u16) -> String {
 fn selected_provider_row_paints_yellow_band() {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI"
     // @step And the row is in the selected state
-    let buf = paint(
-        RowKind::Provider { expanded: false },
-        "OpenAI",
-        true,
-        40,
-    );
+    let buf = paint(RowKind::Provider { expanded: false }, "OpenAI", true, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
     // @step Then every cell on the row carries bg=Yellow and fg=Black
     for x in 0..40u16 {
@@ -96,7 +91,10 @@ fn selected_provider_row_paints_yellow_band() {
     }
     // @step And the row uses Modifier::BOLD
     let any_bold = (0..40u16).any(|x| cell_modifier(&buf, x).contains(Modifier::BOLD));
-    assert!(any_bold, "selected provider row should carry Modifier::BOLD");
+    assert!(
+        any_bold,
+        "selected provider row should carry Modifier::BOLD"
+    );
 }
 
 /// Scenario: Unselected provider row paints white foreground on default background
@@ -104,12 +102,7 @@ fn selected_provider_row_paints_yellow_band() {
 fn unselected_provider_row_paints_white_on_reset() {
     // @step Given a ProviderSettings row of kind Provider labelled "OpenAI"
     // @step And the row is in the unselected state
-    let buf = paint(
-        RowKind::Provider { expanded: false },
-        "OpenAI",
-        false,
-        40,
-    );
+    let buf = paint(RowKind::Provider { expanded: false }, "OpenAI", false, 40);
     // @step When the row is painted into a TestBackend buffer of width 40
     // @step Then the name span carries fg=White and bg=Reset
     // The name starts at cell 4 (2-cell marker "  " + 1 glyph "▶" + 1 space = 4).

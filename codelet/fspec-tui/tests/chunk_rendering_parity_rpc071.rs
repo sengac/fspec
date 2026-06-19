@@ -231,10 +231,7 @@ fn interleaved_visible_and_silent_chunks_keep_seq_monotonic_over_visible_chunks_
     // @step Then the rendered scrollback lines equal ["You: hi", "● hello back"] (RPC-078 prefix correction; Done emits no line)
     assert_eq!(
         session_scrollback_lines(&app, &sid("s-1")),
-        vec![
-            "You: hi".to_string(),
-            "\u{25CF} hello back".to_string(),
-        ]
+        vec!["You: hi".to_string(), "\u{25CF} hello back".to_string(),]
     );
 
     // @step Then the scrollback_next_seq cursor equals 2 (RPC-078: Done does not bump seq)

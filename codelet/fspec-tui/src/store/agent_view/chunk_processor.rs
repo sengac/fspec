@@ -126,16 +126,16 @@ pub fn handle_tool_call(ctx: &mut SessionContext, info: &ToolCallInfo) {
 /// Mirrors `processStreamingChunk` ToolResult branch
 /// (`chunkProcessor.ts:507-536`).
 pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
-    let target_idx = ctx
-        .scrollback
-        .chunks()
-        .iter()
-        .rposition(|c| match c.source.as_ref().map(|s| &s.kind) {
-            Some(ChunkKind::ToolCall { tool_call_id, .. }) => {
-                *tool_call_id == info.tool_call_id
-            }
-            _ => false,
-        });
+    let target_idx =
+        ctx.scrollback
+            .chunks()
+            .iter()
+            .rposition(|c| match c.source.as_ref().map(|s| &s.kind) {
+                Some(ChunkKind::ToolCall { tool_call_id, .. }) => {
+                    *tool_call_id == info.tool_call_id
+                }
+                _ => false,
+            });
     if let Some(idx) = target_idx {
         let sanitized = info.content.replace('\t', "  ");
         if let Some(chunk) = ctx.scrollback.chunks_mut().get_mut(idx) {
@@ -164,16 +164,16 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
 
 /// Folds ToolProgress under the matching ToolCall card.
 pub fn handle_tool_progress(ctx: &mut SessionContext, info: &ToolProgressInfo) {
-    let target_idx = ctx
-        .scrollback
-        .chunks()
-        .iter()
-        .rposition(|c| match c.source.as_ref().map(|s| &s.kind) {
-            Some(ChunkKind::ToolCall { tool_call_id, .. }) => {
-                *tool_call_id == info.tool_call_id
-            }
-            _ => false,
-        });
+    let target_idx =
+        ctx.scrollback
+            .chunks()
+            .iter()
+            .rposition(|c| match c.source.as_ref().map(|s| &s.kind) {
+                Some(ChunkKind::ToolCall { tool_call_id, .. }) => {
+                    *tool_call_id == info.tool_call_id
+                }
+                _ => false,
+            });
     if let Some(idx) = target_idx {
         if let Some(chunk) = ctx.scrollback.chunks_mut().get_mut(idx) {
             if let Some(source) = chunk.source.as_mut() {

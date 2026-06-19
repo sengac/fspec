@@ -7,7 +7,12 @@
 //! opening, focus traversal, key handling, and the post-confirm
 //! `merge_session_worktree` / `discard_session_worktree` routing.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::too_many_lines
+)]
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -17,9 +22,7 @@ use codelet_fspec_tui::views::agent::merge_confirm_dialog::{
 };
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_rpc_types::{
-    MergeOutcome, MergeStatus, SessionChangesSummary, SessionId,
-};
+use codelet_rpc_types::{MergeOutcome, MergeStatus, SessionChangesSummary, SessionId};
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
@@ -71,9 +74,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -110,7 +116,9 @@ async fn slash_merge_worktree_with_no_session_is_silent_noop() {
     let initial_merge = mock.merge_session_worktree_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::MergeWorktree));
+    app.dispatch(Action::SlashCommandSelected(
+        SlashCommandAction::MergeWorktree,
+    ));
     drain_pending(&mut app).await;
 
     // @step Then no backend method is called
@@ -145,7 +153,9 @@ async fn slash_merge_worktree_with_no_changes_emits_nothing_to_merge() {
     let initial_inspect = mock.inspect_session_changes_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::MergeWorktree));
+    app.dispatch(Action::SlashCommandSelected(
+        SlashCommandAction::MergeWorktree,
+    ));
     drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.inspect_session_changes is called exactly once with session_id "s-1"
@@ -187,7 +197,9 @@ async fn slash_merge_worktree_opens_dialog_on_changes() {
     let initial_inspect = mock.inspect_session_changes_calls();
 
     // @step When SlashCommandSelected(SlashCommandAction::MergeWorktree) is dispatched
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::MergeWorktree));
+    app.dispatch(Action::SlashCommandSelected(
+        SlashCommandAction::MergeWorktree,
+    ));
     drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.inspect_session_changes is called exactly once with session_id "s-1"
@@ -226,7 +238,10 @@ fn merge_confirm_dialog_renders_change_summary() {
     let text = render_dialog(&dialog);
 
     // @step Then the rendered text contains "2 files changed"
-    assert!(text.contains("2 files changed"), "missing '2 files changed': {text}");
+    assert!(
+        text.contains("2 files changed"),
+        "missing '2 files changed': {text}"
+    );
     // @step And the rendered text contains "+10"
     assert!(text.contains("+10"), "missing '+10': {text}");
     // @step And the rendered text contains "-3"
@@ -379,7 +394,9 @@ async fn merge_confirmed_success_emits_success_notice() {
     let initial = mock.merge_session_worktree_calls();
 
     // @step When Action::MergeConfirmed { session_id: "s-1" } is dispatched
-    app.dispatch(Action::MergeConfirmed { session_id: sid("s-1") });
+    app.dispatch(Action::MergeConfirmed {
+        session_id: sid("s-1"),
+    });
     drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.merge_session_worktree is called exactly once with session_id "s-1"
@@ -433,7 +450,9 @@ async fn merge_confirmed_no_changes_emits_nothing_to_merge_notice() {
     drain_pending(&mut app).await;
 
     // @step When Action::MergeConfirmed { session_id: "s-1" } is dispatched
-    app.dispatch(Action::MergeConfirmed { session_id: sid("s-1") });
+    app.dispatch(Action::MergeConfirmed {
+        session_id: sid("s-1"),
+    });
     drain_pending(&mut app).await;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[merge] nothing to merge" is observed on the action bus
@@ -473,7 +492,9 @@ async fn merge_confirmed_conflict_seeds_input() {
     drain_pending(&mut app).await;
 
     // @step When Action::MergeConfirmed { session_id: "s-1" } is dispatched
-    app.dispatch(Action::MergeConfirmed { session_id: sid("s-1") });
+    app.dispatch(Action::MergeConfirmed {
+        session_id: sid("s-1"),
+    });
     drain_pending(&mut app).await;
 
     // @step Then within 1 second Action::SeedPendingInput for s-1 with text containing "Merge produced conflicts" is observed on the action bus
@@ -527,12 +548,17 @@ async fn merge_confirmed_err_emits_error_notice() {
     drain_pending(&mut app).await;
 
     // @step When Action::MergeConfirmed { session_id: "s-1" } is dispatched
-    app.dispatch(Action::MergeConfirmed { session_id: sid("s-1") });
+    app.dispatch(Action::MergeConfirmed {
+        session_id: sid("s-1"),
+    });
     drain_pending(&mut app).await;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /merge-worktree: worktree not found" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1")).contains("[error] /merge-worktree: worktree not found"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[error] /merge-worktree: worktree not found")
+        },
         "error notice",
     )
     .await;
@@ -578,7 +604,9 @@ async fn discard_confirmed_routes_through_backend() {
     let initial = mock.discard_session_worktree_calls();
 
     // @step When Action::DiscardConfirmed { session_id: "s-1" } is dispatched
-    app.dispatch(Action::DiscardConfirmed { session_id: sid("s-1") });
+    app.dispatch(Action::DiscardConfirmed {
+        session_id: sid("s-1"),
+    });
     drain_pending(&mut app).await;
 
     // @step Then within 1 second backend.discard_session_worktree is called exactly once with session_id "s-1"
@@ -628,12 +656,17 @@ async fn discard_confirmed_err_emits_error_notice() {
     drain_pending(&mut app).await;
 
     // @step When Action::DiscardConfirmed { session_id: "s-1" } is dispatched
-    app.dispatch(Action::DiscardConfirmed { session_id: sid("s-1") });
+    app.dispatch(Action::DiscardConfirmed {
+        session_id: sid("s-1"),
+    });
     drain_pending(&mut app).await;
 
     // @step Then within 1 second Action::EmitSessionNotice for s-1 with text "[error] /merge-worktree discard: worktree not found" is observed on the action bus
     wait_until(
-        || session_scrollback_text(&app, &sid("s-1")).contains("[error] /merge-worktree discard: worktree not found"),
+        || {
+            session_scrollback_text(&app, &sid("s-1"))
+                .contains("[error] /merge-worktree discard: worktree not found")
+        },
         "discard error notice",
     )
     .await;

@@ -13,9 +13,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_fspec_tui::views::agent::multiline_input::{
-    InputEventOutcome, MultiLineInput,
-};
+use codelet_fspec_tui::views::agent::multiline_input::{InputEventOutcome, MultiLineInput};
 use codelet_fspec_tui::{Action, AgentView, AgentViewStore, EventResult};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -41,9 +39,7 @@ fn type_chars(view: &mut AgentView, s: &str) {
 /// debounced backend persistence. RPC-019 scenarios were written
 /// before that, so this helper skips the keystroke stream and yields
 /// the next "real" Action (submit / chord / nav).
-fn next_non_pending_input_changed(
-    rx: &mut UnboundedReceiver<Action>,
-) -> Option<Action> {
+fn next_non_pending_input_changed(rx: &mut UnboundedReceiver<Action>) -> Option<Action> {
     loop {
         match rx.try_recv() {
             Ok(Action::PendingInputChanged(_)) => continue,
@@ -61,7 +57,12 @@ fn assert_no_non_pending_action(rx: &mut UnboundedReceiver<Action>) {
     }
 }
 
-fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
+fn render_rows(
+    width: u16,
+    height: u16,
+    store: &mut AgentViewStore,
+    view: &mut AgentView,
+) -> Vec<String> {
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
         view.render_with_store(frame.area(), frame.buffer_mut(), store);
@@ -91,8 +92,7 @@ fn plain_enter_on_multi_line_input_submits_and_resets_the_buffer() {
     let _ = view.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
 
     // @step Then AgentView emits Action::InputSubmitted("hello world")
-    let action = next_non_pending_input_changed(&mut rx)
-        .expect("Action::InputSubmitted on bus");
+    let action = next_non_pending_input_changed(&mut rx).expect("Action::InputSubmitted on bus");
     match action {
         Action::InputSubmitted(s) => assert_eq!(s, "hello world"),
         other => panic!("expected InputSubmitted, got {other:?}"),
@@ -192,16 +192,32 @@ fn empty_multi_line_input_paints_the_dim_placeholder_hint_with_a_green_prefix() 
 
     // @step When the App renders AgentView against a 100x12 TestBackend
     let rows = render_rows(100, 12, &mut store, &mut view);
-    let input_row: String = rows.iter().find(|r| r.contains("Type a message...")).cloned().unwrap_or_default();
+    let input_row: String = rows
+        .iter()
+        .find(|r| r.contains("Type a message..."))
+        .cloned()
+        .unwrap_or_default();
 
     // @step Then the rendered buffer's input row contains the substring "> Type a message..."
-    assert!(input_row.contains("> Type a message..."), "input row missing prompt + hint: {input_row:?}");
+    assert!(
+        input_row.contains("> Type a message..."),
+        "input row missing prompt + hint: {input_row:?}"
+    );
     // @step And the rendered buffer's input row contains the substring "'Shift+↑/↓' history"
-    assert!(input_row.contains("'Shift+↑/↓' history"), "input row missing history hint: {input_row:?}");
+    assert!(
+        input_row.contains("'Shift+↑/↓' history"),
+        "input row missing history hint: {input_row:?}"
+    );
     // @step And the rendered buffer's input row contains the substring "'Shift+←/→' sessions"
-    assert!(input_row.contains("'Shift+←/→' sessions"), "input row missing sessions hint: {input_row:?}");
+    assert!(
+        input_row.contains("'Shift+←/→' sessions"),
+        "input row missing sessions hint: {input_row:?}"
+    );
     // @step And the rendered buffer's input row contains the substring "'Tab' select turn"
-    assert!(input_row.contains("'Tab' select turn"), "input row missing turn hint: {input_row:?}");
+    assert!(
+        input_row.contains("'Tab' select turn"),
+        "input row missing turn hint: {input_row:?}"
+    );
 }
 
 /// Scenario: Non-empty MultiLineInput hides the placeholder hint
@@ -217,9 +233,15 @@ fn non_empty_multi_line_input_hides_the_placeholder_hint() {
     let joined = rows.join("\n");
 
     // @step Then the rendered buffer's input area contains the substring "draft"
-    assert!(joined.contains("draft"), "input area should display 'draft'; got:\n{joined}");
+    assert!(
+        joined.contains("draft"),
+        "input area should display 'draft'; got:\n{joined}"
+    );
     // @step And the rendered buffer does NOT contain the substring "Type a message..."
-    assert!(!joined.contains("Type a message..."), "placeholder should be hidden when input is non-empty");
+    assert!(
+        !joined.contains("Type a message..."),
+        "placeholder should be hidden when input is non-empty"
+    );
 }
 
 /// Scenario: Shift+Up emits Action::HistoryPrev without modifying the buffer
@@ -234,7 +256,10 @@ fn shift_up_emits_action_history_prev_without_modifying_the_buffer() {
 
     // @step Then AgentView emits Action::HistoryPrev
     let action = rx.try_recv().expect("Action::HistoryPrev on bus");
-    assert!(matches!(action, Action::HistoryPrev), "expected HistoryPrev, got {action:?}");
+    assert!(
+        matches!(action, Action::HistoryPrev),
+        "expected HistoryPrev, got {action:?}"
+    );
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
@@ -252,7 +277,10 @@ fn shift_down_emits_action_history_next_without_modifying_the_buffer() {
 
     // @step Then AgentView emits Action::HistoryNext
     let action = rx.try_recv().expect("Action::HistoryNext on bus");
-    assert!(matches!(action, Action::HistoryNext), "expected HistoryNext, got {action:?}");
+    assert!(
+        matches!(action, Action::HistoryNext),
+        "expected HistoryNext, got {action:?}"
+    );
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
@@ -270,7 +298,10 @@ fn shift_left_emits_action_session_prev_without_modifying_the_buffer() {
 
     // @step Then AgentView emits Action::SessionPrev
     let action = rx.try_recv().expect("Action::SessionPrev on bus");
-    assert!(matches!(action, Action::SessionPrev), "expected SessionPrev, got {action:?}");
+    assert!(
+        matches!(action, Action::SessionPrev),
+        "expected SessionPrev, got {action:?}"
+    );
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
@@ -288,7 +319,10 @@ fn shift_right_emits_action_session_next_without_modifying_the_buffer() {
 
     // @step Then AgentView emits Action::SessionNext
     let action = rx.try_recv().expect("Action::SessionNext on bus");
-    assert!(matches!(action, Action::SessionNext), "expected SessionNext, got {action:?}");
+    assert!(
+        matches!(action, Action::SessionNext),
+        "expected SessionNext, got {action:?}"
+    );
 
     // @step And the MultiLineInput's buffer is still exactly "draft"
     assert_eq!(view.input.value(), "draft");
@@ -311,7 +345,10 @@ fn esc_inside_agent_view_emits_action_back_to_board() {
 
     // @step When the user presses ESC
     let result = view.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
-    assert!(matches!(result, EventResult::Consumed(_)), "ESC should be Consumed");
+    assert!(
+        matches!(result, EventResult::Consumed(_)),
+        "ESC should be Consumed"
+    );
 
     // @step Then AgentView emits Action::AgentEscPressed (RPC-051 cascade entry point)
     let action = rx.try_recv().expect("Action::AgentEscPressed on bus");
@@ -331,10 +368,16 @@ fn input_event_outcome_distinguishes_submitted_continued_ignored() {
     let mut input = MultiLineInput::new();
     // Continued — typing a printable char
     let outcome = input.handle_key(KeyCode::Char('a'), KeyModifiers::NONE);
-    assert!(matches!(outcome, InputEventOutcome::Continued), "char => Continued; got {outcome:?}");
+    assert!(
+        matches!(outcome, InputEventOutcome::Continued),
+        "char => Continued; got {outcome:?}"
+    );
     // Continued — Shift+Enter
     let outcome = input.handle_key(KeyCode::Enter, KeyModifiers::SHIFT);
-    assert!(matches!(outcome, InputEventOutcome::Continued), "Shift+Enter => Continued; got {outcome:?}");
+    assert!(
+        matches!(outcome, InputEventOutcome::Continued),
+        "Shift+Enter => Continued; got {outcome:?}"
+    );
     // Submitted — plain Enter
     let outcome = input.handle_key(KeyCode::Enter, KeyModifiers::NONE);
     match outcome {
@@ -343,5 +386,8 @@ fn input_event_outcome_distinguishes_submitted_continued_ignored() {
     }
     // Ignored — Shift+Up (caller forwards as HistoryPrev)
     let outcome = input.handle_key(KeyCode::Up, KeyModifiers::SHIFT);
-    assert!(matches!(outcome, InputEventOutcome::Ignored), "Shift+Up => Ignored; got {outcome:?}");
+    assert!(
+        matches!(outcome, InputEventOutcome::Ignored),
+        "Shift+Up => Ignored; got {outcome:?}"
+    );
 }

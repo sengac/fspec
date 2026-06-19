@@ -10,9 +10,9 @@
 //! ceiling — both files cluster App::dispatch helper impls that touch
 //! the AgentView path.
 
-use crate::components::Action;
 use crate::components::create_session_dialog::CreateSessionOption;
 use crate::components::help_dialog::HelpDialog;
+use crate::components::Action;
 use crate::views::agent::slash_commands::SlashCommandAction;
 
 use codelet_rpc_types::CompactionResult;
@@ -51,8 +51,8 @@ impl App {
                 self.handle_open_search_view();
             }
             SlashCommandAction::Model => {
-                // RPC-022: open the ModelSelectorDialog + spawn list_providers.
-                self.handle_open_model_dialog();
+                // RPC-337: open the full-screen ModelSelector mode-view.
+                let _ = self.action_tx.send(Action::OpenModelSelectorView);
             }
             SlashCommandAction::Thinking => {
                 // RPC-022: open the ThinkingLevelDialog seeded with the
@@ -180,7 +180,7 @@ impl App {
         // RPC-022 slash-command interception.
         match parse_slash_command(&text) {
             SlashCommandParse::OpenModelDialog => {
-                self.handle_open_model_dialog();
+                let _ = self.action_tx.send(Action::OpenModelSelectorView); // RPC-337 mode-view
                 return;
             }
             SlashCommandParse::OpenThinkingDialog => {
@@ -228,9 +228,7 @@ impl App {
             SlashCommandParse::ScheduleSubcommand(sub) => {
                 // RPC-058: route the parsed `/schedule …` subcommand
                 // through the dedicated dispatcher in dispatch_rpc058.rs.
-                let _ = self
-                    .action_tx
-                    .send(Action::ScheduleSubcommandParsed(sub));
+                let _ = self.action_tx.send(Action::ScheduleSubcommandParsed(sub));
                 return;
             }
             SlashCommandParse::LoopSubcommand(sub) => {
@@ -247,10 +245,9 @@ impl App {
         // The stub `rpc-no-session-manager` session has no broadcaster
         // so it pushes a `You:` line + `[notice]` here manually.
         if session.value == "rpc-no-session-manager" {
-            self.navigator.agent.push_line(
-                &mut self.agent_view_store,
-                format!("You: {text}"),
-            );
+            self.navigator
+                .agent
+                .push_line(&mut self.agent_view_store, format!("You: {text}"));
             self.navigator.agent.push_line(
                 &mut self.agent_view_store,
                 "[notice] no LLM session manager attached — input recorded but \

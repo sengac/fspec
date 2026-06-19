@@ -44,7 +44,12 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) {
         height: area.height,
     };
     let logo_w = logo::LOGO_WIDTH.min(padded.width);
-    let left = Rect { x: padded.x, y: padded.y, width: logo_w, height: padded.height };
+    let left = Rect {
+        x: padded.x,
+        y: padded.y,
+        width: logo_w,
+        height: padded.height,
+    };
     logo::render(left, buf);
     // The right column begins immediately after the logo block. The TS
     // logo glyph row already ends with a trailing space, so no extra
@@ -60,7 +65,12 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) {
     }
     // Row 0: checkpoint status (matches TS: <CheckpointStatus /> is the
     // first child of the right-hand column → top row of the header).
-    let row0 = Rect { x: right_start_x, y: padded.y, width: right_w, height: 1 };
+    let row0 = Rect {
+        x: right_start_x,
+        y: padded.y,
+        width: right_w,
+        height: 1,
+    };
     checkpoint_status::render(row0, buf, store.checkpoint_counts());
     // Row 2: `─` divider line (TS `borderTop` on KeybindingShortcuts).
     let divider_y = padded.y + 2;
@@ -69,6 +79,11 @@ pub fn paint(area: Rect, buf: &mut Buffer, store: &BoardStore, theme: &Theme) {
         buf.set_string(x, divider_y, "─", divider_style);
     }
     // Row 3: keybinding chord.
-    let row3 = Rect { x: right_start_x, y: padded.y + 3, width: right_w, height: 1 };
+    let row3 = Rect {
+        x: right_start_x,
+        y: padded.y + 3,
+        width: right_w,
+        height: 1,
+    };
     keybinding_shortcuts::render(row3, buf, theme);
 }

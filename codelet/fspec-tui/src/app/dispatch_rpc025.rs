@@ -63,11 +63,11 @@ impl App {
         let action_tx = self.action_tx.clone();
         let session_for_task = session.clone();
         let handle = tokio::spawn(async move {
-            if let Ok(snapshot) =
-                backend.persistence_get_history(session_for_task.clone(), 100).await
+            if let Ok(snapshot) = backend
+                .persistence_get_history(session_for_task.clone(), 100)
+                .await
             {
-                let _ = action_tx
-                    .send(Action::HistorySnapshotLoaded(session_for_task, snapshot));
+                let _ = action_tx.send(Action::HistorySnapshotLoaded(session_for_task, snapshot));
             }
         });
         self.pending_tasks.push(handle);

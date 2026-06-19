@@ -33,9 +33,7 @@ use codelet_fspec_tui::components::error_dialog::{ErrorDialog, ERROR_DIALOG_ID};
 use codelet_fspec_tui::components::notification_dialog::{
     NotificationDialog, NotificationSeverity, NOTIFICATION_DIALOG_ID,
 };
-use codelet_fspec_tui::components::status_dialog::{
-    StatusDialog, StatusKind, STATUS_DIALOG_ID,
-};
+use codelet_fspec_tui::components::status_dialog::{StatusDialog, StatusKind, STATUS_DIALOG_ID};
 use codelet_fspec_tui::components::{Action, Component, EventResult, Priority};
 use codelet_fspec_tui::compositor::Compositor;
 
@@ -92,7 +90,10 @@ async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal(
     // (Border style is enforced by dialog_theme::render_dialog via Accent::Red —
     // we anchor on the rounded corner glyphs being present and centered.)
     assert!(text.contains("\u{256d}"), "missing rounded top-left corner");
-    assert!(text.contains("\u{256e}"), "missing rounded top-right corner");
+    assert!(
+        text.contains("\u{256e}"),
+        "missing rounded top-right corner"
+    );
 
     // @step Then the title row reads "Error" in bold Color::Red
     assert!(text.contains("Error"), "missing Error title");
@@ -101,7 +102,10 @@ async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal(
     assert!(text.contains("Disk full"), "missing body");
 
     // @step Then the footer reads "Press ESC to dismiss" in dim style centered horizontally
-    assert!(text.contains("Press ESC to dismiss"), "missing dismiss footer");
+    assert!(
+        text.contains("Press ESC to dismiss"),
+        "missing dismiss footer"
+    );
 
     // @step Then no auto-dismiss Callback fires for at least 5 seconds
     // (ErrorDialog is sticky — verified by the absence of any spawned timer
@@ -125,9 +129,15 @@ async fn error_dialog_renders_red_bordered_modal_with_sticky_esc_only_dismissal(
             compositor.push(Box::new(ErrorDialog::new("Disk full")));
             assert!(compositor.contains(ERROR_DIALOG_ID));
             cb(&mut compositor);
-            assert!(!compositor.contains(ERROR_DIALOG_ID), "ESC must remove dialog");
+            assert!(
+                !compositor.contains(ERROR_DIALOG_ID),
+                "ESC must remove dialog"
+            );
         }
-        other => panic!("expected Consumed(Some(cb)), got is_consumed={:?}", other.is_consumed()),
+        other => panic!(
+            "expected Consumed(Some(cb)), got is_consumed={:?}",
+            other.is_consumed()
+        ),
     }
 }
 
@@ -141,8 +151,8 @@ async fn notification_dialog_success_shows_cyan_border_green_title_and_2s_countd
 
     // @step Given a NotificationDialog constructed with message "Saved" and severity Success
     // @step Given auto_dismiss_ms is left at its default of 2000
-    let mut dialog = NotificationDialog::new("Saved", NotificationSeverity::Success)
-        .with_action_tx(tx);
+    let mut dialog =
+        NotificationDialog::new("Saved", NotificationSeverity::Success).with_action_tx(tx);
 
     assert_eq!(dialog.severity(), NotificationSeverity::Success);
     assert_eq!(dialog.auto_dismiss_ms(), 2000);
@@ -248,7 +258,10 @@ async fn notification_dialog_warning_sticky_yellow_border_when_auto_dismiss_zero
             cb(&mut compositor);
             assert!(!compositor.contains(NOTIFICATION_DIALOG_ID));
         }
-        other => panic!("expected Consumed(Some(cb)); is_consumed={:?}", other.is_consumed()),
+        other => panic!(
+            "expected Consumed(Some(cb)); is_consumed={:?}",
+            other.is_consumed()
+        ),
     }
 }
 
@@ -357,7 +370,10 @@ async fn status_dialog_transitions_restoring_to_complete_with_green_title_and_3s
             cb(&mut compositor);
             assert!(!compositor.contains(STATUS_DIALOG_ID));
         }
-        other => panic!("expected Consumed(Some(cb)); is_consumed={:?}", other.is_consumed()),
+        other => panic!(
+            "expected Consumed(Some(cb)); is_consumed={:?}",
+            other.is_consumed()
+        ),
     }
 }
 
@@ -390,7 +406,10 @@ async fn status_dialog_transitions_restoring_to_error_with_red_border_and_esc_di
     // @step Then no auto-dismiss Callback fires
     tokio::time::advance(Duration::from_secs(10)).await;
     tokio::task::yield_now().await;
-    assert!(rx.try_recv().is_err(), "Error state must never auto-dismiss");
+    assert!(
+        rx.try_recv().is_err(),
+        "Error state must never auto-dismiss"
+    );
 
     // @step When the dialog receives a KeyCode::Esc event
     let result = dialog.handle_event(&key(KeyCode::Esc));
@@ -500,7 +519,10 @@ fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() {
             "FspecDialog literal at {file:?}:{lineno} not in render-like fn: line={line:?}, sig={fn_sig:?}"
         );
         let fn_body = &body[fn_sig_end..];
-        let next_fn = fn_body[1..].find("\nfn ").map(|i| i + 1).unwrap_or(fn_body.len());
+        let next_fn = fn_body[1..]
+            .find("\nfn ")
+            .map(|i| i + 1)
+            .unwrap_or(fn_body.len());
         let fn_body_only = &fn_body[..next_fn];
         assert!(
             fn_body_only.contains("render_dialog("),
@@ -521,10 +543,10 @@ fn no_raw_fspec_dialog_literals_outside_render_methods_in_non_test_code() {
 
 #[test]
 fn error_dialog_is_shown_when_llm_provider_error_chunk_arrives() {
-    use std::sync::Arc;
     use codelet_fspec_tui::{App, FspecBackend};
     use codelet_rpc_types::{SessionId, StreamChunk};
     use common::MockBackend;
+    use std::sync::Arc;
 
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
@@ -592,10 +614,10 @@ fn error_dialog_is_shown_when_llm_provider_error_chunk_arrives() {
 
 #[test]
 fn end_to_end_app_render_paints_error_dialog_modal_on_top_of_agentview() {
-    use std::sync::Arc;
     use codelet_fspec_tui::{App, FspecBackend};
     use codelet_rpc_types::{SessionId, StreamChunk};
     use common::MockBackend;
+    use std::sync::Arc;
 
     // @step Given an App with an active session s-1 routed to the AgentView and no error dialog currently on the compositor
     let mock = Arc::new(MockBackend::new());

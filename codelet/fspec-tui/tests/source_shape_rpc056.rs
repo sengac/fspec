@@ -41,7 +41,14 @@ fn rpc_types_exports_blocklist_rule_info() {
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ");
-    for field in ["pub id:", "pub pattern:", "pub action:", "pub reason:", "pub guidance:", "pub source:"] {
+    for field in [
+        "pub id:",
+        "pub pattern:",
+        "pub action:",
+        "pub reason:",
+        "pub guidance:",
+        "pub source:",
+    ] {
         assert!(
             normalised.contains(field),
             "BlocklistRuleInfo should declare field {field:?}; normalised text was searched"
@@ -146,14 +153,12 @@ fn fspec_backend_declares_blocklist_list() {
 #[test]
 fn both_transports_implement_blocklist_list() {
     // @step Given the files codelet/fspec-tui/src/transport/embedded.rs and codelet/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"),
-    )
-    .expect("read transport/embedded.rs");
-    let websocket = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"),
-    )
-    .expect("read transport/websocket.rs");
+    let embedded =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"))
+            .expect("read transport/embedded.rs");
+    let websocket =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"))
+            .expect("read transport/websocket.rs");
 
     // @step Then each file contains an impl of "blocklist_list" that calls the corresponding tarpc client method
     assert!(
@@ -216,7 +221,9 @@ fn navigator_declares_view_mode_blocklist() {
     // @step Then ViewMode declares a variant named "Blocklist"
     // The variant could be either `Blocklist,` (bare) or `Blocklist {` (struct variant).
     assert!(
-        source.contains("Blocklist,") || source.contains("Blocklist\n") || source.contains("Blocklist {"),
+        source.contains("Blocklist,")
+            || source.contains("Blocklist\n")
+            || source.contains("Blocklist {"),
         "navigator.rs should declare a ViewMode::Blocklist variant"
     );
 }

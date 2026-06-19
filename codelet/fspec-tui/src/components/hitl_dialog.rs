@@ -90,8 +90,7 @@ impl HitlDialog {
     /// Total number of selectable rows: every option + 1 free-text row
     /// when `allow_text_input`.
     pub fn selectable_row_count(&self) -> usize {
-        self.request.options.len()
-            + if self.request.allow_text_input { 1 } else { 0 }
+        self.request.options.len() + if self.request.allow_text_input { 1 } else { 0 }
     }
 
     /// True iff the currently-selected row is the free-text input row.
@@ -229,10 +228,7 @@ impl HitlDialog {
                 self.text.clone()
             };
             rows.push(DialogRow {
-                spans: vec![
-                    Span::raw("> ".to_string()),
-                    Span::raw(buf),
-                ],
+                spans: vec![Span::raw("> ".to_string()), Span::raw(buf)],
                 selectable: true,
                 selected: is_selected,
             });
@@ -258,9 +254,9 @@ impl Component for HitlDialog {
                     if self.is_free_text_selected() {
                         return self.submit_free_text();
                     }
-                    let option_idx = self.selected.min(
-                        self.request.options.len().saturating_sub(1),
-                    );
+                    let option_idx = self
+                        .selected
+                        .min(self.request.options.len().saturating_sub(1));
                     return self.submit_option(option_idx);
                 }
                 KeyCode::Tab | KeyCode::Down => {
@@ -363,7 +359,10 @@ mod tests {
         let mut dialog = HitlDialog::new(SessionId::new("s-1"), req());
         let _ = dialog.handle_event(&key(KeyCode::Char('a')));
         match dialog.take_pending_action() {
-            Some(Action::HitlSubmitted { session_id, response }) => {
+            Some(Action::HitlSubmitted {
+                session_id,
+                response,
+            }) => {
                 assert_eq!(session_id, SessionId::new("s-1"));
                 assert_eq!(response.id, "q-1");
                 assert_eq!(response.value, "Yes");

@@ -163,7 +163,11 @@ fn expanding_anthropic_without_oauth_tokens_injects_oauth_login_and_api_key_chil
     let items = build_nav_items(&providers, &expanded, "");
 
     // @step Then the row immediately after anthropic is NavItemKind::OAuthLogin { method: Browser }
-    assert_eq!(items.len(), 4, "expected provider + 2 oauth-login + 1 api-key");
+    assert_eq!(
+        items.len(),
+        4,
+        "expected provider + 2 oauth-login + 1 api-key"
+    );
     assert!(matches!(
         items[0].kind,
         NavItemKind::Provider { expanded: true }
@@ -209,7 +213,11 @@ fn expanding_openai_with_profiles_injects_profile_rows_and_add_profile() {
     let items = build_nav_items(&providers, &expanded, "");
 
     // @step Then the rows immediately after openai are NavItemKind::Profile { profile_name: "prof1" } then NavItemKind::Profile { profile_name: "prof2" }
-    assert_eq!(items.len(), 4, "expected provider + 2 profiles + add-profile");
+    assert_eq!(
+        items.len(),
+        4,
+        "expected provider + 2 profiles + add-profile"
+    );
     assert!(matches!(
         items[0].kind,
         NavItemKind::Provider { expanded: true }
@@ -294,10 +302,7 @@ fn expanding_anthropic_with_oauth_tokens_prepends_oauth_status_row() {
 #[test]
 fn filter_is_parent_anchored() {
     // @step Given a ProviderSettingsView with anthropic and openai both expanded
-    let providers = vec![
-        anthropic(false),
-        openai_with_profiles(&["prof1", "prof2"]),
-    ];
+    let providers = vec![anthropic(false), openai_with_profiles(&["prof1", "prof2"])];
     // @step And openai has 2 profiles
     // (encoded above)
     let expanded = expanded_set(&["anthropic", "openai"]);
@@ -398,7 +403,7 @@ fn enter_on_provider_toggles_expansion_without_mutating_selected_index() {
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(vec![api_key_provider("gemini", "Gemini"), anthropic(false)]);
     view.selected_index = 1; // anthropic
-    // @step And anthropic is currently collapsed (not in the expanded set)
+                             // @step And anthropic is currently collapsed (not in the expanded set)
     assert!(!view.expanded.contains("anthropic"));
     let initial_selected = view.selected_index;
 
@@ -411,14 +416,22 @@ fn enter_on_provider_toggles_expansion_without_mutating_selected_index() {
         "Enter on a Provider NavItem must toggle expansion"
     );
     // @step And selected_index still points at the anthropic provider row
-    assert_eq!(view.selected_index, initial_selected, "selected_index must not mutate on toggle");
+    assert_eq!(
+        view.selected_index, initial_selected,
+        "selected_index must not mutate on toggle"
+    );
     // @step And the anthropic child rows now appear immediately below selected_index in nav_items
     let anth_idx = view
         .nav_items
         .iter()
-        .position(|n| n.provider_id == "anthropic" && matches!(n.kind, NavItemKind::Provider { .. }))
+        .position(|n| {
+            n.provider_id == "anthropic" && matches!(n.kind, NavItemKind::Provider { .. })
+        })
         .unwrap();
-    let next = view.nav_items.get(anth_idx + 1).expect("must have a child row");
+    let next = view
+        .nav_items
+        .get(anth_idx + 1)
+        .expect("must have a child row");
     assert_eq!(next.provider_id, "anthropic");
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
 

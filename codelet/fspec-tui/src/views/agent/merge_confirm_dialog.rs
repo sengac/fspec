@@ -112,11 +112,7 @@ impl MergeConfirmDialog {
     /// Esc emits `Cancel` regardless of focused button; Tab/Right cycle
     /// focus forward; Shift+Tab/Left cycle focus backward; Enter
     /// confirms the focused button.
-    pub fn handle_key(
-        &mut self,
-        code: KeyCode,
-        mods: KeyModifiers,
-    ) -> MergeConfirmDialogOutcome {
+    pub fn handle_key(&mut self, code: KeyCode, mods: KeyModifiers) -> MergeConfirmDialogOutcome {
         if mods.contains(KeyModifiers::CONTROL) || mods.contains(KeyModifiers::ALT) {
             return MergeConfirmDialogOutcome::Ignored;
         }
@@ -159,7 +155,11 @@ impl MergeConfirmDialog {
             self.summary.insertions,
             self.summary.deletions,
             self.summary.commits.len(),
-            if self.summary.commits.len() == 1 { "" } else { "s" }
+            if self.summary.commits.len() == 1 {
+                ""
+            } else {
+                "s"
+            }
         );
         DialogRow {
             spans: vec![Span::raw(text)],

@@ -1,0 +1,39 @@
+{
+  "scenarios": [
+    {
+      "name": "Switch from Provider Settings to the model selector with Tab",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc337_navigator_model_selector.rs",
+          "lines": "92-114",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc337_navigator_model_selector.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/navigator_events.rs"
+    ],
+    "totalLinesCovered": 30
+  }
+}

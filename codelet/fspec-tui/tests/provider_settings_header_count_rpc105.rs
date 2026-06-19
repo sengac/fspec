@@ -12,9 +12,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_fspec_tui::views::provider_settings::nav_item::{
-    OAuthMethod, ProviderDisplayInfo,
-};
+use codelet_fspec_tui::views::provider_settings::nav_item::{OAuthMethod, ProviderDisplayInfo};
 use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsView};
 use codelet_rpc_types::ProviderCredentialInfo;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};

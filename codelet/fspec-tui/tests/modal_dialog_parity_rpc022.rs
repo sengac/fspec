@@ -60,6 +60,8 @@ fn fixture_openai_provider() -> ProviderInfo {
             supports_vision: false,
             is_custom: false,
         }],
+        profile_name: None,
+        is_unreachable: false,
     }
 }
 
@@ -105,11 +107,8 @@ async fn list_providers_crosses_tarpc_cleanly_when_no_session_manager_attached()
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.list_providers().await is invoked
     let providers = backend.list_providers().await.expect("list_providers");
     // @step Then the awaited result is Ok(vec![])
@@ -133,14 +132,17 @@ async fn both_transports_return_identical_providers_for_the_same_shared_service(
         Arc::clone(&service),
     ));
     // @step And a WebSocketFspecBackend connected to the rpc-server
-    let websocket: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let websocket: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.list_providers().await is invoked on BOTH backends
-    let embedded_providers = embedded.list_providers().await.expect("embedded list_providers");
-    let websocket_providers = websocket.list_providers().await.expect("websocket list_providers");
+    let embedded_providers = embedded
+        .list_providers()
+        .await
+        .expect("embedded list_providers");
+    let websocket_providers = websocket
+        .list_providers()
+        .await
+        .expect("websocket list_providers");
     // @step Then both awaited results are equal
     assert_eq!(embedded_providers, expected);
     assert_eq!(websocket_providers, expected);
@@ -179,11 +181,8 @@ async fn set_session_model_crosses_tarpc_cleanly_when_no_session_manager_attache
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.set_session_model(SessionId::new("anything"), "openai".to_string(), "gpt-5.1-codex".to_string()).await is invoked
     let result = backend
         .set_session_model(
@@ -224,11 +223,8 @@ async fn set_thinking_level_crosses_tarpc_cleanly_with_safe_default() {
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.set_thinking_level(SessionId::new("anything"), ThinkingLevel::Medium).await is invoked
     let result = backend
         .set_thinking_level(SessionId::new("anything"), ThinkingLevel::Medium)
@@ -266,11 +262,8 @@ async fn get_session_role_crosses_tarpc_cleanly_with_safe_default() {
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.get_session_role(SessionId::new("anything")).await is invoked
     let role = backend
         .get_session_role(SessionId::new("anything"))
@@ -314,11 +307,8 @@ async fn set_session_role_crosses_tarpc_cleanly_with_safe_default() {
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.set_session_role(SessionId::new("anything"), Some("Reviewer A".to_string())).await is invoked
     backend
         .set_session_role(SessionId::new("anything"), Some("Reviewer A".to_string()))

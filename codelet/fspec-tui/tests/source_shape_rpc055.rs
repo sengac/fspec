@@ -63,7 +63,9 @@ fn fspec_service_declares_set_debug_directory() {
     );
     assert!(
         source.contains("set_debug_directory(path: String) -> Result<(), String>")
-            || source.contains("set_debug_directory(\n        path: String,\n    ) -> Result<(), String>"),
+            || source.contains(
+                "set_debug_directory(\n        path: String,\n    ) -> Result<(), String>"
+            ),
         "rpc/src/lib.rs should declare set_debug_directory(path: String) -> Result<(), String>"
     );
 }
@@ -86,14 +88,12 @@ fn fspec_backend_declares_set_debug_directory() {
 #[test]
 fn both_transports_implement_set_debug_directory() {
     // @step Given the files codelet/fspec-tui/src/transport/embedded.rs and codelet/fspec-tui/src/transport/websocket.rs are compiled
-    let embedded = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"),
-    )
-    .expect("read transport/embedded.rs");
-    let websocket = fs::read_to_string(
-        workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"),
-    )
-    .expect("read transport/websocket.rs");
+    let embedded =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/embedded.rs"))
+            .expect("read transport/embedded.rs");
+    let websocket =
+        fs::read_to_string(workspace_root().join("codelet/fspec-tui/src/transport/websocket.rs"))
+            .expect("read transport/websocket.rs");
 
     // @step Then each file contains an impl of "set_debug_directory" that calls the corresponding tarpc client method
     assert!(

@@ -97,9 +97,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -114,7 +117,10 @@ fn fresh_app_with_session(work_unit: Option<&str>) -> (App, Arc<MockBackend>) {
         // Bind by dispatching the Attached action directly (bypasses the
         // BoardView attach path; the chrome path tests the bound state
         // assertion in isolation from the attach round-trip).
-        app.dispatch(Action::WorkUnitAttached(sid("s-1"), ctx(wu, "implementing")));
+        app.dispatch(Action::WorkUnitAttached(
+            sid("s-1"),
+            ctx(wu, "implementing"),
+        ));
     }
     (app, mock)
 }
@@ -192,10 +198,11 @@ async fn detach_with_bound_work_unit_clears_binding_scrollback_and_token_state()
 
     // @step And within 1 second AgentViewStore.work_unit_context_for(s-1) returns None
     wait_until(
-        || app
-            .agent_view_store()
-            .work_unit_context_for(&sid("s-1"))
-            .is_none(),
+        || {
+            app.agent_view_store()
+                .work_unit_context_for(&sid("s-1"))
+                .is_none()
+        },
         "work_unit_context_for(s-1) to clear",
     )
     .await;

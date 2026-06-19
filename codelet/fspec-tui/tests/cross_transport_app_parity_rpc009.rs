@@ -30,10 +30,7 @@ async fn render_app_rows(app: &mut App) -> Vec<String> {
 /// Wait up to `timeout` for the next Action on the App's bus, then
 /// dispatch it through the App so the RootView/Compositor see it.
 #[allow(dead_code)]
-async fn wait_and_dispatch(
-    app: &mut App,
-    timeout: Duration,
-) -> Option<codelet_fspec_tui::Action> {
+async fn wait_and_dispatch(app: &mut App, timeout: Duration) -> Option<codelet_fspec_tui::Action> {
     let deadline = std::time::Instant::now() + timeout;
     while std::time::Instant::now() < deadline {
         if let Some(action) = app.try_recv_action() {

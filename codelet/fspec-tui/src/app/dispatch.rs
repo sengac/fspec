@@ -262,7 +262,8 @@ impl App {
             Action::SessionResumeComplete(id) => self.handle_session_resume_complete(id.clone()),
             // RPC-022/050/053/054/056/057/058/059/060/061/079: try_dispatch_* fallbacks (keep <300 LoC).
             _ => {
-                let _ = self.try_dispatch_rpc022(&action)
+                let _ = self.try_dispatch_rpc337(&action)
+                    || self.try_dispatch_rpc022(&action)
                     || self.try_dispatch_rpc053(&action)
                     || self.try_dispatch_rpc054(&action)
                     || self.try_dispatch_rpc056(&action)

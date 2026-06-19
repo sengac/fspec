@@ -53,8 +53,7 @@ impl App {
     pub(crate) fn handle_open_agent_view(&mut self, target: Option<SessionId>) {
         match target {
             Some(sid) => {
-                self.agent_view_store
-                    .set_navigation_target(Some(sid));
+                self.agent_view_store.set_navigation_target(Some(sid));
                 self.navigator.active_view = ViewMode::Agent;
             }
             None => {
@@ -107,7 +106,8 @@ impl App {
                 //   * wires action_tx for CreateSessionSubmitted /
                 //     CreateSessionCancelled, and
                 //   * is idempotent on CREATE_SESSION_DIALOG_ID.
-                self.agent_view_store.request_create_session_dialog_no_auto();
+                self.agent_view_store
+                    .request_create_session_dialog_no_auto();
                 self.handle_open_create_session_dialog(None);
             }
             NavTarget::Board => {

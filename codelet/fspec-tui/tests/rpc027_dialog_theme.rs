@@ -28,8 +28,8 @@ use ratatui::text::Span;
 use ratatui::Terminal;
 
 use codelet_fspec_tui::components::dialog_theme::{
-    dialog_rect, render_dialog, Accent, DialogRow, FspecDialog,
-    FOOTER_SEPARATOR, MARKER_SELECTED, MARKER_UNSELECTED,
+    dialog_rect, render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR, MARKER_SELECTED,
+    MARKER_UNSELECTED,
 };
 use codelet_fspec_tui::components::dialog_theme_rows::label_description_row;
 

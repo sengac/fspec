@@ -127,10 +127,7 @@ impl Component for ThinkingLevelDialog {
                 }
                 KeyCode::Enter => {
                     let level = self.selected_level();
-                    let action = Action::ThinkingLevelSelected(
-                        self.session_id.clone(),
-                        level,
-                    );
+                    let action = Action::ThinkingLevelSelected(self.session_id.clone(), level);
                     self.emit_action(action);
                     let id = self.id.clone();
                     let callback: Callback = Box::new(move |compositor| {
@@ -143,10 +140,7 @@ impl Component for ThinkingLevelDialog {
                 // ThinkingLevelDialog.tsx lines 93-96).
                 KeyCode::Char('d') | KeyCode::Char('D') => {
                     let level = self.selected_level();
-                    let action = Action::SetThinkingLevelDefault(
-                        self.session_id.clone(),
-                        level,
-                    );
+                    let action = Action::SetThinkingLevelDefault(self.session_id.clone(), level);
                     self.emit_action(action);
                     return EventResult::consumed();
                 }
@@ -202,7 +196,9 @@ mod tests {
 
     #[test]
     fn thinking_level_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
-        let session_id = SessionId { value: "test-session".to_string() };
+        let session_id = SessionId {
+            value: "test-session".to_string(),
+        };
         let mut dialog = ThinkingLevelDialog::new(session_id, ThinkingLevel::Off);
         let backend = TestBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");

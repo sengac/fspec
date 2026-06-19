@@ -21,8 +21,8 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_fspec_tui::AgentViewStore;
 use codelet_fspec_tui::store::SessionContext;
+use codelet_fspec_tui::AgentViewStore;
 use codelet_rpc_types::SessionId;
 
 fn sid(s: &str) -> SessionId {
@@ -209,7 +209,7 @@ fn session_context_mut_for_routes_chunks_by_id() {
     store.append_session(SessionContext::new(sid("s-1")));
     store.append_session(SessionContext::new(sid("s-2")));
     store.focus_session_index(0); // focus s-1
-    // @step And current_session_index is 0
+                                  // @step And current_session_index is 0
     assert_eq!(store.current_session_index(), 0);
     // @step And open_sessions[1].scrollback contains 0 chunks
     assert_eq!(store.open_sessions()[1].scrollback.chunk_count(), 0);
@@ -252,6 +252,9 @@ fn session_index_is_derived_from_current_index_plus_one_and_len() {
     // @step Then session_index() returns (current_session_index + 1, len)
     assert_eq!(
         store.session_index(),
-        (store.current_session_index() + 1, store.open_sessions().len())
+        (
+            store.current_session_index() + 1,
+            store.open_sessions().len()
+        )
     );
 }

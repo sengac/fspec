@@ -44,6 +44,9 @@ pub fn format_text(counts: CheckpointCounts) -> String {
     if counts.manual == 0 && counts.auto == 0 {
         "Checkpoints: None".to_string()
     } else {
-        format!("Checkpoints: {} Manual, {} Auto", counts.manual, counts.auto)
+        format!(
+            "Checkpoints: {} Manual, {} Auto",
+            counts.manual, counts.auto
+        )
     }
 }

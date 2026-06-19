@@ -97,8 +97,7 @@ pub async fn start_ws_server_with_stats(
 /// helper for WS-connect tests so each call site doesn't repeat the
 /// scheme + path concatenation.
 pub fn ws_url(addr: SocketAddr) -> url::Url {
-    url::Url::parse(&format!("ws://{addr}/"))
-        .expect("ws://<addr>/ is always a valid URL")
+    url::Url::parse(&format!("ws://{addr}/")).expect("ws://<addr>/ is always a valid URL")
 }
 
 /// Resolve a path relative to the codelet workspace root.
@@ -180,9 +179,9 @@ pub fn strip_rust_comments(src: &str) -> String {
 // publisher per architecture note [10]).
 // ─────────────────────────────────────────────────────────────────────────
 
-use std::sync::Mutex;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -522,20 +521,16 @@ pub struct MockBackend {
     // ── RPC-058 /schedule surface ────────────────────────────────────
     /// RPC-058: seeded `Result<ScheduledJob, String>` returned by
     /// `schedule_add`. Defaults to `Ok(ScheduledJob::default())`.
-    schedule_add_result:
-        Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
+    schedule_add_result: Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
     /// RPC-058: seeded `Result<Vec<ScheduledJob>, String>` returned by
     /// `schedule_list`.
-    schedule_list_result:
-        Mutex<std::result::Result<Vec<codelet_rpc_types::ScheduledJob>, String>>,
+    schedule_list_result: Mutex<std::result::Result<Vec<codelet_rpc_types::ScheduledJob>, String>>,
     /// RPC-058: seeded `Result<ScheduledJob, String>` returned by
     /// `schedule_pause`.
-    schedule_pause_result:
-        Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
+    schedule_pause_result: Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
     /// RPC-058: seeded `Result<ScheduledJob, String>` returned by
     /// `schedule_resume`.
-    schedule_resume_result:
-        Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
+    schedule_resume_result: Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
     /// RPC-058: seeded `Result<(), String>` returned by `schedule_remove`.
     schedule_remove_result: Mutex<std::result::Result<(), String>>,
     /// RPC-058: per-call counters.
@@ -548,22 +543,19 @@ pub struct MockBackend {
     // ── RPC-059 /loop surface ────────────────────────────────────────
     /// RPC-059: seeded `Result<RegisteredLoop, String>` returned by
     /// `loop_add`. Defaults to `Ok(RegisteredLoop::default())`.
-    loop_add_result:
-        Mutex<std::result::Result<codelet_rpc_types::RegisteredLoop, String>>,
+    loop_add_result: Mutex<std::result::Result<codelet_rpc_types::RegisteredLoop, String>>,
     /// RPC-059: seeded `Result<bool, String>` returned by `loop_cancel`.
     loop_cancel_result: Mutex<std::result::Result<bool, String>>,
     /// RPC-059: seeded `Result<Vec<RegisteredLoop>, String>` returned by
     /// `loop_list`.
-    loop_list_result:
-        Mutex<std::result::Result<Vec<codelet_rpc_types::RegisteredLoop>, String>>,
+    loop_list_result: Mutex<std::result::Result<Vec<codelet_rpc_types::RegisteredLoop>, String>>,
     /// RPC-059: per-call counters.
     loop_add_calls: AtomicUsize,
     loop_cancel_calls: AtomicUsize,
     loop_list_calls: AtomicUsize,
     /// RPC-060: seeded `Result<IsolatedSessionInfo, String>` returned by
     /// `create_isolated_session`.
-    create_isolated_session_result:
-        Mutex<std::result::Result<IsolatedSessionInfo, String>>,
+    create_isolated_session_result: Mutex<std::result::Result<IsolatedSessionInfo, String>>,
     /// RPC-060: per-call counter for `create_isolated_session`.
     create_isolated_session_calls: AtomicUsize,
     /// RPC-061: scripted per-session supervisors list returned by
@@ -857,10 +849,16 @@ impl MockBackend {
         self.interrupt_calls.load(Ordering::SeqCst)
     }
     pub fn last_send_input(&self) -> Option<(SessionId, String)> {
-        self.last_send_input.lock().expect("MockBackend mutex").clone()
+        self.last_send_input
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
     }
     pub fn last_interrupt(&self) -> Option<SessionId> {
-        self.last_interrupt.lock().expect("MockBackend mutex").clone()
+        self.last_interrupt
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
     }
 
     /// RPC-098: count of `destroy_session` calls observed by this mock.
@@ -956,11 +954,11 @@ impl MockBackend {
     /// RPC-026: preload the result list returned by
     /// `persistence_search_history`. The same Vec is returned for
     /// every query — tests script the desired outcome up front.
-    pub fn set_history_search_results(
-        &self,
-        results: Vec<codelet_rpc_types::HistoryMatch>,
-    ) {
-        *self.history_search_results.lock().expect("MockBackend mutex") = results;
+    pub fn set_history_search_results(&self, results: Vec<codelet_rpc_types::HistoryMatch>) {
+        *self
+            .history_search_results
+            .lock()
+            .expect("MockBackend mutex") = results;
     }
 
     /// RPC-026: how many times `persistence_search_history` was awaited.
@@ -1137,10 +1135,7 @@ impl MockBackend {
     /// RPC-049: force the next `resume_session` call to fail with the
     /// supplied message — exercises the error-notice branch.
     pub fn set_resume_session_error(&self, message: String) {
-        *self
-            .resume_session_error
-            .lock()
-            .expect("MockBackend mutex") = Some(message);
+        *self.resume_session_error.lock().expect("MockBackend mutex") = Some(message);
     }
 
     /// RPC-049: script the replay-buffer returned by
@@ -1247,13 +1242,19 @@ impl MockBackend {
     /// RPC-052: force the next `get_pending_input` call to fail with
     /// the supplied message.
     pub fn set_get_pending_input_error(&self, message: String) {
-        *self.get_pending_input_error.lock().expect("MockBackend mutex") = Some(message);
+        *self
+            .get_pending_input_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
     }
 
     /// RPC-052: force the next `set_pending_input` call to fail with
     /// the supplied message.
     pub fn set_set_pending_input_error(&self, message: String) {
-        *self.set_pending_input_error.lock().expect("MockBackend mutex") = Some(message);
+        *self
+            .set_pending_input_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
     }
 
     // ── RPC-053 helpers ──────────────────────────────────────────────────
@@ -1341,12 +1342,18 @@ impl MockBackend {
 
     /// RPC-053: force the next `get_pause_state` call to fail.
     pub fn set_get_pause_state_error(&self, message: String) {
-        *self.get_pause_state_error.lock().expect("MockBackend mutex") = Some(message);
+        *self
+            .get_pause_state_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
     }
 
     /// RPC-053: force the next `get_hitl_request` call to fail.
     pub fn set_get_hitl_request_error(&self, message: String) {
-        *self.get_hitl_request_error.lock().expect("MockBackend mutex") = Some(message);
+        *self
+            .get_hitl_request_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
     }
 
     /// RPC-053: force the next `pause_resume` call to fail.
@@ -1366,7 +1373,10 @@ impl MockBackend {
 
     /// RPC-053: force the next `send_hitl_response` call to fail.
     pub fn set_send_hitl_response_error(&self, message: String) {
-        *self.send_hitl_response_error.lock().expect("MockBackend mutex") = Some(message);
+        *self
+            .send_hitl_response_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
     }
 
     // ── RPC-054 seed / mutator helpers ───────────────────────────────────
@@ -1380,10 +1390,7 @@ impl MockBackend {
     /// RPC-054: script the list returned by the very NEXT
     /// `list_provider_credentials` call after a successful save
     /// (one-shot — consumed by the call).
-    pub fn set_post_save_provider_credentials(
-        &self,
-        list: Vec<ProviderCredentialInfo>,
-    ) {
+    pub fn set_post_save_provider_credentials(&self, list: Vec<ProviderCredentialInfo>) {
         *self
             .provider_credentials_after_save
             .lock()
@@ -1392,10 +1399,7 @@ impl MockBackend {
 
     /// RPC-054: script the list returned by the very NEXT
     /// `list_provider_credentials` call after a successful delete.
-    pub fn set_post_delete_provider_credentials(
-        &self,
-        list: Vec<ProviderCredentialInfo>,
-    ) {
+    pub fn set_post_delete_provider_credentials(&self, list: Vec<ProviderCredentialInfo>) {
         *self
             .provider_credentials_after_delete
             .lock()
@@ -1404,10 +1408,7 @@ impl MockBackend {
 
     /// RPC-054: script the list returned by the very NEXT
     /// `list_provider_credentials` call after a successful refresh.
-    pub fn set_post_refresh_provider_credentials(
-        &self,
-        list: Vec<ProviderCredentialInfo>,
-    ) {
+    pub fn set_post_refresh_provider_credentials(&self, list: Vec<ProviderCredentialInfo>) {
         *self
             .provider_credentials_after_refresh
             .lock()
@@ -1484,9 +1485,7 @@ impl MockBackend {
 
     /// RPC-054: capture of the last `(provider_id, input)` tuple passed
     /// to `set_provider_credentials`.
-    pub fn last_set_provider_credentials(
-        &self,
-    ) -> Option<(String, ProviderCredentialInput)> {
+    pub fn last_set_provider_credentials(&self) -> Option<(String, ProviderCredentialInput)> {
         self.last_set_provider_credentials
             .lock()
             .expect("MockBackend mutex")
@@ -1631,10 +1630,7 @@ impl MockBackend {
 
     /// RPC-057: seed the `SessionWorktreeInfo` rows.
     #[allow(dead_code)]
-    pub fn seed_session_worktrees(
-        &self,
-        rows: Vec<codelet_rpc_types::SessionWorktreeInfo>,
-    ) {
+    pub fn seed_session_worktrees(&self, rows: Vec<codelet_rpc_types::SessionWorktreeInfo>) {
         *self.session_worktrees.lock().expect("MockBackend mutex") = rows;
     }
 
@@ -1646,11 +1642,11 @@ impl MockBackend {
 
     /// RPC-057: seed the `SessionChangesSummary`.
     #[allow(dead_code)]
-    pub fn seed_session_changes_summary(
-        &self,
-        summary: codelet_rpc_types::SessionChangesSummary,
-    ) {
-        *self.session_changes_summary.lock().expect("MockBackend mutex") = summary;
+    pub fn seed_session_changes_summary(&self, summary: codelet_rpc_types::SessionChangesSummary) {
+        *self
+            .session_changes_summary
+            .lock()
+            .expect("MockBackend mutex") = summary;
     }
 
     /// RPC-057: per-call counter for `inspect_session_changes`.
@@ -1684,7 +1680,10 @@ impl MockBackend {
         &self,
         result: std::result::Result<codelet_rpc_types::ScheduledJob, String>,
     ) {
-        *self.schedule_pause_result.lock().expect("MockBackend mutex") = result;
+        *self
+            .schedule_pause_result
+            .lock()
+            .expect("MockBackend mutex") = result;
     }
 
     #[allow(dead_code)]
@@ -1692,12 +1691,18 @@ impl MockBackend {
         &self,
         result: std::result::Result<codelet_rpc_types::ScheduledJob, String>,
     ) {
-        *self.schedule_resume_result.lock().expect("MockBackend mutex") = result;
+        *self
+            .schedule_resume_result
+            .lock()
+            .expect("MockBackend mutex") = result;
     }
 
     #[allow(dead_code)]
     pub fn seed_schedule_remove_result(&self, result: std::result::Result<(), String>) {
-        *self.schedule_remove_result.lock().expect("MockBackend mutex") = result;
+        *self
+            .schedule_remove_result
+            .lock()
+            .expect("MockBackend mutex") = result;
     }
 
     #[allow(dead_code)]
@@ -1798,14 +1803,14 @@ impl MockBackend {
     /// Seed the `Result<(), String>` returned by `add_supervisor`.
     #[allow(dead_code)]
     pub fn seed_add_supervisor_result(&self, result: std::result::Result<(), String>) {
-        *self.add_supervisor_result.lock().expect("MockBackend mutex") = result;
+        *self
+            .add_supervisor_result
+            .lock()
+            .expect("MockBackend mutex") = result;
     }
 
     /// Seed the `Result<(), String>` returned by `receive_incoming_message`.
-    pub fn seed_receive_incoming_message_result(
-        &self,
-        result: std::result::Result<(), String>,
-    ) {
+    pub fn seed_receive_incoming_message_result(&self, result: std::result::Result<(), String>) {
         *self
             .receive_incoming_message_result
             .lock()
@@ -1869,8 +1874,7 @@ impl FspecBackend for MockBackend {
 
     async fn send_input(&self, id: SessionId, text: String) -> Result<()> {
         self.send_input_calls.fetch_add(1, Ordering::SeqCst);
-        *self.last_send_input.lock().expect("MockBackend mutex") =
-            Some((id, text));
+        *self.last_send_input.lock().expect("MockBackend mutex") = Some((id, text));
         Ok(())
     }
 
@@ -1885,8 +1889,10 @@ impl FspecBackend for MockBackend {
     /// `Detach`/`Cancel` do NOT.
     async fn destroy_session(&self, session_id: SessionId) -> Result<()> {
         self.destroy_session_calls.fetch_add(1, Ordering::SeqCst);
-        *self.last_destroyed_session.lock().expect("MockBackend mutex") =
-            Some(session_id);
+        *self
+            .last_destroyed_session
+            .lock()
+            .expect("MockBackend mutex") = Some(session_id);
         Ok(())
     }
 
@@ -1935,8 +1941,7 @@ impl FspecBackend for MockBackend {
     }
 
     async fn move_work_unit_up(&self, id: String) -> Result<()> {
-        self.move_work_unit_up_calls
-            .fetch_add(1, Ordering::SeqCst);
+        self.move_work_unit_up_calls.fetch_add(1, Ordering::SeqCst);
         *self
             .last_move_work_unit_up_id
             .lock()
@@ -1971,14 +1976,22 @@ impl FspecBackend for MockBackend {
         {
             return Err(anyhow::anyhow!("{msg}"));
         }
-        Ok(self.workspace_info.lock().expect("MockBackend mutex").clone())
+        Ok(self
+            .workspace_info
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>> {
         // RPC-020: MockBackend returns scripted matches (or an empty
         // Vec) so tests can drive the file search popup without
         // touching the real filesystem.
-        let all = self.file_search_results.lock().expect("MockBackend mutex").clone();
+        let all = self
+            .file_search_results
+            .lock()
+            .expect("MockBackend mutex")
+            .clone();
         let filtered: Vec<String> = all
             .into_iter()
             .filter(|p| p.to_lowercase().contains(&prefix.to_lowercase()))
@@ -2017,7 +2030,11 @@ impl FspecBackend for MockBackend {
     ) -> Result<Vec<codelet_rpc_types::HistoryMatch>> {
         self.search_history_calls.fetch_add(1, Ordering::SeqCst);
         *self.last_history_query.lock().expect("MockBackend mutex") = Some(query);
-        Ok(self.history_search_results.lock().expect("MockBackend mutex").clone())
+        Ok(self
+            .history_search_results
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn persistence_delete_session(&self, id: SessionId) -> Result<()> {
@@ -2047,13 +2064,8 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
-    async fn set_thinking_level(
-        &self,
-        session_id: SessionId,
-        level: ThinkingLevel,
-    ) -> Result<()> {
-        self.set_thinking_level_calls
-            .fetch_add(1, Ordering::SeqCst);
+    async fn set_thinking_level(&self, session_id: SessionId, level: ThinkingLevel) -> Result<()> {
+        self.set_thinking_level_calls.fetch_add(1, Ordering::SeqCst);
         *self
             .last_set_thinking_level
             .lock()
@@ -2063,8 +2075,10 @@ impl FspecBackend for MockBackend {
 
     async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {
         self.get_session_role_calls.fetch_add(1, Ordering::SeqCst);
-        *self.last_get_session_role.lock().expect("MockBackend mutex") =
-            Some(session_id.clone());
+        *self
+            .last_get_session_role
+            .lock()
+            .expect("MockBackend mutex") = Some(session_id.clone());
         let roles = self.session_roles.lock().expect("MockBackend mutex");
         let role = roles
             .iter()
@@ -2073,11 +2087,7 @@ impl FspecBackend for MockBackend {
         Ok(role)
     }
 
-    async fn set_session_role(
-        &self,
-        session_id: SessionId,
-        role: Option<String>,
-    ) -> Result<()> {
+    async fn set_session_role(&self, session_id: SessionId, role: Option<String>) -> Result<()> {
         self.set_session_role_calls.fetch_add(1, Ordering::SeqCst);
         *self
             .last_set_session_role
@@ -2091,17 +2101,9 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
-    async fn send_fspec_result(
-        &self,
-        session_id: SessionId,
-        result: FspecResult,
-    ) -> Result<()> {
-        self.send_fspec_result_calls
-            .fetch_add(1, Ordering::SeqCst);
-        *self
-            .last_fspec_result
-            .lock()
-            .expect("MockBackend mutex") = Some((session_id, result));
+    async fn send_fspec_result(&self, session_id: SessionId, result: FspecResult) -> Result<()> {
+        self.send_fspec_result_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_fspec_result.lock().expect("MockBackend mutex") = Some((session_id, result));
         Ok(())
     }
 
@@ -2124,10 +2126,7 @@ impl FspecBackend for MockBackend {
 
     async fn compact_session(&self, session_id: SessionId) -> Result<CompactionResult> {
         self.compact_session_calls.fetch_add(1, Ordering::SeqCst);
-        *self
-            .last_compact_session
-            .lock()
-            .expect("MockBackend mutex") = Some(session_id);
+        *self.last_compact_session.lock().expect("MockBackend mutex") = Some(session_id);
         match self
             .compact_session_result
             .lock()
@@ -2141,10 +2140,7 @@ impl FspecBackend for MockBackend {
 
     async fn resume_session(&self, session_id: SessionId) -> Result<()> {
         self.resume_session_calls.fetch_add(1, Ordering::SeqCst);
-        *self
-            .last_resume_session
-            .lock()
-            .expect("MockBackend mutex") = Some(session_id);
+        *self.last_resume_session.lock().expect("MockBackend mutex") = Some(session_id);
         if let Some(msg) = self
             .resume_session_error
             .lock()
@@ -2167,7 +2163,11 @@ impl FspecBackend for MockBackend {
             .last_get_buffered_output
             .lock()
             .expect("MockBackend mutex") = Some((session_id, limit));
-        Ok(self.buffered_output.lock().expect("MockBackend mutex").clone())
+        Ok(self
+            .buffered_output
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn get_work_unit_context(
@@ -2227,18 +2227,11 @@ impl FspecBackend for MockBackend {
         {
             return Err(anyhow::anyhow!("{msg}"));
         }
-        let store = self
-            .pending_input_store
-            .lock()
-            .expect("MockBackend mutex");
+        let store = self.pending_input_store.lock().expect("MockBackend mutex");
         Ok(store.get(&session_id).cloned().unwrap_or(None))
     }
 
-    async fn set_pending_input(
-        &self,
-        session_id: SessionId,
-        text: Option<String>,
-    ) -> Result<()> {
+    async fn set_pending_input(&self, session_id: SessionId, text: Option<String>) -> Result<()> {
         self.set_pending_input_calls.fetch_add(1, Ordering::SeqCst);
         self.pending_input_writes
             .lock()
@@ -2323,11 +2316,7 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
-    async fn pause_triple(
-        &self,
-        session_id: SessionId,
-        choice: ApprovalChoice,
-    ) -> Result<()> {
+    async fn pause_triple(&self, session_id: SessionId, choice: ApprovalChoice) -> Result<()> {
         self.pause_triple_calls.fetch_add(1, Ordering::SeqCst);
         self.pause_triple_calls_log
             .lock()
@@ -2349,8 +2338,7 @@ impl FspecBackend for MockBackend {
         session_id: SessionId,
         response: HitlResponse,
     ) -> Result<()> {
-        self.send_hitl_response_calls
-            .fetch_add(1, Ordering::SeqCst);
+        self.send_hitl_response_calls.fetch_add(1, Ordering::SeqCst);
         self.send_hitl_response_calls_log
             .lock()
             .expect("MockBackend mutex")
@@ -2486,10 +2474,7 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
-    async fn test_provider_connection(
-        &self,
-        provider_id: String,
-    ) -> Result<TestConnectionResult> {
+    async fn test_provider_connection(&self, provider_id: String) -> Result<TestConnectionResult> {
         self.test_provider_connection_calls
             .fetch_add(1, Ordering::SeqCst);
         *self
@@ -2543,16 +2528,9 @@ impl FspecBackend for MockBackend {
 
     // ── RPC-055 debug-capture surface ────────────────────────────────
 
-    async fn toggle_debug(
-        &self,
-        session_id: SessionId,
-        debug_dir: String,
-    ) -> Result<String> {
+    async fn toggle_debug(&self, session_id: SessionId, debug_dir: String) -> Result<String> {
         self.toggle_debug_calls.fetch_add(1, Ordering::SeqCst);
-        *self
-            .last_toggle_debug
-            .lock()
-            .expect("MockBackend mutex") = Some((session_id, debug_dir));
+        *self.last_toggle_debug.lock().expect("MockBackend mutex") = Some((session_id, debug_dir));
         match self
             .toggle_debug_result
             .lock()
@@ -2565,7 +2543,8 @@ impl FspecBackend for MockBackend {
     }
 
     async fn set_debug_directory(&self, path: String) -> Result<()> {
-        self.set_debug_directory_calls.fetch_add(1, Ordering::SeqCst);
+        self.set_debug_directory_calls
+            .fetch_add(1, Ordering::SeqCst);
         *self
             .last_set_debug_directory
             .lock()
@@ -2591,7 +2570,11 @@ impl FspecBackend for MockBackend {
         {
             return Err(anyhow::anyhow!("{msg}"));
         }
-        Ok(self.blocklist_rules.lock().expect("MockBackend mutex").clone())
+        Ok(self
+            .blocklist_rules
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn merge_session_worktree(
@@ -2609,7 +2592,11 @@ impl FspecBackend for MockBackend {
         {
             return Err(anyhow::anyhow!("{msg}"));
         }
-        Ok(self.merge_outcome.lock().expect("MockBackend mutex").clone())
+        Ok(self
+            .merge_outcome
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn discard_session_worktree(&self, _session_id: SessionId) -> Result<()> {
@@ -2629,15 +2616,21 @@ impl FspecBackend for MockBackend {
     async fn prune_orphaned_worktrees(&self) -> Result<Vec<String>> {
         self.prune_orphaned_worktrees_calls
             .fetch_add(1, Ordering::SeqCst);
-        Ok(self.pruned_sessions.lock().expect("MockBackend mutex").clone())
+        Ok(self
+            .pruned_sessions
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
-    async fn list_session_worktrees(
-        &self,
-    ) -> Result<Vec<codelet_rpc_types::SessionWorktreeInfo>> {
+    async fn list_session_worktrees(&self) -> Result<Vec<codelet_rpc_types::SessionWorktreeInfo>> {
         self.list_session_worktrees_calls
             .fetch_add(1, Ordering::SeqCst);
-        Ok(self.session_worktrees.lock().expect("MockBackend mutex").clone())
+        Ok(self
+            .session_worktrees
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
     }
 
     async fn inspect_session_changes(
@@ -2686,10 +2679,7 @@ impl FspecBackend for MockBackend {
         }
     }
 
-    async fn schedule_pause(
-        &self,
-        _name: String,
-    ) -> Result<codelet_rpc_types::ScheduledJob> {
+    async fn schedule_pause(&self, _name: String) -> Result<codelet_rpc_types::ScheduledJob> {
         self.schedule_pause_calls.fetch_add(1, Ordering::SeqCst);
         match self
             .schedule_pause_result
@@ -2702,10 +2692,7 @@ impl FspecBackend for MockBackend {
         }
     }
 
-    async fn schedule_resume(
-        &self,
-        _name: String,
-    ) -> Result<codelet_rpc_types::ScheduledJob> {
+    async fn schedule_resume(&self, _name: String) -> Result<codelet_rpc_types::ScheduledJob> {
         self.schedule_resume_calls.fetch_add(1, Ordering::SeqCst);
         match self
             .schedule_resume_result
@@ -2782,10 +2769,7 @@ impl FspecBackend for MockBackend {
         }
     }
 
-    async fn create_isolated_session(
-        &self,
-        _role: Option<String>,
-    ) -> Result<IsolatedSessionInfo> {
+    async fn create_isolated_session(&self, _role: Option<String>) -> Result<IsolatedSessionInfo> {
         self.create_isolated_session_calls
             .fetch_add(1, Ordering::SeqCst);
         match self
@@ -2818,7 +2802,12 @@ impl FspecBackend for MockBackend {
         _supervisor_id: SessionId,
     ) -> Result<()> {
         self.add_supervisor_calls.fetch_add(1, Ordering::SeqCst);
-        match self.add_supervisor_result.lock().expect("MockBackend mutex").clone() {
+        match self
+            .add_supervisor_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
             Ok(()) => Ok(()),
             Err(e) => Err(anyhow::anyhow!(e)),
         }
@@ -2915,4 +2904,3 @@ pub fn buffer_to_rows(buf: &Buffer) -> Vec<String> {
 // ─────────────────────────────────────────────────────────────────────────
 
 pub mod harness;
-

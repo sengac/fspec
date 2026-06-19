@@ -90,16 +90,9 @@ impl App {
 
     /// RPC-052: route an `Action::SeedPendingInput { session_id, text }`
     /// through the focused-session check + SessionContext fold.
-    pub(crate) fn handle_seed_pending_input(
-        &mut self,
-        session_id: SessionId,
-        text: String,
-    ) {
+    pub(crate) fn handle_seed_pending_input(&mut self, session_id: SessionId, text: String) {
         // ALWAYS fold the text into the matching SessionContext.input_draft.
-        if let Some(ctx) = self
-            .agent_view_store
-            .session_context_mut_for(&session_id)
-        {
+        if let Some(ctx) = self.agent_view_store.session_context_mut_for(&session_id) {
             ctx.input_draft.clone_from(&text);
         }
         // ONLY seed the live MultiLineInput when the activated session is

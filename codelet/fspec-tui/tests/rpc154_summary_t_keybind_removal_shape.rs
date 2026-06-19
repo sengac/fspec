@@ -339,12 +339,7 @@ fn ts_reference_lists_no_t_keybind_for_test_provider_connection() {
         .unwrap_or_else(|err| panic!("failed to read {}: {err}", path.display()));
 
     // @step When the file body is scanned for any of the substrings "key.t " / "key.t&&" / "input === 't'" / "input === 'T'"
-    let forbidden: &[&str] = &[
-        "key.t ",
-        "key.t&&",
-        "input === 't'",
-        "input === 'T'",
-    ];
+    let forbidden: &[&str] = &["key.t ", "key.t&&", "input === 't'", "input === 'T'"];
 
     // @step Then zero matches are found
     for needle in forbidden {

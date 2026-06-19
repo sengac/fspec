@@ -26,9 +26,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
 use codelet_providers::credentials::mask_api_key;
@@ -332,16 +330,18 @@ fn workspace_with_seed(cwd: &Path) {
     .expect("write work-units.json");
 }
 
-fn build_service() -> (TempDir, Arc<SharedFspecService>, Arc<StubSessionManagerHandle>) {
+fn build_service() -> (
+    TempDir,
+    Arc<SharedFspecService>,
+    Arc<StubSessionManagerHandle>,
+) {
     let temp = tempfile::tempdir().expect("tempdir");
     let cwd = temp.path().to_path_buf();
     workspace_with_seed(&cwd);
     let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
-    let service = Arc::new(
-        SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd),
-    );
+    let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
     (temp, service, stub)
 }
 
@@ -395,26 +395,23 @@ async fn cross_transport_parity_for_masked_key_and_source() {
         .iter()
         .find(|r| r.provider_id == "anthropic")
         .expect("anthropic row in embedded list");
-    assert_eq!(
-        em_row.masked_key.as_deref(),
-        Some("sk-ant-••••••••mnop")
-    );
+    assert_eq!(em_row.masked_key.as_deref(), Some("sk-ant-••••••••mnop"));
     assert_eq!(em_row.source.as_deref(), Some("env"));
 
     let ws_row = ws
         .iter()
         .find(|r| r.provider_id == "anthropic")
         .expect("anthropic row in websocket list");
-    assert_eq!(
-        ws_row.masked_key.as_deref(),
-        Some("sk-ant-••••••••mnop")
-    );
+    assert_eq!(ws_row.masked_key.as_deref(), Some("sk-ant-••••••••mnop"));
     assert_eq!(ws_row.source.as_deref(), Some("env"));
 }
 
 #[test]
 fn default_provider_credential_info_has_none_masked_key_and_source() {
     let info = ProviderCredentialInfo::default();
-    assert!(info.masked_key.is_none(), "default masked_key should be None");
+    assert!(
+        info.masked_key.is_none(),
+        "default masked_key should be None"
+    );
     assert!(info.source.is_none(), "default source should be None");
 }

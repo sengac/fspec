@@ -32,7 +32,10 @@ fn count_lines_path(path: &std::path::Path) -> usize {
 #[test]
 fn codelet_common_file_lock_is_lifted_out_of_schedule_handler() {
     // @step Given the codelet workspace after RPC-017 lands
-    let file_lock = workspace_root().join("common").join("src").join("file_lock.rs");
+    let file_lock = workspace_root()
+        .join("common")
+        .join("src")
+        .join("file_lock.rs");
     let common_lib = workspace_root().join("common").join("src").join("lib.rs");
     let schedule_handler = workspace_root()
         .join("napi")
@@ -84,7 +87,10 @@ fn codelet_common_file_lock_is_lifted_out_of_schedule_handler() {
 #[test]
 fn codelet_core_work_units_write_module_exists_and_stays_under_300_loc() {
     // @step Given the codelet workspace after RPC-017 lands
-    let wuw = workspace_root().join("core").join("src").join("work_units_write.rs");
+    let wuw = workspace_root()
+        .join("core")
+        .join("src")
+        .join("work_units_write.rs");
     let core_lib = workspace_root().join("core").join("src").join("lib.rs");
 
     // @step Then the file codelet/core/src/work_units_write.rs exists
@@ -122,7 +128,10 @@ fn codelet_core_work_units_write_module_exists_and_stays_under_300_loc() {
     );
 
     // @step And codelet/core/src/work_units.rs (the read-side module) still exports `pub fn read_snapshot` and `pub struct WorkUnitsWatcher`
-    let work_units_rs = workspace_root().join("core").join("src").join("work_units.rs");
+    let work_units_rs = workspace_root()
+        .join("core")
+        .join("src")
+        .join("work_units.rs");
     let work_units_body = read_raw(&work_units_rs);
     assert!(
         work_units_body.contains("pub fn read_snapshot"),

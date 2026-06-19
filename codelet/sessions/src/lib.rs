@@ -18,6 +18,7 @@ pub mod conversions;
 pub mod credentials;
 pub mod handle_impl;
 pub mod navigation;
+pub mod profile_sections;
 pub mod session_manager;
 
 // Convenient re-exports so downstream crates can write

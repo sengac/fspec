@@ -11,8 +11,7 @@
 use codelet_fspec_tui::store::AgentViewStore;
 use codelet_fspec_tui::views::AgentView;
 use codelet_rpc_types::{
-    ContextFillInfo, ModelInfo, SessionId, StreamChunk, ThinkingLevel, TokenTracker,
-    WorkspaceInfo,
+    ContextFillInfo, ModelInfo, SessionId, StreamChunk, ThinkingLevel, TokenTracker, WorkspaceInfo,
 };
 use ratatui::backend::TestBackend;
 use ratatui::buffer::Buffer;
@@ -23,7 +22,12 @@ mod common;
 
 /// Helper: render AgentView against an N×M TestBackend and return the
 /// buffer as a Vec<String> of row text.
-fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
+fn render_rows(
+    width: u16,
+    height: u16,
+    store: &mut AgentViewStore,
+    view: &mut AgentView,
+) -> Vec<String> {
     let backend = TestBackend::new(width, height);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|frame| {
@@ -59,7 +63,10 @@ async fn empty_agent_view_store_paints_placeholder_header_and_bare_cwd_footer() 
     let bottom = &rows[rows.len() - 1];
     let full = rows.join("\n");
     // @step Then the rendered buffer's top row contains the substring "Agent"
-    assert!(top.contains("Agent"), "top row should contain 'Agent', got: {top:?}");
+    assert!(
+        top.contains("Agent"),
+        "top row should contain 'Agent', got: {top:?}"
+    );
     // @step And the rendered buffer's top row contains the substring "tokens: 0↓ 0↑ [0%]"
     assert!(
         top.contains("tokens: 0↓ 0↑ [0%]"),
@@ -67,16 +74,31 @@ async fn empty_agent_view_store_paints_placeholder_header_and_bare_cwd_footer() 
     );
     // @step And the rendered buffer's bottom row contains the substring "Enter=send"
     // RPC-029: footer hints removed; the bottom row is the input prompt.
-    assert!(bottom.contains("> "), "bottom row should contain input prompt, got: {bottom:?}");
+    assert!(
+        bottom.contains("> "),
+        "bottom row should contain input prompt, got: {bottom:?}"
+    );
     // @step And the rendered buffer's bottom row contains the substring "ESC=back"
     // RPC-029: no ESC=back hint in footer anymore.
-    assert!(!bottom.contains("ESC=back"), "RPC-029: ESC=back hint should be gone, got: {bottom:?}");
+    assert!(
+        !bottom.contains("ESC=back"),
+        "RPC-029: ESC=back hint should be gone, got: {bottom:?}"
+    );
     // @step And the rendered buffer does NOT contain the substring "[R]"
-    assert!(!full.contains("[R]"), "full buffer should NOT contain '[R]'");
+    assert!(
+        !full.contains("[R]"),
+        "full buffer should NOT contain '[R]'"
+    );
     // @step And the rendered buffer does NOT contain the substring "[V]"
-    assert!(!full.contains("[V]"), "full buffer should NOT contain '[V]'");
+    assert!(
+        !full.contains("[V]"),
+        "full buffer should NOT contain '[V]'"
+    );
     // @step And the rendered buffer does NOT contain the substring "[T:"
-    assert!(!full.contains("[T:"), "full buffer should NOT contain '[T:'");
+    assert!(
+        !full.contains("[T:"),
+        "full buffer should NOT contain '[T:'"
+    );
 }
 
 /// Scenario: Header paints model badges and thinking level when session has model info
@@ -106,15 +128,24 @@ async fn header_paints_model_badges_and_thinking_level_when_session_has_model_in
     // @step Then the rendered buffer's top row contains the substring "#1:"
     assert!(top.contains("#1:"), "top row missing '#1:', got: {top:?}");
     // @step And the rendered buffer's top row contains the substring "Claude Opus 4.7"
-    assert!(top.contains("Claude Opus 4.7"), "top row missing model name, got: {top:?}");
+    assert!(
+        top.contains("Claude Opus 4.7"),
+        "top row missing model name, got: {top:?}"
+    );
     // @step And the rendered buffer's top row contains the substring "[R]"
     assert!(top.contains("[R]"), "top row missing '[R]', got: {top:?}");
     // @step And the rendered buffer's top row contains the substring "[V]"
     assert!(top.contains("[V]"), "top row missing '[V]', got: {top:?}");
     // @step And the rendered buffer's top row contains the substring "[192k]"
-    assert!(top.contains("[192k]"), "top row missing '[192k]', got: {top:?}");
+    assert!(
+        top.contains("[192k]"),
+        "top row missing '[192k]', got: {top:?}"
+    );
     // @step And the rendered buffer's top row contains the substring "[T:High]"
-    assert!(top.contains("[T:High]"), "top row missing '[T:High]', got: {top:?}");
+    assert!(
+        top.contains("[T:High]"),
+        "top row missing '[T:High]', got: {top:?}"
+    );
 }
 
 /// Scenario: Header right-side reflects TokenUpdate followed by ContextFillUpdate
@@ -165,7 +196,10 @@ async fn footer_abbreviates_cwd_to_tilde_inside_home_and_appends_branch_in_a_git
         .find(|r| r.contains("~/projects/fspec"))
         .expect("footer row containing cwd");
     // @step Then the footer row contains the substring "~/projects/fspec"
-    assert!(footer.contains("~/projects/fspec"), "footer missing ~/projects/fspec, got: {footer:?}");
+    assert!(
+        footer.contains("~/projects/fspec"),
+        "footer missing ~/projects/fspec, got: {footer:?}"
+    );
     // @step And the footer row contains the substring "[⎇ codelet-integration]" (U+2387 per RPC-029)
     assert!(
         footer.contains("[\u{2387} codelet-integration]"),
@@ -196,9 +230,15 @@ async fn footer_omits_branch_segment_when_workspace_is_not_a_git_repo() {
         .find(|r| r.contains("/tmp/scratch"))
         .expect("footer row containing cwd");
     // @step Then the footer row contains the substring "/tmp/scratch"
-    assert!(footer.contains("/tmp/scratch"), "footer missing cwd, got: {footer:?}");
+    assert!(
+        footer.contains("/tmp/scratch"),
+        "footer missing cwd, got: {footer:?}"
+    );
     // @step And the footer row does NOT contain the substring "[⎇" (U+2387 RPC-029)
-    assert!(!footer.contains("[\u{2387}"), "footer should not have branch decoration, got: {footer:?}");
+    assert!(
+        !footer.contains("[\u{2387}"),
+        "footer should not have branch decoration, got: {footer:?}"
+    );
 }
 
 /// Scenario: AgentView layout splits area into Header / Scrollback / Input / Footer
@@ -226,13 +266,20 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
     let rows = render_rows(80, 10, &mut store, &mut view);
 
     // @step Then the rendered buffer's row 0 contains the substring "#1:"
-    assert!(rows[0].contains("#1:"), "row 0 should contain '#1:', got: {:?}", rows[0]);
+    assert!(
+        rows[0].contains("#1:"),
+        "row 0 should contain '#1:', got: {:?}",
+        rows[0]
+    );
     // @step And the rendered buffer's scrollback area (rows 1..=8) contains both pushed lines
     // RPC-078: ScrollbackList stick-to-bottom now BOTTOM-anchors content,
     // so 2 lines land flush with the bottom of the scrollback area
     // rather than at the top. Assert across the full scrollback area.
     let scroll_area: String = rows[1..=8].join("\n");
-    assert!(scroll_area.contains("user> hi"), "scrollback should contain 'user> hi'; got:\n{scroll_area}");
+    assert!(
+        scroll_area.contains("user> hi"),
+        "scrollback should contain 'user> hi'; got:\n{scroll_area}"
+    );
     // @step And the rendered buffer's scrollback area contains "assistant> hello"
     assert!(
         scroll_area.contains("assistant> hello"),

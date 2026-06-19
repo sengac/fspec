@@ -65,8 +65,8 @@ impl App {
             .thinking_level_for(&session_id)
             .copied()
             .unwrap_or(ThinkingLevel::Off);
-        let dialog = ThinkingLevelDialog::new(session_id, current)
-            .with_action_tx(self.action_tx.clone());
+        let dialog =
+            ThinkingLevelDialog::new(session_id, current).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 
@@ -90,6 +90,10 @@ impl App {
         provider_id: String,
         model_id: String,
     ) {
+        // RPC-337: remember the chosen model id so the ModelSelector's
+        // green `(current)` marker lights up on reopen.
+        self.agent_view_store
+            .set_selected_model_id(session_id.clone(), model_id.clone());
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
@@ -124,9 +128,7 @@ impl App {
         let action_tx = self.action_tx.clone();
         let sid_for_refresh = session_id.clone();
         let handle = tokio::spawn(async move {
-            let _ = backend
-                .set_thinking_level(session_id, level)
-                .await;
+            let _ = backend.set_thinking_level(session_id, level).await;
             if let Ok(fresh) = backend.get_thinking_level(sid_for_refresh.clone()).await {
                 let _ = action_tx.send(Action::ThinkingLevelLoaded(sid_for_refresh, fresh));
             }
@@ -159,11 +161,7 @@ impl App {
     /// RPC-022: update AgentViewStore.role_by_session AND fire a
     /// backend.set_session_role write task. Mirrors the
     /// `handle_input_submitted_persistence` fire-and-forget pattern.
-    pub(crate) fn handle_set_session_role(
-        &mut self,
-        session_id: SessionId,
-        role: Option<String>,
-    ) {
+    pub(crate) fn handle_set_session_role(&mut self, session_id: SessionId, role: Option<String>) {
         self.agent_view_store
             .set_role(session_id.clone(), role.clone());
         if tokio::runtime::Handle::try_current().is_err() {
@@ -240,9 +238,7 @@ impl App {
             // RPC-051 Esc cascade — helper in dispatch_rpc051.rs.
             Action::AgentEscPressed => self.handle_agent_esc_pressed(),
             // RPC-098 ESC exit-confirmation dispatcher.
-            Action::AgentExitChoice { choice } => {
-                self.handle_agent_exit_choice(*choice)
-            }
+            Action::AgentExitChoice { choice } => self.handle_agent_exit_choice(*choice),
             // RPC-052 pending-input debounce + hydration — helpers in dispatch_rpc052.rs.
             Action::PendingInputChanged(text) => {
                 self.handle_pending_input_changed(text.clone());
@@ -255,4 +251,3 @@ impl App {
         true
     }
 }
-

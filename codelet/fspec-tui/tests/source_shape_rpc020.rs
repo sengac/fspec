@@ -33,7 +33,10 @@ fn count_lines_path(path: &std::path::Path) -> usize {
 #[test]
 fn codelet_core_file_search_helper_exists_with_documented_surface() {
     // @step Given codelet/core/src/file_search.rs after RPC-020 lands
-    let path = workspace_codelet_dir().join("core").join("src").join("file_search.rs");
+    let path = workspace_codelet_dir()
+        .join("core")
+        .join("src")
+        .join("file_search.rs");
     // @step Then the file exists
     assert!(path.is_file(), "{} must exist", path.display());
     let body = read_raw(&path);
@@ -45,7 +48,12 @@ fn codelet_core_file_search_helper_exists_with_documented_surface() {
 #[test]
 fn codelet_core_lib_re_exports_file_search() {
     // @step Given codelet/core/src/lib.rs after RPC-020 lands
-    let body = read_raw(&workspace_codelet_dir().join("core").join("src").join("lib.rs"));
+    let body = read_raw(
+        &workspace_codelet_dir()
+            .join("core")
+            .join("src")
+            .join("lib.rs"),
+    );
     // @step Then the file contains the substring "pub mod file_search"
     assert!(body.contains("pub mod file_search"));
 }
@@ -54,7 +62,12 @@ fn codelet_core_lib_re_exports_file_search() {
 #[test]
 fn fspec_service_trait_gains_search_files_rpc_method() {
     // @step Given codelet/rpc/src/lib.rs after RPC-020 lands
-    let body = read_raw(&workspace_codelet_dir().join("rpc").join("src").join("lib.rs"));
+    let body = read_raw(
+        &workspace_codelet_dir()
+            .join("rpc")
+            .join("src")
+            .join("lib.rs"),
+    );
     // @step Then the file contains the substring "async fn search_files"
     assert!(body.contains("async fn search_files"));
     // @step And the file contains the substring "prefix: String"
@@ -88,7 +101,10 @@ fn both_transports_implement_search_files() {
 #[test]
 fn slash_commands_module_exists_with_documented_surface() {
     // @step Given the codelet/fspec-tui crate after RPC-020 lands
-    let path = fspec_tui_src().join("views").join("agent").join("slash_commands.rs");
+    let path = fspec_tui_src()
+        .join("views")
+        .join("agent")
+        .join("slash_commands.rs");
     // @step Then the file codelet/fspec-tui/src/views/agent/slash_commands.rs exists
     assert!(path.is_file(), "{} must exist", path.display());
     let body = read_raw(&path);
@@ -106,7 +122,10 @@ fn slash_commands_module_exists_with_documented_surface() {
 #[test]
 fn slash_command_popup_module_exists_with_documented_surface() {
     // @step Given the codelet/fspec-tui crate after RPC-020 lands
-    let path = fspec_tui_src().join("views").join("agent").join("slash_command_popup.rs");
+    let path = fspec_tui_src()
+        .join("views")
+        .join("agent")
+        .join("slash_command_popup.rs");
     // @step Then the file codelet/fspec-tui/src/views/agent/slash_command_popup.rs exists
     assert!(path.is_file(), "{} must exist", path.display());
     let body = read_raw(&path);
@@ -118,7 +137,10 @@ fn slash_command_popup_module_exists_with_documented_surface() {
 #[test]
 fn file_search_popup_module_exists_with_documented_surface() {
     // @step Given the codelet/fspec-tui crate after RPC-020 lands
-    let path = fspec_tui_src().join("views").join("agent").join("file_search_popup.rs");
+    let path = fspec_tui_src()
+        .join("views")
+        .join("agent")
+        .join("file_search_popup.rs");
     // @step Then the file codelet/fspec-tui/src/views/agent/file_search_popup.rs exists
     assert!(path.is_file(), "{} must exist", path.display());
     let body = read_raw(&path);
@@ -228,9 +250,13 @@ fn existing_ts_slash_and_file_search_components_are_untouched() {
     // @step Given the project root after RPC-020 lands
     let root = project_root();
     // @step Then the file src/tui/components/SlashCommandPalette.tsx exists
-    assert!(root.join("src/tui/components/SlashCommandPalette.tsx").is_file());
+    assert!(root
+        .join("src/tui/components/SlashCommandPalette.tsx")
+        .is_file());
     // @step And the file src/tui/components/FileSearchPopup.tsx exists
-    assert!(root.join("src/tui/components/FileSearchPopup.tsx").is_file());
+    assert!(root
+        .join("src/tui/components/FileSearchPopup.tsx")
+        .is_file());
     // @step And the file src/tui/hooks/useSlashCommandInput.ts exists
     assert!(root.join("src/tui/hooks/useSlashCommandInput.ts").is_file());
     // @step And the file src/tui/hooks/useFileSearchInput.ts exists
@@ -259,7 +285,10 @@ fn existing_ts_slash_and_file_search_components_are_untouched() {
 #[test]
 fn slash_command_action_enum_has_no_providers_variant() {
     // @step Given codelet/fspec-tui/src/views/agent/slash_commands.rs after the 2026-06-01 revision
-    let path = fspec_tui_src().join("views").join("agent").join("slash_commands.rs");
+    let path = fspec_tui_src()
+        .join("views")
+        .join("agent")
+        .join("slash_commands.rs");
     // @step When the source is parsed for SlashCommandAction variants
     let source = read_raw(&path);
 
@@ -277,7 +306,9 @@ fn slash_command_action_enum_has_no_providers_variant() {
     );
     // @step And the SLASH_COMMANDS const contains exactly one entry whose action is SlashCommandAction::Provider
     // Count `action: SlashCommandAction::Provider,` (registry entry) — must be exactly 1
-    let registry_count = source.matches("action: SlashCommandAction::Provider,").count();
+    let registry_count = source
+        .matches("action: SlashCommandAction::Provider,")
+        .count();
     assert_eq!(
         registry_count, 1,
         "SLASH_COMMANDS must contain exactly one entry whose action is SlashCommandAction::Provider; got {registry_count}"

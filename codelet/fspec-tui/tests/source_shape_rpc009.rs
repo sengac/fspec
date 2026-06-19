@@ -25,7 +25,9 @@ mod common;
 fn cargo_toml_dependencies_now_lists_tui_input_alongside_the_existing_entries() {
     // @step Given codelet/fspec-tui/Cargo.toml exists
     let raw = common::read_to_string_or_panic(
-        &common::workspace_root().join("fspec-tui").join("Cargo.toml"),
+        &common::workspace_root()
+            .join("fspec-tui")
+            .join("Cargo.toml"),
     );
     // @step When the test parses the manifest's `[dependencies]` table
     let deps = section_body(&raw, "[dependencies]");
@@ -41,15 +43,31 @@ fn cargo_toml_dependencies_now_lists_tui_input_alongside_the_existing_entries() 
         "codelet-rpc-embedded",
         "codelet-rpc-server",
     ] {
-        assert!(deps.contains(required), "[dependencies] must list {required}");
+        assert!(
+            deps.contains(required),
+            "[dependencies] must list {required}"
+        );
     }
     // @step And the table still contains `tokio`, `async-trait`, `futures`, `ratatui`, `crossterm`, `tui-popup`
-    for required in ["tokio", "async-trait", "futures", "ratatui", "crossterm", "tui-popup"] {
-        assert!(deps.contains(required), "[dependencies] must list {required}");
+    for required in [
+        "tokio",
+        "async-trait",
+        "futures",
+        "ratatui",
+        "crossterm",
+        "tui-popup",
+    ] {
+        assert!(
+            deps.contains(required),
+            "[dependencies] must list {required}"
+        );
     }
     // @step And the table still contains `tokio-tungstenite`, `url`, `tarpc`, `anyhow`, `tracing`
     for required in ["tokio-tungstenite", "url", "tarpc", "anyhow", "tracing"] {
-        assert!(deps.contains(required), "[dependencies] must list {required}");
+        assert!(
+            deps.contains(required),
+            "[dependencies] must list {required}"
+        );
     }
 }
 
@@ -74,7 +92,9 @@ fn workspace_cargo_toml_declares_tui_input_0_10() {
 fn production_dependencies_still_excludes_codelet_napi_and_codelet_core() {
     // @step Given codelet/fspec-tui/Cargo.toml exists
     let raw = common::read_to_string_or_panic(
-        &common::workspace_root().join("fspec-tui").join("Cargo.toml"),
+        &common::workspace_root()
+            .join("fspec-tui")
+            .join("Cargo.toml"),
     );
     // @step When the test parses the manifest's `[dependencies]` table
     let deps = section_body(&raw, "[dependencies]");
@@ -94,7 +114,9 @@ fn production_dependencies_still_excludes_codelet_napi_and_codelet_core() {
 fn dev_dependencies_still_excludes_codelet_napi() {
     // @step Given codelet/fspec-tui/Cargo.toml exists
     let raw = common::read_to_string_or_panic(
-        &common::workspace_root().join("fspec-tui").join("Cargo.toml"),
+        &common::workspace_root()
+            .join("fspec-tui")
+            .join("Cargo.toml"),
     );
     // @step When the test parses the manifest's `[dev-dependencies]` table
     let dev = section_body(&raw, "[dev-dependencies]");
@@ -123,12 +145,7 @@ fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() {
         .join("fspec-tui")
         .join("src")
         .join("views");
-    for file in [
-        "mod.rs",
-        "board.rs",
-        "agent.rs",
-        "navigator.rs",
-    ] {
+    for file in ["mod.rs", "board.rs", "agent.rs", "navigator.rs"] {
         let path = views_dir.join(file);
         assert!(path.exists(), "expected {} to exist", path.display());
     }
@@ -176,7 +193,12 @@ fn new_src_views_files_do_not_directly_import_the_encapsulated_transport_crates(
     for path in &rs_files {
         let body = common::read_to_string_or_panic(path);
         let code = common::strip_rust_comments(&body);
-        for needle in ["codelet_napi::", "codelet_core::", "tarpc::", "tokio_tungstenite::"] {
+        for needle in [
+            "codelet_napi::",
+            "codelet_core::",
+            "tarpc::",
+            "tokio_tungstenite::",
+        ] {
             if code.contains(needle) {
                 violations.push(format!("{}: {}", path.display(), needle));
             }

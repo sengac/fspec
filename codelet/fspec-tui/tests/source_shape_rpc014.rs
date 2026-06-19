@@ -12,11 +12,17 @@ fn src_dir() -> std::path::PathBuf {
 }
 
 fn rpc_types_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc-types").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc-types")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn core_work_units() -> std::path::PathBuf {
-    common::workspace_root().join("core").join("src").join("work_units.rs")
+    common::workspace_root()
+        .join("core")
+        .join("src")
+        .join("work_units.rs")
 }
 
 fn read_raw(path: &std::path::Path) -> String {
@@ -40,16 +46,25 @@ fn grid_and_details_strip_modules_exist_as_separate_files() {
     // @step When a developer scans the views directory
     // @step Then the file codelet/fspec-tui/src/views/board/grid.rs exists
     let grid = src_dir().join("views").join("board").join("grid.rs");
-    assert!(grid.exists(), "codelet/fspec-tui/src/views/board/grid.rs must exist after RPC-014");
+    assert!(
+        grid.exists(),
+        "codelet/fspec-tui/src/views/board/grid.rs must exist after RPC-014"
+    );
     // @step And the file codelet/fspec-tui/src/views/board/details_strip.rs exists
-    let strip = src_dir().join("views").join("board").join("details_strip.rs");
+    let strip = src_dir()
+        .join("views")
+        .join("board")
+        .join("details_strip.rs");
     assert!(
         strip.exists(),
         "codelet/fspec-tui/src/views/board/details_strip.rs must exist after RPC-014"
     );
     // @step And the file codelet/fspec-tui/src/views/board.rs exists
     let board = src_dir().join("views").join("board.rs");
-    assert!(board.exists(), "codelet/fspec-tui/src/views/board.rs must exist after RPC-014");
+    assert!(
+        board.exists(),
+        "codelet/fspec-tui/src/views/board.rs must exist after RPC-014"
+    );
 }
 
 /// Scenario: New and modified board modules stay under 300 lines
@@ -88,7 +103,11 @@ fn new_and_modified_board_modules_stay_under_300_lines() {
     for path in &targets {
         let lines = count_lines_path(path);
         if lines >= 300 {
-            violations.push(format!("{}: {} lines >= 300 ceiling", path.display(), lines));
+            violations.push(format!(
+                "{}: {} lines >= 300 ceiling",
+                path.display(),
+                lines
+            ));
         }
     }
     // @step Then views/board.rs has fewer than 300 lines
@@ -154,13 +173,22 @@ fn rpc013_invariants_preserved() {
     );
     // @step And codelet/fspec-tui/src/views/mod.rs does NOT contain the identifier "FooterView"
     let mod_rs = read_stripped("views/mod.rs");
-    assert!(!mod_rs.contains("FooterView"), "views/mod.rs must not reference FooterView");
+    assert!(
+        !mod_rs.contains("FooterView"),
+        "views/mod.rs must not reference FooterView"
+    );
     // @step And codelet/fspec-tui/src/lib.rs does NOT contain the identifier "FooterView"
     let lib_rs = read_stripped("lib.rs");
-    assert!(!lib_rs.contains("FooterView"), "lib.rs must not reference FooterView");
+    assert!(
+        !lib_rs.contains("FooterView"),
+        "lib.rs must not reference FooterView"
+    );
     // @step And the file codelet/fspec-tui/src/views/footer.rs does NOT exist
     let footer = src_dir().join("views").join("footer.rs");
-    assert!(!footer.exists(), "codelet/fspec-tui/src/views/footer.rs must not exist");
+    assert!(
+        !footer.exists(),
+        "codelet/fspec-tui/src/views/footer.rs must not exist"
+    );
 }
 
 /// Scenario: BoardView still emits Action variants and renders the RPC-013 footer
@@ -175,20 +203,47 @@ fn board_view_still_emits_action_variants_and_renders_rpc013_footer() {
     let combined = format!("{board}\n{footer}");
     // @step When a developer scans the file source raw
     // @step Then the file contains the substring "Action::EnterWorkUnit"
-    assert!(board.contains("Action::EnterWorkUnit"), "missing Action::EnterWorkUnit in board.rs");
+    assert!(
+        board.contains("Action::EnterWorkUnit"),
+        "missing Action::EnterWorkUnit in board.rs"
+    );
     // @step And the file contains the substring "Action::FocusNextColumn"
-    assert!(board.contains("Action::FocusNextColumn"), "missing Action::FocusNextColumn in board.rs");
+    assert!(
+        board.contains("Action::FocusNextColumn"),
+        "missing Action::FocusNextColumn in board.rs"
+    );
     // @step And the file contains the substring "Action::ReorderUp"
-    assert!(board.contains("Action::ReorderUp"), "missing Action::ReorderUp in board.rs");
+    assert!(
+        board.contains("Action::ReorderUp"),
+        "missing Action::ReorderUp in board.rs"
+    );
     // @step And the file contains the substring "← → Columns"
-    assert!(combined.contains("← →"), "board.rs|footer.rs must contain the '← →' span");
-    assert!(combined.contains("Columns"), "board.rs|footer.rs must contain 'Columns' span");
+    assert!(
+        combined.contains("← →"),
+        "board.rs|footer.rs must contain the '← →' span"
+    );
+    assert!(
+        combined.contains("Columns"),
+        "board.rs|footer.rs must contain 'Columns' span"
+    );
     // @step And the file contains the substring "↵ Work Agent"
-    assert!(combined.contains("↵"), "board.rs|footer.rs must contain '↵' span");
-    assert!(combined.contains("Work Agent"), "board.rs|footer.rs must contain 'Work Agent' span");
+    assert!(
+        combined.contains("↵"),
+        "board.rs|footer.rs must contain '↵' span"
+    );
+    assert!(
+        combined.contains("Work Agent"),
+        "board.rs|footer.rs must contain 'Work Agent' span"
+    );
     // @step And the file contains the substring "ESC Back"
-    assert!(combined.contains("ESC"), "board.rs|footer.rs must contain 'ESC' span");
-    assert!(combined.contains("Back"), "board.rs|footer.rs must contain 'Back' span");
+    assert!(
+        combined.contains("ESC"),
+        "board.rs|footer.rs must contain 'ESC' span"
+    );
+    assert!(
+        combined.contains("Back"),
+        "board.rs|footer.rs must contain 'Back' span"
+    );
 }
 
 /// Scenario: Views still avoid encapsulated transport crates and host runtime construction

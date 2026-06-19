@@ -957,33 +957,43 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // rather than panicking (matches the
         // `list_provider_credentials` graceful-degradation pattern).
         match codelet_providers::custom::list_providers_info() {
-            Ok(list) => list
-                .into_iter()
-                .map(|p| {
-                    let is_custom = p.is_custom;
-                    let display_name = p.display_name.unwrap_or_else(|| p.name.clone());
-                    let models = p
-                        .models
-                        .into_iter()
-                        .map(|m| {
-                            codelet_rpc_types::ModelEntry {
-                                id: m.id.clone(),
-                                display_name: m.id,
-                                context_window: u32::try_from(m.context_window)
-                                    .unwrap_or(u32::MAX),
-                                supports_reasoning: m.supports_thinking,
-                                supports_vision: m.supports_vision,
-                                is_custom,
-                            }
-                        })
-                        .collect();
-                    codelet_rpc_types::ProviderInfo {
-                        key: p.name,
-                        display_name,
-                        models,
-                    }
-                })
-                .collect(),
+            Ok(list) => {
+                let mut providers: Vec<codelet_rpc_types::ProviderInfo> = list
+                    .into_iter()
+                    .map(|p| {
+                        let is_custom = p.is_custom;
+                        let display_name = p.display_name.unwrap_or_else(|| p.name.clone());
+                        let models = p
+                            .models
+                            .into_iter()
+                            .map(|m| {
+                                codelet_rpc_types::ModelEntry {
+                                    id: m.id.clone(),
+                                    display_name: m.id,
+                                    context_window: u32::try_from(m.context_window)
+                                        .unwrap_or(u32::MAX),
+                                    supports_reasoning: m.supports_thinking,
+                                    supports_vision: m.supports_vision,
+                                    is_custom,
+                                }
+                            })
+                            .collect();
+                        // RPC-338: cloud / custom providers are never profile
+                        // sections and are always treated as reachable.
+                        crate::profile_sections::cloud_provider_info(
+                            &p.name,
+                            &display_name,
+                            models,
+                        )
+                    })
+                    .collect();
+                // RPC-338: append local-server profile sections, probing each
+                // profile's `/v1/models` endpoint to compute reachability
+                // (MODEL-004: a profile with custom models is never marked
+                // unreachable). Mirrors TS `loadProfileSections`.
+                providers.extend(crate::profile_sections::build_local_profile_sections());
+                providers
+            }
             Err(e) => {
                 tracing::error!(
                     target: "handle_impl",

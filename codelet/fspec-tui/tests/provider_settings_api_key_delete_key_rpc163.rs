@@ -160,7 +160,10 @@ fn pressing_delete_on_empty_draft_is_a_silent_no_op() {
     let mut view = view_in_edit_api_key_mode();
     assert_edit_draft_for(&view, "anthropic", "");
     // @step And the inline validation status is empty
-    assert!(view.status.is_empty(), "precondition: status must start empty");
+    assert!(
+        view.status.is_empty(),
+        "precondition: status must start empty"
+    );
 
     // @step When I press the Delete key
     let out = view.handle_key(key(KeyCode::Delete));
@@ -230,9 +233,9 @@ fn backspace_and_delete_produce_identical_pops_when_alternated() {
         // @step And every keystroke is reported as ProviderSettingsEvent::Consumed
         match out {
             ProviderSettingsEvent::Consumed => {}
-            ref other => panic!(
-                "expected Consumed for {code:?} → {expected_after:?}, got {other:?}"
-            ),
+            ref other => {
+                panic!("expected Consumed for {code:?} → {expected_after:?}, got {other:?}")
+            }
         }
         last_out = Some(out);
     }
@@ -240,7 +243,10 @@ fn backspace_and_delete_produce_identical_pops_when_alternated() {
     // @step And the final draft is ""
     // @step And the view remains in Detail::EditApiKey for the same provider throughout
     assert_edit_draft_for(&view, "anthropic", "");
-    assert!(last_out.is_some(), "expected at least one keystroke processed");
+    assert!(
+        last_out.is_some(),
+        "expected at least one keystroke processed"
+    );
 }
 
 // ────────────────────────────────────────────────────────────────────────

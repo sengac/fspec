@@ -12,21 +12,19 @@
 use codelet_rpc_types::ProviderCredentialInfo;
 use crossterm::event::{KeyEvent, KeyModifiers};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::widgets::{Clear, Widget};
+use ratatui::layout::Rect;
 use std::collections::HashSet;
 
 use crate::components::scroll_viewport::ensure_visible;
 use crate::components::Action;
 use crate::views::agent::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
-use crate::views::agent::mode_view_render::{render_footer_hint, render_title_with_count};
 use crate::views::agent::slash_commands::SlashCommandAction;
 
 mod detail;
 pub mod footer_hints;
+pub mod icons;
 mod list;
 mod list_nav_render;
-pub mod icons;
 pub mod nav_item;
 mod nav_tree_ops;
 pub mod row_render;
@@ -37,14 +35,16 @@ pub use nav_item::{NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo};
 pub use status_text::DetailStatus;
 pub use test_result::{ProviderTestResult, ProviderTestStatus};
 
-const CHROME_ROWS: u16 = 3;
 pub const DELETE_PROVIDER_CREDS_DIALOG_ID: &str = "delete-provider-creds";
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum ProviderSettingsMode {
     #[default]
     List,
-    Detail { provider_id: String, sub: DetailSub },
+    Detail {
+        provider_id: String,
+        sub: DetailSub,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -212,7 +212,10 @@ impl ProviderSettingsView {
                 }
             }
         }
-        if key.modifiers.intersects(KeyModifiers::CONTROL | KeyModifiers::ALT) {
+        if key
+            .modifiers
+            .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT)
+        {
             return ProviderSettingsEvent::Consumed;
         }
         match self.mode.clone() {
@@ -257,39 +260,36 @@ impl ProviderSettingsView {
     }
 
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        Clear.render(area, buf);
-        let split = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(1),
-                Constraint::Length(1),
-                Constraint::Min(0),
-                Constraint::Length(1),
-            ])
-            .split(area);
-        let (title_area, body_area, footer_area) = (split[0], split[2], split[3]);
-        self.visible_rows = body_area.height as usize;
-        render_title_with_count(
-            title_area,
+        // RPC-337: render via the shared full-screen scaffold. Title +
+        // footer strings are computed up-front (owned) so the body
+        // closure can borrow `self` mutably to capture body height.
+        let title = "Provider Settings";
+        let count = self.nav_items.len();
+        let footer = self.footer_hint();
+        let overlay = self.delete_confirm.clone();
+        crate::views::full_screen_shell::render_full_screen_scaffold(
+            area,
             buf,
-            "Provider Settings",
-            self.nav_items.len(),
+            title,
+            count,
             "items",
+            &footer,
+            |body_area, buf| {
+                self.visible_rows = body_area.height as usize;
+                match &self.mode {
+                    ProviderSettingsMode::List => list::render_list(self, body_area, buf),
+                    ProviderSettingsMode::Detail { provider_id, sub } => {
+                        detail::render_detail(self, body_area, buf, provider_id, sub);
+                    }
+                }
+            },
+            overlay.as_ref(),
         );
-        match &self.mode {
-            ProviderSettingsMode::List => list::render_list(self, body_area, buf),
-            ProviderSettingsMode::Detail { provider_id, sub } => {
-                detail::render_detail(self, body_area, buf, provider_id, sub);
-            }
-        }
-        render_footer_hint(footer_area, buf, &self.footer_hint());
-        if let Some(dialog) = self.delete_confirm.as_ref() {
-            dialog.render(area, buf);
-        }
     }
 
     pub fn visible_rows_for(area: Rect) -> usize {
-        area.height.saturating_sub(CHROME_ROWS) as usize
+        area.height
+            .saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
     }
 }
 

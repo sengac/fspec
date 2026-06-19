@@ -60,7 +60,8 @@ impl AgentViewStore {
         if count == 0 {
             self.supervisor_pending_count_by_session.remove(&session);
         } else {
-            self.supervisor_pending_count_by_session.insert(session, count);
+            self.supervisor_pending_count_by_session
+                .insert(session, count);
         }
     }
 

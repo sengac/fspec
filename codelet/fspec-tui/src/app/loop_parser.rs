@@ -48,14 +48,12 @@ fn leading_interval_re() -> &'static Regex {
 fn trailing_interval_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| {
-        Regex::new(
-            r"(?i)\s+every\s+(\d+)\s*(s|sec|seconds?|m|min|minutes?|h|hrs?|hours?|d|days?)$",
-        )
-        .unwrap_or_else(|_| {
-            // SAFETY: "^$" is a trivially valid regex — unwrap is infallible.
-            #[allow(clippy::expect_used)]
-            Regex::new("^$").expect("infallible fallback regex")
-        })
+        Regex::new(r"(?i)\s+every\s+(\d+)\s*(s|sec|seconds?|m|min|minutes?|h|hrs?|hours?|d|days?)$")
+            .unwrap_or_else(|_| {
+                // SAFETY: "^$" is a trivially valid regex — unwrap is infallible.
+                #[allow(clippy::expect_used)]
+                Regex::new("^$").expect("infallible fallback regex")
+            })
     })
 }
 
@@ -99,9 +97,7 @@ pub fn parse_loop_command(input: &str) -> LoopSubcommand {
     {
         let id = rest.trim();
         if !id.is_empty() {
-            return LoopSubcommand::Cancel {
-                id: id.to_string(),
-            };
+            return LoopSubcommand::Cancel { id: id.to_string() };
         }
     }
     if body.eq_ignore_ascii_case("cancel") {
@@ -112,7 +108,10 @@ pub fn parse_loop_command(input: &str) -> LoopSubcommand {
     let mut parts = body.split_whitespace();
     if let Some(first) = parts.next() {
         if let Some(caps) = leading_interval_re().captures(first) {
-            let value: u32 = caps.get(1).and_then(|m| m.as_str().parse().ok()).unwrap_or(1);
+            let value: u32 = caps
+                .get(1)
+                .and_then(|m| m.as_str().parse().ok())
+                .unwrap_or(1);
             let unit = caps.get(2).map(|m| m.as_str()).unwrap_or("s");
             let interval_seconds = unit_to_seconds(value, unit);
             let remaining: Vec<&str> = parts.collect();
@@ -130,7 +129,10 @@ pub fn parse_loop_command(input: &str) -> LoopSubcommand {
     if let Some(m) = trailing_interval_re().find(body) {
         let captured = m.as_str();
         if let Some(caps) = trailing_interval_re().captures(captured) {
-            let value: u32 = caps.get(1).and_then(|m| m.as_str().parse().ok()).unwrap_or(1);
+            let value: u32 = caps
+                .get(1)
+                .and_then(|m| m.as_str().parse().ok())
+                .unwrap_or(1);
             let unit = caps.get(2).map(|m| m.as_str()).unwrap_or("s");
             let interval_seconds = unit_to_seconds(value, unit);
             let prompt = body[..m.start()].trim().to_string();

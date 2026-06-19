@@ -12,15 +12,24 @@ fn src_dir() -> std::path::PathBuf {
 }
 
 fn rpc_types_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc-types").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc-types")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn rpc_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn napi_git_rs() -> std::path::PathBuf {
-    common::workspace_root().join("napi").join("src").join("git.rs")
+    common::workspace_root()
+        .join("napi")
+        .join("src")
+        .join("git.rs")
 }
 
 fn read_raw(path: &std::path::Path) -> String {
@@ -44,13 +53,28 @@ fn header_widget_modules_exist_as_separate_files() {
     // @step When a developer scans the views/board/ directory
     // @step Then the file codelet/fspec-tui/src/views/board/logo.rs exists
     let logo = src_dir().join("views").join("board").join("logo.rs");
-    assert!(logo.exists(), "views/board/logo.rs must exist after RPC-015");
+    assert!(
+        logo.exists(),
+        "views/board/logo.rs must exist after RPC-015"
+    );
     // @step And the file codelet/fspec-tui/src/views/board/checkpoint_status.rs exists
-    let cs = src_dir().join("views").join("board").join("checkpoint_status.rs");
-    assert!(cs.exists(), "views/board/checkpoint_status.rs must exist after RPC-015");
+    let cs = src_dir()
+        .join("views")
+        .join("board")
+        .join("checkpoint_status.rs");
+    assert!(
+        cs.exists(),
+        "views/board/checkpoint_status.rs must exist after RPC-015"
+    );
     // @step And the file codelet/fspec-tui/src/views/board/keybinding_shortcuts.rs exists
-    let kb = src_dir().join("views").join("board").join("keybinding_shortcuts.rs");
-    assert!(kb.exists(), "views/board/keybinding_shortcuts.rs must exist after RPC-015");
+    let kb = src_dir()
+        .join("views")
+        .join("board")
+        .join("keybinding_shortcuts.rs");
+    assert!(
+        kb.exists(),
+        "views/board/keybinding_shortcuts.rs must exist after RPC-015"
+    );
 }
 
 /// Scenario: New and modified board modules stay under 300 lines
@@ -85,7 +109,11 @@ fn new_and_modified_board_modules_stay_under_300_lines() {
     for path in &targets {
         let lines = count_lines_path(path);
         if lines >= 300 {
-            violations.push(format!("{}: {} lines >= 300 ceiling", path.display(), lines));
+            violations.push(format!(
+                "{}: {} lines >= 300 ceiling",
+                path.display(),
+                lines
+            ));
         }
     }
     // @step Then views/board.rs has fewer than 300 lines
@@ -195,20 +223,35 @@ fn rpc013_and_rpc014_invariants_preserved() {
     );
     // @step And codelet/fspec-tui/src/views/mod.rs does NOT contain the identifier "FooterView"
     let mod_rs = read_stripped("views/mod.rs");
-    assert!(!mod_rs.contains("FooterView"), "views/mod.rs must not reference FooterView");
+    assert!(
+        !mod_rs.contains("FooterView"),
+        "views/mod.rs must not reference FooterView"
+    );
     // @step And codelet/fspec-tui/src/lib.rs does NOT contain the identifier "FooterView"
     let lib_rs = read_stripped("lib.rs");
-    assert!(!lib_rs.contains("FooterView"), "lib.rs must not reference FooterView");
+    assert!(
+        !lib_rs.contains("FooterView"),
+        "lib.rs must not reference FooterView"
+    );
     // @step And the file codelet/fspec-tui/src/views/footer.rs does NOT exist
     let footer = src_dir().join("views").join("footer.rs");
     assert!(!footer.exists(), "views/footer.rs must not exist");
     // @step And codelet/fspec-tui/src/views/board.rs still contains the substring "Action::EnterWorkUnit"
     let board = read_raw(&src_dir().join("views").join("board.rs"));
-    assert!(board.contains("Action::EnterWorkUnit"), "board.rs must still emit Action::EnterWorkUnit");
+    assert!(
+        board.contains("Action::EnterWorkUnit"),
+        "board.rs must still emit Action::EnterWorkUnit"
+    );
     // @step And codelet/fspec-tui/src/views/board.rs still contains the substring "Action::FocusNextColumn"
-    assert!(board.contains("Action::FocusNextColumn"), "board.rs must still emit Action::FocusNextColumn");
+    assert!(
+        board.contains("Action::FocusNextColumn"),
+        "board.rs must still emit Action::FocusNextColumn"
+    );
     // @step And codelet/fspec-tui/src/views/board.rs still contains the substring "Action::ReorderUp"
-    assert!(board.contains("Action::ReorderUp"), "board.rs must still emit Action::ReorderUp");
+    assert!(
+        board.contains("Action::ReorderUp"),
+        "board.rs must still emit Action::ReorderUp"
+    );
 }
 
 /// Scenario: Views still avoid encapsulated transport crates and host runtime construction

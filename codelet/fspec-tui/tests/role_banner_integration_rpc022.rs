@@ -23,7 +23,12 @@ mod common;
 
 /// Helper: render AgentView at the supplied dimensions and return the
 /// resulting buffer as a Vec<String> (one entry per row).
-fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
+fn render_rows(
+    width: u16,
+    height: u16,
+    store: &mut AgentViewStore,
+    view: &mut AgentView,
+) -> Vec<String> {
     let backend = TestBackend::new(width, height);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|frame| {
@@ -67,10 +72,7 @@ fn scrollback_block_height(rows: &[String]) -> usize {
     // banner so the scrollback height is exactly 1 row larger).
     let mut bottom = rows.len();
     for (i, row) in rows.iter().enumerate().rev() {
-        if row.contains("> Type a message")
-            || row.contains("> ")
-            || (i > 0 && row.contains('/'))
-        {
+        if row.contains("> Type a message") || row.contains("> ") || (i > 0 && row.contains('/')) {
             bottom = i;
             break;
         }
@@ -129,7 +131,11 @@ fn role_banner_renders_one_row_when_role_is_set() {
         .iter()
         .filter(|r| r.trim_start().starts_with("Role:"))
         .collect();
-    assert_eq!(role_rows.len(), 1, "expected exactly 1 Role: row, got {role_rows:?}");
+    assert_eq!(
+        role_rows.len(),
+        1,
+        "expected exactly 1 Role: row, got {role_rows:?}"
+    );
     // @step And the substring "You are a security reviewer" appears on that row
     assert!(role_rows[0].contains("You are a security reviewer"));
     // @step And the scrollback Block height shrinks by exactly 1 row compared to the no-role layout
@@ -281,8 +287,5 @@ fn role_banner_rs_stays_under_300_lines() {
     // @step When a test counts the line-count of the file
     let lines = common::read_to_string_or_panic(&path).lines().count();
     // @step Then the file has fewer than 300 lines
-    assert!(
-        lines < 300,
-        "role_banner.rs has {lines} lines (>= 300)"
-    );
+    assert!(lines < 300, "role_banner.rs has {lines} lines (>= 300)");
 }

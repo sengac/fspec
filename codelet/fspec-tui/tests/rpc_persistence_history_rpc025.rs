@@ -39,8 +39,7 @@ static DATA_DIR_MUTEX: Mutex<()> = Mutex::new(());
 fn setup_parity_temp_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
     let guard = DATA_DIR_MUTEX.lock().expect("DATA_DIR_MUTEX");
     let temp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(temp.path().to_path_buf())
-        .expect("set_data_directory");
+    codelet_common::set_data_directory(temp.path().to_path_buf()).expect("set_data_directory");
     (guard, temp)
 }
 
@@ -224,11 +223,8 @@ async fn websocket_backend_persistence_add_history_round_trips_to_core_store() {
         .await
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When WebSocketFspecBackend.persistence_add_history(SessionId("s-2"), "ws hello") is awaited
     backend
         .persistence_add_history(SessionId::new("s-2"), "ws hello".to_string())
@@ -255,11 +251,8 @@ async fn cross_transport_parity_for_persistence_get_history() {
         .await
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let ws: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let ws: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
 
     // @step And persistence_add_history is called via the EmbeddedFspecBackend for SessionId("s-1") with text "shared"
     embedded
@@ -297,11 +290,8 @@ async fn cross_transport_parity_for_persistence_search_history() {
         .await
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let ws: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let ws: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
 
     // @step And persistence_add_history is called via the WebSocketFspecBackend for SessionId("s-1") with texts "alpha", "beta"
     ws.persistence_add_history(SessionId::new("s-1"), "alpha".to_string())

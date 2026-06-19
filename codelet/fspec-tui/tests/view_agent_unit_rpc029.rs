@@ -105,13 +105,25 @@ async fn scrollback_area_has_no_border_and_no_agent_title() {
     let buf = render_buffer(80, 20, &mut store, &mut view);
     let full: String = rows_of(&buf).join("\n");
     // @step Then the rendered buffer does NOT contain the substring "┌"
-    assert!(!full.contains('┌'), "scrollback must have no top-left border glyph");
+    assert!(
+        !full.contains('┌'),
+        "scrollback must have no top-left border glyph"
+    );
     // @step And the rendered buffer does NOT contain the substring "└"
-    assert!(!full.contains('└'), "scrollback must have no bottom-left border glyph");
+    assert!(
+        !full.contains('└'),
+        "scrollback must have no bottom-left border glyph"
+    );
     // @step And the rendered buffer does NOT contain the substring "│"
-    assert!(!full.contains('│'), "scrollback must have no vertical border glyph");
+    assert!(
+        !full.contains('│'),
+        "scrollback must have no vertical border glyph"
+    );
     // @step And the rendered buffer does NOT contain the substring " Agent — "
-    assert!(!full.contains(" Agent — "), "scrollback must not paint ' Agent — ' title");
+    assert!(
+        !full.contains(" Agent — "),
+        "scrollback must not paint ' Agent — ' title"
+    );
 }
 
 /// Scenario: Input area has no border and prompt sits at padded column
@@ -131,10 +143,16 @@ async fn input_area_has_no_border_and_prompt_sits_at_padded_column() {
     // @step Then the input row contains the substring "> "
     assert!(input_row.contains("> "), "input row should contain '> '");
     // @step And the input row does NOT contain the substring "│"
-    assert!(!input_row.contains('│'), "input row must have no vertical border glyph");
+    assert!(
+        !input_row.contains('│'),
+        "input row must have no vertical border glyph"
+    );
     // @step And the cell at column 1 of the input row contains the character ">"
     let cell = buf[(1, input_y as u16)].symbol();
-    assert_eq!(cell, ">", "input prompt '>' must sit at column 1 (paddingX=1)");
+    assert_eq!(
+        cell, ">",
+        "input prompt '>' must sit at column 1 (paddingX=1)"
+    );
 }
 
 /// Scenario: Footer row appears strictly above the input row
@@ -282,13 +300,29 @@ async fn header_and_footer_have_horizontal_padding_of_one_column_on_both_edges()
     let footer_y = find_row(&buf, "/tmp/scratch").expect("find footer row");
     let last_x = buf.area.width - 1;
     // @step Then the first column of the header row contains no glyph
-    assert_eq!(buf[(0, header_y)].symbol(), " ", "header col 0 must be empty");
+    assert_eq!(
+        buf[(0, header_y)].symbol(),
+        " ",
+        "header col 0 must be empty"
+    );
     // @step And the last column of the header row contains no glyph
-    assert_eq!(buf[(last_x, header_y)].symbol(), " ", "header last col must be empty");
+    assert_eq!(
+        buf[(last_x, header_y)].symbol(),
+        " ",
+        "header last col must be empty"
+    );
     // @step And the first column of the footer row contains no glyph
-    assert_eq!(buf[(0, footer_y)].symbol(), " ", "footer col 0 must be empty");
+    assert_eq!(
+        buf[(0, footer_y)].symbol(),
+        " ",
+        "footer col 0 must be empty"
+    );
     // @step And the last column of the footer row contains no glyph
-    assert_eq!(buf[(last_x, footer_y)].symbol(), " ", "footer last col must be empty");
+    assert_eq!(
+        buf[(last_x, footer_y)].symbol(),
+        " ",
+        "footer last col must be empty"
+    );
 }
 
 /// Scenario: Footer left side is empty - no Enter=send / Ctrl+C / ESC=back hints
@@ -306,11 +340,20 @@ async fn footer_left_side_is_empty_no_hints() {
     let footer_y = find_row(&buf, "/tmp/scratch").expect("find footer row");
     let row = &rows_of(&buf)[footer_y as usize];
     // @step Then the footer row does NOT contain the substring "Enter=send"
-    assert!(!row.contains("Enter=send"), "footer must not contain 'Enter=send'; got: {row:?}");
+    assert!(
+        !row.contains("Enter=send"),
+        "footer must not contain 'Enter=send'; got: {row:?}"
+    );
     // @step And the footer row does NOT contain the substring "Ctrl+C"
-    assert!(!row.contains("Ctrl+C"), "footer must not contain 'Ctrl+C'; got: {row:?}");
+    assert!(
+        !row.contains("Ctrl+C"),
+        "footer must not contain 'Ctrl+C'; got: {row:?}"
+    );
     // @step And the footer row does NOT contain the substring "ESC=back"
-    assert!(!row.contains("ESC=back"), "footer must not contain 'ESC=back'; got: {row:?}");
+    assert!(
+        !row.contains("ESC=back"),
+        "footer must not contain 'ESC=back'; got: {row:?}"
+    );
 }
 
 /// Scenario: Footer branch glyph uses ⎇ U+2387 not ⌥ U+2325
@@ -335,7 +378,10 @@ async fn footer_branch_glyph_uses_alternative_key_not_option_key() {
         "footer must contain '[⎇ main]' (U+2387); got: {row:?}"
     );
     // @step And the footer row does NOT contain the substring "[⌥"
-    assert!(!row.contains("[\u{2325}"), "footer must not contain '[⌥' (U+2325); got: {row:?}");
+    assert!(
+        !row.contains("[\u{2325}"),
+        "footer must not contain '[⌥' (U+2325); got: {row:?}"
+    );
 }
 
 /// Scenario: Footer cwd span is dark-grey and bracketed branch span is cyan
@@ -404,9 +450,14 @@ async fn header_debug_badge_paints_red_bold_when_debug_enabled() {
     };
     // @step When the SessionHeader renders against an 80x1 buffer
     let buf = render_header_row(header);
-    let row: String = (0..buf.area.width).map(|x| buf[(x, 0)].symbol().to_string()).collect();
+    let row: String = (0..buf.area.width)
+        .map(|x| buf[(x, 0)].symbol().to_string())
+        .collect();
     // @step Then the rendered buffer's row 0 contains the substring "[DEBUG]"
-    assert!(row.contains("[DEBUG]"), "header must paint '[DEBUG]'; got: {row:?}");
+    assert!(
+        row.contains("[DEBUG]"),
+        "header must paint '[DEBUG]'; got: {row:?}"
+    );
     // @step And the cell containing the "D" of "[DEBUG]" has foreground color Red and Bold modifier
     let idx = row.find("[DEBUG]").expect("find debug badge");
     let prefix = &row[..idx];
@@ -451,9 +502,14 @@ async fn header_isolated_badge_paints_green_when_session_is_isolated() {
     };
     // @step When the SessionHeader renders against an 80x1 buffer
     let buf = render_header_row(header);
-    let row: String = (0..buf.area.width).map(|x| buf[(x, 0)].symbol().to_string()).collect();
+    let row: String = (0..buf.area.width)
+        .map(|x| buf[(x, 0)].symbol().to_string())
+        .collect();
     // @step Then the rendered buffer's row 0 contains the substring "[ISOLATED]"
-    assert!(row.contains("[ISOLATED]"), "header must paint '[ISOLATED]'; got: {row:?}");
+    assert!(
+        row.contains("[ISOLATED]"),
+        "header must paint '[ISOLATED]'; got: {row:?}"
+    );
     // @step And the cell containing the "I" of "[ISOLATED]" has foreground color Green
     let idx = row.find("[ISOLATED]").expect("find isolated badge");
     let prefix = &row[..idx];

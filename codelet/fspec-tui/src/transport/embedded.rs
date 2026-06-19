@@ -20,8 +20,7 @@ use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
     FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
-    IsolatedSessionInfo,
-    LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
+    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
     SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
     SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
@@ -136,11 +135,17 @@ impl FspecBackend for EmbeddedFspecBackend {
 
     async fn get_model_info(&self, session_id: SessionId) -> Result<ModelInfo> {
         // RPC-018: one-line delegate to the shared tarpc method.
-        Ok(self.client.get_model_info(context::current(), session_id).await?)
+        Ok(self
+            .client
+            .get_model_info(context::current(), session_id)
+            .await?)
     }
 
     async fn get_thinking_level(&self, session_id: SessionId) -> Result<ThinkingLevel> {
-        Ok(self.client.get_thinking_level(context::current(), session_id).await?)
+        Ok(self
+            .client
+            .get_thinking_level(context::current(), session_id)
+            .await?)
     }
 
     async fn get_workspace_info(&self) -> Result<WorkspaceInfo> {
@@ -163,11 +168,7 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn persistence_get_history(
-        &self,
-        session: SessionId,
-        limit: u32,
-    ) -> Result<Vec<String>> {
+    async fn persistence_get_history(&self, session: SessionId, limit: u32) -> Result<Vec<String>> {
         self.client
             .persistence_get_history(context::current(), session, limit)
             .await?
@@ -207,11 +208,7 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn set_thinking_level(
-        &self,
-        session_id: SessionId,
-        level: ThinkingLevel,
-    ) -> Result<()> {
+    async fn set_thinking_level(&self, session_id: SessionId, level: ThinkingLevel) -> Result<()> {
         self.client
             .set_thinking_level(context::current(), session_id, level)
             .await?
@@ -239,11 +236,7 @@ impl FspecBackend for EmbeddedFspecBackend {
             .await?)
     }
 
-    async fn set_session_role(
-        &self,
-        session_id: SessionId,
-        role: Option<String>,
-    ) -> Result<()> {
+    async fn set_session_role(&self, session_id: SessionId, role: Option<String>) -> Result<()> {
         self.client
             .set_session_role(context::current(), session_id, role)
             .await?
@@ -372,11 +365,7 @@ impl FspecBackend for EmbeddedFspecBackend {
             .await?)
     }
 
-    async fn set_pending_input(
-        &self,
-        session_id: SessionId,
-        text: Option<String>,
-    ) -> Result<()> {
+    async fn set_pending_input(&self, session_id: SessionId, text: Option<String>) -> Result<()> {
         self.client
             .set_pending_input(context::current(), session_id, text)
             .await?;
@@ -431,20 +420,14 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(anyhow::Error::msg)
     }
 
-    async fn get_subordinate(
-        &self,
-        supervisor_id: SessionId,
-    ) -> Result<Option<SessionId>> {
+    async fn get_subordinate(&self, supervisor_id: SessionId) -> Result<Option<SessionId>> {
         Ok(self
             .client
             .get_subordinate(context::current(), supervisor_id)
             .await?)
     }
 
-    async fn get_subordinates(
-        &self,
-        supervisor_id: SessionId,
-    ) -> Result<Vec<SessionId>> {
+    async fn get_subordinates(&self, supervisor_id: SessionId) -> Result<Vec<SessionId>> {
         Ok(self
             .client
             .get_subordinates(context::current(), supervisor_id)
@@ -476,11 +459,7 @@ impl FspecBackend for EmbeddedFspecBackend {
         Ok(())
     }
 
-    async fn toggle_debug(
-        &self,
-        session_id: SessionId,
-        debug_dir: String,
-    ) -> Result<String> {
+    async fn toggle_debug(&self, session_id: SessionId, debug_dir: String) -> Result<String> {
         self.client
             .toggle_debug(context::current(), session_id, debug_dir)
             .await?
@@ -508,11 +487,7 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn pause_triple(
-        &self,
-        session_id: SessionId,
-        choice: ApprovalChoice,
-    ) -> Result<()> {
+    async fn pause_triple(&self, session_id: SessionId, choice: ApprovalChoice) -> Result<()> {
         self.client
             .pause_triple(context::current(), session_id, choice)
             .await?
@@ -544,21 +519,14 @@ impl FspecBackend for EmbeddedFspecBackend {
             .await?)
     }
 
-    async fn send_fspec_result(
-        &self,
-        session_id: SessionId,
-        result: FspecResult,
-    ) -> Result<()> {
+    async fn send_fspec_result(&self, session_id: SessionId, result: FspecResult) -> Result<()> {
         self.client
             .send_fspec_result(context::current(), session_id, result)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn create_isolated_session(
-        &self,
-        role: Option<String>,
-    ) -> Result<IsolatedSessionInfo> {
+    async fn create_isolated_session(&self, role: Option<String>) -> Result<IsolatedSessionInfo> {
         self.client
             .create_isolated_session(context::current(), role)
             .await?
@@ -611,10 +579,7 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
-    async fn test_provider_connection(
-        &self,
-        provider_id: String,
-    ) -> Result<TestConnectionResult> {
+    async fn test_provider_connection(&self, provider_id: String) -> Result<TestConnectionResult> {
         self.client
             .test_provider_connection(context::current(), provider_id)
             .await?
@@ -734,7 +699,10 @@ impl FspecBackend for EmbeddedFspecBackend {
     }
 
     async fn loop_list(&self, session_id: SessionId) -> Result<Vec<RegisteredLoop>> {
-        Ok(self.client.loop_list(context::current(), session_id).await?)
+        Ok(self
+            .client
+            .loop_list(context::current(), session_id)
+            .await?)
     }
 
     /// RPC-037: subscribe to the session manager's status broadcast.

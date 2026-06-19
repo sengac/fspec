@@ -42,7 +42,8 @@ impl BoardStore {
         // Unconditional wrap-around — euclidean modulo handles both
         // directions even when |delta| > len.
         let wrapped = proposed.rem_euclid(len_i) as usize;
-        self.selected_index_per_column.insert(column.clone(), wrapped);
+        self.selected_index_per_column
+            .insert(column.clone(), wrapped);
         adjust_scroll_offset(self, &column, wrapped, viewport_height, len);
     }
 
@@ -107,7 +108,8 @@ impl BoardStore {
             return;
         }
         let clamped = index.min(len.saturating_sub(1));
-        self.selected_index_per_column.insert(column.clone(), clamped);
+        self.selected_index_per_column
+            .insert(column.clone(), clamped);
         if viewport_height == 0 {
             return;
         }
@@ -156,12 +158,10 @@ fn adjust_scroll_offset(
         let first_pass = (selected + 1).saturating_sub(estimated_effective);
         let test_up_arrow = first_pass > 0;
         let test_down_arrow = first_pass.saturating_add(viewport_height) < len;
-        let test_arrows =
-            usize::from(test_up_arrow) + usize::from(test_down_arrow);
+        let test_arrows = usize::from(test_up_arrow) + usize::from(test_down_arrow);
         let test_effective = viewport_height.saturating_sub(test_arrows);
         let tail_correction = usize::from(!test_up_arrow);
-        let mut new_offset =
-            (selected + tail_correction).saturating_sub(test_effective);
+        let mut new_offset = (selected + tail_correction).saturating_sub(test_effective);
         // Clamp to [0, len - viewport_height] — TS uses
         // `Math.max(0, columnUnits.length - VIEWPORT_HEIGHT)`.
         let max_offset = len.saturating_sub(viewport_height);

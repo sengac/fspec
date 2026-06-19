@@ -22,10 +22,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use crate::components::{Action, EventResult, Priority};
 use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
-use crate::views::{
-    AgentView, BlocklistEvent, BlocklistView, BoardView, ProviderSettingsEvent,
-    ProviderSettingsView,
-};
+use crate::views::{AgentView, BlocklistView, BoardView, ModelSelectorView, ProviderSettingsView};
 
 /// Which top-level view is currently visible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -39,6 +36,11 @@ pub enum ViewMode {
     /// RPC-056: BlocklistView entered via the `/blocklist` slash
     /// command. Returns to `Agent` on Esc.
     Blocklist,
+    /// RPC-337: full-screen ModelSelectorView entered via `/model`
+    /// (`OpenModelSelectorView`) or ProviderSettings Tab
+    /// (`SwitchToModels`). Returns to `Agent` on Esc or after a model
+    /// is committed.
+    ModelSelector,
 }
 
 /// Top-level navigator. Owns the BoardView + AgentView components; the
@@ -53,6 +55,8 @@ pub struct Navigator {
     /// RPC-056: BlocklistView owned by the Navigator alongside the
     /// existing children.
     pub blocklist: BlocklistView,
+    /// RPC-337: full-screen ModelSelectorView owned by the Navigator.
+    pub model_selector: ModelSelectorView,
     pub active_view: ViewMode,
     pub action_tx: Option<UnboundedSender<Action>>,
 }
@@ -64,6 +68,7 @@ impl Navigator {
             agent: AgentView::new(action_tx.clone()),
             provider_settings: ProviderSettingsView::new(),
             blocklist: BlocklistView::new(),
+            model_selector: ModelSelectorView::new(),
             active_view: ViewMode::Board,
             action_tx: Some(action_tx),
         }
@@ -81,69 +86,13 @@ impl Navigator {
     /// extended this from `Event::Key`-only forwarding so the BoardView
     /// mouse-handling slice sees `Event::Mouse(_)` for wheel scroll and
     /// click-to-focus hit-testing.
-    pub fn handle_event(
-        &mut self,
-        event: &Event,
-        board_store: &BoardStore,
-    ) -> EventResult {
+    pub fn handle_event(&mut self, event: &Event, board_store: &BoardStore) -> EventResult {
         match self.active_view {
             ViewMode::Board => self.board.handle_event(event, board_store),
             ViewMode::Agent => self.agent.handle_event(event),
             ViewMode::ProviderSettings => self.handle_provider_settings_event(event),
             ViewMode::Blocklist => self.handle_blocklist_event(event),
-        }
-    }
-
-    /// RPC-054: forward key events to the ProviderSettingsView and
-    /// translate its `ProviderSettingsEvent` outcomes onto the action
-    /// bus.
-    fn handle_provider_settings_event(&mut self, event: &Event) -> EventResult {
-        let Event::Key(key) = event else {
-            return EventResult::ignored();
-        };
-        match self.provider_settings.handle_key(*key) {
-            ProviderSettingsEvent::Consumed => EventResult::consumed(),
-            ProviderSettingsEvent::Ignored => EventResult::ignored(),
-            ProviderSettingsEvent::Close => {
-                if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(Action::CloseProviderSettingsView);
-                }
-                EventResult::consumed()
-            }
-            ProviderSettingsEvent::Emit(action) => {
-                if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(action);
-                }
-                EventResult::consumed()
-            }
-            // RPC-160: Tab→SwitchToModels — Consumed for now;
-            // model-settings view transition deferred to follow-up.
-            ProviderSettingsEvent::SwitchToModels => EventResult::consumed(),
-        }
-    }
-
-    /// RPC-056: forward key events to the BlocklistView and translate
-    /// its `BlocklistEvent` outcomes onto the action bus. Mirrors
-    /// `handle_provider_settings_event`.
-    fn handle_blocklist_event(&mut self, event: &Event) -> EventResult {
-        let Event::Key(key) = event else {
-            return EventResult::ignored();
-        };
-        match self.blocklist.handle_key(*key) {
-            BlocklistEvent::Consumed => EventResult::consumed(),
-            BlocklistEvent::Ignored => EventResult::ignored(),
-            BlocklistEvent::Close => {
-                if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(Action::CloseBlocklistView);
-                }
-                EventResult::consumed()
-            }
-            BlocklistEvent::Emit(action) => {
-                if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(action);
-                }
-                EventResult::consumed()
-            }
+            ViewMode::ModelSelector => self.handle_model_selector_event(event),
         }
     }
 
@@ -165,6 +114,16 @@ impl Navigator {
             Action::CloseProviderSettingsView => self.active_view = ViewMode::Agent,
             Action::OpenBlocklistView => self.active_view = ViewMode::Blocklist,
             Action::CloseBlocklistView => self.active_view = ViewMode::Agent,
+            // RPC-337: model selector mode-view flips.
+            Action::OpenModelSelectorView => {
+                self.active_view = ViewMode::ModelSelector;
+            }
+            // Committing a model OR explicit close both return to Agent.
+            Action::CloseModelSelectorView | Action::ModelSelected(..)
+                if self.active_view == ViewMode::ModelSelector =>
+            {
+                self.active_view = ViewMode::Agent;
+            }
             _ => {}
         }
     }
@@ -199,6 +158,9 @@ impl Navigator {
                     .unwrap_or(&empty);
                 self.blocklist.render(area, buf, disabled);
             }
+            ViewMode::ModelSelector => {
+                self.model_selector.render(area, buf);
+            }
         }
     }
 }
@@ -224,7 +186,7 @@ mod tests {
             estimate: None,
             epic: None,
             attachments: Vec::new(),
-        last_state_change_at: None,
+            last_state_change_at: None,
         }
     }
 
@@ -233,11 +195,7 @@ mod tests {
         (Navigator::new(Arc::new(Theme::default()), tx), rx)
     }
 
-    fn render(
-        nav: &mut Navigator,
-        board: &BoardStore,
-        agent: &mut AgentViewStore,
-    ) -> String {
+    fn render(nav: &mut Navigator, board: &BoardStore, agent: &mut AgentViewStore) -> String {
         let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
         term.draw(|frame| {
             nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
@@ -291,9 +249,15 @@ mod tests {
         assert_eq!(nav.active_view, ViewMode::Board);
         // RPC-097: OpenAgentView(None) must NOT flip — dialog overlays board.
         nav.apply_action(&Action::OpenAgentView(None));
-        assert_eq!(nav.active_view, ViewMode::Board, "OpenAgentView(None) must keep view on Board");
+        assert_eq!(
+            nav.active_view,
+            ViewMode::Board,
+            "OpenAgentView(None) must keep view on Board"
+        );
         // OpenAgentView(Some(_)) DOES flip — jumping into existing session.
-        nav.apply_action(&Action::OpenAgentView(Some(codelet_rpc_types::SessionId::new("s-1"))));
+        nav.apply_action(&Action::OpenAgentView(Some(
+            codelet_rpc_types::SessionId::new("s-1"),
+        )));
         assert_eq!(nav.active_view, ViewMode::Agent);
     }
 }

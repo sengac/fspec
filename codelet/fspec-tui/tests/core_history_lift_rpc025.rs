@@ -31,8 +31,7 @@ static DATA_DIR_MUTEX: Mutex<()> = Mutex::new(());
 fn setup_temp_data_dir() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
     let guard = DATA_DIR_MUTEX.lock().expect("DATA_DIR_MUTEX poisoned");
     let temp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(temp.path().to_path_buf())
-        .expect("set_data_directory");
+    codelet_common::set_data_directory(temp.path().to_path_buf()).expect("set_data_directory");
     (guard, temp)
 }
 
@@ -53,10 +52,7 @@ fn core_history_add_writes_jsonl_and_round_trips_via_get() {
         .join("history.jsonl");
     assert!(jsonl_path.is_file(), "history.jsonl must exist after add");
     let contents = std::fs::read_to_string(&jsonl_path).expect("read history.jsonl");
-    let line_count = contents
-        .lines()
-        .filter(|l| !l.trim().is_empty())
-        .count();
+    let line_count = contents.lines().filter(|l| !l.trim().is_empty()).count();
     assert_eq!(line_count, 1, "exactly one JSONL line expected");
     assert!(
         contents.contains("\"display\":\"hello core\""),
@@ -91,7 +87,8 @@ fn core_history_get_returns_newest_first_with_optional_filter() {
     assert_eq!(p1_displays, vec!["entry-b", "entry-a"]);
 
     // @step When codelet_core::persistence::history::get(Some("/p1"), Some(1)) is called
-    let p1_one = core_history::get(Some(std::path::Path::new("/p1")), Some(1)).expect("get p1 limit 1");
+    let p1_one =
+        core_history::get(Some(std::path::Path::new("/p1")), Some(1)).expect("get p1 limit 1");
     // @step Then the returned Vec is ordered ["entry-b"]
     assert_eq!(p1_one.len(), 1);
     assert_eq!(p1_one[0].display, "entry-b");
@@ -195,7 +192,11 @@ fn napi_search_history_returns_same_vec_as_core_search() {
 fn history_entry_to_history_match_emits_rfc3339_timestamp() {
     // @step Given a HistoryEntry with display "submitted text", session_id Uuid("...-1"), and a known timestamp
     let session_uuid = Uuid::nil();
-    let entry = HistoryEntry::new("submitted text".to_string(), PathBuf::from("/p"), session_uuid);
+    let entry = HistoryEntry::new(
+        "submitted text".to_string(),
+        PathBuf::from("/p"),
+        session_uuid,
+    );
     // @step When HistoryEntry::to_history_match() is called
     let mat = entry.to_history_match();
     // @step Then the returned HistoryMatch.text equals "submitted text"

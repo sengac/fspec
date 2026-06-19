@@ -37,16 +37,18 @@ fn workspace_with_seed(cwd: &Path) {
     .expect("write work-units.json");
 }
 
-fn build_service() -> (TempDir, Arc<SharedFspecService>, Arc<StubSessionManagerHandle>) {
+fn build_service() -> (
+    TempDir,
+    Arc<SharedFspecService>,
+    Arc<StubSessionManagerHandle>,
+) {
     let temp = tempfile::tempdir().expect("tempdir");
     let cwd = temp.path().to_path_buf();
     workspace_with_seed(&cwd);
     let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
-    let service = Arc::new(
-        SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd),
-    );
+    let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
     (temp, service, stub)
 }
 
@@ -326,7 +328,9 @@ async fn circular_add_supervisor_is_rejected_identically_across_transports() {
         .await;
 
     // @step Then it returns Err with message "circular supervision not allowed"
-    let em_msg = em_err.expect_err("embedded should reject cycle").to_string();
+    let em_msg = em_err
+        .expect_err("embedded should reject cycle")
+        .to_string();
     assert!(
         em_msg.contains("circular supervision not allowed"),
         "embedded error must include 'circular supervision not allowed': {em_msg}"

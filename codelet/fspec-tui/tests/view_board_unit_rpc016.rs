@@ -86,7 +86,8 @@ fn backlog_content_rows(buf: &Buffer) -> Vec<String> {
         for x in 0..buf.area.width {
             row.push_str(buf[(x, y)].symbol());
         }
-        if content_start.is_none() && row.contains('├') && row.contains('┼') && row.contains('┤') {
+        if content_start.is_none() && row.contains('├') && row.contains('┼') && row.contains('┤')
+        {
             content_start = Some(y + 1);
         } else if content_start.is_some()
             && content_end.is_none()
@@ -475,15 +476,30 @@ fn rpc014_details_strip_and_rpc015_header_still_painted_after_rpc016() {
     let buf = render_fresh(120, 24, &store);
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "AUTH-001: User Login"
-    assert!(joined.contains("AUTH-001: User Login"), "missing details title:\n{joined}");
+    assert!(
+        joined.contains("AUTH-001: User Login"),
+        "missing details title:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Epic: authentication"
-    assert!(joined.contains("Epic: authentication"), "missing Epic line:\n{joined}");
+    assert!(
+        joined.contains("Epic: authentication"),
+        "missing Epic line:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Status: backlog"
-    assert!(joined.contains("Status: backlog"), "missing Status line:\n{joined}");
+    assert!(
+        joined.contains("Status: backlog"),
+        "missing Status line:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Checkpoints: None"
-    assert!(joined.contains("Checkpoints: None"), "missing Checkpoints: None:\n{joined}");
+    assert!(
+        joined.contains("Checkpoints: None"),
+        "missing Checkpoints: None:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "← →"
     assert!(joined.contains("← →"), "missing footer arrows:\n{joined}");
     // @step And the rendered buffer contains the substring "Work Agent"
-    assert!(joined.contains("Work Agent"), "missing footer 'Work Agent':\n{joined}");
+    assert!(
+        joined.contains("Work Agent"),
+        "missing footer 'Work Agent':\n{joined}"
+    );
 }

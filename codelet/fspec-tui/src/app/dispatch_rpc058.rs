@@ -48,9 +48,10 @@ impl App {
         let Some(session_id) = self.agent_view_store.current_session().cloned() else {
             return;
         };
-        let _ = self
-            .action_tx
-            .send(Action::EmitSessionNotice(session_id, USAGE_TEXT.to_string()));
+        let _ = self.action_tx.send(Action::EmitSessionNotice(
+            session_id,
+            USAGE_TEXT.to_string(),
+        ));
     }
 
     /// RPC-058: route a parsed [`ScheduleSubcommand`] to the matching

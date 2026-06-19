@@ -29,10 +29,7 @@ pub(super) fn build_rows(
             format!("(no files match \"{filter}\")")
         };
         return vec![DialogRow {
-            spans: vec![
-                Span::raw(MARKER_UNSELECTED.to_string()),
-                Span::raw(label),
-            ],
+            spans: vec![Span::raw(MARKER_UNSELECTED.to_string()), Span::raw(label)],
             selectable: false,
             selected: false,
         }];
@@ -71,12 +68,13 @@ pub(super) fn build_rows(
         }
         let path = &matches[abs_i];
         let is_sel = abs_i == selected_index;
-        let marker = if is_sel { MARKER_SELECTED } else { MARKER_UNSELECTED };
+        let marker = if is_sel {
+            MARKER_SELECTED
+        } else {
+            MARKER_UNSELECTED
+        };
         out.push(DialogRow {
-            spans: vec![
-                Span::raw(marker.to_string()),
-                Span::raw(path.clone()),
-            ],
+            spans: vec![Span::raw(marker.to_string()), Span::raw(path.clone())],
             selectable: true,
             selected: is_sel,
         });

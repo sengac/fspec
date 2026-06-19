@@ -299,7 +299,9 @@ fn switching_to_never_updated_session_displays_zeros_no_carry_over() {
     // @step And a fresh session "s-2" has been opened with append_session and no Action::ChunkReceived has been dispatched for it
     // (agent_app_with_two_sessions already opened s-2 via append_session and no TokenUpdate was dispatched against it)
     assert!(
-        app.agent_view_store().token_state_for(&sid("s-2")).is_none(),
+        app.agent_view_store()
+            .token_state_for(&sid("s-2"))
+            .is_none(),
         "s-2 should have no TokenState entry yet"
     );
 

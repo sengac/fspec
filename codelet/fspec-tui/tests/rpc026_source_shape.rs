@@ -60,6 +60,15 @@ fn new_mode_view_files_exist_with_documented_surface() {
     assert!(!search_body.contains("popup_body"));
 
     // @step And the first non-attribute statement in each mode view's render fn is "Clear.render(area, buf)" or "frame.render_widget(Clear, area)"
+    // RPC-337: ResumeSessionView delegates its scaffold (Clear +
+    // 4-constraint split + footer + overlay) to the shared
+    // `render_full_screen_scaffold` helper. RPC-339: SearchHistoryView is
+    // now ALSO refit, delegating to the title-closure variant
+    // `render_full_screen_scaffold_with_title` (its editable-query title
+    // needs a caller-supplied title renderer). For both views the render
+    // fn's first statement is the scaffold call rather than a literal
+    // `Clear.render`; the Clear-first invariant is preserved inside the
+    // shell (see views/full_screen_shell.rs tests).
     let resume_render_idx = resume_body
         .find("pub fn render(&self, area: Rect, buf: &mut Buffer)")
         .expect("resume render fn");
@@ -68,9 +77,10 @@ fn new_mode_view_files_exist_with_documented_surface() {
     let after_brace = &body_after[brace_idx + 1..];
     let trimmed = after_brace.trim_start();
     assert!(
-        trimmed.starts_with("Clear.render(area, buf)"),
-        "resume render fn first stmt must paint Clear; got: {}",
-        &trimmed[..trimmed.len().min(60)]
+        trimmed.starts_with("Clear.render(area, buf)")
+            || trimmed.starts_with("crate::views::full_screen_shell::render_full_screen_scaffold"),
+        "resume render fn first stmt must paint Clear OR delegate to the shared shell; got: {}",
+        &trimmed[..trimmed.len().min(80)]
     );
 
     let search_render_idx = search_body
@@ -81,8 +91,12 @@ fn new_mode_view_files_exist_with_documented_surface() {
     let s_after_brace = &s_body_after[s_brace_idx + 1..];
     let s_trimmed = s_after_brace.trim_start();
     assert!(
-        s_trimmed.starts_with("Clear.render(area, buf)"),
-        "search render fn first stmt must paint Clear"
+        s_trimmed.starts_with("Clear.render(area, buf)")
+            || s_trimmed.starts_with("render_full_screen_scaffold_with_title")
+            || s_trimmed
+                .starts_with("crate::views::full_screen_shell::render_full_screen_scaffold_with_title"),
+        "search render fn first stmt must paint Clear OR delegate to the title-closure shell; got: {}",
+        &s_trimmed[..s_trimmed.len().min(80)]
     );
 
     // @step And codelet/fspec-tui/src/views/agent.rs line count is < 300

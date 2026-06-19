@@ -629,6 +629,7 @@ Tags tracking development status of features.
 | `@rpc-101` | Work unit identifier tag for RPC-101 — context-fill badge real-time recompute on every TokenUpdate (parallel Rust/TS fix for the badge freezing during streaming and after ESC interrupt) |
 | `@rpc-153` | RPC-153: Provider settings api-key edit filterPrintableChars ASCII 32-126 restriction — regression-shape coverage card pinning the is_printable_ascii helper signature, body range expression, and guard placement before draft.push(c) in handle_edit_key |
 | `@rpc-252` | Work unit identifier tag for RPC-252 — port list-virtual-hooks command to Rust |
+| `@rpc-337` | Work unit identifier tag for RPC-337 — full-screen Model Selector mode-view + shared full-screen shell extraction |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -936,7 +937,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-06-12T00:06:35.873Z_
+_Last updated: 2026-06-19T00:54:07.588Z_
 
 **Update Command**: `fspec tag-stats`
 

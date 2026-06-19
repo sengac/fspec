@@ -29,8 +29,7 @@ static DATA_DIR_MUTEX: Mutex<()> = Mutex::new(());
 fn setup_parity_temp_dir() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
     let guard = DATA_DIR_MUTEX.lock().expect("DATA_DIR_MUTEX");
     let temp = tempfile::tempdir().expect("tempdir");
-    codelet_common::set_data_directory(temp.path().to_path_buf())
-        .expect("set_data_directory");
+    codelet_common::set_data_directory(temp.path().to_path_buf()).expect("set_data_directory");
     (guard, temp)
 }
 
@@ -64,9 +63,8 @@ async fn embedded_and_websocket_list_sessions_byte_identical() {
         .await
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url).await.expect("connect"),
-    );
+    let websocket: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
 
     // @step When EmbeddedFspecBackend.list_sessions().await is called against the service
     let embedded_list = embedded.list_sessions().await.expect("embedded list");
@@ -94,9 +92,8 @@ async fn embedded_and_websocket_search_history_byte_identical() {
         .await
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url).await.expect("connect"),
-    );
+    let websocket: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
 
     for text in ["git status", "git push", "fspec board"] {
         embedded
@@ -116,10 +113,8 @@ async fn embedded_and_websocket_search_history_byte_identical() {
         .await
         .expect("ws search");
     // @step Then both backends return Vec<HistoryMatch> with the same text field in the same order
-    let embedded_texts: Vec<&str> =
-        embedded_out.iter().map(|m| m.text.as_str()).collect();
-    let websocket_texts: Vec<&str> =
-        websocket_out.iter().map(|m| m.text.as_str()).collect();
+    let embedded_texts: Vec<&str> = embedded_out.iter().map(|m| m.text.as_str()).collect();
+    let websocket_texts: Vec<&str> = websocket_out.iter().map(|m| m.text.as_str()).collect();
     assert_eq!(embedded_texts, websocket_texts);
     assert_eq!(embedded_out.len(), 2);
 }
@@ -155,9 +150,8 @@ async fn embedded_and_websocket_delete_session_byte_identical() {
         .await
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
-    let websocket: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url).await.expect("connect"),
-    );
+    let websocket: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
 
     // @step When the test calls EmbeddedFspecBackend.persistence_delete_session("s-2")
     embedded

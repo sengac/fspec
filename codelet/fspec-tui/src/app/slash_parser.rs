@@ -134,12 +134,18 @@ mod tests {
 
     #[test]
     fn parse_slash_command_recognises_model_thinking_and_role_variants() {
-        assert_eq!(parse_slash_command("/model"), SlashCommandParse::OpenModelDialog);
+        assert_eq!(
+            parse_slash_command("/model"),
+            SlashCommandParse::OpenModelDialog
+        );
         assert_eq!(
             parse_slash_command("/thinking"),
             SlashCommandParse::OpenThinkingDialog
         );
-        assert_eq!(parse_slash_command("/role"), SlashCommandParse::OpenRoleDialog);
+        assert_eq!(
+            parse_slash_command("/role"),
+            SlashCommandParse::OpenRoleDialog
+        );
         assert_eq!(
             parse_slash_command("/role clear"),
             SlashCommandParse::ClearRole
@@ -166,4 +172,3 @@ mod tests {
         );
     }
 }
-

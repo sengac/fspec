@@ -136,8 +136,7 @@ fn dialog_priority_components_match_event_key_exclusively() {
 fn mouse_module_files_and_views_board_rs_stay_under_300_lines() {
     // @step Given codelet/fspec-tui/src/mouse/*.rs and codelet/fspec-tui/src/views/board.rs after RPC-023 lands
     let mouse_dir = src_dir().join("mouse");
-    let mut targets: Vec<std::path::PathBuf> =
-        vec![src_dir().join("views").join("board.rs")];
+    let mut targets: Vec<std::path::PathBuf> = vec![src_dir().join("views").join("board.rs")];
     let entries = std::fs::read_dir(&mouse_dir)
         .unwrap_or_else(|e| panic!("read_dir {}: {e}", mouse_dir.display()));
     for entry in entries {

@@ -67,11 +67,19 @@ fn canonical_providers_slice_has_seventeen_entries_in_ts_canonical_order() {
     let ids: Vec<&str> = slice.iter().map(|p| p.id).collect();
 
     // @step Then it yields exactly 17 entries
-    assert_eq!(slice.len(), 17, "RPC-107: CANONICAL_PROVIDERS must declare exactly 17 entries; got {}", slice.len());
+    assert_eq!(
+        slice.len(),
+        17,
+        "RPC-107: CANONICAL_PROVIDERS must declare exactly 17 entries; got {}",
+        slice.len()
+    );
 
     // @step And the provider ids in order are "openai", "anthropic", "cohere", "gemini", "mistral", "xai", "together", "huggingface", "openrouter", "groq", "deepseek", "moonshot", "galadriel", "azure", "zai", "codex", "github-copilot"
     let expected: Vec<&str> = ts_canonical_pairs().iter().map(|(id, _)| *id).collect();
-    assert_eq!(ids, expected, "RPC-107: CANONICAL_PROVIDERS order must match TS SUPPORTED_PROVIDERS");
+    assert_eq!(
+        ids, expected,
+        "RPC-107: CANONICAL_PROVIDERS order must match TS SUPPORTED_PROVIDERS"
+    );
 }
 
 // =============================================================================
@@ -99,11 +107,13 @@ fn canonical_providers_marks_anthropic_codex_and_copilot_as_oauth() {
     let slice: &[CanonicalProvider] = CANONICAL_PROVIDERS;
 
     // @step When the auth_type field is read from each entry
-    let oauth_ids: Vec<&str> = slice.iter()
+    let oauth_ids: Vec<&str> = slice
+        .iter()
         .filter(|p| matches!(p.auth_type, AuthType::OAuth))
         .map(|p| p.id)
         .collect();
-    let api_key_ids: Vec<&str> = slice.iter()
+    let api_key_ids: Vec<&str> = slice
+        .iter()
         .filter(|p| matches!(p.auth_type, AuthType::ApiKey))
         .map(|p| p.id)
         .collect();
@@ -115,9 +125,17 @@ fn canonical_providers_marks_anthropic_codex_and_copilot_as_oauth() {
         "RPC-107: OAuth auth_type set must equal {{anthropic, codex, github-copilot}}; got {oauth_ids:?}");
 
     // @step And every other entry has auth_type AuthType::ApiKey
-    assert_eq!(api_key_ids.len(), 14, "RPC-107: 14 api-key providers expected; got {}", api_key_ids.len());
+    assert_eq!(
+        api_key_ids.len(),
+        14,
+        "RPC-107: 14 api-key providers expected; got {}",
+        api_key_ids.len()
+    );
     for forbidden in ["anthropic", "codex", "github-copilot"] {
-        assert!(!api_key_ids.contains(&forbidden), "RPC-107: '{forbidden}' must NOT be in the ApiKey bucket");
+        assert!(
+            !api_key_ids.contains(&forbidden),
+            "RPC-107: '{forbidden}' must NOT be in the ApiKey bucket"
+        );
     }
 }
 
@@ -134,19 +152,28 @@ impl EnvGuard {
     fn set(key: &str, value: &str) -> Self {
         let prior = std::env::var(key).ok();
         std::env::set_var(key, value);
-        Self { key: key.to_string(), prior }
+        Self {
+            key: key.to_string(),
+            prior,
+        }
     }
 
     fn set_path(key: &str, value: &Path) -> Self {
         let prior = std::env::var(key).ok();
         std::env::set_var(key, value);
-        Self { key: key.to_string(), prior }
+        Self {
+            key: key.to_string(),
+            prior,
+        }
     }
 
     fn remove(key: &str) -> Self {
         let prior = std::env::var(key).ok();
         std::env::remove_var(key);
-        Self { key: key.to_string(), prior }
+        Self {
+            key: key.to_string(),
+            prior,
+        }
     }
 }
 
@@ -267,16 +294,43 @@ fn handle() -> Arc<dyn SessionManagerHandle> {
 
 /// TS-canonical ordering for assertions.
 const CANONICAL_ORDER: [&str; 17] = [
-    "openai", "anthropic", "cohere", "gemini", "mistral", "xai",
-    "together", "huggingface", "openrouter", "groq", "deepseek",
-    "moonshot", "galadriel", "azure", "zai", "codex", "github-copilot",
+    "openai",
+    "anthropic",
+    "cohere",
+    "gemini",
+    "mistral",
+    "xai",
+    "together",
+    "huggingface",
+    "openrouter",
+    "groq",
+    "deepseek",
+    "moonshot",
+    "galadriel",
+    "azure",
+    "zai",
+    "codex",
+    "github-copilot",
 ];
 
 const CANONICAL_DISPLAY_NAMES: [&str; 17] = [
-    "OpenAI API", "Anthropic", "Cohere", "Google Gemini", "Mistral AI",
-    "xAI", "Together AI", "Hugging Face", "OpenRouter", "Groq",
-    "DeepSeek", "Moonshot", "Galadriel", "Azure OpenAI", "Z.AI",
-    "Codex (ChatGPT)", "GitHub Copilot",
+    "OpenAI API",
+    "Anthropic",
+    "Cohere",
+    "Google Gemini",
+    "Mistral AI",
+    "xAI",
+    "Together AI",
+    "Hugging Face",
+    "OpenRouter",
+    "Groq",
+    "DeepSeek",
+    "Moonshot",
+    "Galadriel",
+    "Azure OpenAI",
+    "Z.AI",
+    "Codex (ChatGPT)",
+    "GitHub Copilot",
 ];
 
 // =============================================================================
@@ -302,13 +356,19 @@ fn empty_workspace_returns_seventeen_canonical_rows_in_order() {
 
     // @step And the entries appear in canonical order with provider_id "openai", "anthropic", "cohere", "gemini", "mistral", "xai", "together", "huggingface", "openrouter", "groq", "deepseek", "moonshot", "galadriel", "azure", "zai", "codex", "github-copilot"
     let ids: Vec<&str> = list.iter().map(|e| e.provider_id.as_str()).collect();
-    assert_eq!(ids, CANONICAL_ORDER.to_vec(),
-        "RPC-107: provider_id order must match TS SUPPORTED_PROVIDERS");
+    assert_eq!(
+        ids,
+        CANONICAL_ORDER.to_vec(),
+        "RPC-107: provider_id order must match TS SUPPORTED_PROVIDERS"
+    );
 
     // @step And every entry has display_name set to the TS-canonical display string
     let names: Vec<&str> = list.iter().map(|e| e.display_name.as_str()).collect();
-    assert_eq!(names, CANONICAL_DISPLAY_NAMES.to_vec(),
-        "RPC-107: display_name strings must match TS PROVIDER_REGISTRY byte-for-byte");
+    assert_eq!(
+        names,
+        CANONICAL_DISPLAY_NAMES.to_vec(),
+        "RPC-107: display_name strings must match TS PROVIDER_REGISTRY byte-for-byte"
+    );
 
     // @step And every entry has configured == false
     for entry in &list {
@@ -338,17 +398,26 @@ fn anthropic_api_key_marks_anthropic_row_configured_under_anthropic_slug() {
     // @step Then the response contains exactly 17 entries in canonical order
     assert_eq!(list.len(), 17, "RPC-107: must yield 17 canonical rows");
     let ids: Vec<&str> = list.iter().map(|e| e.provider_id.as_str()).collect();
-    assert_eq!(ids, CANONICAL_ORDER.to_vec(),
-        "RPC-107: provider_id order must match TS canon");
+    assert_eq!(
+        ids,
+        CANONICAL_ORDER.to_vec(),
+        "RPC-107: provider_id order must match TS canon"
+    );
 
     // @step And the entry at index 1 has provider_id "anthropic" and display_name "Anthropic" and configured == true
     let anthropic = &list[1];
-    assert_eq!(anthropic.provider_id, "anthropic",
-        "RPC-107: index 1 must carry the canonical 'anthropic' slug");
-    assert_eq!(anthropic.display_name, "Anthropic",
-        "RPC-107: Anthropic display_name must be 'Anthropic'");
-    assert!(anthropic.configured,
-        "RPC-107: Anthropic row must be configured when ANTHROPIC_API_KEY is set");
+    assert_eq!(
+        anthropic.provider_id, "anthropic",
+        "RPC-107: index 1 must carry the canonical 'anthropic' slug"
+    );
+    assert_eq!(
+        anthropic.display_name, "Anthropic",
+        "RPC-107: Anthropic display_name must be 'Anthropic'"
+    );
+    assert!(
+        anthropic.configured,
+        "RPC-107: Anthropic row must be configured when ANTHROPIC_API_KEY is set"
+    );
 
     // @step And no entry has provider_id "claude"
     assert!(
@@ -399,20 +468,28 @@ fn canonical_rows_precede_custom_providers() {
 
     // @step And the first 17 entries are the canonical providers in canonical order
     let canonical_ids: Vec<&str> = list[..17].iter().map(|e| e.provider_id.as_str()).collect();
-    assert_eq!(canonical_ids, CANONICAL_ORDER.to_vec(),
-        "RPC-107: first 17 entries must be the canonical providers in canonical order");
+    assert_eq!(
+        canonical_ids,
+        CANONICAL_ORDER.to_vec(),
+        "RPC-107: first 17 entries must be the canonical providers in canonical order"
+    );
 
     // @step And the entry at index 17 has provider_id "my-vllm"
-    assert_eq!(list[17].provider_id, "my-vllm",
-        "RPC-107: custom provider must be appended AFTER the canonical 17");
+    assert_eq!(
+        list[17].provider_id, "my-vllm",
+        "RPC-107: custom provider must be appended AFTER the canonical 17"
+    );
 
     // @step And the entries with provider_id "anthropic", "groq", and "openrouter" have configured == true
     for target in ["anthropic", "groq", "openrouter"] {
-        let entry = list.iter()
+        let entry = list
+            .iter()
             .find(|e| e.provider_id == target)
             .unwrap_or_else(|| panic!("RPC-107: '{target}' missing from response"));
-        assert!(entry.configured,
-            "RPC-107: '{target}' row must be configured when its env var is set");
+        assert!(
+            entry.configured,
+            "RPC-107: '{target}' row must be configured when its env var is set"
+        );
     }
 }
 
@@ -435,12 +512,15 @@ fn display_name_on_every_canonical_entry_comes_from_catalog_not_slug() {
         .zip(CANONICAL_DISPLAY_NAMES.iter().copied())
         .collect();
     for (id, expected_name) in &expected {
-        let entry = list.iter()
+        let entry = list
+            .iter()
             .find(|e| e.provider_id == *id)
             .unwrap_or_else(|| panic!("RPC-107: '{id}' missing from response"));
-        assert_eq!(&entry.display_name, expected_name,
+        assert_eq!(
+            &entry.display_name, expected_name,
             "RPC-107: '{id}' display_name must be '{expected_name}', got '{}'",
-            entry.display_name);
+            entry.display_name
+        );
     }
 
     // @step And the entry with provider_id "openai" has display_name "OpenAI API"
@@ -452,7 +532,10 @@ fn display_name_on_every_canonical_entry_comes_from_catalog_not_slug() {
     assert_eq!(gemini.display_name, "Google Gemini");
 
     // @step And the entry with provider_id "github-copilot" has display_name "GitHub Copilot"
-    let copilot = list.iter().find(|e| e.provider_id == "github-copilot").unwrap();
+    let copilot = list
+        .iter()
+        .find(|e| e.provider_id == "github-copilot")
+        .unwrap();
     assert_eq!(copilot.display_name, "GitHub Copilot");
 
     // @step And the entry with provider_id "azure" has display_name "Azure OpenAI"
@@ -498,9 +581,7 @@ fn build_real_service() -> (TempDir, Arc<SharedFspecService>) {
     let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
     let session_manager = Arc::new(SessionManager::new());
     let handle: Arc<dyn DynHandle> = session_manager;
-    let service = Arc::new(
-        SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd),
-    );
+    let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
     (temp, service)
 }
 
@@ -551,28 +632,52 @@ async fn embedded_and_websocket_surface_identical_canonical_seventeen_rows() {
         .expect("websocket list");
 
     // @step Then both responses contain exactly 17 entries
-    assert_eq!(em_list.len(), 17,
-        "RPC-107: embedded transport must surface 17 canonical rows; got {}", em_list.len());
-    assert_eq!(ws_list.len(), 17,
-        "RPC-107: websocket transport must surface 17 canonical rows; got {}", ws_list.len());
+    assert_eq!(
+        em_list.len(),
+        17,
+        "RPC-107: embedded transport must surface 17 canonical rows; got {}",
+        em_list.len()
+    );
+    assert_eq!(
+        ws_list.len(),
+        17,
+        "RPC-107: websocket transport must surface 17 canonical rows; got {}",
+        ws_list.len()
+    );
 
     // @step And both responses list the canonical provider_ids in identical canonical order
     let em_ids: Vec<&str> = em_list.iter().map(|e| e.provider_id.as_str()).collect();
     let ws_ids: Vec<&str> = ws_list.iter().map(|e| e.provider_id.as_str()).collect();
-    assert_eq!(em_ids, CANONICAL_ORDER.to_vec(),
-        "RPC-107: embedded provider_id order must match TS canon");
-    assert_eq!(ws_ids, CANONICAL_ORDER.to_vec(),
-        "RPC-107: websocket provider_id order must match TS canon");
-    assert_eq!(em_ids, ws_ids,
-        "RPC-107: both transports must surface identical canonical order");
+    assert_eq!(
+        em_ids,
+        CANONICAL_ORDER.to_vec(),
+        "RPC-107: embedded provider_id order must match TS canon"
+    );
+    assert_eq!(
+        ws_ids,
+        CANONICAL_ORDER.to_vec(),
+        "RPC-107: websocket provider_id order must match TS canon"
+    );
+    assert_eq!(
+        em_ids, ws_ids,
+        "RPC-107: both transports must surface identical canonical order"
+    );
 
     // @step And both responses list the canonical display_names in identical canonical order
     let em_names: Vec<&str> = em_list.iter().map(|e| e.display_name.as_str()).collect();
     let ws_names: Vec<&str> = ws_list.iter().map(|e| e.display_name.as_str()).collect();
-    assert_eq!(em_names, CANONICAL_DISPLAY_NAMES.to_vec(),
-        "RPC-107: embedded display_name must match TS PROVIDER_REGISTRY");
-    assert_eq!(ws_names, CANONICAL_DISPLAY_NAMES.to_vec(),
-        "RPC-107: websocket display_name must match TS PROVIDER_REGISTRY");
-    assert_eq!(em_names, ws_names,
-        "RPC-107: both transports must surface identical display_name strings");
+    assert_eq!(
+        em_names,
+        CANONICAL_DISPLAY_NAMES.to_vec(),
+        "RPC-107: embedded display_name must match TS PROVIDER_REGISTRY"
+    );
+    assert_eq!(
+        ws_names,
+        CANONICAL_DISPLAY_NAMES.to_vec(),
+        "RPC-107: websocket display_name must match TS PROVIDER_REGISTRY"
+    );
+    assert_eq!(
+        em_names, ws_names,
+        "RPC-107: both transports must surface identical display_name strings"
+    );
 }

@@ -117,25 +117,27 @@ async fn slash_clear_resets_scrollback_and_calls_backend() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// /model — pushes ModelSelectorDialog
+// /model — activates ViewMode::ModelSelector (RPC-337: full-screen
+// mode-view replaces the retired RPC-022 Compositor modal)
 // ─────────────────────────────────────────────────────────────────────────
 
-/// TS-REF: src/tui/views/AgentView.tsx (slash /model → ModelSelectorDialog)
-/// DEEP-REF: tests/model_selector_dialog_rpc022.rs
+/// TS-REF: src/tui/components/ModelSelectorView.tsx (full-screen view)
+/// DEEP-REF: tests/rpc337_navigator_model_selector.rs
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_model_pushes_model_selector_dialog() {
+async fn slash_model_activates_model_selector_view() {
     // @step Given a fresh AppTestHarness with focused session s-1
     let mut h = AppTestHarness::new();
 
     // @step When I dispatch the slash command "/model"
     h.dispatch_slash(SlashCommandAction::Model);
 
-    // Drain in case the dialog push happens via action_tx in a future
-    // refactor — today the open helper pushes synchronously.
+    // @step And I drain pending tasks and actions
     h.drain_pending().await;
 
-    // @step Then the compositor contains a layer with id MODEL_SELECTOR_DIALOG_ID
-    assert!(h.compositor_contains(MODEL_SELECTOR_DIALOG_ID));
+    // @step Then the navigator's active_view is ViewMode::ModelSelector
+    assert_eq!(h.active_view(), ViewMode::ModelSelector);
+    // @step And no Compositor modal is pushed (the modal is retired)
+    assert!(!h.compositor_contains(MODEL_SELECTOR_DIALOG_ID));
 }
 
 // ─────────────────────────────────────────────────────────────────────────

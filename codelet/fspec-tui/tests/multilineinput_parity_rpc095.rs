@@ -13,10 +13,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use codelet_fspec_tui::views::agent::input_transition::{
-    InputTransitionState, render_input_transition,
+    render_input_transition, InputTransitionState,
 };
 use codelet_fspec_tui::views::agent::multiline_input::{
-    InputGate, InputEventOutcome, MultiLineInput,
+    InputEventOutcome, InputGate, MultiLineInput,
 };
 use codelet_fspec_tui::views::agent::spinner::{
     current_frame_glyph, paint_spinner_line, DOTS_FRAMES, DOTS_INTERVAL_MS,
@@ -122,7 +122,10 @@ fn compacting_blocks_printable_insert() {
     // @step And the input buffer contains the text "hello"
     let mut input = MultiLineInput::new();
     input.set_value("hello");
-    let gate = InputGate { block_edits: true, suppress_enter: true };
+    let gate = InputGate {
+        block_edits: true,
+        suppress_enter: true,
+    };
 
     // @step When I press the printable character "a"
     let outcome = input.handle_key_gated(KeyCode::Char('a'), KeyModifiers::NONE, gate);
@@ -142,7 +145,10 @@ fn compacting_blocks_backspace() {
     // @step And the input buffer contains the text "hello"
     let mut input = MultiLineInput::new();
     input.set_value("hello");
-    let gate = InputGate { block_edits: true, suppress_enter: true };
+    let gate = InputGate {
+        block_edits: true,
+        suppress_enter: true,
+    };
 
     // @step When I press Backspace
     let _ = input.handle_key_gated(KeyCode::Backspace, KeyModifiers::NONE, gate);
@@ -161,7 +167,10 @@ fn compacting_blocks_delete() {
     // @step And the cursor is at position 0
     let mut input = MultiLineInput::new();
     input.set_value("hello");
-    let gate = InputGate { block_edits: true, suppress_enter: true };
+    let gate = InputGate {
+        block_edits: true,
+        suppress_enter: true,
+    };
 
     // @step When I press Delete
     let _ = input.handle_key_gated(KeyCode::Delete, KeyModifiers::NONE, gate);
@@ -179,7 +188,10 @@ fn compacting_swallows_enter() {
     // @step And the input buffer contains the text "hello"
     let mut input = MultiLineInput::new();
     input.set_value("hello");
-    let gate = InputGate { block_edits: true, suppress_enter: true };
+    let gate = InputGate {
+        block_edits: true,
+        suppress_enter: true,
+    };
 
     // @step When I press Enter
     let outcome = input.handle_key_gated(KeyCode::Enter, KeyModifiers::NONE, gate);
@@ -206,7 +218,10 @@ fn running_preserves_cursor_movement_and_spinner_animates() {
 
     // Gate during Running: edits NOT blocked (Running !== Compacting),
     // suppress_enter NOT set when no popup active.
-    let gate = InputGate { block_edits: false, suppress_enter: false };
+    let gate = InputGate {
+        block_edits: false,
+        suppress_enter: false,
+    };
 
     // @step When I press the Right arrow key
     let _ = input.handle_key_gated(KeyCode::Right, KeyModifiers::NONE, gate);
@@ -262,7 +277,10 @@ fn new_modules_stay_under_300_loc() {
     let transition_loc = transition_src.lines().count();
 
     // @step Then both files have fewer than 300 lines of code
-    assert!(spinner_loc < 300, "spinner.rs has {spinner_loc} lines (>= 300)");
+    assert!(
+        spinner_loc < 300,
+        "spinner.rs has {spinner_loc} lines (>= 300)"
+    );
     assert!(
         transition_loc < 300,
         "input_transition.rs has {transition_loc} lines (>= 300)"

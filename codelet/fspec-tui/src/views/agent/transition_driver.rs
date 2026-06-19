@@ -126,13 +126,7 @@ mod tests {
             started_at: 1_000,
             hide_completed_at: None,
         };
-        let next = advance_transition(
-            Some(SessionStatus::Running),
-            &prev,
-            None,
-            999_999,
-            5_000,
-        );
+        let next = advance_transition(Some(SessionStatus::Running), &prev, None, 999_999, 5_000);
         match next {
             InputTransitionState::Loading { elapsed_ms } => assert_eq!(elapsed_ms, 0),
             other => panic!("expected Loading{{0}}, got {other:?}"),

@@ -83,14 +83,24 @@ impl FileSearchPopup {
         &self.matches
     }
 
-    pub fn selected_index(&self) -> usize { self.selected_index }
+    pub fn selected_index(&self) -> usize {
+        self.selected_index
+    }
     pub fn selected(&self) -> Option<&str> {
         self.matches.get(self.selected_index).map(String::as_str)
     }
-    pub fn match_count(&self) -> usize { self.matches.len() }
-    pub fn scroll_offset(&self) -> usize { self.scroll_offset }
-    pub fn visible_rows(&self) -> usize { self.last_visible_rows.get().max(1) }
-    pub fn shows_up_indicator(&self) -> bool { self.scroll_offset > 0 }
+    pub fn match_count(&self) -> usize {
+        self.matches.len()
+    }
+    pub fn scroll_offset(&self) -> usize {
+        self.scroll_offset
+    }
+    pub fn visible_rows(&self) -> usize {
+        self.last_visible_rows.get().max(1)
+    }
+    pub fn shows_up_indicator(&self) -> bool {
+        self.scroll_offset > 0
+    }
     pub fn shows_down_indicator(&self) -> bool {
         self.scroll_offset + self.visible_rows() < self.matches.len()
     }
@@ -262,10 +272,7 @@ mod tests {
         use ratatui::backend::TestBackend;
         use ratatui::Terminal;
         let mut popup = FileSearchPopup::new(0, "rea");
-        popup.set_matches(vec![
-            "README.md".to_string(),
-            "src/readme.rs".to_string(),
-        ]);
+        popup.set_matches(vec!["README.md".to_string(), "src/readme.rs".to_string()]);
         let backend = TestBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
         terminal

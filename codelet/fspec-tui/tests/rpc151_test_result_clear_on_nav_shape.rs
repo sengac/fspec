@@ -69,23 +69,23 @@ fn handle_list_key_body(src: &str) -> &str {
 /// don't pollute the result.
 fn arm_body<'a>(body: &'a str, pattern_prefix: &str) -> &'a str {
     let pat_start = body.find(pattern_prefix).unwrap_or_else(|| {
-        panic!(
-            "match arm starting with `{pattern_prefix}` not found in handle_list_key body"
-        )
+        panic!("match arm starting with `{pattern_prefix}` not found in handle_list_key body")
     });
     // From the arm pattern, find the `=>` and then the opening `{` of
     // the block body. Some arms are expressions without braces (e.g.
     // `KeyCode::Tab => ProviderSettingsEvent::SwitchToModels`); for
     // those we fall back to slicing from `=>` to the next match-arm
     // comma at brace-depth 0.
-    let arrow_rel = body[pat_start..].find("=>").unwrap_or_else(|| {
-        panic!("expected `=>` after pattern `{pattern_prefix}`")
-    });
+    let arrow_rel = body[pat_start..]
+        .find("=>")
+        .unwrap_or_else(|| panic!("expected `=>` after pattern `{pattern_prefix}`"));
     let after_arrow = pat_start + arrow_rel + 2;
     // Skip whitespace.
     let mut i = after_arrow;
     let bytes = body.as_bytes();
-    while i < bytes.len() && (bytes[i] == b' ' || bytes[i] == b'\n' || bytes[i] == b'\r' || bytes[i] == b'\t') {
+    while i < bytes.len()
+        && (bytes[i] == b' ' || bytes[i] == b'\n' || bytes[i] == b'\r' || bytes[i] == b'\t')
+    {
         i += 1;
     }
     if i < bytes.len() && bytes[i] == b'{' {
@@ -106,9 +106,7 @@ fn arm_body<'a>(body: &'a str, pattern_prefix: &str) -> &'a str {
             }
             j += 1;
         }
-        panic!(
-            "matching closing brace for arm `{pattern_prefix}` not found"
-        );
+        panic!("matching closing brace for arm `{pattern_prefix}` not found");
     }
     // Expression arm — walk forward until a comma at brace-depth 0.
     let abs_open = i;

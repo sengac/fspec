@@ -127,9 +127,7 @@ fn help_dialog_renders_with_cyan_accent_and_inner_title_body() {
     // @step And the top border row does NOT contain the text "Help"
     let mut top_border = String::new();
     let border_y = (0..buf.area.height)
-        .find(|y| {
-            (0..buf.area.width).any(|x| buf[(x, *y)].symbol() == "╭")
-        })
+        .find(|y| (0..buf.area.width).any(|x| buf[(x, *y)].symbol() == "╭"))
         .expect("top border row exists");
     for x in 0..buf.area.width {
         top_border.push_str(buf[(x, border_y)].symbol());
@@ -169,8 +167,8 @@ fn help_dialog_body_lists_every_rpc009_keybinding() {
 #[test]
 fn help_dialog_no_longer_imports_tui_popup() {
     // @step Given the source file codelet/fspec-tui/src/components/help_dialog.rs
-    let src = fs::read_to_string("src/components/help_dialog.rs")
-        .expect("help_dialog.rs must exist");
+    let src =
+        fs::read_to_string("src/components/help_dialog.rs").expect("help_dialog.rs must exist");
 
     // @step Then the source does not contain the substring "tui_popup::Popup"
     assert!(
@@ -299,8 +297,16 @@ fn thinking_level_dialog_highlights_the_current_level_with_inverse_style() {
     for label in &["Low", "Medium", "High"] {
         let (lx, ly) = find_text(&buf, label).unwrap_or_else(|| panic!("{label} present"));
         let m_x = lx - 2;
-        assert_eq!(buf[(m_x, ly)].symbol(), " ", "unselected marker[0] for {label}");
-        assert_eq!(buf[(m_x + 1, ly)].symbol(), " ", "unselected marker[1] for {label}");
+        assert_eq!(
+            buf[(m_x, ly)].symbol(),
+            " ",
+            "unselected marker[0] for {label}"
+        );
+        assert_eq!(
+            buf[(m_x + 1, ly)].symbol(),
+            " ",
+            "unselected marker[1] for {label}"
+        );
     }
 
     // @step And the description text for unselected rows carries Modifier::DIM
@@ -402,10 +408,7 @@ fn pressing_uppercase_d_behaves_identically_to_lowercase_d() {
 fn set_thinking_level_default_is_wired_through_the_backend_trait_stack() {
     // @step Given the codelet_rpc_types::Action enum
     // @step Then it contains the variant SetThinkingLevelDefault(SessionId, ThinkingLevel)
-    let _variant = Action::SetThinkingLevelDefault(
-        SessionId::new("s"),
-        ThinkingLevel::Medium,
-    );
+    let _variant = Action::SetThinkingLevelDefault(SessionId::new("s"), ThinkingLevel::Medium);
 
     // @step Given the SessionManagerHandle trait
     // @step Then it declares set_thinking_level_default with a default no-op implementation returning Ok(())
@@ -413,7 +416,10 @@ fn set_thinking_level_default_is_wired_through_the_backend_trait_stack() {
     // This is a source-shape assertion. The trait lives in
     // codelet/core/src/session_manager_handle.rs. We grep the source.
     let trait_src = fs::read_to_string(
-        Path::new("..").join("core").join("src").join("session_manager_handle.rs"),
+        Path::new("..")
+            .join("core")
+            .join("src")
+            .join("session_manager_handle.rs"),
     )
     .or_else(|_| fs::read_to_string("../core/src/session_manager_handle.rs"))
     .expect("session_manager_handle.rs must exist");
@@ -424,11 +430,9 @@ fn set_thinking_level_default_is_wired_through_the_backend_trait_stack() {
 
     // @step Given the FspecBackend trait
     // @step Then it declares set_thinking_level_default on both transports
-    let backend_src = fs::read_to_string(
-        Path::new("src").join("transport").join("mod.rs"),
-    )
-    .or_else(|_| fs::read_to_string("src/transport/mod.rs"))
-    .expect("transport/mod.rs must exist");
+    let backend_src = fs::read_to_string(Path::new("src").join("transport").join("mod.rs"))
+        .or_else(|_| fs::read_to_string("src/transport/mod.rs"))
+        .expect("transport/mod.rs must exist");
     assert!(
         backend_src.contains("set_thinking_level_default"),
         "FspecBackend trait must declare set_thinking_level_default"
@@ -439,11 +443,9 @@ fn set_thinking_level_default_is_wired_through_the_backend_trait_stack() {
     // calls backend.set_thinking_level_default. Without this wiring
     // the dialog emits an action that is silently dropped.
     // @step Then dispatch_rpc022.rs routes Action::SetThinkingLevelDefault to backend.set_thinking_level_default
-    let dispatch_src = fs::read_to_string(
-        Path::new("src").join("app").join("dispatch_rpc022.rs"),
-    )
-    .or_else(|_| fs::read_to_string("src/app/dispatch_rpc022.rs"))
-    .expect("dispatch_rpc022.rs must exist");
+    let dispatch_src = fs::read_to_string(Path::new("src").join("app").join("dispatch_rpc022.rs"))
+        .or_else(|_| fs::read_to_string("src/app/dispatch_rpc022.rs"))
+        .expect("dispatch_rpc022.rs must exist");
     assert!(
         dispatch_src.contains("Action::SetThinkingLevelDefault"),
         "dispatch_rpc022.rs must route Action::SetThinkingLevelDefault"

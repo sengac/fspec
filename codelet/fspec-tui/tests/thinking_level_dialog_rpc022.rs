@@ -174,10 +174,15 @@ fn enter_on_a_level_emits_action_thinking_level_selected() {
     // @step Then handle_event returns EventResult::Consumed with a callback
     let callback = match result {
         EventResult::Consumed(Some(cb)) => cb,
-        other => panic!("expected Consumed(Some(callback)), got {:?}", std::mem::discriminant(&other)),
+        other => panic!(
+            "expected Consumed(Some(callback)), got {:?}",
+            std::mem::discriminant(&other)
+        ),
     };
     // @step And the callback emits Action::ThinkingLevelSelected(SessionId::new("s-1"), ThinkingLevel::High)
-    let action = dialog.take_pending_action().expect("pending action must be set");
+    let action = dialog
+        .take_pending_action()
+        .expect("pending action must be set");
     match action {
         Action::ThinkingLevelSelected(sid, level) => {
             assert_eq!(sid, SessionId::new("s-1"));
@@ -209,7 +214,10 @@ fn esc_dismisses_the_thinking_level_dialog_without_side_effects() {
     // @step Then handle_event returns EventResult::Consumed with a callback
     let callback = match result {
         EventResult::Consumed(Some(cb)) => cb,
-        other => panic!("expected Consumed(Some(callback)), got {:?}", std::mem::discriminant(&other)),
+        other => panic!(
+            "expected Consumed(Some(callback)), got {:?}",
+            std::mem::discriminant(&other)
+        ),
     };
     // @step And the callback removes the dialog from the Compositor via its id
     let mut compositor = Compositor::new();

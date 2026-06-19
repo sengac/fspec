@@ -15,9 +15,7 @@
 use std::time::Duration;
 
 use anyhow::Result;
-use crossterm::event::{
-    Event, EventStream, KeyCode, KeyEvent, KeyEventKind, KeyModifiers,
-};
+use crossterm::event::{Event, EventStream, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use futures::StreamExt;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -53,10 +51,8 @@ impl App {
     /// LOW), where focused inputs always win against view-level
     /// shortcuts.
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
-        let topmost_is_critical = matches!(
-            self.compositor.topmost_priority(),
-            Some(Priority::Critical)
-        );
+        let topmost_is_critical =
+            matches!(self.compositor.topmost_priority(), Some(Priority::Critical));
         let topmost_is_disconnect =
             self.compositor.topmost_id().as_deref() == Some(DISCONNECT_DIALOG_ID);
 
@@ -112,16 +108,12 @@ impl App {
         // ONLY `q` (quit) and `r` (manual reconnect).
         if let Event::Key(key) = event {
             if key.kind != KeyEventKind::Release {
-                if key.code == KeyCode::Char('q')
-                    && key.modifiers == KeyModifiers::NONE
-                {
+                if key.code == KeyCode::Char('q') && key.modifiers == KeyModifiers::NONE {
                     self.should_quit = true;
                     let _ = self.compositor.remove(DISCONNECT_DIALOG_ID);
                     return EventResult::consumed();
                 }
-                if key.code == KeyCode::Char('r')
-                    && key.modifiers == KeyModifiers::NONE
-                {
+                if key.code == KeyCode::Char('r') && key.modifiers == KeyModifiers::NONE {
                     let _ = self.action_tx.send(Action::ManualReconnect);
                     return EventResult::consumed();
                 }
@@ -147,20 +139,15 @@ impl App {
             && key.modifiers == KeyModifiers::NONE
             && self.navigator.active_view == ViewMode::Board
         {
-            if !self
-                .compositor
-                .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID)
-            {
-                let dialog = BoardExitConfirmationDialog::new()
-                    .with_action_tx(self.action_tx.clone());
+            if !self.compositor.contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID) {
+                let dialog =
+                    BoardExitConfirmationDialog::new().with_action_tx(self.action_tx.clone());
                 self.compositor.push(Box::new(dialog));
                 self.should_render = true;
             }
             return Some(EventResult::consumed());
         }
-        if key.code == KeyCode::Char('d')
-            && key.modifiers.contains(KeyModifiers::CONTROL)
-        {
+        if key.code == KeyCode::Char('d') && key.modifiers.contains(KeyModifiers::CONTROL) {
             self.should_quit = true;
             return Some(EventResult::consumed());
         }

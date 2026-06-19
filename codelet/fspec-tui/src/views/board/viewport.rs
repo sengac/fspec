@@ -39,9 +39,7 @@ pub(crate) fn paint_content_rows(
         return;
     }
     let viewport_height = area.height as usize;
-    let last_changed_id: Option<String> = store
-        .last_changed_unit()
-        .map(|u| u.id.clone());
+    let last_changed_id: Option<String> = store.last_changed_unit().map(|u| u.id.clone());
     let border_style = Style::default().fg(theme.border);
 
     for row in 0..area.height {

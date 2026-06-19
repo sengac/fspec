@@ -33,7 +33,7 @@ fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     }
 }
 
@@ -75,9 +75,15 @@ fn empty_board_store_paints_the_fspec_logo_and_checkpoints_none() {
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "┏┓┏┓┏┓┏┓┏┓"
-    assert!(joined.contains("┏┓┏┓┏┓┏┓┏┓"), "missing FSPEC logo glyph row:\n{joined}");
+    assert!(
+        joined.contains("┏┓┏┓┏┓┏┓┏┓"),
+        "missing FSPEC logo glyph row:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Checkpoints: None"
-    assert!(joined.contains("Checkpoints: None"), "missing 'Checkpoints: None':\n{joined}");
+    assert!(
+        joined.contains("Checkpoints: None"),
+        "missing 'Checkpoints: None':\n{joined}"
+    );
 }
 
 /// Scenario: Non-zero checkpoint counts paint the Manual/Auto breakdown
@@ -105,13 +111,25 @@ fn keybinding_shortcuts_chord_row_is_painted_in_the_header() {
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "C Checkpoints"
-    assert!(joined.contains("C Checkpoints"), "missing 'C Checkpoints':\n{joined}");
+    assert!(
+        joined.contains("C Checkpoints"),
+        "missing 'C Checkpoints':\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "F Changed Files"
-    assert!(joined.contains("F Changed Files"), "missing 'F Changed Files':\n{joined}");
+    assert!(
+        joined.contains("F Changed Files"),
+        "missing 'F Changed Files':\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "D FOUNDATION.md"
-    assert!(joined.contains("D FOUNDATION.md"), "missing 'D FOUNDATION.md':\n{joined}");
+    assert!(
+        joined.contains("D FOUNDATION.md"),
+        "missing 'D FOUNDATION.md':\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "/ New Agent"
-    assert!(joined.contains("/ New Agent"), "missing '/ New Agent':\n{joined}");
+    assert!(
+        joined.contains("/ New Agent"),
+        "missing '/ New Agent':\n{joined}"
+    );
 }
 
 /// Scenario: New ├──┤ separator sits between the header strip and the details strip
@@ -138,9 +156,18 @@ fn new_plain_separator_sits_between_the_header_strip_and_the_details_strip() {
     // @step Then one of the inner rows contains the glyph "├" and the glyph "┤" with NO inner "┬" or "┼" or "┴" junctions on that same row
     assert!(row5.contains('├'), "row 5 must contain ├, got `{row5}`");
     assert!(row5.contains('┤'), "row 5 must contain ┤, got `{row5}`");
-    assert!(!row5.contains('┬'), "row 5 (header→details separator) must NOT contain ┬, got `{row5}`");
-    assert!(!row5.contains('┼'), "row 5 (header→details separator) must NOT contain ┼, got `{row5}`");
-    assert!(!row5.contains('┴'), "row 5 (header→details separator) must NOT contain ┴, got `{row5}`");
+    assert!(
+        !row5.contains('┬'),
+        "row 5 (header→details separator) must NOT contain ┬, got `{row5}`"
+    );
+    assert!(
+        !row5.contains('┼'),
+        "row 5 (header→details separator) must NOT contain ┼, got `{row5}`"
+    );
+    assert!(
+        !row5.contains('┴'),
+        "row 5 (header→details separator) must NOT contain ┴, got `{row5}`"
+    );
     // @step And the four existing details/columns/footer separator rows (├┬┤ / ├┼┤ / ├┴┤) are still painted exactly as before
     let has_top = (0..buf.area.height).any(|y| {
         let r = row_string(&buf, y);
@@ -231,7 +258,7 @@ fn rpc014_details_strip_and_rpc013_footer_are_still_painted_after_rpc015_header(
         estimate: Some(5),
         epic: Some("authentication".to_string()),
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     };
     let mut store = BoardStore::default();
     store.replace_work_units(vec![unit]);
@@ -242,15 +269,30 @@ fn rpc014_details_strip_and_rpc013_footer_are_still_painted_after_rpc015_header(
     let buf = render(120, 24, &store);
     let joined = join_buffer(&buf);
     // @step Then the rendered buffer contains the substring "AUTH-001: User Login"
-    assert!(joined.contains("AUTH-001: User Login"), "missing details title:\n{joined}");
+    assert!(
+        joined.contains("AUTH-001: User Login"),
+        "missing details title:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Epic: authentication"
-    assert!(joined.contains("Epic: authentication"), "missing Epic line:\n{joined}");
+    assert!(
+        joined.contains("Epic: authentication"),
+        "missing Epic line:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Estimate: 5pts"
-    assert!(joined.contains("Estimate: 5pts"), "missing Estimate line:\n{joined}");
+    assert!(
+        joined.contains("Estimate: 5pts"),
+        "missing Estimate line:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "Status: backlog"
-    assert!(joined.contains("Status: backlog"), "missing Status line:\n{joined}");
+    assert!(
+        joined.contains("Status: backlog"),
+        "missing Status line:\n{joined}"
+    );
     // @step And the rendered buffer contains the substring "← →"
     assert!(joined.contains("← →"), "missing footer arrows:\n{joined}");
     // @step And the rendered buffer contains the substring "Work Agent"
-    assert!(joined.contains("Work Agent"), "missing footer 'Work Agent':\n{joined}");
+    assert!(
+        joined.contains("Work Agent"),
+        "missing footer 'Work Agent':\n{joined}"
+    );
 }

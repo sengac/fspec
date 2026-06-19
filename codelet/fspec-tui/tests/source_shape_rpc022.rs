@@ -17,11 +17,17 @@ fn src_dir() -> std::path::PathBuf {
 }
 
 fn rpc_types_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc-types").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc-types")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn rpc_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn core_session_manager_handle() -> std::path::PathBuf {
@@ -97,7 +103,9 @@ fn fspec_service_trait_gains_five_new_rpc_methods() {
         "async fn set_thinking_level(session_id: SessionId, level: ThinkingLevel) -> Result<(), String>"
     ));
     // @step And the file contains the substring "async fn get_session_role(session_id: SessionId) -> Option<String>"
-    assert!(collapsed.contains("async fn get_session_role(session_id: SessionId) -> Option<String>"));
+    assert!(
+        collapsed.contains("async fn get_session_role(session_id: SessionId) -> Option<String>")
+    );
     // @step And the file contains the substring "async fn set_session_role(session_id: SessionId, role: Option<String>) -> Result<(), String>"
     assert!(collapsed.contains(
         "async fn set_session_role( session_id: SessionId, role: Option<String>, ) -> Result<(), String>"
@@ -114,9 +122,7 @@ fn session_manager_handle_trait_gains_new_methods_with_default_impls() {
     // @step Then the file contains the substring "fn list_providers(&self) -> Vec<ProviderInfo>"
     assert!(src.contains("fn list_providers(&self) -> Vec<ProviderInfo>"));
     // @step And the file contains the substring "fn set_model(&self, session_id: &SessionId, provider_id: &str, model_id: &str) -> Result<(), String>"
-    assert!(src.contains(
-        "fn set_model("
-    ));
+    assert!(src.contains("fn set_model("));
     assert!(src.contains("session_id: &SessionId"));
     assert!(src.contains("provider_id: &str"));
     assert!(src.contains("model_id: &str"));
@@ -129,7 +135,10 @@ fn session_manager_handle_trait_gains_new_methods_with_default_impls() {
     assert!(src.contains("fn set_role("));
     assert!(src.contains("role: Option<String>"));
     // @step And each of the five methods has a default implementation returning the safe default (empty Vec / None / Ok(()))
-    assert!(src.contains("Vec::new()"), "list_providers default = Vec::new()");
+    assert!(
+        src.contains("Vec::new()"),
+        "list_providers default = Vec::new()"
+    );
     // Each defaulted setter body should end with Ok(()), and get_role returns None.
     let occurrences_ok_unit = src.matches("Ok(())").count();
     assert!(
@@ -189,11 +198,21 @@ fn new_modal_dialog_modules_and_dispatch_helper_exist() {
     // @step Given the codelet/fspec-tui crate after RPC-022 lands
     let src = src_dir();
     // @step Then the file codelet/fspec-tui/src/components/model_selector_dialog.rs exists
-    assert!(src.join("components").join("model_selector_dialog.rs").exists());
+    assert!(src
+        .join("components")
+        .join("model_selector_dialog.rs")
+        .exists());
     // @step And the file codelet/fspec-tui/src/components/thinking_level_dialog.rs exists
-    assert!(src.join("components").join("thinking_level_dialog.rs").exists());
+    assert!(src
+        .join("components")
+        .join("thinking_level_dialog.rs")
+        .exists());
     // @step And the file codelet/fspec-tui/src/views/agent/role_banner.rs exists
-    assert!(src.join("views").join("agent").join("role_banner.rs").exists());
+    assert!(src
+        .join("views")
+        .join("agent")
+        .join("role_banner.rs")
+        .exists());
     // @step And the file codelet/fspec-tui/src/app/dispatch_rpc022.rs exists
     assert!(src.join("app").join("dispatch_rpc022.rs").exists());
 }
@@ -202,8 +221,12 @@ fn new_modal_dialog_modules_and_dispatch_helper_exist() {
 #[test]
 fn new_rpc022_modules_stay_under_300_lines() {
     // @step Given the new files introduced by RPC-022
-    let model_selector = src_dir().join("components").join("model_selector_dialog.rs");
-    let thinking_level = src_dir().join("components").join("thinking_level_dialog.rs");
+    let model_selector = src_dir()
+        .join("components")
+        .join("model_selector_dialog.rs");
+    let thinking_level = src_dir()
+        .join("components")
+        .join("thinking_level_dialog.rs");
     let role_banner = src_dir().join("views").join("agent").join("role_banner.rs");
     let dispatch = src_dir().join("app").join("dispatch_rpc022.rs");
     // @step When a test counts the line-count of every .rs file
@@ -273,11 +296,17 @@ fn existing_ts_modal_dialog_files_are_untouched() {
     // @step Given the project root after RPC-022 lands
     let root = project_root();
     // @step Then the file src/tui/components/ModelSelectorScreen.tsx exists
-    assert!(root.join("src/tui/components/ModelSelectorScreen.tsx").exists());
+    assert!(root
+        .join("src/tui/components/ModelSelectorScreen.tsx")
+        .exists());
     // @step And the file src/tui/components/ModelSelectorView.tsx exists
-    assert!(root.join("src/tui/components/ModelSelectorView.tsx").exists());
+    assert!(root
+        .join("src/tui/components/ModelSelectorView.tsx")
+        .exists());
     // @step And the file src/tui/components/ThinkingLevelDialog.tsx exists
-    assert!(root.join("src/tui/components/ThinkingLevelDialog.tsx").exists());
+    assert!(root
+        .join("src/tui/components/ThinkingLevelDialog.tsx")
+        .exists());
     // @step And the file src/tui/components/RoleBanner.tsx exists
     assert!(root.join("src/tui/components/RoleBanner.tsx").exists());
     // @step And the file src/tui/store/modelStore.ts exists
@@ -289,8 +318,12 @@ fn existing_ts_modal_dialog_files_are_untouched() {
 fn new_view_component_files_do_not_import_forbidden_crates() {
     // @step Given the new RPC-022 files (model_selector_dialog.rs, thinking_level_dialog.rs, role_banner.rs)
     let files = [
-        src_dir().join("components").join("model_selector_dialog.rs"),
-        src_dir().join("components").join("thinking_level_dialog.rs"),
+        src_dir()
+            .join("components")
+            .join("model_selector_dialog.rs"),
+        src_dir()
+            .join("components")
+            .join("thinking_level_dialog.rs"),
         src_dir().join("views").join("agent").join("role_banner.rs"),
     ];
     // @step When a test scans each *.rs file

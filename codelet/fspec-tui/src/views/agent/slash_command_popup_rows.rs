@@ -66,7 +66,11 @@ pub(super) fn build_rows(
         }
         let cmd = matches[abs_i];
         let is_sel = abs_i == selected_index;
-        let marker = if is_sel { MARKER_SELECTED } else { MARKER_UNSELECTED };
+        let marker = if is_sel {
+            MARKER_SELECTED
+        } else {
+            MARKER_UNSELECTED
+        };
         let name_token = format!("/{name:<width$}", name = cmd.name(), width = max_name);
         let mut spans: Vec<Span<'static>> = vec![
             Span::raw(marker.to_string()),
@@ -81,7 +85,11 @@ pub(super) fn build_rows(
                 Style::default().add_modifier(Modifier::DIM),
             ));
         }
-        out.push(DialogRow { spans, selectable: true, selected: is_sel });
+        out.push(DialogRow {
+            spans,
+            selectable: true,
+            selected: is_sel,
+        });
     }
     out
 }

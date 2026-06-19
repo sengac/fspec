@@ -98,14 +98,9 @@ impl BoardStore {
         // selected id when it still lives in this column; otherwise
         // clamp the prior numeric index to the new length.
         for column in COLUMN_ORDER {
-            let len = self
-                .by_column
-                .get(column)
-                .map(Vec::len)
-                .unwrap_or(0);
+            let len = self.by_column.get(column).map(Vec::len).unwrap_or(0);
             if len == 0 {
-                self.selected_index_per_column
-                    .insert(column.to_string(), 0);
+                self.selected_index_per_column.insert(column.to_string(), 0);
                 continue;
             }
             if let Some(prior_id) = prior_selected_id.get(column) {
@@ -181,11 +176,7 @@ impl BoardStore {
 
     /// Set the selection inside `column`. Clamps to the column's length.
     pub fn set_selected_index_for(&mut self, column: &str, index: usize) {
-        let len = self
-            .by_column
-            .get(column)
-            .map(Vec::len)
-            .unwrap_or(0);
+        let len = self.by_column.get(column).map(Vec::len).unwrap_or(0);
         let clamped = if len == 0 {
             0
         } else {

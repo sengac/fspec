@@ -26,16 +26,11 @@
 //!    is out of scope for this slice (deferred to a later card per
 //!    the RPC-045 attachment).
 
-use codelet_rpc_types::{
-    FspecRequest, SessionId, SessionState, SessionStatus, StreamChunk,
-};
 use codelet_rpc_types::WorkspaceInfo;
+use codelet_rpc_types::{FspecRequest, SessionId, SessionState, SessionStatus, StreamChunk};
 
 use crate::components::Action;
-use crate::store::{
-    agent_view::isolation_state::session_status_from_state,
-    IsolationState,
-};
+use crate::store::{agent_view::isolation_state::session_status_from_state, IsolationState};
 
 use super::dispatch_rpc020::format_compaction_notice;
 use super::dispatch_rpc045_fspec_runner::run_fspec_command;
@@ -78,8 +73,7 @@ impl App {
                         // so the SessionHeader badge returns to `[0%]`
                         // / no `COMPACTED` after a `/clear`.
                         self.agent_view_store.reset_token_state(session_id);
-                        self.agent_view_store
-                            .clear_compaction_reduction(session_id);
+                        self.agent_view_store.clear_compaction_reduction(session_id);
                     }
                     _ => {}
                 }
@@ -126,7 +120,8 @@ impl App {
             }
             StreamChunk::SupervisorPendingInjection { .. } => {
                 // RPC-061: bump per-session pending-supervisor count.
-                self.agent_view_store.apply_supervisor_pending_injection(session_id);
+                self.agent_view_store
+                    .apply_supervisor_pending_injection(session_id);
             }
             StreamChunk::CompactionComplete { compaction_result } => {
                 // RPC-047: clear the per-session compaction-progress
@@ -143,8 +138,8 @@ impl App {
                 // `[X%: COMPACTED Y%]` badge suffix. Same formula as
                 // `format_compaction_notice` in dispatch_rpc020.rs:290
                 // — keeping the notice line and the badge in sync.
-                let reduction = ((1.0 - compaction_result.compression_ratio) * 100.0).round()
-                    as i32;
+                let reduction =
+                    ((1.0 - compaction_result.compression_ratio) * 100.0).round() as i32;
                 self.agent_view_store
                     .set_compaction_reduction(session_id.clone(), reduction);
 
@@ -207,4 +202,3 @@ impl App {
         self.pending_tasks.push(handle);
     }
 }
-

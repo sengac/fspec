@@ -93,7 +93,10 @@ mod tests {
 
     #[test]
     fn leading_slash_opens_slash_popup_with_filter() {
-        assert_eq!(classify_buffer("/"), PopupTrigger::OpenSlash("".to_string()));
+        assert_eq!(
+            classify_buffer("/"),
+            PopupTrigger::OpenSlash("".to_string())
+        );
         assert_eq!(
             classify_buffer("/he"),
             PopupTrigger::OpenSlash("he".to_string())

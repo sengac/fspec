@@ -103,7 +103,9 @@ impl MultiLineInput {
         let lines: Vec<String> = if text.is_empty() {
             vec![String::new()]
         } else {
-            text.split('\n').map(std::string::ToString::to_string).collect()
+            text.split('\n')
+                .map(std::string::ToString::to_string)
+                .collect()
         };
         let mut ta = TextArea::new(lines);
         ta.set_cursor_line_style(ratatui::style::Style::default());
@@ -182,7 +184,10 @@ impl MultiLineInput {
         // navigation). Reported as Ignored so AgentView can convert
         // them into Action::{HistoryPrev,HistoryNext,SessionPrev,SessionNext}.
         if mods.contains(KeyModifiers::SHIFT)
-            && matches!(code, KeyCode::Up | KeyCode::Down | KeyCode::Left | KeyCode::Right)
+            && matches!(
+                code,
+                KeyCode::Up | KeyCode::Down | KeyCode::Left | KeyCode::Right
+            )
         {
             return InputEventOutcome::Ignored;
         }
@@ -199,7 +204,9 @@ impl MultiLineInput {
         }
         // RPC-073: Ctrl+D bubbles up so App::handle_app_shortcut
         // (Stage 4) fires the global quit fallback.
-        if mods.contains(KeyModifiers::CONTROL) && matches!(code, KeyCode::Char('d') | KeyCode::Char('D')) {
+        if mods.contains(KeyModifiers::CONTROL)
+            && matches!(code, KeyCode::Char('d') | KeyCode::Char('D'))
+        {
             return InputEventOutcome::Ignored;
         }
         // RPC-095 — block edits gate. Swallow Backspace, Delete,

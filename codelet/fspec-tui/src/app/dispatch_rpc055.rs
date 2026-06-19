@@ -39,13 +39,16 @@ impl App {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let debug_dir = std::env::var("FSPEC_DEBUG_DIR")
-            .unwrap_or_else(|_| ".fspec/debug".to_string());
+        let debug_dir =
+            std::env::var("FSPEC_DEBUG_DIR").unwrap_or_else(|_| ".fspec/debug".to_string());
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let session_for_send = session_id;
         let handle = tokio::spawn(async move {
-            let text = match backend.toggle_debug(session_for_send.clone(), debug_dir).await {
+            let text = match backend
+                .toggle_debug(session_for_send.clone(), debug_dir)
+                .await
+            {
                 Ok(path) => format!("[debug] capture toggled \u{2192} {path}"),
                 Err(e) => format!("[error] /debug failed: {e}"),
             };

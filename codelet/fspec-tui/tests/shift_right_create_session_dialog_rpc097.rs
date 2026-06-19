@@ -9,7 +9,12 @@
 //! the Compositor must contain `CREATE_SESSION_DIALOG_ID`. The visual
 //! parity tests then assert per-cell bg/fg/modifier on the styled cells.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::too_many_lines
+)]
 
 use std::sync::Arc;
 
@@ -244,8 +249,8 @@ fn freshly_mounted_dialog_paints_yes_button_blue_white_bold() {
 
     // @step Then the cells covering " Yes " have background Color::Blue
     //   and foreground Color::White and Modifier::BOLD
-    let (x, y) = find_text_cell(&buf, " Yes ")
-        .expect("' Yes ' must appear in the rendered dialog buffer");
+    let (x, y) =
+        find_text_cell(&buf, " Yes ").expect("' Yes ' must appear in the rendered dialog buffer");
     // Inspect every cell in the 5-cell span ' Yes ' — bg/fg/modifier on
     // each must match the TS contract.
     for dx in 0..5 {
@@ -461,7 +466,10 @@ fn enter_on_cancel_emits_cancelled_and_preserves_input() {
             saw_cancelled = true;
         }
     }
-    assert!(saw_cancelled, "Enter on Cancel must emit Action::CreateSessionCancelled");
+    assert!(
+        saw_cancelled,
+        "Enter on Cancel must emit Action::CreateSessionCancelled"
+    );
     // @step And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
     // @step And the MultiLineInput value is still "hello"
@@ -488,7 +496,10 @@ fn esc_emits_cancelled_and_dismisses() {
             saw_cancelled = true;
         }
     }
-    assert!(saw_cancelled, "Esc must emit Action::CreateSessionCancelled");
+    assert!(
+        saw_cancelled,
+        "Esc must emit Action::CreateSessionCancelled"
+    );
     // @step And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
     assert!(!app.compositor().contains(CREATE_SESSION_DIALOG_ID));
 }
@@ -531,7 +542,10 @@ fn shift_right_is_idempotent_when_dialog_already_mounted() {
         .iter()
         .filter(|id| id.as_str() == CREATE_SESSION_DIALOG_ID)
         .count();
-    assert_eq!(first_count, 1, "first Shift+Right must push exactly one dialog");
+    assert_eq!(
+        first_count, 1,
+        "first Shift+Right must push exactly one dialog"
+    );
 
     // @step When the user presses Shift+Right again
     app.dispatch(Action::SessionNext);
@@ -572,8 +586,7 @@ fn rendered_footer_uses_ascii_pipe_not_box_drawing() {
     // rounded border with ╭╮╰╯─│ but the FOOTER text uses ASCII |.
     // We check only the footer line by locating its row and confirming
     // the box-drawing pipe is absent within the same row.
-    let (fx, fy) = find_text_cell(&buf, "← → Select")
-        .expect("footer prefix must be present");
+    let (fx, fy) = find_text_cell(&buf, "← → Select").expect("footer prefix must be present");
     let _ = fx;
     let mut footer_row = String::new();
     for x in 0..buf.area.width {
@@ -619,7 +632,8 @@ fn source_shape_create_session_dialog_uses_render_dialog() {
         .expect("read create_session_dialog.rs");
     // @step Then it imports render_dialog from super::dialog_theme
     assert!(
-        source.contains("dialog_theme::") || source.contains("use super::dialog_theme")
+        source.contains("dialog_theme::")
+            || source.contains("use super::dialog_theme")
             || source.contains("render_dialog"),
         "create_session_dialog.rs must reuse dialog_theme::render_dialog primitive"
     );
@@ -714,7 +728,8 @@ fn drain_actions(app: &mut App) {
 fn app_in_boardview(unit_id: &str, status: &str, attach: Option<SessionId>) -> App {
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
-    app.board_store_mut().replace_work_units(vec![wu(unit_id, status)]);
+    app.board_store_mut()
+        .replace_work_units(vec![wu(unit_id, status)]);
     app.board_store_mut().set_focused_column(status);
     app.board_store_mut().set_selected_index_for(status, 0);
     if let Some(sid) = attach {
@@ -1043,7 +1058,8 @@ fn shift_left_then_shift_right_resumes_open_session_rpc097_reopen2() {
     // @step Given an App in AgentView with one open session "sid-A" focused
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let mut app = App::new(backend);
-    app.board_store_mut().replace_work_units(vec![wu("AUTH-001", "backlog")]);
+    app.board_store_mut()
+        .replace_work_units(vec![wu("AUTH-001", "backlog")]);
     app.board_store_mut().set_focused_column("backlog");
     app.board_store_mut().set_selected_index_for("backlog", 0);
     app.dispatch(Action::SessionCreated(sid("sid-A")));

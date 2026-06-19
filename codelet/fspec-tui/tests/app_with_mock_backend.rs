@@ -81,10 +81,16 @@ fn question_at_app_level_pushes_the_help_dialog_onto_the_compositor() {
     assert_eq!(app.compositor().len(), 1);
 
     // @step And the topmost layer's priority() returns Priority::Critical
-    assert_eq!(app.compositor().topmost_priority(), Some(Priority::Critical));
+    assert_eq!(
+        app.compositor().topmost_priority(),
+        Some(Priority::Critical)
+    );
 
     // @step And the topmost layer's id() returns "help-dialog"
-    assert_eq!(app.compositor().topmost_id(), Some("help-dialog".to_string()));
+    assert_eq!(
+        app.compositor().topmost_id(),
+        Some("help-dialog".to_string())
+    );
 }
 
 /// Scenario: ESC while the HelpDialog is on top removes the dialog via
@@ -94,7 +100,10 @@ fn esc_while_help_dialog_on_top_removes_the_dialog_via_deferred_callback() {
     // @step Given an App with a HelpDialog pushed onto the compositor at Priority::Critical
     let (mut app, _term) = fresh_app_with_mock_backend();
     let _ = app.handle_event(&synth_key(KeyCode::Char('?')));
-    assert_eq!(app.compositor().topmost_id(), Some("help-dialog".to_string()));
+    assert_eq!(
+        app.compositor().topmost_id(),
+        Some("help-dialog".to_string())
+    );
 
     // @step When the App receives a synthetic Key(Esc) event
     let result = app.handle_event(&synth_key(KeyCode::Esc));

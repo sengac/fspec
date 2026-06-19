@@ -11,8 +11,8 @@
 use std::collections::HashMap;
 
 use codelet_rpc_types::{
-    CompactionProgress, ModelInfo, SessionId, SessionStatus, ThinkingLevel,
-    WorkUnitContext, WorkspaceInfo,
+    CompactionProgress, ModelInfo, SessionId, SessionStatus, ThinkingLevel, WorkUnitContext,
+    WorkspaceInfo,
 };
 
 pub mod blocklist_state;
@@ -56,6 +56,11 @@ pub struct AgentViewStore {
     token_state_by_session: HashMap<SessionId, TokenState>,
     thinking_level_by_session: HashMap<SessionId, ThinkingLevel>,
     workspace: Option<WorkspaceInfo>,
+    /// RPC-337: last model id selected for each session (set on
+    /// `Action::ModelSelected`). Seeds the full-screen ModelSelector's
+    /// green `(current)` marker — `ModelInfo` carries only a display
+    /// name, not the api model id, so this is the available source.
+    selected_model_id_by_session: HashMap<SessionId, String>,
 
     // ── RPC-025 per-session history-recall state ────────────────────────
     /// Walk position into the cached history snapshot. See
@@ -85,8 +90,7 @@ pub struct AgentViewStore {
 
     // ── RPC-056 per-session blocklist-disabled set ──────────────────────
     // Accessors live in `store/agent_view/blocklist_state.rs`.
-    pub(crate) blocklist_disabled_by_session:
-        HashMap<SessionId, std::collections::HashSet<String>>,
+    pub(crate) blocklist_disabled_by_session: HashMap<SessionId, std::collections::HashSet<String>>,
 
     // ── RPC-061 per-session supervisor / subordinate state ──────────────
     // Accessors in `supervisor_state.rs`.

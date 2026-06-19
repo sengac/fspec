@@ -270,7 +270,9 @@ async fn fspec_command_request_list_work_units_round_trips_via_send_fspec_result
     // @step And the captured FspecResult.data is a JSON-serialised array containing every seeded work unit
     let value: serde_json::Value =
         serde_json::from_str(&result.data).expect("FspecResult.data must be JSON");
-    let arr = value.as_array().expect("FspecResult.data must be a JSON array");
+    let arr = value
+        .as_array()
+        .expect("FspecResult.data must be a JSON array");
     let ids: Vec<&str> = arr
         .iter()
         .filter_map(|v| v.get("id").and_then(|s| s.as_str()))
@@ -367,7 +369,10 @@ async fn chunks_rx_sender_drop_terminates_subscriber_task_cleanly() {
         .await
         .expect("bootstrap must succeed against MockBackend");
     let initial_task_count = app.subscriber_task_count();
-    assert!(initial_task_count >= 3, "at least chunks/work_units/logs subscribers must be alive");
+    assert!(
+        initial_task_count >= 3,
+        "at least chunks/work_units/logs subscribers must be alive"
+    );
 
     // Drop the MockBackend's chunks_tx Sender, mirroring a SessionManager
     // shutdown. After the drop, every active receiver observes

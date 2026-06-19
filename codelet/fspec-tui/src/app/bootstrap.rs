@@ -130,9 +130,7 @@ impl App {
                         let _ = tx.send(Action::SessionStatusChanged(id, status));
                     }
                     Err(broadcast::error::RecvError::Lagged(n)) => {
-                        tracing::warn!(
-                            "status_changes subscriber lagged by {n}; continuing"
-                        );
+                        tracing::warn!("status_changes subscriber lagged by {n}; continuing");
                     }
                     Err(broadcast::error::RecvError::Closed) => break,
                 }

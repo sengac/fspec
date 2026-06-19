@@ -145,11 +145,7 @@ impl FspecBackend for HistoryMockBackend {
         Ok(Vec::new())
     }
     async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()> {
-        let latch = self
-            .add_history_latch
-            .lock()
-            .expect("latch mutex")
-            .clone();
+        let latch = self.add_history_latch.lock().expect("latch mutex").clone();
         if let Some(notify) = latch {
             notify.notified().await;
         }
@@ -159,11 +155,7 @@ impl FspecBackend for HistoryMockBackend {
             .push((session, text));
         Ok(())
     }
-    async fn persistence_get_history(
-        &self,
-        session: SessionId,
-        limit: u32,
-    ) -> Result<Vec<String>> {
+    async fn persistence_get_history(&self, session: SessionId, limit: u32) -> Result<Vec<String>> {
         self.persistence_get_history_calls
             .lock()
             .expect("get_history mutex")
@@ -204,11 +196,7 @@ impl FspecBackend for HistoryMockBackend {
     async fn get_session_role(&self, _session_id: SessionId) -> Result<Option<String>> {
         Ok(None)
     }
-    async fn set_session_role(
-        &self,
-        _session_id: SessionId,
-        _role: Option<String>,
-    ) -> Result<()> {
+    async fn set_session_role(&self, _session_id: SessionId, _role: Option<String>) -> Result<()> {
         Ok(())
     }
 }
@@ -235,14 +223,20 @@ async fn first_shift_up_caches_draft_loads_snapshot_replaces_input() {
     // @step And the backend's persistence_get_history(SessionId("s-1"), 100) is stubbed to return ["third", "second", "first"]
     mock.script_history(
         sid("s-1"),
-        vec!["third".to_string(), "second".to_string(), "first".to_string()],
+        vec![
+            "third".to_string(),
+            "second".to_string(),
+            "first".to_string(),
+        ],
     );
     // @step And the MultiLineInput buffer is "live draft"
     app.navigator_mut().agent.input.set_value("live draft");
     // @step When App::dispatch handles Action::HistoryPrev
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index equals Some(0)
     let state = app
         .agent_view_store()
@@ -258,7 +252,11 @@ async fn first_shift_up_caches_draft_loads_snapshot_replaces_input() {
         .expect("snapshot must be cached after first HistoryPrev");
     assert_eq!(
         snap,
-        &vec!["third".to_string(), "second".to_string(), "first".to_string()]
+        &vec![
+            "third".to_string(),
+            "second".to_string(),
+            "first".to_string()
+        ]
     );
     // @step And the MultiLineInput buffer equals "third"
     assert_eq!(app.navigator().agent.input.value(), "third");
@@ -269,45 +267,64 @@ async fn first_shift_up_caches_draft_loads_snapshot_replaces_input() {
 async fn subsequent_shift_up_walks_back_and_clamps() {
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    mock.script_history(sid("s-1"), vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+    mock.script_history(
+        sid("s-1"),
+        vec!["a".to_string(), "b".to_string(), "c".to_string()],
+    );
     app.navigator_mut().agent.input.set_value("live");
     // @step Given an AgentViewStore where history_state_by_session[SessionId("s-1")] is HistoryNavState { recall_index: Some(0), cached_draft: Some("live") }
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     let calls_after_first = mock.get_history_call_count();
     assert_eq!(calls_after_first, 1);
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(0)
     );
     // @step And cached_history_snapshot[SessionId("s-1")] equals ["a", "b", "c"]
     // @step When App::dispatch handles Action::HistoryPrev
     app.dispatch(Action::HistoryPrev);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index equals Some(1)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(1)
     );
     // @step And the MultiLineInput buffer equals "b"
     assert_eq!(app.navigator().agent.input.value(), "b");
     // @step When App::dispatch handles Action::HistoryPrev
     app.dispatch(Action::HistoryPrev);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index equals Some(2)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(2)
     );
     // @step And the MultiLineInput buffer equals "c"
     assert_eq!(app.navigator().agent.input.value(), "c");
     // @step When App::dispatch handles Action::HistoryPrev
     app.dispatch(Action::HistoryPrev);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index stays at Some(2)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(2)
     );
     // @step And the MultiLineInput buffer is still "c"
@@ -321,47 +338,70 @@ async fn subsequent_shift_up_walks_back_and_clamps() {
 async fn shift_down_walks_forward_and_exits_recall() {
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    mock.script_history(sid("s-1"), vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+    mock.script_history(
+        sid("s-1"),
+        vec!["a".to_string(), "b".to_string(), "c".to_string()],
+    );
     app.navigator_mut().agent.input.set_value("live");
     // @step Given an AgentViewStore where history_state_by_session[SessionId("s-1")] is HistoryNavState { recall_index: Some(2), cached_draft: Some("live") }
     // @step And cached_history_snapshot[SessionId("s-1")] equals ["a", "b", "c"]
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     app.dispatch(Action::HistoryPrev);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     app.dispatch(Action::HistoryPrev);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(2)
     );
     // @step When App::dispatch handles Action::HistoryNext
     app.dispatch(Action::HistoryNext);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index equals Some(1)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(1)
     );
     // @step And the MultiLineInput buffer equals "b"
     assert_eq!(app.navigator().agent.input.value(), "b");
     // @step When App::dispatch handles Action::HistoryNext
     app.dispatch(Action::HistoryNext);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index equals Some(0)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(0)
     );
     // @step And the MultiLineInput buffer equals "a"
     assert_eq!(app.navigator().agent.input.value(), "a");
     // @step When App::dispatch handles Action::HistoryNext
     app.dispatch(Action::HistoryNext);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index equals None
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         None
     );
     // @step And the MultiLineInput buffer equals "live"
@@ -378,10 +418,14 @@ async fn shift_down_from_live_draft_mode_is_a_noop() {
     app.navigator_mut().agent.input.set_value("current draft");
     // @step When App::dispatch handles Action::HistoryNext
     app.dispatch(Action::HistoryNext);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index stays None
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         None
     );
     // @step And the MultiLineInput buffer is unchanged at "current draft"
@@ -401,10 +445,14 @@ async fn shift_up_with_empty_history_is_a_noop() {
     // @step When App::dispatch handles Action::HistoryPrev
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index stays at None
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         None
     );
     // @step And cached_history_snapshot[SessionId("s-1")] is empty
@@ -422,17 +470,24 @@ async fn each_session_keeps_independent_recall_across_cycling() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.dispatch(Action::SessionCreated(sid("s-2")));
     app.dispatch(Action::SessionPrev); // focus s-1
-    // @step And the backend's persistence_get_history(SessionId("s-1"), 100) is stubbed to return ["a", "b"]
+                                       // @step And the backend's persistence_get_history(SessionId("s-1"), 100) is stubbed to return ["a", "b"]
     mock.script_history(sid("s-1"), vec!["a".to_string(), "b".to_string()]);
     // @step And the backend's persistence_get_history(SessionId("s-2"), 100) is stubbed to return ["x", "y", "z"]
-    mock.script_history(sid("s-2"), vec!["x".to_string(), "y".to_string(), "z".to_string()]);
+    mock.script_history(
+        sid("s-2"),
+        vec!["x".to_string(), "y".to_string(), "z".to_string()],
+    );
     // @step When App::dispatch handles Action::HistoryPrev
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-1")].recall_index equals Some(0)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(0)
     );
     // @step And the MultiLineInput buffer equals "a"
@@ -442,15 +497,21 @@ async fn each_session_keeps_independent_recall_across_cycling() {
     // @step Then current_session_index equals 1
     assert_eq!(app.agent_view_store().current_session_index(), 1);
     // @step And the MultiLineInput buffer is restored from open_sessions[1].input_draft (NOT from history)
-    let s2_draft = app.agent_view_store().open_sessions()[1].input_draft.clone();
+    let s2_draft = app.agent_view_store().open_sessions()[1]
+        .input_draft
+        .clone();
     assert_eq!(app.navigator().agent.input.value(), s2_draft);
     // @step When App::dispatch handles Action::HistoryPrev
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then history_state_by_session[SessionId("s-2")].recall_index equals Some(0)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-2")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-2"))
+            .and_then(|s| s.recall_index),
         Some(0)
     );
     // @step And the MultiLineInput buffer equals "x"
@@ -459,12 +520,16 @@ async fn each_session_keeps_independent_recall_across_cycling() {
     app.dispatch(Action::SessionPrev);
     // @step Then history_state_by_session[SessionId("s-1")].recall_index is preserved at Some(0)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(0)
     );
     // @step And history_state_by_session[SessionId("s-2")].recall_index is preserved at Some(0)
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-2")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-2"))
+            .and_then(|s| s.recall_index),
         Some(0)
     );
 }
@@ -474,22 +539,33 @@ async fn each_session_keeps_independent_recall_across_cycling() {
 async fn submitting_input_fires_add_history_and_resets_state() {
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
-    mock.script_history(sid("s-1"), vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+    mock.script_history(
+        sid("s-1"),
+        vec!["a".to_string(), "b".to_string(), "c".to_string()],
+    );
     app.navigator_mut().agent.input.set_value("live");
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     app.dispatch(Action::HistoryPrev);
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Given an AgentViewStore with open_sessions[0].id == SessionId("s-1") and current_session_index == 0
     // @step And history_state_by_session[SessionId("s-1")] is HistoryNavState { recall_index: Some(1), cached_draft: Some("live") }
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         Some(1)
     );
     // @step And cached_history_snapshot[SessionId("s-1")] equals ["a", "b", "c"]
     assert_eq!(
-        app.agent_view_store().cached_history_snapshot(&sid("s-1")).expect("snap"),
+        app.agent_view_store()
+            .cached_history_snapshot(&sid("s-1"))
+            .expect("snap"),
         &vec!["a".to_string(), "b".to_string(), "c".to_string()]
     );
     // @step When App::dispatch handles Action::InputSubmitted("hello") for SessionId("s-1")
@@ -497,21 +573,31 @@ async fn submitting_input_fires_add_history_and_resets_state() {
     for _ in 0..4 {
         tokio::task::yield_now().await;
     }
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     // @step Then backend.send_input(SessionId("s-1"), "hello") is invoked
     let sent = mock.send_input_calls.lock().expect("send_input").clone();
     assert!(sent.iter().any(|(s, t)| s == &sid("s-1") && t == "hello"));
     // @step And backend.persistence_add_history(SessionId("s-1"), "hello") is invoked via tokio::spawn
-    let added = mock.persistence_add_history_calls.lock().expect("add_history").clone();
+    let added = mock
+        .persistence_add_history_calls
+        .lock()
+        .expect("add_history")
+        .clone();
     assert!(added.iter().any(|(s, t)| s == &sid("s-1") && t == "hello"));
     // @step And history_state_by_session[SessionId("s-1")].recall_index is reset to None
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.recall_index),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.recall_index),
         None
     );
     // @step And history_state_by_session[SessionId("s-1")].cached_draft is reset to None
     assert_eq!(
-        app.agent_view_store().history_state_for(&sid("s-1")).and_then(|s| s.cached_draft.clone()),
+        app.agent_view_store()
+            .history_state_for(&sid("s-1"))
+            .and_then(|s| s.cached_draft.clone()),
         None
     );
     // @step And cached_history_snapshot[SessionId("s-1")] is cleared
@@ -521,7 +607,9 @@ async fn submitting_input_fires_add_history_and_resets_state() {
     let before = mock.get_history_call_count();
     app.dispatch(Action::HistoryPrev);
     tokio::task::yield_now().await;
-    while let Some(action) = app.try_recv_action() { app.dispatch(action); }
+    while let Some(action) = app.try_recv_action() {
+        app.dispatch(action);
+    }
     assert!(mock.get_history_call_count() > before);
 }
 
@@ -538,18 +626,27 @@ async fn persistence_add_history_is_fire_and_forget() {
     app.dispatch(Action::InputSubmitted("hello".to_string()));
     let elapsed = start.elapsed();
     // @step Then the dispatch call returns within 50 milliseconds without awaiting persistence_add_history
-    assert!(elapsed < Duration::from_millis(50), "dispatch took {elapsed:?}");
+    assert!(
+        elapsed < Duration::from_millis(50),
+        "dispatch took {elapsed:?}"
+    );
     for _ in 0..4 {
         tokio::task::yield_now().await;
     }
     // @step And backend.send_input(SessionId("s-1"), "hello") is invoked exactly once
     let sent = mock.send_input_calls.lock().expect("send_input").clone();
     assert_eq!(
-        sent.iter().filter(|(s, t)| s == &sid("s-1") && t == "hello").count(),
+        sent.iter()
+            .filter(|(s, t)| s == &sid("s-1") && t == "hello")
+            .count(),
         1
     );
     // @step And the spawned persistence_add_history task is still pending (the latch has not been released)
-    let added = mock.persistence_add_history_calls.lock().expect("add_history").clone();
+    let added = mock
+        .persistence_add_history_calls
+        .lock()
+        .expect("add_history")
+        .clone();
     assert!(added.is_empty(), "add_history must still be latched");
     latch.notify_one();
     for _ in 0..4 {

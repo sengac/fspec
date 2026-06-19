@@ -109,7 +109,11 @@ fn build_left_compaction_line(progress: &CompactionProgress) -> Line<'static> {
         current = progress.current,
         total = progress.total,
     );
-    let bar = compaction_bar(progress.current, progress.total, COMPACTION_BAR_WIDTH as u32);
+    let bar = compaction_bar(
+        progress.current,
+        progress.total,
+        COMPACTION_BAR_WIDTH as u32,
+    );
     Line::from(vec![
         Span::styled(chip, Style::default().fg(Color::DarkGray)),
         Span::raw(" "),
@@ -145,7 +149,12 @@ fn paint_right_aligned(inner: Rect, buf: &mut Buffer, line: Line<'static>) {
     }
     let x = inner.x + (inner.width - width as u16);
     Paragraph::new(line).render(
-        Rect { x, y: inner.y, width: width as u16, height: 1 },
+        Rect {
+            x,
+            y: inner.y,
+            width: width as u16,
+            height: 1,
+        },
         buf,
     );
 }
@@ -158,7 +167,12 @@ fn paint_left_aligned(inner: Rect, buf: &mut Buffer, line: Line<'static>) {
     }
     let paint_width = (width as u16).min(inner.width);
     Paragraph::new(line).render(
-        Rect { x: inner.x, y: inner.y, width: paint_width, height: 1 },
+        Rect {
+            x: inner.x,
+            y: inner.y,
+            width: paint_width,
+            height: 1,
+        },
         buf,
     );
 }
@@ -189,13 +203,19 @@ mod tests {
     use super::*;
 
     fn line_text(line: &Line<'_>) -> String {
-        line.spans.iter().map(|s| s.content.as_ref()).collect::<String>()
+        line.spans
+            .iter()
+            .map(|s| s.content.as_ref())
+            .collect::<String>()
     }
 
     #[test]
     fn shorten_with_home_replaces_home_prefix() {
         std::env::set_var("HOME", "/Users/rquast");
-        assert_eq!(shorten_with_home("/Users/rquast/projects/fspec"), "~/projects/fspec");
+        assert_eq!(
+            shorten_with_home("/Users/rquast/projects/fspec"),
+            "~/projects/fspec"
+        );
     }
 
     #[test]
@@ -217,7 +237,10 @@ mod tests {
 
     #[test]
     fn build_right_line_omits_branch_suffix_when_none() {
-        let ws = WorkspaceInfo { cwd: "/tmp/scratch".to_string(), git_branch: None };
+        let ws = WorkspaceInfo {
+            cwd: "/tmp/scratch".to_string(),
+            git_branch: None,
+        };
         let line = build_right_line(&ws);
         assert_eq!(line.spans.len(), 1);
         assert_eq!(line.spans[0].content.as_ref(), "/tmp/scratch");
@@ -237,7 +260,10 @@ mod tests {
     #[test]
     fn compaction_bar_renders_five_filled_for_5_of_10() {
         let bar = compaction_bar(5, 10, 10);
-        assert_eq!(bar, "\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}");
+        assert_eq!(
+            bar,
+            "\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"
+        );
     }
 
     #[test]
@@ -259,6 +285,8 @@ mod tests {
         };
         let text = line_text(&build_left_compaction_line(&progress));
         assert!(text.contains("[compacting: summarising messages 5/10]"));
-        assert!(text.contains("\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"));
+        assert!(text.contains(
+            "\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"
+        ));
     }
 }

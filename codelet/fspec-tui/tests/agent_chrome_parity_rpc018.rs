@@ -92,7 +92,10 @@ async fn embedded_backend_get_workspace_info_delegates_through_the_shared_servic
         service,
     ));
     // @step When backend.get_workspace_info().await is invoked
-    let info = backend.get_workspace_info().await.expect("get_workspace_info");
+    let info = backend
+        .get_workspace_info()
+        .await
+        .expect("get_workspace_info");
     // @step Then the awaited result is Ok(WorkspaceInfo { cwd: <tmp_path>, git_branch: Some("main") })
     assert_eq!(
         info.cwd,
@@ -113,13 +116,13 @@ async fn websocket_backend_get_workspace_info_crosses_tarpc_cleanly() {
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.get_workspace_info().await is invoked
-    let info = backend.get_workspace_info().await.expect("get_workspace_info");
+    let info = backend
+        .get_workspace_info()
+        .await
+        .expect("get_workspace_info");
     // @step Then the awaited result is Ok(WorkspaceInfo { cwd: <tmp_path>, git_branch: Some("main") })
     assert_eq!(info.cwd, tmp.path().to_string_lossy().to_string());
     assert_eq!(info.git_branch.as_deref(), Some("main"));
@@ -142,7 +145,8 @@ async fn both_transports_return_identical_workspace_info() {
         service,
     ));
     // @step And a WebSocketFspecBackend connected to the rpc-server
-    let ws: Arc<dyn FspecBackend> = Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
+    let ws: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.get_workspace_info().await is invoked on BOTH backends
     let a = embedded.get_workspace_info().await.expect("embedded");
     let b = ws.get_workspace_info().await.expect("ws");
@@ -162,9 +166,16 @@ async fn get_workspace_info_returns_process_cwd_with_no_branch_when_no_cwd_attac
         service,
     ));
     // @step When backend.get_workspace_info().await is invoked
-    let info = backend.get_workspace_info().await.expect("get_workspace_info");
+    let info = backend
+        .get_workspace_info()
+        .await
+        .expect("get_workspace_info");
     // @step Then the awaited result is Ok with git_branch = None
-    assert!(info.git_branch.is_none(), "git_branch should be None, got {:?}", info.git_branch);
+    assert!(
+        info.git_branch.is_none(),
+        "git_branch should be None, got {:?}",
+        info.git_branch
+    );
     // @step And the cwd field is non-empty (defaults to std::env::current_dir())
     assert!(!info.cwd.is_empty(), "cwd should default to process cwd");
 }
@@ -188,7 +199,10 @@ async fn get_workspace_info_returns_no_branch_when_cwd_is_not_a_git_repo() {
         service,
     ));
     // @step When backend.get_workspace_info().await is invoked
-    let info = backend.get_workspace_info().await.expect("get_workspace_info");
+    let info = backend
+        .get_workspace_info()
+        .await
+        .expect("get_workspace_info");
     // @step Then the awaited result is Ok with git_branch = None
     assert!(info.git_branch.is_none());
     // @step And the cwd field equals the supplied tempdir path
@@ -247,11 +261,8 @@ async fn get_model_info_and_get_thinking_level_cross_tarpc_cleanly_with_safe_def
         .expect("bind_and_serve");
     let url = url::Url::parse(&format!("ws://{addr}/")).expect("ws url");
     // @step And a WebSocketFspecBackend connected to that server
-    let backend: Arc<dyn FspecBackend> = Arc::new(
-        WebSocketFspecBackend::connect(url)
-            .await
-            .expect("connect"),
-    );
+    let backend: Arc<dyn FspecBackend> =
+        Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
     // @step When backend.get_model_info(SessionId::new("anything")).await is invoked
     let info = backend
         .get_model_info(SessionId::new("anything"))

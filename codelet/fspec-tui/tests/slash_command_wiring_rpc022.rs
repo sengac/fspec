@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{
-    parse_slash_command, Action, App, FspecBackend, Priority, SlashCommandParse,
+    parse_slash_command, Action, App, FspecBackend, Priority, SlashCommandParse, ViewMode,
     MODEL_SELECTOR_DIALOG_ID, THINKING_LEVEL_DIALOG_ID,
 };
 use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId, ThinkingLevel};
@@ -55,12 +55,18 @@ fn parse_slash_command_recognises_the_four_wired_commands() {
     // @step Given the function parse_slash_command from app/dispatch_rpc022.rs
     // @step When it is called with text=<input>
     // @step Then it returns <expected_variant>
-    assert_eq!(parse_slash_command("/model"), SlashCommandParse::OpenModelDialog);
+    assert_eq!(
+        parse_slash_command("/model"),
+        SlashCommandParse::OpenModelDialog
+    );
     assert_eq!(
         parse_slash_command("/thinking"),
         SlashCommandParse::OpenThinkingDialog
     );
-    assert_eq!(parse_slash_command("/role"), SlashCommandParse::OpenRoleDialog);
+    assert_eq!(
+        parse_slash_command("/role"),
+        SlashCommandParse::OpenRoleDialog
+    );
     assert_eq!(
         parse_slash_command("/role clear"),
         SlashCommandParse::ClearRole
@@ -83,7 +89,9 @@ fn parse_slash_command_recognises_the_four_wired_commands() {
     );
 }
 
-/// Scenario: Submitting "/model" opens the ModelSelectorDialog and spawns list_providers
+/// Scenario: Submitting "/model" opens the full-screen ModelSelector
+/// mode-view and spawns list_providers (RPC-337: replaces the retired
+/// RPC-022 Compositor modal)
 #[tokio::test]
 async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
     // @step Given an App with one open session SessionId("s-1") and no dialogs pushed
@@ -103,6 +111,8 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
             supports_vision: false,
             is_custom: false,
         }],
+        profile_name: None,
+        is_unreachable: false,
     }]);
     let prior_send = mock.send_input_calls();
     let prior_lp = mock.list_providers_calls();
@@ -115,30 +125,21 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
         prior_send,
         "/model must not be forwarded to backend.send_input"
     );
-    // @step And a ModelSelectorDialog with id "model-selector-dialog" is pushed onto the Compositor at Priority::Foreground
-    assert!(app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
-    assert_eq!(
-        app.compositor().topmost_priority(),
-        Some(Priority::Foreground)
-    );
+    // @step And the Navigator flips to ViewMode::ModelSelector (no Compositor modal)
+    assert_eq!(app.active_view(), ViewMode::ModelSelector);
+    assert!(!app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
     // @step And a tokio task is spawned that calls backend.list_providers()
-    // @step When the spawned task completes
-    // (drain_pending already awaited the task above.)
     assert!(
         mock.list_providers_calls() > prior_lp,
         "list_providers must be called"
     );
-    // @step Then Action::ListProvidersLoaded([ProviderInfo{ key: "openai", ... }]) is dispatched
-    // (Drained above through the action bus.)
-    // @step And the open ModelSelectorDialog now contains 1 provider
-    // We assert by re-rendering and looking for "OpenAI" in the painted
-    // buffer (provider header label).
+    // @step And the model selector view contains 1 provider after the task resolves
     use ratatui::backend::TestBackend;
     use ratatui::Terminal;
     let backend = TestBackend::new(100, 30);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|frame| {
-        app.compositor_mut().render(frame.area(), frame.buffer_mut());
+        app.render(frame.area(), frame.buffer_mut());
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -151,7 +152,7 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
     }
     assert!(
         painted.contains("OpenAI"),
-        "dialog must contain 1 provider after list_providers resolves; got:\n{painted}"
+        "model selector must show 1 provider after list_providers resolves; got:\n{painted}"
     );
 }
 
@@ -191,7 +192,8 @@ async fn submitting_slash_thinking_opens_dialog_seeded_with_cached_level() {
     let backend = TestBackend::new(80, 24);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|frame| {
-        app.compositor_mut().render(frame.area(), frame.buffer_mut());
+        app.compositor_mut()
+            .render(frame.area(), frame.buffer_mut());
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -359,7 +361,8 @@ async fn slash_commands_are_not_appended_to_per_session_history() {
     assert_eq!(last.1, "hello");
 }
 
-/// Scenario: Slash popup selection of /model also opens the ModelSelectorDialog
+/// Scenario: Slash popup selection of /model also opens the full-screen
+/// ModelSelector mode-view (RPC-337: replaces the retired modal)
 #[tokio::test]
 async fn slash_popup_selection_of_model_opens_the_dialog() {
     // @step Given an App with one open session SessionId("s-1") and the slash popup open with selected command Model
@@ -373,12 +376,9 @@ async fn slash_popup_selection_of_model_opens_the_dialog() {
     // @step Then Action::SlashCommandSelected(SlashCommandAction::Model) is dispatched
     // (Already dispatched above.)
     drain_pending(&mut app).await;
-    // @step And a ModelSelectorDialog with id "model-selector-dialog" is pushed onto the Compositor at Priority::Foreground
-    assert!(app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
-    assert_eq!(
-        app.compositor().topmost_priority(),
-        Some(Priority::Foreground)
-    );
+    // @step And the Navigator flips to ViewMode::ModelSelector (no Compositor modal)
+    assert_eq!(app.active_view(), ViewMode::ModelSelector);
+    assert!(!app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
     // @step And a tokio task is spawned that calls backend.list_providers()
     assert!(
         mock.list_providers_calls() > prior_lp,
@@ -402,10 +402,7 @@ async fn slash_popup_selection_of_role_opens_the_role_dialog() {
         Some("Reviewer A".to_string())
     );
     let prior_role = mock.set_session_role_calls();
-    let prior_chunks = app
-        .navigator()
-        .agent
-        .chunk_count(app.agent_view_store());
+    let prior_chunks = app.navigator().agent.chunk_count(app.agent_view_store());
     // @step When the user presses Enter inside the popup
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
     // @step Then Action::SlashCommandSelected(SlashCommandAction::Role) is dispatched
@@ -428,11 +425,7 @@ async fn slash_popup_selection_of_role_opens_the_role_dialog() {
         "popup-picker `/role` must NOT call backend.set_session_role any more (RPC-063 routes through the dialog)"
     );
     // @step And no scrollback line containing the substring "[notice] /role" is appended
-    let chunk_delta = app
-        .navigator()
-        .agent
-        .chunk_count(app.agent_view_store())
-        - prior_chunks;
+    let chunk_delta = app.navigator().agent.chunk_count(app.agent_view_store()) - prior_chunks;
     assert_eq!(
         chunk_delta, 0,
         "popup-picker `/role` must NOT append a `[notice] /role` scrollback line — rule [5]"

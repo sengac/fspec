@@ -42,7 +42,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     }
 }
 
@@ -99,7 +99,10 @@ async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host
         .expect("Action::WorkUnitsLoaded on bus");
     assert!(matches!(action, Action::WorkUnitsLoaded(units) if units.len() == 1));
     // @step And one task drains `backend.chunks_rx()` and forwards `Action::ChunkReceived(id, chunk)` for EVERY session (RPC-045 removed the active-session filter)
-    mock.push_chunk(SessionId::new("s-mock-1"), StreamChunk::text("x".to_string()));
+    mock.push_chunk(
+        SessionId::new("s-mock-1"),
+        StreamChunk::text("x".to_string()),
+    );
     let action = wait_for_action(&mut app, |a| matches!(a, Action::ChunkReceived(_, _)))
         .await
         .expect("Action::ChunkReceived on bus");
@@ -148,7 +151,10 @@ async fn chunks_broadcast_events_for_the_active_session_become_action_chunkrecei
     app.bootstrap().await.expect("bootstrap");
     app.dispatch(Action::SessionCreated(SessionId::new("s-mock-1")));
     // @step When the test calls `mock.push_chunk(SessionId::new("s-mock-1"), StreamChunk::text("hello".into()))`
-    mock.push_chunk(SessionId::new("s-mock-1"), StreamChunk::text("hello".to_string()));
+    mock.push_chunk(
+        SessionId::new("s-mock-1"),
+        StreamChunk::text("hello".to_string()),
+    );
     // @step Then within 200ms the App's action bus receives an `Action::ChunkReceived(SessionId::new("s-mock-1"), StreamChunk::text("hello".into()))`
     let action = wait_for_action(&mut app, |a| matches!(a, Action::ChunkReceived(_, _)))
         .await
@@ -171,11 +177,15 @@ async fn chunks_broadcast_events_for_an_other_session_do_not_become_action_chunk
     app.bootstrap().await.expect("bootstrap");
     app.dispatch(Action::SessionCreated(SessionId::new("s-mock-1")));
     // @step When the test calls `mock.push_chunk(SessionId::new("s-other"), StreamChunk::text("not for us".into()))`
-    mock.push_chunk(SessionId::new("s-other"), StreamChunk::text("not for us".to_string()));
+    mock.push_chunk(
+        SessionId::new("s-other"),
+        StreamChunk::text("not for us".to_string()),
+    );
     // @step Then within 200ms the App's action bus receives an `Action::ChunkReceived` for the other session (RPC-045: no active-session filter)
-    let action = wait_for_action(&mut app, |a| {
-        matches!(a, Action::ChunkReceived(id, _) if id == &SessionId::new("s-other"))
-    })
+    let action = wait_for_action(
+        &mut app,
+        |a| matches!(a, Action::ChunkReceived(id, _) if id == &SessionId::new("s-other")),
+    )
     .await;
     assert!(
         action.is_some(),
@@ -185,7 +195,8 @@ async fn chunks_broadcast_events_for_an_other_session_do_not_become_action_chunk
 
 /// Scenario: Action::InputSubmitted dispatches backend.send_input and is forwarded to compositor.update
 #[tokio::test]
-async fn action_inputsubmitted_dispatches_backend_send_input_and_is_forwarded_to_compositor_update() {
+async fn action_inputsubmitted_dispatches_backend_send_input_and_is_forwarded_to_compositor_update()
+{
     // @step Given an App with active_session = Some(SessionId("s-mock-1")) and bootstrap complete
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -265,7 +276,9 @@ fn action_enum_gains_seven_new_variants_while_existing_variants_are_preserved() 
     // @step And it additionally contains SessionCreated(SessionId)
     assert!(src.contains("SessionCreated(codelet_rpc_types::SessionId)"));
     // @step And it additionally contains ChunkReceived(SessionId, StreamChunk)
-    assert!(src.contains("ChunkReceived(codelet_rpc_types::SessionId, codelet_rpc_types::StreamChunk)"));
+    assert!(
+        src.contains("ChunkReceived(codelet_rpc_types::SessionId, codelet_rpc_types::StreamChunk)")
+    );
     // @step And it additionally contains InputSubmitted(String)
     assert!(src.contains("InputSubmitted(String)"));
     // @step And it additionally contains Interrupt

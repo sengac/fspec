@@ -61,7 +61,14 @@ fn scrollback_text(app: &App) -> String {
         .unwrap_or_default();
     chunks
         .iter()
-        .flat_map(|c| c.lines.iter().map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>()))
+        .flat_map(|c| {
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
+        })
         .collect::<Vec<String>>()
         .join("\n")
 }
@@ -95,7 +102,10 @@ fn typing_slash_on_empty_input_opens_slash_command_palette() {
     type_chars(&mut view, "/");
 
     // @step Then AgentView.slash_popup is Some
-    let popup = view.slash_popup.as_ref().expect("slash popup should be open");
+    let popup = view
+        .slash_popup
+        .as_ref()
+        .expect("slash popup should be open");
     // @step And the slash popup's filter is ""
     assert_eq!(popup.filter(), "");
     // @step And the slash popup's match count equals the SLASH_COMMANDS registry length
@@ -223,7 +233,10 @@ fn pressing_enter_on_help_emits_help_action() {
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Help));
     assert!(app.compositor().contains("help-dialog"));
     // @step And the topmost compositor layer reports priority Priority::Critical
-    assert_eq!(app.compositor().topmost_priority(), Some(Priority::Critical));
+    assert_eq!(
+        app.compositor().topmost_priority(),
+        Some(Priority::Critical)
+    );
     // @step And the slash popup is closed
     assert!(view.slash_popup.is_none());
 }
@@ -249,9 +262,10 @@ fn pressing_enter_on_unimplemented_command_emits_notice() {
     // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Isolation)
     let actions = drain(&mut rx);
     assert!(
-        actions
-            .iter()
-            .any(|a| matches!(a, Action::SlashCommandSelected(SlashCommandAction::Isolation))),
+        actions.iter().any(|a| matches!(
+            a,
+            Action::SlashCommandSelected(SlashCommandAction::Isolation)
+        )),
         "expected SlashCommandSelected(Isolation), got {actions:?}"
     );
     // @step And App::dispatch routes that action into Action::OpenCreateSessionDialog{preselect:Some(Isolated)}
@@ -370,10 +384,7 @@ fn pressing_enter_on_file_match_splices_path_with_trailing_space() {
     let (mut view, _rx) = fresh_view();
     type_chars(&mut view, "hello @rea");
     // @step And the file popup is open with matches ["README.md", "src/reader.ts"] and selected index 0
-    view.set_file_search_results(vec![
-        "README.md".to_string(),
-        "src/reader.ts".to_string(),
-    ]);
+    view.set_file_search_results(vec!["README.md".to_string(), "src/reader.ts".to_string()]);
 
     // @step When the user presses Enter
     view.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
@@ -460,7 +471,9 @@ fn slash_popup_intercepts_plain_enter_so_chat_submit_does_not_fire() {
     );
     // @step And NO Action::InputSubmitted is emitted
     assert!(
-        !actions.iter().any(|a| matches!(a, Action::InputSubmitted(_))),
+        !actions
+            .iter()
+            .any(|a| matches!(a, Action::InputSubmitted(_))),
         "InputSubmitted should not fire while popup is open"
     );
 }

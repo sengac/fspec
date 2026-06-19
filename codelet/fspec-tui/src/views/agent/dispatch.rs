@@ -95,7 +95,13 @@ impl AgentView {
     }
 
     fn splice_path(&mut self, anchor: usize, filter_len: usize, path: &str, trailing_space: bool) {
-        let new = splice_file_selection(&self.input.value(), anchor, filter_len, path, trailing_space);
+        let new = splice_file_selection(
+            &self.input.value(),
+            anchor,
+            filter_len,
+            path,
+            trailing_space,
+        );
         self.input.set_value(&new);
         self.file_popup = None;
     }
@@ -259,7 +265,11 @@ impl AgentView {
 
     pub(crate) fn scrollback_viewport_hint(&self) -> usize {
         let h = self.last_scrollback_viewport as usize;
-        if h == 0 { 10 } else { h }
+        if h == 0 {
+            10
+        } else {
+            h
+        }
     }
 
     pub(super) fn mode_view_visible_rows(&self) -> usize {

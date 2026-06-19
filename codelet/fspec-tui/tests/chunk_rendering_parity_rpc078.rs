@@ -263,10 +263,7 @@ fn user_notification_chunk_renders_message_verbatim_with_no_extra_prefix() {
     // @step When the chunks subscriber forwards StreamChunk::UserNotification { message: "⟳ Reconnecting..." } for s-1
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
-        StreamChunk::user_notification(
-            "⟳ Reconnecting...".to_string(),
-            NotificationSeverity::Info,
-        ),
+        StreamChunk::user_notification("⟳ Reconnecting...".to_string(), NotificationSeverity::Info),
     ));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "⟳ Reconnecting..."

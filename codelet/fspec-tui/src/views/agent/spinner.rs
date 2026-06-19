@@ -23,9 +23,7 @@ use ratatui::widgets::{Paragraph, Widget};
 
 /// 10-frame braille-dots set, identical to the TS Ink
 /// `ThinkingIndicator` spinner style `'dots'`.
-pub const DOTS_FRAMES: [&str; 10] = [
-    "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏",
-];
+pub const DOTS_FRAMES: [&str; 10] = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 /// Frame interval in milliseconds (TS uses 80 ms).
 pub const DOTS_INTERVAL_MS: u64 = 80;

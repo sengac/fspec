@@ -18,9 +18,7 @@
 use std::sync::Arc;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_rpc_types::{
-    SessionId, StreamChunk, ToolCallInfo, ToolProgressInfo, ToolResultInfo,
-};
+use codelet_rpc_types::{SessionId, StreamChunk, ToolCallInfo, ToolProgressInfo, ToolResultInfo};
 use ratatui::style::Color;
 
 mod common;
@@ -88,7 +86,6 @@ fn nth_chunk_source_text(app: &App, id: &SessionId, n: usize) -> String {
         .unwrap_or_default()
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Consecutive Text deltas accumulate into a single in-flight
 //           assistant chunk
@@ -125,7 +122,10 @@ fn consecutive_text_deltas_accumulate_into_single_in_flight_assistant_chunk() {
     // @step And the SessionContext in_flight_assistant slot is Some(<that chunk's index>)
     assert_eq!(session_in_flight(&app, &sid("s-1")), Some(0));
     // @step And the chunk's source.kind is ChunkKind::AssistantText
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     let chunks = ctx.scrollback.visible_window(1024);
     let kind = chunks[0]
         .source
@@ -158,10 +158,7 @@ fn bullet_glyph_applied_by_renderer_only_on_line_index_zero() {
     let visible = session_lines(&app, &sid("s-1"));
     assert_eq!(
         visible,
-        vec![
-            "\u{25CF} first line".to_string(),
-            "second line".to_string(),
-        ],
+        vec!["\u{25CF} first line".to_string(), "second line".to_string(),],
     );
 
     // @step And the stored chunk.source.text is exactly "first line\nsecond line" (no bullet baked in)
@@ -193,7 +190,10 @@ fn done_flushes_in_flight_and_emits_no_new_chunk() {
     // @step And the SessionContext in_flight_assistant slot is None
     assert_eq!(session_in_flight(&app, &sid("s-1")), None);
     // @step And the chunk's is_streaming flag is false
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     let chunks = ctx.scrollback.visible_window(1024);
     let is_streaming = chunks[0]
         .source
@@ -258,10 +258,11 @@ fn done_runs_format_markdown_tables_over_accumulated_text() {
     }
 
     // @step And the chunk's is_streaming flag is false
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
-    let is_streaming = ctx
-        .scrollback
-        .visible_window(1024)[0]
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
+    let is_streaming = ctx.scrollback.visible_window(1024)[0]
         .source
         .as_ref()
         .map(|s| s.is_streaming)
@@ -285,7 +286,12 @@ fn tool_result_chunk(tool_call_id: &str, content: &str, is_error: bool) -> Strea
     })
 }
 
-fn tool_progress_chunk(tool_call_id: &str, name: &str, chunk: &str, is_stderr: bool) -> StreamChunk {
+fn tool_progress_chunk(
+    tool_call_id: &str,
+    name: &str,
+    chunk: &str,
+    is_stderr: bool,
+) -> StreamChunk {
     StreamChunk::tool_progress(ToolProgressInfo {
         tool_call_id: tool_call_id.to_string(),
         tool_name: name.to_string(),
@@ -325,7 +331,10 @@ fn tool_call_flushes_in_flight_and_pushes_tool_call_card() {
     assert_eq!(session_in_flight(&app, &sid("s-1")), None);
 
     // @step And the tool-call chunk's tool_call_id equals "tc-1"
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     let chunks = ctx.scrollback.visible_window(1024);
     let kind = chunks[1].source.as_ref().map(|s| s.kind.clone()).unwrap();
     match kind {
@@ -366,7 +375,10 @@ fn tool_call_drops_empty_in_flight_placeholder() {
     // @step Then the empty AssistantText chunk has been removed from scrollback
     // @step And the s-1 scrollback contains exactly one rendered chunk of kind ToolCall
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     let chunks = ctx.scrollback.visible_window(1024);
     let kind = chunks[0].source.as_ref().map(|s| s.kind.clone()).unwrap();
     assert!(matches!(
@@ -405,7 +417,10 @@ fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
     assert!(stored0.contains("AUTH-001  AUTH-002  AUTH-003"));
 
     // @step And the matching ToolCall chunk's is_error flag is false
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     let chunks = ctx.scrollback.visible_window(1024);
     let kind0 = chunks[0].source.as_ref().map(|s| s.kind.clone()).unwrap();
     match kind0 {
@@ -416,10 +431,7 @@ fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
     // @step And the s-1 scrollback ends with a fresh empty AssistantText chunk with is_streaming true
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
     let kind1 = chunks[1].source.as_ref().map(|s| s.kind.clone()).unwrap();
-    assert!(matches!(
-        kind1,
-        codelet_fspec_tui::ChunkKind::AssistantText
-    ));
+    assert!(matches!(kind1, codelet_fspec_tui::ChunkKind::AssistantText));
     let is_streaming1 = chunks[1].source.as_ref().map(|s| s.is_streaming).unwrap();
     assert!(is_streaming1, "fresh placeholder must be is_streaming");
     let stored1 = nth_chunk_source_text(&app, &sid("s-1"), 1);
@@ -450,7 +462,10 @@ fn tool_result_with_is_error_true_colours_body_red() {
     ));
 
     // @step Then the matching ToolCall chunk's is_error flag is true
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     let chunks = ctx.scrollback.visible_window(1024);
     let kind0 = chunks[0].source.as_ref().map(|s| s.kind.clone()).unwrap();
     match kind0 {
@@ -461,11 +476,7 @@ fn tool_result_with_is_error_true_colours_body_red() {
     let body_line = chunks[0]
         .lines
         .iter()
-        .find(|l| {
-            l.spans
-                .iter()
-                .any(|s| s.content.contains("exit code 1"))
-        })
+        .find(|l| l.spans.iter().any(|s| s.content.contains("exit code 1")))
         .expect("result body line present");
     let fg = body_line
         .spans
@@ -647,16 +658,25 @@ fn full_round_trip_renders_four_chunks_in_order() {
     assert_eq!(visible[2], "\u{25CF} Fspec(board)");
     // Last assistant bubble — find a line equal to "● Here are the open work units"
     assert!(
-        visible.iter().any(|l| l == "\u{25CF} Here are the open work units"),
+        visible
+            .iter()
+            .any(|l| l == "\u{25CF} Here are the open work units"),
         "expected final assistant bubble; got {visible:?}"
     );
     // @step And the SessionContext in_flight_assistant slot is None
     assert_eq!(session_in_flight(&app, &sid("s-1")), None);
 
     // @step And no chunk has a bullet baked into its stored source.text
-    let ctx = app.agent_view_store().session_context_for(&sid("s-1")).unwrap();
+    let ctx = app
+        .agent_view_store()
+        .session_context_for(&sid("s-1"))
+        .unwrap();
     for (i, c) in ctx.scrollback.visible_window(1024).iter().enumerate() {
-        let stored = c.source.as_ref().map(|s| s.text.clone()).unwrap_or_default();
+        let stored = c
+            .source
+            .as_ref()
+            .map(|s| s.text.clone())
+            .unwrap_or_default();
         assert!(
             !stored.starts_with('\u{25CF}'),
             "chunk {i} must not bake the bullet; got {stored:?}"

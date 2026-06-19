@@ -45,11 +45,7 @@ async fn await_call_count(actual: impl Fn() -> usize, expected: usize, timeout: 
         }
         tokio::time::sleep(Duration::from_millis(5)).await;
     }
-    assert_eq!(
-        actual(),
-        expected,
-        "timed out waiting for {expected} calls"
-    );
+    assert_eq!(actual(), expected, "timed out waiting for {expected} calls");
 }
 
 /// Scenario: Action::ReorderUp dispatches backend.move_work_unit_up against the selected work unit
@@ -59,7 +55,11 @@ async fn action_reorder_up_dispatches_move_work_unit_up_for_selected_id() {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    let units = vec![wu("A-001", "backlog"), wu("B-002", "backlog"), wu("C-003", "backlog")];
+    let units = vec![
+        wu("A-001", "backlog"),
+        wu("B-002", "backlog"),
+        wu("C-003", "backlog"),
+    ];
     app.board_store_mut().replace_work_units(units);
     app.board_store_mut().set_focused_column("backlog");
     app.board_store_mut().set_selected_index_for("backlog", 1);
@@ -68,12 +68,7 @@ async fn action_reorder_up_dispatches_move_work_unit_up_for_selected_id() {
     app.dispatch(Action::ReorderUp);
 
     // Wait for the fire-and-forget tokio task.
-    await_call_count(
-        || mock.move_work_unit_up_calls(),
-        1,
-        Duration::from_secs(1),
-    )
-    .await;
+    await_call_count(|| mock.move_work_unit_up_calls(), 1, Duration::from_secs(1)).await;
 
     // @step Then the mock backend records exactly one move_work_unit_up call with id "B-002"
     assert_eq!(mock.move_work_unit_up_calls(), 1);
@@ -90,7 +85,11 @@ async fn action_reorder_down_dispatches_move_work_unit_down_for_selected_id() {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
-    let units = vec![wu("A-001", "backlog"), wu("B-002", "backlog"), wu("C-003", "backlog")];
+    let units = vec![
+        wu("A-001", "backlog"),
+        wu("B-002", "backlog"),
+        wu("C-003", "backlog"),
+    ];
     app.board_store_mut().replace_work_units(units);
     app.board_store_mut().set_focused_column("backlog");
     app.board_store_mut().set_selected_index_for("backlog", 0);

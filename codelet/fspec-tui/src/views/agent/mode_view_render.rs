@@ -42,7 +42,12 @@ pub(super) fn render_session_rows(
 ) {
     if sessions.is_empty() {
         let mid_y = area.y.saturating_add(area.height / 2);
-        let row = Rect { x: area.x, y: mid_y, width: area.width, height: 1 };
+        let row = Rect {
+            x: area.x,
+            y: mid_y,
+            width: area.width,
+            height: 1,
+        };
         Paragraph::new("(no sessions to resume)")
             .alignment(Alignment::Center)
             .render(row, buf);
@@ -55,7 +60,11 @@ pub(super) fn render_session_rows(
     let end = (scroll_offset + visible_rows).min(sessions.len());
     for (row_idx, info) in sessions[scroll_offset..end].iter().enumerate() {
         let global_idx = scroll_offset + row_idx;
-        let marker = if global_idx == selected_index { "▸" } else { " " };
+        let marker = if global_idx == selected_index {
+            "▸"
+        } else {
+            " "
+        };
         let label = format!(" {marker} {} ({})", info.id, info.status);
         let style = if global_idx == selected_index {
             Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
@@ -63,7 +72,12 @@ pub(super) fn render_session_rows(
             Style::default()
         };
         let y = area.y + row_idx as u16;
-        let row_area = Rect { x: area.x, y, width: area.width, height: 1 };
+        let row_area = Rect {
+            x: area.x,
+            y,
+            width: area.width,
+            height: 1,
+        };
         Paragraph::new(Line::from(Span::styled(label, style))).render(row_area, buf);
     }
 }

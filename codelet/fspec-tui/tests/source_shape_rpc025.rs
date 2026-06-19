@@ -131,10 +131,7 @@ fn history_nav_state_module_exists_under_100_loc() {
     assert!(path.is_file(), "{} must exist", path.display());
     // @step And that file is under 100 lines
     let n = count_lines_path(&path);
-    assert!(
-        n < 100,
-        "history_state.rs has {n} lines, must be < 100"
-    );
+    assert!(n < 100, "history_state.rs has {n} lines, must be < 100");
     let body = read_raw(&path);
     // @step And the file declares "pub struct HistoryNavState"
     assert!(

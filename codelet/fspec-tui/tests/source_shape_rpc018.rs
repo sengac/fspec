@@ -12,19 +12,31 @@ fn src_dir() -> std::path::PathBuf {
 }
 
 fn rpc_types_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc-types").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc-types")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn rpc_lib() -> std::path::PathBuf {
-    common::workspace_root().join("rpc").join("src").join("lib.rs")
+    common::workspace_root()
+        .join("rpc")
+        .join("src")
+        .join("lib.rs")
 }
 
 fn core_session_manager_handle() -> std::path::PathBuf {
-    common::workspace_root().join("core").join("src").join("session_manager_handle.rs")
+    common::workspace_root()
+        .join("core")
+        .join("src")
+        .join("session_manager_handle.rs")
 }
 
 fn napi_git_rs() -> std::path::PathBuf {
-    common::workspace_root().join("napi").join("src").join("git.rs")
+    common::workspace_root()
+        .join("napi")
+        .join("src")
+        .join("git.rs")
 }
 
 fn napi_src_dir() -> std::path::PathBuf {
@@ -52,23 +64,50 @@ fn new_shared_types_live_in_rpc_types() {
     // @step Given codelet/rpc-types/src/lib.rs after RPC-018 lands
     let body = read_raw(&rpc_types_lib());
     // @step Then the file contains the substring "pub struct ModelInfo"
-    assert!(body.contains("pub struct ModelInfo"), "rpc-types must define `pub struct ModelInfo`");
+    assert!(
+        body.contains("pub struct ModelInfo"),
+        "rpc-types must define `pub struct ModelInfo`"
+    );
     // @step And the file contains the substring "pub display_name: String"
-    assert!(body.contains("pub display_name: String"), "ModelInfo must have `pub display_name: String`");
+    assert!(
+        body.contains("pub display_name: String"),
+        "ModelInfo must have `pub display_name: String`"
+    );
     // @step And the file contains the substring "pub supports_reasoning: bool"
-    assert!(body.contains("pub supports_reasoning: bool"), "ModelInfo must have `pub supports_reasoning: bool`");
+    assert!(
+        body.contains("pub supports_reasoning: bool"),
+        "ModelInfo must have `pub supports_reasoning: bool`"
+    );
     // @step And the file contains the substring "pub supports_vision: bool"
-    assert!(body.contains("pub supports_vision: bool"), "ModelInfo must have `pub supports_vision: bool`");
+    assert!(
+        body.contains("pub supports_vision: bool"),
+        "ModelInfo must have `pub supports_vision: bool`"
+    );
     // @step And the file contains the substring "pub context_window: u32"
-    assert!(body.contains("pub context_window: u32"), "ModelInfo must have `pub context_window: u32`");
+    assert!(
+        body.contains("pub context_window: u32"),
+        "ModelInfo must have `pub context_window: u32`"
+    );
     // @step And the file contains the substring "pub enum ThinkingLevel"
-    assert!(body.contains("pub enum ThinkingLevel"), "rpc-types must define `pub enum ThinkingLevel`");
+    assert!(
+        body.contains("pub enum ThinkingLevel"),
+        "rpc-types must define `pub enum ThinkingLevel`"
+    );
     // @step And the file contains the substring "pub struct WorkspaceInfo"
-    assert!(body.contains("pub struct WorkspaceInfo"), "rpc-types must define `pub struct WorkspaceInfo`");
+    assert!(
+        body.contains("pub struct WorkspaceInfo"),
+        "rpc-types must define `pub struct WorkspaceInfo`"
+    );
     // @step And the file contains the substring "pub cwd: String"
-    assert!(body.contains("pub cwd: String"), "WorkspaceInfo must have `pub cwd: String`");
+    assert!(
+        body.contains("pub cwd: String"),
+        "WorkspaceInfo must have `pub cwd: String`"
+    );
     // @step And the file contains the substring "pub git_branch: Option<String>"
-    assert!(body.contains("pub git_branch: Option<String>"), "WorkspaceInfo must have `pub git_branch: Option<String>`");
+    assert!(
+        body.contains("pub git_branch: Option<String>"),
+        "WorkspaceInfo must have `pub git_branch: Option<String>`"
+    );
 }
 
 /// Scenario: FspecService trait gains three new RPC methods
@@ -164,9 +203,15 @@ fn new_agent_widget_modules_exist_as_separate_files() {
     let header = src_dir().join("views").join("agent").join("header.rs");
     let footer = src_dir().join("views").join("agent").join("footer.rs");
     // @step Then the file codelet/fspec-tui/src/views/agent/header.rs exists
-    assert!(header.exists(), "views/agent/header.rs must exist after RPC-018");
+    assert!(
+        header.exists(),
+        "views/agent/header.rs must exist after RPC-018"
+    );
     // @step And the file codelet/fspec-tui/src/views/agent/footer.rs exists
-    assert!(footer.exists(), "views/agent/footer.rs must exist after RPC-018");
+    assert!(
+        footer.exists(),
+        "views/agent/footer.rs must exist after RPC-018"
+    );
 }
 
 /// Scenario: New and modified agent modules stay under 300 lines
@@ -205,7 +250,11 @@ fn new_and_modified_agent_modules_stay_under_300_lines() {
         // @step Then every file in views/agent/ has fewer than 300 lines
         // @step And the orchestrator file (views/agent.rs OR views/agent/mod.rs) has fewer than 300 lines
         if lines >= 300 {
-            violations.push(format!("{}: {} lines >= 300 ceiling", path.display(), lines));
+            violations.push(format!(
+                "{}: {} lines >= 300 ceiling",
+                path.display(),
+                lines
+            ));
         }
     }
     assert!(
@@ -297,7 +346,12 @@ fn views_still_avoid_encapsulated_transport_crates_and_runtime_construction() {
         let body = common::read_to_string_or_panic(path);
         let code = common::strip_rust_comments(&body);
         // @step Then no file imports `codelet_core::` or `codelet_napi::` or `tarpc::` or `tokio_tungstenite::`
-        for needle in ["codelet_napi::", "codelet_core::", "tarpc::", "tokio_tungstenite::"] {
+        for needle in [
+            "codelet_napi::",
+            "codelet_core::",
+            "tarpc::",
+            "tokio_tungstenite::",
+        ] {
             if code.contains(needle) {
                 violations.push(format!("{}: {}", path.display(), needle));
             }

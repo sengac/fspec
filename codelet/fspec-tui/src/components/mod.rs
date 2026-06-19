@@ -13,13 +13,13 @@ use ratatui::layout::Rect;
 
 use crate::compositor::Compositor;
 
-pub mod disconnect_dialog;
-pub mod dialog_theme;
-pub mod dialog_theme_rows;
 pub mod board_exit_confirmation_dialog;
 pub mod create_session_dialog;
-pub mod exit_confirmation_dialog;
+pub mod dialog_theme;
+pub mod dialog_theme_rows;
+pub mod disconnect_dialog;
 pub mod error_dialog;
+pub mod exit_confirmation_dialog;
 pub mod hello;
 pub mod help_dialog;
 pub mod hitl_dialog;
@@ -238,7 +238,10 @@ pub enum Action {
     /// RPC-018: per-session ThinkingLevel arrived. Sibling of
     /// `ModelInfoLoaded` — fired by the same `Action::SessionCreated`
     /// dispatch arm.
-    ThinkingLevelLoaded(codelet_rpc_types::SessionId, codelet_rpc_types::ThinkingLevel),
+    ThinkingLevelLoaded(
+        codelet_rpc_types::SessionId,
+        codelet_rpc_types::ThinkingLevel,
+    ),
     /// RPC-018: workspace snapshot arrived (typically from
     /// `App::bootstrap` firing `backend.get_workspace_info()`).
     /// App::dispatch writes the payload into `AgentViewStore.workspace`.
@@ -386,11 +389,7 @@ pub enum Action {
     /// row. App::dispatch spawns `backend.set_session_model(...)` then
     /// re-runs `backend.get_model_info(...)` to refresh the
     /// SessionHeader chrome via `Action::ModelInfoLoaded`.
-    ModelSelected(
-        codelet_rpc_types::SessionId,
-        String,
-        String,
-    ),
+    ModelSelected(codelet_rpc_types::SessionId, String, String),
     /// RPC-022: emitted by ThinkingLevelDialog on Enter over a level
     /// row. App::dispatch spawns `backend.set_thinking_level(...)`
     /// then re-runs `backend.get_thinking_level(...)` to refresh the
@@ -604,7 +603,6 @@ pub enum Action {
     // folds backend responses into the view via the *Loaded /
     // *Complete / *Refreshed variants.
     // ========================================================================
-
     /// RPC-054: emitted by the slash command palette (and `/provider`
     /// submit-line parser) to open the ProviderSettingsView. App::dispatch
     /// flips the Navigator's ViewMode to ProviderSettings AND spawns
@@ -613,6 +611,23 @@ pub enum Action {
     /// RPC-054: emitted by the view on Esc (list mode). App::dispatch
     /// returns the Navigator to the Agent view.
     CloseProviderSettingsView,
+    /// RPC-337: open the full-screen ModelSelector mode-view. Emitted
+    /// by the `/model` slash command AND by ProviderSettings Tab
+    /// (SwitchToModels). App::dispatch flips the Navigator's ViewMode to
+    /// ModelSelector AND spawns `backend.list_providers()` (folded back
+    /// via `Action::ListProvidersLoaded`). Replaces the retired
+    /// `Action::OpenModelDialog` Compositor-modal path.
+    OpenModelSelectorView,
+    /// RPC-337: emitted by the ModelSelector mode-view on Esc.
+    /// App::dispatch returns the Navigator to the Agent view. A
+    /// committed `Action::ModelSelected` ALSO returns to Agent (the
+    /// selection closes the selector — handled in Navigator::apply_action).
+    CloseModelSelectorView,
+    /// RPC-337: emitted by the ModelSelector mode-view on `r`. Re-spawns
+    /// `backend.list_providers()` so the provider/model tree refreshes;
+    /// the view shows `(refreshing...)` until `ListProvidersLoaded`
+    /// arrives.
+    RefreshModelSelector,
     /// RPC-054: a spawned `backend.list_provider_credentials()` task
     /// resolved. App::dispatch folds the result into the open
     /// ProviderSettingsView.
@@ -671,7 +686,6 @@ pub enum Action {
     // `AgentViewStore.blocklist_disabled_by_session`. Esc dismisses the
     // view via `CloseBlocklistView`.
     // ========================================================================
-
     /// RPC-056: emitted by the slash command palette to open the
     /// BlocklistView. App::dispatch flips the Navigator's ViewMode to
     /// Blocklist AND spawns `backend.blocklist_list()`.
@@ -694,7 +708,6 @@ pub enum Action {
     // `MergeConfirmDialog` onto the compositor. Button activation maps
     // to `MergeConfirmed` / `DiscardConfirmed` / `CancelMergeDialog`.
     // ========================================================================
-
     /// RPC-057: emitted after a successful
     /// `backend.inspect_session_changes()` round-trip. The App pushes
     /// a `MergeConfirmDialog` seeded with the summary onto the
@@ -751,16 +764,13 @@ pub enum Action {
     // and on error emits `Action::EmitSessionNotice` against the focused
     // session.
     // ========================================================================
-
     /// RPC-060: emitted by the `/isolation` slash command palette pick
     /// (and any future explicit "new session" trigger). App::dispatch
     /// pushes a fresh [`crate::components::create_session_dialog::CreateSessionDialog`]
     /// onto the Compositor at Priority::Foreground, preselecting the
     /// option indicated by `preselect`.
     OpenCreateSessionDialog {
-        preselect: Option<
-            crate::components::create_session_dialog::CreateSessionOption,
-        >,
+        preselect: Option<crate::components::create_session_dialog::CreateSessionOption>,
     },
     /// RPC-060: emitted by the CreateSessionDialog on Enter over "Yes"
     /// or "Yes - Isolated". App::dispatch spawns
@@ -769,7 +779,9 @@ pub enum Action {
     /// folds the result into `Action::SessionCreated`. On error the
     /// dispatch helper surfaces a `[error] create [isolated ]session: …`
     /// notice to the focused session via `Action::EmitSessionNotice`.
-    CreateSessionSubmitted { isolated: bool },
+    CreateSessionSubmitted {
+        isolated: bool,
+    },
     /// RPC-060: emitted by the CreateSessionDialog on Enter over
     /// "Cancel" or on Esc. App::dispatch is a silent no-op — the
     /// callback returned by `handle_event` removes the dialog from the
@@ -785,11 +797,13 @@ pub enum Action {
     // `IncomingMessageInput` payload onto a subordinate session via
     // `backend.receive_incoming_message`.
     // ========================================================================
-
     /// RPC-061: result of a `backend.get_supervisors(session_id)` snapshot.
     /// `App::dispatch` writes the list into `AgentViewStore` so the
     /// next render of the SessionHeader can paint the subordinate badge.
-    SupervisorsLoaded(codelet_rpc_types::SessionId, Vec<codelet_rpc_types::SessionId>),
+    SupervisorsLoaded(
+        codelet_rpc_types::SessionId,
+        Vec<codelet_rpc_types::SessionId>,
+    ),
     /// RPC-061: dispatched by a supervisor's UI to forward an
     /// `IncomingMessageInput` payload onto `subordinate_id` via
     /// `backend.receive_incoming_message`. On `Err` the dispatch helper

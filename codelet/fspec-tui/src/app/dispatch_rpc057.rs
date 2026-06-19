@@ -85,10 +85,7 @@ impl App {
             + summary.deletions
             + summary.commits.len() as u32;
         if total == 0 {
-            self.handle_emit_session_notice(
-                &session_id,
-                "[merge] nothing to merge".to_string(),
-            );
+            self.handle_emit_session_notice(&session_id, "[merge] nothing to merge".to_string());
             return;
         }
         let _ = self.action_tx.send(Action::OpenMergeConfirmDialog {

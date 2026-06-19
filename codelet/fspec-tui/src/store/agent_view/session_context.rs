@@ -258,9 +258,8 @@ mod tests {
 
     #[test]
     fn parse_supervisor_envelope_extracts_role_and_body() {
-        let (role, body) = parse_supervisor_envelope(
-            "[SUPERVISOR: reviewer | Session: s-2]\nplease check this",
-        );
+        let (role, body) =
+            parse_supervisor_envelope("[SUPERVISOR: reviewer | Session: s-2]\nplease check this");
         assert_eq!(role, "reviewer");
         assert_eq!(body, "please check this");
     }

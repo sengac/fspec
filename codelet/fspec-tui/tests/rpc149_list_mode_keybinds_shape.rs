@@ -183,7 +183,10 @@ fn scenario_handle_list_key_match_arms_enumerate_exactly_the_ts_contract_surface
     let body = handle_list_key_body(&src);
 
     // @step Then the source must contain "KeyCode::Esc"
-    assert!(body.contains("KeyCode::Esc"), "Esc arm required (TS parity)");
+    assert!(
+        body.contains("KeyCode::Esc"),
+        "Esc arm required (TS parity)"
+    );
 
     // @step And the source must contain "KeyCode::Char('/')"
     assert!(
@@ -192,16 +195,28 @@ fn scenario_handle_list_key_match_arms_enumerate_exactly_the_ts_contract_surface
     );
 
     // @step And the source must contain "KeyCode::Tab"
-    assert!(body.contains("KeyCode::Tab"), "Tab arm required (TS parity, RPC-160)");
+    assert!(
+        body.contains("KeyCode::Tab"),
+        "Tab arm required (TS parity, RPC-160)"
+    );
 
     // @step And the source must contain "KeyCode::Up"
-    assert!(body.contains("KeyCode::Up"), "Up arrow arm required (TS parity)");
+    assert!(
+        body.contains("KeyCode::Up"),
+        "Up arrow arm required (TS parity)"
+    );
 
     // @step And the source must contain "KeyCode::Down"
-    assert!(body.contains("KeyCode::Down"), "Down arrow arm required (TS parity)");
+    assert!(
+        body.contains("KeyCode::Down"),
+        "Down arrow arm required (TS parity)"
+    );
 
     // @step And the source must contain "KeyCode::Enter"
-    assert!(body.contains("KeyCode::Enter"), "Enter arm required (TS parity)");
+    assert!(
+        body.contains("KeyCode::Enter"),
+        "Enter arm required (TS parity)"
+    );
 
     // @step And the source must contain "KeyCode::Char('d') | KeyCode::Char('D')"
     assert!(

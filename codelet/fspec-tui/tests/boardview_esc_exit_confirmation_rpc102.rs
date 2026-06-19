@@ -74,8 +74,7 @@ fn pressing_esc_on_the_boardview_opens_an_exit_confirmation_dialog() {
 
     // @step Then an "Exit fspec?" confirmation dialog appears over the board
     assert!(
-        app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "BoardView ESC must push BoardExitConfirmationDialog onto compositor"
     );
     assert_eq!(
@@ -108,8 +107,7 @@ fn pressing_q_on_the_boardview_is_ignored() {
 
     // @step Then no dialog appears
     assert!(
-        !app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        !app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "'q' on BoardView must NOT push BoardExitConfirmationDialog"
     );
     assert_eq!(
@@ -135,8 +133,7 @@ async fn confirming_the_exit_dialog_closes_the_application() {
     let mut app = board_view_app();
     let _ = app.handle_event(&synth_key(KeyCode::Esc));
     assert!(
-        app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "precondition: dialog must be open"
     );
 
@@ -157,16 +154,12 @@ async fn confirming_the_exit_dialog_closes_the_application() {
 
     // @step Then the dialog closes
     assert!(
-        !app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        !app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "Enter on Exit must remove BoardExitConfirmationDialog from compositor"
     );
 
     // @step And the application exits
-    assert!(
-        app.should_quit(),
-        "Enter on Exit must set should_quit=true"
-    );
+    assert!(app.should_quit(), "Enter on Exit must set should_quit=true");
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -179,8 +172,7 @@ async fn cancelling_the_exit_dialog_with_esc_returns_to_the_board() {
     let mut app = board_view_app();
     let _ = app.handle_event(&synth_key(KeyCode::Esc));
     assert!(
-        app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "precondition: dialog must be open"
     );
 
@@ -194,8 +186,7 @@ async fn cancelling_the_exit_dialog_with_esc_returns_to_the_board() {
 
     // @step Then the dialog disappears
     assert!(
-        !app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        !app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "ESC inside dialog must remove BoardExitConfirmationDialog"
     );
 
@@ -223,8 +214,7 @@ async fn disconnect_dialog_still_honors_q_to_quit() {
     let mut app = board_view_app();
 
     // @step And the DisconnectDialog is showing
-    app.compositor_mut()
-        .push(Box::new(DisconnectDialog::new()));
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     assert_eq!(
         app.compositor().topmost_id(),
         Some("disconnect-dialog".to_string()),
@@ -260,8 +250,7 @@ async fn disconnect_dialog_still_honors_r_to_reconnect() {
     let mut app = board_view_app();
 
     // @step And the DisconnectDialog is showing
-    app.compositor_mut()
-        .push(Box::new(DisconnectDialog::new()));
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     assert_eq!(
         app.compositor().topmost_id(),
         Some("disconnect-dialog".to_string())
@@ -339,16 +328,12 @@ async fn agentview_esc_cascade_still_clears_non_empty_input() {
         "AgentView Esc on non-empty input must NOT push ExitConfirmationDialog (L6 fires before L7)"
     );
     assert!(
-        !app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        !app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "AgentView Esc must NOT push BoardExitConfirmationDialog — wrong view"
     );
 
     // @step And the application is still running
-    assert!(
-        !app.should_quit(),
-        "AgentView Esc-cascade L6 must NOT quit"
-    );
+    assert!(!app.should_quit(), "AgentView Esc-cascade L6 must NOT quit");
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -383,9 +368,7 @@ fn pressing_esc_twice_on_boardview_only_opens_one_dialog() {
     // @step When I press ESC once
     let _ = app.handle_event(&synth_key(KeyCode::Esc));
     // @step Then the BoardExitConfirmationDialog is on the compositor
-    assert!(app
-        .compositor()
-        .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID));
+    assert!(app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID));
     let len_after_first = app.compositor().len();
 
     // @step When I press ESC a second time (the dialog itself handles it
@@ -397,8 +380,7 @@ fn pressing_esc_twice_on_boardview_only_opens_one_dialog() {
 
     // @step Then the dialog is gone (its own ESC handler == Cancel)
     assert!(
-        !app.compositor()
-            .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
+        !app.compositor().contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID),
         "Second ESC must close the dialog (ESC == Cancel inside the dialog)"
     );
 

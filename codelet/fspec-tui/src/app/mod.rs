@@ -42,6 +42,7 @@ pub mod dispatch_rpc061;
 pub mod dispatch_rpc063;
 pub mod dispatch_rpc079;
 pub mod dispatch_rpc098;
+pub mod dispatch_rpc337;
 pub mod events;
 pub mod loop_parser;
 pub mod schedule_parser;

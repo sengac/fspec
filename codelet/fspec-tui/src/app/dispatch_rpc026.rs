@@ -183,10 +183,7 @@ impl App {
         let handle = tokio::spawn(async move {
             tokio::time::sleep(Duration::from_millis(SEARCH_DEBOUNCE_MS)).await;
             if let Ok(matches) = backend.persistence_search_history(q.clone()).await {
-                let _ = action_tx.send(Action::HistorySearchResults {
-                    query: q,
-                    matches,
-                });
+                let _ = action_tx.send(Action::HistorySearchResults { query: q, matches });
             }
         });
         // RPC-064: park the abort token for the next keystroke's

@@ -24,15 +24,17 @@ fn workspace_root() -> PathBuf {
 }
 
 fn count_lines(path: &PathBuf) -> usize {
-    fs::read_to_string(path).expect("read source").lines().count()
+    fs::read_to_string(path)
+        .expect("read source")
+        .lines()
+        .count()
 }
 
 /// Scenario: CreateSessionDialog component file exists with the documented surface
 #[test]
 fn create_session_dialog_component_exists() {
     // @step Given the file codelet/fspec-tui/src/components/create_session_dialog.rs exists
-    let path = workspace_root()
-        .join("codelet/fspec-tui/src/components/create_session_dialog.rs");
+    let path = workspace_root().join("codelet/fspec-tui/src/components/create_session_dialog.rs");
     let source = fs::read_to_string(&path).expect("read create_session_dialog.rs");
 
     // @step Then it declares a public struct named "CreateSessionDialog"

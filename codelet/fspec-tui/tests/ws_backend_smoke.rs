@@ -101,8 +101,7 @@ async fn websocket_backend_round_trips_list_work_units_across_the_ws_wire() {
 #[test]
 fn websocket_backend_connect_uses_tokio_tungstenite_connect_async_directly() {
     // @step Given codelet/fspec-tui/src/transport/websocket.rs exists
-    let manifest_dir =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/transport/websocket.rs");
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/transport/websocket.rs");
     assert!(
         manifest_dir.exists(),
         "expected fspec-tui WebSocketFspecBackend source at {}",
@@ -141,8 +140,7 @@ fn websocket_backend_connect_uses_tokio_tungstenite_connect_async_directly() {
     );
 
     // @step And no envelope, bincode, or framing code lives in codelet/fspec-tui/src/transport/
-    let transport_dir =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/transport");
+    let transport_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/transport");
     let mut violations: Vec<String> = Vec::new();
     for entry in fs::read_dir(&transport_dir).expect("read transport/") {
         let path = entry.expect("dir entry").path();

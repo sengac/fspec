@@ -44,9 +44,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -256,7 +259,8 @@ async fn success_path_does_not_emit_error_notice() {
 
     let text = session_scrollback_text(&app, &sid("s-1"));
     assert!(
-        text.lines().all(|l| !l.starts_with("[error] /resume failed:")),
+        text.lines()
+            .all(|l| !l.starts_with("[error] /resume failed:")),
         "success path must NOT push an error notice into scrollback, got {text:?}",
     );
     // And the chunk count is 0 since buffered_output was empty.

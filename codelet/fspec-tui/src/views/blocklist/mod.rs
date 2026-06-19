@@ -93,7 +93,10 @@ impl BlocklistView {
     /// trap that would otherwise let the view's local set drift from
     /// the store's authoritative set across session switches.
     pub fn handle_key(&mut self, key: KeyEvent) -> BlocklistEvent {
-        if key.modifiers.intersects(KeyModifiers::CONTROL | KeyModifiers::ALT) {
+        if key
+            .modifiers
+            .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT)
+        {
             return BlocklistEvent::Consumed;
         }
         match key.code {
@@ -141,21 +144,14 @@ impl BlocklistView {
     /// Paint the view into `area`. Two-pane layout: 50% left (list),
     /// 50% right (details). The supplied `session_disabled` set drives
     /// the per-row glyph (●/○) and the right-pane Session Status field.
-    pub fn render(
-        &self,
-        area: Rect,
-        buf: &mut Buffer,
-        session_disabled: &HashSet<String>,
-    ) {
+    pub fn render(&self, area: Rect, buf: &mut Buffer, session_disabled: &HashSet<String>) {
         // Outer block: title + footer hint.
-        let outer = Block::default()
-            .borders(Borders::ALL)
-            .title(Span::styled(
-                " Blocklist ",
-                Style::default()
-                    .fg(Color::Cyan)
-                    .add_modifier(Modifier::BOLD),
-            ));
+        let outer = Block::default().borders(Borders::ALL).title(Span::styled(
+            " Blocklist ",
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        ));
         let inner = outer.inner(area);
         outer.render(area, buf);
 
@@ -211,12 +207,7 @@ impl BlocklistView {
         .render(footer, buf);
     }
 
-    fn render_left_pane(
-        &self,
-        area: Rect,
-        buf: &mut Buffer,
-        session_disabled: &HashSet<String>,
-    ) {
+    fn render_left_pane(&self, area: Rect, buf: &mut Buffer, session_disabled: &HashSet<String>) {
         let mut lines: Vec<Line<'_>> = Vec::with_capacity(self.rules.len());
         for (idx, rule) in self.rules.iter().enumerate() {
             let selected = idx == self.selected_index;
@@ -245,7 +236,10 @@ impl BlocklistView {
             let category = derive_category(&rule.pattern);
             let mut meta_spans: Vec<Span<'_>> = vec![
                 Span::raw("    "),
-                Span::styled(format!("[{}]", rule.action), Style::default().fg(action_color)),
+                Span::styled(
+                    format!("[{}]", rule.action),
+                    Style::default().fg(action_color),
+                ),
                 Span::raw(" "),
                 Span::styled(format!("[{category}]"), Style::default().fg(Color::Magenta)),
                 Span::raw(" "),
@@ -262,12 +256,7 @@ impl BlocklistView {
         Paragraph::new(lines).render(area, buf);
     }
 
-    fn render_right_pane(
-        &self,
-        area: Rect,
-        buf: &mut Buffer,
-        session_disabled: &HashSet<String>,
-    ) {
+    fn render_right_pane(&self, area: Rect, buf: &mut Buffer, session_disabled: &HashSet<String>) {
         let mut lines: Vec<Line<'_>> = Vec::new();
         if let Some(rule) = self.focused_rule() {
             lines.push(Line::from(Span::styled(
@@ -283,7 +272,10 @@ impl BlocklistView {
             ]));
             lines.push(Line::from(vec![
                 Span::styled("Action: ", Style::default().fg(Color::White)),
-                Span::styled(rule.action.clone(), Style::default().fg(action_color(&rule.action))),
+                Span::styled(
+                    rule.action.clone(),
+                    Style::default().fg(action_color(&rule.action)),
+                ),
             ]));
             lines.push(Line::from(vec![
                 Span::styled("Source: ", Style::default().fg(Color::White)),

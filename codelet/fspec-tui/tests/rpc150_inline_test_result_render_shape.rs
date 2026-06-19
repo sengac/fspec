@@ -242,9 +242,7 @@ fn scenario_paint_test_result_decoration_helper_is_owned_exclusively_by_list_nav
     );
 
     // @step And row_render.rs must contain zero occurrences of "paint_test_result_decoration"
-    let row_render_count = row_render
-        .matches("paint_test_result_decoration")
-        .count();
+    let row_render_count = row_render.matches("paint_test_result_decoration").count();
     assert_eq!(
         row_render_count, 0,
         "row_render.rs must NOT reference `paint_test_result_decoration` — row_render is the pure row painter; decoration composition belongs one layer up in the per-row loop (RPC-150). found {row_render_count}"

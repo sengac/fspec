@@ -365,7 +365,11 @@ async fn fresh_results_matching_current_query_are_folded() {
 /// column. This matters because the body row prefix " ▸ " contains
 /// a 3-byte character that would otherwise misalign byte-based
 /// `String::find` lookups.
-fn find_first_col_of(buf: &Buffer, row_substring: &str, needle_first_char: char) -> Option<(u16, u16)> {
+fn find_first_col_of(
+    buf: &Buffer,
+    row_substring: &str,
+    needle_first_char: char,
+) -> Option<(u16, u16)> {
     let needle_buf: String = needle_first_char.to_string();
     for y in 0..buf.area.height {
         for x_start in 0..buf.area.width {

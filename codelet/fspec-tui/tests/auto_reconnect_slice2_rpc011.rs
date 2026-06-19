@@ -24,7 +24,9 @@ use tokio::sync::mpsc::unbounded_channel;
 
 mod common;
 
-use common::{render_one_frame, start_ws_server_with_stats, temp_service, test_app, ws_url, MockBackend};
+use common::{
+    render_one_frame, start_ws_server_with_stats, temp_service, test_app, ws_url, MockBackend,
+};
 
 /// Helper: drain the App's action bus, dispatching each Action.
 fn pump_actions(app: &mut App) {
@@ -131,8 +133,7 @@ async fn auto_reconnect_backoff_schedule() {
 async fn auto_reconnect_happy_path() {
     // @step Given a fspec client whose daemon has just died
     let (_dir, service) = temp_service();
-    let (addr, stats, server_join) =
-        start_ws_server_with_stats(Arc::clone(&service)).await;
+    let (addr, stats, server_join) = start_ws_server_with_stats(Arc::clone(&service)).await;
     let (action_tx, mut action_rx) = unbounded_channel::<Action>();
     let url = ws_url(addr);
     let _backend = WebSocketFspecBackend::connect_with_supervisor(url.clone(), action_tx.clone())
@@ -157,7 +158,10 @@ async fn auto_reconnect_happy_path() {
         }
     }
     assert!(saw_disconnected, "must observe Action::Disconnected");
-    assert!(saw_reconnecting, "must observe Action::Reconnecting(...) at least once");
+    assert!(
+        saw_reconnecting,
+        "must observe Action::Reconnecting(...) at least once"
+    );
 
     // @step When a new fspec daemon binds the same port within 2 seconds
     // Rebind on the same port the supervisor is trying. We need to
@@ -302,8 +306,7 @@ async fn auto_reconnect_reconnecting_action_updates_dialog_text_inline() {
 async fn client_receives_server_going_away_when_daemon_shuts_down_gracefully() {
     // @step Given a fspec client connected to a daemon
     let (_dir, service) = temp_service();
-    let (addr, stats, _server_join) =
-        start_ws_server_with_stats(Arc::clone(&service)).await;
+    let (addr, stats, _server_join) = start_ws_server_with_stats(Arc::clone(&service)).await;
     let (action_tx, mut action_rx) = unbounded_channel::<Action>();
     let url = ws_url(addr);
     let backend = WebSocketFspecBackend::connect_with_supervisor(url, action_tx.clone())

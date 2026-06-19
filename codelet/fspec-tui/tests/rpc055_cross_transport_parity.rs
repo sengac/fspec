@@ -34,16 +34,18 @@ fn workspace_with_seed(cwd: &Path) {
     .expect("write work-units.json");
 }
 
-fn build_service() -> (TempDir, Arc<SharedFspecService>, Arc<StubSessionManagerHandle>) {
+fn build_service() -> (
+    TempDir,
+    Arc<SharedFspecService>,
+    Arc<StubSessionManagerHandle>,
+) {
     let temp = tempfile::tempdir().expect("tempdir");
     let cwd = temp.path().to_path_buf();
     workspace_with_seed(&cwd);
     let watcher = Arc::new(WorkUnitsWatcher::new(&cwd).expect("watcher"));
     let stub = Arc::new(StubSessionManagerHandle::new());
     let handle: Arc<dyn SessionManagerHandle> = stub.clone();
-    let service = Arc::new(
-        SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd),
-    );
+    let service = Arc::new(SharedFspecService::with_session_manager(watcher, handle).with_cwd(cwd));
     (temp, service, stub)
 }
 
@@ -76,9 +78,7 @@ async fn set_debug_directory_round_trips_identically_across_transports() {
     let initial = stub.set_debug_directory_calls();
 
     // @step When set_debug_directory("/tmp/dbg-A") is called via the embedded transport
-    let em = embedded
-        .set_debug_directory("/tmp/dbg-A".to_string())
-        .await;
+    let em = embedded.set_debug_directory("/tmp/dbg-A".to_string()).await;
     assert!(em.is_ok(), "embedded set_debug_directory: {em:?}");
 
     // @step And set_debug_directory("/tmp/dbg-B") is called via the WebSocket transport
@@ -135,6 +135,12 @@ async fn toggle_debug_round_trips_identically_across_transports() {
     );
 
     // @step And both calls return Ok with a non-empty path string
-    assert!(!em.is_empty(), "embedded toggle_debug returned empty string");
-    assert!(!ws.is_empty(), "websocket toggle_debug returned empty string");
+    assert!(
+        !em.is_empty(),
+        "embedded toggle_debug returned empty string"
+    );
+    assert!(
+        !ws.is_empty(),
+        "websocket toggle_debug returned empty string"
+    );
 }

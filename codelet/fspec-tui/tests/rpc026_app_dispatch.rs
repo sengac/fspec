@@ -41,7 +41,11 @@ async fn open_resume_view_installs_view_and_spawns_list_sessions() {
     // @step Given AgentView has no popups or mode views open
     let (mut app, mock) = fresh_app();
     // @step And the backend returns ["s1", "s2", "s3"] from list_sessions
-    mock.seed_sessions(vec![fake_session("s1"), fake_session("s2"), fake_session("s3")]);
+    mock.seed_sessions(vec![
+        fake_session("s1"),
+        fake_session("s2"),
+        fake_session("s3"),
+    ]);
 
     // @step When the user submits "/resume" via the input field
     // (Simulated by dispatching the action the slash handler would dispatch.)
@@ -301,10 +305,7 @@ async fn confirm_delete_session_round_trips_and_refreshes_list() {
     let handle = app.next_pending_task().expect("delete + list task");
     handle.await.expect("await delete");
     assert_eq!(mock.delete_session_calls(), 1);
-    assert_eq!(
-        mock.last_deleted_session(),
-        Some(SessionId::new("s-2"))
-    );
+    assert_eq!(mock.last_deleted_session(), Some(SessionId::new("s-2")));
 
     // @step And on completion a follow-up backend.list_sessions() is fetched
     // @step And Action::SessionListLoaded(["s-1", "s-3"]) is dispatched

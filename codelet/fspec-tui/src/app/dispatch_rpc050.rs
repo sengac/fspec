@@ -52,7 +52,8 @@ impl App {
                 .await
             {
                 Ok(()) => {
-                    let _ = action_tx.send(Action::WorkUnitAttached(session_for_task, ctx_for_task));
+                    let _ =
+                        action_tx.send(Action::WorkUnitAttached(session_for_task, ctx_for_task));
                 }
                 Err(e) => {
                     let _ = action_tx.send(Action::EmitSessionNotice(
@@ -72,8 +73,7 @@ impl App {
         session_id: SessionId,
         ctx: WorkUnitContext,
     ) {
-        self.agent_view_store
-            .set_work_unit_context(session_id, ctx);
+        self.agent_view_store.set_work_unit_context(session_id, ctx);
     }
 
     /// RPC-050: fold a successful `set_work_unit_context(None)` outcome
@@ -81,8 +81,7 @@ impl App {
     /// reset the session's scrollback, and reset its TokenState.
     /// Mirrors the TS `prepareForNewSession` cleanup chain.
     pub(crate) fn handle_work_unit_detached(&mut self, session_id: SessionId) {
-        self.agent_view_store
-            .clear_work_unit_context(&session_id);
+        self.agent_view_store.clear_work_unit_context(&session_id);
         if let Some(ctx) = self.agent_view_store.session_context_mut_for(&session_id) {
             ctx.reset_scrollback();
         }

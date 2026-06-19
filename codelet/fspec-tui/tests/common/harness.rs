@@ -125,8 +125,7 @@ impl AppTestHarness {
     /// the entry the slash-parser hooks into for inline-arg branches
     /// like `/thinking high` and `/role <text>`.
     pub fn submit_input(&mut self, text: &str) {
-        self.app
-            .dispatch(Action::InputSubmitted(text.to_string()));
+        self.app.dispatch(Action::InputSubmitted(text.to_string()));
     }
 
     /// Drive a single key event through the navigator's handle_event
@@ -219,11 +218,7 @@ impl AppTestHarness {
     /// because the page-size arithmetic in `App::dispatch` reads
     /// `scrollback_viewport_hint()` (which defaults to 10 when unset).
     pub fn set_scrollback_viewport_height(&mut self, id: &SessionId, height: u16) {
-        if let Some(ctx) = self
-            .app
-            .agent_view_store_mut()
-            .session_context_mut_for(id)
-        {
+        if let Some(ctx) = self.app.agent_view_store_mut().session_context_mut_for(id) {
             ctx.scrollback.set_viewport_height(height);
         }
     }

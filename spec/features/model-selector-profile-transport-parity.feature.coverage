@@ -1,0 +1,80 @@
+{
+  "scenarios": [
+    {
+      "name": "Both transports return identical profile and reachability fields",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc338_cross_transport_parity.rs",
+          "lines": "93-125",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967,
+                968,
+                969,
+                970,
+                971,
+                972,
+                973,
+                974,
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982,
+                983,
+                984,
+                985,
+                986,
+                987,
+                988,
+                989,
+                990,
+                991,
+                992,
+                993,
+                994,
+                995,
+                996,
+                997,
+                998,
+                999,
+                1000,
+                1001,
+                1002,
+                1003,
+                1004,
+                1005,
+                1006
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc338_cross_transport_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 81
+  }
+}

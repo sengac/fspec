@@ -63,7 +63,9 @@ impl App {
         let input_has_text = !self.navigator.agent.input.value().trim().is_empty();
         if input_has_text {
             self.navigator.agent.input.reset();
-            let _ = self.action_tx.send(Action::PendingInputChanged(String::new()));
+            let _ = self
+                .action_tx
+                .send(Action::PendingInputChanged(String::new()));
             return;
         }
         // RPC-098 L7 — open the three-button exit-confirmation modal.
@@ -78,8 +80,7 @@ impl App {
             self.agent_view_store.session_status_for(&session).copied(),
             Some(SessionStatus::Running) | Some(SessionStatus::Compacting),
         );
-        let dialog =
-            ExitConfirmationDialog::new(is_busy).with_action_tx(self.action_tx.clone());
+        let dialog = ExitConfirmationDialog::new(is_busy).with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 }

@@ -61,9 +61,7 @@ fn seed_workspace(backlog: &[&str], done: &[&str]) -> TempDir {
 }
 
 fn service_for(repo_path: &Path) -> Arc<SharedFspecService> {
-    let watcher = Arc::new(
-        WorkUnitsWatcher::new(repo_path).expect("WorkUnitsWatcher::new"),
-    );
+    let watcher = Arc::new(WorkUnitsWatcher::new(repo_path).expect("WorkUnitsWatcher::new"));
     Arc::new(SharedFspecService::new(watcher).with_cwd(repo_path.to_path_buf()))
 }
 
@@ -74,7 +72,11 @@ fn read_backlog_ids(workspace: &Path) -> Vec<String> {
     v.get("states")
         .and_then(|s| s.get("backlog"))
         .and_then(|c| c.as_array())
-        .map(|arr| arr.iter().filter_map(|x| x.as_str().map(std::string::ToString::to_string)).collect())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|x| x.as_str().map(std::string::ToString::to_string))
+                .collect()
+        })
         .unwrap_or_default()
 }
 
@@ -170,8 +172,7 @@ fn napi_move_work_unit_up_is_wired_through_the_same_shared_helper() {
         .join("napi")
         .join("src")
         .join("work_units_watcher.rs");
-    let body = fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    let body = fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
 
     // @step When a developer reads the file source raw
     // @step Then the file contains the substring "pub fn move_work_unit_up"
@@ -240,9 +241,7 @@ async fn fspec_service_move_work_unit_down_delegates_through_shared_service_cwd(
 async fn fspec_service_move_work_unit_up_returns_err_without_cwd() {
     // @step Given a SharedFspecService constructed via new() WITHOUT with_cwd
     let dir = seed_workspace(&["A-001", "B-002"], &[]);
-    let watcher = Arc::new(
-        WorkUnitsWatcher::new(dir.path()).expect("WorkUnitsWatcher::new"),
-    );
+    let watcher = Arc::new(WorkUnitsWatcher::new(dir.path()).expect("WorkUnitsWatcher::new"));
     let service = Arc::new(SharedFspecService::new(watcher));
     let backend: Arc<dyn FspecBackend> = Arc::new(EmbeddedFspecBackend::new(
         tokio::runtime::Handle::current(),

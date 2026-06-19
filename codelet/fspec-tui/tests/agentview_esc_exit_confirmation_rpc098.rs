@@ -219,8 +219,8 @@ async fn idle_session_esc_opens_dialog_with_idle_description_and_detach_focused(
         "idle-description text must be painted, got:\n{painted_str}"
     );
     // @step And the button "Detach" is selected with blue background and white foreground
-    let (dx, dy) = find_text_cell(&painted, " Detach ")
-        .expect("' Detach ' must appear in rendered buffer");
+    let (dx, dy) =
+        find_text_cell(&painted, " Detach ").expect("' Detach ' must appear in rendered buffer");
     for off in 0..8 {
         let style = painted[(dx + off, dy)].style();
         assert_eq!(
@@ -252,8 +252,8 @@ async fn idle_session_esc_opens_dialog_with_idle_description_and_detach_focused(
         Some(Color::Gray),
         "Close Session unselected must be Gray fg"
     );
-    let (cx, cy) = find_text_cell(&painted, " Cancel ")
-        .expect("' Cancel ' must appear in rendered buffer");
+    let (cx, cy) =
+        find_text_cell(&painted, " Cancel ").expect("' Cancel ' must appear in rendered buffer");
     assert_eq!(
         painted[(cx + 1, cy)].style().fg,
         Some(Color::Gray),
@@ -426,7 +426,10 @@ async fn enter_on_detach_dispatches_back_to_board_without_destroy() {
     // @step Then Action::AgentExitChoice { choice: Detach } is emitted
     // (verified indirectly: dialog has popped AND BackToBoard occurred)
     // @step And the ExitConfirmationDialog is removed from the compositor
-    assert!(!dialog_present(&app), "dialog must be popped after Enter on Detach");
+    assert!(
+        !dialog_present(&app),
+        "dialog must be popped after Enter on Detach"
+    );
     // @step And Action::BackToBoard is dispatched
     // @step And the navigator switches to the Board view
     assert_eq!(app.navigator().active_view, ViewMode::Board);
@@ -449,10 +452,11 @@ async fn enter_on_close_session_destroys_then_dispatches_back_to_board() {
     // @step Given the ExitConfirmationDialog is open with Detach focused
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
     // @step And the current AgentView session is attached to work unit "AUTH-001" in BoardStore
-    app.agent_view_store_mut()
-        .set_current_work_unit(Some("AUTH-001".to_string()), Some("implementing".to_string()));
-    app.board_store_mut()
-        .attach_session("AUTH-001", sid("s-1"));
+    app.agent_view_store_mut().set_current_work_unit(
+        Some("AUTH-001".to_string()),
+        Some("implementing".to_string()),
+    );
+    app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
     assert_eq!(
         app.board_store().session_for("AUTH-001"),
         Some(&sid("s-1")),
@@ -534,10 +538,11 @@ async fn cycling_sessions_in_agent_view_after_close_session_does_not_list_destro
     // describing s-1 as the focused session in the scenario, so bring it
     // back into focus before opening the exit dialog.
     app.agent_view_store_mut().focus_session_index(0);
-    app.agent_view_store_mut()
-        .set_current_work_unit(Some("AUTH-001".to_string()), Some("implementing".to_string()));
-    app.board_store_mut()
-        .attach_session("AUTH-001", sid("s-1"));
+    app.agent_view_store_mut().set_current_work_unit(
+        Some("AUTH-001".to_string()),
+        Some("implementing".to_string()),
+    );
+    app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
     assert_eq!(
         app.agent_view_store().open_sessions().len(),
         2,
@@ -623,10 +628,11 @@ async fn cycling_sessions_in_agent_view_after_close_session_does_not_list_destro
 async fn shift_right_after_close_session_does_not_navigate_back_to_destroyed_session() {
     // @step Given I am in the Rust AgentView with an active session "s1" attached to work unit "AUTH-001" in BoardStore
     let (mut app, mock) = agent_app_with_status(SessionStatus::Idle);
-    app.agent_view_store_mut()
-        .set_current_work_unit(Some("AUTH-001".to_string()), Some("implementing".to_string()));
-    app.board_store_mut()
-        .attach_session("AUTH-001", sid("s-1"));
+    app.agent_view_store_mut().set_current_work_unit(
+        Some("AUTH-001".to_string()),
+        Some("implementing".to_string()),
+    );
+    app.board_store_mut().attach_session("AUTH-001", sid("s-1"));
 
     // @step And the ExitConfirmationDialog is open with Close Session focused
     let _ = app.handle_event(&esc());
@@ -736,10 +742,7 @@ async fn esc_inside_dialog_is_equivalent_to_cancel() {
 
     // @step Then Action::AgentExitChoice { choice: Cancel } is emitted
     // @step And the ExitConfirmationDialog is removed from the compositor
-    assert!(
-        !dialog_present(&app),
-        "dialog must be popped on inner ESC"
-    );
+    assert!(!dialog_present(&app), "dialog must be popped on inner ESC");
     // @step And the navigator remains on the Agent view
     assert_eq!(app.navigator().active_view, ViewMode::Agent);
     // @step And no backend.destroy_session task is spawned
@@ -779,7 +782,10 @@ async fn pressing_esc_twice_from_l7_only_opens_one_dialog() {
 
     // Re-open the dialog and verify pushing twice via the *cascade* (not
     // via the dialog's own ESC handler) does not stack.
-    assert!(!dialog_present(&app), "after inner-ESC the dialog must be gone");
+    assert!(
+        !dialog_present(&app),
+        "after inner-ESC the dialog must be gone"
+    );
     let _ = app.handle_event(&esc());
     drain_pending(&mut app).await;
     assert!(dialog_present(&app), "re-open must succeed");
@@ -810,8 +816,7 @@ fn snapshot_dialog_80x24_is_busy_true() {
     let painted = buffer_to_string(&buf);
 
     // @step Then the snapshot shows a yellow rounded border centred on the buffer
-    let (corner_x, corner_y) = find_text_cell(&buf, "╭")
-        .expect("rounded corner ╭ must be painted");
+    let (corner_x, corner_y) = find_text_cell(&buf, "╭").expect("rounded corner ╭ must be painted");
     let style = buf[(corner_x, corner_y)].style();
     assert_eq!(
         style.fg,
@@ -819,8 +824,8 @@ fn snapshot_dialog_80x24_is_busy_true() {
         "border corner fg must be Yellow"
     );
     // @step And the title row reads "Exit Session?" in bold
-    let (tx, ty) = find_text_cell(&buf, "Exit Session?")
-        .expect("title 'Exit Session?' must be painted");
+    let (tx, ty) =
+        find_text_cell(&buf, "Exit Session?").expect("title 'Exit Session?' must be painted");
     assert!(
         buf[(tx, ty)].style().add_modifier.contains(Modifier::BOLD),
         "title must be bold"
@@ -831,8 +836,7 @@ fn snapshot_dialog_80x24_is_busy_true() {
         "busy-description must be painted, got:\n{painted}"
     );
     // @step And the button " Detach " is styled with blue background and white foreground
-    let (dx, dy) = find_text_cell(&buf, " Detach ")
-        .expect("' Detach ' must be painted");
+    let (dx, dy) = find_text_cell(&buf, " Detach ").expect("' Detach ' must be painted");
     for off in 0..8 {
         let cell_style = buf[(dx + off, dy)].style();
         assert_eq!(cell_style.bg, Some(Color::Blue));
@@ -840,11 +844,10 @@ fn snapshot_dialog_80x24_is_busy_true() {
         assert!(cell_style.add_modifier.contains(Modifier::BOLD));
     }
     // @step And the buttons " Close Session " and " Cancel " are styled in gray
-    let (cs_x, cs_y) = find_text_cell(&buf, " Close Session ")
-        .expect("' Close Session ' must be painted");
+    let (cs_x, cs_y) =
+        find_text_cell(&buf, " Close Session ").expect("' Close Session ' must be painted");
     assert_eq!(buf[(cs_x + 1, cs_y)].style().fg, Some(Color::Gray));
-    let (cx, cy) = find_text_cell(&buf, " Cancel ")
-        .expect("' Cancel ' must be painted");
+    let (cx, cy) = find_text_cell(&buf, " Cancel ").expect("' Cancel ' must be painted");
     assert_eq!(buf[(cx + 1, cy)].style().fg, Some(Color::Gray));
     // @step And the footer reads "← → Navigate | Enter Select | Esc Cancel" in dim text
     assert!(
@@ -865,16 +868,15 @@ fn snapshot_dialog_80x24_is_busy_false() {
     let painted = buffer_to_string(&buf);
 
     // @step Then the snapshot shows a yellow rounded border centred on the buffer
-    let (corner_x, corner_y) = find_text_cell(&buf, "╭")
-        .expect("rounded corner ╭ must be painted");
+    let (corner_x, corner_y) = find_text_cell(&buf, "╭").expect("rounded corner ╭ must be painted");
     assert_eq!(
         buf[(corner_x, corner_y)].style().fg,
         Some(Color::Yellow),
         "border corner fg must be Yellow"
     );
     // @step And the title row reads "Exit Session?" in bold
-    let (tx, ty) = find_text_cell(&buf, "Exit Session?")
-        .expect("title 'Exit Session?' must be painted");
+    let (tx, ty) =
+        find_text_cell(&buf, "Exit Session?").expect("title 'Exit Session?' must be painted");
     assert!(
         buf[(tx, ty)].style().add_modifier.contains(Modifier::BOLD),
         "title must be bold"
@@ -890,8 +892,7 @@ fn snapshot_dialog_80x24_is_busy_false() {
         "busy-only text must NOT appear with is_busy=false, got:\n{painted}"
     );
     // @step And the button " Detach " is styled with blue background and white foreground
-    let (dx, dy) = find_text_cell(&buf, " Detach ")
-        .expect("' Detach ' must be painted");
+    let (dx, dy) = find_text_cell(&buf, " Detach ").expect("' Detach ' must be painted");
     for off in 0..8 {
         let cell_style = buf[(dx + off, dy)].style();
         assert_eq!(cell_style.bg, Some(Color::Blue));
@@ -924,8 +925,8 @@ async fn end_to_end_app_render_overlays_dialog_on_top_of_agentview_chrome() {
     let painted = buffer_to_string(&buf);
 
     // @step Then the rendered buffer contains a yellow rounded border centred on screen
-    let (corner_x, corner_y) = find_text_cell(&buf, "╭")
-        .expect("rounded corner ╭ must be painted by App::render");
+    let (corner_x, corner_y) =
+        find_text_cell(&buf, "╭").expect("rounded corner ╭ must be painted by App::render");
     assert_eq!(
         buf[(corner_x, corner_y)].style().fg,
         Some(Color::Yellow),
@@ -950,9 +951,7 @@ async fn end_to_end_app_render_overlays_dialog_on_top_of_agentview_chrome() {
             // Skip the rounded border + interior — assume the dialog
             // occupies the middle ~half of the buffer. Anything to the
             // far left/right that is non-blank counts as chrome.
-            if (x < 5 || x > buf.area.width.saturating_sub(5))
-                && !s.trim().is_empty()
-            {
+            if (x < 5 || x > buf.area.width.saturating_sub(5)) && !s.trim().is_empty() {
                 non_dialog_chrome_cells += 1;
             }
         }

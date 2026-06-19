@@ -74,15 +74,18 @@ fn popup_body_rs_is_deleted_from_the_codebase() {
         .iter()
         .find(|p| Path::new(p).exists())
         .expect("either views/agent.rs or views/agent/mod.rs must exist");
-    let mod_rs = fs::read_to_string(agent_mod_path)
-        .unwrap_or_else(|_| panic!("{agent_mod_path} exists"));
+    let mod_rs =
+        fs::read_to_string(agent_mod_path).unwrap_or_else(|_| panic!("{agent_mod_path} exists"));
     assert!(
         !mod_rs.contains("mod popup_body"),
         "{agent_mod_path} must not declare mod popup_body"
     );
 
     // @step And no source file imports "popup_body::PopupBody"
-    for f in &["src/views/agent/slash_command_popup.rs", "src/views/agent/file_search_popup.rs"] {
+    for f in &[
+        "src/views/agent/slash_command_popup.rs",
+        "src/views/agent/file_search_popup.rs",
+    ] {
         let src = fs::read_to_string(f).unwrap_or_default();
         assert!(
             !src.contains("popup_body::PopupBody"),
@@ -150,8 +153,7 @@ fn every_refactored_dialog_file_remains_under_300_lines() {
         );
     }
     // @step And dialog_theme.rs itself has fewer than 300 source lines
-    let theme_src = fs::read_to_string(DIALOG_THEME_FILE)
-        .expect("dialog_theme.rs must exist");
+    let theme_src = fs::read_to_string(DIALOG_THEME_FILE).expect("dialog_theme.rs must exist");
     let theme_lines = theme_src.lines().count();
     assert!(
         theme_lines < 300,

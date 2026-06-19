@@ -78,9 +78,7 @@ impl App {
                 let _ = self.action_tx.send(Action::BackToBoard);
             }
             ExitChoice::CloseSession => {
-                if let Some(session) =
-                    self.agent_view_store.current_session().cloned()
-                {
+                if let Some(session) = self.agent_view_store.current_session().cloned() {
                     // Step 1: snapshot the work-unit binding BEFORE
                     // mutating any store so we still know which key to
                     // drop in BoardStore.

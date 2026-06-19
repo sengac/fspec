@@ -35,11 +35,6 @@ pub(super) fn render_title(view: &SearchHistoryView, area: Rect, buf: &mut Buffe
     Paragraph::new(Line::from(spans)).render(area, buf);
 }
 
-/// Paint the 1-row footer with keybinding hints.
-pub(super) fn render_footer(_view: &SearchHistoryView, area: Rect, buf: &mut Buffer) {
-    Paragraph::new("Enter Select | ↑↓ Navigate | Esc Cancel").render(area, buf);
-}
-
 /// Paint the body (either the placeholder OR the scrollable list of
 /// matched history entries with the live query highlighted).
 pub(super) fn render_body(view: &SearchHistoryView, area: Rect, buf: &mut Buffer) {
@@ -50,7 +45,12 @@ pub(super) fn render_body(view: &SearchHistoryView, area: Rect, buf: &mut Buffer
             format!("(no history matches \"{}\")", view.query())
         };
         let mid_y = area.y.saturating_add(area.height / 2);
-        let row = Rect { x: area.x, y: mid_y, width: area.width, height: 1 };
+        let row = Rect {
+            x: area.x,
+            y: mid_y,
+            width: area.width,
+            height: 1,
+        };
         Paragraph::new(placeholder)
             .alignment(Alignment::Center)
             .render(row, buf);
@@ -78,12 +78,16 @@ pub(super) fn render_body(view: &SearchHistoryView, area: Rect, buf: &mut Buffer
         // Prefix (" ▸ " / "   ") is rendered with the row's base style
         // (REVERSED inversion on the selected row, plain on others) but
         // never with the query-highlight BOLD by itself.
-        let mut spans: Vec<Span<'static>> =
-            vec![Span::styled(format!(" {marker} "), row_style)];
+        let mut spans: Vec<Span<'static>> = vec![Span::styled(format!(" {marker} "), row_style)];
         spans.extend(highlight_query(&m.text, view.query(), row_style));
 
         let y = area.y + row_idx as u16;
-        let row_area = Rect { x: area.x, y, width: area.width, height: 1 };
+        let row_area = Rect {
+            x: area.x,
+            y,
+            width: area.width,
+            height: 1,
+        };
         Paragraph::new(Line::from(spans)).render(row_area, buf);
     }
 }
@@ -118,7 +122,10 @@ pub fn highlight_query(text: &str, query: &str, base_style: Style) -> Vec<Span<'
                 }
                 let bold_end = absolute + qlen;
                 let bold_style = base_style.add_modifier(Modifier::BOLD);
-                out.push(Span::styled(text[absolute..bold_end].to_string(), bold_style));
+                out.push(Span::styled(
+                    text[absolute..bold_end].to_string(),
+                    bold_style,
+                ));
                 cursor = bold_end;
             }
             None => {

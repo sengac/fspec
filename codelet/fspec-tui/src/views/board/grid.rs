@@ -135,7 +135,10 @@ pub fn calculate_viewport_height(terminal_height: u16) -> u16 {
 /// border, each column's width from [`column_width_at`], and the `│`
 /// separator between columns. The returned array is indexed by
 /// [`crate::store::COLUMN_ORDER`] position.
-pub fn slice_column_rects(area: ratatui::layout::Rect, widths: ColumnWidths) -> [ratatui::layout::Rect; 7] {
+pub fn slice_column_rects(
+    area: ratatui::layout::Rect,
+    widths: ColumnWidths,
+) -> [ratatui::layout::Rect; 7] {
     let mut rects = [ratatui::layout::Rect::default(); 7];
     let mut x = area.x.saturating_add(1);
     for (idx, slot) in rects.iter_mut().enumerate() {

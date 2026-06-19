@@ -80,9 +80,10 @@ fn press_backspace(view: &mut ProviderSettingsView, n: usize) {
 /// Assert the view is in Detail::EditApiKey mode and return the draft.
 fn read_edit_draft(view: &ProviderSettingsView) -> String {
     match &view.mode {
-        ProviderSettingsMode::Detail { sub: DetailSub::EditApiKey { draft }, .. } => {
-            draft.clone()
-        }
+        ProviderSettingsMode::Detail {
+            sub: DetailSub::EditApiKey { draft },
+            ..
+        } => draft.clone(),
         other => panic!("expected Detail::EditApiKey, got {other:?}"),
     }
 }
@@ -104,11 +105,15 @@ fn pressing_enter_on_an_empty_edit_api_key_draft_transitions_to_list_mode_and_em
     // @step Then the view's mode is ProviderSettingsMode::List
     assert!(
         matches!(view.mode, ProviderSettingsMode::List),
-        "expected List, got {:?}", view.mode
+        "expected List, got {:?}",
+        view.mode
     );
 
     // @step And view.status is the empty string
-    assert_eq!(view.status, "", "view.status must be empty after silent cancel");
+    assert_eq!(
+        view.status, "",
+        "view.status must be empty after silent cancel"
+    );
 
     // @step And no ProviderSettingsEvent::Emit is dispatched
     assert!(
@@ -166,7 +171,10 @@ fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_li
 
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "anthropic", api_key: "sk-abc" })
     match evt {
-        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials { provider_id, api_key }) => {
+        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials {
+            provider_id,
+            api_key,
+        }) => {
             assert_eq!(provider_id, "anthropic");
             assert_eq!(api_key, "sk-abc");
         }
@@ -176,11 +184,15 @@ fn pressing_enter_on_a_non_empty_edit_api_key_draft_emits_save_and_returns_to_li
     // @step And the view's mode is ProviderSettingsMode::List
     assert!(
         matches!(view.mode, ProviderSettingsMode::List),
-        "expected List after non-empty save, got {:?}", view.mode
+        "expected List after non-empty save, got {:?}",
+        view.mode
     );
 
     // @step And view.status is the empty string
-    assert_eq!(view.status, "", "view.status must be empty after save (no Saving… text)");
+    assert_eq!(
+        view.status, "",
+        "view.status must be empty after save (no Saving… text)"
+    );
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -200,7 +212,8 @@ fn pressing_esc_in_edit_api_key_transitions_directly_to_list_mode() {
     // @step Then the view's mode is ProviderSettingsMode::List
     assert!(
         matches!(view.mode, ProviderSettingsMode::List),
-        "expected List after Esc, got {:?}", view.mode
+        "expected List after Esc, got {:?}",
+        view.mode
     );
 
     // @step And view.status is the empty string
@@ -236,7 +249,8 @@ fn pressing_esc_in_edit_api_key_with_an_empty_draft_also_returns_directly_to_lis
     // @step Then the view's mode is ProviderSettingsMode::List
     assert!(
         matches!(view.mode, ProviderSettingsMode::List),
-        "expected List after Esc on empty draft, got {:?}", view.mode
+        "expected List after Esc on empty draft, got {:?}",
+        view.mode
     );
 
     // @step And view.status is the empty string
@@ -249,7 +263,8 @@ fn pressing_esc_in_edit_api_key_with_an_empty_draft_also_returns_directly_to_lis
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn empty_enter_cancel_after_typing_then_deleting_all_characters_still_produces_no_validation_chrome() {
+fn empty_enter_cancel_after_typing_then_deleting_all_characters_still_produces_no_validation_chrome(
+) {
     // @step Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with empty draft
     let mut view = view_in_edit_api_key_mode_for("anthropic");
     assert_eq!(read_edit_draft(&view), "");
@@ -268,7 +283,8 @@ fn empty_enter_cancel_after_typing_then_deleting_all_characters_still_produces_n
     // @step Then the view's mode is ProviderSettingsMode::List
     assert!(
         matches!(view.mode, ProviderSettingsMode::List),
-        "expected List after typing/deleting/Enter cycle, got {:?}", view.mode
+        "expected List after typing/deleting/Enter cycle, got {:?}",
+        view.mode
     );
 
     // @step And view.status is the empty string
@@ -294,12 +310,16 @@ fn empty_enter_clears_any_pre_existing_legacy_validation_status() {
     view.handle_key(key(KeyCode::Enter));
 
     // @step Then view.status is the empty string
-    assert_eq!(view.status, "", "silent-cancel must clear any legacy validation status");
+    assert_eq!(
+        view.status, "",
+        "silent-cancel must clear any legacy validation status"
+    );
 
     // @step And the view's mode is ProviderSettingsMode::List
     assert!(
         matches!(view.mode, ProviderSettingsMode::List),
-        "expected List after empty-Enter with legacy status, got {:?}", view.mode
+        "expected List after empty-Enter with legacy status, got {:?}",
+        view.mode
     );
 }
 
@@ -320,7 +340,10 @@ fn non_empty_enter_still_consumes_the_draft_into_save_provider_credentials_verba
 
     // @step Then the emitted ProviderSettingsEvent is Emit(Action::SaveProviderCredentials { provider_id: "openai", api_key: "sk-test-1" })
     match evt {
-        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials { provider_id, api_key }) => {
+        ProviderSettingsEvent::Emit(Action::SaveProviderCredentials {
+            provider_id,
+            api_key,
+        }) => {
             assert_eq!(provider_id, "openai");
             assert_eq!(api_key, "sk-test-1");
         }
@@ -330,6 +353,7 @@ fn non_empty_enter_still_consumes_the_draft_into_save_provider_credentials_verba
     // @step And the view's mode is ProviderSettingsMode::List
     assert!(
         matches!(view.mode, ProviderSettingsMode::List),
-        "expected List after save, got {:?}", view.mode
+        "expected List after save, got {:?}",
+        view.mode
     );
 }

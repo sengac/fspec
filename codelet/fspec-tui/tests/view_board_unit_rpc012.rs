@@ -25,7 +25,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
-    last_state_change_at: None,
+        last_state_change_at: None,
     }
 }
 
@@ -108,8 +108,19 @@ fn render_with_store_paints_seven_column_headers() {
         }
         joined.push('\n');
     }
-    for header in ["BACKLOG", "SPECIFYING", "TESTING", "IMPLEMENTING", "VALIDATING", "DONE", "BLOCKED"] {
-        assert!(joined.contains(header), "expected header {header} in:\n{joined}");
+    for header in [
+        "BACKLOG",
+        "SPECIFYING",
+        "TESTING",
+        "IMPLEMENTING",
+        "VALIDATING",
+        "DONE",
+        "BLOCKED",
+    ] {
+        assert!(
+            joined.contains(header),
+            "expected header {header} in:\n{joined}"
+        );
     }
     assert!(joined.contains("AUTH-001"));
 }

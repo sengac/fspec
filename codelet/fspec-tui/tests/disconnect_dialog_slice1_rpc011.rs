@@ -29,9 +29,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use codelet_fspec_tui::transport::websocket::WebSocketFspecBackend;
-use codelet_fspec_tui::{
-    synth_key, Action, App, FspecBackend, Priority,
-};
+use codelet_fspec_tui::{synth_key, Action, App, FspecBackend, Priority};
 use crossterm::event::KeyCode;
 use tokio::sync::mpsc::unbounded_channel;
 
@@ -127,11 +125,7 @@ async fn websocketfspecbackend_surfaces_ws_disconnect_as_action_disconnected() {
     );
 
     // @step And the WebSocketFspecBackend's internal client slot becomes None
-    let is_disconnected = backend_arc
-        .health()
-        .await
-        .map(|_| false)
-        .unwrap_or(true);
+    let is_disconnected = backend_arc.health().await.map(|_| false).unwrap_or(true);
     assert!(
         is_disconnected,
         "after daemon abort, health() must fail (client slot is None)"
@@ -218,7 +212,9 @@ async fn disconnect_dialog_swallows_navigation_keys_while_topmost() {
         Some("disconnect-dialog".to_string()),
         "precondition: DisconnectDialog must be topmost"
     );
-    let initial_selected = app.board_store().selected_index_for(app.board_store().focused_column());
+    let initial_selected = app
+        .board_store()
+        .selected_index_for(app.board_store().focused_column());
     let initial_focused_column = app.board_store().focused_column().to_string();
     let initial_view = app.active_view();
 
@@ -230,7 +226,8 @@ async fn disconnect_dialog_swallows_navigation_keys_while_topmost() {
 
     // @step Then the WorkUnitsListView selection index does not change
     assert_eq!(
-        app.board_store().selected_index_for(&initial_focused_column),
+        app.board_store()
+            .selected_index_for(&initial_focused_column),
         initial_selected,
         "BoardStore selection must not change while DisconnectDialog topmost"
     );
@@ -276,7 +273,10 @@ async fn pressing_q_in_disconnect_dialog_exits_the_client_cleanly() {
         app.compositor().topmost_id(),
         Some("disconnect-dialog".to_string())
     );
-    assert!(!app.should_quit(), "precondition: should_quit must start false");
+    assert!(
+        !app.should_quit(),
+        "precondition: should_quit must start false"
+    );
 
     // @step When the user presses 'q'
     let _ = app.handle_event(&synth_key(KeyCode::Char('q')));

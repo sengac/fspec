@@ -36,7 +36,9 @@ pub(crate) fn paint_column_headers(
         let w = column_width_at(idx, widths);
         let label = pad_to_width(&col.to_uppercase(), w as usize);
         let style = if store.focused_column_index() == idx {
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD)
         } else {
             Style::default().fg(theme.dim)
         };

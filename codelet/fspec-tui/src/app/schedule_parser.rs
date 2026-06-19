@@ -98,21 +98,15 @@ pub fn parse_schedule_command(input: &str) -> ScheduleSubcommand {
     match head {
         "list" => ScheduleSubcommand::List,
         "pause" => match tokens.get(1) {
-            Some(name) => ScheduleSubcommand::Pause {
-                name: name.clone(),
-            },
+            Some(name) => ScheduleSubcommand::Pause { name: name.clone() },
             None => ScheduleSubcommand::Help,
         },
         "resume" => match tokens.get(1) {
-            Some(name) => ScheduleSubcommand::Resume {
-                name: name.clone(),
-            },
+            Some(name) => ScheduleSubcommand::Resume { name: name.clone() },
             None => ScheduleSubcommand::Help,
         },
         "remove" => match tokens.get(1) {
-            Some(name) => ScheduleSubcommand::Remove {
-                name: name.clone(),
-            },
+            Some(name) => ScheduleSubcommand::Remove { name: name.clone() },
             None => ScheduleSubcommand::Help,
         },
         "add" => parse_add(&tokens),

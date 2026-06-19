@@ -137,7 +137,10 @@ fn panic_mid_render_restores_terminal_via_registered_panic_hook() {
     });
 
     // @step Then the panic is captured
-    assert!(result.is_err(), "panic!() inside catch_unwind must be captured");
+    assert!(
+        result.is_err(),
+        "panic!() inside catch_unwind must be captured"
+    );
 
     // @step And `crossterm::terminal::is_raw_mode_enabled()` returns false afterwards
     // @step And the alt-screen has been exited
@@ -190,8 +193,12 @@ fn panic_hook_registration_is_idempotent() {
     let call_once_start = register_fn_body
         .find("call_once(")
         .expect("call_once must appear in register_panic_hook");
-    let take_hook_pos = register_fn_body.find("take_hook").expect("take_hook somewhere");
-    let set_hook_pos = register_fn_body.find("set_hook").expect("set_hook somewhere");
+    let take_hook_pos = register_fn_body
+        .find("take_hook")
+        .expect("take_hook somewhere");
+    let set_hook_pos = register_fn_body
+        .find("set_hook")
+        .expect("set_hook somewhere");
     assert!(
         take_hook_pos > call_once_start,
         "take_hook must live INSIDE Once::call_once, not before it"

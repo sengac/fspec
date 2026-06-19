@@ -35,7 +35,10 @@ async fn bootstrap_fetches_workspace_info_and_stores_it_in_agent_view_store() {
     app.bootstrap().await.expect("bootstrap");
     // @step Then App::dispatch has matched an Action::WorkspaceInfoLoaded(info)
     // @step And app.agent_view_store().workspace() returns Some(info) with cwd = <tmp_path> and git_branch = Some("main")
-    let ws = app.agent_view_store().workspace().expect("workspace populated");
+    let ws = app
+        .agent_view_store()
+        .workspace()
+        .expect("workspace populated");
     assert_eq!(ws.cwd, "/tmp/x");
     assert_eq!(ws.git_branch.as_deref(), Some("main"));
 }
@@ -66,7 +69,10 @@ async fn bootstrap_is_best_effort_workspace_info_failure_does_not_abort() {
     // @step When App::bootstrap is invoked
     let result = app.bootstrap().await;
     // @step Then App::bootstrap returns Ok(()) (failure is non-fatal)
-    assert!(result.is_ok(), "bootstrap should be non-fatal on workspace fetch error");
+    assert!(
+        result.is_ok(),
+        "bootstrap should be non-fatal on workspace fetch error"
+    );
     // @step And app.agent_view_store().workspace() returns None
     assert!(app.agent_view_store().workspace().is_none());
 }

@@ -1,0 +1,63 @@
+{
+  "scenarios": [
+    {
+      "name": "Migrated view preserves rendered output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc337_shell_refit_parity.rs",
+          "lines": "47-72",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc337_shell_refit_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+    ],
+    "totalLinesCovered": 57
+  }
+}

@@ -63,8 +63,14 @@ fn view_in_edit_api_key_mode() -> ProviderSettingsView {
 /// Helper: assert the view is in Detail::EditApiKey mode and return the draft.
 fn assert_draft_eq(view: &ProviderSettingsView, expected: &str) {
     match &view.mode {
-        ProviderSettingsMode::Detail { sub: DetailSub::EditApiKey { draft }, .. } => {
-            assert_eq!(draft, expected, "expected draft {expected:?}, got {draft:?}");
+        ProviderSettingsMode::Detail {
+            sub: DetailSub::EditApiKey { draft },
+            ..
+        } => {
+            assert_eq!(
+                draft, expected,
+                "expected draft {expected:?}, got {draft:?}"
+            );
         }
         other => panic!("expected Detail::EditApiKey, got {other:?}"),
     }
@@ -95,7 +101,11 @@ fn typing_a_sequence_of_printable_ascii_characters_appends_each_to_the_draft() {
         other => panic!("expected Consumed on each printable char, got {other:?}"),
     }
     // @step And no inline validation status is shown
-    assert!(view.status.is_empty(), "expected empty status, got {:?}", view.status);
+    assert!(
+        view.status.is_empty(),
+        "expected empty status, got {:?}",
+        view.status
+    );
     // @step And no Action is dispatched (no SaveProviderCredentials)
     // (We hold only the LAST event above; for each accepted printable char the arm
     // re-enters EditApiKey and returns Consumed without emitting — the strongly-
@@ -176,7 +186,11 @@ fn tab_ascii_9_is_silently_dropped_as_a_control_character() {
         other => panic!("expected Consumed, got {other:?}"),
     }
     // @step And no inline validation status is shown
-    assert!(view.status.is_empty(), "expected empty status, got {:?}", view.status);
+    assert!(
+        view.status.is_empty(),
+        "expected empty status, got {:?}",
+        view.status
+    );
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -361,7 +375,10 @@ fn dropping_non_printable_keeps_empty_key_status_subsequent_printable_clears_it(
     }
     // Belt-and-braces: no Action fired.
     assert!(
-        !matches!(out_accept, ProviderSettingsEvent::Emit(Action::SaveProviderCredentials { .. })),
+        !matches!(
+            out_accept,
+            ProviderSettingsEvent::Emit(Action::SaveProviderCredentials { .. })
+        ),
         "char-keystrokes must NOT emit SaveProviderCredentials"
     );
 }
@@ -391,7 +408,10 @@ fn is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to
         let mut view = view_in_edit_api_key_mode();
         view.handle_key(key(KeyCode::Char(c)));
         match &view.mode {
-            ProviderSettingsMode::Detail { sub: DetailSub::EditApiKey { draft }, .. } => {
+            ProviderSettingsMode::Detail {
+                sub: DetailSub::EditApiKey { draft },
+                ..
+            } => {
                 assert_eq!(
                     draft,
                     &c.to_string(),
@@ -409,7 +429,10 @@ fn is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to
         let mut view = view_in_edit_api_key_mode();
         view.handle_key(key(KeyCode::Char(c)));
         match &view.mode {
-            ProviderSettingsMode::Detail { sub: DetailSub::EditApiKey { draft }, .. } => {
+            ProviderSettingsMode::Detail {
+                sub: DetailSub::EditApiKey { draft },
+                ..
+            } => {
                 assert!(
                     draft.is_empty(),
                     "char {c:?} (code {}) must NOT enter the draft, but got {draft:?}",

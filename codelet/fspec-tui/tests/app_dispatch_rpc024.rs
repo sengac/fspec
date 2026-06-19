@@ -220,11 +220,15 @@ fn each_session_keeps_its_own_scrollback_across_cycling() {
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 5);
     // @step And no chunks have been dropped from either session's scrollback
     assert_eq!(
-        app.agent_view_store().open_sessions()[0].scrollback.chunk_count(),
+        app.agent_view_store().open_sessions()[0]
+            .scrollback
+            .chunk_count(),
         3
     );
     assert_eq!(
-        app.agent_view_store().open_sessions()[1].scrollback.chunk_count(),
+        app.agent_view_store().open_sessions()[1]
+            .scrollback
+            .chunk_count(),
         5
     );
 }
@@ -237,11 +241,13 @@ fn background_chunk_routes_to_its_own_session_context() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.dispatch(Action::SessionCreated(sid("s-2")));
     app.dispatch(Action::SessionPrev); // focus s-1
-    // @step And current_session_index is 0
+                                       // @step And current_session_index is 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
     // @step And open_sessions[1].scrollback contains 0 chunks
     assert_eq!(
-        app.agent_view_store().open_sessions()[1].scrollback.chunk_count(),
+        app.agent_view_store().open_sessions()[1]
+            .scrollback
+            .chunk_count(),
         0
     );
     // @step When App::dispatch handles Action::ChunkReceived("s-2", StreamChunk::text("background"))
@@ -251,7 +257,9 @@ fn background_chunk_routes_to_its_own_session_context() {
     ));
     // @step Then open_sessions[1].scrollback contains 1 chunk
     assert_eq!(
-        app.agent_view_store().open_sessions()[1].scrollback.chunk_count(),
+        app.agent_view_store().open_sessions()[1]
+            .scrollback
+            .chunk_count(),
         1
     );
     // @step And current_session_index is still 0
@@ -278,7 +286,9 @@ fn unknown_session_chunk_is_dropped_silently() {
     // @step Then App::dispatch does not panic (we got here)
     // @step And open_sessions[0].scrollback is unchanged
     assert_eq!(
-        app.agent_view_store().open_sessions()[0].scrollback.chunk_count(),
+        app.agent_view_store().open_sessions()[0]
+            .scrollback
+            .chunk_count(),
         0
     );
     // @step And no other SessionContext exists for "s-ghost"

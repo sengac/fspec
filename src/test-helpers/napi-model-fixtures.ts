@@ -101,6 +101,7 @@ export function createAnthropicNapiModels(): NapiProviderModels {
         name: 'Claude Opus 4',
       }),
     ],
+    isUnreachable: false,
   };
 }
 
@@ -123,6 +124,7 @@ export function createOpenAiNapiModels(): NapiProviderModels {
         name: 'GPT-4.1 Mini',
       }),
     ],
+    isUnreachable: false,
   };
 }
 

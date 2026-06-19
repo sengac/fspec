@@ -6,10 +6,14 @@
 //! (rather than #[cfg(test)] inside compositor.rs) so the production
 //! file stays under the project's 300-LoC ceiling.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::redundant_clone)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::redundant_clone
+)]
 
 use std::sync::{Arc, Mutex};
-
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::buffer::Buffer;
@@ -81,7 +85,11 @@ impl Component for TestComp {
         &self.id
     }
     fn handle_event(&mut self, _event: &Event) -> EventResult {
-        self.rec.handle_event_log.lock().unwrap().push(self.id.clone());
+        self.rec
+            .handle_event_log
+            .lock()
+            .unwrap()
+            .push(self.id.clone());
         match &self.on_event {
             EventResultFactory::AlwaysIgnore => EventResult::ignored(),
             EventResultFactory::AlwaysConsume => EventResult::consumed(),
@@ -230,7 +238,11 @@ fn callback_inside_consumed_runs_after_event_handling_completes() {
     };
     // The dispatch path itself did not mutate the compositor before
     // the callback ran:
-    assert_eq!(compositor.len(), 1, "dispatch must not mutate compositor before callback runs");
+    assert_eq!(
+        compositor.len(),
+        1,
+        "dispatch must not mutate compositor before callback runs"
+    );
     cb(&mut compositor);
 
     // @step Then the layer was popped off the compositor stack
@@ -269,8 +281,16 @@ fn pop_removes_most_recently_pushed_layer_regardless_of_priority() {
     // @step Given a Compositor with a Background-priority HelloComponent and then a Critical-priority HelpDialog pushed in that order
     let rec = Recorder::default();
     let mut compositor = Compositor::new();
-    compositor.push(Box::new(TestComp::new("hello", Priority::Background, rec.clone())));
-    compositor.push(Box::new(TestComp::new("help", Priority::Critical, rec.clone())));
+    compositor.push(Box::new(TestComp::new(
+        "hello",
+        Priority::Background,
+        rec.clone(),
+    )));
+    compositor.push(Box::new(TestComp::new(
+        "help",
+        Priority::Critical,
+        rec.clone(),
+    )));
 
     // @step When compositor.pop() is invoked
     let popped = compositor.pop().expect("pop must return Some");
@@ -289,8 +309,16 @@ fn remove_id_removes_the_layer_with_matching_id() {
     // @step Given a Compositor with two layers identified as "hello" (Background) and "help" (Critical)
     let rec = Recorder::default();
     let mut compositor = Compositor::new();
-    compositor.push(Box::new(TestComp::new("hello", Priority::Background, rec.clone())));
-    compositor.push(Box::new(TestComp::new("help", Priority::Critical, rec.clone())));
+    compositor.push(Box::new(TestComp::new(
+        "hello",
+        Priority::Background,
+        rec.clone(),
+    )));
+    compositor.push(Box::new(TestComp::new(
+        "help",
+        Priority::Critical,
+        rec.clone(),
+    )));
 
     // @step When compositor.remove("help") is invoked
     let removed = compositor.remove("help").expect("remove must return Some");
@@ -339,7 +367,10 @@ fn all_inactive_compositor_returns_ignored() {
 
     // @step Then no layer's handle_event was invoked
     let log = rec.handle_events();
-    assert!(log.is_empty(), "no inactive layer should be invoked, got {log:?}");
+    assert!(
+        log.is_empty(),
+        "no inactive layer should be invoked, got {log:?}"
+    );
 
     // @step And the dispatch returned Ignored(None)
     assert!(!result.is_consumed());
@@ -382,9 +413,21 @@ fn action_propagation_in_update_fans_out_across_all_layers_top_down() {
     // @step Given a Compositor with three layers each recording the actions they observe in update()
     let rec = Recorder::default();
     let mut compositor = Compositor::new();
-    compositor.push(Box::new(TestComp::new("first", Priority::Background, rec.clone())));
-    compositor.push(Box::new(TestComp::new("second", Priority::Medium, rec.clone())));
-    compositor.push(Box::new(TestComp::new("third", Priority::Critical, rec.clone())));
+    compositor.push(Box::new(TestComp::new(
+        "first",
+        Priority::Background,
+        rec.clone(),
+    )));
+    compositor.push(Box::new(TestComp::new(
+        "second",
+        Priority::Medium,
+        rec.clone(),
+    )));
+    compositor.push(Box::new(TestComp::new(
+        "third",
+        Priority::Critical,
+        rec.clone(),
+    )));
 
     // @step When compositor.update(Action::Quit) is invoked
     let follow = compositor.update(Action::Quit);
@@ -392,7 +435,14 @@ fn action_propagation_in_update_fans_out_across_all_layers_top_down() {
     // @step Then all three layers observed Action::Quit in registration order
     let updates = rec.updates();
     let ids: Vec<String> = updates.iter().map(|(id, _)| id.clone()).collect();
-    assert_eq!(ids, vec!["first".to_string(), "second".to_string(), "third".to_string()]);
+    assert_eq!(
+        ids,
+        vec![
+            "first".to_string(),
+            "second".to_string(),
+            "third".to_string()
+        ]
+    );
     for (_, a) in &updates {
         assert!(matches!(a, Action::Quit));
     }

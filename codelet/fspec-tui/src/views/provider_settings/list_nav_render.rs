@@ -21,11 +21,7 @@ use super::nav_item::{NavItem, NavItemKind};
 use super::row_render::{render_row, row_band_bg, RowKind};
 use super::ProviderSettingsView;
 
-pub(super) fn render_nav_items(
-    view: &ProviderSettingsView,
-    body_area: Rect,
-    buf: &mut Buffer,
-) {
+pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf: &mut Buffer) {
     let visible_rows = body_area.height as usize;
     if visible_rows == 0 {
         return;
@@ -66,7 +62,12 @@ pub(super) fn render_nav_items(
             if let Some(test_result) = view.test_result.as_ref() {
                 if test_result.provider_id == item.provider_id {
                     paint_test_result_decoration(
-                        kind, selected, &test_result.status, row_area, end_x, buf,
+                        kind,
+                        selected,
+                        &test_result.status,
+                        row_area,
+                        end_x,
+                        buf,
                     );
                 }
             }
@@ -114,11 +115,14 @@ fn row_kind_and_label(item: &NavItem, view: &ProviderSettingsView) -> (RowKind, 
                 .find(|p| p.id == item.provider_id)
                 .map(|p| p.name.clone())
                 .unwrap_or_else(|| item.provider_id.clone());
-            (RowKind::Provider { expanded: *expanded }, label)
+            (
+                RowKind::Provider {
+                    expanded: *expanded,
+                },
+                label,
+            )
         }
-        NavItemKind::Profile { profile_name } => {
-            (RowKind::Profile, profile_name.clone())
-        }
+        NavItemKind::Profile { profile_name } => (RowKind::Profile, profile_name.clone()),
         NavItemKind::AddProfile => (RowKind::AddProfile, "Add Profile".to_string()),
         NavItemKind::ApiKey => (RowKind::ApiKey, "API Key".to_string()),
         NavItemKind::OAuthLogin { label, .. } => (RowKind::OauthLogin, label.clone()),

@@ -216,7 +216,11 @@ impl Component for StatusDialog {
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
         match self.state.clone() {
-            StatusKind::Restoring { current, idx, total } => {
+            StatusKind::Restoring {
+                current,
+                idx,
+                total,
+            } => {
                 let rows = vec![
                     DialogRow {
                         spans: vec![Span::raw(current)],
@@ -295,9 +299,10 @@ fn overlay_title_color(area: Rect, buf: &mut Buffer, title: &str, color: Color) 
             if start_x as usize + title_chars.len() > x_end as usize {
                 break;
             }
-            let matches = title_chars.iter().enumerate().all(|(i, ch)| {
-                buf[(start_x + i as u16, y)].symbol() == ch.to_string()
-            });
+            let matches = title_chars
+                .iter()
+                .enumerate()
+                .all(|(i, ch)| buf[(start_x + i as u16, y)].symbol() == ch.to_string());
             if matches {
                 for (i, _ch) in title_chars.iter().enumerate() {
                     let cell = &mut buf[(start_x + i as u16, y)];
@@ -383,10 +388,7 @@ mod tests {
             }
             rows.push(row);
         }
-        insta::assert_yaml_snapshot!(
-            "status_dialog_restoring__centered_popup_80x24",
-            rows
-        );
+        insta::assert_yaml_snapshot!("status_dialog_restoring__centered_popup_80x24", rows);
     }
 
     #[test]
@@ -402,9 +404,6 @@ mod tests {
             }
             rows.push(row);
         }
-        insta::assert_yaml_snapshot!(
-            "status_dialog_error__centered_popup_80x24",
-            rows
-        );
+        insta::assert_yaml_snapshot!("status_dialog_error__centered_popup_80x24", rows);
     }
 }

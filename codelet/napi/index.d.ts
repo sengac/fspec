@@ -1705,6 +1705,16 @@ export interface NapiProviderModels {
   providerName: string;
   /** List of models available from this provider */
   models: Array<NapiModelInfo>;
+  /**
+   * RPC-338: `Some(profile)` marks a local-server profile section
+   * (mirrors `ProviderInfo.profile_name`). `None` for cloud / custom.
+   */
+  profileName?: string | undefined | null;
+  /**
+   * RPC-338: `true` when the local-server profile is unreachable
+   * (mirrors `ProviderInfo.is_unreachable`).
+   */
+  isUnreachable: boolean;
 }
 
 export interface NapiSessionManifest {

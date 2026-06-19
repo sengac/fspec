@@ -12,12 +12,8 @@
 
 use std::collections::HashSet;
 
-use codelet_fspec_tui::views::provider_settings::footer_hints::{
-    footer_hint_for, FOOTER_COMMON,
-};
-use codelet_fspec_tui::views::provider_settings::nav_item::{
-    OAuthMethod, ProviderDisplayInfo,
-};
+use codelet_fspec_tui::views::provider_settings::footer_hints::{footer_hint_for, FOOTER_COMMON};
+use codelet_fspec_tui::views::provider_settings::nav_item::{OAuthMethod, ProviderDisplayInfo};
 use codelet_fspec_tui::views::provider_settings::row_render::RowKind;
 use codelet_fspec_tui::views::ProviderSettingsView;
 use ratatui::buffer::Buffer;
@@ -60,10 +56,7 @@ fn anthropic_oauth() -> ProviderDisplayInfo {
         requires_api_key: true,
         env_var: Some("ANTHROPIC_API_KEY".to_string()),
         profiles: Vec::new(),
-        oauth_login_methods: vec![(
-            OAuthMethod::Browser,
-            "Sign in with browser".to_string(),
-        )],
+        oauth_login_methods: vec![(OAuthMethod::Browser, "Sign in with browser".to_string())],
         oauth_status_label: Some("Logout from OAuth [Anthropic]".to_string()),
     }
 }
@@ -96,8 +89,7 @@ fn provider_row_yields_enter_expand_hint() {
 
     // @step Then the hint equals "Enter: expand · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
-        hint,
-        "Enter: expand · / filter · Tab: Switch to models · Esc: close",
+        hint, "Enter: expand · / filter · Tab: Switch to models · Esc: close",
         "provider-row hint mismatch"
     );
 }
@@ -130,8 +122,7 @@ fn api_key_row_yields_enter_edit_d_delete_hint() {
 
     // @step Then the hint equals "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
-        hint,
-        "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close",
+        hint, "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close",
         "api-key-row hint mismatch"
     );
 }
@@ -147,10 +138,12 @@ fn profile_row_yields_enter_edit_d_delete_hint() {
     let profile_idx = view
         .nav_items
         .iter()
-        .position(|n| matches!(
-            &n.kind,
-            codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::Profile { .. }
-        ))
+        .position(|n| {
+            matches!(
+                &n.kind,
+                codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::Profile { .. }
+            )
+        })
         .expect("openai with one profile must produce a Profile row");
     view.selected_index = profile_idx;
 
@@ -159,8 +152,7 @@ fn profile_row_yields_enter_edit_d_delete_hint() {
 
     // @step Then the hint equals "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
-        hint,
-        "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close",
+        hint, "Enter: edit · d: delete · / filter · Tab: Switch to models · Esc: close",
         "profile-row hint mismatch"
     );
 }
@@ -176,10 +168,12 @@ fn add_profile_row_yields_enter_create_hint() {
     let add_idx = view
         .nav_items
         .iter()
-        .position(|n| matches!(
-            n.kind,
-            codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::AddProfile
-        ))
+        .position(|n| {
+            matches!(
+                n.kind,
+                codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::AddProfile
+            )
+        })
         .expect("expanded openai must produce an AddProfile row");
     view.selected_index = add_idx;
 
@@ -188,8 +182,7 @@ fn add_profile_row_yields_enter_create_hint() {
 
     // @step Then the hint equals "Enter: create · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
-        hint,
-        "Enter: create · / filter · Tab: Switch to models · Esc: close",
+        hint, "Enter: create · / filter · Tab: Switch to models · Esc: close",
         "add-profile-row hint mismatch"
     );
 }
@@ -202,14 +195,16 @@ fn add_profile_row_yields_enter_create_hint() {
 fn oauth_login_row_yields_enter_start_login_hint() {
     // @step Given the ProviderSettingsView has an OAuthLogin nav-item selected
     let mut view = view_with(anthropic_oauth(), &["anthropic"]);
-    let login_idx = view
-        .nav_items
-        .iter()
-        .position(|n| matches!(
+    let login_idx =
+        view.nav_items
+            .iter()
+            .position(|n| {
+                matches!(
             &n.kind,
             codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::OAuthLogin { .. }
-        ))
-        .expect("anthropic expanded must produce an OAuthLogin row");
+        )
+            })
+            .expect("anthropic expanded must produce an OAuthLogin row");
     view.selected_index = login_idx;
 
     // @step When I read the footer hint
@@ -217,8 +212,7 @@ fn oauth_login_row_yields_enter_start_login_hint() {
 
     // @step Then the hint equals "Enter: start login · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
-        hint,
-        "Enter: start login · / filter · Tab: Switch to models · Esc: close",
+        hint, "Enter: start login · / filter · Tab: Switch to models · Esc: close",
         "oauth-login-row hint mismatch"
     );
 }
@@ -231,14 +225,16 @@ fn oauth_login_row_yields_enter_start_login_hint() {
 fn oauth_status_row_yields_enter_logout_hint() {
     // @step Given the ProviderSettingsView has an OAuthStatus nav-item selected
     let mut view = view_with(anthropic_oauth(), &["anthropic"]);
-    let status_idx = view
-        .nav_items
-        .iter()
-        .position(|n| matches!(
+    let status_idx =
+        view.nav_items
+            .iter()
+            .position(|n| {
+                matches!(
             &n.kind,
             codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::OAuthStatus { .. }
-        ))
-        .expect("anthropic-with-oauth-tokens expanded must produce an OAuthStatus row");
+        )
+            })
+            .expect("anthropic-with-oauth-tokens expanded must produce an OAuthStatus row");
     view.selected_index = status_idx;
 
     // @step When I read the footer hint
@@ -246,8 +242,7 @@ fn oauth_status_row_yields_enter_logout_hint() {
 
     // @step Then the hint equals "Enter: logout · / filter · Tab: Switch to models · Esc: close"
     assert_eq!(
-        hint,
-        "Enter: logout · / filter · Tab: Switch to models · Esc: close",
+        hint, "Enter: logout · / filter · Tab: Switch to models · Esc: close",
         "oauth-status-row hint mismatch"
     );
 }
@@ -308,10 +303,12 @@ fn keybind_labels_use_lowercase_colon_style() {
     let api_key_idx = view
         .nav_items
         .iter()
-        .position(|n| matches!(
-            n.kind,
-            codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::ApiKey
-        ))
+        .position(|n| {
+            matches!(
+                n.kind,
+                codelet_fspec_tui::views::provider_settings::nav_item::NavItemKind::ApiKey
+            )
+        })
         .expect("anthropic-with-oauth must produce an ApiKey row");
     view.selected_index = api_key_idx;
 
@@ -319,7 +316,10 @@ fn keybind_labels_use_lowercase_colon_style() {
     let hint = view.footer_hint();
 
     // @step Then the hint contains "Enter:"
-    assert!(hint.contains("Enter:"), "hint must contain 'Enter:': {hint:?}");
+    assert!(
+        hint.contains("Enter:"),
+        "hint must contain 'Enter:': {hint:?}"
+    );
     // @step And the hint contains "d: delete"
     assert!(
         hint.contains("d: delete"),

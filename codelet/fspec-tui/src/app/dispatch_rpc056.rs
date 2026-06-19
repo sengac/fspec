@@ -24,8 +24,7 @@ impl App {
     pub(crate) fn handle_open_blocklist_view(&mut self) {
         // Reset selection so a previous open's selection doesn't leak
         // back in.
-        self.navigator.blocklist =
-            crate::views::BlocklistView::new();
+        self.navigator.blocklist = crate::views::BlocklistView::new();
         self.spawn_blocklist_list();
     }
 
@@ -60,10 +59,7 @@ impl App {
     }
 
     /// RPC-056: fold a `blocklist_list` response into the view.
-    pub(crate) fn handle_blocklist_rules_loaded(
-        &mut self,
-        rules: Vec<BlocklistRuleInfo>,
-    ) {
+    pub(crate) fn handle_blocklist_rules_loaded(&mut self, rules: Vec<BlocklistRuleInfo>) {
         self.navigator.blocklist.set_rules(rules);
     }
 

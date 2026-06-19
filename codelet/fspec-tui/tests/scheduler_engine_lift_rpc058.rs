@@ -253,8 +253,7 @@ fn sessions_handle_impl_wires_schedule_methods_to_crud() {
     }
     // The delegation goes through codelet_core::scheduler::crud.
     assert!(
-        source.contains("codelet_core::scheduler::crud")
-            || source.contains("scheduler::crud::"),
+        source.contains("codelet_core::scheduler::crud") || source.contains("scheduler::crud::"),
         "handle_impl.rs should delegate to codelet_core::scheduler::crud"
     );
 }
@@ -275,8 +274,14 @@ fn lifted_scheduler_engine_and_cron_utils_use_captured_identifier_format_args() 
     // @step Given codelet/core/src/scheduler/engine.rs and codelet/core/src/scheduler/cron_utils.rs live at their post-RPC-058 location
     let engine_path = workspace_root().join("codelet/core/src/scheduler/engine.rs");
     let cron_utils_path = workspace_root().join("codelet/core/src/scheduler/cron_utils.rs");
-    assert!(engine_path.exists(), "engine.rs must live at post-RPC-058 location");
-    assert!(cron_utils_path.exists(), "cron_utils.rs must live at post-RPC-058 location");
+    assert!(
+        engine_path.exists(),
+        "engine.rs must live at post-RPC-058 location"
+    );
+    assert!(
+        cron_utils_path.exists(),
+        "cron_utils.rs must live at post-RPC-058 location"
+    );
     let engine_source = fs::read_to_string(&engine_path).expect("read engine.rs");
     let cron_utils_source = fs::read_to_string(&cron_utils_path).expect("read cron_utils.rs");
 
@@ -311,9 +316,17 @@ fn lifted_scheduler_engine_and_cron_utils_use_captured_identifier_format_args() 
             let start = idx.saturating_sub(3);
             let window: Vec<&str> = source.lines().skip(start).take(idx - start + 1).collect();
             let window_joined = window.join(" ");
-            let has_target_macro = ["format!(", "anyhow!(", "panic!(", "println!(", "eprintln!(", "write!(", "writeln!("]
-                .iter()
-                .any(|m| window_joined.contains(m));
+            let has_target_macro = [
+                "format!(",
+                "anyhow!(",
+                "panic!(",
+                "println!(",
+                "eprintln!(",
+                "write!(",
+                "writeln!(",
+            ]
+            .iter()
+            .any(|m| window_joined.contains(m));
             if !has_target_macro {
                 continue;
             }
@@ -363,7 +376,9 @@ fn lifted_scheduler_engine_and_cron_utils_use_captured_identifier_format_args() 
                 // requiring ALL trailing args to be bare identifiers.
                 !p.is_empty()
                     && p.chars().all(|c| c.is_alphanumeric() || c == '_')
-                    && p.chars().next().is_some_and(|c| c.is_alphabetic() || c == '_')
+                    && p.chars()
+                        .next()
+                        .is_some_and(|c| c.is_alphabetic() || c == '_')
             };
             let has_trailing_arg =
                 !trailing_parts.is_empty() && trailing_parts.iter().all(|p| is_bare_ident(p));

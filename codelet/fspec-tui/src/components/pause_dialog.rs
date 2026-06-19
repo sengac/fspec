@@ -22,9 +22,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use codelet_rpc_types::{ApprovalChoice, PauseKind, PauseState, SessionId};
 
-use super::dialog_theme::{
-    render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR,
-};
+use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR};
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove` when the dialog dismisses.
@@ -184,9 +182,7 @@ impl PauseDialog {
                     .bg(Color::Yellow)
                     .add_modifier(Modifier::BOLD)
             } else {
-                Style::default()
-                    .fg(Color::Yellow)
-                    .bg(Color::Black)
+                Style::default().fg(Color::Yellow).bg(Color::Black)
             };
             spans.push(Span::styled(format!("[ {label} ]"), style));
         }

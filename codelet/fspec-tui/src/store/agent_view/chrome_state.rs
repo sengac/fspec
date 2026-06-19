@@ -25,6 +25,21 @@ impl AgentViewStore {
         self.model_info_by_session.insert(session_id, info);
     }
 
+    /// RPC-337: remember the model id the user picked for `session_id`
+    /// (set on `Action::ModelSelected`). Seeds the ModelSelector's green
+    /// `(current)` marker on reopen.
+    pub fn set_selected_model_id(&mut self, session_id: SessionId, model_id: String) {
+        self.selected_model_id_by_session
+            .insert(session_id, model_id);
+    }
+
+    /// RPC-337: the last model id selected for `session_id`, if any.
+    pub fn selected_model_id_for(&self, session_id: &SessionId) -> Option<&str> {
+        self.selected_model_id_by_session
+            .get(session_id)
+            .map(String::as_str)
+    }
+
     pub fn thinking_level_for(&self, session_id: &SessionId) -> Option<&ThinkingLevel> {
         self.thinking_level_by_session.get(session_id)
     }
@@ -63,7 +78,9 @@ impl AgentViewStore {
     /// `None` means the session has not yet completed a compaction
     /// (or was reset via `SessionStateChange { state: Cleared }`).
     pub fn compaction_reduction_for(&self, session_id: &SessionId) -> Option<i32> {
-        self.compaction_reduction_by_session.get(session_id).copied()
+        self.compaction_reduction_by_session
+            .get(session_id)
+            .copied()
     }
 
     /// Persist `reduction` (already computed as
@@ -72,7 +89,8 @@ impl AgentViewStore {
     /// next frame. Called by `dispatch_rpc045.rs` on
     /// `StreamChunk::CompactionComplete`.
     pub fn set_compaction_reduction(&mut self, session_id: SessionId, reduction: i32) {
-        self.compaction_reduction_by_session.insert(session_id, reduction);
+        self.compaction_reduction_by_session
+            .insert(session_id, reduction);
     }
 
     /// Drop the cached compaction-reduction entry for `session_id`.

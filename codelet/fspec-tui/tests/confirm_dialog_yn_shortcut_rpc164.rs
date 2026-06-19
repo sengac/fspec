@@ -15,9 +15,7 @@
 
 use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::agent::{ConfirmDialog, ConfirmDialogOutcome};
-use codelet_fspec_tui::views::{
-    ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
-};
+use codelet_fspec_tui::views::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 use codelet_rpc_types::ProviderCredentialInfo;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 
@@ -213,7 +211,11 @@ fn pressing_y_ignores_currently_focused_button() {
     let mut dialog = two_button_dialog();
     // @step And the focused button index has been moved to 1 by pressing Tab
     let _ = dialog.handle_key(KeyCode::Tab, KeyModifiers::NONE);
-    assert_eq!(dialog.focused(), 1, "Tab should move focus to Cancel (idx 1)");
+    assert_eq!(
+        dialog.focused(),
+        1,
+        "Tab should move focus to Cancel (idx 1)"
+    );
 
     // @step When I press the 'y' key with no modifiers
     let outcome = dialog.handle_key(KeyCode::Char('y'), KeyModifiers::NONE);

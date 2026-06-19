@@ -46,10 +46,7 @@ pub struct ModelSelectorDialog {
 impl ModelSelectorDialog {
     pub fn new(session_id: SessionId, providers: Vec<ProviderInfo>) -> Self {
         let rows = build_rows(&providers);
-        let selected_index = rows
-            .iter()
-            .position(|r| r.selectable)
-            .unwrap_or(0);
+        let selected_index = rows.iter().position(|r| r.selectable).unwrap_or(0);
         Self {
             id: MODEL_SELECTOR_DIALOG_ID.to_string(),
             session_id,
@@ -69,11 +66,7 @@ impl ModelSelectorDialog {
 
     pub fn set_providers(&mut self, providers: Vec<ProviderInfo>) {
         self.rows = build_rows(&providers);
-        self.selected_index = self
-            .rows
-            .iter()
-            .position(|r| r.selectable)
-            .unwrap_or(0);
+        self.selected_index = self.rows.iter().position(|r| r.selectable).unwrap_or(0);
         self.scroll_offset = 0;
     }
 
@@ -276,7 +269,9 @@ mod tests {
 
     #[test]
     fn model_selector_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
-        let session_id = SessionId { value: "test-session".to_string() };
+        let session_id = SessionId {
+            value: "test-session".to_string(),
+        };
         let mut dialog = ModelSelectorDialog::new(session_id, Vec::new());
         let backend = TestBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");

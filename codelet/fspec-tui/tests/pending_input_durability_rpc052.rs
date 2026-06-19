@@ -67,10 +67,7 @@ async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
 /// Build an App with the supplied MockBackend, in ViewMode::Agent,
 /// with a single open session at `session_id`. Drains the initial
 /// SessionCreated wiring before returning.
-async fn agent_app_with_session(
-    mock: Arc<MockBackend>,
-    session_id: SessionId,
-) -> App {
+async fn agent_app_with_session(mock: Arc<MockBackend>, session_id: SessionId) -> App {
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.navigator_mut().active_view = ViewMode::Agent;
@@ -682,8 +679,7 @@ fn source_shape_dispatch_rpc052_module_exists() {
         .join("src")
         .join("app")
         .join("dispatch.rs");
-    let dispatch_source =
-        std::fs::read_to_string(&dispatch_path).expect("read app/dispatch.rs");
+    let dispatch_source = std::fs::read_to_string(&dispatch_path).expect("read app/dispatch.rs");
     let logical_lines = dispatch_source
         .lines()
         .filter(|line| {

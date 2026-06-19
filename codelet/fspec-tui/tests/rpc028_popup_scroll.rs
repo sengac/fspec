@@ -82,7 +82,12 @@ fn rpc028_slash_mouse_wheel_inside_popup_rect_moves_selection() {
     let mut p = make_slash(14);
     p.set_visible_rows_for_test(10);
     p.set_selected_for_test(5);
-    let rect = Rect { x: 0, y: 0, width: 60, height: 12 };
+    let rect = Rect {
+        x: 0,
+        y: 0,
+        width: 60,
+        height: 12,
+    };
     let outcome = p.handle_mouse(
         MouseEvent {
             kind: MouseEventKind::ScrollDown,
@@ -105,7 +110,12 @@ fn rpc028_slash_mouse_wheel_outside_popup_rect_is_ignored() {
     let mut p = make_slash(14);
     p.set_visible_rows_for_test(10);
     p.set_selected_for_test(5);
-    let rect = Rect { x: 0, y: 0, width: 60, height: 12 };
+    let rect = Rect {
+        x: 0,
+        y: 0,
+        width: 60,
+        height: 12,
+    };
     // @step And the mouse cursor is over the scrollback area, outside the popup rect
     // @step When the user emits MouseEventKind::ScrollUp
     let outcome = p.handle_mouse(
@@ -183,7 +193,12 @@ fn rpc028_file_mouse_wheel_up_at_first_wraps_to_last() {
     // @step And the selected_index is 0 with scroll_offset 0
     assert_eq!(p.selected_index(), 0);
     assert_eq!(p.scroll_offset(), 0);
-    let rect = Rect { x: 0, y: 0, width: 60, height: 12 };
+    let rect = Rect {
+        x: 0,
+        y: 0,
+        width: 60,
+        height: 12,
+    };
     // @step When the user emits MouseEventKind::ScrollUp inside the popup rect
     let outcome = p.handle_mouse(
         MouseEvent {
@@ -212,7 +227,12 @@ fn rpc028_file_mouse_wheel_up_moves_selection_up_one() {
     p.set_visible_rows_for_test(10);
     // @step And the selected_index is 5
     p.set_selected_for_test(5);
-    let rect = Rect { x: 0, y: 0, width: 60, height: 12 };
+    let rect = Rect {
+        x: 0,
+        y: 0,
+        width: 60,
+        height: 12,
+    };
     // @step When the user emits MouseEventKind::ScrollUp inside the popup rect
     let outcome = p.handle_mouse(
         MouseEvent {
@@ -239,7 +259,12 @@ fn rpc028_file_mouse_wheel_down_moves_selection_down_one() {
     let mut p = make_file_popup(12);
     p.set_visible_rows_for_test(10);
     p.set_selected_for_test(5);
-    let rect = Rect { x: 0, y: 0, width: 60, height: 12 };
+    let rect = Rect {
+        x: 0,
+        y: 0,
+        width: 60,
+        height: 12,
+    };
     let outcome = p.handle_mouse(
         MouseEvent {
             kind: MouseEventKind::ScrollDown,
@@ -473,6 +498,8 @@ fn provider(key: &str, n: usize) -> ProviderInfo {
         key: key.to_string(),
         display_name: format!("Provider {key}"),
         models: (0..n).map(|i| model_entry(&format!("{key}{i}"))).collect(),
+        profile_name: None,
+        is_unreachable: false,
     }
 }
 
@@ -521,7 +548,12 @@ fn rpc028_resume_left_click_on_row_selects_that_row() {
     assert_eq!(v.selected_index(), 12);
     assert_eq!(v.scroll_offset(), 5);
     // body rect inside the mode-view layout: title=1, separator=1, body=vr, footer=1.
-    let body_rect = Rect { x: 0, y: 2, width: 60, height: visible_rows as u16 };
+    let body_rect = Rect {
+        x: 0,
+        y: 2,
+        width: 60,
+        height: visible_rows as u16,
+    };
     // @step When the user left-clicks on the second visible row
     let outcome = v.handle_mouse(
         MouseEvent {
@@ -582,14 +614,26 @@ fn rpc028_model_selector_pagedown_jumps_by_visible_rows_and_skips_headers() {
     let mut d = ModelSelectorDialog::new(SessionId::new("s0".to_string()), providers);
     let initial_index = d.selected_index();
     // @step And visible_rows is 12 and selected_index is on the first selectable row
-    let area = Rect { x: 0, y: 0, width: 80, height: 25 };
+    let area = Rect {
+        x: 0,
+        y: 0,
+        width: 80,
+        height: 25,
+    };
     let mut buf = Buffer::empty(area);
     d.render(area, &mut buf);
     let initial_offset = d.scroll_offset();
     // @step When the user presses PageDown
-    let _ = d.handle_event(&Event::Key(KeyEvent::new(KeyCode::PageDown, KeyModifiers::NONE)));
+    let _ = d.handle_event(&Event::Key(KeyEvent::new(
+        KeyCode::PageDown,
+        KeyModifiers::NONE,
+    )));
     // @step Then the selected_index advances by visible_rows and lands on a selectable row
-    assert_ne!(d.selected_index(), initial_index, "PageDown advances selection");
+    assert_ne!(
+        d.selected_index(),
+        initial_index,
+        "PageDown advances selection"
+    );
     // @step And the scroll_offset has advanced so the new selection is visible
     let mut buf2 = Buffer::empty(area);
     d.render(area, &mut buf2);

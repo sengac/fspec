@@ -37,14 +37,17 @@ pub fn paint_header_and_role(
         .and_then(|s| store.token_state_for(s).copied())
         .unwrap_or_default();
     let bound = sid.and_then(|s| store.work_unit_context_for(s));
-    let work_unit_id = bound.map(|c| c.id.as_str()).or_else(|| store.current_work_unit_id());
+    let work_unit_id = bound
+        .map(|c| c.id.as_str())
+        .or_else(|| store.current_work_unit_id());
     let work_unit_status = bound
         .map(|c| c.status.as_str())
         .or_else(|| store.current_work_unit_status());
-    let is_debug_enabled = sid.and_then(|s| store.debug_enabled_for(s)).unwrap_or(false);
-    let subordinate_label = sid.and_then(|s| {
-        super::header_build::format_subordinate_label(store.supervisors_for(s))
-    });
+    let is_debug_enabled = sid
+        .and_then(|s| store.debug_enabled_for(s))
+        .unwrap_or(false);
+    let subordinate_label =
+        sid.and_then(|s| super::header_build::format_subordinate_label(store.supervisors_for(s)));
     SessionHeader {
         session_index: store.session_index(),
         model,

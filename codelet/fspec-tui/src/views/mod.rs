@@ -23,12 +23,16 @@
 pub mod agent;
 pub mod blocklist;
 pub mod board;
+pub mod full_screen_shell;
+pub mod model_selector;
 pub mod navigator;
+pub mod navigator_events;
 pub mod provider_settings;
 
 pub use agent::{AgentView, RenderedChunk as AgentRenderedChunk};
 pub use blocklist::{BlocklistEvent, BlocklistView};
 pub use board::BoardView;
+pub use model_selector::{ModelSelectorEvent, ModelSelectorView};
 pub use navigator::{Navigator, ViewMode};
 pub use provider_settings::{
     DetailStatus, DetailSub, NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo,

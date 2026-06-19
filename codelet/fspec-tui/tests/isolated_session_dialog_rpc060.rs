@@ -9,16 +9,21 @@
 //! `CreateSessionCancelled`. Mirrors the thinking_level_dialog_rpc022 +
 //! slash_resume_rpc049 layouts.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::too_many_lines)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::too_many_lines
+)]
 
 use std::sync::Arc;
 use std::time::Duration;
 
+use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{
     Accent, Action, App, Compositor, CreateSessionDialog, CreateSessionOption, EventResult,
     FspecBackend, Priority, CREATE_SESSION_DIALOG_ID,
 };
-use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_rpc_types::{IsolatedSessionInfo, SessionId, WorkUnitContext};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -90,9 +95,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")
@@ -212,8 +220,7 @@ fn create_session_dialog_enter_on_yes_emits_submitted_non_isolated() {
 fn create_session_dialog_enter_on_isolated_emits_submitted_isolated() {
     use codelet_fspec_tui::Component;
     // @step Given a CreateSessionDialog with selection "Yes - Isolated"
-    let mut dialog =
-        CreateSessionDialog::new(Some(CreateSessionOption::Isolated), None);
+    let mut dialog = CreateSessionDialog::new(Some(CreateSessionOption::Isolated), None);
     assert_eq!(dialog.selected_option(), CreateSessionOption::Isolated);
     // @step When the user presses Enter
     let result = dialog.handle_event(&key(KeyCode::Enter));
@@ -241,8 +248,7 @@ fn create_session_dialog_enter_on_isolated_emits_submitted_isolated() {
 fn create_session_dialog_enter_on_cancel_emits_cancelled() {
     use codelet_fspec_tui::Component;
     // @step Given a CreateSessionDialog with selection "Cancel"
-    let mut dialog =
-        CreateSessionDialog::new(Some(CreateSessionOption::Cancel), None);
+    let mut dialog = CreateSessionDialog::new(Some(CreateSessionOption::Cancel), None);
     assert_eq!(dialog.selected_option(), CreateSessionOption::Cancel);
     // @step When the user presses Enter
     let result = dialog.handle_event(&key(KeyCode::Enter));

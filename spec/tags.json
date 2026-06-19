@@ -2334,6 +2334,10 @@
           "description": "Work unit identifier tag for RPC-252 — port list-virtual-hooks command to Rust"
         },
         {
+          "name": "@rpc-337",
+          "description": "Work unit identifier tag for RPC-337 — full-screen Model Selector mode-view + shared full-screen shell extraction"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
@@ -2778,7 +2782,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-06-12T00:06:35.873Z",
+    "lastUpdated": "2026-06-19T00:54:07.588Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

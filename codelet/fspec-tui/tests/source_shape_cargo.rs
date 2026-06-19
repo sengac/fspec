@@ -40,7 +40,9 @@ fn codelet_fspec_tui_is_a_workspace_member_with_no_binary_entry_point() {
 
     // @step And codelet/fspec-tui/Cargo.toml contains a [lib] section but NO [[bin]] section
     let fspec_tui_cargo_toml = common::read_to_string_or_panic(
-        &common::workspace_root().join("fspec-tui").join("Cargo.toml"),
+        &common::workspace_root()
+            .join("fspec-tui")
+            .join("Cargo.toml"),
     );
     assert!(
         fspec_tui_cargo_toml.contains("[lib]"),
@@ -68,7 +70,9 @@ fn codelet_fspec_tui_is_a_workspace_member_with_no_binary_entry_point() {
 #[test]
 fn codelet_fspec_tui_production_dependencies_include_only_rpc_seam_and_ratatui_deps() {
     // @step Given codelet/fspec-tui/Cargo.toml exists
-    let cargo_toml_path = common::workspace_root().join("fspec-tui").join("Cargo.toml");
+    let cargo_toml_path = common::workspace_root()
+        .join("fspec-tui")
+        .join("Cargo.toml");
     let raw = common::read_to_string_or_panic(&cargo_toml_path);
 
     // @step When I read its [dependencies] table
@@ -123,7 +127,9 @@ fn codelet_fspec_tui_production_dependencies_include_only_rpc_seam_and_ratatui_d
 #[test]
 fn codelet_fspec_tui_dev_dependencies_allow_codelet_core_for_fixtures_but_never_napi() {
     // @step Given codelet/fspec-tui/Cargo.toml exists
-    let cargo_toml_path = common::workspace_root().join("fspec-tui").join("Cargo.toml");
+    let cargo_toml_path = common::workspace_root()
+        .join("fspec-tui")
+        .join("Cargo.toml");
     let raw = common::read_to_string_or_panic(&cargo_toml_path);
 
     // @step When I read its [dev-dependencies] table
@@ -237,9 +243,7 @@ fn rpc_embedded_scenario_7_is_widened_to_scan_fspec_tui() {
 /// by the Cargo.toml dependency-shape tests above.
 fn section_body<'a>(raw: &'a str, header: &str) -> &'a str {
     let Some(start) = raw.find(header) else {
-        panic!(
-            "expected section header `{header}` to appear in Cargo.toml. Got:\n{raw}"
-        );
+        panic!("expected section header `{header}` to appear in Cargo.toml. Got:\n{raw}");
     };
     let after_header = &raw[start + header.len()..];
     if let Some(next) = after_header.find("\n[") {

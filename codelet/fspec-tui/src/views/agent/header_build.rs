@@ -47,7 +47,9 @@ pub(super) fn build_left_line(
 
     spans.push(Span::styled(
         format!("{session_prefix}{work_unit_text}{separator}{model_name}"),
-        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(Color::Cyan)
+            .add_modifier(Modifier::BOLD),
     ));
 
     if is_isolated {
@@ -156,11 +158,7 @@ pub(super) fn build_right_line(
         Style::default().fg(Color::DarkGray),
     ));
     let pct_text = match compaction_reduction {
-        Some(r) => format!(
-            "[{}%: COMPACTED {}%]",
-            tokens.context_fill_pct,
-            r.abs()
-        ),
+        Some(r) => format!("[{}%: COMPACTED {}%]", tokens.context_fill_pct, r.abs()),
         None => format!("[{}%]", tokens.context_fill_pct),
     };
     spans.push(Span::styled(
@@ -206,5 +204,3 @@ pub(crate) fn format_context_window(n: u32) -> String {
         n.to_string()
     }
 }
-
-

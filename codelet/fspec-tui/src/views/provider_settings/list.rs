@@ -20,9 +20,7 @@ use ratatui::widgets::{Paragraph, Widget};
 use crate::views::agent::confirm_dialog::ConfirmDialog;
 use crate::views::provider_settings::nav_item::NavItemKind;
 
-use super::{
-    DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
-};
+use super::{DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 
 /// Dispatch a single key in List mode. Filter-mode sub-state is
 /// checked FIRST so printable chars accumulate into the filter
@@ -158,10 +156,7 @@ pub(super) fn handle_list_key(
     }
 }
 
-fn handle_filter_key(
-    view: &mut ProviderSettingsView,
-    key: KeyEvent,
-) -> ProviderSettingsEvent {
+fn handle_filter_key(view: &mut ProviderSettingsView, key: KeyEvent) -> ProviderSettingsEvent {
     match key.code {
         KeyCode::Esc => {
             view.filter.clear();
@@ -252,7 +247,11 @@ pub(super) fn render_list(view: &ProviderSettingsView, area: Rect, buf: &mut Buf
     let end = (view.scroll_offset + visible_rows).min(visible.len());
     for (row_idx, info) in visible[view.scroll_offset..end].iter().enumerate() {
         let global_idx = view.scroll_offset + row_idx;
-        let marker = if global_idx == view.selected_index { "▸" } else { " " };
+        let marker = if global_idx == view.selected_index {
+            "▸"
+        } else {
+            " "
+        };
         let configured = if info.configured { "✓" } else { "·" };
         let label = format!(
             " {marker} {} {} — {} models [{}]",

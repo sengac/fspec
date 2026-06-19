@@ -45,7 +45,10 @@ impl Compositor {
     pub fn push(&mut self, component: Box<dyn Component>) {
         let registration = self.next_registration;
         self.next_registration += 1;
-        self.layers.push(Layer { component, registration });
+        self.layers.push(Layer {
+            component,
+            registration,
+        });
         // Stable sort by priority ascending; iter().rev() in dispatch
         // walks from highest priority down, FIFO inside each priority
         // band (newest pushed last → matched first).
@@ -85,7 +88,10 @@ impl Compositor {
     /// Snapshot of every layer's id, ordered by priority (ascending) +
     /// registration (ascending). Used by tests + introspection.
     pub fn layer_ids(&self) -> Vec<String> {
-        self.layers.iter().map(|l| l.component.id().to_string()).collect()
+        self.layers
+            .iter()
+            .map(|l| l.component.id().to_string())
+            .collect()
     }
 
     /// True iff any layer reports the given id.
@@ -96,12 +102,14 @@ impl Compositor {
     /// Highest-priority layer's id, if any. FIFO tiebreak: the
     /// most-recently-pushed layer wins at equal priority.
     pub fn topmost_id(&self) -> Option<String> {
-        self.topmost_index().map(|i| self.layers[i].component.id().to_string())
+        self.topmost_index()
+            .map(|i| self.layers[i].component.id().to_string())
     }
 
     /// Highest-priority layer's [`Priority`], if any.
     pub fn topmost_priority(&self) -> Option<Priority> {
-        self.topmost_index().map(|i| self.layers[i].component.priority())
+        self.topmost_index()
+            .map(|i| self.layers[i].component.priority())
     }
 
     fn topmost_index(&self) -> Option<usize> {

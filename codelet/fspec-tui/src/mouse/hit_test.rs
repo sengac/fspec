@@ -46,7 +46,10 @@ mod tests {
             height: 10,
         };
         assert!(rect_contains(r, 5, 5), "(5,5) is the top-left corner");
-        assert!(rect_contains(r, 14, 14), "(14,14) is the bottom-right interior cell");
+        assert!(
+            rect_contains(r, 14, 14),
+            "(14,14) is the bottom-right interior cell"
+        );
     }
 
     #[test]
@@ -57,8 +60,14 @@ mod tests {
             width: 10,
             height: 10,
         };
-        assert!(!rect_contains(r, 15, 14), "(15,14) is one past the right edge");
-        assert!(!rect_contains(r, 14, 15), "(14,15) is one past the bottom edge");
+        assert!(
+            !rect_contains(r, 15, 14),
+            "(15,14) is one past the right edge"
+        );
+        assert!(
+            !rect_contains(r, 14, 15),
+            "(14,15) is one past the bottom edge"
+        );
     }
 
     #[test]

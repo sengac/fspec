@@ -57,7 +57,10 @@ fn dispatch_help_pushes_help_dialog_at_priority_critical() {
     // @step And dispatching that action pushes a HelpDialog Component with id "help-dialog" onto the Compositor
     assert!(app.compositor().contains("help-dialog"));
     // @step And the topmost compositor layer reports priority Priority::Critical
-    assert_eq!(app.compositor().topmost_priority(), Some(Priority::Critical));
+    assert_eq!(
+        app.compositor().topmost_priority(),
+        Some(Priority::Critical)
+    );
 }
 
 /// Scenario: Pressing Enter on /clear resets the AgentView scrollback and input

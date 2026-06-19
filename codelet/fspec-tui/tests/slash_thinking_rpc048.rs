@@ -81,7 +81,6 @@ fn parse_slash_command_bare_thinking_opens_dialog() {
 // right backend method (or the right scrollback notice for invalid args).
 // ─────────────────────────────────────────────────────────────────────────
 
-
 fn fresh_app() -> (App, Arc<MockBackend>) {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock.clone();
@@ -118,9 +117,12 @@ fn session_scrollback_text(app: &App, id: &SessionId) -> String {
     chunks
         .iter()
         .flat_map(|c| {
-            c.lines
-                .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            c.lines.iter().map(|l| {
+                l.spans
+                    .iter()
+                    .map(|s| s.content.as_ref())
+                    .collect::<String>()
+            })
         })
         .collect::<Vec<String>>()
         .join("\n")

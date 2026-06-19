@@ -20,10 +20,10 @@
 
 use tokio::task::JoinHandle;
 
-use crate::components::Action;
 use crate::components::create_session_dialog::{
     CreateSessionDialog, CreateSessionOption, CREATE_SESSION_DIALOG_ID,
 };
+use crate::components::Action;
 
 use super::state::App;
 
@@ -46,11 +46,7 @@ impl App {
             .agent_view_store
             .current_session()
             .cloned()
-            .and_then(|sid| {
-                self.agent_view_store
-                    .work_unit_context_for(&sid)
-                    .cloned()
-            });
+            .and_then(|sid| self.agent_view_store.work_unit_context_for(&sid).cloned());
         let dialog = CreateSessionDialog::new(preselect, work_unit_context)
             .with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));

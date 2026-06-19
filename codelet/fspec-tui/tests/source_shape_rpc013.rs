@@ -180,26 +180,62 @@ fn board_view_source_contains_literal_footer_string() {
     let footer = read_raw("views/board/footer.rs");
     let combined = format!("{board}\n{footer}");
     // @step Then the file contains the substring "← → Columns"
-    assert!(combined.contains("← →"), "board.rs|footer.rs must contain the '← →' key span");
-    assert!(combined.contains("Columns"), "board.rs|footer.rs must contain the 'Columns' label span");
+    assert!(
+        combined.contains("← →"),
+        "board.rs|footer.rs must contain the '← →' key span"
+    );
+    assert!(
+        combined.contains("Columns"),
+        "board.rs|footer.rs must contain the 'Columns' label span"
+    );
     // @step And the file contains the substring "↑↓ Work Units"
-    assert!(combined.contains("↑↓"), "board.rs|footer.rs must contain the '↑↓' key span");
-    assert!(combined.contains("Work Units"), "board.rs|footer.rs must contain the 'Work Units' label span");
+    assert!(
+        combined.contains("↑↓"),
+        "board.rs|footer.rs must contain the '↑↓' key span"
+    );
+    assert!(
+        combined.contains("Work Units"),
+        "board.rs|footer.rs must contain the 'Work Units' label span"
+    );
     // @step And the file contains the substring "[ Priority Up"
-    assert!(combined.contains("Priority Up"), "board.rs|footer.rs must contain the 'Priority Up' label span");
+    assert!(
+        combined.contains("Priority Up"),
+        "board.rs|footer.rs must contain the 'Priority Up' label span"
+    );
     // @step And the file contains the substring "] Priority Down"
-    assert!(combined.contains("Priority Down"), "board.rs|footer.rs must contain the 'Priority Down' label span");
+    assert!(
+        combined.contains("Priority Down"),
+        "board.rs|footer.rs must contain the 'Priority Down' label span"
+    );
     // @step And the file contains the substring "↵ Work Agent"
-    assert!(combined.contains("↵"), "board.rs|footer.rs must contain the '↵' key span");
-    assert!(combined.contains("Work Agent"), "board.rs|footer.rs must contain the 'Work Agent' label span");
+    assert!(
+        combined.contains("↵"),
+        "board.rs|footer.rs must contain the '↵' key span"
+    );
+    assert!(
+        combined.contains("Work Agent"),
+        "board.rs|footer.rs must contain the 'Work Agent' label span"
+    );
     // @step And the file contains the substring "ESC Back"
-    assert!(combined.contains("ESC"), "board.rs|footer.rs must contain the 'ESC' key span");
-    assert!(combined.contains("Back"), "board.rs|footer.rs must contain the 'Back' label span");
+    assert!(
+        combined.contains("ESC"),
+        "board.rs|footer.rs must contain the 'ESC' key span"
+    );
+    assert!(
+        combined.contains("Back"),
+        "board.rs|footer.rs must contain the 'Back' label span"
+    );
     // @step And the file does NOT contain the substring "? help"
     let stripped = read_stripped("views/board.rs");
-    assert!(!stripped.contains("? help"), "board.rs (code) must not contain '? help' after RPC-013");
+    assert!(
+        !stripped.contains("? help"),
+        "board.rs (code) must not contain '? help' after RPC-013"
+    );
     // @step And the file does NOT contain the substring "switch pane"
-    assert!(!stripped.contains("switch pane"), "board.rs (code) must not contain 'switch pane' after RPC-013");
+    assert!(
+        !stripped.contains("switch pane"),
+        "board.rs (code) must not contain 'switch pane' after RPC-013"
+    );
 }
 
 /// Internal sanity (no scenario): identical to the BoardView-source
@@ -208,6 +244,12 @@ fn board_view_source_contains_literal_footer_string() {
 #[test]
 fn board_view_source_does_not_contain_legacy_generic_hint() {
     let board = read_stripped("views/board.rs");
-    assert!(!board.contains("? help"), "board.rs must not contain '? help' after RPC-013");
-    assert!(!board.contains("switch pane"), "board.rs must not contain 'switch pane' after RPC-013");
+    assert!(
+        !board.contains("? help"),
+        "board.rs must not contain '? help' after RPC-013"
+    );
+    assert!(
+        !board.contains("switch pane"),
+        "board.rs must not contain 'switch pane' after RPC-013"
+    );
 }

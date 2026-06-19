@@ -50,7 +50,9 @@ fn vitest_smoke_test_for_work_unit_info_shape_remains_unchanged_by_rpc_008() {
     let body = fs::read_to_string(&existing_test).expect("read existing Vitest test");
     // The test still has its expected describe blocks + assertions.
     assert!(
-        body.contains("Feature: TS frontend NAPI WorkUnitInfo shape preserved after rpc-types lift"),
+        body.contains(
+            "Feature: TS frontend NAPI WorkUnitInfo shape preserved after rpc-types lift"
+        ),
         "Vitest smoke test must still contain its original Feature line"
     );
     assert!(
@@ -77,8 +79,9 @@ fn vitest_smoke_test_for_work_unit_info_shape_remains_unchanged_by_rpc_008() {
     // to `work_units_watcher.rs` (new NAPI exports) and the
     // `schedule_handler.rs` refactor to `codelet_common::file_lock`
     // are explicitly allowed by the rust-tui-parity-master-plan doc.
-    let fspec_tui_youngest = youngest_mtime(&common::workspace_root().join("fspec-tui").join("src"))
-        .expect("fspec-tui src must contain at least one .rs file");
+    let fspec_tui_youngest =
+        youngest_mtime(&common::workspace_root().join("fspec-tui").join("src"))
+            .expect("fspec-tui src must contain at least one .rs file");
 
     let mut violations: Vec<String> = Vec::new();
 

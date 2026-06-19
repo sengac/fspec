@@ -203,7 +203,8 @@ async fn compact_emits_error_notice_into_originating_session_scrollback() {
     // @step Then within 1 second s-1's scrollback contains a chunk whose text equals "[error] /compact failed: out of memory"
     let text = session_scrollback_text(&app, &sid("s-1"));
     assert!(
-        text.lines().any(|l| l == "[error] /compact failed: out of memory"),
+        text.lines()
+            .any(|l| l == "[error] /compact failed: out of memory"),
         "expected `[error] /compact failed: out of memory` line in s-1 scrollback, got {text:?}",
     );
 }
@@ -275,8 +276,7 @@ async fn compact_only_affects_focused_session_background_untouched() {
 
     // @step And within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 50.0% reduction (1000 → 500 tokens, 4 turns summarised)"
     let s1_text = session_scrollback_text(&app, &sid("s-1"));
-    let expected =
-        "[compaction] 50.0% reduction (1000 \u{2192} 500 tokens, 4 turns summarised)";
+    let expected = "[compaction] 50.0% reduction (1000 \u{2192} 500 tokens, 4 turns summarised)";
     assert!(
         s1_text.lines().any(|l| l == expected),
         "expected `{expected}` in s-1 scrollback, got {s1_text:?}",
@@ -334,7 +334,9 @@ fn session_footer_renders_compaction_progress_when_some() {
     );
     // @step And the rendered row contains the substring "▰▰▰▰▰▱▱▱▱▱"
     assert!(
-        row.contains("\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"),
+        row.contains(
+            "\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B0}\u{25B1}\u{25B1}\u{25B1}\u{25B1}\u{25B1}"
+        ),
         "expected `▰▰▰▰▰▱▱▱▱▱` bar in row, got {row:?}",
     );
 }
@@ -392,7 +394,10 @@ async fn compaction_complete_chunk_clears_progress_and_emits_notice() {
             total: 10,
         },
     );
-    assert!(app.agent_view_store().compaction_progress_for(&sid("s-1")).is_some());
+    assert!(app
+        .agent_view_store()
+        .compaction_progress_for(&sid("s-1"))
+        .is_some());
 
     // @step When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 0.25, original_tokens 8000, compacted_tokens 2000, turns_summarized 6, turns_kept 2 is dispatched
     let result = CompactionResult {
@@ -421,8 +426,7 @@ async fn compaction_complete_chunk_clears_progress_and_emits_notice() {
 
     // @step And within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 75.0% reduction (8000 → 2000 tokens, 6 turns summarised)"
     let text = session_scrollback_text(&app, &sid("s-1"));
-    let expected =
-        "[compaction] 75.0% reduction (8000 \u{2192} 2000 tokens, 6 turns summarised)";
+    let expected = "[compaction] 75.0% reduction (8000 \u{2192} 2000 tokens, 6 turns summarised)";
     assert!(
         text.lines().any(|l| l == expected),
         "expected `{expected}` in s-1 scrollback, got {text:?}",

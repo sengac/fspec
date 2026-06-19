@@ -119,12 +119,7 @@ impl<'a> Widget for SessionHeader<'a> {
 /// remaining span is truncated to fit). The row background is already
 /// painted by `paint_row_bg`, so we can render the styled lines
 /// directly and ratatui's cell-merge preserves the bg.
-fn paint_two_columns(
-    inner: Rect,
-    buf: &mut Buffer,
-    left: Line<'static>,
-    right: Line<'static>,
-) {
+fn paint_two_columns(inner: Rect, buf: &mut Buffer, left: Line<'static>, right: Line<'static>) {
     let width = inner.width as usize;
     let right_len = line_width(&right);
     // Budget includes one cell of gap when both columns are non-empty.
@@ -175,4 +170,3 @@ fn truncate_line(line: Line<'static>, budget: usize) -> Line<'static> {
     }
     Line::from(out)
 }
-

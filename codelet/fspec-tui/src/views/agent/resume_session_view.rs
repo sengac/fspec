@@ -23,11 +23,10 @@
 use codelet_rpc_types::{SessionId, SessionInfo};
 use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::widgets::{Clear, Widget};
+use ratatui::layout::Rect;
 
 use super::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
-use super::mode_view_render::{render_footer_hint, render_session_rows, render_title_with_count};
+use super::mode_view_render::render_session_rows;
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
@@ -180,9 +179,9 @@ impl ResumeSessionView {
             match dialog.handle_key(code, mods) {
                 ConfirmDialogOutcome::Primary => {
                     let outcome = match self.selected() {
-                        Some(info) => ResumeSessionViewOutcome::ConfirmedDelete(
-                            SessionId::new(info.id.clone()),
-                        ),
+                        Some(info) => ResumeSessionViewOutcome::ConfirmedDelete(SessionId::new(
+                            info.id.clone(),
+                        )),
                         None => ResumeSessionViewOutcome::CancelledDelete,
                     };
                     self.delete_confirm = None;
@@ -257,35 +256,24 @@ impl ResumeSessionView {
     /// fully overwritten. When `delete_confirm` is `Some`, the dialog
     /// overlay is painted on top after the base paint.
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        Clear.render(area, buf);
-        let split = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(1),
-                Constraint::Length(1),
-                Constraint::Min(0),
-                Constraint::Length(1),
-            ])
-            .split(area);
-        let title_area = split[0];
-        let body_area = split[2];
-        let footer_area = split[3];
-        render_title_with_count(title_area, buf, "Resume Session", self.sessions.len(), "available");
-        render_session_rows(
-            body_area,
+        crate::views::full_screen_shell::render_full_screen_scaffold(
+            area,
             buf,
-            &self.sessions,
-            self.selected_index,
-            self.scroll_offset,
-        );
-        render_footer_hint(
-            footer_area,
-            buf,
+            "Resume Session",
+            self.sessions.len(),
+            "available",
             "Enter Select | ↑↓ Navigate | D Delete | Esc Cancel",
+            |body_area, buf| {
+                render_session_rows(
+                    body_area,
+                    buf,
+                    &self.sessions,
+                    self.selected_index,
+                    self.scroll_offset,
+                );
+            },
+            self.delete_confirm.as_ref(),
         );
-        if let Some(dialog) = self.delete_confirm.as_ref() {
-            dialog.render(area, buf);
-        }
     }
 
     /// Heuristic visible-row hint used by AgentView when computing

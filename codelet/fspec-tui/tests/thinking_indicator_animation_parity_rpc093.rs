@@ -76,7 +76,10 @@ fn render_loop_redraws_while_busy_independent_of_should_render_flag() {
     //   run-loop guard: should_draw <=> should_render || is_busy.)
     use codelet_fspec_tui::app::tick_should_draw;
     // @step Then the terminal is drawn (terminal.draw is called once for that tick)
-    assert!(tick_should_draw(false, true, false), "busy must bypass should_render");
+    assert!(
+        tick_should_draw(false, true, false),
+        "busy must bypass should_render"
+    );
     // @step And the App should_render flag is false
     //   (encoded in the first arg above)
 }
@@ -90,7 +93,10 @@ fn render_loop_stays_idle_when_not_busy_and_no_events() {
     // @step When a 16ms RENDER_TICK fires
     use codelet_fspec_tui::app::tick_should_draw;
     // @step Then the terminal is NOT drawn for that tick (terminal.draw is not called)
-    assert!(!tick_should_draw(false, false, false), "idle + no event must skip draw");
+    assert!(
+        !tick_should_draw(false, false, false),
+        "idle + no event must skip draw"
+    );
     // @step And no input-transition finish animation is in progress (phase is Idle)
     //   (Compile-time: Idle variant exists and is the default.)
     let _ = InputTransitionState::Idle;
@@ -233,7 +239,11 @@ fn hiding_phase_advances_5_chars_per_17ms_and_renders_prefix() {
         render_input_transition(area, &mut buf, &advanced);
         let line = buf_line(&buf, area);
         let expected_prefix: String = captured.chars().take(actual_visible).collect();
-        assert_eq!(line, expected_prefix.trim_end(), "rendered prefix at +{dms}ms");
+        assert_eq!(
+            line,
+            expected_prefix.trim_end(),
+            "rendered prefix at +{dms}ms"
+        );
     }
 }
 
@@ -457,7 +467,10 @@ fn source_shape_input_transition_under_300_loc() {
     let lines = contents.lines().count();
 
     // @step Then the line count is strictly less than 300
-    assert!(lines < 300, "input_transition.rs has {lines} lines (>= 300)");
+    assert!(
+        lines < 300,
+        "input_transition.rs has {lines} lines (>= 300)"
+    );
 }
 
 // Suppress 'unused' for the constant — referenced in expected_visible math.

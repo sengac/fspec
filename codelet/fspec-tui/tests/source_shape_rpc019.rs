@@ -57,7 +57,10 @@ fn codelet_fspec_tui_declares_tui_textarea_as_a_dep() {
 #[test]
 fn new_multi_line_input_module_exists_with_the_documented_surface() {
     // @step Given the codelet/fspec-tui crate after RPC-019 lands
-    let path = fspec_tui_src().join("views").join("agent").join("multiline_input.rs");
+    let path = fspec_tui_src()
+        .join("views")
+        .join("agent")
+        .join("multiline_input.rs");
     // @step Then the file codelet/fspec-tui/src/views/agent/multiline_input.rs exists
     assert!(path.is_file(), "{} must exist", path.display());
     let body = read_raw(&path);
@@ -77,7 +80,10 @@ fn new_multi_line_input_module_exists_with_the_documented_surface() {
 #[test]
 fn new_scrollback_list_module_exists_with_the_documented_surface() {
     // @step Given the codelet/fspec-tui crate after RPC-019 lands
-    let path = fspec_tui_src().join("views").join("agent").join("scrollback.rs");
+    let path = fspec_tui_src()
+        .join("views")
+        .join("agent")
+        .join("scrollback.rs");
     // @step Then the file codelet/fspec-tui/src/views/agent/scrollback.rs exists
     assert!(path.is_file(), "{} must exist", path.display());
     let body = read_raw(&path);
@@ -197,5 +203,7 @@ fn existing_ts_agent_view_input_and_scrollback_files_are_untouched() {
     // @step And the file src/tui/components/VirtualList.tsx exists
     assert!(root.join("src/tui/components/VirtualList.tsx").is_file());
     // @step And the file src/tui/components/ConversationInputArea.tsx exists
-    assert!(root.join("src/tui/components/ConversationInputArea.tsx").is_file());
+    assert!(root
+        .join("src/tui/components/ConversationInputArea.tsx")
+        .is_file());
 }
