@@ -12,8 +12,7 @@ use ratatui::widgets::{Paragraph, Widget};
 use crate::components::Action;
 
 use super::{
-    DetailStatus, DetailSub, ProviderSettingsEvent, ProviderSettingsMode,
-    ProviderSettingsView,
+    DetailStatus, DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
 
 /// RPC-161 — TS-canonical printable-ASCII filter for API-key edit input.
@@ -194,10 +193,7 @@ pub(super) fn render_detail(
     let title_style = Style::default()
         .fg(Color::Yellow)
         .add_modifier(Modifier::BOLD);
-    let focused = view
-        .providers
-        .iter()
-        .find(|p| p.provider_id == provider_id);
+    let focused = view.providers.iter().find(|p| p.provider_id == provider_id);
     let display_name = focused
         .map(|p| p.display_name.clone())
         .unwrap_or_else(|| provider_id.to_string());
@@ -207,9 +203,16 @@ pub(super) fn render_detail(
             lines.push(Line::from(Span::styled(display_name, title_style)));
             lines.push(Line::from(format!("provider_id: {provider_id}")));
             if let Some(p) = focused {
-                lines.push(Line::from(format!("credential type: {}", p.credential_type)));
+                lines.push(Line::from(format!(
+                    "credential type: {}",
+                    p.credential_type
+                )));
                 lines.push(Line::from(format!("models: {}", p.model_count)));
-                let configured = if p.configured { "✓ configured" } else { "(not configured)" };
+                let configured = if p.configured {
+                    "✓ configured"
+                } else {
+                    "(not configured)"
+                };
                 lines.push(Line::from(configured.to_string()));
             }
             if let Some(status) = last_status {
@@ -251,38 +254,5 @@ pub(super) fn render_detail(
 }
 
 #[cfg(test)]
-mod tests {
-    //! RPC-161 — branch-coverage unit tests for the printable-ASCII helper.
-    //!
-    //! Feature: spec/features/rpc161-provider-settings-api-key-printable-ascii-filter.feature
-    //!
-    //! Covers the same Gherkin scenario as the end-to-end integration test
-    //! `is_printable_ascii_helper_classifies_characters_by_ascii_code_observed_end_to_end`
-    //! in tests/provider_settings_api_key_charset_rpc161.rs, but exercises
-    //! the helper directly so a regression that changed the range bounds
-    //! without changing observable view state would still fail.
-
-    use super::is_printable_ascii;
-
-    /// Scenario: is_printable_ascii() helper classifies characters by ASCII code
-    #[test]
-    fn is_printable_ascii_returns_true_for_inclusive_boundaries_and_interior() {
-        // @step Given the helper function is_printable_ascii(c: char) -> bool exists in views/provider_settings/detail.rs
-        // @step When the helper is called with each of the chars ' ' (32), 'A' (65), '~' (126)
-        // @step Then it returns true for every one
-        assert!(is_printable_ascii(' '), "space (32) must be accepted");
-        assert!(is_printable_ascii('A'), "interior char 'A' (65) must be accepted");
-        assert!(is_printable_ascii('~'), "tilde (126) must be accepted");
-    }
-
-    #[test]
-    fn is_printable_ascii_returns_false_for_control_del_and_non_ascii() {
-        // @step When the helper is called with each of the chars '\t' (9), '\u{001F}' (31), '\u{007F}' (127), 'é' (233), '🔑' (128017)
-        // @step Then it returns false for every one
-        assert!(!is_printable_ascii('\t'), "tab (9) must be rejected");
-        assert!(!is_printable_ascii('\u{001F}'), "unit-separator (31) must be rejected");
-        assert!(!is_printable_ascii('\u{007F}'), "DEL (127) must be rejected");
-        assert!(!is_printable_ascii('é'), "latin-1 é (233) must be rejected");
-        assert!(!is_printable_ascii('🔑'), "non-BMP emoji (128017) must be rejected");
-    }
-}
+#[path = "detail_tests.rs"]
+mod tests;

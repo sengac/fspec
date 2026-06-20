@@ -443,9 +443,13 @@ fn set_thinking_level_default_is_wired_through_the_backend_trait_stack() {
     // calls backend.set_thinking_level_default. Without this wiring
     // the dialog emits an action that is silently dropped.
     // @step Then dispatch_model_thinking_dialogs.rs routes Action::SetThinkingLevelDefault to backend.set_thinking_level_default
-    let dispatch_src = fs::read_to_string(Path::new("src").join("app").join("dispatch_model_thinking_dialogs.rs"))
-        .or_else(|_| fs::read_to_string("src/app/dispatch_model_thinking_dialogs.rs"))
-        .expect("dispatch_model_thinking_dialogs.rs must exist");
+    let dispatch_src = fs::read_to_string(
+        Path::new("src")
+            .join("app")
+            .join("dispatch_model_thinking_dialogs.rs"),
+    )
+    .or_else(|_| fs::read_to_string("src/app/dispatch_model_thinking_dialogs.rs"))
+    .expect("dispatch_model_thinking_dialogs.rs must exist");
     assert!(
         dispatch_src.contains("Action::SetThinkingLevelDefault"),
         "dispatch_model_thinking_dialogs.rs must route Action::SetThinkingLevelDefault"

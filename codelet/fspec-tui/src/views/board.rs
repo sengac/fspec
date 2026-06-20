@@ -25,14 +25,13 @@ use crossterm::event::{Event, KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::Style;
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Paragraph, Widget};
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::components::{Action, EventResult};
 use crate::store::{BoardStore, COLUMN_ORDER};
 use crate::theme::Theme;
 
+pub mod borders;
 pub mod checkpoint_status;
 pub mod columns;
 pub mod details_strip;
@@ -46,8 +45,7 @@ pub mod viewport;
 
 use self::columns::paint_column_headers;
 use self::grid::{
-    build_border_row, calculate_column_widths, column_width_at, slice_column_rects,
-    SeparatorType,
+    build_border_row, calculate_column_widths, column_width_at, slice_column_rects, SeparatorType,
 };
 use self::viewport::paint_content_rows;
 
@@ -220,30 +218,42 @@ impl BoardView {
             .split(area);
         let border_style = Style::default().fg(self.theme.border);
 
-        paint_border_string(
-            split[0], buf,
-            &build_border_row(widths, "┌", "┐", SeparatorType::Plain), border_style,
+        borders::paint_border_string(
+            split[0],
+            buf,
+            &build_border_row(widths, "┌", "┐", SeparatorType::Plain),
+            border_style,
         );
-        paint_side_borders(split[1], buf, border_style);
-        header::paint(inner_rect(split[1]), buf, store, &self.theme);
-        paint_border_string(
-            split[2], buf,
-            &build_border_row(widths, "├", "┤", SeparatorType::Plain), border_style,
+        borders::paint_side_borders(split[1], buf, border_style);
+        header::paint(borders::inner_rect(split[1]), buf, store, &self.theme);
+        borders::paint_border_string(
+            split[2],
+            buf,
+            &build_border_row(widths, "├", "┤", SeparatorType::Plain),
+            border_style,
         );
-        paint_side_borders(split[3], buf, border_style);
-        details_strip::render(inner_rect(split[3]), buf, store.selected_work_unit());
-        paint_border_string(
-            split[4], buf,
-            &build_border_row(widths, "├", "┤", SeparatorType::Top), border_style,
+        borders::paint_side_borders(split[3], buf, border_style);
+        details_strip::render(
+            borders::inner_rect(split[3]),
+            buf,
+            store.selected_work_unit(),
         );
-        paint_side_borders(split[5], buf, border_style);
+        borders::paint_border_string(
+            split[4],
+            buf,
+            &build_border_row(widths, "├", "┤", SeparatorType::Top),
+            border_style,
+        );
+        borders::paint_side_borders(split[5], buf, border_style);
         paint_column_headers(split[5], buf, widths, store, &self.theme);
         // RPC-023: cache per-column header rects for click-to-focus.
         self.last_column_header_areas
             .set(Some(slice_column_rects(split[5], widths)));
-        paint_border_string(
-            split[6], buf,
-            &build_border_row(widths, "├", "┤", SeparatorType::Cross), border_style,
+        borders::paint_border_string(
+            split[6],
+            buf,
+            &build_border_row(widths, "├", "┤", SeparatorType::Cross),
+            border_style,
         );
         // RPC-016: record the viewport height the painter is about to
         // observe so handle_event can emit ScrollFocusedColumnUp/Down
@@ -255,45 +265,19 @@ impl BoardView {
         self.last_column_content_areas
             .set(Some(slice_column_rects(split[7], widths)));
         paint_content_rows(split[7], buf, widths, store, &self.theme);
-        paint_border_string(
-            split[8], buf,
-            &build_border_row(widths, "├", "┤", SeparatorType::Bottom), border_style,
+        borders::paint_border_string(
+            split[8],
+            buf,
+            &build_border_row(widths, "├", "┤", SeparatorType::Bottom),
+            border_style,
         );
-        paint_side_borders(split[9], buf, border_style);
-        footer::render(inner_rect(split[9]), buf, &self.theme);
-        paint_border_string(
-            split[10], buf,
-            &build_border_row(widths, "└", "┘", SeparatorType::Plain), border_style,
+        borders::paint_side_borders(split[9], buf, border_style);
+        footer::render(borders::inner_rect(split[9]), buf, &self.theme);
+        borders::paint_border_string(
+            split[10],
+            buf,
+            &build_border_row(widths, "└", "┘", SeparatorType::Plain),
+            border_style,
         );
-    }
-}
-
-fn paint_border_string(area: Rect, buf: &mut Buffer, body: &str, style: Style) {
-    if area.width == 0 || area.height == 0 {
-        return;
-    }
-    Paragraph::new(Line::from(Span::styled(body.to_string(), style)))
-        .render(area, buf);
-}
-
-fn paint_side_borders(area: Rect, buf: &mut Buffer, style: Style) {
-    if area.width < 2 || area.height == 0 {
-        return;
-    }
-    for y in 0..area.height {
-        buf.set_string(area.x, area.y + y, "│", style);
-        buf.set_string(area.x + area.width - 1, area.y + y, "│", style);
-    }
-}
-
-fn inner_rect(area: Rect) -> Rect {
-    if area.width < 2 {
-        return area;
-    }
-    Rect {
-        x: area.x + 1,
-        y: area.y,
-        width: area.width - 2,
-        height: area.height,
     }
 }

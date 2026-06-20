@@ -104,7 +104,9 @@ fn new_mode_view_files_exist_with_documented_surface() {
     assert!(count_lines(&agent_rs) < 300);
 
     // @step And codelet/fspec-tui/src/app/dispatch_resume_search_views.rs line count is < 300
-    let dispatch026 = fspec_tui_src().join("app").join("dispatch_resume_search_views.rs");
+    let dispatch026 = fspec_tui_src()
+        .join("app")
+        .join("dispatch_resume_search_views.rs");
     assert!(count_lines(&dispatch026) < 300);
 }
 
@@ -171,7 +173,9 @@ fn agent_view_orchestrator_owns_the_new_mode_view_fields() {
 #[test]
 fn handle_slash_command_dispatches_open_resume_view_and_open_search_view() {
     // @step Given codelet/fspec-tui/src/app/dispatch_slash_commands.rs after RPC-026 lands
-    let path = fspec_tui_src().join("app").join("dispatch_slash_commands.rs");
+    let path = fspec_tui_src()
+        .join("app")
+        .join("dispatch_slash_commands.rs");
     let body = read_raw(&path);
     assert!(count_lines(&path) < 300);
     // @step And the file routes "SlashCommandAction::Resume" through handle_open_resume_view

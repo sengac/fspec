@@ -32,8 +32,8 @@ use codelet_rpc_types::{FspecRequest, SessionId, SessionState, SessionStatus, St
 use crate::components::Action;
 use crate::store::{agent_view::isolation_state::session_status_from_state, IsolationState};
 
-use super::dispatch_slash_commands::format_compaction_notice;
 use super::dispatch_fspec_runner::run_fspec_command;
+use super::dispatch_slash_commands::format_compaction_notice;
 use super::state::App;
 
 impl App {

@@ -19,13 +19,12 @@ use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
-    CustomModelDefinition,
-    FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
-    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
-    ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
-    SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
-    SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
-    TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
+    IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
+    ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
+    RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId, SessionInfo, SessionModel,
+    SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult,
+    ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::broadcast;

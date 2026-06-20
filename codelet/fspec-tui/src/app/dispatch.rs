@@ -1,7 +1,7 @@
 //! `App::dispatch` — single mutation surface for [`BoardStore`] +
 //! [`AgentViewStore`] per the RPC-009 single-task tenere pattern.
-use crate::components::Action;
 use crate::components::disconnect_dialog::{DisconnectDialog, DISCONNECT_DIALOG_ID};
+use crate::components::Action;
 use crate::views::ViewMode;
 
 use super::state::App;
@@ -82,7 +82,9 @@ impl App {
                 self.navigator.active_view = ViewMode::Agent;
                 // RPC-050: bind work unit to current session via the
                 // attach action; lazy SessionCreated re-dispatches below.
-                let _ = self.action_tx.send(Action::AttachWorkUnitToSession(id.clone()));
+                let _ = self
+                    .action_tx
+                    .send(Action::AttachWorkUnitToSession(id.clone()));
                 if self.agent_view_store.current_session().is_none() {
                     let backend = self.backend.clone();
                     let action_tx = self.action_tx.clone();
@@ -223,8 +225,12 @@ impl App {
                 // with wrap-around, restore incoming draft.
                 self.handle_session_cycle(1);
             }
-            Action::ScrollbackPageUp => self.scroll_focused(-(self.navigator.agent.scrollback_viewport_hint() as i64)),
-            Action::ScrollbackPageDown => self.scroll_focused(self.navigator.agent.scrollback_viewport_hint() as i64),
+            Action::ScrollbackPageUp => {
+                self.scroll_focused(-(self.navigator.agent.scrollback_viewport_hint() as i64))
+            }
+            Action::ScrollbackPageDown => {
+                self.scroll_focused(self.navigator.agent.scrollback_viewport_hint() as i64)
+            }
             Action::ScrollbackLineUp => self.scroll_focused(-1),
             Action::ScrollbackLineDown => self.scroll_focused(1),
             Action::ScrollbackHome => {
@@ -254,11 +260,15 @@ impl App {
             Action::SessionListLoaded(s) => self.handle_session_list_loaded(s.clone()),
             Action::AttachToSession(s) => self.handle_attach_to_session(s.clone()),
             Action::SearchHistory(q) => self.handle_search_history(q.clone()),
-            Action::HistorySearchResults { query, matches } => self.handle_history_search_results(query.clone(), matches.clone()),
+            Action::HistorySearchResults { query, matches } => {
+                self.handle_history_search_results(query.clone(), matches.clone())
+            }
             Action::InsertIntoInput(t) => self.handle_insert_into_input(t.clone()),
             Action::RequestDeleteSession(id) => self.handle_request_delete_session(id.clone()),
             Action::ConfirmDeleteSession(id) => self.handle_confirm_delete_session(id.clone()),
-            Action::EmitSessionNotice(sid, text) => self.handle_emit_session_notice(sid, text.clone()),
+            Action::EmitSessionNotice(sid, text) => {
+                self.handle_emit_session_notice(sid, text.clone())
+            }
             Action::SessionResumeComplete(id) => self.handle_session_resume_complete(id.clone()),
             // Capability dispatchers: try_dispatch_* fallbacks (keep <300 LoC).
             _ => {
@@ -278,13 +288,5 @@ impl App {
         self.navigator.apply_action(&action);
         let _ = self.compositor.update(action);
         self.should_render = true;
-    }
-
-    /// RPC-094: shared scrollback dispatch helper.
-    fn scroll_focused(&mut self, delta: i64) {
-        if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
-            if delta < 0 { ctx.scrollback.scroll_up(delta.unsigned_abs() as usize); }
-            else if delta > 0 { ctx.scrollback.scroll_down(delta as usize); }
-        }
     }
 }

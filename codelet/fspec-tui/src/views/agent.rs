@@ -16,6 +16,7 @@ use codelet_rpc_types::SessionStatus;
 
 use input_transition::InputTransitionState;
 
+pub mod animation;
 pub mod chrome;
 pub mod chrome_paint;
 pub mod confirm_dialog;
@@ -197,39 +198,6 @@ impl AgentView {
         }
     }
 
-    /// RPC-095 + RPC-093: per-frame animation tick. Returns
-    /// `(session_status, is_loading)`.
-    fn tick_animation(
-        &mut self,
-        store: &AgentViewStore,
-        sid: Option<&codelet_rpc_types::SessionId>,
-    ) -> (Option<SessionStatus>, bool) {
-        let session_status = sid.and_then(|s| store.session_status_for(s).copied());
-        let is_busy = matches!(
-            session_status,
-            Some(SessionStatus::Running) | Some(SessionStatus::Compacting)
-        );
-        if is_busy && self.spinner_started_at.is_none() {
-            self.spinner_started_at = Some(Instant::now());
-        } else if !is_busy {
-            self.spinner_started_at = None;
-        }
-        let is_loading = matches!(session_status, Some(SessionStatus::Running));
-        self.animation_clock_ms = self.animation_clock_ms.saturating_add(16);
-        let elapsed_ms = self
-            .spinner_started_at
-            .map(|t| t.elapsed().as_millis() as u64)
-            .unwrap_or(0);
-        self.input_transition_state = transition_driver::advance_transition(
-            session_status,
-            &self.input_transition_state,
-            self.last_spinner_line.as_deref(),
-            elapsed_ms,
-            self.animation_clock_ms,
-        );
-        (session_status, is_loading)
-    }
-
     /// RPC-029 layout. Mode views early-return; otherwise paints chrome + input + popups.
     pub fn render_with_store(&mut self, area: Rect, buf: &mut Buffer, store: &mut AgentViewStore) {
         self.last_render_area = Some(area);
@@ -243,7 +211,11 @@ impl AgentView {
         }
         let input_height = self.input.visible_rows();
         let sid = store.current_session().cloned();
-        let role_height: u16 = sid.as_ref().and_then(|s| store.role_for(s)).map(|_| 1).unwrap_or(0);
+        let role_height: u16 = sid
+            .as_ref()
+            .and_then(|s| store.role_for(s))
+            .map(|_| 1)
+            .unwrap_or(0);
         // RPC-029 layout: Header(1), RoleBanner(0|1), Scrollback flex Min(0), Footer Length(1), Input Length(input_height).
         let split = Layout::default()
             .direction(Direction::Vertical)
@@ -283,7 +255,12 @@ impl AgentView {
             width: areas.input.width.saturating_sub(pad * 2),
             height: areas.input.height,
         };
-        input_transition::paint_input_or_spinner(padded, buf, &self.input, &self.input_transition_state);
+        input_transition::paint_input_or_spinner(
+            padded,
+            buf,
+            &self.input,
+            &self.input_transition_state,
+        );
         if let Some(line) = transition_driver::cached_spinner_line(&self.input_transition_state) {
             self.last_spinner_line = Some(line);
         }

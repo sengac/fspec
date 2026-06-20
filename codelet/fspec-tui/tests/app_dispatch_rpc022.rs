@@ -315,5 +315,8 @@ fn dispatch_model_thinking_dialogs_rs_stays_under_300_lines() {
     // @step When a test counts the line-count of the file
     let lines = common::read_to_string_or_panic(&path).lines().count();
     // @step Then the file has fewer than 300 lines
-    assert!(lines < 300, "dispatch_model_thinking_dialogs.rs has {lines} lines");
+    assert!(
+        lines < 300,
+        "dispatch_model_thinking_dialogs.rs has {lines} lines"
+    );
 }

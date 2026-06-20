@@ -590,10 +590,12 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     with its doc stanza)
     //   - RPC-337 added ≤25 lines (OpenModelSelectorView /
     //     CloseModelSelectorView / RefreshModelSelector variants + docs)
-    //   - Total budget = 802 baseline + 30 + 20 + 25 = 877
+    //   - RPC-347 added ≤25 lines (AddCustomModel / EditCustomModel /
+    //     DeleteCustomModel custom-model write variants + docs)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 = 902
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 877,
-        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337 budget is +75 over baseline 802"
+        n_components <= 902,
+        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337+RPC-347 budget is +100 over baseline 802"
     );
 }

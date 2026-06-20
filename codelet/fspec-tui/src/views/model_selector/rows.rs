@@ -81,6 +81,11 @@ pub(crate) fn build_view_rows(
             model_id: String::new(),
             is_profile: provider.profile_name.is_some(),
             is_unreachable: provider.is_unreachable,
+            is_custom: false,
+            profile_name: provider.profile_name.clone(),
+            context_window: 0,
+            supports_reasoning: false,
+            supports_vision: false,
         });
         if !is_expanded {
             continue;
@@ -94,6 +99,11 @@ pub(crate) fn build_view_rows(
                 model_id: model.id.clone(),
                 is_profile: false,
                 is_unreachable: false,
+                is_custom: model.is_custom,
+                profile_name: provider.profile_name.clone(),
+                context_window: model.context_window,
+                supports_reasoning: model.supports_reasoning,
+                supports_vision: model.supports_vision,
             });
         }
     }

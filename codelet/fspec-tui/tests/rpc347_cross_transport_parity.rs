@@ -138,7 +138,12 @@ async fn scenario_no_handle_silent_no_op() {
         .add_custom_model("openai".into(), "work-vllm".into(), def.clone())
         .await;
     let update = embedded
-        .update_custom_model("openai".into(), "work-vllm".into(), "my-model".into(), def.clone())
+        .update_custom_model(
+            "openai".into(),
+            "work-vllm".into(),
+            "my-model".into(),
+            def.clone(),
+        )
         .await;
     let delete = embedded
         .delete_custom_model("openai".into(), "work-vllm".into(), "my-model".into())
@@ -146,8 +151,14 @@ async fn scenario_no_handle_silent_no_op() {
 
     // @step Then each call returns Ok
     assert!(add.is_ok(), "add must be Ok without a handle: {add:?}");
-    assert!(update.is_ok(), "update must be Ok without a handle: {update:?}");
-    assert!(delete.is_ok(), "delete must be Ok without a handle: {delete:?}");
+    assert!(
+        update.is_ok(),
+        "update must be Ok without a handle: {update:?}"
+    );
+    assert!(
+        delete.is_ok(),
+        "delete must be Ok without a handle: {delete:?}"
+    );
 
     // @step And no configuration is written
     // (no handle means nothing downstream of the no-op default is invoked)

@@ -11,8 +11,10 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
+use ratatui::widgets::{Paragraph, Widget};
 
 use super::scrollback::ScrollState;
+use super::RenderedChunk;
 
 /// Paint a single-column scrollbar into `area`'s rightmost column.
 ///
@@ -48,6 +50,53 @@ pub(super) fn paint_scrollbar(
         cell.set_symbol(glyph);
         cell.set_style(dim);
     }
+}
+
+/// RPC-094: paint the windowed slice of chunk rows into `area`, skipping the
+/// first `skip_rows` visual rows and stopping at the area's bottom edge.
+/// Returns the number of distinct chunks that contributed at least one
+/// painted row. Extracted from `ScrollbackList::render_count_visited` to keep
+/// `scrollback.rs` under the 300-LoC source-shape ceiling.
+pub(super) fn paint_chunk_rows(
+    area: Rect,
+    buf: &mut Buffer,
+    chunks: &[RenderedChunk],
+    content_width: u16,
+    skip_rows: usize,
+) -> usize {
+    let mut row_idx: usize = 0;
+    let mut y = area.y;
+    let y_end = area.y.saturating_add(area.height);
+    let mut visited = 0_usize;
+    for chunk in chunks {
+        if y >= y_end {
+            break;
+        }
+        let mut chunk_visited = false;
+        for line in &chunk.lines {
+            if row_idx < skip_rows {
+                row_idx += 1;
+                continue;
+            }
+            if y >= y_end {
+                break;
+            }
+            let row = Rect {
+                x: area.x,
+                y,
+                width: content_width,
+                height: 1,
+            };
+            Paragraph::new(line.clone()).render(row, buf);
+            y = y.saturating_add(1);
+            row_idx += 1;
+            if !chunk_visited {
+                visited = visited.saturating_add(1);
+                chunk_visited = true;
+            }
+        }
+    }
+    visited
 }
 
 #[cfg(test)]

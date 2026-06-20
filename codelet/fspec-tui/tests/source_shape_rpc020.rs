@@ -328,7 +328,9 @@ fn slash_command_action_enum_has_no_providers_variant() {
 #[test]
 fn dispatch_slash_commands_has_no_providers_arm() {
     // @step Given codelet/fspec-tui/src/app/dispatch_slash_commands.rs after the 2026-06-01 revision
-    let path = fspec_tui_src().join("app").join("dispatch_slash_commands.rs");
+    let path = fspec_tui_src()
+        .join("app")
+        .join("dispatch_slash_commands.rs");
     // @step When the file is read
     let source = read_raw(&path);
 

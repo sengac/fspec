@@ -41,6 +41,20 @@ pub(crate) struct ModelSelectorRow {
     /// RPC-338: true when an (unreachable) profile header (drives the red
     /// `(unreachable)` marker). Header rows only.
     pub(crate) is_unreachable: bool,
+    /// RPC-344: true for a selectable custom-model row (drives the `[C]`
+    /// badge AND gates the `e`/`d` keybinds). Always false for headers.
+    pub(crate) is_custom: bool,
+    /// RPC-344: the profile name of the section this row belongs to, when it
+    /// is a local-server profile section. Set on BOTH the profile header and
+    /// its model rows so the a/e/d guards can read it off the focused row.
+    pub(crate) profile_name: Option<String>,
+    /// RPC-344: context window of a model row (0 for headers) — used to
+    /// prefill the edit form without re-walking providers.
+    pub(crate) context_window: u32,
+    /// RPC-344: reasoning capability of a model row — edit-form prefill.
+    pub(crate) supports_reasoning: bool,
+    /// RPC-344: vision capability of a model row — edit-form prefill.
+    pub(crate) supports_vision: bool,
 }
 
 /// Flatten a `[ProviderInfo]` list into a flat `[ModelSelectorRow]`
@@ -60,6 +74,11 @@ pub(crate) fn build_rows(providers: &[ProviderInfo]) -> Vec<ModelSelectorRow> {
             model_id: String::new(),
             is_profile: provider.profile_name.is_some(),
             is_unreachable: provider.is_unreachable,
+            is_custom: false,
+            profile_name: provider.profile_name.clone(),
+            context_window: 0,
+            supports_reasoning: false,
+            supports_vision: false,
         });
         for model in &provider.models {
             let label = model.display_name.clone();
@@ -86,6 +105,11 @@ pub(crate) fn build_rows(providers: &[ProviderInfo]) -> Vec<ModelSelectorRow> {
                 model_id: model.id.clone(),
                 is_profile: false,
                 is_unreachable: false,
+                is_custom: model.is_custom,
+                profile_name: provider.profile_name.clone(),
+                context_window: model.context_window,
+                supports_reasoning: model.supports_reasoning,
+                supports_vision: model.supports_vision,
             });
         }
     }

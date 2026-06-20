@@ -57,6 +57,58 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
+    /// RPC-344: spawn one of the three custom-model write calls, then refresh
+    /// the provider list so the new/edited/deleted entry shows immediately.
+    fn spawn_custom_model_write(&mut self, action: Action) {
+        if tokio::runtime::Handle::try_current().is_err() {
+            return;
+        }
+        let backend = self.backend.clone();
+        let action_tx = self.action_tx.clone();
+        let handle = tokio::spawn(async move {
+            match action {
+                Action::AddCustomModel {
+                    provider_id,
+                    profile_name,
+                    definition,
+                } => {
+                    let _ = backend
+                        .add_custom_model(provider_id, profile_name, definition)
+                        .await;
+                }
+                Action::EditCustomModel {
+                    provider_id,
+                    profile_name,
+                    original_model_id,
+                    definition,
+                } => {
+                    let _ = backend
+                        .update_custom_model(
+                            provider_id,
+                            profile_name,
+                            original_model_id,
+                            definition,
+                        )
+                        .await;
+                }
+                Action::DeleteCustomModel {
+                    provider_id,
+                    profile_name,
+                    model_id,
+                } => {
+                    let _ = backend
+                        .delete_custom_model(provider_id, profile_name, model_id)
+                        .await;
+                }
+                _ => {}
+            }
+            if let Ok(providers) = backend.list_providers().await {
+                let _ = action_tx.send(Action::ListProvidersLoaded(providers));
+            }
+        });
+        self.pending_tasks.push(handle);
+    }
+
     /// Route the RPC-337 model-selector actions. Called from the
     /// catch-all arm of `App::dispatch`. Returns `true` if handled.
     pub(crate) fn try_dispatch_model_selector(&mut self, action: &Action) -> bool {
@@ -65,6 +117,13 @@ impl App {
             Action::RefreshModelSelector => self.handle_refresh_model_selector(),
             Action::ListProvidersLoaded(providers) => {
                 self.handle_model_selector_providers_loaded(providers.clone());
+            }
+            // RPC-344: custom-model write actions spawn the backend call +
+            // a provider-list refresh.
+            Action::AddCustomModel { .. }
+            | Action::EditCustomModel { .. }
+            | Action::DeleteCustomModel { .. } => {
+                self.spawn_custom_model_write(action.clone());
             }
             // CloseModelSelectorView is a pure ViewMode flip handled by
             // Navigator::apply_action — no App-side state to mutate.

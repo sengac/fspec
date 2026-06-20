@@ -43,7 +43,12 @@ pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>) {
         let title_text = format!("{}: {}", unit.id, unit.title);
         let line = Line::from(Span::raw(truncate_to(title_text, area.width as usize)));
         Paragraph::new(line).render(
-            Rect { x: area.x, y: row_y, width: area.width, height: 1 },
+            Rect {
+                x: area.x,
+                y: row_y,
+                width: area.width,
+                height: 1,
+            },
             buf,
         );
     }
@@ -62,12 +67,22 @@ pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>) {
         let cyan = Style::default().fg(Color::Cyan);
         let (line1, line2) = wrap_to_two_lines(&normalized, avail);
         Paragraph::new(Line::from(Span::styled(line1, cyan))).render(
-            Rect { x: area.x, y: row_y + 1, width: area.width, height: 1 },
+            Rect {
+                x: area.x,
+                y: row_y + 1,
+                width: area.width,
+                height: 1,
+            },
             buf,
         );
         if area.height >= 3 {
             Paragraph::new(Line::from(Span::styled(line2, cyan))).render(
-                Rect { x: area.x, y: row_y + 2, width: area.width, height: 1 },
+                Rect {
+                    x: area.x,
+                    y: row_y + 2,
+                    width: area.width,
+                    height: 1,
+                },
                 buf,
             );
         }
@@ -76,7 +91,12 @@ pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>) {
     if area.height >= 4 {
         let attachments_line = build_attachments_line(unit, area.width);
         Paragraph::new(attachments_line).render(
-            Rect { x: area.x, y: row_y + 3, width: area.width, height: 1 },
+            Rect {
+                x: area.x,
+                y: row_y + 3,
+                width: area.width,
+                height: 1,
+            },
             buf,
         );
     }
@@ -84,7 +104,12 @@ pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>) {
     if area.height >= 5 {
         let meta_line = build_metadata_line(unit, area.width);
         Paragraph::new(meta_line).render(
-            Rect { x: area.x, y: row_y + 4, width: area.width, height: 1 },
+            Rect {
+                x: area.x,
+                y: row_y + 4,
+                width: area.width,
+                height: 1,
+            },
             buf,
         );
     }
@@ -159,7 +184,10 @@ fn wrap_to_two_lines(text: &str, width: usize) -> (String, String) {
 
     let remaining: Vec<char> = chars[line2_start..].to_vec();
     if remaining.len() <= width {
-        return (line1.trim_end().to_string(), remaining.into_iter().collect());
+        return (
+            line1.trim_end().to_string(),
+            remaining.into_iter().collect(),
+        );
     }
 
     // Line 2 overflows — keep `width - 1` chars + an ellipsis.
@@ -235,41 +263,5 @@ fn build_metadata_line(unit: &WorkUnitInfo, width: u16) -> Line<'static> {
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used)]
-    use super::*;
-
-    #[test]
-    fn wrap_short_text_fits_on_one_line() {
-        let (a, b) = wrap_to_two_lines("hello world", 20);
-        assert_eq!(a, "hello world");
-        assert_eq!(b, "");
-    }
-
-    #[test]
-    fn wrap_long_text_breaks_on_whitespace_for_line_one() {
-        // 25 chars — line1 fits 20 wide, remainder ("dog") fits line2.
-        let (a, b) = wrap_to_two_lines("the quick brown fox done", 20);
-        assert_eq!(a, "the quick brown fox");
-        assert_eq!(b, "done");
-    }
-
-    #[test]
-    fn wrap_overflow_truncates_line_two_with_ellipsis() {
-        let (a, b) = wrap_to_two_lines(
-            "the quick brown fox jumps over the lazy dog one two three four",
-            20,
-        );
-        assert_eq!(a, "the quick brown fox");
-        // line2 must be exactly `width` chars long and end with `…`.
-        assert_eq!(b.chars().count(), 20);
-        assert!(b.ends_with('…'));
-    }
-
-    #[test]
-    fn wrap_hard_break_when_first_word_exceeds_width() {
-        let (a, b) = wrap_to_two_lines("supercalifragilisticexpialidocious", 10);
-        assert_eq!(a.chars().count(), 10);
-        assert!(!b.is_empty());
-    }
-}
+#[path = "details_strip_tests.rs"]
+mod tests;

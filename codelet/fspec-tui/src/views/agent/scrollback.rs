@@ -12,10 +12,10 @@
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::widgets::{Paragraph, Widget};
+use ratatui::widgets::Widget;
 
-use super::RenderedChunk;
 use super::scrollback_paint::paint_scrollbar;
+use super::RenderedChunk;
 use crate::store::agent_view::chunk_wrap::wrap_source;
 
 /// Scroll state for `ScrollbackList`. `stick_to_bottom = true` is the
@@ -30,7 +30,10 @@ pub struct ScrollState {
 
 impl Default for ScrollState {
     fn default() -> Self {
-        Self { offset: 0, stick_to_bottom: true }
+        Self {
+            offset: 0,
+            stick_to_bottom: true,
+        }
     }
 }
 
@@ -102,7 +105,11 @@ impl ScrollbackList {
     /// Re-wrap a single chunk at index `i` (or 80 cols pre-render).
     /// **RPC-091**.
     pub fn rewrap_at(&mut self, i: usize) {
-        let width = if self.viewport_width != 0 { self.viewport_width } else { 80 };
+        let width = if self.viewport_width != 0 {
+            self.viewport_width
+        } else {
+            80
+        };
         if let Some(chunk) = self.chunks.get_mut(i) {
             rewrap_chunk(chunk, width);
         }
@@ -177,7 +184,10 @@ impl ScrollbackList {
         }
     }
 
-    pub fn jump_to_top(&mut self) { self.scroll_state.stick_to_bottom = false; self.scroll_state.offset = 0; }
+    pub fn jump_to_top(&mut self) {
+        self.scroll_state.stick_to_bottom = false;
+        self.scroll_state.offset = 0;
+    }
 
     pub fn jump_to_bottom(&mut self) {
         self.scroll_state.stick_to_bottom = true;
@@ -211,7 +221,11 @@ impl ScrollbackList {
         // Pass 2: when overflowing AND the terminal is at least 4 cols
         // wide, reserve a 2-col gutter (1 gap + 1 scrollbar) and rewrap.
         let reserve_gutter = self.total_visual_rows() > vh && area.width >= 4;
-        let content_width = if reserve_gutter { area.width - 2 } else { area.width };
+        let content_width = if reserve_gutter {
+            area.width - 2
+        } else {
+            area.width
+        };
         if reserve_gutter {
             self.set_viewport_width(content_width);
         }
@@ -221,26 +235,13 @@ impl ScrollbackList {
         } else {
             self.scroll_state.offset
         };
-        let mut row_idx: usize = 0;
-        let mut y = area.y;
-        let y_end = area.y.saturating_add(area.height);
-        let mut visited = 0_usize;
-        for chunk in &self.chunks {
-            if y >= y_end { break; }
-            let mut chunk_visited = false;
-            for line in &chunk.lines {
-                if row_idx < skip_rows { row_idx += 1; continue; }
-                if y >= y_end { break; }
-                let row = Rect { x: area.x, y, width: content_width, height: 1 };
-                Paragraph::new(line.clone()).render(row, buf);
-                y = y.saturating_add(1);
-                row_idx += 1;
-                if !chunk_visited {
-                    visited = visited.saturating_add(1);
-                    chunk_visited = true;
-                }
-            }
-        }
+        let visited = super::scrollback_paint::paint_chunk_rows(
+            area,
+            buf,
+            &self.chunks,
+            content_width,
+            skip_rows,
+        );
         if reserve_gutter && total_rows > vh {
             paint_scrollbar(area, buf, vh, total_rows, self.scroll_state);
         }
@@ -256,7 +257,11 @@ impl ScrollbackList {
     fn max_offset_for_viewport(&self) -> usize {
         let total = self.total_visual_rows();
         let vh = self.viewport_height as usize;
-        if vh == 0 || total <= vh { 0 } else { total.saturating_sub(vh) }
+        if vh == 0 || total <= vh {
+            0
+        } else {
+            total.saturating_sub(vh)
+        }
     }
 
     fn recompute_offset_for_stick(&mut self) {

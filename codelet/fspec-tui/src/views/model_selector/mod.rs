@@ -14,8 +14,13 @@
 //! header-skipping navigation helpers from
 //! `components::model_selector_dialog_rows`.
 
+mod form;
+mod form_render;
 mod header;
 mod rows;
+
+use form::FormOutcome;
+pub use form::{CustomModelForm, CustomModelMode};
 
 use std::collections::HashSet;
 
@@ -57,6 +62,10 @@ pub struct ModelSelectorView {
     is_refreshing: bool,
     loaded: bool,
     visible_rows: usize,
+    /// RPC-344: custom-model CRUD sub-mode (browse / add / edit /
+    /// delete-confirm) and the in-progress form values.
+    custom_model_mode: CustomModelMode,
+    form: CustomModelForm,
 }
 
 impl Default for ModelSelectorView {
@@ -80,6 +89,8 @@ impl ModelSelectorView {
             is_refreshing: false,
             loaded: false,
             visible_rows: 12,
+            custom_model_mode: CustomModelMode::Browse,
+            form: CustomModelForm::default(),
         }
     }
 
@@ -177,6 +188,16 @@ impl ModelSelectorView {
         self.selected_index
     }
 
+    /// RPC-344: the current custom-model CRUD sub-mode.
+    pub fn custom_model_mode(&self) -> &CustomModelMode {
+        &self.custom_model_mode
+    }
+
+    /// RPC-344: the in-progress custom-model form values.
+    pub fn form(&self) -> &CustomModelForm {
+        &self.form
+    }
+
     /// Number of selectable model rows in the CURRENT projection (honours
     /// the expanded set and any active filter). Used for navigation and the
     /// filter-narrowing assertions.
@@ -260,6 +281,165 @@ impl ModelSelectorView {
         }
     }
 
+    // ---- RPC-344: custom-model CRUD helpers ---------------------------
+
+    /// The focused row, when one exists.
+    fn focused_row(
+        &self,
+    ) -> Option<&crate::components::model_selector_dialog_rows::ModelSelectorRow> {
+        self.rows.get(self.selected_index)
+    }
+
+    /// `a`: open the Add form when the focused row belongs to a profile
+    /// section (header OR model). A consumed no-op on non-profile rows.
+    fn try_open_add_form(&mut self) {
+        let Some(row) = self.focused_row() else {
+            return;
+        };
+        let Some(profile_name) = row.profile_name.clone() else {
+            return;
+        };
+        let provider_id = row.provider_key.clone();
+        self.custom_model_mode = CustomModelMode::Add {
+            provider_id,
+            profile_name,
+        };
+        self.form = CustomModelForm::default();
+    }
+
+    /// `e`: open the Edit form when the focused row is a selectable custom
+    /// model inside a profile section. A consumed no-op otherwise.
+    fn try_open_edit_form(&mut self) {
+        let Some(row) = self.focused_row() else {
+            return;
+        };
+        if !row.selectable || !row.is_custom {
+            return;
+        }
+        let Some(profile_name) = row.profile_name.clone() else {
+            return;
+        };
+        let provider_id = row.provider_key.clone();
+        let original_model_id = row.model_id.clone();
+        self.form = CustomModelForm::prefill_from_entry(
+            &row.model_id,
+            &row.label,
+            row.context_window,
+            row.supports_reasoning,
+            row.supports_vision,
+        );
+        self.custom_model_mode = CustomModelMode::Edit {
+            provider_id,
+            profile_name,
+            original_model_id,
+        };
+    }
+
+    /// `d`: open the delete confirmation when the focused row is a selectable
+    /// custom model inside a profile section. A consumed no-op otherwise.
+    fn try_open_delete_confirm(&mut self) {
+        let Some(row) = self.focused_row() else {
+            return;
+        };
+        if !row.selectable || !row.is_custom {
+            return;
+        }
+        let Some(profile_name) = row.profile_name.clone() else {
+            return;
+        };
+        self.custom_model_mode = CustomModelMode::DeleteConfirm {
+            provider_id: row.provider_key.clone(),
+            profile_name,
+            model_id: row.model_id.clone(),
+            display_name: row.label.clone(),
+        };
+    }
+
+    /// Route a key through the open add/edit form, building the matching
+    /// Action on a valid submit (returns the view to browse mode).
+    fn handle_form_key(&mut self, key: KeyEvent) -> ModelSelectorEvent {
+        match self.form.handle_key(key) {
+            FormOutcome::Editing => ModelSelectorEvent::Consumed,
+            FormOutcome::Cancel => {
+                self.custom_model_mode = CustomModelMode::Browse;
+                self.form = CustomModelForm::default();
+                ModelSelectorEvent::Consumed
+            }
+            FormOutcome::Submit => self.submit_form(),
+        }
+    }
+
+    /// Build the definition and emit Add/Edit; an empty Model ID keeps the
+    /// form open (no Action emitted).
+    fn submit_form(&mut self) -> ModelSelectorEvent {
+        let Some(definition) = self.form.build_definition() else {
+            return ModelSelectorEvent::Consumed;
+        };
+        let action = match &self.custom_model_mode {
+            CustomModelMode::Add {
+                provider_id,
+                profile_name,
+            } => Action::AddCustomModel {
+                provider_id: provider_id.clone(),
+                profile_name: profile_name.clone(),
+                definition,
+            },
+            CustomModelMode::Edit {
+                provider_id,
+                profile_name,
+                original_model_id,
+            } => Action::EditCustomModel {
+                provider_id: provider_id.clone(),
+                profile_name: profile_name.clone(),
+                original_model_id: original_model_id.clone(),
+                definition,
+            },
+            _ => return ModelSelectorEvent::Consumed,
+        };
+        self.custom_model_mode = CustomModelMode::Browse;
+        self.form = CustomModelForm::default();
+        ModelSelectorEvent::Emit(action)
+    }
+
+    /// Route a key through the delete-confirm overlay: y/Enter confirm,
+    /// n/Esc cancel.
+    fn handle_delete_confirm_key(&mut self, key: KeyEvent) -> ModelSelectorEvent {
+        let confirm = matches!(
+            key.code,
+            KeyCode::Enter | KeyCode::Char('y') | KeyCode::Char('Y')
+        );
+        let cancel = matches!(
+            key.code,
+            KeyCode::Esc | KeyCode::Char('n') | KeyCode::Char('N')
+        );
+        if confirm {
+            let action = if let CustomModelMode::DeleteConfirm {
+                provider_id,
+                profile_name,
+                model_id,
+                ..
+            } = &self.custom_model_mode
+            {
+                Some(Action::DeleteCustomModel {
+                    provider_id: provider_id.clone(),
+                    profile_name: profile_name.clone(),
+                    model_id: model_id.clone(),
+                })
+            } else {
+                None
+            };
+            self.custom_model_mode = CustomModelMode::Browse;
+            return match action {
+                Some(a) => ModelSelectorEvent::Emit(a),
+                None => ModelSelectorEvent::Consumed,
+            };
+        }
+        if cancel {
+            self.custom_model_mode = CustomModelMode::Browse;
+        }
+        ModelSelectorEvent::Consumed
+    }
+
     fn handle_filter_key(&mut self, key: KeyEvent) -> ModelSelectorEvent {
         match key.code {
             KeyCode::Esc => {
@@ -291,8 +471,19 @@ impl ModelSelectorView {
             _ => ModelSelectorEvent::Consumed,
         }
     }
-
     pub fn handle_key(&mut self, key: KeyEvent) -> ModelSelectorEvent {
+        // RPC-344: custom-model form/confirm overlays intercept input BEFORE
+        // the browse/filter handlers (TS handleDeleteConfirmInput +
+        // handleCustomModelFormInput run first, ModelSelectorScreen.tsx:124-131).
+        match &self.custom_model_mode {
+            CustomModelMode::Add { .. } | CustomModelMode::Edit { .. } => {
+                return self.handle_form_key(key);
+            }
+            CustomModelMode::DeleteConfirm { .. } => {
+                return self.handle_delete_confirm_key(key);
+            }
+            CustomModelMode::Browse => {}
+        }
         if self.filter_mode {
             return self.handle_filter_key(key);
         }
@@ -317,6 +508,20 @@ impl ModelSelectorView {
             // handled earlier in handle_filter_key, so Tab while typing a
             // filter never reaches here (mirror of provider_settings/list.rs:62).
             KeyCode::Tab => ModelSelectorEvent::SwitchToProviders,
+            // RPC-344: a/e/d open the custom-model CRUD overlays, gated on the
+            // focused row. They are consumed no-ops on non-eligible rows.
+            KeyCode::Char('a') => {
+                self.try_open_add_form();
+                ModelSelectorEvent::Consumed
+            }
+            KeyCode::Char('e') => {
+                self.try_open_edit_form();
+                ModelSelectorEvent::Consumed
+            }
+            KeyCode::Char('d') => {
+                self.try_open_delete_confirm();
+                ModelSelectorEvent::Consumed
+            }
             KeyCode::Up => {
                 self.move_up();
                 ModelSelectorEvent::Consumed
@@ -386,6 +591,59 @@ impl ModelSelectorView {
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
         let title = self.title_text();
         let current = self.current_model_id.clone();
+        // RPC-344: when a custom-model overlay is active, paint it inside the
+        // shell body instead of the browse list.
+        let overlay_title = match &self.custom_model_mode {
+            CustomModelMode::Add { .. } => Some("Add Custom Model".to_string()),
+            CustomModelMode::Edit { .. } => Some("Edit Custom Model".to_string()),
+            CustomModelMode::DeleteConfirm { .. } => Some("Delete Custom Model".to_string()),
+            CustomModelMode::Browse => None,
+        };
+        if let Some(shell_title) = overlay_title {
+            let mode = self.custom_model_mode.clone();
+            let form = self.form.clone();
+            crate::views::full_screen_shell::render_full_screen_scaffold_raw_title(
+                area,
+                buf,
+                &shell_title,
+                rows::FOOTER,
+                |body_area, buf| match &mode {
+                    CustomModelMode::Add { profile_name, .. } => {
+                        form_render::render_form(
+                            body_area,
+                            buf,
+                            "Add Custom Model",
+                            profile_name,
+                            &form,
+                        );
+                    }
+                    CustomModelMode::Edit { profile_name, .. } => {
+                        form_render::render_form(
+                            body_area,
+                            buf,
+                            "Edit Custom Model",
+                            profile_name,
+                            &form,
+                        );
+                    }
+                    CustomModelMode::DeleteConfirm {
+                        profile_name,
+                        display_name,
+                        ..
+                    } => {
+                        form_render::render_delete_confirm(
+                            body_area,
+                            buf,
+                            display_name,
+                            profile_name,
+                        );
+                    }
+                    CustomModelMode::Browse => {}
+                },
+                None,
+            );
+            return;
+        }
         // Title already contains the count; pass it whole with an empty
         // count/suffix via the scaffold's title slot.
         crate::views::full_screen_shell::render_full_screen_scaffold_raw_title(
@@ -1179,5 +1437,431 @@ mod tests {
         // @step And the active view becomes Provider Settings
         nav.apply_action(&action);
         assert_eq!(nav.active_view, ViewMode::ProviderSettings);
+    }
+
+    // ---- RPC-344: custom-model CRUD (a/e/d keybinds + form/confirm) ----
+
+    fn custom_model(id: &str) -> ModelEntry {
+        ModelEntry {
+            id: id.to_string(),
+            display_name: id.to_string(),
+            context_window: 128_000,
+            supports_reasoning: false,
+            supports_vision: false,
+            is_custom: true,
+        }
+    }
+
+    fn profile_provider_with(key: &str, profile: &str, models: Vec<ModelEntry>) -> ProviderInfo {
+        ProviderInfo {
+            key: key.to_string(),
+            display_name: format!("{key}: {profile}"),
+            models,
+            profile_name: Some(profile.to_string()),
+            is_unreachable: false,
+        }
+    }
+
+    /// A single collapsed profile section with one custom model; cursor rests
+    /// on the (non-selectable) profile header.
+    fn profile_header_view() -> ModelSelectorView {
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_providers(vec![profile_provider_with(
+            "openai",
+            "my-profile",
+            vec![custom_model("c1")],
+        )]);
+        v
+    }
+
+    /// An EXPANDED profile section with a built-in model then a custom model;
+    /// cursor rests on the first selectable (built-in) model row.
+    fn expanded_profile_view() -> ModelSelectorView {
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_providers(vec![profile_provider_with(
+            "openai",
+            "my-profile",
+            vec![model("base"), custom_model("mycustom")],
+        )]);
+        v.expanded = ["openai".to_string()].into_iter().collect();
+        v.rebuild_rows();
+        v.selected_index = rows::first_selectable_or_zero(&v.rows);
+        v.adjust_scroll();
+        v
+    }
+
+    /// Scenario: Pressing 'a' on a profile-section header opens the Add Custom Model form
+    #[test]
+    fn a_on_profile_header_opens_add_form() {
+        // @step Given the model selector is showing a local-server profile section
+        // @step And the cursor is on that profile-section header
+        let mut v = profile_header_view();
+        assert!(!v.rows[v.selected_index()].selectable, "cursor on header");
+
+        // @step When I press "a"
+        v.handle_key(key(KeyCode::Char('a')));
+
+        // @step Then the Add Custom Model form opens
+        match v.custom_model_mode() {
+            CustomModelMode::Add {
+                provider_id,
+                profile_name,
+            } => {
+                assert_eq!(provider_id, "openai");
+                assert_eq!(profile_name, "my-profile");
+            }
+            other => panic!("expected Add mode, got {other:?}"),
+        }
+        // @step And every field is empty
+        let f = v.form();
+        assert!(f.id.is_empty() && f.display_name.is_empty() && f.facade.is_none());
+        // @step And the Model ID field is focused
+        assert_eq!(f.field_index, 0);
+    }
+
+    /// Scenario: Pressing 'a' on a cloud provider header does nothing
+    #[test]
+    fn a_on_cloud_header_is_noop() {
+        // @step Given the model selector is showing a cloud provider header with no profile
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_providers(vec![provider("anthropic", &["claude"])]);
+        // @step And the cursor is on that cloud provider header
+        assert!(!v.rows[v.selected_index()].selectable);
+
+        // @step When I press "a"
+        let out = v.handle_key(key(KeyCode::Char('a')));
+
+        // @step Then no form opens
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+        // @step And the model selector stays in browse mode
+        assert!(matches!(out, ModelSelectorEvent::Consumed));
+    }
+
+    /// Scenario: Pressing 'e' on a custom model opens the Edit Custom Model form prefilled
+    #[test]
+    fn e_on_custom_model_opens_edit_prefilled() {
+        // @step Given the model selector is showing a profile section with a custom model
+        let mut v = expanded_profile_view();
+        // @step And the cursor is on that custom model row
+        v.handle_key(key(KeyCode::Down));
+        let row = &v.rows[v.selected_index()];
+        assert!(row.selectable && row.model_id == "mycustom");
+
+        // @step When I press "e"
+        v.handle_key(key(KeyCode::Char('e')));
+
+        // @step Then the Edit Custom Model form opens
+        match v.custom_model_mode() {
+            CustomModelMode::Edit {
+                provider_id,
+                profile_name,
+                original_model_id,
+            } => {
+                assert_eq!(provider_id, "openai");
+                assert_eq!(profile_name, "my-profile");
+                assert_eq!(original_model_id, "mycustom");
+            }
+            other => panic!("expected Edit mode, got {other:?}"),
+        }
+        // @step And the form is prefilled with the model's id, display name, context window, reasoning and vision
+        let f = v.form();
+        assert_eq!(f.id, "mycustom");
+        assert_eq!(f.display_name, "mycustom");
+        assert_eq!(f.context_window, "128000");
+        assert_eq!(f.reasoning, Some(false));
+        assert_eq!(f.has_vision, Some(false));
+    }
+
+    /// Scenario: Pressing 'e' or 'd' on a built-in model does nothing
+    #[test]
+    fn e_and_d_on_builtin_model_are_noop() {
+        // @step Given the model selector is showing a profile section with a built-in non-custom model
+        let mut v = expanded_profile_view();
+        // @step And the cursor is on that built-in model row
+        let row = &v.rows[v.selected_index()];
+        assert!(row.selectable && row.model_id == "base");
+
+        // @step When I press "e"
+        v.handle_key(key(KeyCode::Char('e')));
+        // @step Then no form opens
+        // @step And the model selector stays in browse mode
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+
+        // @step When I press "d"
+        v.handle_key(key(KeyCode::Char('d')));
+        // @step Then no delete confirmation opens
+        // @step And the model selector stays in browse mode
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+    }
+
+    /// Scenario: Adding a custom model with a facade and reasoning enabled saves it
+    #[test]
+    fn add_flow_emits_add_custom_model() {
+        // @step Given the Add Custom Model form is open for a profile section
+        let mut v = profile_header_view();
+        v.handle_key(key(KeyCode::Char('a')));
+
+        // @step When I type a Model ID
+        for c in "my-model".chars() {
+            v.handle_key(key(KeyCode::Char(c)));
+        }
+        // @step And I move down to the Facade field and press the right arrow twice
+        v.handle_key(key(KeyCode::Down));
+        v.handle_key(key(KeyCode::Down));
+        v.handle_key(key(KeyCode::Right));
+        v.handle_key(key(KeyCode::Right));
+        // @step And I move down to the Reasoning field and press the right arrow once
+        for _ in 0..4 {
+            v.handle_key(key(KeyCode::Down));
+        }
+        v.handle_key(key(KeyCode::Right));
+        // @step And I press Enter
+        let out = v.handle_key(key(KeyCode::Enter));
+
+        // @step Then a custom model is saved with the typed id, the selected facade and reasoning enabled
+        match out {
+            ModelSelectorEvent::Emit(Action::AddCustomModel {
+                provider_id,
+                profile_name,
+                definition,
+            }) => {
+                assert_eq!(provider_id, "openai");
+                assert_eq!(profile_name, "my-profile");
+                assert_eq!(definition.id, "my-model");
+                assert_eq!(definition.facade.as_deref(), Some("codex"));
+                assert_eq!(definition.reasoning, Some(true));
+            }
+            other => panic!("expected Emit(AddCustomModel), got {other:?}"),
+        }
+        // @step And the form closes and the provider list is refreshed
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+    }
+
+    /// Scenario: Saving the Add form with an empty Model ID is rejected
+    #[test]
+    fn add_empty_id_is_rejected() {
+        // @step Given the Add Custom Model form is open for a profile section
+        let mut v = profile_header_view();
+        v.handle_key(key(KeyCode::Char('a')));
+        // @step And the Model ID field is empty
+        assert!(v.form().id.is_empty());
+
+        // @step When I press Enter
+        let out = v.handle_key(key(KeyCode::Enter));
+
+        // @step Then no custom model is saved
+        assert!(!matches!(out, ModelSelectorEvent::Emit(_)));
+        // @step And the Add Custom Model form stays open
+        assert!(matches!(v.custom_model_mode(), CustomModelMode::Add { .. }));
+    }
+
+    /// Scenario: A "80%" Compaction Trigger saves a percentage threshold
+    #[test]
+    fn compaction_percentage_saved() {
+        // @step Given the Add Custom Model form is open for a profile section
+        let mut v = profile_header_view();
+        v.handle_key(key(KeyCode::Char('a')));
+        // @step And I have typed a Model ID
+        for c in "m1".chars() {
+            v.handle_key(key(KeyCode::Char(c)));
+        }
+        // @step When I enter "80%" into the Compaction Trigger field
+        for _ in 0..5 {
+            v.handle_key(key(KeyCode::Down));
+        }
+        for c in "80%".chars() {
+            v.handle_key(key(KeyCode::Char(c)));
+        }
+        // @step And I press Enter
+        let out = v.handle_key(key(KeyCode::Enter));
+
+        // @step Then the saved custom model carries a percentage compaction threshold of 80
+        match out {
+            ModelSelectorEvent::Emit(Action::AddCustomModel { definition, .. }) => {
+                assert_eq!(
+                    definition.compaction_threshold_type.as_deref(),
+                    Some("percentage")
+                );
+                assert_eq!(definition.compaction_threshold_value, Some(80));
+            }
+            other => panic!("expected Emit(AddCustomModel), got {other:?}"),
+        }
+    }
+
+    /// Scenario: A bare integer Compaction Trigger saves a tokens threshold
+    #[test]
+    fn compaction_tokens_saved() {
+        // @step Given the Add Custom Model form is open for a profile section
+        let mut v = profile_header_view();
+        v.handle_key(key(KeyCode::Char('a')));
+        // @step And I have typed a Model ID
+        for c in "m1".chars() {
+            v.handle_key(key(KeyCode::Char(c)));
+        }
+        // @step When I enter "200000" into the Compaction Trigger field
+        for _ in 0..5 {
+            v.handle_key(key(KeyCode::Down));
+        }
+        for c in "200000".chars() {
+            v.handle_key(key(KeyCode::Char(c)));
+        }
+        // @step And I press Enter
+        let out = v.handle_key(key(KeyCode::Enter));
+
+        // @step Then the saved custom model carries a tokens compaction threshold of 200000
+        match out {
+            ModelSelectorEvent::Emit(Action::AddCustomModel { definition, .. }) => {
+                assert_eq!(
+                    definition.compaction_threshold_type.as_deref(),
+                    Some("tokens")
+                );
+                assert_eq!(definition.compaction_threshold_value, Some(200_000));
+            }
+            other => panic!("expected Emit(AddCustomModel), got {other:?}"),
+        }
+    }
+
+    /// Scenario: Pressing Esc in the Add form cancels without saving
+    #[test]
+    fn esc_in_add_form_cancels() {
+        // @step Given the Add Custom Model form is open for a profile section
+        let mut v = profile_header_view();
+        v.handle_key(key(KeyCode::Char('a')));
+
+        // @step When I press Esc
+        let out = v.handle_key(key(KeyCode::Esc));
+
+        // @step Then the form closes
+        // @step And I am back in the browse list
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+        // @step And no custom model is saved
+        assert!(matches!(out, ModelSelectorEvent::Consumed));
+    }
+
+    /// Scenario: Deleting a custom model after confirming
+    #[test]
+    fn delete_confirm_yes_emits_delete() {
+        // @step Given the model selector is showing a profile section with a custom model
+        let mut v = expanded_profile_view();
+        // @step And the cursor is on that custom model row
+        v.handle_key(key(KeyCode::Down));
+
+        // @step When I press "d"
+        v.handle_key(key(KeyCode::Char('d')));
+        // @step Then a delete confirmation shows the model display name and profile name
+        match v.custom_model_mode() {
+            CustomModelMode::DeleteConfirm {
+                model_id,
+                display_name,
+                profile_name,
+                ..
+            } => {
+                assert_eq!(model_id, "mycustom");
+                assert_eq!(display_name, "mycustom");
+                assert_eq!(profile_name, "my-profile");
+            }
+            other => panic!("expected DeleteConfirm, got {other:?}"),
+        }
+
+        // @step When I press "y"
+        let out = v.handle_key(key(KeyCode::Char('y')));
+        // @step Then the custom model is deleted
+        match out {
+            ModelSelectorEvent::Emit(Action::DeleteCustomModel {
+                provider_id,
+                profile_name,
+                model_id,
+            }) => {
+                assert_eq!(provider_id, "openai");
+                assert_eq!(profile_name, "my-profile");
+                assert_eq!(model_id, "mycustom");
+            }
+            other => panic!("expected Emit(DeleteCustomModel), got {other:?}"),
+        }
+        // @step And I am returned to the browse list and the provider list is refreshed
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+    }
+
+    /// Scenario: Cancelling the delete confirmation keeps the custom model
+    #[test]
+    fn delete_confirm_no_cancels() {
+        // @step Given the model selector is showing a profile section with a custom model
+        let mut v = expanded_profile_view();
+        // @step And the cursor is on that custom model row
+        v.handle_key(key(KeyCode::Down));
+        // @step When I press "d"
+        v.handle_key(key(KeyCode::Char('d')));
+        // @step Then a delete confirmation shows the model display name and profile name
+        assert!(matches!(
+            v.custom_model_mode(),
+            CustomModelMode::DeleteConfirm { .. }
+        ));
+
+        // @step When I press "n"
+        let out = v.handle_key(key(KeyCode::Char('n')));
+        // @step Then no custom model is deleted
+        assert!(!matches!(out, ModelSelectorEvent::Emit(_)));
+        // @step And I am returned to the browse list
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+    }
+
+    /// Scenario: The open form intercepts keys that are browse shortcuts
+    #[test]
+    fn form_intercepts_browse_shortcuts() {
+        // @step Given the Add Custom Model form is open with the Model ID field focused
+        let mut v = profile_header_view();
+        v.handle_key(key(KeyCode::Char('a')));
+        assert_eq!(v.form().field_index, 0);
+
+        // @step When I press "r"
+        v.handle_key(key(KeyCode::Char('r')));
+        // @step And I press "/"
+        v.handle_key(key(KeyCode::Char('/')));
+
+        // @step Then "r/" is typed into the Model ID field
+        assert_eq!(v.form().id, "r/");
+        // @step And neither a refresh nor a filter is triggered
+        assert!(!v.is_refreshing());
+        assert!(!v.filter_mode);
+    }
+
+    /// Scenario: Editing a custom model saves it in place under the same id
+    #[test]
+    fn edit_saves_in_place_under_same_id() {
+        // @step Given the Edit Custom Model form is open for a custom model
+        let mut v = expanded_profile_view();
+        v.handle_key(key(KeyCode::Down));
+        v.handle_key(key(KeyCode::Char('e')));
+        assert!(matches!(
+            v.custom_model_mode(),
+            CustomModelMode::Edit { .. }
+        ));
+
+        // @step When I clear the Display Name field
+        v.handle_key(key(KeyCode::Down)); // focus Display Name (index 1)
+        for _ in 0.."mycustom".len() {
+            v.handle_key(key(KeyCode::Backspace));
+        }
+        // @step And I press Enter
+        let out = v.handle_key(key(KeyCode::Enter));
+
+        // @step Then the custom model is saved in place under its original id with the updated display name
+        match out {
+            ModelSelectorEvent::Emit(Action::EditCustomModel {
+                original_model_id,
+                definition,
+                ..
+            }) => {
+                assert_eq!(original_model_id, "mycustom");
+                assert_eq!(definition.id, "mycustom");
+                assert_eq!(definition.display_name, None);
+            }
+            other => panic!("expected Emit(EditCustomModel), got {other:?}"),
+        }
+        // @step And the form closes and the provider list is refreshed
+        assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
     }
 }
