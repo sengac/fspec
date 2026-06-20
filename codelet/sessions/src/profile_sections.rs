@@ -14,10 +14,10 @@
 //! `handle_impl::list_providers` wires the real probe
 //! (`OpenAIProvider::list_local_models_with_auth`) into them.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use codelet_rpc_types::{ModelEntry, ProviderInfo};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Build the wire `ProviderInfo` for a cloud / custom provider. Such
 /// providers are never profile sections and are always treated as
@@ -83,9 +83,44 @@ pub struct LocalServerProfile {
 }
 
 /// A custom model declared on a profile (`profile.customModels[]`).
-#[derive(Debug, Clone, Deserialize)]
+///
+/// RPC-346: extended from the read-only `{ id }` shape to the full
+/// definition mirroring the TS `CustomModelDefinition`
+/// (provider-config.ts:95-112). All fields besides `id` are optional and
+/// omitted from the serialized JSON when `None`, keeping existing config
+/// files backward-compatible. Wire names are camelCase.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CustomModelDef {
+    /// Model ID string sent to the API (required).
     pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub display_name: Option<String>,
+    /// Facade override for tool-schema selection
+    /// (`openai` | `codex` | `claude` | `gemini` | `zai`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub facade: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub context_window: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub max_output_tokens: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub compaction_threshold: Option<CompactionThreshold>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub reasoning: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub has_vision: Option<bool>,
+}
+
+/// CTX-008 compaction-threshold override on a custom model. Mirrors the TS
+/// `CompactionThresholdConfig` (`{ type: 'tokens' | 'percentage', value }`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CompactionThreshold {
+    /// `"tokens"` (absolute count) or `"percentage"` (1-100 of context window).
+    #[serde(rename = "type")]
+    pub threshold_type: String,
+    pub value: u32,
 }
 
 /// Resolve `~/.fspec` (parity with the TS `getFspecUserDir`).
@@ -106,7 +141,16 @@ pub fn load_local_server_profiles() -> Vec<LocalServerProfile> {
     let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
         return Vec::new();
     };
-    let Ok(content) = std::fs::read_to_string(&config_path) else {
+    load_local_server_profiles_from(&config_path)
+}
+
+/// Path-injectable core of [`load_local_server_profiles`]. Reads the given
+/// `fspec-config.json` and returns the `providers.openai.profiles` as
+/// [`LocalServerProfile`]s, degrading to an empty list on any error. Kept
+/// private so callers go through the env-resolved public function; the
+/// RPC-346 persistence tests exercise this directly against a temp file.
+fn load_local_server_profiles_from(config_path: &Path) -> Vec<LocalServerProfile> {
+    let Ok(content) = std::fs::read_to_string(config_path) else {
         return Vec::new();
     };
     let Ok(root) = serde_json::from_str::<serde_json::Value>(&content) else {
@@ -131,6 +175,156 @@ pub fn load_local_server_profiles() -> Vec<LocalServerProfile> {
     // the `preserve_order` feature, but sort by name for stable output).
     out.sort_by(|a, b| a.name.cmp(&b.name));
     out
+}
+
+/// RPC-346: add or update a custom model on a local-server profile.
+///
+/// When `original_model_id` is `Some`, the entry with that id is replaced in
+/// place (edit); otherwise the definition is appended (add). Mirrors the TS
+/// `customModelCrudService.saveCustomModel`. Resolves the config path via the
+/// `FSPEC_USER_DIR`/`HOME` convention and delegates to
+/// [`save_custom_model_at`]. No-op (returns `Ok`) when the target profile does
+/// not exist or `provider_id` is not `"openai"`.
+pub fn save_custom_model(
+    provider_id: &str,
+    profile_name: &str,
+    definition: &CustomModelDef,
+    original_model_id: Option<&str>,
+) -> std::io::Result<()> {
+    let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
+        return Ok(());
+    };
+    save_custom_model_at(
+        &config_path,
+        provider_id,
+        profile_name,
+        definition,
+        original_model_id,
+    )
+}
+
+/// RPC-346: delete a custom model from a local-server profile by id.
+///
+/// Mirrors the TS `customModelCrudService.deleteCustomModel`: removes the
+/// matching entry and drops the `customModels` key entirely when the array
+/// becomes empty. No-op when the profile is absent or `provider_id` is not
+/// `"openai"`.
+pub fn delete_custom_model(
+    provider_id: &str,
+    profile_name: &str,
+    model_id: &str,
+) -> std::io::Result<()> {
+    let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
+        return Ok(());
+    };
+    delete_custom_model_at(&config_path, provider_id, profile_name, model_id)
+}
+
+/// Borrow the `providers.openai.profiles.<name>` object out of the parsed
+/// config, or `None` when any segment is missing. Profiles are only supported
+/// for the `openai` provider (parity with the TS `saveProfile` guard).
+fn profile_object_mut<'a>(
+    root: &'a mut serde_json::Value,
+    provider_id: &str,
+    profile_name: &str,
+) -> Option<&'a mut serde_json::Map<String, serde_json::Value>> {
+    if provider_id != "openai" {
+        return None;
+    }
+    root.get_mut("providers")?
+        .get_mut(provider_id)?
+        .get_mut("profiles")?
+        .get_mut(profile_name)?
+        .as_object_mut()
+}
+
+/// Path-injectable core of [`save_custom_model`]. Performs a whole-file
+/// read-modify-write of `config_path`, mutating only the target profile's
+/// `customModels` array so unrelated keys are preserved verbatim.
+fn save_custom_model_at(
+    config_path: &Path,
+    provider_id: &str,
+    profile_name: &str,
+    definition: &CustomModelDef,
+    original_model_id: Option<&str>,
+) -> std::io::Result<()> {
+    let Some(mut root) = read_config_value(config_path) else {
+        // Missing or malformed config: there is no profile to modify, so the
+        // operation is a no-op and the file is left untouched.
+        return Ok(());
+    };
+    let Some(profile) = profile_object_mut(&mut root, provider_id, profile_name) else {
+        return Ok(());
+    };
+
+    let def_value = serde_json::to_value(definition)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+
+    let mut entries: Vec<serde_json::Value> = profile
+        .get("customModels")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    match original_model_id {
+        Some(original) => {
+            for entry in entries.iter_mut() {
+                if entry.get("id").and_then(|v| v.as_str()) == Some(original) {
+                    *entry = def_value.clone();
+                }
+            }
+        }
+        None => entries.push(def_value),
+    }
+
+    profile.insert("customModels".to_string(), serde_json::Value::Array(entries));
+    write_config_value(config_path, &root)
+}
+
+/// Path-injectable core of [`delete_custom_model`].
+fn delete_custom_model_at(
+    config_path: &Path,
+    provider_id: &str,
+    profile_name: &str,
+    model_id: &str,
+) -> std::io::Result<()> {
+    let Some(mut root) = read_config_value(config_path) else {
+        return Ok(());
+    };
+    let Some(profile) = profile_object_mut(&mut root, provider_id, profile_name) else {
+        return Ok(());
+    };
+
+    let mut entries: Vec<serde_json::Value> = profile
+        .get("customModels")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
+    entries.retain(|entry| entry.get("id").and_then(|v| v.as_str()) != Some(model_id));
+
+    if entries.is_empty() {
+        profile.remove("customModels");
+    } else {
+        profile.insert("customModels".to_string(), serde_json::Value::Array(entries));
+    }
+    write_config_value(config_path, &root)
+}
+
+/// Read `config_path` into a JSON `Value`, returning `None` on a missing or
+/// malformed file (caller treats this as a no-op).
+fn read_config_value(config_path: &Path) -> Option<serde_json::Value> {
+    let content = std::fs::read_to_string(config_path).ok()?;
+    serde_json::from_str::<serde_json::Value>(&content).ok()
+}
+
+/// Write the JSON `Value` back to `config_path` (pretty-printed with a
+/// trailing newline). With the workspace `preserve_order` serde_json feature,
+/// existing key order is retained.
+fn write_config_value(config_path: &Path, root: &serde_json::Value) -> std::io::Result<()> {
+    let mut serialized = serde_json::to_string_pretty(root)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+    serialized.push('\n');
+    std::fs::write(config_path, serialized)
 }
 
 /// Merge the probe-discovered model ids with the profile's declared custom
@@ -331,5 +525,206 @@ mod tests {
         // @step And the "custom-profile" entry lists its custom models
         assert_eq!(info.models.len(), 1);
         assert!(info.models[0].is_custom);
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod persistence_tests {
+    //! RPC-346 — custom-model persistence (save/delete) on local-server
+    //! profiles. Exercises the path-injectable helpers against a temp
+    //! config file so the suite stays fully offline.
+
+    use super::{
+        delete_custom_model_at, load_local_server_profiles_from, save_custom_model_at,
+        CompactionThreshold, CustomModelDef,
+    };
+    use std::fs;
+    use std::path::PathBuf;
+    use tempfile::TempDir;
+
+    fn def(id: &str) -> CustomModelDef {
+        CustomModelDef {
+            id: id.to_string(),
+            display_name: None,
+            facade: None,
+            context_window: None,
+            max_output_tokens: None,
+            compaction_threshold: None,
+            reasoning: None,
+            has_vision: None,
+        }
+    }
+
+    /// Write a config file with one openai profile, returning (dir, path).
+    fn config_with(profile: &str, custom_models_json: &str) -> (TempDir, PathBuf) {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("fspec-config.json");
+        let body = format!(
+            r#"{{"providers":{{"openai":{{"profiles":{{"{profile}":{{"baseUrl":"http://localhost:8888","apiKey":"sk-test"{custom_models_json}}}}}}}}}}}"#
+        );
+        fs::write(&path, body).unwrap();
+        (dir, path)
+    }
+
+    fn profile_custom_ids(path: &PathBuf, profile: &str) -> Option<Vec<String>> {
+        let content = fs::read_to_string(path).unwrap();
+        let root: serde_json::Value = serde_json::from_str(&content).unwrap();
+        let p = &root["providers"]["openai"]["profiles"][profile];
+        p.get("customModels")
+            .map(|v| {
+                v.as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|m| m["id"].as_str().unwrap().to_string())
+                    .collect()
+            })
+    }
+
+    /// Scenario: Add a custom model to a profile with no custom models
+    #[test]
+    fn add_to_profile_without_custom_models() {
+        // @step Given an "openai" profile "work-vllm" with no custom models
+        let (_dir, path) = config_with("work-vllm", "");
+
+        // @step When I save a new custom model "my-model" in add mode
+        save_custom_model_at(&path, "openai", "work-vllm", &def("my-model"), None).unwrap();
+
+        // @step Then the profile's custom models are exactly ["my-model"]
+        assert_eq!(
+            profile_custom_ids(&path, "work-vllm"),
+            Some(vec!["my-model".to_string()])
+        );
+
+        // @step And the profile's baseUrl and apiKey are unchanged
+        let root: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+        let p = &root["providers"]["openai"]["profiles"]["work-vllm"];
+        assert_eq!(p["baseUrl"], "http://localhost:8888");
+        assert_eq!(p["apiKey"], "sk-test");
+    }
+
+    /// Scenario: Edit replaces the matching custom model in place
+    #[test]
+    fn edit_replaces_in_place_preserving_order() {
+        // @step Given an "openai" profile "work-vllm" with custom models ["alpha", "beta"]
+        let (_dir, path) = config_with(
+            "work-vllm",
+            r#","customModels":[{"id":"alpha"},{"id":"beta"}]"#,
+        );
+
+        // @step When I save a definition with id "alpha2" and original id "alpha"
+        save_custom_model_at(&path, "openai", "work-vllm", &def("alpha2"), Some("alpha")).unwrap();
+
+        // @step Then the profile's custom models are exactly ["alpha2", "beta"]
+        assert_eq!(
+            profile_custom_ids(&path, "work-vllm"),
+            Some(vec!["alpha2".to_string(), "beta".to_string()])
+        );
+    }
+
+    /// Scenario: Delete one of several custom models
+    #[test]
+    fn delete_one_of_several() {
+        // @step Given an "openai" profile "work-vllm" with custom models ["alpha", "beta"]
+        let (_dir, path) = config_with(
+            "work-vllm",
+            r#","customModels":[{"id":"alpha"},{"id":"beta"}]"#,
+        );
+
+        // @step When I delete the custom model "alpha"
+        delete_custom_model_at(&path, "openai", "work-vllm", "alpha").unwrap();
+
+        // @step Then the profile's custom models are exactly ["beta"]
+        assert_eq!(
+            profile_custom_ids(&path, "work-vllm"),
+            Some(vec!["beta".to_string()])
+        );
+    }
+
+    /// Scenario: Deleting the last custom model removes the customModels key
+    #[test]
+    fn delete_last_removes_key() {
+        // @step Given an "openai" profile "work-vllm" with custom models ["alpha"]
+        let (_dir, path) = config_with("work-vllm", r#","customModels":[{"id":"alpha"}]"#);
+
+        // @step When I delete the custom model "alpha"
+        delete_custom_model_at(&path, "openai", "work-vllm", "alpha").unwrap();
+
+        // @step Then the profile has no customModels key
+        assert_eq!(profile_custom_ids(&path, "work-vllm"), None);
+    }
+
+    /// Scenario: Unrelated config is preserved on save
+    #[test]
+    fn unrelated_config_is_preserved() {
+        // @step Given a config with "openai" profiles "work-vllm" and "home" and a top-level "theme" key
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("fspec-config.json");
+        fs::write(
+            &path,
+            r#"{"theme":"dark","providers":{"openai":{"profiles":{"work-vllm":{"baseUrl":"http://a","apiKey":"k1"},"home":{"baseUrl":"http://b","apiKey":"k2"}}}}}"#,
+        )
+        .unwrap();
+
+        // @step When I save a new custom model "my-model" to "work-vllm" in add mode
+        save_custom_model_at(&path, "openai", "work-vllm", &def("my-model"), None).unwrap();
+
+        let root: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+        // @step Then the "home" profile is unchanged
+        let home = &root["providers"]["openai"]["profiles"]["home"];
+        assert_eq!(home["baseUrl"], "http://b");
+        assert_eq!(home["apiKey"], "k2");
+        assert!(home.get("customModels").is_none());
+
+        // @step And the top-level "theme" key is unchanged
+        assert_eq!(root["theme"], "dark");
+    }
+
+    /// Scenario: Saving to a missing profile is a no-op
+    #[test]
+    fn saving_to_missing_profile_is_noop() {
+        // @step Given an "openai" profile "work-vllm" exists
+        let (_dir, path) = config_with("work-vllm", "");
+        let before = fs::read_to_string(&path).unwrap();
+
+        // @step When I save a custom model to the profile "does-not-exist"
+        save_custom_model_at(&path, "openai", "does-not-exist", &def("x"), None).unwrap();
+
+        // @step Then the config file is unchanged
+        let after = fs::read_to_string(&path).unwrap();
+        assert_eq!(before, after);
+    }
+
+    /// Scenario: Full definition round-trips through save and reload
+    #[test]
+    fn full_definition_round_trips() {
+        // @step Given an "openai" profile "work-vllm" with no custom models
+        let (_dir, path) = config_with("work-vllm", "");
+
+        // @step When I save a custom model with every field set
+        let full = CustomModelDef {
+            id: "full-model".to_string(),
+            display_name: Some("Full Model".to_string()),
+            facade: Some("gemini".to_string()),
+            context_window: Some(1_048_576),
+            max_output_tokens: Some(65_536),
+            compaction_threshold: Some(CompactionThreshold {
+                threshold_type: "percentage".to_string(),
+                value: 80,
+            }),
+            reasoning: Some(true),
+            has_vision: Some(true),
+        };
+        save_custom_model_at(&path, "openai", "work-vllm", &full, None).unwrap();
+
+        // @step And I reload the local-server profiles
+        let profiles = load_local_server_profiles_from(&path);
+
+        // @step Then the reloaded profile contains a matching custom model definition
+        let profile = profiles.iter().find(|p| p.name == "work-vllm").unwrap();
+        assert_eq!(profile.custom_models, vec![full]);
     }
 }
