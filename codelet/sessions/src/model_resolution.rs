@@ -70,9 +70,43 @@ pub fn apply_model_selection(
         );
         pm.set_model_direct(registry_provider, model_part, None, None, None)
             .map_err(|e| format!("Failed to set model: {e}"))?;
+
+        // RPC-348: re-resolve the per-selection facade override for custom
+        // (registered custom-provider) models. `set_model_direct` was called
+        // with `facade_override = None`, so without this step both the
+        // creation path and the mid-session set_model path leave the inner
+        // manager's facade unset relative to the new custom model — the
+        // shared port gap the TS `lookupFacadeOverride` boundary covered.
+        //
+        // Mirrors the NAPI `session_set_model_profile` post-set_model_direct
+        // block (session_bindings.rs): derive the facade from the registered
+        // config (explicit `facade` wins; otherwise derived from `api_style`;
+        // `None` for Rhai-scripted providers), store it on the manager, and
+        // apply the facade's env vars so dispatch works end-to-end.
+        if is_custom_model {
+            let facade = codelet_providers::custom::derive_facade_for_custom(registry_provider);
+            pm.set_facade_override(facade.clone());
+            if let Err(e) = codelet_providers::custom::apply_custom_provider_env_vars(
+                registry_provider,
+                model_part,
+                facade.as_deref(),
+            ) {
+                tracing::warn!(
+                    target: "model_resolution",
+                    provider = registry_provider,
+                    error = %e,
+                    "apply_custom_provider_env_vars failed for custom model"
+                );
+            }
+        }
     } else {
         pm.select_model(model)
             .map_err(|e| format!("Failed to select model: {e}"))?;
+        // RPC-348: `select_model` never touches `facade_override`, so a switch
+        // from a previously-selected custom model would otherwise leave a stale
+        // facade pointing at the old custom provider. Clear it for plain
+        // registry selections.
+        pm.set_facade_override(None);
     }
 
     Ok(ResolvedModelLimits {

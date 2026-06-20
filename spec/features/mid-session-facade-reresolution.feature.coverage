@@ -1,0 +1,255 @@
+{
+  "scenarios": [
+    {
+      "name": "Creating a session on a custom model resolves the facade at creation time",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
+          "lines": "104-119",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_resolution.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching to a custom model with an explicit facade stores that facade",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
+          "lines": "126-147",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_resolution.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching to a custom model with no explicit facade derives the facade from api_style",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
+          "lines": "151-172",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_resolution.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching from a custom model to a registry model clears the stale facade",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
+          "lines": "180-203",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_resolution.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switching between two registry models leaves no facade override",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc348_mid_session_facade_reresolution.rs",
+          "lines": "210-228",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_resolution.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/rpc348_mid_session_facade_reresolution.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/model_resolution.rs"
+    ],
+    "totalLinesCovered": 262
+  }
+}
