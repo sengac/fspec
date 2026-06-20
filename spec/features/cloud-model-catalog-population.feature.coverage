@@ -1,0 +1,369 @@
+{
+  "scenarios": [
+    {
+      "name": "Credentialed provider lists tool-call models newest-first and drops deprecated ones",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "lines": "59-77",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Only tool-call-capable models are listed",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "lines": "79-102",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini canonical slug is sourced from the models.dev google entry",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "lines": "104-126",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Uncredentialed provider yields no models",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "lines": "128-147",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider absent from models.dev yields no models without error",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "lines": "149-161",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model entry fields are mapped from the models.dev model",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "lines": "163-184",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "list_providers wires the cloud model catalog into the model selector",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc073_cloud_model_catalog.rs",
+          "lines": "186-207",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967,
+                968,
+                969,
+                970,
+                971,
+                972
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/rpc073_cloud_model_catalog.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/cloud_models.rs",
+      "codelet/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 383
+  }
+}

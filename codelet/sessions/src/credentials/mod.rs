@@ -21,7 +21,9 @@
 mod resolver;
 mod store;
 mod types;
+mod writer;
 
 pub use resolver::*;
 pub use store::*;
 pub use types::*;
+pub use writer::*;

@@ -1,0 +1,375 @@
+{
+  "scenarios": [
+    {
+      "name": "Loading credentials populates the rich nav tree, not the legacy flat list",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
+          "lines": "74-114",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding an api-key provider reveals an editable API-key row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
+          "lines": "116-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding a configured OAuth provider reveals logout and login rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
+          "lines": "159-187",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding an uncredentialed OAuth provider reveals only login rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
+          "lines": "189-217",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding the openai provider reveals profiles and an add-profile row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
+          "lines": "219-260",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Header item count grows when a provider is expanded",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs",
+          "lines": "262-285",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_rich_tree_rpc349.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_provider_settings.rs",
+      "codelet/fspec-tui/src/views/provider_settings/projection.rs"
+    ],
+    "totalLinesCovered": 464
+  }
+}

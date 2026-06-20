@@ -149,7 +149,14 @@ fn list_providers_returns_all_six_built_in_providers() {
     // RPC-107: the legacy 'claude' slug was migrated to the TS-canonical
     // 'anthropic' slug. Assert on the canonical slug going forward.
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
-    for builtin in ["anthropic", "openai", "gemini", "zai", "codex", "github-copilot"] {
+    for builtin in [
+        "anthropic",
+        "openai",
+        "gemini",
+        "zai",
+        "codex",
+        "github-copilot",
+    ] {
         assert!(
             keys.contains(&builtin),
             "RPC-073 bug 3 / RPC-107: canonical built-in provider '{builtin}' missing from list_providers result; got keys: {keys:?}",

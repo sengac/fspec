@@ -58,12 +58,24 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// RPC-054: fold a `list_provider_credentials` response into the view.
+    /// RPC-054 / RPC-349: fold a `list_provider_credentials` response into
+    /// the view. The raw list still backs the legacy `visible_providers`
+    /// path (delete-focus, `d` keybind), but RPC-349 additionally projects
+    /// it into `ProviderDisplayInfo`s and feeds the rich RPC-103 NavItem
+    /// tree via `set_provider_display_infos` — otherwise `nav_items` stays
+    /// empty and the screen falls back to the legacy flat list (the bug
+    /// this card fixes). `openai_profiles` is empty until a list-profiles
+    /// RPC exists; the trailing "Add Profile" row still renders.
     pub(crate) fn handle_provider_credentials_loaded(
         &mut self,
         list: Vec<codelet_rpc_types::ProviderCredentialInfo>,
     ) {
+        let display =
+            crate::views::provider_settings::projection::project_display_infos(&list, &[]);
         self.navigator.provider_settings.set_providers(list);
+        self.navigator
+            .provider_settings
+            .set_provider_display_infos(display);
     }
 
     /// RPC-054: persist the API key via

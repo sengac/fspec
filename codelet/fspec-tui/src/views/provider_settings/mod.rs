@@ -27,6 +27,7 @@ mod list;
 mod list_nav_render;
 pub mod nav_item;
 mod nav_tree_ops;
+pub mod projection;
 pub mod row_render;
 mod status_text;
 mod test_result;

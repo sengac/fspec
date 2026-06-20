@@ -197,9 +197,8 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     model_id,
                     context_window: s.cached_context_window.load(Ordering::Acquire) as i64,
                     max_output_tokens: s.cached_max_output_tokens.load(Ordering::Acquire) as i64,
-                    compaction_threshold: s
-                        .cached_compaction_threshold
-                        .load(Ordering::Acquire) as i64,
+                    compaction_threshold: s.cached_compaction_threshold.load(Ordering::Acquire)
+                        as i64,
                 }
             })
             .unwrap_or(SessionModel {
@@ -315,19 +314,13 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 let mut text_parts: Vec<String> = Vec::new();
 
                 for block in arr {
-                    let block_type = block
-                        .get("type")
-                        .and_then(|t| t.as_str())
-                        .unwrap_or("");
+                    let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
 
                     match block_type {
                         "thinking" => {
-                            if let Some(thinking) =
-                                block.get("thinking").and_then(|t| t.as_str())
-                            {
+                            if let Some(thinking) = block.get("thinking").and_then(|t| t.as_str()) {
                                 if !thinking.is_empty() {
-                                    stream_chunks
-                                        .push(StreamChunk::thinking(thinking.to_string()));
+                                    stream_chunks.push(StreamChunk::thinking(thinking.to_string()));
                                 }
                             }
                         }
@@ -386,15 +379,11 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     let mut chunks_for_this_envelope: Vec<StreamChunk> = Vec::new();
 
                     for block in arr {
-                        let block_type = block
-                            .get("type")
-                            .and_then(|t| t.as_str())
-                            .unwrap_or("");
+                        let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
 
                         match block_type {
                             "text" => {
-                                if let Some(text) = block.get("text").and_then(|t| t.as_str())
-                                {
+                                if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
                                     text_parts.push(text.to_string());
                                     if !text.is_empty() {
                                         chunks_for_this_envelope
@@ -521,11 +510,9 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
                 match ctx {
-                    Some(c) => session.set_work_unit_context(
-                        Some(c.id),
-                        Some(c.title),
-                        Some(c.status),
-                    ),
+                    Some(c) => {
+                        session.set_work_unit_context(Some(c.id), Some(c.title), Some(c.status))
+                    }
                     None => session.set_work_unit_context(None, None, None),
                 }
                 Ok(())
@@ -601,8 +588,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     /// RPC-061: first subordinate of the supervisor (or None).
     fn get_subordinate(&self, supervisor_id: &SessionId) -> Option<SessionId> {
         let sup_uuid = uuid_from(supervisor_id);
-        SessionManager::get_subordinate(self, sup_uuid)
-            .map(|u| SessionId::new(u.to_string()))
+        SessionManager::get_subordinate(self, sup_uuid).map(|u| SessionId::new(u.to_string()))
     }
 
     /// RPC-061: every subordinate of the supervisor.
@@ -656,11 +642,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         }
     }
 
-    fn toggle_debug(
-        &self,
-        session_id: &SessionId,
-        debug_dir: &str,
-    ) -> Result<String, String> {
+    fn toggle_debug(&self, session_id: &SessionId, debug_dir: &str) -> Result<String, String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
@@ -710,9 +692,9 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // BackgroundSession).
         match codelet_common::debug_capture::get_debug_capture_manager() {
             Ok(arc) => {
-                let mut manager = arc
-                    .lock()
-                    .map_err(|_| "Failed to acquire lock on global debug capture manager".to_string())?;
+                let mut manager = arc.lock().map_err(|_| {
+                    "Failed to acquire lock on global debug capture manager".to_string()
+                })?;
                 manager.set_debug_directory(path);
                 Ok(())
             }
@@ -724,20 +706,14 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
-                session.send_pause_response(
-                    codelet_tools::tool_pause::PauseResponse::Resumed,
-                );
+                session.send_pause_response(codelet_tools::tool_pause::PauseResponse::Resumed);
                 Ok(())
             }
             Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
         }
     }
 
-    fn pause_confirm(
-        &self,
-        session_id: &SessionId,
-        accept: bool,
-    ) -> Result<(), String> {
+    fn pause_confirm(&self, session_id: &SessionId, accept: bool) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
@@ -748,11 +724,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         }
     }
 
-    fn pause_triple(
-        &self,
-        session_id: &SessionId,
-        choice: ApprovalChoice,
-    ) -> Result<(), String> {
+    fn pause_triple(&self, session_id: &SessionId, choice: ApprovalChoice) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
@@ -793,7 +765,10 @@ impl codelet_core::SessionManagerHandle for SessionManager {
 
     fn get_hitl_request(&self, session_id: &SessionId) -> Option<HitlRequest> {
         let uuid = uuid_from(session_id);
-        let internal = self.get_session(&uuid.to_string()).ok().and_then(|s| s.get_hitl_request())?;
+        let internal = self
+            .get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_hitl_request())?;
         // Surface only the first question through the wire shape — the
         // wire `HitlRequest` is a single question; the multi-question
         // surface is wired in RPC-053.
@@ -816,11 +791,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         })
     }
 
-    fn send_fspec_result(
-        &self,
-        session_id: &SessionId,
-        result: FspecResult,
-    ) -> Result<(), String> {
+    fn send_fspec_result(&self, session_id: &SessionId, result: FspecResult) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
@@ -836,10 +807,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     /// **Runtime requirement (RPC-070):** bridges sync→async via
     /// `tokio::task::block_in_place(|| Handle::current().block_on(...))`.
     /// MUST be invoked from a multi-thread tokio runtime.
-    fn create_isolated_session(
-        &self,
-        role: Option<String>,
-    ) -> Result<IsolatedSessionInfo, String> {
+    fn create_isolated_session(&self, role: Option<String>) -> Result<IsolatedSessionInfo, String> {
         let id = Uuid::new_v4();
         let project = std::env::current_dir()
             .map_err(|e| e.to_string())?
@@ -891,10 +859,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         })
     }
 
-    fn get_model_info(
-        &self,
-        session_id: &SessionId,
-    ) -> codelet_rpc_types::ModelInfo {
+    fn get_model_info(&self, session_id: &SessionId) -> codelet_rpc_types::ModelInfo {
         use std::sync::atomic::Ordering;
         let uuid = uuid_from(session_id);
         self.get_session(&uuid.to_string())
@@ -958,33 +923,45 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // `list_provider_credentials` graceful-degradation pattern).
         match codelet_providers::custom::list_providers_info() {
             Ok(list) => {
+                // RPC-073 (reopened): source the models.dev catalog ONCE so
+                // built-in/cloud providers expose their tool-capable models
+                // (credential-gated) instead of empty rows. Mirrors TS
+                // `loadCloudModels` + `buildCloudSections`. Graceful: any load
+                // failure (cold cache offline, corrupt file) → None → the
+                // built-ins keep their empty model lists (prior behaviour).
+                let cloud_registry = build_cloud_registry();
                 let mut providers: Vec<codelet_rpc_types::ProviderInfo> = list
                     .into_iter()
                     .map(|p| {
                         let is_custom = p.is_custom;
                         let display_name = p.display_name.unwrap_or_else(|| p.name.clone());
-                        let models = p
+                        let mut models: Vec<codelet_rpc_types::ModelEntry> = p
                             .models
                             .into_iter()
-                            .map(|m| {
-                                codelet_rpc_types::ModelEntry {
-                                    id: m.id.clone(),
-                                    display_name: m.id,
-                                    context_window: u32::try_from(m.context_window)
-                                        .unwrap_or(u32::MAX),
-                                    supports_reasoning: m.supports_thinking,
-                                    supports_vision: m.supports_vision,
-                                    is_custom,
-                                }
+                            .map(|m| codelet_rpc_types::ModelEntry {
+                                id: m.id.clone(),
+                                display_name: m.id,
+                                context_window: u32::try_from(m.context_window).unwrap_or(u32::MAX),
+                                supports_reasoning: m.supports_thinking,
+                                supports_vision: m.supports_vision,
+                                is_custom,
                             })
                             .collect();
+                        // RPC-073: built-in (non-custom) providers carry no
+                        // declared models — fill them from the models.dev
+                        // registry, gated on configured credentials.
+                        if !is_custom && models.is_empty() {
+                            if let Some(registry) = cloud_registry.as_ref() {
+                                let has_creds =
+                                    crate::cloud_models::provider_has_credentials(&p.name);
+                                models = crate::cloud_models::cloud_model_entries(
+                                    registry, &p.name, has_creds,
+                                );
+                            }
+                        }
                         // RPC-338: cloud / custom providers are never profile
                         // sections and are always treated as reachable.
-                        crate::profile_sections::cloud_provider_info(
-                            &p.name,
-                            &display_name,
-                            models,
-                        )
+                        crate::profile_sections::cloud_provider_info(&p.name, &display_name, models)
                     })
                     .collect();
                 // RPC-338: append local-server profile sections, probing each
@@ -1049,13 +1026,12 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             crate::model_resolution::apply_model_selection(inner.provider_manager_mut(), &model)?
         };
 
-        let compaction_threshold =
-            codelet_cli::compaction_threshold::resolve_compaction_threshold(
-                resolved.context_window as u64,
-                resolved.max_output_tokens as u64,
-                Some(model_id),
-                None,
-            ) as u32;
+        let compaction_threshold = codelet_cli::compaction_threshold::resolve_compaction_threshold(
+            resolved.context_window as u64,
+            resolved.max_output_tokens as u64,
+            Some(model_id),
+            None,
+        ) as u32;
 
         session.set_model(Some(provider_id.to_string()), Some(model_id.to_string()));
         session.set_model_limits(
@@ -1145,11 +1121,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             .and_then(|s| s.get_role())
     }
 
-    fn set_role(
-        &self,
-        session_id: &SessionId,
-        role: Option<String>,
-    ) -> Result<(), String> {
+    fn set_role(&self, session_id: &SessionId, role: Option<String>) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
@@ -1172,13 +1144,14 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     //   * `list_provider_credentials` / `get_provider_credential` reflect
     //     `ProviderCredentials::detect()` + `custom::list_providers_info()`
     //     into the wire-portable `ProviderCredentialInfo` shape.
-    //   * `set_provider_credentials` is intentionally non-persistent in this
-    //     card — the underlying credential stores (keychain / file) live in
-    //     `codelet-providers` and lifting them through a write API is a
-    //     follow-up. The method validates the input and returns `Ok(())` so
-    //     the TUI's optimistic UI flows still work; the next
-    //     `list_provider_credentials` call re-derives state from env vars.
-    //   * `delete_provider_credentials` is similarly a no-op success today.
+    //   * `set_provider_credentials` (api_key kind) PERSISTS to
+    //     `<data_dir>/credentials/credentials.json` via
+    //     `credentials::save_credential` and refreshes the in-memory store
+    //     (RPC-054 reopened — mirrors TS saveCredential). oauth / custom
+    //     kinds are validated but remain non-persistent (follow-up).
+    //   * `delete_provider_credentials` removes the provider entry via
+    //     `credentials::delete_credential` (mirrors TS deleteCredential);
+    //     absent provider / missing file is a no-op success.
     //   * `test_provider_connection` delegates to
     //     `codelet_providers::custom::test_provider_connection` for custom
     //     providers and falls back to `ProviderManager::with_provider`
@@ -1236,51 +1209,63 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         provider_id: &str,
         creds: ProviderCredentialInput,
     ) -> Result<(), String> {
-        // Light validation only — full persistence is a follow-up
-        // (see attachment Risks / Phase 7.1).
+        // RPC-054 (reopened): the api_key write path is no longer a stub —
+        // it persists to <data_dir>/credentials/credentials.json and refreshes
+        // the in-memory store, mirroring TS saveCredential. oauth / custom
+        // kinds remain non-persistent here (OAuth write path is a follow-up).
         match creds.kind.as_str() {
             "api_key" => {
-                if creds.api_key.as_deref().unwrap_or("").is_empty() {
+                let api_key = creds.api_key.as_deref().unwrap_or("");
+                if api_key.is_empty() {
                     return Err("api_key input requires a non-empty api_key".to_string());
                 }
+                crate::credentials::save_credential(provider_id, api_key)?;
+                tracing::info!(
+                    provider = provider_id,
+                    kind = "api_key",
+                    "set_provider_credentials: api key persisted to credentials.json"
+                );
+                Ok(())
             }
             "oauth" => {
                 if creds.oauth_token.as_deref().unwrap_or("").is_empty() {
                     return Err("oauth input requires a non-empty oauth_token".to_string());
                 }
+                tracing::info!(
+                    provider = provider_id,
+                    kind = "oauth",
+                    "set_provider_credentials: oauth persistence is a follow-up; input accepted"
+                );
+                Ok(())
             }
             "custom" => {
                 if creds.custom_endpoint.as_deref().unwrap_or("").is_empty() {
-                    return Err(
-                        "custom input requires a non-empty custom_endpoint".to_string(),
-                    );
+                    return Err("custom input requires a non-empty custom_endpoint".to_string());
                 }
+                tracing::info!(
+                    provider = provider_id,
+                    kind = "custom",
+                    "set_provider_credentials: custom persistence is a follow-up; input accepted"
+                );
+                Ok(())
             }
-            other => return Err(format!("unknown credential kind: {other}")),
+            other => Err(format!("unknown credential kind: {other}")),
         }
-        tracing::info!(
-            provider = provider_id,
-            kind = creds.kind.as_str(),
-            "set_provider_credentials: credential persistence is a follow-up; \
-             input accepted but env-var-derived state will not change until \
-             the user updates their shell env"
-        );
-        Ok(())
     }
 
     fn delete_provider_credentials(&self, provider_id: &str) -> Result<(), String> {
+        // RPC-054 (reopened): actually remove the provider entry from
+        // credentials.json and refresh the in-memory store, mirroring TS
+        // deleteCredential. Absent provider / missing file is a no-op success.
+        crate::credentials::delete_credential(provider_id)?;
         tracing::info!(
             provider = provider_id,
-            "delete_provider_credentials: credential removal is a follow-up; \
-             accepting the request as a no-op success"
+            "delete_provider_credentials: credential removed from credentials.json"
         );
         Ok(())
     }
 
-    fn test_provider_connection(
-        &self,
-        provider_id: &str,
-    ) -> Result<TestConnectionResult, String> {
+    fn test_provider_connection(&self, provider_id: &str) -> Result<TestConnectionResult, String> {
         let start = std::time::Instant::now();
         // Try the custom-provider HTTP probe first — it's the only path
         // that returns rich `ProviderTestResult` metadata. If the
@@ -1307,10 +1292,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 error: if probe.reachable {
                     None
                 } else {
-                    Some(format!(
-                        "unreachable (status {:?})",
-                        probe.status_code
-                    ))
+                    Some(format!("unreachable (status {:?})", probe.status_code))
                 },
                 latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX)) as u32,
             }),
@@ -1320,24 +1302,19 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     Ok(_) => Ok(TestConnectionResult {
                         success: true,
                         error: None,
-                        latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX))
-                            as u32,
+                        latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX)) as u32,
                     }),
                     Err(e) => Ok(TestConnectionResult {
                         success: false,
                         error: Some(e.to_string()),
-                        latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX))
-                            as u32,
+                        latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX)) as u32,
                     }),
                 }
             }
         }
     }
 
-    fn refresh_models_cache(
-        &self,
-        provider_id: &str,
-    ) -> Result<Vec<ModelEntry>, String> {
+    fn refresh_models_cache(&self, provider_id: &str) -> Result<Vec<ModelEntry>, String> {
         // Built-in providers don't publish a dynamic model catalog; we
         // re-list the providers and return the matching model entries.
         // Custom providers DO have dynamic catalogs but lifting the
@@ -1447,12 +1424,12 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // The strategy is reserved for future evolution — the codelet-git
         // layer currently has only one merge algorithm.
         let _ = strategy;
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
         match codelet_git::merge_session(&repo_path, &session_id.value) {
             Ok(result) => {
-                let total_changed =
-                    result.files_modified.len() + result.files_added.len() + result.files_deleted.len();
+                let total_changed = result.files_modified.len()
+                    + result.files_added.len()
+                    + result.files_deleted.len();
                 let status = if total_changed == 0 {
                     MergeStatus::NoChanges
                 } else {
@@ -1475,26 +1452,18 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         }
     }
 
-    fn discard_session_worktree(
-        &self,
-        session_id: &SessionId,
-    ) -> Result<(), String> {
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
+    fn discard_session_worktree(&self, session_id: &SessionId) -> Result<(), String> {
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
         codelet_git::discard_session(&repo_path, &session_id.value)
             .map(|_| ())
             .map_err(|e| format!("{e}"))
     }
 
     fn prune_orphaned_worktrees(&self) -> Result<Vec<String>, String> {
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
         // The active-session set is sourced from the live SessionManager.
-        let active: std::collections::HashSet<String> = self
-            .list_sessions()
-            .into_iter()
-            .map(|s| s.id)
-            .collect();
+        let active: std::collections::HashSet<String> =
+            self.list_sessions().into_iter().map(|s| s.id).collect();
         codelet_git::prune_orphaned(&repo_path, &active)
             .map(|r| r.pruned)
             .map_err(|e| format!("{e}"))
@@ -1541,8 +1510,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         &self,
         session_id: &SessionId,
     ) -> Result<SessionChangesSummary, String> {
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
         let result = codelet_git::inspect_session(&repo_path, &session_id.value)
             .map_err(|e| format!("{e}"))?;
         let files_changed = (result.files_changed.len()
@@ -1581,12 +1549,8 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     // ─────────────────────────────────────────────────────────────────
 
     fn schedule_add(&self, job: ScheduledJob) -> Result<ScheduledJob, String> {
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
-        codelet_core::scheduler::crud::schedule_add(
-            &repo_path.to_string_lossy(),
-            job,
-        )
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_add(&repo_path.to_string_lossy(), job)
     }
 
     fn schedule_list(&self) -> Vec<ScheduledJob> {
@@ -1598,30 +1562,18 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     }
 
     fn schedule_pause(&self, name: &str) -> Result<ScheduledJob, String> {
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
-        codelet_core::scheduler::crud::schedule_pause(
-            &repo_path.to_string_lossy(),
-            name,
-        )
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_pause(&repo_path.to_string_lossy(), name)
     }
 
     fn schedule_resume(&self, name: &str) -> Result<ScheduledJob, String> {
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
-        codelet_core::scheduler::crud::schedule_resume(
-            &repo_path.to_string_lossy(),
-            name,
-        )
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_resume(&repo_path.to_string_lossy(), name)
     }
 
     fn schedule_remove(&self, name: &str) -> Result<(), String> {
-        let repo_path = std::env::current_dir()
-            .map_err(|e| format!("current_dir: {e}"))?;
-        codelet_core::scheduler::crud::schedule_remove(
-            &repo_path.to_string_lossy(),
-            name,
-        )
+        let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_remove(&repo_path.to_string_lossy(), name)
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -1775,4 +1727,32 @@ fn blocklist_rule_to_wire(
         guidance: rule.guidance,
         source: source.to_string(),
     }
+}
+
+/// Build the models.dev `ModelRegistry` once for `list_providers` cloud-model
+/// population (RPC-073). Returns `None` on any failure (cold cache offline,
+/// corrupt file) so the model selector degrades to empty built-in model lists
+/// rather than erroring. Bridges the async registry load from the sync trait
+/// method via `block_in_place` (the same pattern `build_local_profile_sections`
+/// and `test_provider_connection` use), so it is only safe inside a tokio
+/// multi-thread runtime — which `list_providers` always runs within.
+fn build_cloud_registry() -> Option<codelet_providers::models::ModelRegistry> {
+    // RPC-073: bridge the async registry load from the sync trait method.
+    // `block_in_place` + `Handle::block_on` requires a live multi-thread
+    // tokio runtime. Outside one (e.g. plain `#[test]` callers exercising
+    // the no-panic graceful-degradation contract), `Handle::try_current`
+    // returns Err — degrade to `None` rather than panicking.
+    let Ok(handle) = tokio::runtime::Handle::try_current() else {
+        return None;
+    };
+    tokio::task::block_in_place(|| {
+        handle.block_on(async {
+            match codelet_providers::models::ModelCache::new() {
+                Ok(cache) => codelet_providers::models::ModelRegistry::new(&cache)
+                    .await
+                    .ok(),
+                Err(_) => None,
+            }
+        })
+    })
 }

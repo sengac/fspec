@@ -22,11 +22,7 @@ use serde::{Deserialize, Serialize};
 /// Build the wire `ProviderInfo` for a cloud / custom provider. Such
 /// providers are never profile sections and are always treated as
 /// reachable (`profile_name = None`, `is_unreachable = false`).
-pub fn cloud_provider_info(
-    key: &str,
-    display_name: &str,
-    models: Vec<ModelEntry>,
-) -> ProviderInfo {
+pub fn cloud_provider_info(key: &str, display_name: &str, models: Vec<ModelEntry>) -> ProviderInfo {
     ProviderInfo {
         key: key.to_string(),
         display_name: display_name.to_string(),
@@ -337,7 +333,10 @@ fn save_custom_model_at(
         None => entries.push(def_value),
     }
 
-    profile.insert("customModels".to_string(), serde_json::Value::Array(entries));
+    profile.insert(
+        "customModels".to_string(),
+        serde_json::Value::Array(entries),
+    );
     write_config_value(config_path, &root)
 }
 
@@ -365,7 +364,10 @@ fn delete_custom_model_at(
     if entries.is_empty() {
         profile.remove("customModels");
     } else {
-        profile.insert("customModels".to_string(), serde_json::Value::Array(entries));
+        profile.insert(
+            "customModels".to_string(),
+            serde_json::Value::Array(entries),
+        );
     }
     write_config_value(config_path, &root)
 }
@@ -634,14 +636,13 @@ mod persistence_tests {
         let content = fs::read_to_string(path).unwrap();
         let root: serde_json::Value = serde_json::from_str(&content).unwrap();
         let p = &root["providers"]["openai"]["profiles"][profile];
-        p.get("customModels")
-            .map(|v| {
-                v.as_array()
-                    .unwrap()
-                    .iter()
-                    .map(|m| m["id"].as_str().unwrap().to_string())
-                    .collect()
-            })
+        p.get("customModels").map(|v| {
+            v.as_array()
+                .unwrap()
+                .iter()
+                .map(|m| m["id"].as_str().unwrap().to_string())
+                .collect()
+        })
     }
 
     /// Scenario: Add a custom model to a profile with no custom models

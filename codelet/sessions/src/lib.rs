@@ -14,6 +14,7 @@
 
 pub mod background_session;
 pub mod chain_of_command;
+pub mod cloud_models;
 pub mod conversions;
 pub mod credentials;
 pub mod handle_impl;

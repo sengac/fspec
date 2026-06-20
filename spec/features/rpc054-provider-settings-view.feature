@@ -71,7 +71,7 @@ Feature: ProviderSettingsView — full-screen mode-view keyboard handling
     When the user presses Enter
     Then the view's mode is Detail { provider_id: "codex", sub: OAuthNotice }
     And the body shows the read-only text "codex uses OAuth which is not yet supported in the Rust frontend"
-    And the footer hint reads "Esc Back"
+    And the footer hint reads "Esc: back" (RPC-106 bullet/lowercase-colon style)
 
   @detail
   @summary

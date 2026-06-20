@@ -55,11 +55,9 @@ Feature: ProviderSettingsView — source-shape invariants
   Scenario: ProviderSettingsView imports the canonical full-screen helpers
     Given codelet/fspec-tui/src/views/provider_settings/mod.rs
     When the use statements are parsed
-    Then the file imports ratatui::widgets::Clear
     And the file imports crate::components::scroll_viewport::ensure_visible
-    And the file does NOT import crate::components::scroll_viewport::wrap_index (RPC-157: clamped nav)
     And the file imports crate::views::agent::confirm_dialog::ConfirmDialog
-    And the file imports crate::views::agent::mode_view_render::{render_title_with_count, render_footer_hint}
+    And the render delegates to the shared full-screen scaffold (RPC-337)
 
   @view-imports
   @forbidden
@@ -74,8 +72,7 @@ Feature: ProviderSettingsView — source-shape invariants
   Scenario: render() starts with Clear and uses the 4-constraint Layout
     Given codelet/fspec-tui/src/views/provider_settings/mod.rs
     When the source of ProviderSettingsView::render is inspected
-    Then the first statement is "Clear.render(area, buf);"
-    And the body splits area with Layout::default().direction(Direction::Vertical).constraints([Constraint::Length(1), Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)])
+    Then render delegates to render_full_screen_scaffold (Clear + 4-constraint split owned by the shell)
 
   @file-size
   Scenario: Every file under views/provider_settings/ stays under 300 lines
