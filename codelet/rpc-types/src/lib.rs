@@ -347,6 +347,34 @@ pub struct ModelEntry {
     pub is_custom: bool,
 }
 
+/// RPC-347: transport-portable definition of a custom model declared on a
+/// local-server profile (`profile.customModels[]`, MODEL-004). Maps 1:1 to
+/// the persistence-layer `codelet_sessions::profile_sections::CustomModelDef`
+/// — the `codelet-sessions` conversion module (`custom_model_def_from_wire`)
+/// is the single place the two meet, keeping `codelet-core` /
+/// `codelet-rpc-types` free of any dependency on `codelet-sessions`.
+///
+/// The CTX-008 compaction-threshold override is carried as two flat optional
+/// fields (`compaction_threshold_type` / `compaction_threshold_value`) rather
+/// than a nested object so the `napi(object)` projection stays a plain struct
+/// (mirroring the `session_set_model` NAPI binding's
+/// `compaction_threshold_type` / `compaction_threshold_value` parameters).
+/// `id` is the only required field; every other field is optional and, when
+/// `None`, is omitted from the persisted `CustomModelDef` JSON.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CustomModelDefinition {
+    pub id: String,
+    pub display_name: Option<String>,
+    pub facade: Option<String>,
+    pub context_window: Option<u32>,
+    pub max_output_tokens: Option<u32>,
+    pub compaction_threshold_type: Option<String>,
+    pub compaction_threshold_value: Option<u32>,
+    pub reasoning: Option<bool>,
+    pub has_vision: Option<bool>,
+}
+
 /// One provider's display metadata plus its set of available models —
 /// returned (in a Vec) by `FspecService::list_providers`. Mirrors the
 /// TS `NapiProviderModels` shape (codelet/napi/src/models/napi_bindings.rs)

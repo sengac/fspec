@@ -27,7 +27,8 @@
 //! codelet-providers, OAuth, persistence, ghost commits, etc.).
 
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, CompactionProgress, CompactionResult, FspecResult,
+    ApprovalChoice, BlocklistRuleInfo, CompactionProgress, CompactionResult, CustomModelDefinition,
+    FspecResult,
     HitlRequest, HitlResponse, IncomingMessageInput,
     IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStatus, MergeStrategy, ModelInfo,
     PauseState, ProviderInfo,
@@ -152,6 +153,51 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         model_id: &str,
     ) -> Result<(), String> {
         let _ = (session_id, provider_id, model_id);
+        Ok(())
+    }
+
+    /// RPC-347: add a NEW custom model to a local-server profile. Default
+    /// returns `Ok(())` (silent no-op) so handles that have not wired the
+    /// custom-model write path — including the stub used by tests — compile
+    /// without per-test wiring. The codelet/sessions `SessionManager`
+    /// overrides this to delegate to
+    /// `profile_sections::save_custom_model(.., None)` (append). Mirrors the
+    /// idempotent contract of `set_model`.
+    fn add_custom_model(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        definition: &CustomModelDefinition,
+    ) -> Result<(), String> {
+        let _ = (provider_id, profile_name, definition);
+        Ok(())
+    }
+
+    /// RPC-347: UPDATE an existing custom model in place. `original_model_id`
+    /// names the entry to replace. Default returns `Ok(())`; the
+    /// codelet/sessions override delegates to
+    /// `profile_sections::save_custom_model(.., Some(original_model_id))`.
+    fn update_custom_model(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        original_model_id: &str,
+        definition: &CustomModelDefinition,
+    ) -> Result<(), String> {
+        let _ = (provider_id, profile_name, original_model_id, definition);
+        Ok(())
+    }
+
+    /// RPC-347: DELETE a custom model from a local-server profile by id.
+    /// Default returns `Ok(())`; the codelet/sessions override delegates to
+    /// `profile_sections::delete_custom_model`.
+    fn delete_custom_model(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        model_id: &str,
+    ) -> Result<(), String> {
+        let _ = (provider_id, profile_name, model_id);
         Ok(())
     }
 
@@ -881,6 +927,10 @@ pub struct StubSessionManagerHandle {
     get_subordinate_calls: AtomicU64,
     get_subordinates_calls: AtomicU64,
     receive_incoming_message_calls: AtomicU64,
+    // RPC-347: in-memory custom-model write surface keyed by profile name.
+    // The three trait overrides mirror profile_sections append/replace/delete
+    // semantics so cross-transport parity tests can assert state without disk.
+    custom_models: Arc<Mutex<HashMap<String, Vec<CustomModelDefinition>>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -992,7 +1042,18 @@ impl StubSessionManagerHandle {
             get_subordinate_calls: AtomicU64::new(0),
             get_subordinates_calls: AtomicU64::new(0),
             receive_incoming_message_calls: AtomicU64::new(0),
+            custom_models: Arc::new(Mutex::new(HashMap::new())),
         }
+    }
+
+    /// RPC-347: snapshot the in-memory custom-model list for `profile_name`
+    /// (empty when the profile has none). Cross-transport parity tests use
+    /// this to assert both transports forwarded identical definitions.
+    pub fn custom_models(&self, profile_name: &str) -> Vec<CustomModelDefinition> {
+        self.custom_models
+            .lock()
+            .map(|guard| guard.get(profile_name).cloned().unwrap_or_default())
+            .unwrap_or_default()
     }
 
     /// RPC-049: how many times `resume_session` has been called on this
@@ -1443,6 +1504,56 @@ impl SessionManagerHandle for StubSessionManagerHandle {
             Ok(guard) => guard.clone(),
             Err(_) => Vec::new(),
         }
+    }
+
+    // RPC-347: in-memory custom-model write overrides mirroring the
+    // profile_sections append/replace/delete semantics. `provider_id` is
+    // ignored (the stub does not enforce the openai-only guard — that lives
+    // in the real persistence layer) so parity tests can drive any profile.
+    fn add_custom_model(
+        &self,
+        _provider_id: &str,
+        profile_name: &str,
+        definition: &CustomModelDefinition,
+    ) -> Result<(), String> {
+        if let Ok(mut guard) = self.custom_models.lock() {
+            guard
+                .entry(profile_name.to_string())
+                .or_default()
+                .push(definition.clone());
+        }
+        Ok(())
+    }
+
+    fn update_custom_model(
+        &self,
+        _provider_id: &str,
+        profile_name: &str,
+        original_model_id: &str,
+        definition: &CustomModelDefinition,
+    ) -> Result<(), String> {
+        if let Ok(mut guard) = self.custom_models.lock() {
+            if let Some(entries) = guard.get_mut(profile_name) {
+                if let Some(slot) = entries.iter_mut().find(|d| d.id == original_model_id) {
+                    *slot = definition.clone();
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn delete_custom_model(
+        &self,
+        _provider_id: &str,
+        profile_name: &str,
+        model_id: &str,
+    ) -> Result<(), String> {
+        if let Ok(mut guard) = self.custom_models.lock() {
+            if let Some(entries) = guard.get_mut(profile_name) {
+                entries.retain(|d| d.id != model_id);
+            }
+        }
+        Ok(())
     }
 
     // ========================================================================

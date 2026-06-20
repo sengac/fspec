@@ -19,6 +19,7 @@ use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
+    CustomModelDefinition,
     FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
     IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
@@ -204,6 +205,50 @@ impl FspecBackend for EmbeddedFspecBackend {
         // RPC-022: one-line delegate, lifting the String error into anyhow.
         self.client
             .set_session_model(context::current(), session_id, provider_id, model_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // RPC-347: custom-model write surface — one-line delegates.
+    async fn add_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        definition: CustomModelDefinition,
+    ) -> Result<()> {
+        self.client
+            .add_custom_model(context::current(), provider_id, profile_name, definition)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn update_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        original_model_id: String,
+        definition: CustomModelDefinition,
+    ) -> Result<()> {
+        self.client
+            .update_custom_model(
+                context::current(),
+                provider_id,
+                profile_name,
+                original_model_id,
+                definition,
+            )
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        model_id: String,
+    ) -> Result<()> {
+        self.client
+            .delete_custom_model(context::current(), provider_id, profile_name, model_id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }

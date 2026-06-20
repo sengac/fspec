@@ -1066,6 +1066,50 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         Ok(())
     }
 
+    // RPC-347: custom-model write surface. These delegate to the RPC-346
+    // persistence functions in `profile_sections`, converting the
+    // transport-portable `CustomModelDefinition` into the on-disk
+    // `CustomModelDef` via `conversions::custom_model_def_from_wire`. The
+    // openai-only guard and the missing-profile / empty-array no-op semantics
+    // live in `profile_sections`, so these overrides are thin pass-throughs.
+    fn add_custom_model(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        definition: &codelet_rpc_types::CustomModelDefinition,
+    ) -> Result<(), String> {
+        let def = crate::conversions::custom_model_def_from_wire(definition);
+        crate::profile_sections::save_custom_model(provider_id, profile_name, &def, None)
+            .map_err(|e| e.to_string())
+    }
+
+    fn update_custom_model(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        original_model_id: &str,
+        definition: &codelet_rpc_types::CustomModelDefinition,
+    ) -> Result<(), String> {
+        let def = crate::conversions::custom_model_def_from_wire(definition);
+        crate::profile_sections::save_custom_model(
+            provider_id,
+            profile_name,
+            &def,
+            Some(original_model_id),
+        )
+        .map_err(|e| e.to_string())
+    }
+
+    fn delete_custom_model(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        model_id: &str,
+    ) -> Result<(), String> {
+        crate::profile_sections::delete_custom_model(provider_id, profile_name, model_id)
+            .map_err(|e| e.to_string())
+    }
+
     fn set_thinking_level(
         &self,
         session_id: &SessionId,

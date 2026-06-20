@@ -1,0 +1,126 @@
+{
+  "scenarios": [
+    {
+      "name": "add_custom_model appends a new definition to an existing profile",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "lines": "63-92",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "update_custom_model replaces an existing definition in place",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "lines": "93-124",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098,
+                1099,
+                1100,
+                1101,
+                1102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delete_custom_model removes an entry and drops the empty key",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "lines": "125-153",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delete_custom_model on a missing profile or non-openai provider is an idempotent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/custom_model_rpc_surface.rs",
+          "lines": "154-178",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/custom_model_rpc_surface.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 162
+  }
+}

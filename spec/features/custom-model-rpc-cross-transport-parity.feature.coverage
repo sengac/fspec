@@ -1,0 +1,148 @@
+{
+  "scenarios": [
+    {
+      "name": "add_custom_model produces identical results across transports",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc347_cross_transport_parity.rs",
+          "lines": "96-128",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068,
+                1069,
+                1070,
+                1071,
+                1072,
+                1073,
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098,
+                1099,
+                1100,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111,
+                1112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RPC methods are a silent no-op without an attached SessionManagerHandle",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc347_cross_transport_parity.rs",
+          "lines": "129-154",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068,
+                1069,
+                1070,
+                1071,
+                1072,
+                1073,
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098,
+                1099,
+                1100,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111,
+                1112
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc347_cross_transport_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/rpc/src/lib.rs"
+    ],
+    "totalLinesCovered": 159
+  }
+}

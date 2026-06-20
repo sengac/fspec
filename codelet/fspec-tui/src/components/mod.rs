@@ -628,6 +628,34 @@ pub enum Action {
     /// the view shows `(refreshing...)` until `ListProvidersLoaded`
     /// arrives.
     RefreshModelSelector,
+    /// RPC-347: emitted by the ModelSelector mode-view's `a` keybind (wired in
+    /// RPC-344) to create a NEW custom model on the focused profile.
+    /// App::dispatch spawns `backend.add_custom_model(provider_id,
+    /// profile_name, definition)` followed by a `list_providers` refresh.
+    /// Added here as inert wire surface so the backend path exists before the
+    /// keybinds/form land.
+    AddCustomModel {
+        provider_id: String,
+        profile_name: String,
+        definition: codelet_rpc_types::CustomModelDefinition,
+    },
+    /// RPC-347: emitted by the ModelSelector `e` keybind (RPC-344) to edit an
+    /// existing custom model in place. `original_model_id` names the entry
+    /// being replaced. App::dispatch spawns `backend.update_custom_model(..)`.
+    EditCustomModel {
+        provider_id: String,
+        profile_name: String,
+        original_model_id: String,
+        definition: codelet_rpc_types::CustomModelDefinition,
+    },
+    /// RPC-347: emitted by the ModelSelector `d` keybind (RPC-344) after the
+    /// delete-confirm overlay. App::dispatch spawns
+    /// `backend.delete_custom_model(..)`.
+    DeleteCustomModel {
+        provider_id: String,
+        profile_name: String,
+        model_id: String,
+    },
     /// RPC-054: a spawned `backend.list_provider_credentials()` task
     /// resolved. App::dispatch folds the result into the open
     /// ProviderSettingsView.

@@ -27,6 +27,7 @@ use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
+    CustomModelDefinition,
     FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
     IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
@@ -175,6 +176,37 @@ pub trait FspecService {
     async fn set_session_model(
         session_id: SessionId,
         provider_id: String,
+        model_id: String,
+    ) -> Result<(), String>;
+
+    /// RPC-347: add a NEW custom model to a local-server profile. Delegates
+    /// through `SessionManagerHandle::add_custom_model` (which calls
+    /// `profile_sections::save_custom_model(.., None)`). Without an attached
+    /// handle returns `Ok(())` (silent no-op, idempotent like
+    /// `set_session_model`).
+    async fn add_custom_model(
+        provider_id: String,
+        profile_name: String,
+        definition: CustomModelDefinition,
+    ) -> Result<(), String>;
+
+    /// RPC-347: UPDATE an existing custom model in place. `original_model_id`
+    /// names the entry to replace. Delegates through
+    /// `SessionManagerHandle::update_custom_model`; without a handle returns
+    /// `Ok(())`.
+    async fn update_custom_model(
+        provider_id: String,
+        profile_name: String,
+        original_model_id: String,
+        definition: CustomModelDefinition,
+    ) -> Result<(), String>;
+
+    /// RPC-347: DELETE a custom model from a local-server profile by id.
+    /// Delegates through `SessionManagerHandle::delete_custom_model`; without
+    /// a handle returns `Ok(())`.
+    async fn delete_custom_model(
+        provider_id: String,
+        profile_name: String,
         model_id: String,
     ) -> Result<(), String>;
 
@@ -1021,6 +1053,54 @@ impl FspecService for FspecServiceImpl {
         // no-handle case.
         match self.inner.session_manager() {
             Some(handle) => handle.set_model(&session_id, &provider_id, &model_id),
+            None => Ok(()),
+        }
+    }
+
+    // RPC-347: custom-model write surface. Each delegates through the optional
+    // SessionManagerHandle; the no-handle path returns `Ok(())` (silent no-op,
+    // matching set_session_model).
+    async fn add_custom_model(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        profile_name: String,
+        definition: CustomModelDefinition,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.add_custom_model(&provider_id, &profile_name, &definition),
+            None => Ok(()),
+        }
+    }
+
+    async fn update_custom_model(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        profile_name: String,
+        original_model_id: String,
+        definition: CustomModelDefinition,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.update_custom_model(
+                &provider_id,
+                &profile_name,
+                &original_model_id,
+                &definition,
+            ),
+            None => Ok(()),
+        }
+    }
+
+    async fn delete_custom_model(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        profile_name: String,
+        model_id: String,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.delete_custom_model(&provider_id, &profile_name, &model_id),
             None => Ok(()),
         }
     }

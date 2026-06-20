@@ -19,6 +19,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
+    CustomModelDefinition,
     FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
     IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
@@ -182,6 +183,48 @@ pub trait FspecBackend: Send + Sync {
         provider_id: String,
         model_id: String,
     ) -> Result<()>;
+
+    /// RPC-347: add a NEW custom model to a local-server profile. Delegates
+    /// to `FspecService::add_custom_model`. Returns `Ok(())` (silent no-op)
+    /// when no session manager is attached. Default body lets test mocks that
+    /// do not exercise the custom-model surface compile unchanged (mirrors the
+    /// RPC-037 default-impl convention); the embedded + websocket transports
+    /// override it with a real delegate.
+    async fn add_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        definition: CustomModelDefinition,
+    ) -> Result<()> {
+        let _ = (provider_id, profile_name, definition);
+        Ok(())
+    }
+
+    /// RPC-347: UPDATE an existing custom model in place, replacing the entry
+    /// named by `original_model_id`. Delegates to
+    /// `FspecService::update_custom_model`.
+    async fn update_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        original_model_id: String,
+        definition: CustomModelDefinition,
+    ) -> Result<()> {
+        let _ = (provider_id, profile_name, original_model_id, definition);
+        Ok(())
+    }
+
+    /// RPC-347: DELETE a custom model from a local-server profile by id.
+    /// Delegates to `FspecService::delete_custom_model`.
+    async fn delete_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        model_id: String,
+    ) -> Result<()> {
+        let _ = (provider_id, profile_name, model_id);
+        Ok(())
+    }
 
     /// RPC-022: set the per-session thinking/reasoning level.
     /// Mirrors `set_session_model` in shape.

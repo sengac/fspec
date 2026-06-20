@@ -124,3 +124,39 @@ impl From<crate::background_session::CompactionProgress>
         }
     }
 }
+
+/// RPC-347: build a persistence-layer
+/// [`crate::profile_sections::CustomModelDef`] from the transport-portable
+/// [`codelet_rpc_types::CustomModelDefinition`]. The two flat compaction
+/// fields (`compaction_threshold_type` / `compaction_threshold_value`) are
+/// folded back into the nested
+/// [`crate::profile_sections::CompactionThreshold`] only when BOTH are
+/// present; otherwise the override is dropped (`None`). This is the single
+/// place the wire shape and the on-disk shape meet (orphan-rule-friendly free
+/// function, matching the rest of this module).
+pub fn custom_model_def_from_wire(
+    wire: &codelet_rpc_types::CustomModelDefinition,
+) -> crate::profile_sections::CustomModelDef {
+    let compaction_threshold = match (
+        wire.compaction_threshold_type.as_ref(),
+        wire.compaction_threshold_value,
+    ) {
+        (Some(threshold_type), Some(value)) => {
+            Some(crate::profile_sections::CompactionThreshold {
+                threshold_type: threshold_type.clone(),
+                value,
+            })
+        }
+        _ => None,
+    };
+    crate::profile_sections::CustomModelDef {
+        id: wire.id.clone(),
+        display_name: wire.display_name.clone(),
+        facade: wire.facade.clone(),
+        context_window: wire.context_window,
+        max_output_tokens: wire.max_output_tokens,
+        compaction_threshold,
+        reasoning: wire.reasoning,
+        has_vision: wire.has_vision,
+    }
+}

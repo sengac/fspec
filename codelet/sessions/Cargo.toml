@@ -67,3 +67,6 @@ codelet-test-helpers = { workspace = true }
 # RPC-081: restoration tests need a hermetic data dir.
 tempfile = { workspace = true }
 tokio = { workspace = true, features = ["test-util"] }
+# RPC-347: custom-model RPC surface tests mutate the process-global
+# FSPEC_USER_DIR env var, so they must run serially.
+serial_test.workspace = true

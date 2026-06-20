@@ -17,6 +17,7 @@ use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
+    CustomModelDefinition,
     FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
     IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
@@ -401,6 +402,60 @@ impl FspecBackend for WebSocketFspecBackend {
         client
             .client()
             .set_session_model(context::current(), session_id, provider_id, model_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // RPC-347: custom-model write surface — same read().await + Disconnected
+    // guard pattern as the rest of the WebSocket backend.
+    async fn add_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        definition: CustomModelDefinition,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .add_custom_model(context::current(), provider_id, profile_name, definition)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn update_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        original_model_id: String,
+        definition: CustomModelDefinition,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .update_custom_model(
+                context::current(),
+                provider_id,
+                profile_name,
+                original_model_id,
+                definition,
+            )
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_custom_model(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        model_id: String,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .delete_custom_model(context::current(), provider_id, profile_name, model_id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }

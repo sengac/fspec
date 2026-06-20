@@ -288,3 +288,57 @@ mod rpc338_tests {
         assert!(!is_unreachable);
     }
 }
+
+// ============================================================================
+// RPC-347: Custom-model write surface (add / update / delete) NAPI bindings.
+//
+// Mirror the FspecService RPC surface for the JS/TS host. Each binding
+// converts the transport-portable `CustomModelDefinition` into the on-disk
+// `CustomModelDef` via the shared `codelet_sessions::conversions` helper and
+// persists through the RPC-346 `profile_sections` writer. The openai-only
+// guard and the missing-profile / empty-array no-op semantics live in
+// `profile_sections`, so these bindings are thin pass-throughs.
+// ============================================================================
+
+/// Add a NEW custom model to a local-server profile (`save` with no original
+/// id → append).
+#[napi]
+pub async fn add_custom_model(
+    provider_id: String,
+    profile_name: String,
+    definition: codelet_rpc_types::CustomModelDefinition,
+) -> Result<()> {
+    let def = codelet_sessions::conversions::custom_model_def_from_wire(&definition);
+    codelet_sessions::profile_sections::save_custom_model(&provider_id, &profile_name, &def, None)
+        .map_err(|e| Error::from_reason(format!("add_custom_model failed: {e}")))
+}
+
+/// UPDATE an existing custom model in place (replace the entry named by
+/// `original_model_id`).
+#[napi]
+pub async fn update_custom_model(
+    provider_id: String,
+    profile_name: String,
+    original_model_id: String,
+    definition: codelet_rpc_types::CustomModelDefinition,
+) -> Result<()> {
+    let def = codelet_sessions::conversions::custom_model_def_from_wire(&definition);
+    codelet_sessions::profile_sections::save_custom_model(
+        &provider_id,
+        &profile_name,
+        &def,
+        Some(&original_model_id),
+    )
+    .map_err(|e| Error::from_reason(format!("update_custom_model failed: {e}")))
+}
+
+/// DELETE a custom model from a local-server profile by id.
+#[napi]
+pub async fn delete_custom_model(
+    provider_id: String,
+    profile_name: String,
+    model_id: String,
+) -> Result<()> {
+    codelet_sessions::profile_sections::delete_custom_model(&provider_id, &profile_name, &model_id)
+        .map_err(|e| Error::from_reason(format!("delete_custom_model failed: {e}")))
+}
