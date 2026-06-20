@@ -1078,6 +1078,14 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         profile_name: &str,
         definition: &codelet_rpc_types::CustomModelDefinition,
     ) -> Result<(), String> {
+        // TS parity (profile-management.ts saveProfile): profiles are only
+        // supported for the OpenAI API provider. Surface an error for a
+        // non-openai add rather than silently no-op'ing.
+        if provider_id != "openai" {
+            return Err(format!(
+                "Profiles are only supported for the OpenAI API provider (got '{provider_id}')"
+            ));
+        }
         let def = crate::conversions::custom_model_def_from_wire(definition);
         crate::profile_sections::save_custom_model(provider_id, profile_name, &def, None)
             .map_err(|e| e.to_string())
@@ -1090,6 +1098,11 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         original_model_id: &str,
         definition: &codelet_rpc_types::CustomModelDefinition,
     ) -> Result<(), String> {
+        if provider_id != "openai" {
+            return Err(format!(
+                "Profiles are only supported for the OpenAI API provider (got '{provider_id}')"
+            ));
+        }
         let def = crate::conversions::custom_model_def_from_wire(definition);
         crate::profile_sections::save_custom_model(
             provider_id,

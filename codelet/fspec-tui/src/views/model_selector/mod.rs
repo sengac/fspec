@@ -602,11 +602,19 @@ impl ModelSelectorView {
         if let Some(shell_title) = overlay_title {
             let mode = self.custom_model_mode.clone();
             let form = self.form.clone();
+            // Single footer that fully replaces the browse hints while an
+            // overlay is open (TS parity): the form/confirm view owns the
+            // footer, so the scaffold's pinned slot carries the overlay hint
+            // rather than the stale browse shortcuts.
+            let overlay_footer = match &mode {
+                CustomModelMode::DeleteConfirm { .. } => form_render::CONFIRM_FOOTER,
+                _ => form_render::FORM_FOOTER,
+            };
             crate::views::full_screen_shell::render_full_screen_scaffold_raw_title(
                 area,
                 buf,
                 &shell_title,
-                rows::FOOTER,
+                overlay_footer,
                 |body_area, buf| match &mode {
                     CustomModelMode::Add { profile_name, .. } => {
                         form_render::render_form(
@@ -668,11 +676,6 @@ impl ModelSelectorView {
             },
             None,
         );
-    }
-
-    pub fn visible_rows_for(area: Rect) -> usize {
-        area.height
-            .saturating_sub(crate::views::full_screen_shell::CHROME_ROWS) as usize
     }
 }
 
@@ -1025,6 +1028,38 @@ mod tests {
         assert!(v.selected_index >= v.scroll_offset);
         // @step And the scroll offset returns to 0
         assert_eq!(v.scroll_offset, 0);
+    }
+
+    /// Scenario: Returning to the first model reveals the leading provider header
+    #[test]
+    fn returning_to_first_model_reveals_leading_header() {
+        // @step Given the model selector has been scrolled down a tall list
+        let mut v = tall_view();
+        render_at(&mut v, 60, 14);
+        let visible = v.visible_rows;
+        for _ in 0..(visible + 5) {
+            v.handle_key(key(KeyCode::Down));
+        }
+        assert!(v.scroll_offset > 0, "precondition: viewport scrolled away");
+        // Row 0 is the non-selectable provider header.
+        assert!(!v.rows[0].selectable, "row 0 must be the provider header");
+
+        // @step When I press Up until the cursor reaches the first selectable model
+        let first = rows::first_selectable_or_zero(&v.rows);
+        while v.selected_index > first {
+            v.handle_key(key(KeyCode::Up));
+        }
+
+        // @step Then the scroll offset is 0
+        assert_eq!(v.scroll_offset, 0);
+        // @step And the provider header row at index 0 is inside the visible window
+        assert!(v.visible_rows > 0, "viewport must have at least one row");
+        assert!(
+            v.scroll_offset < v.scroll_offset + v.visible_rows,
+            "row 0 must fall within [offset, offset+visible): offset={}, visible={}",
+            v.scroll_offset,
+            v.visible_rows
+        );
     }
 
     /// Scenario: End jumps to the last row and pins it to the bottom edge
@@ -1544,7 +1579,27 @@ mod tests {
     #[test]
     fn e_on_custom_model_opens_edit_prefilled() {
         // @step Given the model selector is showing a profile section with a custom model
-        let mut v = expanded_profile_view();
+        // Custom model carries a stored display name distinct from its id so the
+        // prefill of a real display name is exercised (RPC-346 surfaces it on the row).
+        let named_custom = ModelEntry {
+            id: "mycustom".to_string(),
+            display_name: "My Custom".to_string(),
+            context_window: 128_000,
+            supports_reasoning: false,
+            supports_vision: false,
+            is_custom: true,
+        };
+        let mut v = ModelSelectorView::new();
+        v.set_session(Some(SessionId::new("s-1")));
+        v.set_providers(vec![profile_provider_with(
+            "openai",
+            "my-profile",
+            vec![model("base"), named_custom],
+        )]);
+        v.expanded = ["openai".to_string()].into_iter().collect();
+        v.rebuild_rows();
+        v.selected_index = rows::first_selectable_or_zero(&v.rows);
+        v.adjust_scroll();
         // @step And the cursor is on that custom model row
         v.handle_key(key(KeyCode::Down));
         let row = &v.rows[v.selected_index()];
@@ -1569,7 +1624,7 @@ mod tests {
         // @step And the form is prefilled with the model's id, display name, context window, reasoning and vision
         let f = v.form();
         assert_eq!(f.id, "mycustom");
-        assert_eq!(f.display_name, "mycustom");
+        assert_eq!(f.display_name, "My Custom");
         assert_eq!(f.context_window, "128000");
         assert_eq!(f.reasoning, Some(false));
         assert_eq!(f.has_vision, Some(false));
@@ -1863,5 +1918,70 @@ mod tests {
         }
         // @step And the form closes and the provider list is refreshed
         assert_eq!(v.custom_model_mode(), &CustomModelMode::Browse);
+    }
+
+    /// Render a view into a `width`x`height` TestBackend and return the buffer
+    /// text (one row per line) so footer/visible-text assertions are possible.
+    fn render_to_text(v: &mut ModelSelectorView, width: u16, height: u16) -> String {
+        let mut term = ratatui::Terminal::new(ratatui::backend::TestBackend::new(width, height))
+            .expect("term");
+        term.draw(|f| v.render(f.area(), f.buffer_mut()))
+            .expect("draw");
+        let buf = term.backend().buffer().clone();
+        let mut out = String::new();
+        for y in 0..buf.area.height {
+            for x in 0..buf.area.width {
+                out.push_str(buf[(x, y)].symbol());
+            }
+            out.push('\n');
+        }
+        out
+    }
+
+    /// Scenario: An open overlay shows only the form footer, not the browse footer
+    #[test]
+    fn open_overlay_shows_only_form_footer() {
+        // @step Given the Add Custom Model form is open
+        let mut v = profile_header_view();
+        v.handle_key(key(KeyCode::Char('a')));
+        assert!(matches!(v.custom_model_mode(), CustomModelMode::Add { .. }));
+
+        // @step When the model selector is rendered
+        let text = render_to_text(&mut v, 80, 24);
+
+        // @step Then the footer shows the form hint "Enter save"
+        assert!(
+            text.contains("Enter save"),
+            "form footer hint missing; got:\n{text}"
+        );
+        // @step And the browse hint "r Refresh" is not shown
+        assert!(
+            !text.contains("r Refresh"),
+            "browse footer must not appear while the form is open; got:\n{text}"
+        );
+    }
+
+    /// Scenario: Editing a custom model with no stored display name starts blank
+    #[test]
+    fn edit_with_no_stored_display_name_starts_blank() {
+        // @step Given a custom model whose display label is identical to its id
+        let mut v = expanded_profile_view();
+        // expanded_profile_view's custom_model("mycustom") has display_name == id.
+
+        // @step When I press "e" on that custom model row
+        v.handle_key(key(KeyCode::Down)); // move from base model to the custom row
+        v.handle_key(key(KeyCode::Char('e')));
+        assert!(matches!(
+            v.custom_model_mode(),
+            CustomModelMode::Edit { .. }
+        ));
+
+        // @step Then the Edit form opens with the Display Name field blank
+        assert_eq!(
+            v.form().display_name,
+            "",
+            "display name must start blank when the label only echoes the id"
+        );
+        assert_eq!(v.form().id, "mycustom");
     }
 }

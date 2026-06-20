@@ -78,7 +78,11 @@ pub struct LocalServerProfile {
     /// entry's `id` is all the renderer needs; extra fields are ignored.
     #[serde(rename = "customModels", default)]
     pub custom_models: Vec<CustomModelDef>,
-    #[serde(rename = "contextWindow", default)]
+    #[serde(
+        rename = "contextWindow",
+        default,
+        deserialize_with = "de_opt_u32_lenient"
+    )]
     pub context_window: Option<u32>,
 }
 
@@ -100,9 +104,17 @@ pub struct CustomModelDef {
     /// (`openai` | `codex` | `claude` | `gemini` | `zai`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub facade: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", default)]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "de_opt_u32_lenient"
+    )]
     pub context_window: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none", default)]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        default,
+        deserialize_with = "de_opt_u32_lenient"
+    )]
     pub max_output_tokens: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub compaction_threshold: Option<CompactionThreshold>,
@@ -120,7 +132,55 @@ pub struct CompactionThreshold {
     /// `"tokens"` (absolute count) or `"percentage"` (1-100 of context window).
     #[serde(rename = "type")]
     pub threshold_type: String,
+    #[serde(deserialize_with = "de_u32_lenient")]
     pub value: u32,
+}
+
+/// Lenient deserializer for an optional unsigned integer that tolerates a JSON
+/// number written as a float (e.g. `80.0`) or one exceeding the `u32` range
+/// (saturating to `u32::MAX`), matching the TS `number` width so a config
+/// written by the TS build never drops the whole profile on read (RPC-346
+/// parity fix). A non-numeric / negative / non-finite value deserializes to
+/// `None` rather than failing the surrounding profile.
+fn de_opt_u32_lenient<'de, D>(deserializer: D) -> Result<Option<u32>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = Option::<serde_json::Value>::deserialize(deserializer)?;
+    Ok(value.and_then(coerce_u32))
+}
+
+/// Lenient deserializer for a required `u32`; tolerates floats / oversized
+/// numbers the same way as [`de_opt_u32_lenient`], falling back to `0` rather
+/// than failing the surrounding profile.
+fn de_u32_lenient<'de, D>(deserializer: D) -> Result<u32, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = serde_json::Value::deserialize(deserializer)?;
+    Ok(coerce_u32(value).unwrap_or(0))
+}
+
+/// Coerce a JSON value into a `u32`, truncating floats and saturating values
+/// above `u32::MAX`. Returns `None` for non-numeric, negative or non-finite
+/// inputs.
+fn coerce_u32(value: serde_json::Value) -> Option<u32> {
+    match value {
+        serde_json::Value::Number(n) => {
+            if let Some(u) = n.as_u64() {
+                Some(u.min(u64::from(u32::MAX)) as u32)
+            } else if let Some(f) = n.as_f64() {
+                if f.is_finite() && f >= 0.0 {
+                    Some(f.min(f64::from(u32::MAX)) as u32)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
 }
 
 /// Resolve `~/.fspec` (parity with the TS `getFspecUserDir`).
@@ -353,10 +413,13 @@ pub fn merge_profile_models(
     for c in custom {
         entries.push(ModelEntry {
             id: c.id.clone(),
-            display_name: c.id.clone(),
-            context_window,
-            supports_reasoning: false,
-            supports_vision: false,
+            // Parity with TS `custom.displayName || custom.id`: fall back to
+            // the id only when no display name is stored, instead of always
+            // overwriting it with the id (RPC-346/RPC-344 prefill fix).
+            display_name: c.display_name.clone().unwrap_or_else(|| c.id.clone()),
+            context_window: c.context_window.unwrap_or(context_window),
+            supports_reasoning: c.reasoning.unwrap_or(false),
+            supports_vision: c.has_vision.unwrap_or(false),
             is_custom: true,
         });
     }
@@ -536,8 +599,8 @@ mod persistence_tests {
     //! config file so the suite stays fully offline.
 
     use super::{
-        delete_custom_model_at, load_local_server_profiles_from, save_custom_model_at,
-        CompactionThreshold, CustomModelDef,
+        delete_custom_model_at, load_local_server_profiles_from, merge_profile_models,
+        save_custom_model_at, CompactionThreshold, CustomModelDef,
     };
     use std::fs;
     use std::path::PathBuf;
@@ -726,5 +789,64 @@ mod persistence_tests {
         // @step Then the reloaded profile contains a matching custom model definition
         let profile = profiles.iter().find(|p| p.name == "work-vllm").unwrap();
         assert_eq!(profile.custom_models, vec![full]);
+    }
+
+    /// Scenario: A custom model with a float compaction value still loads
+    #[test]
+    fn float_compaction_value_still_loads() {
+        // @step Given an "openai" profile "work-vllm" whose custom model stores compactionThreshold.value as the float 80.0
+        let (_dir, path) = config_with(
+            "work-vllm",
+            r#","customModels":[{"id":"m","compactionThreshold":{"type":"percentage","value":80.0}}]"#,
+        );
+
+        // @step When I reload the local-server profiles
+        let profiles = load_local_server_profiles_from(&path);
+
+        // @step Then the profile loads and the custom model's compaction value is 80
+        let profile = profiles.iter().find(|p| p.name == "work-vllm").unwrap();
+        let threshold = profile.custom_models[0]
+            .compaction_threshold
+            .as_ref()
+            .unwrap();
+        assert_eq!(threshold.value, 80);
+    }
+
+    /// Scenario: A stored display name is surfaced when merging custom models
+    #[test]
+    fn stored_display_name_is_surfaced_on_merge() {
+        // @step Given a custom model stored with displayName "My Model" and another with no stored display name
+        let custom = vec![
+            CustomModelDef {
+                id: "with-name".to_string(),
+                display_name: Some("My Model".to_string()),
+                facade: None,
+                context_window: None,
+                max_output_tokens: None,
+                compaction_threshold: None,
+                reasoning: Some(true),
+                has_vision: None,
+            },
+            CustomModelDef {
+                id: "no-name".to_string(),
+                display_name: None,
+                facade: None,
+                context_window: None,
+                max_output_tokens: None,
+                compaction_threshold: None,
+                reasoning: None,
+                has_vision: None,
+            },
+        ];
+
+        // @step When the custom models are merged into wire model rows
+        let entries = merge_profile_models(Vec::new(), &custom, 128_000);
+
+        // @step Then the first row's display name is "My Model" and the second falls back to its id
+        let with_name = entries.iter().find(|e| e.id == "with-name").unwrap();
+        let no_name = entries.iter().find(|e| e.id == "no-name").unwrap();
+        assert_eq!(with_name.display_name, "My Model");
+        assert!(with_name.supports_reasoning);
+        assert_eq!(no_name.display_name, "no-name");
     }
 }

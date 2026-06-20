@@ -5,7 +5,8 @@ Feature: Model selector opens on the current model
   """
   Dispatch order is favorable: set_current_model is called before set_providers (dispatch_model_selector.rs:28-29 then :42-43), so cursor seeding happens synchronously inside set_providers — no TS-style hasAutoExpanded latch needed
   Add rows::index_of_model(rows, current_model_id) helper (selectable guard so headers with empty model_id can't match); seed selected_index in set_providers, else keep validate-or-first-selectable fallback
-  Keep expand-all behavior here (existing mod.rs:474 asserts is_expanded('openai')). Strict TS expand-only-current-section parity is RPC-342's concern — this card stays a minimal cursor-seed fix
+  RECONCILED (re-review): this card was shipped together with RPC-342, so set_providers now collapses all sections by default and auto-expands ONLY the current model's section (this is the more TS-faithful behavior). The earlier "keep expand-all" note and the stale mod.rs:474 is_expanded('openai') reference no longer apply; the cursor seeding remains the focus of this card and the expand-only-current behavior is covered by RPC-342.
+  KNOWN LIMITATION: matching is by model id only (TS parity, ModelSelectorScreen.tsx:98-109); if the same model id appears under two providers the earlier provider's copy is highlighted. No example-map case covers a duplicate-model-id collision.
   """
 
   # ========================================

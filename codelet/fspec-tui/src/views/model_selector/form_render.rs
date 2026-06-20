@@ -15,8 +15,14 @@ use ratatui::widgets::{Paragraph, Widget};
 
 use super::form::{CustomModelForm, FieldType, FORM_FIELDS};
 
-const FORM_FOOTER: &str = "↑↓ navigate fields | ←→ cycle options | Enter save | Esc cancel";
-const CONFIRM_FOOTER: &str = "y/Enter confirm delete | n/Esc cancel";
+/// Footer hint for the add/edit form overlay. Rendered ONCE by the parent
+/// scaffold's pinned footer slot (not inside the body) so the browse footer is
+/// fully replaced while a form is open — parity with the TS `CustomModelFormView`
+/// which early-returns in place of the browse view.
+pub(super) const FORM_FOOTER: &str =
+    "↑↓ navigate fields | ←→ cycle options | Enter save | Esc cancel";
+/// Footer hint for the delete-confirmation overlay (see [`FORM_FOOTER`]).
+pub(super) const CONFIRM_FOOTER: &str = "y/Enter confirm delete | n/Esc cancel";
 
 /// Display value for a field given the current form values.
 fn field_value(form: &CustomModelForm, idx: usize) -> String {
@@ -114,11 +120,6 @@ pub(super) fn render_form(
         }
         lines.push(Line::from(spans));
     }
-    lines.push(Line::from(""));
-    lines.push(Line::from(Span::styled(
-        FORM_FOOTER.to_string(),
-        Style::default().add_modifier(Modifier::DIM),
-    )));
 
     Paragraph::new(lines).render(area, buf);
 }
@@ -156,11 +157,6 @@ pub(super) fn render_delete_confirm(
             ),
             Span::raw("?"),
         ]),
-        Line::from(""),
-        Line::from(Span::styled(
-            CONFIRM_FOOTER.to_string(),
-            Style::default().add_modifier(Modifier::DIM),
-        )),
     ];
     Paragraph::new(lines).render(area, buf);
 }

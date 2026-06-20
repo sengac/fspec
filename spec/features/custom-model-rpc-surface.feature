@@ -64,3 +64,10 @@ Feature: Backend custom-model RPC + NAPI surface (add/update/delete_custom_model
     And a client calls delete_custom_model for a non-openai provider
     Then each call returns Ok
     And the configuration is left untouched
+
+  Scenario: add_custom_model and update_custom_model on a non-openai provider return an error
+    Given a config with an openai profile "work-vllm"
+    When a client calls add_custom_model for a non-openai provider
+    And a client calls update_custom_model for a non-openai provider
+    Then each call returns Err mentioning the OpenAI-only constraint
+    And the configuration is left untouched

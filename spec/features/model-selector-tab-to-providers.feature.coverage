@@ -20,6 +20,23 @@
               ]
             }
           ]
+        },
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "1399-1411",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                505,
+                506,
+                507,
+                508,
+                509,
+                510
+              ]
+            }
+          ]
         }
       ]
     },
@@ -188,6 +205,6 @@
       "codelet/fspec-tui/src/views/model_selector/mod.rs",
       "codelet/fspec-tui/src/views/navigator_events.rs"
     ],
-    "totalLinesCovered": 186
+    "totalLinesCovered": 205
   }
 }

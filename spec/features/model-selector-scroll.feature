@@ -96,3 +96,9 @@ Feature: Model selector list does not scroll to follow the cursor
     Then on the next paint the scroll offset is re-clamped
     And the selected row is still visible
     And there are no blank trailing rows rendered
+
+  Scenario: Returning to the first model reveals the leading provider header
+    Given the model selector has been scrolled down a tall list
+    When I press Up until the cursor reaches the first selectable model
+    Then the scroll offset is 0
+    And the provider header row at index 0 is inside the visible window

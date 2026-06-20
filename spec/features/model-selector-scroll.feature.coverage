@@ -249,11 +249,50 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Returning to the first model reveals the leading provider header",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+          "lines": "1034-1070",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-tui/src/views/model_selector/mod.rs"
@@ -261,6 +300,6 @@
     "implFiles": [
       "codelet/fspec-tui/src/views/model_selector/mod.rs"
     ],
-    "totalLinesCovered": 303
+    "totalLinesCovered": 363
   }
 }

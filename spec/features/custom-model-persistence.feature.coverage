@@ -53,6 +53,56 @@
               ]
             }
           ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "648-668",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
+              ]
+            }
+          ]
         }
       ]
     },
@@ -90,6 +140,56 @@
                 281,
                 282,
                 283
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "671-687",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
               ]
             }
           ]
@@ -138,6 +238,62 @@
               ]
             }
           ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "690-706",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389
+              ]
+            }
+          ]
         }
       ]
     },
@@ -160,6 +316,62 @@
                 311,
                 312,
                 313
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "709-719",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389
               ]
             }
           ]
@@ -193,6 +405,56 @@
                 329,
                 330,
                 331
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "722-747",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
               ]
             }
           ]
@@ -242,6 +504,56 @@
                 256,
                 257,
                 258
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "750-762",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
               ]
             }
           ]
@@ -327,13 +639,271 @@
               ]
             }
           ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "765-792",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A custom model with a float compaction value still loads",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "795-811",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "794-812",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A stored display name is surfaced when merging custom models",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "814-845",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/sessions/src/profile_sections.rs",
+          "lines": "815-851",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427
+              ]
+            }
+          ]
         }
       ]
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/sessions/src/profile_sections.rs"
@@ -341,6 +911,6 @@
     "implFiles": [
       "codelet/sessions/src/profile_sections.rs"
     ],
-    "totalLinesCovered": 367
+    "totalLinesCovered": 1044
   }
 }

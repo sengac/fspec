@@ -159,7 +159,16 @@ impl CustomModelForm {
     ) -> Self {
         Self {
             id: id.to_string(),
-            display_name: display_name.to_string(),
+            // Parity with TS: the wire row's display name falls back to the id
+            // when no custom display name is stored (see merge_profile_models).
+            // Treat label == id as "no stored display name" so editing and
+            // re-saving an unnamed custom model does NOT materialize
+            // displayName == id on disk (a write the TS build never makes).
+            display_name: if display_name == id {
+                String::new()
+            } else {
+                display_name.to_string()
+            },
             facade: None,
             context_window: if context_window > 0 {
                 context_window.to_string()

@@ -129,7 +129,7 @@ async fn scenario_add_custom_model_parity_across_transports() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn scenario_no_handle_silent_no_op() {
     let (_temp, service) = build_service_without_handle();
-    let (embedded, _websocket) = dual_backends(service).await;
+    let (embedded, websocket) = dual_backends(service).await;
     let def = definition("my-model");
 
     // @step Given a FspecServiceImpl with no SessionManagerHandle attached
@@ -158,6 +158,31 @@ async fn scenario_no_handle_silent_no_op() {
     assert!(
         delete.is_ok(),
         "delete must be Ok without a handle: {delete:?}"
+    );
+
+    // @step And the websocket transport behaves identically over its no-handle path
+    let ws_add = websocket
+        .add_custom_model("openai".into(), "work-vllm".into(), def.clone())
+        .await;
+    let ws_update = websocket
+        .update_custom_model(
+            "openai".into(),
+            "work-vllm".into(),
+            "my-model".into(),
+            def.clone(),
+        )
+        .await;
+    let ws_delete = websocket
+        .delete_custom_model("openai".into(), "work-vllm".into(), "my-model".into())
+        .await;
+    assert!(ws_add.is_ok(), "websocket add must be Ok: {ws_add:?}");
+    assert!(
+        ws_update.is_ok(),
+        "websocket update must be Ok: {ws_update:?}"
+    );
+    assert!(
+        ws_delete.is_ok(),
+        "websocket delete must be Ok: {ws_delete:?}"
     );
 
     // @step And no configuration is written

@@ -150,3 +150,14 @@ Feature: Model selector missing custom-model CRUD (a/e/d keybinds)
     And I press Enter
     Then the custom model is saved in place under its original id with the updated display name
     And the form closes and the provider list is refreshed
+
+  Scenario: An open overlay shows only the form footer, not the browse footer
+    Given the Add Custom Model form is open
+    When the model selector is rendered
+    Then the footer shows the form hint "Enter save"
+    And the browse hint "r Refresh" is not shown
+
+  Scenario: Editing a custom model with no stored display name starts blank
+    Given a custom model whose display label is identical to its id
+    When I press "e" on that custom model row
+    Then the Edit form opens with the Display Name field blank

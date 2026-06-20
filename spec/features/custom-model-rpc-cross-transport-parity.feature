@@ -29,4 +29,5 @@ Feature: Custom-model RPC write surface cross-transport parity
     Given a FspecServiceImpl with no SessionManagerHandle attached
     When a client calls add_custom_model, update_custom_model, and delete_custom_model
     Then each call returns Ok
+    And the websocket transport behaves identically over its no-handle path
     And no configuration is written

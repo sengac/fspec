@@ -6,9 +6,10 @@
 Feature: Model selector model-change re-resolves nothing server-side (drops rich metadata)
 
   """
-  Extract creation-time resolution (model-type detect plus select_model/set_model_direct plus limits compute) into a shared helper so create_session_with_id and set_model call the same code, avoiding drift. The inner provider_manager is reached via codelet_cli Session::provider_manager_mut() (session/mod.rs:148).
-  Offline-testable: fallback_models.json gives same-provider models with distinct output caps (claude-opus-4-5 out=32000, claude-haiku-3-5 out=8192, claude-sonnet-4 out=16000) all at ctx=200000, so an opus->haiku switch changes max_output_tokens and compaction_threshold without network. Test via SessionManagerHandle create_session then set_model then get_session_model, mirroring rpc081_restore_session_messages.rs setup.
-  Fix lives in codelet/sessions handle_impl.rs set_model (handle_impl.rs:1008-1022). After swapping the label strings on BackgroundSession, re-resolve on the inner session provider_manager and call session.set_model_limits with the recomputed context_window / max_output_tokens / compaction_threshold, mirroring the creation-time chain at session_manager.rs:504-561.
+  Extract creation-time resolution (model-type detect plus select_model/set_model_direct plus limits compute) into a shared helper (model_resolution::apply_model_selection) so create_session_with_id and set_model call the same code, avoiding drift. The inner provider_manager is reached via codelet_cli Session::provider_manager_mut() (session/mod.rs:148).
+  Offline-testable via a CROSS-FAMILY switch (same-provider switches are not observable because the Claude limits resolver clamps every anthropic model to ctx 200000 / out 8192): a session created on anthropic/claude-opus-4-5 (ctx 200000, out 8192) switched to google/gemini-2.5-pro (ctx 1048576, out 65536, 80% compaction) changes all three cached limit fields without network. Dummy ANTHROPIC_API_KEY + GOOGLE_GENERATIVE_AI_API_KEY env vars satisfy credential detection. Test via SessionManagerHandle create_session then set_model then get_session_model, mirroring rpc081_restore_session_messages.rs setup.
+  Scope: re-resolve the registry-derivable LIMIT fields (context_window, max_output_tokens, compaction_threshold) and the inner manager's selected model, with NO wire change. The per-selection facade override (and reasoning surfacing) for custom models is NOT in scope here — it requires widening the set_model wire to carry the facade and is tracked as a follow-up (RPC-348). A busy-session guard declines the switch while a request is streaming.
+  Fix lives in codelet/sessions handle_impl.rs set_model. After swapping the label strings on BackgroundSession, re-resolve on the inner session provider_manager and call session.set_model_limits with the recomputed context_window / max_output_tokens / compaction_threshold, mirroring the creation-time chain.
   """
 
   # ========================================
@@ -75,3 +76,8 @@ Feature: Model selector model-change re-resolves nothing server-side (drops rich
     Given a SessionManagerHandle with no session registered for the id "nonexistent-uuid"
     When I switch the model for that id to provider "google" model "gemini-2.5-pro" via set_model
     Then set_model returns Err containing "Session not found"
+
+  Scenario: Switching the model while the session is busy is declined
+    Given a session created on "anthropic/claude-opus-4-5" whose inner session is currently locked
+    When I switch the session model to provider "google" model "gemini-2.5-pro" via set_model
+    Then set_model returns Err containing "busy"

@@ -239,11 +239,34 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Switching the model while the session is busy is declined",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs",
+          "lines": "191-228",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                1002,
+                1003,
+                1004,
+                1005,
+                1006,
+                1007,
+                1008
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/sessions/tests/rpc343_mid_session_model_reresolution.rs"
@@ -252,6 +275,6 @@
       "codelet/sessions/src/handle_impl.rs",
       "codelet/sessions/src/model_resolution.rs"
     ],
-    "totalLinesCovered": 307
+    "totalLinesCovered": 352
   }
 }

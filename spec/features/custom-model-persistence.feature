@@ -76,3 +76,13 @@ Feature: Backend custom-model persistence (save/delete on local-server profiles)
     When I save a custom model with every field set
     And I reload the local-server profiles
     Then the reloaded profile contains a matching custom model definition
+
+  Scenario: A custom model with a float compaction value still loads
+    Given an "openai" profile "work-vllm" whose custom model stores compactionThreshold.value as the float 80.0
+    When I reload the local-server profiles
+    Then the profile loads and the custom model's compaction value is 80
+
+  Scenario: A stored display name is surfaced when merging custom models
+    Given a custom model stored with displayName "My Model" and another with no stored display name
+    When the custom models are merged into wire model rows
+    Then the first row's display name is "My Model" and the second falls back to its id

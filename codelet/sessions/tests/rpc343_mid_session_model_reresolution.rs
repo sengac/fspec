@@ -113,9 +113,7 @@ async fn switching_model_updates_inner_provider_manager() {
     assert!(result.is_ok(), "set_model should return Ok, got {result:?}");
 
     // @step Then the inner session provider manager reports a gemini model id as its selected model
-    let session = manager
-        .get_session(&sid.value)
-        .expect("session must exist");
+    let session = manager.get_session(&sid.value).expect("session must exist");
     let inner = session.inner.lock().await;
     let selected = inner.current_model_id().unwrap_or_default();
     assert!(
@@ -188,4 +186,35 @@ async fn switching_model_on_unknown_session_reports_not_found() {
             "expected error containing `Session not found`, got `{msg}`"
         ),
     }
+}
+
+// =============================================================================
+// Scenario: Switching the model while the session is busy is declined
+// =============================================================================
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn switching_model_while_busy_is_declined() {
+    // @step Given a session created on "anthropic/claude-opus-4-5" whose inner session is currently locked
+    let (manager, sid) = manager_with_opus_session().await;
+    let handle: &dyn SessionManagerHandle = manager.as_ref();
+    let before = handle.get_session_model(&sid);
+    let session = manager.get_session(&sid.value).expect("session must exist");
+    // Hold the inner lock to simulate a request streaming in-flight.
+    let _guard = session.inner.lock().await;
+
+    // @step When I switch the session model to provider "google" model "gemini-2.5-pro" via set_model
+    let result = handle.set_model(&sid, "google", "gemini-2.5-pro");
+
+    // @step Then set_model returns Err containing "busy"
+    match result {
+        Ok(()) => panic!("expected Err while busy, got Ok"),
+        Err(msg) => assert!(
+            msg.contains("busy"),
+            "expected error containing `busy`, got `{msg}`"
+        ),
+    }
+    // And the prior limits are left unchanged.
+    drop(_guard);
+    let after = handle.get_session_model(&sid);
+    assert_eq!(after.context_window, before.context_window);
+    assert_eq!(after.max_output_tokens, before.max_output_tokens);
 }

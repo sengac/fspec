@@ -74,7 +74,10 @@ fn scenario_add_custom_model_appends() {
     let result = handle.add_custom_model("openai", "work-vllm", &full_definition("my-model"));
 
     // @step Then the call returns Ok
-    assert!(result.is_ok(), "add_custom_model should succeed: {result:?}");
+    assert!(
+        result.is_ok(),
+        "add_custom_model should succeed: {result:?}"
+    );
 
     // @step And the profile's customModels contains an entry with id "my-model" and the supplied fields
     let profile = read_profile(tmp.path(), "work-vllm");
@@ -108,7 +111,10 @@ fn scenario_update_custom_model_replaces_in_place() {
         handle.update_custom_model("openai", "work-vllm", "alpha", &full_definition("alpha2"));
 
     // @step Then the call returns Ok
-    assert!(result.is_ok(), "update_custom_model should succeed: {result:?}");
+    assert!(
+        result.is_ok(),
+        "update_custom_model should succeed: {result:?}"
+    );
 
     // @step And the customModels entry formerly "alpha" is now "alpha2" at the same array position
     let profile = read_profile(tmp.path(), "work-vllm");
@@ -139,7 +145,10 @@ fn scenario_delete_custom_model_drops_empty_key() {
     let result = handle.delete_custom_model("openai", "work-vllm", "only-model");
 
     // @step Then the call returns Ok
-    assert!(result.is_ok(), "delete_custom_model should succeed: {result:?}");
+    assert!(
+        result.is_ok(),
+        "delete_custom_model should succeed: {result:?}"
+    );
 
     // @step And the profile no longer has a customModels key
     let profile = read_profile(tmp.path(), "work-vllm");
@@ -169,10 +178,52 @@ fn scenario_delete_custom_model_idempotent_no_op() {
     let non_openai = handle.delete_custom_model("anthropic", "work-vllm", "x");
 
     // @step Then each call returns Ok
-    assert!(missing.is_ok(), "missing-profile delete should be Ok: {missing:?}");
-    assert!(non_openai.is_ok(), "non-openai delete should be Ok: {non_openai:?}");
+    assert!(
+        missing.is_ok(),
+        "missing-profile delete should be Ok: {missing:?}"
+    );
+    assert!(
+        non_openai.is_ok(),
+        "non-openai delete should be Ok: {non_openai:?}"
+    );
 
     // @step And the configuration is left untouched
     let after = std::fs::read_to_string(tmp.path().join("fspec-config.json")).unwrap();
-    assert_eq!(before, after, "config must be byte-identical after no-op deletes");
+    assert_eq!(
+        before, after,
+        "config must be byte-identical after no-op deletes"
+    );
+}
+
+// Scenario: add_custom_model and update_custom_model on a non-openai provider return an error
+#[test]
+#[serial]
+fn scenario_add_update_non_openai_provider_errors() {
+    let tmp = TempDir::new().unwrap();
+    // @step Given a config with an openai profile "work-vllm"
+    seed_config(
+        tmp.path(),
+        json!({ "work-vllm": { "baseUrl": "http://localhost:8000" } }),
+    );
+    let before = std::fs::read_to_string(tmp.path().join("fspec-config.json")).unwrap();
+    let handle = make_handle();
+
+    // @step When a client calls add_custom_model for a non-openai provider
+    let added = handle.add_custom_model("anthropic", "work-vllm", &full_definition("m"));
+
+    // @step And a client calls update_custom_model for a non-openai provider
+    let updated = handle.update_custom_model("anthropic", "work-vllm", "m", &full_definition("m2"));
+
+    // @step Then each call returns Err mentioning the OpenAI-only constraint
+    assert!(added.is_err(), "non-openai add should be Err: {added:?}");
+    assert!(
+        updated.is_err(),
+        "non-openai update should be Err: {updated:?}"
+    );
+    assert!(added.unwrap_err().contains("OpenAI"));
+    assert!(updated.unwrap_err().contains("OpenAI"));
+
+    // @step And the configuration is left untouched
+    let after = std::fs::read_to_string(tmp.path().join("fspec-config.json")).unwrap();
+    assert_eq!(before, after, "config must be byte-identical after errors");
 }
