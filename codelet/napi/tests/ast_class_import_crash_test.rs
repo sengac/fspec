@@ -56,11 +56,20 @@ fn make_calls_edge(from_slug: &str, to_slug: &str) -> GraphEntity {
 /// Build a Function node entity for testing dedup.
 fn make_function_node(slug: &str) -> GraphEntity {
     let mut props = serde_json::Map::new();
-    props.insert("slug".to_string(), serde_json::Value::String(slug.to_string()));
-    props.insert("name".to_string(), serde_json::Value::String("test".to_string()));
+    props.insert(
+        "slug".to_string(),
+        serde_json::Value::String(slug.to_string()),
+    );
+    props.insert(
+        "name".to_string(),
+        serde_json::Value::String("test".to_string()),
+    );
     props.insert("isAsync".to_string(), serde_json::Value::Bool(false));
     props.insert("isPublic".to_string(), serde_json::Value::Bool(true));
-    props.insert("paramCount".to_string(), serde_json::Value::Number(0.into()));
+    props.insert(
+        "paramCount".to_string(),
+        serde_json::Value::Number(0.into()),
+    );
     props.insert("lineStart".to_string(), serde_json::Value::Number(1.into()));
     props.insert("lineEnd".to_string(), serde_json::Value::Number(5.into()));
     GraphEntity::Node {
@@ -73,9 +82,18 @@ fn make_function_node(slug: &str) -> GraphEntity {
 /// Build a Type node entity for testing dedup.
 fn make_type_node(slug: &str) -> GraphEntity {
     let mut props = serde_json::Map::new();
-    props.insert("slug".to_string(), serde_json::Value::String(slug.to_string()));
-    props.insert("name".to_string(), serde_json::Value::String("TestClass".to_string()));
-    props.insert("typeKind".to_string(), serde_json::Value::String("class".to_string()));
+    props.insert(
+        "slug".to_string(),
+        serde_json::Value::String(slug.to_string()),
+    );
+    props.insert(
+        "name".to_string(),
+        serde_json::Value::String("TestClass".to_string()),
+    );
+    props.insert(
+        "typeKind".to_string(),
+        serde_json::Value::String("class".to_string()),
+    );
     props.insert("isPublic".to_string(), serde_json::Value::Bool(true));
     GraphEntity::Node {
         node_type: "Type".to_string(),
@@ -124,7 +142,12 @@ def make_parser(ctx):
         .expect("Python extraction should not crash");
 
     // @step Then a TypeRef edge should exist from "make_parser" to "_OptionParser"
-    let typeref_edges = find_edges(&entities, "TypeRef", Some("make_parser"), Some("_OptionParser"));
+    let typeref_edges = find_edges(
+        &entities,
+        "TypeRef",
+        Some("make_parser"),
+        Some("_OptionParser"),
+    );
     assert!(
         !typeref_edges.is_empty(),
         "Should have TypeRef edge from make_parser to _OptionParser (underscore-prefixed class). \
@@ -198,7 +221,8 @@ public final class MyException extends RuntimeException {
         })
         .count();
     assert_eq!(
-        exact_bad, 0,
+        exact_bad,
+        0,
         "Should NOT have Type node with name 'name' (extracted from comment). Types: {:?}",
         entities
             .iter()
@@ -348,8 +372,14 @@ fn test_deduplicate_prunes_calls_edge_to_type_only_slug() {
         slug: "file-a".to_string(),
         properties: {
             let mut p = serde_json::Map::new();
-            p.insert("slug".to_string(), serde_json::Value::String("file-a".to_string()));
-            p.insert("path".to_string(), serde_json::Value::String("file-a.py".to_string()));
+            p.insert(
+                "slug".to_string(),
+                serde_json::Value::String("file-a".to_string()),
+            );
+            p.insert(
+                "path".to_string(),
+                serde_json::Value::String("file-a.py".to_string()),
+            );
             p
         },
     };
@@ -358,8 +388,14 @@ fn test_deduplicate_prunes_calls_edge_to_type_only_slug() {
         slug: "file-b".to_string(),
         properties: {
             let mut p = serde_json::Map::new();
-            p.insert("slug".to_string(), serde_json::Value::String("file-b".to_string()));
-            p.insert("path".to_string(), serde_json::Value::String("file-b.py".to_string()));
+            p.insert(
+                "slug".to_string(),
+                serde_json::Value::String("file-b".to_string()),
+            );
+            p.insert(
+                "path".to_string(),
+                serde_json::Value::String("file-b.py".to_string()),
+            );
             p
         },
     };
@@ -370,7 +406,12 @@ fn test_deduplicate_prunes_calls_edge_to_type_only_slug() {
     let deduped = deduplicate_entities(entities);
 
     // @step Then the Calls edge from "file-b::caller" to "file-a::MyClass" should be pruned
-    let remaining_calls = find_edges(&deduped, "Calls", Some("file-b::caller"), Some("file-a::MyClass"));
+    let remaining_calls = find_edges(
+        &deduped,
+        "Calls",
+        Some("file-b::caller"),
+        Some("file-a::MyClass"),
+    );
 
     // @step And no Calls edge should remain targeting "file-a::MyClass"
     assert!(

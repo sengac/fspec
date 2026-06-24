@@ -9,9 +9,8 @@
 //! exists for the requested provider name.
 
 use codelet_providers::oauth::custom_oauth::{
-    custom_oauth_authorize_json, custom_oauth_clear as core_clear,
-    custom_oauth_exchange_json, custom_oauth_needs_refresh_json,
-    custom_oauth_refresh_json, custom_oauth_store_path,
+    custom_oauth_authorize_json, custom_oauth_clear as core_clear, custom_oauth_exchange_json,
+    custom_oauth_needs_refresh_json, custom_oauth_refresh_json, custom_oauth_store_path,
 };
 use codelet_providers::oauth::custom_oauth_device_json::{
     custom_oauth_device_poll_json, custom_oauth_device_start_json,
@@ -42,15 +41,15 @@ pub struct NapiCustomTokens {
 /// opening the browser, hosting the loopback callback server, and
 /// then calling `custom_oauth_exchange` with the captured code.
 #[napi]
-pub async fn custom_oauth_authorize(
-    provider_name: String,
-) -> Result<NapiCustomAuthorizeResult> {
-    let payload_json = custom_oauth_authorize_json(&provider_name).await.map_err(|e| {
-        Error::new(
-            Status::GenericFailure,
-            format!("custom_oauth_authorize('{provider_name}') failed: {e}"),
-        )
-    })?;
+pub async fn custom_oauth_authorize(provider_name: String) -> Result<NapiCustomAuthorizeResult> {
+    let payload_json = custom_oauth_authorize_json(&provider_name)
+        .await
+        .map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("custom_oauth_authorize('{provider_name}') failed: {e}"),
+            )
+        })?;
     Ok(NapiCustomAuthorizeResult { payload_json })
 }
 
@@ -91,12 +90,14 @@ pub async fn custom_oauth_needs_refresh(provider_name: String) -> Result<bool> {
 /// script's `auth_refresh` / `refresh_token`, then persist the result.
 #[napi]
 pub async fn custom_oauth_refresh(provider_name: String) -> Result<NapiCustomTokens> {
-    let tokens_json = custom_oauth_refresh_json(&provider_name).await.map_err(|e| {
-        Error::new(
-            Status::GenericFailure,
-            format!("custom_oauth_refresh('{provider_name}') failed: {e}"),
-        )
-    })?;
+    let tokens_json = custom_oauth_refresh_json(&provider_name)
+        .await
+        .map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("custom_oauth_refresh('{provider_name}') failed: {e}"),
+            )
+        })?;
     Ok(NapiCustomTokens { tokens_json })
 }
 
@@ -113,9 +114,7 @@ pub async fn custom_oauth_clear(provider_name: String) -> Result<()> {
 
 /// Return the stored tokens for `provider_name`. `None` if not stored.
 #[napi]
-pub async fn custom_oauth_get_tokens(
-    provider_name: String,
-) -> Result<Option<NapiCustomTokens>> {
+pub async fn custom_oauth_get_tokens(provider_name: String) -> Result<Option<NapiCustomTokens>> {
     let path = custom_oauth_store_path(&provider_name);
     if !path.exists() {
         return Ok(None);
@@ -135,9 +134,7 @@ pub async fn custom_oauth_get_tokens(
 /// authorization map as JSON — typically `{device_code, user_code,
 /// verification_uri, interval}`.
 #[napi]
-pub async fn custom_oauth_device_start(
-    provider_name: String,
-) -> Result<NapiCustomAuthorizeResult> {
+pub async fn custom_oauth_device_start(provider_name: String) -> Result<NapiCustomAuthorizeResult> {
     let payload_json = custom_oauth_device_start_json(&provider_name)
         .await
         .map_err(|e| {
@@ -158,14 +155,13 @@ pub async fn custom_oauth_device_poll(
     provider_name: String,
     device_data_json: String,
 ) -> Result<NapiCustomTokens> {
-    let tokens_json =
-        custom_oauth_device_poll_json(&provider_name, &device_data_json)
-            .await
-            .map_err(|e| {
-                Error::new(
-                    Status::GenericFailure,
-                    format!("custom_oauth_device_poll('{provider_name}') failed: {e}"),
-                )
-            })?;
+    let tokens_json = custom_oauth_device_poll_json(&provider_name, &device_data_json)
+        .await
+        .map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("custom_oauth_device_poll('{provider_name}') failed: {e}"),
+            )
+        })?;
     Ok(NapiCustomTokens { tokens_json })
 }

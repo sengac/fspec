@@ -25,11 +25,7 @@ static FOOTER_POLLER_TOKENS: once_cell::sync::Lazy<
 /// * `session_id` - The session UUID string
 /// * `cwd` - The effective working directory (project root or worktree path)
 /// * `worktree_path` - If Some, the session is isolated (uses worktree CWD)
-pub(crate) fn spawn_footer_poller(
-    session_id: String,
-    cwd: String,
-    worktree_path: Option<String>,
-) {
+pub(crate) fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Option<String>) {
     let cancelled = Arc::new(AtomicBool::new(false));
     let cancelled_clone = cancelled.clone();
 
@@ -115,11 +111,7 @@ pub(crate) fn spawn_footer_poller(
             if let Ok((is_git, branch)) = git_result {
                 // Only emit if something changed (or on first run)
                 let cwd_changed = current_cwd != prev_cwd;
-                if first_run
-                    || cwd_changed
-                    || is_git != prev_is_git
-                    || branch != prev_branch
-                {
+                if first_run || cwd_changed || is_git != prev_is_git || branch != prev_branch {
                     first_run = false;
                     prev_cwd = current_cwd.clone();
                     prev_display_path = current_display_path.clone();
@@ -135,10 +127,9 @@ pub(crate) fn spawn_footer_poller(
                         is_git,
                         branch,
                     );
-                    let _ = SessionManager::instance().chunks_tx().send((
-                        codelet_rpc_types::SessionId::from(sid.clone()),
-                        chunk,
-                    ));
+                    let _ = SessionManager::instance()
+                        .chunks_tx()
+                        .send((codelet_rpc_types::SessionId::from(sid.clone()), chunk));
                 }
             }
 

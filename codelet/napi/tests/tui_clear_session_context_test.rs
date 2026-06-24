@@ -23,7 +23,10 @@ fn test_ai_has_no_memory_of_prior_conversation_after_clear() {
     // @step And I have discussed "topic X" with the AI for 5 turns
     for i in 0..5 {
         messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(format!("Discussion about topic X - turn {}", i))),
+            content: OneOrMany::one(UserContent::text(format!(
+                "Discussion about topic X - turn {}",
+                i
+            ))),
         });
     }
     assert_eq!(messages.len(), 5);
@@ -37,7 +40,10 @@ fn test_ai_has_no_memory_of_prior_conversation_after_clear() {
 
     // @step Then the AI should NOT know about "topic X"
     // Verified by messages being empty - no prior context sent to LLM
-    assert!(messages.is_empty(), "Messages should be cleared - AI has no memory of topic X");
+    assert!(
+        messages.is_empty(),
+        "Messages should be cleared - AI has no memory of topic X"
+    );
 }
 
 // ============================================================================
@@ -49,18 +55,18 @@ fn test_ai_has_no_memory_of_prior_conversation_after_clear() {
 #[test]
 fn test_system_reminders_preserved_after_clear() {
     // @step Given I have a TUI session with CLAUDE.md loaded
-    let mut messages: Vec<Message> = vec![
-        Message::User {
-            content: OneOrMany::one(UserContent::text("System context from CLAUDE.md - fspec project")),
-        },
-    ];
+    let mut messages: Vec<Message> = vec![Message::User {
+        content: OneOrMany::one(UserContent::text(
+            "System context from CLAUDE.md - fspec project",
+        )),
+    }];
 
     // @step And environment info shows the current date
     // (implicitly part of context reminders that will be reinjected)
 
     // @step When I type "/clear" and press Enter
     messages.clear();
-    
+
     // Simulate inject_context_reminders() being called by session_clear_history
     // In real implementation, this reinjects CLAUDE.md and environment info
     let has_project_context = true; // inject_context_reminders() restores project context
@@ -70,10 +76,16 @@ fn test_system_reminders_preserved_after_clear() {
     // (Context would be available if reminders were reinjected)
 
     // @step Then the AI should still know it's working on fspec project
-    assert!(has_project_context, "AI should know it's working on fspec project from CLAUDE.md");
+    assert!(
+        has_project_context,
+        "AI should know it's working on fspec project from CLAUDE.md"
+    );
 
     // @step And the AI should still know the current date
-    assert!(has_date_context, "AI should know the current date from environment info");
+    assert!(
+        has_date_context,
+        "AI should know the current date from environment info"
+    );
 }
 
 // ============================================================================
@@ -104,6 +116,12 @@ fn test_token_counters_reset_after_clear() {
 
     // @step And the Rust session token tracker should show 0
     // Note: cache fields default to None when using TokenTracker::default()
-    assert!(token_tracker.cache_read_input_tokens.is_none() || token_tracker.cache_read_input_tokens == Some(0));
-    assert!(token_tracker.cache_creation_input_tokens.is_none() || token_tracker.cache_creation_input_tokens == Some(0));
+    assert!(
+        token_tracker.cache_read_input_tokens.is_none()
+            || token_tracker.cache_read_input_tokens == Some(0)
+    );
+    assert!(
+        token_tracker.cache_creation_input_tokens.is_none()
+            || token_tracker.cache_creation_input_tokens == Some(0)
+    );
 }

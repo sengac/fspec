@@ -21,9 +21,7 @@ pub(super) fn dynamic_to_chunks(
 
     // Array of maps → dispatch each entry.
     if value.is_array() {
-        let arr = value
-            .into_typed_array::<Dynamic>()
-            .unwrap_or_default();
+        let arr = value.into_typed_array::<Dynamic>().unwrap_or_default();
         let mut out = Vec::new();
         for entry in arr {
             out.extend(handle_one(processor, entry));
@@ -34,14 +32,9 @@ pub(super) fn dynamic_to_chunks(
     handle_one(processor, value)
 }
 
-fn handle_one(
-    processor: &mut RhaiStreamProcessor,
-    value: Dynamic,
-) -> Vec<StreamChunk> {
+fn handle_one(processor: &mut RhaiStreamProcessor, value: Dynamic) -> Vec<StreamChunk> {
     let Some(map) = value.try_cast::<Map>() else {
-        tracing::warn!(
-            "parse_stream_chunk returned a non-map value; skipping event"
-        );
+        tracing::warn!("parse_stream_chunk returned a non-map value; skipping event");
         return Vec::new();
     };
     let kind = map
@@ -135,10 +128,7 @@ fn handle_usage(map: &Map) -> Vec<StreamChunk> {
     vec![StreamChunk::UsageDelta(usage)]
 }
 
-fn handle_stop(
-    processor: &mut RhaiStreamProcessor,
-    map: &Map,
-) -> Vec<StreamChunk> {
+fn handle_stop(processor: &mut RhaiStreamProcessor, map: &Map) -> Vec<StreamChunk> {
     let reason_str = map
         .get("reason")
         .cloned()
@@ -153,10 +143,7 @@ fn handle_stop(
     processor.mark_done()
 }
 
-fn handle_tool_call(
-    processor: &mut RhaiStreamProcessor,
-    map: &Map,
-) -> Vec<StreamChunk> {
+fn handle_tool_call(processor: &mut RhaiStreamProcessor, map: &Map) -> Vec<StreamChunk> {
     let explicit_id = map
         .get("id")
         .cloned()
@@ -207,16 +194,15 @@ fn handle_tool_call(
     let (effective_id, start_chunk) = {
         let entry = processor.tool_call_entry(&key);
         let effective_id = entry.id.clone();
-        let start =
-            if !entry.started && !entry.id.is_empty() && !entry.name.is_empty() {
-                entry.started = true;
-                Some(StreamChunk::ToolCallStart {
-                    id: entry.id.clone(),
-                    name: entry.name.clone(),
-                })
-            } else {
-                None
-            };
+        let start = if !entry.started && !entry.id.is_empty() && !entry.name.is_empty() {
+            entry.started = true;
+            Some(StreamChunk::ToolCallStart {
+                id: entry.id.clone(),
+                name: entry.name.clone(),
+            })
+        } else {
+            None
+        };
         (effective_id, start)
     };
     if let Some(c) = start_chunk {

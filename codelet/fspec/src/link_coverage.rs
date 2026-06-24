@@ -31,8 +31,7 @@ pub struct CliArgs {
 
 /// Entry point for the `link-coverage` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut payload: Map<String, Value> = Map::new();
     payload.insert(
@@ -52,7 +51,10 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     if let Some(v) = &args.impl_lines {
         payload.insert("implLines".to_string(), Value::String(v.clone()));
     }
-    payload.insert("skipValidation".to_string(), Value::Bool(args.skip_validation));
+    payload.insert(
+        "skipValidation".to_string(),
+        Value::Bool(args.skip_validation),
+    );
     payload.insert(
         "skipStepValidation".to_string(),
         Value::Bool(args.skip_step_validation),

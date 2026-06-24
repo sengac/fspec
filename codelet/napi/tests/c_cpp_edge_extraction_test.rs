@@ -38,8 +38,8 @@ int main() {
     let known_files = build_known_files(project_dir);
 
     // @step When the C extractor processes the source file
-    let entities = extract_c(c_source, "main.c", &known_files)
-        .expect("C extraction should succeed");
+    let entities =
+        extract_c(c_source, "main.c", &known_files).expect("C extraction should succeed");
 
     // @step Then an Imports edge should be emitted from the source file to `jv.h`
     let local_imports = find_edges(&entities, "Imports", Some("main-c"), Some("jv-h"));
@@ -77,8 +77,8 @@ int main() {
     // @step Given a C file with function `main()` that calls `jv_parse()`
     // @step And `jv_parse` is defined in the same file
     // @step When the C extractor processes the source file
-    let entities = extract_c(c_source, "main.c", &known_files)
-        .expect("C extraction should succeed");
+    let entities =
+        extract_c(c_source, "main.c", &known_files).expect("C extraction should succeed");
 
     // @step Then a Calls edge should be emitted from `main` to `jv_parse`
     let calls = find_edges(&entities, "Calls", Some("main"), Some("jv_parse"));
@@ -115,8 +115,8 @@ int main() {
     let known_files = build_known_files(project_dir);
 
     // @step When the C++ extractor processes the source file
-    let entities = extract_cpp(cpp_source, "main.cpp", &known_files)
-        .expect("C++ extraction should succeed");
+    let entities =
+        extract_cpp(cpp_source, "main.cpp", &known_files).expect("C++ extraction should succeed");
 
     // @step Then an Imports edge should be emitted from the source file to `utils.h`
     let local_imports = find_edges(&entities, "Imports", Some("main-cpp"), Some("utils-h"));

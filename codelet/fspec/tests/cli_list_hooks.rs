@@ -68,8 +68,7 @@ fn canonical_hooks_json() -> String {
 /// Regenerate via:
 ///   `cd /tmp && node /Users/rquast/projects/fspec/dist/index.js list-hooks --help \
 ///    > codelet/fspec/tests/fixtures/help/list-hooks.txt`
-const TS_HELP_FIXTURE: &str =
-    include_str!("fixtures/help/list-hooks.txt");
+const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/list-hooks.txt");
 
 #[test]
 fn scenario_clap_exposes_list_hooks_with_flag_aware_help() {
@@ -111,7 +110,10 @@ fn scenario_clap_exposes_list_hooks_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the section header "WHEN TO USE"
-    assert!(stdout.contains("WHEN TO USE\n"), "help must contain WHEN TO USE section");
+    assert!(
+        stdout.contains("WHEN TO USE\n"),
+        "help must contain WHEN TO USE section"
+    );
 
     // @step Then stdout contains the section header "USAGE" followed by "  fspec list-hooks"
     assert!(
@@ -126,28 +128,67 @@ fn scenario_clap_exposes_list_hooks_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the section header "TYPICAL WORKFLOW"
-    assert!(stdout.contains("TYPICAL WORKFLOW\n"), "help must contain TYPICAL WORKFLOW section");
+    assert!(
+        stdout.contains("TYPICAL WORKFLOW\n"),
+        "help must contain TYPICAL WORKFLOW section"
+    );
 
     // @step Then stdout contains the section header "EXAMPLES" with both documented examples
-    assert!(stdout.contains("EXAMPLES\n"), "help must contain EXAMPLES section");
-    assert!(stdout.contains("1. List all configured hooks"), "help must list example 1");
-    assert!(stdout.contains("2. When no hooks are configured"), "help must list example 2");
+    assert!(
+        stdout.contains("EXAMPLES\n"),
+        "help must contain EXAMPLES section"
+    );
+    assert!(
+        stdout.contains("1. List all configured hooks"),
+        "help must list example 1"
+    );
+    assert!(
+        stdout.contains("2. When no hooks are configured"),
+        "help must list example 2"
+    );
 
     // @step Then stdout contains the section header "COMMON ERRORS"
-    assert!(stdout.contains("COMMON ERRORS\n"), "help must contain COMMON ERRORS section");
+    assert!(
+        stdout.contains("COMMON ERRORS\n"),
+        "help must contain COMMON ERRORS section"
+    );
 
     // @step Then stdout contains the section header "RELATED COMMANDS" listing validate-hooks, add-hook, remove-hook
-    assert!(stdout.contains("RELATED COMMANDS\n"), "help must contain RELATED COMMANDS section");
-    assert!(stdout.contains("fspec validate-hooks"), "help must list validate-hooks");
+    assert!(
+        stdout.contains("RELATED COMMANDS\n"),
+        "help must contain RELATED COMMANDS section"
+    );
+    assert!(
+        stdout.contains("fspec validate-hooks"),
+        "help must list validate-hooks"
+    );
     assert!(stdout.contains("fspec add-hook"), "help must list add-hook");
-    assert!(stdout.contains("fspec remove-hook"), "help must list remove-hook");
+    assert!(
+        stdout.contains("fspec remove-hook"),
+        "help must list remove-hook"
+    );
 
     // @step Then stdout contains the section header "NOTES" listing the four documented notes
-    assert!(stdout.contains("NOTES\n"), "help must contain NOTES section");
-    assert!(stdout.contains("Reads from spec/fspec-hooks.json"), "help must list note 1");
-    assert!(stdout.contains("Shows event names and hook names only"), "help must list note 2");
-    assert!(stdout.contains("Use validate-hooks to check if hook scripts exist"), "help must list note 3");
-    assert!(stdout.contains("Hooks are organized by event"), "help must list note 4");
+    assert!(
+        stdout.contains("NOTES\n"),
+        "help must contain NOTES section"
+    );
+    assert!(
+        stdout.contains("Reads from spec/fspec-hooks.json"),
+        "help must list note 1"
+    );
+    assert!(
+        stdout.contains("Shows event names and hook names only"),
+        "help must list note 2"
+    );
+    assert!(
+        stdout.contains("Use validate-hooks to check if hook scripts exist"),
+        "help must list note 3"
+    );
+    assert!(
+        stdout.contains("Hooks are organized by event"),
+        "help must list note 4"
+    );
 
     // @step Then stdout does NOT contain the substring '--format'
     assert!(
@@ -280,7 +321,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_hooks() {
         .expect("spawn --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -335,7 +377,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
     let events = dispatcher_data["events"].as_array().expect("events array");

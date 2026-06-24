@@ -111,7 +111,11 @@ async fn test_extract_learnings_explorations_and_constraints_from_dag_summary() 
 
     // @step When the extraction pipeline processes the summary with the LLM response
     let result = extract_learnings_from_text(summary_text, Some(llm_response));
-    assert!(result.is_ok(), "Extraction should succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Extraction should succeed: {:?}",
+        result.err()
+    );
     let extraction = result.unwrap();
 
     // @step Then the result should contain 4 entities total
@@ -271,7 +275,9 @@ async fn test_extracted_entities_queryable_via_learnings_search() {
         serde_json::from_str(&search_result).expect("search result should be valid JSON");
 
     // @step Then the search results should contain the matching Learning node with correct slug and title
-    let results = parsed["results"].as_array().expect("results should be array");
+    let results = parsed["results"]
+        .as_array()
+        .expect("results should be array");
     let matching_slugs: Vec<&str> = results
         .iter()
         .filter_map(|r| r.get("slug").and_then(|s| s.as_str()))
@@ -328,8 +334,14 @@ async fn test_decision_entities_queryable_with_domain_filter() {
         serde_json::from_str(&result).expect("result should be valid JSON");
 
     // @step Then only Decision nodes with domain "architecture" should be returned
-    let results = parsed["results"].as_array().expect("results should be array");
-    assert_eq!(results.len(), 1, "Should return exactly 1 architecture decision");
+    let results = parsed["results"]
+        .as_array()
+        .expect("results should be array");
+    assert_eq!(
+        results.len(),
+        1,
+        "Should return exactly 1 architecture decision"
+    );
     assert_eq!(
         results[0]["slug"].as_str().unwrap(),
         "use-gq-extension",
@@ -394,7 +406,10 @@ async fn test_graceful_failure_when_llm_unavailable() {
     let result = extract_learnings_from_text(summary_text, llm_response);
 
     // @step Then the result should be an Err with a descriptive message
-    assert!(result.is_err(), "Should return an error when LLM is unavailable");
+    assert!(
+        result.is_err(),
+        "Should return an error when LLM is unavailable"
+    );
     let err_msg = result.unwrap_err();
     assert!(
         !err_msg.is_empty(),
@@ -501,7 +516,10 @@ async fn test_invalid_categories_are_skipped() {
 
     // @step Then only 2 Learning nodes should be returned
     let learning_count = count_nodes(&extraction.entities, "Learning");
-    assert_eq!(learning_count, 2, "Should have 2 valid learnings, got {learning_count}");
+    assert_eq!(
+        learning_count, 2,
+        "Should have 2 valid learnings, got {learning_count}"
+    );
 
     // @step And the entity with invalid category "foo" should be skipped
     assert!(

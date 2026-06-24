@@ -197,12 +197,7 @@ fn both_transports_implement_five_new_backend_methods() {
 fn new_modal_dialog_modules_and_dispatch_helper_exist() {
     // @step Given the codelet/fspec-tui crate after RPC-022 lands
     let src = src_dir();
-    // @step Then the file codelet/fspec-tui/src/components/model_selector_dialog.rs exists
-    assert!(src
-        .join("components")
-        .join("model_selector_dialog.rs")
-        .exists());
-    // @step And the file codelet/fspec-tui/src/components/thinking_level_dialog.rs exists
+    // @step Then the file codelet/fspec-tui/src/components/thinking_level_dialog.rs exists
     assert!(src
         .join("components")
         .join("thinking_level_dialog.rs")
@@ -224,9 +219,6 @@ fn new_modal_dialog_modules_and_dispatch_helper_exist() {
 #[test]
 fn new_rpc022_modules_stay_under_300_lines() {
     // @step Given the new files introduced by RPC-022
-    let model_selector = src_dir()
-        .join("components")
-        .join("model_selector_dialog.rs");
     let thinking_level = src_dir()
         .join("components")
         .join("thinking_level_dialog.rs");
@@ -235,16 +227,10 @@ fn new_rpc022_modules_stay_under_300_lines() {
         .join("app")
         .join("dispatch_model_thinking_dialogs.rs");
     // @step When a test counts the line-count of every .rs file
-    let lines_model = count_lines_path(&model_selector);
     let lines_thinking = count_lines_path(&thinking_level);
     let lines_role = count_lines_path(&role_banner);
     let lines_dispatch = count_lines_path(&dispatch);
-    // @step Then codelet/fspec-tui/src/components/model_selector_dialog.rs has fewer than 300 lines
-    assert!(
-        lines_model < 300,
-        "model_selector_dialog.rs has {lines_model} lines (>= 300)"
-    );
-    // @step And codelet/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
+    // @step Then codelet/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
     assert!(
         lines_thinking < 300,
         "thinking_level_dialog.rs has {lines_thinking} lines (>= 300)"
@@ -289,8 +275,6 @@ fn action_enum_gains_new_rpc022_variants() {
     assert!(src.contains("SessionRoleLoaded"));
     // @step And the file contains the substring "ListProvidersLoaded"
     assert!(src.contains("ListProvidersLoaded"));
-    // @step And the file contains the substring "OpenModelDialog"
-    assert!(src.contains("OpenModelDialog"));
     // @step And the file contains the substring "OpenThinkingDialog"
     assert!(src.contains("OpenThinkingDialog"));
 }
@@ -321,11 +305,8 @@ fn existing_ts_modal_dialog_files_are_untouched() {
 /// Scenario: New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite
 #[test]
 fn new_view_component_files_do_not_import_forbidden_crates() {
-    // @step Given the new RPC-022 files (model_selector_dialog.rs, thinking_level_dialog.rs, role_banner.rs)
+    // @step Given the new RPC-022 files (thinking_level_dialog.rs, role_banner.rs)
     let files = [
-        src_dir()
-            .join("components")
-            .join("model_selector_dialog.rs"),
         src_dir()
             .join("components")
             .join("thinking_level_dialog.rs"),

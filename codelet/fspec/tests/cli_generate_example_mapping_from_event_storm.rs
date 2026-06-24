@@ -156,9 +156,18 @@ fn scenario_cli_transforms_and_prints_summary() {
     // @step Then the command exits with code 0
     // TS Console-output contract: always exits 1 with empty stdout/stderr
     // (the swallowed `logger.success` TypeError). Assert byte-parity.
-    assert_eq!(code, 1, "expected exit 1 (TS logger.success TypeError); stderr={stderr}");
-    assert_eq!(stdout, "", "stdout must be empty (file-only logger); got:\n{stdout}");
-    assert_eq!(stderr, "", "stderr must be empty (file-only logger); got:\n{stderr}");
+    assert_eq!(
+        code, 1,
+        "expected exit 1 (TS logger.success TypeError); stderr={stderr}"
+    );
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (file-only logger); got:\n{stdout}"
+    );
+    assert_eq!(
+        stderr, "",
+        "stderr must be empty (file-only logger); got:\n{stderr}"
+    );
 
     // @step Then stdout contains 'Rules added: 1'
     // @step Then stdout contains 'Examples added: 0'
@@ -168,9 +177,21 @@ fn scenario_cli_transforms_and_prints_summary() {
     let raw = fs::read_to_string(ws.path().join("spec/work-units.json")).expect("read");
     let data: serde_json::Value = serde_json::from_str(&raw).expect("parse");
     let wu = &data["workUnits"]["AUTH-001"];
-    assert_eq!(wu["rules"].as_array().map(Vec::len), Some(1), "1 rule persisted");
-    assert_eq!(wu["examples"].as_array().map(Vec::len), Some(0), "0 examples persisted");
-    assert_eq!(wu["questions"].as_array().map(Vec::len), Some(1), "1 question persisted");
+    assert_eq!(
+        wu["rules"].as_array().map(Vec::len),
+        Some(1),
+        "1 rule persisted"
+    );
+    assert_eq!(
+        wu["examples"].as_array().map(Vec::len),
+        Some(0),
+        "0 examples persisted"
+    );
+    assert_eq!(
+        wu["questions"].as_array().map(Vec::len),
+        Some(1),
+        "1 question persisted"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -194,8 +215,14 @@ fn scenario_cli_empty_workspace_exits_1_missing_file() {
     // TS Console-output contract: the failure path uses the file-only
     // `logger.error(...)`, so the binary writes NOTHING to stdout/stderr and
     // exits 1. Assert byte-parity.
-    assert_eq!(stdout, "", "stdout must be empty (file-only logger); got:\n{stdout}");
-    assert_eq!(stderr, "", "stderr must be empty (file-only logger); got:\n{stderr}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (file-only logger); got:\n{stdout}"
+    );
+    assert_eq!(
+        stderr, "",
+        "stderr must be empty (file-only logger); got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -218,6 +245,12 @@ fn scenario_cli_exits_1_when_no_event_storm_data() {
     // TS Console-output contract: the failure path uses the file-only
     // `logger.error(...)`, so the binary writes NOTHING to stdout/stderr and
     // exits 1. Assert byte-parity.
-    assert_eq!(stdout, "", "stdout must be empty (file-only logger); got:\n{stdout}");
-    assert_eq!(stderr, "", "stderr must be empty (file-only logger); got:\n{stderr}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (file-only logger); got:\n{stdout}"
+    );
+    assert_eq!(
+        stderr, "",
+        "stderr must be empty (file-only logger); got:\n{stderr}"
+    );
 }

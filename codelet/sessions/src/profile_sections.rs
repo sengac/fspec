@@ -180,7 +180,7 @@ fn coerce_u32(value: serde_json::Value) -> Option<u32> {
 }
 
 /// Resolve `~/.fspec` (parity with the TS `getFspecUserDir`).
-fn fspec_user_dir() -> Option<PathBuf> {
+pub(crate) fn fspec_user_dir() -> Option<PathBuf> {
     std::env::var_os("FSPEC_USER_DIR")
         .map(PathBuf::from)
         .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".fspec")))
@@ -374,7 +374,7 @@ fn delete_custom_model_at(
 
 /// Read `config_path` into a JSON `Value`, returning `None` on a missing or
 /// malformed file (caller treats this as a no-op).
-fn read_config_value(config_path: &Path) -> Option<serde_json::Value> {
+pub(crate) fn read_config_value(config_path: &Path) -> Option<serde_json::Value> {
     let content = std::fs::read_to_string(config_path).ok()?;
     serde_json::from_str::<serde_json::Value>(&content).ok()
 }
@@ -382,7 +382,10 @@ fn read_config_value(config_path: &Path) -> Option<serde_json::Value> {
 /// Write the JSON `Value` back to `config_path` (pretty-printed with a
 /// trailing newline). With the workspace `preserve_order` serde_json feature,
 /// existing key order is retained.
-fn write_config_value(config_path: &Path, root: &serde_json::Value) -> std::io::Result<()> {
+pub(crate) fn write_config_value(
+    config_path: &Path,
+    root: &serde_json::Value,
+) -> std::io::Result<()> {
     let mut serialized = serde_json::to_string_pretty(root)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
     serialized.push('\n');

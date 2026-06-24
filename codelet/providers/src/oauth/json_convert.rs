@@ -47,7 +47,10 @@ pub fn dynamic_to_json_value(value: &Dynamic) -> serde_json::Value {
     } else if let Ok(s) = value.clone().into_string() {
         serde_json::Value::String(s)
     } else if value.is_array() {
-        let arr = value.clone().into_typed_array::<Dynamic>().unwrap_or_default();
+        let arr = value
+            .clone()
+            .into_typed_array::<Dynamic>()
+            .unwrap_or_default();
         serde_json::Value::Array(arr.iter().map(dynamic_to_json_value).collect())
     } else if value.is_map() {
         let map = value.clone().cast::<Map>();

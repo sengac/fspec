@@ -11,7 +11,7 @@
 //! Offline-testable via a CROSS-FAMILY switch. The Claude limits resolver
 //! clamps every anthropic model to ctx 200000 / out 8192 with an identical base
 //! compaction threshold, so an anthropic→anthropic switch is NOT observable on
-//! limits. `google/gemini-2.5-pro` resolves (from `fallback_models.json`) to
+//! limits. `google/gemini-2.5-pro` resolves (from the models.dev cache) to
 //! ctx 1048576 / out 65536 with the gemini 80% compaction rule, so all three
 //! cached fields differ. Dummy credential env vars are set so credential
 //! detection passes; no network access occurs (select_model only validates

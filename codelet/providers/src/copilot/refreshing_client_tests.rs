@@ -137,7 +137,10 @@ fn inject_headers_adds_all_required_copilot_headers_for_user_text() {
         .to_str()
         .unwrap()
         .starts_with("codelet/"));
-    assert_eq!(headers.get(http::header::AUTHORIZATION).unwrap(), "Bearer ghu_tok");
+    assert_eq!(
+        headers.get(http::header::AUTHORIZATION).unwrap(),
+        "Bearer ghu_tok"
+    );
     assert_eq!(headers.get("openai-intent").unwrap(), "conversation-edits");
     assert!(headers.get("copilot-vision-request").is_none());
 }

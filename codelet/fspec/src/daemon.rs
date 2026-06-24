@@ -50,13 +50,9 @@ pub async fn run(workspace: Option<PathBuf>, bind: String, pidfile: Option<PathB
 
     let djson = common::daemon_json_path()?;
     let started_at = SystemTime::now();
-    if let Err(e) = common::write_daemon_json(
-        &djson,
-        addr.port(),
-        process::id(),
-        &workspace,
-        started_at,
-    ) {
+    if let Err(e) =
+        common::write_daemon_json(&djson, addr.port(), process::id(), &workspace, started_at)
+    {
         tracing::warn!(error = %e, "failed to write daemon.json (continuing)");
     }
 

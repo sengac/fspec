@@ -107,7 +107,10 @@ fn scenario_dispatcher_returns_empty_bottlenecks_in_empty_workspace() {
     let data = parse_data(&result.data);
 
     // @step And the returned JSON has bottlenecks=[]
-    assert_eq!(data["bottlenecks"].as_array().map(|a| a.is_empty()), Some(true));
+    assert_eq!(
+        data["bottlenecks"].as_array().map(|a| a.is_empty()),
+        Some(true)
+    );
 
     // @step And spec/work-units.json exists after the call (auto-created by ensure_work_units_file)
     assert!(
@@ -142,7 +145,10 @@ fn scenario_dispatcher_excludes_done_units_with_blocks() {
         .iter()
         .filter_map(|b| b["id"].as_str())
         .collect();
-    assert!(!ids.contains(&"A"), "done units must not appear; got ids={ids:?}");
+    assert!(
+        !ids.contains(&"A"),
+        "done units must not appear; got ids={ids:?}"
+    );
 }
 
 #[test]
@@ -170,7 +176,10 @@ fn scenario_dispatcher_excludes_blocked_status_units() {
         .iter()
         .filter_map(|b| b["id"].as_str())
         .collect();
-    assert!(!ids.contains(&"A"), "blocked status units must not appear; got ids={ids:?}");
+    assert!(
+        !ids.contains(&"A"),
+        "blocked status units must not appear; got ids={ids:?}"
+    );
 }
 
 #[test]
@@ -422,7 +431,10 @@ fn scenario_clap_exposes_query_bottlenecks_with_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "fspec query-bottlenecks --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "fspec query-bottlenecks --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step And stdout contains the substring 'query-bottlenecks'
     assert!(
@@ -489,13 +501,22 @@ fn scenario_cli_text_output_lists_qualifying_bottleneck() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step And stdout contains the substring 'Bottleneck Work Units (blocking 2+ work units):'
-    assert!(stdout.contains("Bottleneck Work Units (blocking 2+ work units):"), "expected header; got:\n{stdout}");
+    assert!(
+        stdout.contains("Bottleneck Work Units (blocking 2+ work units):"),
+        "expected header; got:\n{stdout}"
+    );
     // @step And stdout contains the substring 'A'
     assert!(stdout.contains("A"), "expected unit id A; got:\n{stdout}");
     // @step And stdout contains the substring 'Bottleneck Score: 3'
-    assert!(stdout.contains("Bottleneck Score: 3"), "expected 'Bottleneck Score: 3'; got:\n{stdout}");
+    assert!(
+        stdout.contains("Bottleneck Score: 3"),
+        "expected 'Bottleneck Score: 3'; got:\n{stdout}"
+    );
     // @step And stdout contains the substring 'Total bottlenecks: 1'
-    assert!(stdout.contains("Total bottlenecks: 1"), "expected 'Total bottlenecks: 1'; got:\n{stdout}");
+    assert!(
+        stdout.contains("Total bottlenecks: 1"),
+        "expected 'Total bottlenecks: 1'; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -508,13 +529,22 @@ fn scenario_cli_malformed_work_units_json_exits_1_with_stderr() {
     let (code, stdout, stderr) = run_query(ws.path(), &["--output", "json"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1 on malformed; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1 on malformed; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "expected 'Error:' in stderr; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "expected 'Error:' in stderr; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Failed to parse work-units.json'
-    assert!(stderr.contains("Failed to parse work-units.json"), "expected 'Failed to parse work-units.json'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Failed to parse work-units.json"),
+        "expected 'Failed to parse work-units.json'; got:\n{stderr}"
+    );
 }
 
 #[test]
@@ -533,7 +563,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step When I dispatch query-bottlenecks through fspec_core::dispatch::dispatch_command with output='json' against that workspace
     let result = dispatch_command(req(ws.path(), json!({ "output": "json" })));
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_data: Value = serde_json::from_str(&result.data).expect("dispatcher data JSON");
 
     // @step And I run `./codelet/target/release/fspec query-bottlenecks --output json` against the same workspace
@@ -549,7 +582,11 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step And the CLI bridge module codelet/fspec/src/query_bottlenecks.rs contains NO inline DFS, filtering, or rendering logic — its only computation is JSON arg marshalling and stdout printing
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_bottlenecks.rs");
-    assert!(bridge_path.exists(), "codelet/fspec/src/query_bottlenecks.rs must exist as the CLI bridge module; missing: {}", bridge_path.display());
+    assert!(
+        bridge_path.exists(),
+        "codelet/fspec/src/query_bottlenecks.rs must exist as the CLI bridge module; missing: {}",
+        bridge_path.display()
+    );
     let bridge_src = fs::read_to_string(&bridge_path).expect("bridge module readable");
     for forbidden in [
         "calculateBlockedWorkUnits",
@@ -584,7 +621,10 @@ fn scenario_query_bottlenecks_help_matches_ts_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "query-bottlenecks --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "query-bottlenecks --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/query-bottlenecks.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_QB);

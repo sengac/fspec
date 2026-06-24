@@ -54,12 +54,15 @@ async fn test_ast_search_function_by_name() {
     let db = setup_test_ast_db(temp_dir.path()).await;
 
     // @step When I execute an AstSearch action with query "login"
-    let result = ast_dispatch::dispatch_ast_search(&db, "login", None, None, None, None, None, None)
-        .await;
+    let result =
+        ast_dispatch::dispatch_ast_search(&db, "login", None, None, None, None, None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then the result should contain a Function node matching "login"
-    let results = parsed.get("results").and_then(|v| v.as_array()).expect("results array");
+    let results = parsed
+        .get("results")
+        .and_then(|v| v.as_array())
+        .expect("results array");
     assert!(!results.is_empty(), "Should find at least one result");
 
     let first = &results[0];
@@ -67,14 +70,23 @@ async fn test_ast_search_function_by_name() {
     // @step And the result should include the function's slug, name, and qualifiedName
     assert!(first.get("slug").is_some(), "Result should have slug");
     assert!(first.get("name").is_some(), "Result should have name");
-    assert!(first.get("qualifiedName").is_some(), "Result should have qualifiedName");
+    assert!(
+        first.get("qualifiedName").is_some(),
+        "Result should have qualifiedName"
+    );
 
     // @step And the result should include lineStart and lineEnd positions
-    assert!(first.get("lineStart").is_some(), "Result should have lineStart");
+    assert!(
+        first.get("lineStart").is_some(),
+        "Result should have lineStart"
+    );
     assert!(first.get("lineEnd").is_some(), "Result should have lineEnd");
 
     // @step And the result should include paramCount
-    assert!(first.get("paramCount").is_some(), "Result should have paramCount");
+    assert!(
+        first.get("paramCount").is_some(),
+        "Result should have paramCount"
+    );
 }
 
 // ============================================================================
@@ -88,15 +100,13 @@ async fn test_ast_neighbors_of_function_node() {
     let db = setup_test_ast_db(temp_dir.path()).await;
 
     // @step When I execute an AstNeighbors action for a Function node slug
-    let result = ast_dispatch::dispatch_ast_neighbors(
-        &db,
-        "src-auth-login-ts::login",
-        None,
-        None,
-    )
-    .await;
+    let result =
+        ast_dispatch::dispatch_ast_neighbors(&db, "src-auth-login-ts::login", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
-    let neighbors = parsed.get("neighbors").and_then(|v| v.as_array()).expect("neighbors array");
+    let neighbors = parsed
+        .get("neighbors")
+        .and_then(|v| v.as_array())
+        .expect("neighbors array");
 
     // @step Then the result should include the File node that contains the function via Contains edge
     // The login function is contained by src-auth-login-ts (incoming Contains)
@@ -145,7 +155,11 @@ async fn test_ast_stats_codebase_statistics() {
         "Should have at least 1 Type node"
     );
     assert!(
-        nodes.get("Dependency").and_then(|v| v.as_u64()).unwrap_or(0) >= 1,
+        nodes
+            .get("Dependency")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0)
+            >= 1,
         "Should have at least 1 Dependency node"
     );
 

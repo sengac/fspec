@@ -592,10 +592,17 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     CloseModelSelectorView / RefreshModelSelector variants + docs)
     //   - RPC-347 added ≤25 lines (AddCustomModel / EditCustomModel /
     //     DeleteCustomModel custom-model write variants + docs)
-    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 = 902
+    //   - PROV-109 added ≤30 lines (SaveProfile / DeleteProfile /
+    //     ConfirmDeleteProfile profile write variants + docs)
+    //   - PROV-113 added ≤60 lines (OAuthLoginStart / OAuthHeadlessReady /
+    //     OAuthDeviceReady / OAuthLoginHeadlessSubmit / OAuthLoginSucceeded /
+    //     OAuthLoginFailed / OAuthOpenUrl / OAuthCopyUrl OAuth-login variants
+    //     + docs)
+    //   - PROV-116 added ≤10 lines (ProfileDeleteNavigate variant + doc)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 = 1002
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 902,
-        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337+RPC-347 budget is +100 over baseline 802"
+        n_components <= 1002,
+        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337+RPC-347+PROV-109+PROV-113+PROV-116 budget is +200 over baseline 802"
     );
 }

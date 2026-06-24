@@ -46,8 +46,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         return Ok(1);
     }
 
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let args_json = json!({
         "tags": args.tags,
@@ -63,8 +62,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         }
     };
 
-    let value: Value =
-        serde_json::from_str(&json_text).context("parse core response as JSON")?;
+    let value: Value = serde_json::from_str(&json_text).context("parse core response as JSON")?;
 
     let success = value
         .get("success")
@@ -92,16 +90,22 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     if args.dry_run && scenarios.is_some() {
         // Parity with TS dry-run branch (lines 301-325).
         println!("Dry run mode - no files modified");
-        println!(
-            "\nWould delete {deleted_count} scenario(s) from {file_count} file(s):\n"
-        );
+        println!("\nWould delete {deleted_count} scenario(s) from {file_count} file(s):\n");
 
         // Group scenarios by file, preserving first-seen file order.
         let mut order: Vec<String> = Vec::new();
         let mut by_file: BTreeMap<String, Vec<(String, String)>> = BTreeMap::new();
         for s in scenarios.unwrap_or(&Vec::new()) {
-            let file = s.get("file").and_then(Value::as_str).unwrap_or("").to_string();
-            let name = s.get("name").and_then(Value::as_str).unwrap_or("").to_string();
+            let file = s
+                .get("file")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
+            let name = s
+                .get("name")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
             let tags: Vec<String> = s
                 .get("tags")
                 .and_then(Value::as_array)

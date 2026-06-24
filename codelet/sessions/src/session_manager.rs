@@ -55,14 +55,12 @@ use uuid::Uuid;
 
 use codelet_core::lifecycle_hooks::{load_lifecycle_hooks, run_pre_tool};
 use codelet_rpc_types::{LogRecord, SessionInfo, SessionStatus, StreamChunk};
-use codelet_tools::McpInjection;
 use codelet_tools::pre_tool_hook::{
     register_pre_tool_hook, unregister_pre_tool_hook, PreToolHookDecision, PreToolHookHandler,
 };
+use codelet_tools::McpInjection;
 
-use crate::background_session::{
-    BackgroundSession, PromptInput, SUPERVISOR_BROADCAST_CAPACITY,
-};
+use crate::background_session::{BackgroundSession, PromptInput, SUPERVISOR_BROADCAST_CAPACITY};
 
 /// Maximum concurrent sessions.
 pub const MAX_SESSIONS: usize = 10;
@@ -95,12 +93,7 @@ pub trait SessionManagerHooks: Send + Sync + 'static {
     fn ensure_scheduler_running_for_loop(&self, project: String, rt: tokio::runtime::Handle);
 
     /// Spawn the per-session footer poller.
-    fn spawn_footer_poller(
-        &self,
-        session_id: String,
-        cwd: String,
-        worktree_path: Option<String>,
-    );
+    fn spawn_footer_poller(&self, session_id: String, cwd: String, worktree_path: Option<String>);
 
     /// Stop the per-session footer poller.
     fn stop_footer_poller(&self, session_id: &str);
@@ -324,7 +317,10 @@ impl SessionManager {
 
     /// SCHED-003: Start the scheduler if not already running.
     fn maybe_start_scheduler(&self, project: &str) {
-        let mut handle = self.scheduler_handle.write().expect("scheduler lock poisoned");
+        let mut handle = self
+            .scheduler_handle
+            .write()
+            .expect("scheduler lock poisoned");
         if handle.is_some() {
             return;
         }
@@ -342,12 +338,16 @@ impl SessionManager {
 
     /// SCHED-011: Ensure the scheduler is running (for /loop support).
     pub fn ensure_scheduler_running(&self, project: &str, rt: &tokio::runtime::Handle) {
-        let mut handle = self.scheduler_handle.write().expect("scheduler lock poisoned");
+        let mut handle = self
+            .scheduler_handle
+            .write()
+            .expect("scheduler lock poisoned");
         if handle.is_some() {
             return;
         }
         tracing::info!("Starting scheduler for /loop support: {}", project);
-        self.hooks().ensure_scheduler_running_for_loop(project.to_string(), rt.clone());
+        self.hooks()
+            .ensure_scheduler_running_for_loop(project.to_string(), rt.clone());
         *handle = Some(tokio::spawn(async {}));
     }
 
@@ -398,7 +398,13 @@ impl SessionManager {
     }
 
     /// Create a background session with a specific ID (for persistence integration).
-    pub async fn create_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<(), String> {
+    pub async fn create_session_with_id(
+        &self,
+        id: &str,
+        model: &str,
+        project: &str,
+        name: &str,
+    ) -> Result<(), String> {
         let uuid = Uuid::parse_str(id).map_err(|e| format!("Invalid session ID: {}", e))?;
 
         {
@@ -505,20 +511,18 @@ impl SessionManager {
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
         inner.inject_context_reminders();
 
-        let lifecycle_hooks = match load_lifecycle_hooks(
-            Some(&project_path),
-            dirs::home_dir().as_deref(),
-        ) {
-            Ok(Some(compiled)) => Some(Arc::new(compiled)),
-            Ok(None) => None,
-            Err(e) => {
-                tracing::warn!(
-                    "[HOOK-013] Failed to load lifecycle hooks: {} - continuing without",
-                    e
-                );
-                None
-            }
-        };
+        let lifecycle_hooks =
+            match load_lifecycle_hooks(Some(&project_path), dirs::home_dir().as_deref()) {
+                Ok(Some(compiled)) => Some(Arc::new(compiled)),
+                Ok(None) => None,
+                Err(e) => {
+                    tracing::warn!(
+                        "[HOOK-013] Failed to load lifecycle hooks: {} - continuing without",
+                        e
+                    );
+                    None
+                }
+            };
 
         let session = Arc::new(BackgroundSession::new(
             uuid,
@@ -540,12 +544,13 @@ impl SessionManager {
             .read()
             .expect("model_id lock poisoned")
             .clone();
-        let initial_compaction_threshold = codelet_cli::compaction_threshold::resolve_compaction_threshold(
-            initial_context_window as u64,
-            initial_max_output_tokens as u64,
-            initial_model_id.as_deref(),
-            None,
-        ) as u32;
+        let initial_compaction_threshold =
+            codelet_cli::compaction_threshold::resolve_compaction_threshold(
+                initial_context_window as u64,
+                initial_max_output_tokens as u64,
+                initial_model_id.as_deref(),
+                None,
+            ) as u32;
         session.set_model_limits(
             initial_context_window,
             initial_max_output_tokens,
@@ -556,8 +561,8 @@ impl SessionManager {
             if !hooks.pre_tool_use.is_empty() {
                 let hooks_for_pre = hooks.clone();
                 let session_for_pre = session.clone();
-                let pre_handler: PreToolHookHandler =
-                    std::sync::Arc::new(move |_sid, tool_name, tool_input| {
+                let pre_handler: PreToolHookHandler = std::sync::Arc::new(
+                    move |_sid, tool_name, tool_input| {
                         let ctx = session_for_pre.hook_context();
                         let hooks = hooks_for_pre.clone();
                         let name = tool_name.to_string();
@@ -584,7 +589,8 @@ impl SessionManager {
                                 PreToolHookDecision::Continue
                             }
                         }
-                    });
+                    },
+                );
                 register_pre_tool_hook(uuid, pre_handler);
             }
         }
@@ -593,7 +599,8 @@ impl SessionManager {
 
         // RPC-040: agent_loop spawning is delegated to the hooks impl so
         // codelet-sessions has no transitive napi dependency.
-        self.hooks().spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
+        self.hooks()
+            .spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
 
         self.sessions
             .write()
@@ -613,7 +620,8 @@ impl SessionManager {
         ));
 
         // TUI-091: footer poller via the hooks.
-        self.hooks().spawn_footer_poller(id.to_string(), project.to_string(), None);
+        self.hooks()
+            .spawn_footer_poller(id.to_string(), project.to_string(), None);
 
         codelet_tools::broadcast_metadata_update();
 
@@ -621,7 +629,13 @@ impl SessionManager {
     }
 
     /// GIT-028: Create an isolated session with a git worktree.
-    pub async fn create_isolated_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<codelet_rpc_types::IsolatedSessionInfo, String> {
+    pub async fn create_isolated_session_with_id(
+        &self,
+        id: &str,
+        model: &str,
+        project: &str,
+        name: &str,
+    ) -> Result<codelet_rpc_types::IsolatedSessionInfo, String> {
         let uuid = Uuid::parse_str(id).map_err(|e| format!("Invalid session ID: {}", e))?;
 
         {
@@ -751,20 +765,18 @@ impl SessionManager {
 
         inner.inject_context_reminders_with_isolation(Some(&isolation));
 
-        let lifecycle_hooks = match load_lifecycle_hooks(
-            Some(&project_path),
-            dirs::home_dir().as_deref(),
-        ) {
-            Ok(Some(compiled)) => Some(Arc::new(compiled)),
-            Ok(None) => None,
-            Err(e) => {
-                tracing::warn!(
-                    "[HOOK-013] Failed to load lifecycle hooks for isolated session: {}",
-                    e
-                );
-                None
-            }
-        };
+        let lifecycle_hooks =
+            match load_lifecycle_hooks(Some(&project_path), dirs::home_dir().as_deref()) {
+                Ok(Some(compiled)) => Some(Arc::new(compiled)),
+                Ok(None) => None,
+                Err(e) => {
+                    tracing::warn!(
+                        "[HOOK-013] Failed to load lifecycle hooks for isolated session: {}",
+                        e
+                    );
+                    None
+                }
+            };
 
         let session = Arc::new(BackgroundSession::new(
             uuid,
@@ -786,12 +798,13 @@ impl SessionManager {
             .read()
             .expect("model_id lock poisoned")
             .clone();
-        let isolated_compaction_threshold = codelet_cli::compaction_threshold::resolve_compaction_threshold(
-            initial_context_window as u64,
-            initial_max_output_tokens as u64,
-            isolated_model_id.as_deref(),
-            None,
-        ) as u32;
+        let isolated_compaction_threshold =
+            codelet_cli::compaction_threshold::resolve_compaction_threshold(
+                initial_context_window as u64,
+                initial_max_output_tokens as u64,
+                isolated_model_id.as_deref(),
+                None,
+            ) as u32;
         session.set_model_limits(
             initial_context_window,
             initial_max_output_tokens,
@@ -802,8 +815,8 @@ impl SessionManager {
             if !hooks.pre_tool_use.is_empty() {
                 let hooks_for_pre = hooks.clone();
                 let session_for_pre = session.clone();
-                let pre_handler: PreToolHookHandler =
-                    std::sync::Arc::new(move |_sid, tool_name, tool_input| {
+                let pre_handler: PreToolHookHandler = std::sync::Arc::new(
+                    move |_sid, tool_name, tool_input| {
                         let ctx = session_for_pre.hook_context();
                         let hooks = hooks_for_pre.clone();
                         let name = tool_name.to_string();
@@ -830,14 +843,16 @@ impl SessionManager {
                                 PreToolHookDecision::Continue
                             }
                         }
-                    });
+                    },
+                );
                 register_pre_tool_hook(uuid, pre_handler);
             }
         }
 
         let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);
 
-        self.hooks().spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
+        self.hooks()
+            .spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
 
         self.sessions
             .write()
@@ -884,7 +899,8 @@ impl SessionManager {
         role: Option<&str>,
         prompt: &str,
     ) -> Result<(), String> {
-        self.create_session_with_id(id, model, project, name).await?;
+        self.create_session_with_id(id, model, project, name)
+            .await?;
 
         let uuid = Uuid::parse_str(id).map_err(|e| format!("Invalid session ID: {}", e))?;
         let sessions = self.sessions.read().expect("sessions lock poisoned");

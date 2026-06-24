@@ -61,8 +61,16 @@ const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/delete-features.txt");
 fn scenario_cli_dry_run_previews_deletions_without_removing_files() {
     // @step Given a tempdir with two features tagged @deprecated
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/a.feature", &tagged("@deprecated", "A"));
-    write_feature(ws.path(), "spec/features/b.feature", &tagged("@deprecated", "B"));
+    write_feature(
+        ws.path(),
+        "spec/features/a.feature",
+        &tagged("@deprecated", "A"),
+    );
+    write_feature(
+        ws.path(),
+        "spec/features/b.feature",
+        &tagged("@deprecated", "B"),
+    );
 
     // @step When I run 'fspec delete-features --tag @deprecated --dry-run' in that tempdir
     let (code, stdout, stderr) =
@@ -96,8 +104,16 @@ fn scenario_cli_dry_run_previews_deletions_without_removing_files() {
 fn scenario_cli_deletes_matching_features_and_lists_them() {
     // @step Given a tempdir with two features tagged @deprecated
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/a.feature", &tagged("@deprecated", "A"));
-    write_feature(ws.path(), "spec/features/b.feature", &tagged("@deprecated", "B"));
+    write_feature(
+        ws.path(),
+        "spec/features/a.feature",
+        &tagged("@deprecated", "A"),
+    );
+    write_feature(
+        ws.path(),
+        "spec/features/b.feature",
+        &tagged("@deprecated", "B"),
+    );
 
     // @step When I run 'fspec delete-features --tag @deprecated' in that tempdir
     let (code, stdout, stderr) = run_delete_features(ws.path(), &["--tag", "@deprecated"]);
@@ -130,7 +146,11 @@ fn scenario_cli_deletes_matching_features_and_lists_them() {
 fn scenario_cli_with_no_tag_exits_1_with_stderr_error_prefix() {
     // @step Given a tempdir with a feature tagged @deprecated
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/a.feature", &tagged("@deprecated", "A"));
+    write_feature(
+        ws.path(),
+        "spec/features/a.feature",
+        &tagged("@deprecated", "A"),
+    );
 
     // @step When I run 'fspec delete-features' in that tempdir
     let (code, _stdout, stderr) = run_delete_features(ws.path(), &[]);
@@ -166,7 +186,10 @@ fn scenario_cli_help_output_matches_captured_typescript_fixture_byte_for_byte() 
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "delete-features --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "delete-features --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/delete-features.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

@@ -51,7 +51,10 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             Ok(0)
         }
         Err(err) => {
-            eprintln!("✗ Failed to export example map: {}", render_core_error(&err));
+            eprintln!(
+                "✗ Failed to export example map: {}",
+                render_core_error(&err)
+            );
             Ok(1)
         }
     }

@@ -8,7 +8,7 @@
 Feature: Model selector view interaction
 
   """
-  The model selector is a full-screen Navigator mode-view (ViewMode::ModelSelector), replacing the Compositor modal. /model dispatches Action::OpenModelSelectorView (and spawns list_providers); Esc returns to Agent. Provider header rows stay non-selectable; navigation (up/down, PageUp/Down, Home/End, mouse-wheel) skips them with wrap-around. Selecting a model row with Enter emits Action::ModelSelected(session_id, provider_key, model_id) and returns to the prior view; selection requires a current session, otherwise it is a no-op. The mode-view supports filter (/), expand/collapse of provider groups (left/right arrows) and refresh (r); footer reads 'Enter Select | <-> Expand/Collapse | / Filter | r Refresh | Esc Close'.
+  The model selector is a full-screen Navigator mode-view (ViewMode::ModelSelector), replacing the Compositor modal. /model dispatches Action::OpenModelSelectorView (and spawns list_providers); Esc returns to Agent. Provider header rows stay non-selectable; navigation (up/down, PageUp/Down, Home/End, mouse-wheel) skips them with wrap-around. Selecting a model row with Enter emits Action::ModelSelected(Option<session_id>, provider_key, model_id) and returns to the prior view. Following the TypeScript implementation (ModelSelectorScreen.tsx Enter handler + modelSelectionService.selectModel), the Enter handler has NO session-existence guard: the selection is always emitted and the view always closes; only the downstream backend write (set_session_model) and the green (current) marker are gated on a present session. With no active session the selector still closes but no backend write fires. The mode-view supports filter (/), expand/collapse of provider groups (left/right arrows) and refresh (r); footer reads 'Enter Select | <-> Expand/Collapse | / Filter | r Refresh | Esc Close'.
   """
 
   Background: User Story
@@ -44,12 +44,12 @@ Feature: Model selector view interaction
     And the model selector view closes
     And the session header badge updates to the selected model
 
-  Scenario: Selecting a model with no active session is a no-op
+  Scenario: Selecting a model with no active session still emits the selection
     Given the model selector is open with no current session
     And the cursor is on a selectable model row
     When I press Enter
-    Then no model selection is committed
-    And the view remains open
+    Then a model selection is emitted with no session id
+    And the model selector view closes
 
   Scenario: Filtering narrows the model list
     Given the model selector is showing all providers and models
@@ -67,7 +67,7 @@ Feature: Model selector view interaction
   Scenario: Overflowing list shows scroll indicators and wheel navigates
     Given the model list overflows the viewport
     When the list is rendered
-    Then dim up and down overflow indicators show on the first and last visible rows
+    Then a scrollbar column shows the scroll position beside the list
     When I scroll the mouse wheel down
     Then the selection advances skipping provider headers
 

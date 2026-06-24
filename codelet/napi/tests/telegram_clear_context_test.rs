@@ -19,7 +19,7 @@ fn simulate_correct_clear_action(session: &mut Session) {
     session.messages.clear();
     session.turns.clear();
     session.token_tracker = TokenTracker::default();
-    
+
     // CRITICAL: Reinject context reminders so AI retains project context
     session.inject_context_reminders();
 }
@@ -66,7 +66,7 @@ fn test_telegram_clear_resets_context_completely() {
     // @step Given I have an active conversation with the AI via Telegram bridge
     // @step And the conversation has accumulated messages and tokens
     session.inject_context_reminders();
-    
+
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text("Hello, I'm testing from Telegram")),
     });
@@ -78,7 +78,10 @@ fn test_telegram_clear_resets_context_completely() {
 
     let messages_before = session.messages.len();
     assert!(messages_before > 0, "Should have messages before clear");
-    assert!(session.token_tracker.input_tokens > 0, "Should have tokens before clear");
+    assert!(
+        session.token_tracker.input_tokens > 0,
+        "Should have tokens before clear"
+    );
 
     // @step When I send "/clear" via Telegram
     // (This simulates what the control handler SHOULD do after fix)
@@ -99,11 +102,20 @@ fn test_telegram_clear_resets_context_completely() {
             false
         }
     });
-    assert!(!has_secret_code, "Previous conversation should be cleared - no secret code");
+    assert!(
+        !has_secret_code,
+        "Previous conversation should be cleared - no secret code"
+    );
 
     // @step And the next message should be treated as a fresh conversation start
-    assert_eq!(session.token_tracker.input_tokens, 0, "Input tokens should be 0");
-    assert_eq!(session.token_tracker.output_tokens, 0, "Output tokens should be 0");
+    assert_eq!(
+        session.token_tracker.input_tokens, 0,
+        "Input tokens should be 0"
+    );
+    assert_eq!(
+        session.token_tracker.output_tokens, 0,
+        "Output tokens should be 0"
+    );
 
     // @step And no confirmation dialog should appear
     // (This is a UI concern - verified by the immediate action execution)
@@ -165,10 +177,16 @@ fn test_telegram_clear_preserves_system_reminders() {
             false
         }
     });
-    assert!(has_environment, "Environment system reminder should be present");
+    assert!(
+        has_environment,
+        "Environment system reminder should be present"
+    );
 
     // @step And the conversation history should be cleared
-    assert_eq!(session.token_tracker.input_tokens, 0, "Tokens should be reset");
+    assert_eq!(
+        session.token_tracker.input_tokens, 0,
+        "Tokens should be reset"
+    );
 }
 
 /// Scenario: Token counters reset after clear
@@ -201,25 +219,38 @@ fn test_telegram_clear_resets_tokens() {
     simulate_correct_clear_action(&mut session);
 
     // @step Then the token counters should show "0↓ 0↑"
-    assert_eq!(session.token_tracker.input_tokens, 0, "Input tokens should be 0");
-    assert_eq!(session.token_tracker.output_tokens, 0, "Output tokens should be 0");
+    assert_eq!(
+        session.token_tracker.input_tokens, 0,
+        "Input tokens should be 0"
+    );
+    assert_eq!(
+        session.token_tracker.output_tokens, 0,
+        "Output tokens should be 0"
+    );
 
     // @step And the session.messages should be empty (except system reminders)
     // Only system reminders should remain
-    let user_messages: Vec<_> = session.messages.iter().filter(|msg| {
-        if let Message::User { content, .. } = msg {
-            !content.iter().any(|item| {
-                if let UserContent::Text(text) = item {
-                    text.text.contains("<system-reminder>")
-                } else {
-                    false
-                }
-            })
-        } else {
-            true // Non-user messages count as user content
-        }
-    }).collect();
-    assert!(user_messages.is_empty(), "Non-system-reminder messages should be cleared");
+    let user_messages: Vec<_> = session
+        .messages
+        .iter()
+        .filter(|msg| {
+            if let Message::User { content, .. } = msg {
+                !content.iter().any(|item| {
+                    if let UserContent::Text(text) = item {
+                        text.text.contains("<system-reminder>")
+                    } else {
+                        false
+                    }
+                })
+            } else {
+                true // Non-user messages count as user content
+            }
+        })
+        .collect();
+    assert!(
+        user_messages.is_empty(),
+        "Non-system-reminder messages should be cleared"
+    );
 
     // @step And the session.turns should be empty
     assert!(session.turns.is_empty(), "Turns should be cleared");
@@ -258,7 +289,10 @@ fn test_telegram_clear_resets_full_session_state() {
 
     // Verify pre-conditions
     assert!(!session.messages.is_empty(), "Should have messages");
-    assert!(session.token_tracker.input_tokens > 0, "Should have input tokens");
+    assert!(
+        session.token_tracker.input_tokens > 0,
+        "Should have input tokens"
+    );
 
     // @step When I send "/clear" via Telegram
     simulate_correct_clear_action(&mut session);
@@ -269,11 +303,17 @@ fn test_telegram_clear_resets_full_session_state() {
 
     // @step And token_tracker should be reset to default
     assert_eq!(session.token_tracker.input_tokens, 0, "Input tokens reset");
-    assert_eq!(session.token_tracker.output_tokens, 0, "Output tokens reset");
+    assert_eq!(
+        session.token_tracker.output_tokens, 0,
+        "Output tokens reset"
+    );
 
     // @step And inject_context_reminders() should be called to restore system context
     let has_system_reminders = count_system_reminder_messages(&session) > 0;
-    assert!(has_system_reminders, "System reminders should be reinjected");
+    assert!(
+        has_system_reminders,
+        "System reminders should be reinjected"
+    );
 }
 
 /// Scenario: Control handler works correctly from async context
@@ -315,7 +355,11 @@ async fn test_control_handler_blocking_lock_from_async_context() {
 
     // @step And the blocking operations should complete successfully
     let guard = data.lock().await;
-    assert_eq!(*guard, vec![42], "Data should be modified by control handler");
+    assert_eq!(
+        *guard,
+        vec![42],
+        "Data should be modified by control handler"
+    );
 }
 
 /// Scenario: Control handler WITHOUT block_in_place would panic

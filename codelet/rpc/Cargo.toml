@@ -28,6 +28,12 @@ codelet-core = { workspace = true }
 # the helper called inside the service body — not duplicated at every
 # transport's call site.
 codelet-git = { workspace = true }
+# PROV-112: disconnect-oauth clears tokens by calling the SAME providers
+# primitives the napi *_oauth.rs wrappers use (claude_auth path / codex
+# read+write auth / copilot delete_copilot_auth). The arrow rpc → providers
+# is permitted (rpc → the napi crate remains forbidden); this keeps the clear
+# logic napi-direct in spirit without that forbidden dependency.
+codelet-providers = { workspace = true }
 tarpc = { workspace = true }
 serde = { workspace = true }
 # RPC-006: Arc<WorkUnitsWatcher>, broadcast::Receiver — tokio sync feature

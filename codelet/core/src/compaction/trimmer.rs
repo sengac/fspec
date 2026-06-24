@@ -11,9 +11,9 @@ use regex::Regex;
 use serde_json::Value;
 use std::collections::HashMap;
 
-use codelet_common::token_estimator::count_tokens;
 use super::trimmer_base64::{is_base64_image, trim_base64_image};
 use super::trimmer_metadata::{extract_tool_result_info, extract_tool_uses, ToolUseInfo};
+use codelet_common::token_estimator::count_tokens;
 
 /// Regex for detecting grep-style output lines (file:line:text).
 static GREP_PATTERN: Lazy<Regex> = Lazy::new(|| {
@@ -154,16 +154,35 @@ impl Default for Trimmer {
 
 /// Replace Write tool input content with compact persistence reference.
 fn trim_write_in_content(input: &Value) -> String {
-    let path = input.get("file_path").and_then(|v| v.as_str()).unwrap_or("unknown");
-    let lines = input.get("content").and_then(|v| v.as_str()).unwrap_or("").lines().count();
+    let path = input
+        .get("file_path")
+        .and_then(|v| v.as_str())
+        .unwrap_or("unknown");
+    let lines = input
+        .get("content")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .lines()
+        .count();
     format!("[Write: {path}, {lines} lines — file persisted to disk]")
 }
 
 /// Replace Edit tool input content with condensed change summary.
 fn trim_edit_in_content(input: &Value) -> String {
-    let path = input.get("file_path").and_then(|v| v.as_str()).unwrap_or("unknown");
-    let old_len = input.get("old_string").and_then(|v| v.as_str()).map(str::len).unwrap_or(0);
-    let new_len = input.get("new_string").and_then(|v| v.as_str()).map(str::len).unwrap_or(0);
+    let path = input
+        .get("file_path")
+        .and_then(|v| v.as_str())
+        .unwrap_or("unknown");
+    let old_len = input
+        .get("old_string")
+        .and_then(|v| v.as_str())
+        .map(str::len)
+        .unwrap_or(0);
+    let new_len = input
+        .get("new_string")
+        .and_then(|v| v.as_str())
+        .map(str::len)
+        .unwrap_or(0);
     format!("[Edit: {path} — replaced {old_len} chars with {new_len} chars]")
 }
 
@@ -184,8 +203,7 @@ fn trim_bash_output(content: &str, is_error: bool) -> String {
         return content.to_string();
     }
 
-    let exit_code = parse_exit_code_from_content(content)
-        .unwrap_or(if is_error { 1 } else { 0 });
+    let exit_code = parse_exit_code_from_content(content).unwrap_or(if is_error { 1 } else { 0 });
     let omitted = lines.len() - BASH_HEAD_LINES - BASH_TAIL_LINES;
 
     let mut result = lines[..BASH_HEAD_LINES].join("\n");
@@ -233,5 +251,10 @@ fn trim_by_content_heuristics(content: &str) -> String {
 
 /// Check if lines look like grep output (file:line:text pattern).
 fn looks_like_grep_output(lines: &[&str]) -> bool {
-    lines.iter().take(5).filter(|l| GREP_PATTERN.is_match(l)).count() >= 3
+    lines
+        .iter()
+        .take(5)
+        .filter(|l| GREP_PATTERN.is_match(l))
+        .count()
+        >= 3
 }

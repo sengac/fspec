@@ -41,8 +41,8 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec").join("work-units.json"))
-        .expect("read work-units.json");
+    let raw =
+        fs::read_to_string(cwd.join("spec").join("work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse JSON")
 }
 
@@ -97,7 +97,10 @@ fn scenario_clap_exposes_compact_work_unit_with_arg_and_force_flag() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "compact-work-unit --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "compact-work-unit --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout describes the compact-work-unit subcommand
     assert!(
@@ -142,7 +145,9 @@ fn scenario_cli_compacts_done_work_unit_and_prints_summary() {
 
     // @step And stdout contains the line '✓ Compacted work unit AUTH-001'
     assert!(
-        stdout.lines().any(|l| l == "✓ Compacted work unit AUTH-001"),
+        stdout
+            .lines()
+            .any(|l| l == "✓ Compacted work unit AUTH-001"),
         "missing compacted line; got:\n{stdout}"
     );
 
@@ -224,7 +229,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And the AUTH-001 rules array in spec/work-units.json contains 0 items
     let data = read_work_units(ws.path());
@@ -279,7 +287,10 @@ fn scenario_compact_work_unit_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "compact-work-unit --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "compact-work-unit --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/compact-work-unit.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_CWU);

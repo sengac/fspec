@@ -78,11 +78,19 @@ pub async fn append_log_entry(log_path: &Path, entry: &JobLogEntry) {
             let mut buf = line.into_bytes();
             buf.push(b'\n');
             if let Err(e) = file.write_all(&buf).await {
-                warn!("Failed to write job log entry to {}: {}", log_path.display(), e);
+                warn!(
+                    "Failed to write job log entry to {}: {}",
+                    log_path.display(),
+                    e
+                );
             }
             // Ensure data is flushed to disk before returning
             if let Err(e) = file.flush().await {
-                warn!("Failed to flush job log entry to {}: {}", log_path.display(), e);
+                warn!(
+                    "Failed to flush job log entry to {}: {}",
+                    log_path.display(),
+                    e
+                );
             }
         }
         Err(e) => {

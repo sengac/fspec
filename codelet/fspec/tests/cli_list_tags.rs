@@ -225,12 +225,8 @@ fn scenario_cli_text_output_renders_alphabetically_sorted_tags() {
     );
 
     // @step Then the line '  @aaa - A desc' appears BEFORE the line '  @zed - Z desc' in stdout
-    let aaa = stdout
-        .find("  @aaa - A desc")
-        .expect("@aaa line present");
-    let zed = stdout
-        .find("  @zed - Z desc")
-        .expect("@zed line present");
+    let aaa = stdout.find("  @aaa - A desc").expect("@aaa line present");
+    let zed = stdout.find("  @zed - Z desc").expect("@zed line present");
     assert!(
         aaa < zed,
         "@aaa must appear before @zed; aaa={aaa} zed={zed}\n{stdout}"
@@ -295,8 +291,7 @@ fn scenario_cli_category_filter_unknown_exits_1() {
     write_tags_file(ws.path(), &two_categories_json());
 
     // @step When I run `./codelet/target/release/fspec list-tags --category 'No Such Category'`
-    let (code, stdout, stderr) =
-        run_list_tags(ws.path(), &["--category", "No Such Category"]);
+    let (code, stdout, stderr) = run_list_tags(ws.path(), &["--category", "No Such Category"]);
 
     // @step Then the command exits with code 1
     assert_eq!(
@@ -365,7 +360,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_tags() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -443,14 +439,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         .iter()
         .find(|t| t["tag"].as_str() == Some("@critical"))
         .expect("@critical entry present");
-    assert_eq!(
-        critical["description"].as_str(),
-        Some("Critical features")
-    );
+    assert_eq!(critical["description"].as_str(), Some("Critical features"));
 
     // @step Then the CLI bridge module codelet/fspec/src/list_tags.rs contains NO inline category-filter, tag-sorting, or rendering logic
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_tags.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_tags.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/list_tags.rs must exist as the CLI bridge module; got missing: {}",

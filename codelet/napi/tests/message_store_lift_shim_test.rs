@@ -15,14 +15,14 @@
 
 use chrono::Utc;
 use codelet_core::persistence::messages::{
-    compute_hash as core_compute_hash,
-    MessageRef as CoreMessageRef, MessageSource as CoreMessageSource,
-    MessageStore as CoreMessageStore, StoredMessage as CoreStoredMessage,
+    compute_hash as core_compute_hash, MessageRef as CoreMessageRef,
+    MessageSource as CoreMessageSource, MessageStore as CoreMessageStore,
+    StoredMessage as CoreStoredMessage,
 };
 use codelet_napi::persistence::{
-    compute_hash as napi_compute_hash,
-    MessageRef as NapiMessageRef, MessageSource as NapiMessageSource,
-    MessageStore as NapiMessageStore, StoredMessage as NapiStoredMessageType,
+    compute_hash as napi_compute_hash, MessageRef as NapiMessageRef,
+    MessageSource as NapiMessageSource, MessageStore as NapiMessageStore,
+    StoredMessage as NapiStoredMessageType,
 };
 use serial_test::serial;
 use std::collections::HashMap;
@@ -69,8 +69,14 @@ fn _types_are_reexported_not_duplicated() {
     };
     assert_same(&core_msg, &napi_msg);
 
-    let core_ref = CoreMessageRef { message_id: Uuid::nil(), source: CoreMessageSource::Native };
-    let napi_ref = NapiMessageRef { message_id: Uuid::nil(), source: NapiMessageSource::Native };
+    let core_ref = CoreMessageRef {
+        message_id: Uuid::nil(),
+        source: CoreMessageSource::Native,
+    };
+    let napi_ref = NapiMessageRef {
+        message_id: Uuid::nil(),
+        source: NapiMessageSource::Native,
+    };
     assert_same(&core_ref, &napi_ref);
 
     // MessageStore is a unit-keyed reference — assert the type names alias.
@@ -151,7 +157,11 @@ fn napi_flat_reexports_round_trip_a_stored_message() {
 
     // @step Then the 48 persistence tests pass
     // @step And the 9 lazy_init_tests pass (including the BUG-122 lazy-init coverage that asserts MessageStore::new() does not rescan the JSONL when messages.idx is current)
-    assert_eq!(reopened.index_len(), 1, "reopened index has the one stored message");
+    assert_eq!(
+        reopened.index_len(),
+        1,
+        "reopened index has the one stored message"
+    );
     assert_eq!(
         reopened.cache_len(),
         0,

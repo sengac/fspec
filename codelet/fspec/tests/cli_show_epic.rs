@@ -112,8 +112,11 @@ fn scenario_clap_exposes_show_epic_with_epicid_help() {
 
     // @step Then stdout advertises the required positional <epicId> argument
     assert!(
-        stdout.contains("epicId") || stdout.contains("epic_id") || stdout.contains("EPIC_ID")
-            || stdout.contains("<EPICID>") || stdout.contains("<EPIC_ID>"),
+        stdout.contains("epicId")
+            || stdout.contains("epic_id")
+            || stdout.contains("EPIC_ID")
+            || stdout.contains("<EPICID>")
+            || stdout.contains("<EPIC_ID>"),
         "help must mention the positional epicId argument; got:\n{stdout}"
     );
 
@@ -445,7 +448,8 @@ fn scenario_default_combined_tui_mode_preserved() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -492,7 +496,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let parsed: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 

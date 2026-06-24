@@ -173,10 +173,12 @@ fn cli_json_prints_the_2_space_json_envelope_to_stdout() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as JSON with searchedFiles and files fields
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     for field in ["searchedFiles", "files"] {
-        assert!(parsed.get(field).is_some(), "missing field `{field}` in:\n{stdout}");
+        assert!(
+            parsed.get(field).is_some(),
+            "missing field `{field}` in:\n{stdout}"
+        );
     }
 }
 
@@ -267,7 +269,10 @@ fn cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher() {
     let cli_len = cli_parsed["files"].as_array().expect("files array").len();
 
     // @step Then both invocations produce a JSON envelope with the same files array length
-    assert_eq!(disp_len, cli_len, "dispatcher and CLI files counts must match");
+    assert_eq!(
+        disp_len, cli_len,
+        "dispatcher and CLI files counts must match"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/search_implementation.rs contains NO inline filtering or rendering logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/search_implementation.rs");

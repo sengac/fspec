@@ -13,7 +13,10 @@ use codelet_napi::graph::ast_pipeline::pubspec_dep_extractor::extract_pubspec_de
 use codelet_napi::graph::graph_entities::GraphEntity;
 
 mod graph_test_helpers;
-use graph_test_helpers::{build_known_files, count_edges, count_nodes, find_edges, find_node, get_node_property, write_test_file};
+use graph_test_helpers::{
+    build_known_files, count_edges, count_nodes, find_edges, find_node, get_node_property,
+    write_test_file,
+};
 
 // ============================================================================
 // Scenario: Extract File, Function, and Type nodes from Dart source with Contains edges
@@ -138,7 +141,10 @@ class User {
             if node_type == "File" && properties.get("path").and_then(|v| v.as_str()).is_some_and(|p| p.contains("user.dart"))
         )
     }).collect();
-    assert!(!stub_file_nodes.is_empty(), "Should create stub File node for import target");
+    assert!(
+        !stub_file_nodes.is_empty(),
+        "Should create stub File node for import target"
+    );
 }
 
 // ============================================================================
@@ -199,7 +205,12 @@ void transform(String data) {
         .expect("Dart extraction should succeed");
 
     // @step Then it should produce a Calls edge from "processData" to "validateInput"
-    let calls = find_edges(&entities, "Calls", Some("processData"), Some("validateInput"));
+    let calls = find_edges(
+        &entities,
+        "Calls",
+        Some("processData"),
+        Some("validateInput"),
+    );
     assert!(
         !calls.is_empty(),
         "Should have Calls edge from processData to validateInput. All Calls: {:?}",
@@ -275,37 +286,65 @@ dev_dependencies:
     write_test_file(project_dir, "pubspec.yaml", pubspec_content);
 
     // @step When I run the pubspec dependency extractor
-    let entities = extract_pubspec_dependencies(project_dir)
-        .expect("Pubspec extraction should succeed");
+    let entities =
+        extract_pubspec_dependencies(project_dir).expect("Pubspec extraction should succeed");
 
     // @step Then it should produce a Dependency node for "provider" with isDev false and version "^6.0.0"
     let provider_dep = entities.iter().find(|e| {
-        if let GraphEntity::Node { node_type, properties, .. } = e {
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
             node_type == "Dependency"
                 && properties.get("name").and_then(|v| v.as_str()) == Some("provider")
         } else {
             false
         }
     });
-    assert!(provider_dep.is_some(), "Should have Dependency node for 'provider'");
+    assert!(
+        provider_dep.is_some(),
+        "Should have Dependency node for 'provider'"
+    );
     if let Some(GraphEntity::Node { properties, .. }) = provider_dep {
-        assert_eq!(properties.get("isDev").and_then(|v| v.as_bool()), Some(false));
-        assert_eq!(properties.get("version").and_then(|v| v.as_str()), Some("^6.0.0"));
+        assert_eq!(
+            properties.get("isDev").and_then(|v| v.as_bool()),
+            Some(false)
+        );
+        assert_eq!(
+            properties.get("version").and_then(|v| v.as_str()),
+            Some("^6.0.0")
+        );
     }
 
     // @step And it should produce a Dependency node for "build_runner" with isDev true and version "^2.4.0"
     let build_runner_dep = entities.iter().find(|e| {
-        if let GraphEntity::Node { node_type, properties, .. } = e {
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
             node_type == "Dependency"
                 && properties.get("name").and_then(|v| v.as_str()) == Some("build_runner")
         } else {
             false
         }
     });
-    assert!(build_runner_dep.is_some(), "Should have Dependency node for 'build_runner'");
+    assert!(
+        build_runner_dep.is_some(),
+        "Should have Dependency node for 'build_runner'"
+    );
     if let Some(GraphEntity::Node { properties, .. }) = build_runner_dep {
-        assert_eq!(properties.get("isDev").and_then(|v| v.as_bool()), Some(true));
-        assert_eq!(properties.get("version").and_then(|v| v.as_str()), Some("^2.4.0"));
+        assert_eq!(
+            properties.get("isDev").and_then(|v| v.as_bool()),
+            Some(true)
+        );
+        assert_eq!(
+            properties.get("version").and_then(|v| v.as_str()),
+            Some("^2.4.0")
+        );
     }
 
     // @step And it should produce DependsOn edges from the pubspec.yaml File to each Dependency
@@ -348,7 +387,12 @@ class User {
     let fn_nodes: Vec<_> = entities
         .iter()
         .filter_map(|e| {
-            if let GraphEntity::Node { node_type, properties, .. } = e {
+            if let GraphEntity::Node {
+                node_type,
+                properties,
+                ..
+            } = e
+            {
                 if node_type == "Function" {
                     return properties.get("name").and_then(|v| v.as_str());
                 }
@@ -397,7 +441,12 @@ void main() {
 
     // @step Then the ".dart" files should be discovered and extracted using the Dart extractor
     let dart_file = entities.iter().find(|e| {
-        if let GraphEntity::Node { node_type, properties, .. } = e {
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
             node_type == "File"
                 && properties.get("language").and_then(|v| v.as_str()) == Some("dart")
         } else {
@@ -407,7 +456,10 @@ void main() {
     assert!(
         dart_file.is_some(),
         "Should discover and extract .dart files. Entities: {:?}",
-        entities.iter().filter(|e| matches!(e, GraphEntity::Node { node_type, .. } if node_type == "File")).collect::<Vec<_>>()
+        entities
+            .iter()
+            .filter(|e| matches!(e, GraphEntity::Node { node_type, .. } if node_type == "File"))
+            .collect::<Vec<_>>()
     );
 }
 
@@ -455,8 +507,7 @@ void orphanFunction() {
     write_test_file(project_dir, ".gitignore", "build/\n.dart_tool/\n");
 
     // @step When I run ast_dead_code detection on the indexed project
-    let entities = walk_and_extract(project_dir, false)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, false).expect("walk_and_extract should succeed");
 
     let db_path = temp_dir.path().join("test-dart-dead-code.nano");
     let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)

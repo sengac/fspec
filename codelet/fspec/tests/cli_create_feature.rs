@@ -100,13 +100,22 @@ fn scenario_cli_prints_the_prefill_system_reminder_on_stdout() {
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
     // @step And stdout contains the substring '<system-reminder>'
-    assert!(stdout.contains("<system-reminder>"), "stdout must contain reminder opener; got:\n{stdout}");
+    assert!(
+        stdout.contains("<system-reminder>"),
+        "stdout must contain reminder opener; got:\n{stdout}"
+    );
 
     // @step And stdout contains the substring 'PREFILL DETECTED'
-    assert!(stdout.contains("PREFILL DETECTED"), "stdout must contain prefill banner; got:\n{stdout}");
+    assert!(
+        stdout.contains("PREFILL DETECTED"),
+        "stdout must contain prefill banner; got:\n{stdout}"
+    );
 
     // @step And stdout contains the substring '</system-reminder>'
-    assert!(stdout.contains("</system-reminder>"), "stdout must contain reminder closer; got:\n{stdout}");
+    assert!(
+        stdout.contains("</system-reminder>"),
+        "stdout must contain reminder closer; got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -131,7 +140,10 @@ fn scenario_cli_fails_with_exit_1_when_file_already_exists() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'File already exists: spec/features/payment-processing.feature'
     assert!(
@@ -161,7 +173,10 @@ fn scenario_cli_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "create-feature --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "create-feature --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/create-feature.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_CF);
@@ -200,7 +215,8 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         bridge_path.exists(),
         "codelet/fspec/src/create_feature.rs must exist as the CLI bridge module"
     );
-    let bridge_src = strip_comments(&fs::read_to_string(&bridge_path).expect("bridge module readable"));
+    let bridge_src =
+        strip_comments(&fs::read_to_string(&bridge_path).expect("bridge module readable"));
     for forbidden in [
         "generateFeatureTemplate",
         "feature_template",

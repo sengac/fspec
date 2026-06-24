@@ -122,6 +122,10 @@ impl Navigator {
             Action::CloseModelSelectorView | Action::ModelSelected(..)
                 if self.active_view == ViewMode::ModelSelector =>
             {
+                tracing::info!(
+                    target: "model_select",
+                    "[MODEL-SELECT] navigator apply_action: closing ModelSelector view -> Agent"
+                );
                 self.active_view = ViewMode::Agent;
             }
             _ => {}

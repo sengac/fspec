@@ -115,7 +115,11 @@ fn scenario_dispatcher_ignores_non_done_units() {
         tmp.path(),
         &work_units_with(&[
             ("A", "backlog", json!({ "estimate": 3, "iterations": 1 })),
-            ("B", "implementing", json!({ "estimate": 5, "iterations": 2 })),
+            (
+                "B",
+                "implementing",
+                json!({ "estimate": 5, "iterations": 2 }),
+            ),
         ]),
     );
 
@@ -370,7 +374,10 @@ fn scenario_cli_without_format_prints_nothing() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step And stdout is exactly empty
-    assert_eq!(stdout, "", "stdout must be empty (TS silent-text parity); got:\n{stdout}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (TS silent-text parity); got:\n{stdout}"
+    );
 
     // @step And stderr is exactly empty
     assert_eq!(stderr, "", "stderr must be empty; got:\n{stderr}");
@@ -389,7 +396,10 @@ fn scenario_cli_format_text_prints_nothing() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step And stdout is exactly empty
-    assert_eq!(stdout, "", "stdout must be empty for --format text; got:\n{stdout}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty for --format text; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -420,7 +430,10 @@ fn scenario_cli_requires_positional_work_unit_id() {
     let (code, stdout, stderr) = run_query(ws.path(), &[]);
 
     // @step Then the command exits with a non-zero code
-    assert_ne!(code, 0, "missing required arg should exit non-zero; got {code}");
+    assert_ne!(
+        code, 0,
+        "missing required arg should exit non-zero; got {code}"
+    );
     // Sanity-check: stderr should mention either the required argument (green phase)
     // or unrecognized subcommand (red phase, before clap wiring). Either way, the
     // exit code must be non-zero and stderr must be non-empty.
@@ -441,11 +454,20 @@ fn scenario_cli_malformed_work_units_json_exits_1_with_stderr() {
     let (code, stdout, stderr) = run_query(ws.path(), &["ANY-001", "--format", "json"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1 on malformed; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1 on malformed; got {code}, stdout={stdout}, stderr={stderr}"
+    );
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "expected 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "expected 'Error:'; got:\n{stderr}"
+    );
     // @step And stderr contains the substring 'Failed to parse work-units.json'
-    assert!(stderr.contains("Failed to parse work-units.json"), "got:\n{stderr}");
+    assert!(
+        stderr.contains("Failed to parse work-units.json"),
+        "got:\n{stderr}"
+    );
 }
 
 #[test]
@@ -472,13 +494,23 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step Then both invocations produce JSON with patterns[0].points=3 and patterns[0].confidence='low'
     assert_eq!(dispatcher_data["patterns"][0]["points"].as_u64(), Some(3));
-    assert_eq!(dispatcher_data["patterns"][0]["confidence"].as_str(), Some("low"));
+    assert_eq!(
+        dispatcher_data["patterns"][0]["confidence"].as_str(),
+        Some("low")
+    );
     assert_eq!(binary_data["patterns"][0]["points"].as_u64(), Some(3));
-    assert_eq!(binary_data["patterns"][0]["confidence"].as_str(), Some("low"));
+    assert_eq!(
+        binary_data["patterns"][0]["confidence"].as_str(),
+        Some("low")
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/query_estimation_guide.rs contains NO inline grouping, bucketing, or rendering logic — its only computation is JSON arg marshalling and stdout printing
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_estimation_guide.rs");
-    assert!(bridge_path.exists(), "bridge must exist: {}", bridge_path.display());
+    assert!(
+        bridge_path.exists(),
+        "bridge must exist: {}",
+        bridge_path.display()
+    );
     let bridge_src = fs::read_to_string(&bridge_path).expect("read bridge");
     for forbidden in [
         "byPoints",

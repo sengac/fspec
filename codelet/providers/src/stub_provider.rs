@@ -38,7 +38,10 @@ impl StubProvider {
 
     /// Return the deterministic chunk sequence emitted on any input.
     pub fn canned_chunks() -> Vec<StreamChunk> {
-        vec![StreamChunk::text("hi back".to_string()), StreamChunk::done()]
+        vec![
+            StreamChunk::text("hi back".to_string()),
+            StreamChunk::done(),
+        ]
     }
 
     /// RPC-069: Build a real `rig::agent::Agent<StubModel>` so the

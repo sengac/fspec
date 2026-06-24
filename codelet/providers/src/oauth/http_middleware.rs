@@ -115,9 +115,10 @@ impl<S: TokenStrategy> RefreshingHttpClient<S> {
                                 let mut state = ts.write().await;
                                 if Instant::now() + buffer >= state.expires_at {
                                     let old = state.clone();
-                                    let new_state = strategy.refresh(old).await.map_err(|e| {
-                                        rig::http_client::Error::Instance(e.into())
-                                    })?;
+                                    let new_state = strategy
+                                        .refresh(old)
+                                        .await
+                                        .map_err(|e| rig::http_client::Error::Instance(e.into()))?;
                                     *state = new_state.clone();
                                     Some(new_state)
                                 } else {
@@ -188,9 +189,10 @@ impl<S: TokenStrategy> rig::http_client::HttpClientExt for RefreshingHttpClient<
                                 let mut state = token_state.write().await;
                                 if Instant::now() + buffer >= state.expires_at {
                                     let old = state.clone();
-                                    let new_state = strategy.refresh(old).await.map_err(|e| {
-                                        rig::http_client::Error::Instance(e.into())
-                                    })?;
+                                    let new_state = strategy
+                                        .refresh(old)
+                                        .await
+                                        .map_err(|e| rig::http_client::Error::Instance(e.into()))?;
                                     *state = new_state.clone();
                                     Some(new_state)
                                 } else {

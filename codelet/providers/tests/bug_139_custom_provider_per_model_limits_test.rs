@@ -27,8 +27,8 @@ use serial_test::serial;
 use tempfile::TempDir;
 
 use codelet_providers::custom::{
-    list_providers_info, ApiStyle, AuthConfig, ModelDef, ProviderConfig,
-    ProviderModelInfo, RhaiCustomProvider, ScriptLoader, ToolStyle,
+    list_providers_info, ApiStyle, AuthConfig, ModelDef, ProviderConfig, ProviderModelInfo,
+    RhaiCustomProvider, ScriptLoader, ToolStyle,
 };
 use codelet_providers::LlmProvider;
 use std::collections::HashMap;
@@ -382,12 +382,8 @@ fn get_model_limits(config) {
     let loader = Arc::new(ScriptLoader::with_default_engine());
 
     // @step When lookup_script_model_limits is invoked for the selected model
-    let provider = RhaiCustomProvider::new(
-        Arc::new(cfg),
-        loader,
-        "opus-4.7".to_string(),
-    )
-    .expect("provider builds");
+    let provider = RhaiCustomProvider::new(Arc::new(cfg), loader, "opus-4.7".to_string())
+        .expect("provider builds");
 
     // @step Then the resolved context_window equals 400000
     // (Rust tier — the provider.context_window() is the authoritative

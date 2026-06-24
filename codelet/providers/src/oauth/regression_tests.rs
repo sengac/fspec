@@ -16,12 +16,12 @@
 fn oauth_module_compiles_and_exports_all_building_blocks() {
     // @step Given the shared OAuth building blocks have replaced provider-specific implementations
     // Verify all public types are accessible
+    use crate::oauth::building_blocks::register_all_modules;
+    use crate::oauth::callback_server::CodeExchangeHandler;
     use crate::oauth::credential_store::CredentialStore;
     use crate::oauth::device_flow::DeviceCodeProvider;
-    use crate::oauth::callback_server::CodeExchangeHandler;
+    use crate::oauth::engine::{build_default_engine, build_sandboxed_engine, RhaiModule};
     use crate::oauth::http_middleware::TokenStrategy;
-    use crate::oauth::engine::{build_sandboxed_engine, build_default_engine, RhaiModule};
-    use crate::oauth::building_blocks::register_all_modules;
     use crate::oauth::token_refresh::TokenState;
 
     // @step When the full test suite is executed with cargo test in codelet/providers

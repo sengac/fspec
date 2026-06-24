@@ -45,10 +45,7 @@ fn write_work_units(cwd: &Path, raw: &str) {
 
 /// Build a single-work-unit JSON document, optionally embedding a
 /// `virtualHooks` array via raw `serde_json::json!`.
-fn work_units_with_virtual_hooks(
-    id: &str,
-    hooks: Option<&[serde_json::Value]>,
-) -> String {
+fn work_units_with_virtual_hooks(id: &str, hooks: Option<&[serde_json::Value]>) -> String {
     let mut wu = serde_json::Map::new();
     wu.insert("id".to_string(), serde_json::json!(id));
     wu.insert(
@@ -194,10 +191,7 @@ fn scenario_cli_prints_populated_text_layout() {
 fn scenario_cli_prints_empty_sentinel_and_exits_0() {
     // @step Given spec/work-units.json contains AUTH-001 with no virtualHooks field
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_virtual_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_virtual_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec list-virtual-hooks AUTH-001`
     let (code, stdout, stderr) = run_list_virtual_hooks(ws.path(), &["AUTH-001"]);
@@ -250,8 +244,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert_eq!(arr.len(), 1, "hooks array length 1; got {arr:?}");
 
     // @step And the CLI bridge module codelet/fspec/src/list_virtual_hooks.rs contains NO inline rendering, hook-grouping, or work-unit-lookup logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_virtual_hooks.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_virtual_hooks.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/list_virtual_hooks.rs must exist as the CLI bridge module; got missing: {}",
@@ -299,7 +292,10 @@ fn scenario_list_virtual_hooks_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "list-virtual-hooks --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "list-virtual-hooks --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-virtual-hooks.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_LVH);

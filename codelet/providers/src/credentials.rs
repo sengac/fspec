@@ -290,17 +290,16 @@ fn detect_custom_provider_availability() -> std::collections::HashMap<String, bo
             api_key_env_var_ok
         } else {
             match &cfg.auth {
-                AuthConfig::Bearer { env_var, .. }
-                | AuthConfig::ApiKeyHeader { env_var, .. } => std::env::var(env_var)
-                    .map(|v| !v.is_empty())
-                    .unwrap_or(false),
+                AuthConfig::Bearer { env_var, .. } | AuthConfig::ApiKeyHeader { env_var, .. } => {
+                    std::env::var(env_var)
+                        .map(|v| !v.is_empty())
+                        .unwrap_or(false)
+                }
                 // A custom auth provider is available when it has a
                 // facade (env-var plumbing handled by the facade) OR a
                 // Rhai script (the script handles auth internally, e.g.
                 // embedded tokens or custom credential resolution).
-                AuthConfig::Custom { .. } => {
-                    cfg.facade.is_some() || !cfg.script.is_empty()
-                }
+                AuthConfig::Custom { .. } => cfg.facade.is_some() || !cfg.script.is_empty(),
                 AuthConfig::OauthDeviceCode { .. } | AuthConfig::OauthPkce { .. } => false,
             }
         };

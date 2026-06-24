@@ -109,7 +109,10 @@ fn test_get_next_no_sessions() {
 
     // No sessions exist
     let next = manager.get_next();
-    assert!(next.is_none(), "get_next should return None when no sessions exist");
+    assert!(
+        next.is_none(),
+        "get_next should return None when no sessions exist"
+    );
 }
 
 /// Test: get_next with no active session returns first session
@@ -129,7 +132,11 @@ fn test_get_next_no_active_returns_first() {
     assert!(manager.get_active().is_none());
 
     let next = manager.get_next();
-    assert_eq!(next, Some(a), "get_next with no active should return first session");
+    assert_eq!(
+        next,
+        Some(a),
+        "get_next with no active should return first session"
+    );
 }
 
 /// Test: get_next from first session returns second session
@@ -186,7 +193,10 @@ fn test_get_next_from_last_returns_none() {
     manager.set_active(c);
 
     let next = manager.get_next();
-    assert!(next.is_none(), "get_next from last session should return None");
+    assert!(
+        next.is_none(),
+        "get_next from last session should return None"
+    );
 }
 
 /// Test: get_prev with no active session returns None
@@ -224,7 +234,10 @@ fn test_get_prev_from_first_returns_none() {
     manager.set_active(a);
 
     let prev = manager.get_prev();
-    assert!(prev.is_none(), "get_prev from first session should return None (go to board)");
+    assert!(
+        prev.is_none(),
+        "get_prev from first session should return None (go to board)"
+    );
 }
 
 /// Test: get_prev from second session returns first session
@@ -299,7 +312,10 @@ fn test_full_navigation_flow_board_sessions_board() {
     // User presses Shift+Right from session A
     // get_next(active=A) returns None (A is last)
     let next = manager.get_next();
-    assert!(next.is_none(), "A is the last session, get_next should return None");
+    assert!(
+        next.is_none(),
+        "A is the last session, get_next should return None"
+    );
 
     // Create dialog shows, user confirms, types a message, session B is created
     let session_b = manager.create_session("Session B");
@@ -329,7 +345,10 @@ fn test_full_navigation_flow_board_sessions_board() {
     // sessionDetach(A) clears active, clearActiveSession also clears
     manager.clear_active();
 
-    assert!(manager.get_active().is_none(), "Active should be None when on board");
+    assert!(
+        manager.get_active().is_none(),
+        "Active should be None when on board"
+    );
 
     // === Step 4: User presses Shift+Right from board ===
     let next = manager.get_next();
@@ -357,7 +376,11 @@ fn test_indexmap_insertion_order() {
     let c = manager.create_session("C");
 
     let sessions = manager.list_sessions();
-    assert_eq!(sessions, vec![a, b, c], "Sessions should be in insertion order");
+    assert_eq!(
+        sessions,
+        vec![a, b, c],
+        "Sessions should be in insertion order"
+    );
 }
 
 /// Test: get_first always returns first session regardless of active
@@ -376,7 +399,11 @@ fn test_get_first_ignores_active() {
     manager.set_active(b);
 
     let first = manager.get_first();
-    assert_eq!(first, Some(a), "get_first should always return first session");
+    assert_eq!(
+        first,
+        Some(a),
+        "get_first should always return first session"
+    );
 }
 
 /// Test: Active session not found in list returns first on get_next
@@ -400,7 +427,10 @@ fn test_active_not_in_list() {
 
     let next = manager.get_next();
     // Current implementation returns None when active not found
-    assert!(next.is_none(), "get_next with invalid active should return None");
+    assert!(
+        next.is_none(),
+        "get_next with invalid active should return None"
+    );
 }
 
 /// Test: Navigation after clearing active session
@@ -424,7 +454,11 @@ fn test_navigation_after_clear_active() {
 
     // get_next should return first session
     let next = manager.get_next();
-    assert_eq!(next, Some(a), "get_next after clear_active should return first session");
+    assert_eq!(
+        next,
+        Some(a),
+        "get_next after clear_active should return first session"
+    );
 }
 
 /// Test: Single session navigation
@@ -441,10 +475,16 @@ fn test_single_session_navigation() {
     manager.set_active(a);
 
     // Can't go next (only session)
-    assert!(manager.get_next().is_none(), "get_next from only session should return None");
+    assert!(
+        manager.get_next().is_none(),
+        "get_next from only session should return None"
+    );
 
     // Can't go prev (first session)
-    assert!(manager.get_prev().is_none(), "get_prev from first/only session should return None");
+    assert!(
+        manager.get_prev().is_none(),
+        "get_prev from first/only session should return None"
+    );
 }
 
 // =============================================================================
@@ -484,5 +524,8 @@ fn test_navigation_many_sessions() {
     }
 
     // At last session, get_next should return None
-    assert!(manager.get_next().is_none(), "get_next from last session should return None");
+    assert!(
+        manager.get_next().is_none(),
+        "get_next from last session should return None"
+    );
 }

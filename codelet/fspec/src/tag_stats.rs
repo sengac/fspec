@@ -50,8 +50,7 @@ pub struct CliArgs {}
 /// propagate it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(_args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // The CLI front door always requests text rendering — the
     // dispatcher front door requests JSON. The shape of the args

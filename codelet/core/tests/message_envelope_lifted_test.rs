@@ -14,9 +14,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use codelet_core::persistence::message_envelope::{
-    AssistantContent, AssistantMessage, CacheControl, DocumentSource, ImageSource,
-    MessageEnvelope, MessagePayload, ToolUseResultMetadata, TokenUsagePerMessage,
-    UserContent, UserMessage,
+    AssistantContent, AssistantMessage, CacheControl, DocumentSource, ImageSource, MessageEnvelope,
+    MessagePayload, TokenUsagePerMessage, ToolUseResultMetadata, UserContent, UserMessage,
 };
 
 use chrono::Utc;
@@ -73,11 +72,20 @@ fn assistant_envelope_round_trip_from_core_with_request_id() {
     assert_eq!(restored, original);
 
     // @step And the JSON includes parentUuid, type, provider, message, and requestId fields with camelCase keys
-    assert!(json.contains("\"parentUuid\""), "expected camelCase parentUuid, got: {json}");
-    assert!(json.contains("\"type\":\"assistant\""), "expected outer type discriminator");
+    assert!(
+        json.contains("\"parentUuid\""),
+        "expected camelCase parentUuid, got: {json}"
+    );
+    assert!(
+        json.contains("\"type\":\"assistant\""),
+        "expected outer type discriminator"
+    );
     assert!(json.contains("\"provider\":\"claude\""));
     assert!(json.contains("\"message\":"));
-    assert!(json.contains("\"requestId\""), "expected camelCase requestId, got: {json}");
+    assert!(
+        json.contains("\"requestId\""),
+        "expected camelCase requestId, got: {json}"
+    );
 }
 
 // ============================================================================
@@ -127,7 +135,10 @@ fn core_consumers_produce_identical_json_to_napi_for_user_text_envelope() {
         r#""message":{"role":"user","content":[{"type":"text","text":"Hi"}]},"#,
         r#""requestId":null}"#
     );
-    assert_eq!(json, expected, "JSON drift between core and napi-frozen layout");
+    assert_eq!(
+        json, expected,
+        "JSON drift between core and napi-frozen layout"
+    );
 }
 
 // ============================================================================
@@ -173,7 +184,11 @@ fn user_content_tool_result_round_trips_from_core() {
     assert!(json.contains("\"type\":\"tool_result\""));
     let restored: UserContent = serde_json::from_str(&json).unwrap();
     match restored {
-        UserContent::ToolResult { tool_use_id, is_error, .. } => {
+        UserContent::ToolResult {
+            tool_use_id,
+            is_error,
+            ..
+        } => {
             assert_eq!(tool_use_id, "toolu_01AyTnm7YLfybhnhEhwwZvAY");
             assert!(!is_error);
         }

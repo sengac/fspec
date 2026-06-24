@@ -360,13 +360,7 @@ async fn e2e_pre_tool_use_denies_destructive_command() {
     let ctx = make_context(workspace.path());
 
     // Destructive command → Deny
-    let outcome = run_pre_tool(
-        &compiled,
-        &ctx,
-        "Bash",
-        &json!({"command": "rm -rf /"}),
-    )
-    .await;
+    let outcome = run_pre_tool(&compiled, &ctx, "Bash", &json!({"command": "rm -rf /"})).await;
 
     assert_eq!(
         outcome.decision,

@@ -56,8 +56,7 @@ pub struct CliArgs {
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Marshal CLI args into the JSON shape consumed by fspec_core.
     let mut obj = serde_json::Map::new();

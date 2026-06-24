@@ -430,9 +430,8 @@ mod tests {
         use base64::Engine;
         let header = base64::engine::general_purpose::URL_SAFE_NO_PAD
             .encode(r#"{"typ":"JWT","alg":"none"}"#.as_bytes());
-        let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
-            format!(r#"{{"chatgpt_account_id":"{account_id}"}}"#).as_bytes(),
-        );
+        let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .encode(format!(r#"{{"chatgpt_account_id":"{account_id}"}}"#).as_bytes());
         format!("{header}.{payload}.stub_signature")
     }
 

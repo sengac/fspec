@@ -158,7 +158,10 @@ fn scenario_cli_exits_1_and_writes_to_stderr_when_work_units_json_is_malformed()
     let (code, stdout, stderr) = run_suggest(ws.path(), &["--output", "json"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring 'Error:'
     assert!(stderr.contains("Error:"), "stderr:\n{stderr}");
@@ -183,7 +186,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_json: Value =
         serde_json::from_str(&result.data).expect("dispatcher data must be JSON");
 
@@ -207,8 +213,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     }
 
     // @step And the CLI bridge module codelet/fspec/src/suggest_dependencies.rs contains NO inline suggestion logic — its only computation is JSON arg marshalling and stdout printing
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/suggest_dependencies.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/suggest_dependencies.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/suggest_dependencies.rs must exist as the CLI bridge module"
@@ -247,7 +252,10 @@ fn scenario_suggest_dependencies_help_matches_ts_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "suggest-dependencies --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "suggest-dependencies --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/suggest-dependencies.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

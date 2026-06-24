@@ -59,15 +59,21 @@ fn provider_settings_view_module_exists() {
     // (asserted by read_at succeeding)
     // @step And it declares a pub struct ProviderSettingsView
     assert!(source.contains("pub struct ProviderSettingsView"));
+    // PROV-113: the mode enums were extracted into a sibling `mode.rs` so the
+    // new OAuth-login variants fit without pushing mod.rs past the 300-LoC
+    // ceiling; mod.rs re-exports them. Assert the re-export here and the
+    // declarations against mode.rs below.
+    assert!(source.contains("pub use mode::{DetailSub, ProviderSettingsMode}"));
+    let mode_source = read_at("codelet/fspec-tui/src/views/provider_settings/mode.rs");
     // @step And it declares a pub enum ProviderSettingsMode with variants List and Detail
-    assert!(source.contains("pub enum ProviderSettingsMode"));
-    assert!(source.contains("List"));
-    assert!(source.contains("Detail"));
+    assert!(mode_source.contains("pub enum ProviderSettingsMode"));
+    assert!(mode_source.contains("List"));
+    assert!(mode_source.contains("Detail"));
     // @step And it declares a pub enum DetailSub with variants Summary, EditApiKey, OAuthNotice
-    assert!(source.contains("pub enum DetailSub"));
-    assert!(source.contains("Summary"));
-    assert!(source.contains("EditApiKey"));
-    assert!(source.contains("OAuthNotice"));
+    assert!(mode_source.contains("pub enum DetailSub"));
+    assert!(mode_source.contains("Summary"));
+    assert!(mode_source.contains("EditApiKey"));
+    assert!(mode_source.contains("OAuthNotice"));
 
     // And codelet/fspec-tui/src/views/mod.rs declares pub mod provider_settings
     let views_mod = read_at("codelet/fspec-tui/src/views/mod.rs");

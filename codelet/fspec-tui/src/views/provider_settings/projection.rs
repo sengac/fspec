@@ -65,6 +65,19 @@ fn oauth_login_methods(provider_id: &str) -> Vec<(OAuthMethod, String)> {
     }
 }
 
+/// OAuth source label shown as ` [{label}]` on an OAuth-logged-in
+/// provider/api-key row. Mirrors TS `oauthProviderLabels.ts`:
+/// anthropic→"Claude", codex→"ChatGPT", github-copilot→"GitHub Copilot",
+/// fallback→"OAuth".
+fn oauth_label(provider_id: &str) -> String {
+    match provider_id {
+        "anthropic" => "Claude".to_string(),
+        "codex" => "ChatGPT".to_string(),
+        "github-copilot" => "GitHub Copilot".to_string(),
+        _ => "OAuth".to_string(),
+    }
+}
+
 /// Project a single backend credential record into the display-layer shape
 /// consumed by `build_nav_items`. `openai_profiles` is only consulted for
 /// the `openai` provider (profiles are OpenAI-only, per TS Rule 29).
@@ -73,7 +86,15 @@ fn project_one(info: &ProviderCredentialInfo, openai_profiles: &[String]) -> Pro
     // For OAuth providers, `configured` doubles as "has stored tokens"
     // (TS sets hasOAuthTokens when a token lookup succeeds and reports the
     // provider as configured).
-    let has_oauth_tokens = is_oauth && info.configured;
+    //
+    // PROV-099: a present env api key (`masked_key = Some`) means an
+    // api-key configuration, NOT an OAuth login. Anthropic declares
+    // env_var=ANTHROPIC_API_KEY but auth_type=OAuth, so a mere env key
+    // made `configured` true and wrongly emitted the
+    // "Logout from OAuth [Anthropic]" row. Gate on `masked_key.is_none()`
+    // so only a real OAuth credential (env key absent, e.g. the
+    // claude_auth.json file) classifies the provider as OAuth-logged-in.
+    let has_oauth_tokens = is_oauth && info.configured && info.masked_key.is_none();
     let name = pretty_name(&info.provider_id, &info.display_name);
 
     let oauth_status_label = if has_oauth_tokens {
@@ -99,6 +120,24 @@ fn project_one(info: &ProviderCredentialInfo, openai_profiles: &[String]) -> Pro
         Vec::new()
     };
 
+    // PROV-098: DISPLAY masked_key/source priority (TS parity):
+    //   1. backend env api key present -> copy masked_key/source verbatim.
+    //   2. else OAuth-logged-in (is_oauth && configured, backend key
+    //      absent) -> synthesize Some("OAuth") + Some(oauth_label).
+    //   3. else -> None/None ((not configured)/(not set)).
+    // NOTE: this reads BACKEND `info.masked_key`, never the display field,
+    // so `has_oauth_tokens` above (PROV-099) is unaffected.
+    let (display_masked_key, display_source) = if info.masked_key.is_some() {
+        (info.masked_key.clone(), info.source.clone())
+    } else if is_oauth && info.configured {
+        (
+            Some("OAuth".to_string()),
+            Some(oauth_label(&info.provider_id)),
+        )
+    } else {
+        (None, None)
+    };
+
     ProviderDisplayInfo {
         id: info.provider_id.clone(),
         name,
@@ -112,6 +151,8 @@ fn project_one(info: &ProviderCredentialInfo, openai_profiles: &[String]) -> Pro
         profiles,
         oauth_login_methods: login_methods,
         oauth_status_label,
+        masked_key: display_masked_key,
+        source: display_source,
     }
 }
 

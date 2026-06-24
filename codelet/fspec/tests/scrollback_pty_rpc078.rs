@@ -155,10 +155,7 @@ fn end_to_end_user_typing_produces_correct_prefixes_no_duplicates_no_truncation(
         .master
         .try_clone_reader()
         .expect("clone PTY master reader");
-    let mut writer = pair
-        .master
-        .take_writer()
-        .expect("take PTY master writer");
+    let mut writer = pair.master.take_writer().expect("take PTY master writer");
 
     let drain = spawn_pty_drainer(reader);
 
@@ -203,9 +200,7 @@ fn end_to_end_user_typing_produces_correct_prefixes_no_duplicates_no_truncation(
     // delay so the binary's crossterm event reader doesn't drop bursts
     // and so we can observe the input panel echo growing on screen.
     for byte in b"is this card done?" {
-        writer
-            .write_all(&[*byte])
-            .expect("type user message byte");
+        writer.write_all(&[*byte]).expect("type user message byte");
         writer.flush().expect("flush PTY writer per byte");
         thread::sleep(Duration::from_millis(10));
     }

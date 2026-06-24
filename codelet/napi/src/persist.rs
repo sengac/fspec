@@ -8,8 +8,8 @@
 //! `session_restore_token_state`) in `session_bindings`.
 
 use crate::persistence::{
-    append_message_with_metadata, load_session, update_session_tokens,
-    AssistantContent, AssistantMessage, MessageEnvelope, MessagePayload, UserContent, UserMessage,
+    append_message_with_metadata, load_session, update_session_tokens, AssistantContent,
+    AssistantMessage, MessageEnvelope, MessagePayload, UserContent, UserMessage,
 };
 
 /// Persist a user message to the Rust persistence layer
@@ -45,14 +45,16 @@ pub(crate) fn persist_user_message(
     // Convert envelope to metadata map for storage
     let envelope_json = serde_json::to_string(&envelope)
         .map_err(|e| format!("Failed to serialize envelope: {e}"))?;
-    let metadata_map: HashMap<String, serde_json::Value> =
-        serde_json::from_str(&envelope_json)
-            .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
+    let metadata_map: HashMap<String, serde_json::Value> = serde_json::from_str(&envelope_json)
+        .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
 
     // Store the message
     append_message_with_metadata(&mut session_manifest, "user", text, metadata_map)?;
 
-    tracing::debug!("REFAC-007: Persisted user message for session {}", session_id);
+    tracing::debug!(
+        "REFAC-007: Persisted user message for session {}",
+        session_id
+    );
     Ok(())
 }
 
@@ -113,7 +115,12 @@ pub(crate) fn persist_assistant_message_internal(
         .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
 
     // Store the message
-    append_message_with_metadata(&mut session_manifest, "assistant", &text_content, metadata_map)?;
+    append_message_with_metadata(
+        &mut session_manifest,
+        "assistant",
+        &text_content,
+        metadata_map,
+    )?;
 
     tracing::debug!(
         "REFAC-007: Persisted assistant message for session {}",

@@ -31,6 +31,9 @@ pub mod dispatch_model_thinking_dialogs;
 pub mod dispatch_pause_hitl;
 pub mod dispatch_pending_input;
 pub mod dispatch_provider_settings;
+pub mod dispatch_provider_settings_copilot;
+pub mod dispatch_provider_settings_oauth;
+pub mod dispatch_provider_settings_profiles;
 pub mod dispatch_resume_search_views;
 pub mod dispatch_role_dialog;
 pub mod dispatch_scroll;
@@ -47,6 +50,7 @@ pub mod dispatch_work_unit_binding;
 pub mod events;
 pub mod loop_parser;
 pub mod schedule_parser;
+pub mod session_creation;
 pub mod slash_parser;
 pub mod state;
 

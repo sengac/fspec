@@ -46,7 +46,12 @@ pub fn slugify_path(path: &str) -> String {
         .expect("Rust extraction should succeed");
 
     // @step Then an Imports edge should be emitted from the source file to `graph-helpers-rs`
-    let local_imports = find_edges(&entities, "Imports", Some("src-extractor-rs"), Some("graph"));
+    let local_imports = find_edges(
+        &entities,
+        "Imports",
+        Some("src-extractor-rs"),
+        Some("graph"),
+    );
     assert!(
         !local_imports.is_empty(),
         "Should have Imports edge to graph/helpers.rs. All Imports: {:?}",

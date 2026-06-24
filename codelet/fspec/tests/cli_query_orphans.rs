@@ -346,7 +346,10 @@ fn scenario_clap_exposes_query_orphans_with_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "fspec query-orphans --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "fspec query-orphans --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step And stdout contains the substring 'query-orphans'
     assert!(
@@ -408,13 +411,22 @@ fn scenario_cli_text_output_lists_orphan_with_suggested_actions() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step And stdout contains the substring 'Found 1 orphaned work unit(s):'
-    assert!(stdout.contains("Found 1 orphaned work unit(s):"), "expected header; got:\n{stdout}");
+    assert!(
+        stdout.contains("Found 1 orphaned work unit(s):"),
+        "expected header; got:\n{stdout}"
+    );
     // @step And stdout contains the substring 'MISC-001'
     assert!(stdout.contains("MISC-001"), "expected id; got:\n{stdout}");
     // @step And stdout contains the substring 'No epic or dependency relationships'
-    assert!(stdout.contains("No epic or dependency relationships"), "expected warning; got:\n{stdout}");
+    assert!(
+        stdout.contains("No epic or dependency relationships"),
+        "expected warning; got:\n{stdout}"
+    );
     // @step And stdout contains the substring 'Assign epic'
-    assert!(stdout.contains("Assign epic"), "expected suggested action; got:\n{stdout}");
+    assert!(
+        stdout.contains("Assign epic"),
+        "expected suggested action; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -444,7 +456,10 @@ fn scenario_cli_exclude_done_flag_suppresses_done_orphans() {
         .filter_map(|o| o["id"].as_str())
         .collect();
     assert!(ids.contains(&"OPEN-1"), "expected OPEN-1; got {ids:?}");
-    assert!(!ids.contains(&"DONE-1"), "DONE-1 must be filtered; got {ids:?}");
+    assert!(
+        !ids.contains(&"DONE-1"),
+        "DONE-1 must be filtered; got {ids:?}"
+    );
 }
 
 #[test]
@@ -457,11 +472,20 @@ fn scenario_cli_malformed_work_units_json_exits_1_with_stderr() {
     let (code, stdout, stderr) = run_query(ws.path(), &["--output", "json"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "expected 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "expected 'Error:'; got:\n{stderr}"
+    );
     // @step And stderr contains the substring 'Failed to parse work-units.json'
-    assert!(stderr.contains("Failed to parse work-units.json"), "got:\n{stderr}");
+    assert!(
+        stderr.contains("Failed to parse work-units.json"),
+        "got:\n{stderr}"
+    );
 }
 
 #[test]
@@ -484,12 +508,19 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let binary_data: Value = serde_json::from_str(&stdout).expect("JSON");
 
     // @step Then both invocations produce JSON with orphans[0].id='MISC-001'
-    assert_eq!(dispatcher_data["orphans"][0]["id"].as_str(), Some("MISC-001"));
+    assert_eq!(
+        dispatcher_data["orphans"][0]["id"].as_str(),
+        Some("MISC-001")
+    );
     assert_eq!(binary_data["orphans"][0]["id"].as_str(), Some("MISC-001"));
 
     // @step And the CLI bridge module codelet/fspec/src/query_orphans.rs contains NO inline orphan-detection or rendering logic — its only computation is JSON arg marshalling and stdout printing
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_orphans.rs");
-    assert!(bridge_path.exists(), "bridge must exist: {}", bridge_path.display());
+    assert!(
+        bridge_path.exists(),
+        "bridge must exist: {}",
+        bridge_path.display()
+    );
     let bridge_src = fs::read_to_string(&bridge_path).expect("read bridge");
     for forbidden in [
         "isOrphaned",

@@ -136,7 +136,11 @@ fn scenario_cli_exits_1_when_feature_has_invalid_gherkin() {
     // @step Given a project root whose spec/features holds a feature file with invalid Gherkin syntax
     let ws = tempfile::tempdir().expect("tempdir");
     write_tags(ws.path(), &["@comp"], &["@grp"]);
-    write_file(ws.path(), "spec/features/broken.feature", "this is not gherkin");
+    write_file(
+        ws.path(),
+        "spec/features/broken.feature",
+        "this is not gherkin",
+    );
 
     // @step When I run `./codelet/target/release/fspec check` from that directory
     let (code, stdout, stderr) = run_check(ws.path());
@@ -185,7 +189,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 

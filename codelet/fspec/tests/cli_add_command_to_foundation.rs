@@ -45,8 +45,8 @@ fn write_foundation(project_root: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(project_root: &Path) -> serde_json::Value {
-    let raw =
-        fs::read_to_string(project_root.join("spec/foundation.json")).expect("read foundation.json");
+    let raw = fs::read_to_string(project_root.join("spec/foundation.json"))
+        .expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -102,7 +102,10 @@ fn scenario_add_command_to_foundation_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "add-command-to-foundation --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-command-to-foundation --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-command-to-foundation.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -126,7 +129,8 @@ fn scenario_cli_successfully_appends_command() {
 
     // @step And stdout contains the substring '✓ Added command "CreateWorkUnit" to "Work Management" bounded context'
     assert!(
-        stdout.contains("✓ Added command \"CreateWorkUnit\" to \"Work Management\" bounded context"),
+        stdout
+            .contains("✓ Added command \"CreateWorkUnit\" to \"Work Management\" bounded context"),
         "stdout must contain canonical success line; got:\n{stdout}"
     );
 
@@ -150,7 +154,12 @@ fn scenario_cli_forwards_description_flag() {
     // @step When I run `fspec add-command-to-foundation "Work Management" "CreateWorkUnit" --description "Creates a work unit"` in that tempdir
     let (code, _stdout, stderr) = run_cmd(
         ws.path(),
-        &["Work Management", "CreateWorkUnit", "--description", "Creates a work unit"],
+        &[
+            "Work Management",
+            "CreateWorkUnit",
+            "--description",
+            "Creates a work unit",
+        ],
     );
 
     // @step Then the exit code is 0
@@ -181,7 +190,10 @@ fn scenario_cli_rejects_missing_bounded_context_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error: prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error: prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring "Bounded context 'Nope' not found"
     assert!(
@@ -213,11 +225,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-command-to-foundation "Work Management" "C2"` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["Work Management", "C2"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows eventStorm.items contains both command items 'C1' and 'C2'
     let v = read_foundation(ws.path());

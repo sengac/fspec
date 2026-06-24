@@ -27,7 +27,9 @@ fn run_add(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec add-aggregate-to-foundation");
+    let output = cmd
+        .output()
+        .expect("spawn fspec add-aggregate-to-foundation");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -45,8 +47,7 @@ fn write_foundation(cwd: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/foundation.json"))
-        .expect("read foundation.json");
+    let raw = fs::read_to_string(cwd.join("spec/foundation.json")).expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -165,8 +166,7 @@ fn scenario_cli_persists_description_via_d_flag() {
     write_foundation(ws.path(), &foundation_with_context("Billing", 0));
 
     // @step When I run `./codelet/target/release/fspec add-aggregate-to-foundation Billing Invoice -d "Billing root"`
-    let (code, stdout, stderr) =
-        run_add(ws.path(), &["Billing", "Invoice", "-d", "Billing root"]);
+    let (code, stdout, stderr) = run_add(ws.path(), &["Billing", "Invoice", "-d", "Billing root"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}; stdout={stdout}");
@@ -197,7 +197,10 @@ fn scenario_cli_rejects_unknown_bounded_context_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring "Bounded context 'Unknown' not found"
     assert!(
@@ -223,18 +226,28 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/foundation.json
     assert!(ws.path().join("spec/foundation.json").exists());
 
     // @step And running `./codelet/target/release/fspec add-aggregate-to-foundation Sales ViaCli` afterwards exits 0
     let (code, stdout, stderr) = run_add(ws.path(), &["Sales", "ViaCli"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json eventStorm.items contains two aggregate items
     let data = read_foundation(ws.path());
-    assert_eq!(aggregates(&data).len(), 2, "expected two aggregates; data={data}");
+    assert_eq!(
+        aggregates(&data).len(),
+        2,
+        "expected two aggregates; data={data}"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/add_aggregate_to_foundation.rs contains NO inline bounded-context lookup, ensure_foundation_file, or JSON-mutation logic — its only computation is JSON arg marshalling
     let bridge_path =

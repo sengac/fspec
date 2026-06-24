@@ -22,9 +22,7 @@ use std::sync::Arc;
 
 use codelet_common::Message;
 use codelet_providers::custom::request_bridge::request_to_rhai;
-use codelet_providers::custom::{
-    CustomProvider, ProviderConfig, RhaiCustomProvider, ScriptLoader,
-};
+use codelet_providers::custom::{CustomProvider, ProviderConfig, RhaiCustomProvider, ScriptLoader};
 use helpers::{config_with_full_script, config_with_script};
 use rhai::{Dynamic, Map};
 use uuid::Uuid;
@@ -51,8 +49,8 @@ fn request_to_rhai_bridges_some_thinking_config_into_the_request_map() {
     });
 
     // @step When I call request_to_rhai with Some(thinking_config)
-    let dyn_map: Dynamic = request_to_rhai(&messages, &tools, Some(&thinking))
-        .expect("request_to_rhai returns Ok");
+    let dyn_map: Dynamic =
+        request_to_rhai(&messages, &tools, Some(&thinking)).expect("request_to_rhai returns Ok");
 
     // @step Then the returned Dynamic is a map containing messages tools and thinking_config
     let outer: Map = dyn_map
@@ -98,8 +96,8 @@ fn request_to_rhai_bridges_none_thinking_config_as_rhai_unit() {
     let tools = Vec::new();
 
     // @step When I call request_to_rhai with None for thinking_config
-    let dyn_map: Dynamic = request_to_rhai(&messages, &tools, None)
-        .expect("request_to_rhai returns Ok");
+    let dyn_map: Dynamic =
+        request_to_rhai(&messages, &tools, None).expect("request_to_rhai returns Ok");
 
     // @step Then the returned Dynamic is a map containing a thinking_config key whose value is Rhai unit
     let outer: Map = dyn_map
@@ -231,8 +229,7 @@ fn map_error(status, body) { #{ type: "api", message: "" } }
     let providers_dir = project.path().join(".fspec").join("providers");
     std::fs::create_dir_all(&providers_dir).expect("mkdir -p .fspec/providers");
     let name = "prov090-custom";
-    std::fs::write(providers_dir.join(format!("{name}.rhai")), script_body)
-        .expect("write rhai");
+    std::fs::write(providers_dir.join(format!("{name}.rhai")), script_body).expect("write rhai");
     let cfg_json = serde_json::json!({
         "name": name,
         "display_name": "PROV-090 Custom",

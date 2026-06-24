@@ -17,9 +17,7 @@ use codelet_common::Message;
 use codelet_providers::custom::stream::StreamChunk;
 use codelet_providers::StopReason;
 use futures::StreamExt;
-use helpers::{
-    build_streaming_provider, process_events, streaming_config_with_script,
-};
+use helpers::{build_streaming_provider, process_events, streaming_config_with_script};
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -108,7 +106,11 @@ async fn emit_reasoning_delta_chunk_for_reasoning_delta_kind() {
     let (_tmp, results) = process_events(script, &["Let me think"]).await;
 
     // @step Then the bridge yields one StreamChunk::ReasoningDelta with value "Let me think"
-    assert_eq!(results.len(), 1, "expected exactly one chunk; got {results:?}");
+    assert_eq!(
+        results.len(),
+        1,
+        "expected exactly one chunk; got {results:?}"
+    );
     match results.into_iter().next().unwrap() {
         Ok(StreamChunk::ReasoningDelta(text)) => assert_eq!(text, "Let me think"),
         other => panic!("expected ReasoningDelta(\"Let me think\"), got {other:?}"),
@@ -127,7 +129,11 @@ async fn accept_thinking_delta_kind_as_alias_for_reasoning_delta() {
     let (_tmp, results) = process_events(script, &["computing..."]).await;
 
     // @step Then the bridge yields one StreamChunk::ReasoningDelta with value "computing..."
-    assert_eq!(results.len(), 1, "expected exactly one chunk; got {results:?}");
+    assert_eq!(
+        results.len(),
+        1,
+        "expected exactly one chunk; got {results:?}"
+    );
     match results.into_iter().next().unwrap() {
         Ok(StreamChunk::ReasoningDelta(text)) => assert_eq!(text, "computing..."),
         other => panic!("expected ReasoningDelta(\"computing...\"), got {other:?}"),
@@ -186,7 +192,11 @@ async fn preserve_wire_order_for_interleaved_reasoning_and_text_deltas() {
     .await;
 
     // @step Then the bridge yields ReasoningDelta("Hel") followed by TextDelta("answer") followed by ReasoningDelta("thinking done")
-    assert_eq!(results.len(), 3, "expected three chunks in order; got {results:?}");
+    assert_eq!(
+        results.len(),
+        3,
+        "expected three chunks in order; got {results:?}"
+    );
     match &results[0] {
         Ok(StreamChunk::ReasoningDelta(t)) => assert_eq!(t, "Hel"),
         other => panic!("expected ReasoningDelta(Hel), got {other:?}"),
@@ -261,9 +271,7 @@ fn parse_stream_chunk(config, data) {{
 
     // @step When RhaiCustomProvider performs a streaming completion
     let messages = vec![Message::user("hi")];
-    let mut stream = provider
-        .complete_with_tools_streaming(&messages, &[])
-        .await;
+    let mut stream = provider.complete_with_tools_streaming(&messages, &[]).await;
 
     let mut collected: Vec<StreamChunk> = Vec::new();
     while let Some(item) = stream.next().await {

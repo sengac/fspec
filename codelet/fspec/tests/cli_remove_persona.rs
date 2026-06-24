@@ -88,7 +88,10 @@ fn scenario_help_output_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "remove-persona --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-persona --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-persona.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -111,7 +114,10 @@ fn scenario_cli_removes_persona_and_prints_success_line() {
     write_file(
         ws.path(),
         "foundation.json",
-        &foundation_with(serde_json::json!([persona("Primary User"), persona("Admin")])),
+        &foundation_with(serde_json::json!([
+            persona("Primary User"),
+            persona("Admin")
+        ])),
     );
 
     // @step When I run `fspec remove-persona "Admin"` in that tempdir
@@ -169,7 +175,10 @@ fn scenario_cli_reports_nonexistent_persona_with_exit_1() {
     write_file(
         ws.path(),
         "foundation.json",
-        &foundation_with(serde_json::json!([persona("Primary User"), persona("Admin")])),
+        &foundation_with(serde_json::json!([
+            persona("Primary User"),
+            persona("Admin")
+        ])),
     );
     let before = read_raw(ws.path(), "foundation.json");
 
@@ -197,7 +206,11 @@ fn scenario_cli_reports_nonexistent_persona_with_exit_1() {
 fn scenario_cli_reports_empty_personas_with_exit_1() {
     // @step Given a project root tempdir with spec/foundation.json whose personas array is empty
     let ws = tempfile::tempdir().expect("tempdir");
-    write_file(ws.path(), "foundation.json", &foundation_with(serde_json::json!([])));
+    write_file(
+        ws.path(),
+        "foundation.json",
+        &foundation_with(serde_json::json!([])),
+    );
 
     // @step When I run `fspec remove-persona "Admin"` in that tempdir
     let (code, _stdout, stderr) = run_remove_persona(ws.path(), &["Admin"]);
@@ -265,11 +278,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec remove-persona "Admin"` afterwards exits 0
     let (code, stdout, stderr) = run_remove_persona(ws.path(), &["Admin"]);
-    assert_eq!(code, 0, "CLI remove must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI remove must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows personas has length 1
     let f = read_json(ws.path(), "foundation.json");

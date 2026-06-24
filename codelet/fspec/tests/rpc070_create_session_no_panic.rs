@@ -42,10 +42,10 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
-use std::fs;
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
@@ -404,8 +404,7 @@ fn scenario_pre_existing_handle_impl_tests_still_pass() {
     // those tests). Instead we duplicate the cheapest of the three
     // assertions to prove the trait surface still matches.
     let manager = SessionManager::new();
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(manager) as Arc<dyn SessionManagerHandle>;
+    let handle: Arc<dyn SessionManagerHandle> = Arc::new(manager) as Arc<dyn SessionManagerHandle>;
 
     // @step Then scenario_session_manager_satisfies_trait_object passes
     let sessions = handle.list_sessions();

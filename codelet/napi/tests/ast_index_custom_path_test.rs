@@ -29,7 +29,11 @@ fn test_ast_index_deserializes_without_path() {
     let result: Result<GraphSearchAction, _> = serde_json::from_str(json);
 
     // @step Then it should succeed with path set to None
-    assert!(result.is_ok(), "AstIndex should parse without path: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "AstIndex should parse without path: {:?}",
+        result.err()
+    );
     if let Ok(GraphSearchAction::AstIndex { path, .. }) = result {
         assert!(path.is_none(), "Path should be None when omitted");
     } else {
@@ -51,7 +55,11 @@ fn test_ast_index_deserializes_with_path() {
     let result: Result<GraphSearchAction, _> = serde_json::from_str(json);
 
     // @step Then it should succeed with path set to "tmp/my-repo"
-    assert!(result.is_ok(), "AstIndex should parse with path: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "AstIndex should parse with path: {:?}",
+        result.err()
+    );
     if let Ok(GraphSearchAction::AstIndex { path, .. }) = result {
         assert_eq!(path.as_deref(), Some("tmp/my-repo"), "Path should match");
     } else {
@@ -73,7 +81,11 @@ fn test_ast_index_deserializes_with_null_path() {
     let result: Result<GraphSearchAction, _> = serde_json::from_str(json);
 
     // @step Then it should succeed with path set to None
-    assert!(result.is_ok(), "AstIndex should parse with null path: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "AstIndex should parse with null path: {:?}",
+        result.err()
+    );
     if let Ok(GraphSearchAction::AstIndex { path, .. }) = result {
         assert!(path.is_none(), "Null path should deserialize as None");
     } else {
@@ -115,14 +127,15 @@ fn test_walk_and_extract_respects_gitignore_when_enabled() {
     );
 
     // @step When walk_and_extract runs with respect_gitignore=true
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step Then only the "src/main.ts" file should be found
     let file_slugs: Vec<String> = entities
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, slug, .. } if node_type == "File" => Some(slug.clone()),
+            GraphEntity::Node {
+                node_type, slug, ..
+            } if node_type == "File" => Some(slug.clone()),
             _ => None,
         })
         .collect();
@@ -135,7 +148,9 @@ fn test_walk_and_extract_respects_gitignore_when_enabled() {
 
     // @step And the external_deps/lib/dep.ts file should be skipped
     assert!(
-        !file_slugs.iter().any(|s| s.contains("external") || s.contains("dep")),
+        !file_slugs
+            .iter()
+            .any(|s| s.contains("external") || s.contains("dep")),
         "Should NOT contain files from external_deps/, got: {:?}",
         file_slugs
     );
@@ -175,14 +190,15 @@ fn test_walk_and_extract_ignores_gitignore_when_disabled() {
     );
 
     // @step When walk_and_extract runs with respect_gitignore=false
-    let entities = walk_and_extract(project_dir, false)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, false).expect("walk_and_extract should succeed");
 
     // @step Then both files should be found
     let file_slugs: Vec<String> = entities
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, slug, .. } if node_type == "File" => Some(slug.clone()),
+            GraphEntity::Node {
+                node_type, slug, ..
+            } if node_type == "File" => Some(slug.clone()),
             _ => None,
         })
         .collect();
@@ -220,21 +236,18 @@ fn test_walk_and_extract_still_skips_hardcoded_dirs_with_gitignore_disabled() {
         "node_modules/pkg/index.ts",
         "export function pkg(): void {}\n",
     );
-    write_test_file(
-        project_dir,
-        "target/debug/main.rs",
-        "fn compiled() {}\n",
-    );
+    write_test_file(project_dir, "target/debug/main.rs", "fn compiled() {}\n");
 
     // @step When walk_and_extract runs with respect_gitignore=false
-    let entities = walk_and_extract(project_dir, false)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, false).expect("walk_and_extract should succeed");
 
     // @step Then src/app.ts should be found
     let file_slugs: Vec<String> = entities
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, slug, .. } if node_type == "File" => Some(slug.clone()),
+            GraphEntity::Node {
+                node_type, slug, ..
+            } if node_type == "File" => Some(slug.clone()),
             _ => None,
         })
         .collect();
@@ -247,7 +260,9 @@ fn test_walk_and_extract_still_skips_hardcoded_dirs_with_gitignore_disabled() {
 
     // @step And node_modules files should still be skipped (hardcoded SKIP_DIRS)
     assert!(
-        !file_slugs.iter().any(|s| s.contains("node_modules") || s.contains("node-modules")),
+        !file_slugs
+            .iter()
+            .any(|s| s.contains("node_modules") || s.contains("node-modules")),
         "Should NOT contain files from node_modules even with gitignore disabled, got: {:?}",
         file_slugs
     );
@@ -297,8 +312,7 @@ class DataProcessor:
     );
 
     // @step When walk_and_extract runs with respect_gitignore=false
-    let entities = walk_and_extract(project_dir, false)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, false).expect("walk_and_extract should succeed");
 
     // @step Then Function nodes should be extracted from the gitignored Python files
     let function_count = count_nodes(&entities, "Function");
@@ -358,30 +372,37 @@ fn test_walk_and_extract_multi_language_in_gitignored_dir() {
     );
 
     // @step When walk_and_extract runs with respect_gitignore=false
-    let entities = walk_and_extract(project_dir, false)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, false).expect("walk_and_extract should succeed");
 
     // @step Then File nodes should include files from all three languages
     let file_slugs: Vec<String> = entities
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, slug, .. } if node_type == "File" => Some(slug.clone()),
+            GraphEntity::Node {
+                node_type, slug, ..
+            } if node_type == "File" => Some(slug.clone()),
             _ => None,
         })
         .collect();
 
     assert!(
-        file_slugs.iter().any(|s| s.contains("index") && s.contains("ts")),
+        file_slugs
+            .iter()
+            .any(|s| s.contains("index") && s.contains("ts")),
         "Should contain TypeScript file, got: {:?}",
         file_slugs
     );
     assert!(
-        file_slugs.iter().any(|s| s.contains("lib") && s.contains("rs")),
+        file_slugs
+            .iter()
+            .any(|s| s.contains("lib") && s.contains("rs")),
         "Should contain Rust file, got: {:?}",
         file_slugs
     );
     assert!(
-        file_slugs.iter().any(|s| s.contains("main") && s.contains("go")),
+        file_slugs
+            .iter()
+            .any(|s| s.contains("main") && s.contains("go")),
         "Should contain Go file, got: {:?}",
         file_slugs
     );
@@ -390,9 +411,14 @@ fn test_walk_and_extract_multi_language_in_gitignored_dir() {
     let fn_names: Vec<String> = entities
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, properties, .. } if node_type == "Function" => {
-                properties.get("name").and_then(|v| v.as_str()).map(|s| s.to_string())
-            }
+            GraphEntity::Node {
+                node_type,
+                properties,
+                ..
+            } if node_type == "Function" => properties
+                .get("name")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string()),
             _ => None,
         })
         .collect();
@@ -442,8 +468,7 @@ fn test_walk_and_extract_gitignore_true_extracts_nothing_from_gitignored() {
     );
 
     // @step When walk_and_extract runs with respect_gitignore=true
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step Then no File nodes should be found (all files are gitignored)
     let file_count = count_nodes(&entities, "File");

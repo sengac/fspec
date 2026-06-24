@@ -45,8 +45,7 @@ fn write_foundation(cwd: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/foundation.json"))
-        .expect("read foundation.json");
+    let raw = fs::read_to_string(cwd.join("spec/foundation.json")).expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -203,8 +202,7 @@ fn scenario_cli_rejects_empty_code_with_exit_1() {
     write_foundation(ws.path(), &empty_foundation());
 
     // @step When I run `./codelet/target/release/fspec add-diagram Architecture "X" ""`
-    let (code, _stdout, stderr) =
-        run_add_diag(ws.path(), &["Architecture", "X", ""]);
+    let (code, _stdout, stderr) = run_add_diag(ws.path(), &["Architecture", "X", ""]);
 
     // @step Then the command exits with code 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
@@ -261,22 +259,27 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step When I dispatch add-diagram via fspec_core::dispatch::dispatch_command with section='Architecture' title='Via dispatcher' code='graph TD\n  A-->B'
     let req = codelet_fspec_core::DispatchRequest {
         command: "add-diagram".to_string(),
-        args_json: r#"{"section":"Architecture","title":"Via dispatcher","code":"graph TD\n  A-->B"}"#
-            .to_string(),
+        args_json:
+            r#"{"section":"Architecture","title":"Via dispatcher","code":"graph TD\n  A-->B"}"#
+                .to_string(),
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/foundation.json
     assert!(ws.path().join("spec/foundation.json").exists());
 
     // @step And running `./codelet/target/release/fspec add-diagram Architecture "Via CLI" "graph TD\n  C-->D"` afterwards exits 0
-    let (code, stdout, stderr) = run_add_diag(
-        ws.path(),
-        &["Architecture", "Via CLI", "graph TD\n  C-->D"],
+    let (code, stdout, stderr) =
+        run_add_diag(ws.path(), &["Architecture", "Via CLI", "graph TD\n  C-->D"]);
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
     );
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
 
     // @step And spec/foundation.json architectureDiagrams contains two entries
     let data = read_foundation(ws.path());

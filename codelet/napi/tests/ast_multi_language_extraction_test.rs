@@ -14,7 +14,9 @@ use codelet_napi::graph::ast_pipeline::extract_file;
 use codelet_napi::graph::graph_entities::GraphEntity;
 
 mod graph_test_helpers;
-use graph_test_helpers::{count_edges, count_nodes, find_node, has_dependency_with_source, write_test_file};
+use graph_test_helpers::{
+    count_edges, count_nodes, find_node, has_dependency_with_source, write_test_file,
+};
 
 // ============================================================================
 // Python Extractor Tests
@@ -52,51 +54,103 @@ def _internal_helper(data):
 
     // @step Then Function nodes should be created for each def and async def
     // File node
-    assert_eq!(count_nodes(&entities, "File"), 1, "Should create 1 File node");
+    assert_eq!(
+        count_nodes(&entities, "File"),
+        1,
+        "Should create 1 File node"
+    );
     let file_node = find_node(&entities, "File", "src-services-user-py");
-    assert!(file_node.is_some(), "Should find File node with correct slug");
+    assert!(
+        file_node.is_some(),
+        "Should find File node with correct slug"
+    );
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
         assert_eq!(
             properties.get("language").and_then(|v| v.as_str()),
             Some("python")
         );
-        assert_eq!(properties.get("isTest").and_then(|v| v.as_bool()), Some(false));
+        assert_eq!(
+            properties.get("isTest").and_then(|v| v.as_bool()),
+            Some(false)
+        );
     }
 
     // Function nodes — top-level functions are captured; class methods may or may not be
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 2, "Should extract at least 2 functions, got {fn_count}");
+    assert!(
+        fn_count >= 2,
+        "Should extract at least 2 functions, got {fn_count}"
+    );
 
     // Check validate_email is public
-    let validate_fn = find_node(&entities, "Function", "src-services-user-py::validate_email");
+    let validate_fn = find_node(
+        &entities,
+        "Function",
+        "src-services-user-py::validate_email",
+    );
     if let Some(GraphEntity::Node { properties, .. }) = validate_fn {
-        assert_eq!(properties.get("isPublic").and_then(|v| v.as_bool()), Some(true));
-        assert_eq!(properties.get("isAsync").and_then(|v| v.as_bool()), Some(false));
-        assert_eq!(properties.get("paramCount").and_then(|v| v.as_i64()), Some(1));
+        assert_eq!(
+            properties.get("isPublic").and_then(|v| v.as_bool()),
+            Some(true)
+        );
+        assert_eq!(
+            properties.get("isAsync").and_then(|v| v.as_bool()),
+            Some(false)
+        );
+        assert_eq!(
+            properties.get("paramCount").and_then(|v| v.as_i64()),
+            Some(1)
+        );
     }
 
     // Check async function
-    let send_fn = find_node(&entities, "Function", "src-services-user-py::send_notification");
+    let send_fn = find_node(
+        &entities,
+        "Function",
+        "src-services-user-py::send_notification",
+    );
     if let Some(GraphEntity::Node { properties, .. }) = send_fn {
-        assert_eq!(properties.get("isAsync").and_then(|v| v.as_bool()), Some(true));
-        assert_eq!(properties.get("paramCount").and_then(|v| v.as_i64()), Some(2));
+        assert_eq!(
+            properties.get("isAsync").and_then(|v| v.as_bool()),
+            Some(true)
+        );
+        assert_eq!(
+            properties.get("paramCount").and_then(|v| v.as_i64()),
+            Some(2)
+        );
     }
 
     // @step And isPublic should be false for functions starting with underscore
     // Check private function
-    let helper_fn = find_node(&entities, "Function", "src-services-user-py::_internal_helper");
+    let helper_fn = find_node(
+        &entities,
+        "Function",
+        "src-services-user-py::_internal_helper",
+    );
     if let Some(GraphEntity::Node { properties, .. }) = helper_fn {
-        assert_eq!(properties.get("isPublic").and_then(|v| v.as_bool()), Some(false));
+        assert_eq!(
+            properties.get("isPublic").and_then(|v| v.as_bool()),
+            Some(false)
+        );
     }
 
     // @step And Type nodes should be created for each class with typeKind "class"
     // Type (class) nodes
-    assert!(count_nodes(&entities, "Type") >= 1, "Should find at least 1 Type node (UserService class)");
+    assert!(
+        count_nodes(&entities, "Type") >= 1,
+        "Should find at least 1 Type node (UserService class)"
+    );
 
     // @step And Contains and ContainsType edges should link File to children
     // Edges
-    assert!(count_edges(&entities, "Contains") >= 2, "Should have Contains edges for functions");
-    assert!(count_edges(&entities, "ContainsType") >= 1, "Should have ContainsType edges for classes");
+    assert!(
+        count_edges(&entities, "Contains") >= 2,
+        "Should have Contains edges for functions"
+    );
+    assert!(
+        count_edges(&entities, "ContainsType") >= 1,
+        "Should have ContainsType edges for classes"
+    );
 }
 
 #[tokio::test]
@@ -111,7 +165,10 @@ async fn test_python_test_file_detection() {
 
     let file_node = find_node(&entities, "File", "tests-test_auth-py");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("isTest").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(
+            properties.get("isTest").and_then(|v| v.as_bool()),
+            Some(true)
+        );
     }
 }
 
@@ -160,29 +217,50 @@ func helper(x int) int {
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "cmd-server-main-go");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("go"));
-        assert_eq!(properties.get("isTest").and_then(|v| v.as_bool()), Some(false));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("go")
+        );
+        assert_eq!(
+            properties.get("isTest").and_then(|v| v.as_bool()),
+            Some(false)
+        );
     }
 
     // Functions — NewServer is public (capitalized), helper is private
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 2, "Should extract at least 2 functions, got {fn_count}");
+    assert!(
+        fn_count >= 2,
+        "Should extract at least 2 functions, got {fn_count}"
+    );
 
     let new_server = find_node(&entities, "Function", "cmd-server-main-go::NewServer");
     if let Some(GraphEntity::Node { properties, .. }) = new_server {
-        assert_eq!(properties.get("isPublic").and_then(|v| v.as_bool()), Some(true));
-        assert_eq!(properties.get("paramCount").and_then(|v| v.as_i64()), Some(2));
+        assert_eq!(
+            properties.get("isPublic").and_then(|v| v.as_bool()),
+            Some(true)
+        );
+        assert_eq!(
+            properties.get("paramCount").and_then(|v| v.as_i64()),
+            Some(2)
+        );
     }
 
     let helper_fn = find_node(&entities, "Function", "cmd-server-main-go::helper");
     if let Some(GraphEntity::Node { properties, .. }) = helper_fn {
-        assert_eq!(properties.get("isPublic").and_then(|v| v.as_bool()), Some(false));
+        assert_eq!(
+            properties.get("isPublic").and_then(|v| v.as_bool()),
+            Some(false)
+        );
     }
 
     // @step And Type nodes should be created for structs and interfaces
     // Type nodes
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node (Server struct), got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node (Server struct), got {type_count}"
+    );
 
     // Edges
     assert!(count_edges(&entities, "Contains") >= 2);
@@ -202,7 +280,10 @@ async fn test_go_test_file_detection() {
 
     let file_node = find_node(&entities, "File", "server_test-go");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("isTest").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(
+            properties.get("isTest").and_then(|v| v.as_bool()),
+            Some(true)
+        );
     }
 }
 
@@ -238,7 +319,11 @@ enum UserRole {
     GUEST
 }
 "#;
-    let file_path = write_test_file(temp_dir.path(), "src/main/UserController.java", java_content);
+    let file_path = write_test_file(
+        temp_dir.path(),
+        "src/main/UserController.java",
+        java_content,
+    );
 
     // @step When the Java extractor parses the file
     let entities = extract_file(&file_path, temp_dir.path(), &HashSet::new())
@@ -246,17 +331,30 @@ enum UserRole {
 
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "src-main-UserController-java");
-    assert!(file_node.is_some(), "Should find File node for UserController.java");
+    assert!(
+        file_node.is_some(),
+        "Should find File node for UserController.java"
+    );
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("java"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("java")
+        );
     }
 
     // @step Then Function nodes should be created with isPublic from access modifiers
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 2, "Should extract at least 2 methods, got {fn_count}");
+    assert!(
+        fn_count >= 2,
+        "Should extract at least 2 methods, got {fn_count}"
+    );
 
     // Verify isPublic per-method based on access modifiers
-    let get_user_fn = find_node(&entities, "Function", "src-main-UserController-java::getUser");
+    let get_user_fn = find_node(
+        &entities,
+        "Function",
+        "src-main-UserController-java::getUser",
+    );
     if let Some(GraphEntity::Node { properties, .. }) = &get_user_fn {
         assert_eq!(
             properties.get("isPublic").and_then(|v| v.as_bool()),
@@ -264,7 +362,11 @@ enum UserRole {
             "public method getUser should have isPublic=true"
         );
     }
-    let log_fn = find_node(&entities, "Function", "src-main-UserController-java::logAccess");
+    let log_fn = find_node(
+        &entities,
+        "Function",
+        "src-main-UserController-java::logAccess",
+    );
     if let Some(GraphEntity::Node { properties, .. }) = &log_fn {
         assert_eq!(
             properties.get("isPublic").and_then(|v| v.as_bool()),
@@ -275,11 +377,17 @@ enum UserRole {
 
     // @step And Type nodes should be created for classes, interfaces, and enums
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 3, "Should find at least 3 Type nodes (class + interface + enum), got {type_count}");
+    assert!(
+        type_count >= 3,
+        "Should find at least 3 Type nodes (class + interface + enum), got {type_count}"
+    );
 
     // Edges
     assert!(count_edges(&entities, "Contains") >= 1);
-    assert!(count_edges(&entities, "ContainsType") >= 1, "Should have ContainsType edges for type declarations");
+    assert!(
+        count_edges(&entities, "ContainsType") >= 1,
+        "Should have ContainsType edges for type declarations"
+    );
 }
 
 // ============================================================================
@@ -328,16 +436,25 @@ void print_point(struct Point p) {
     let file_node = find_node(&entities, "File", "src-geometry-c");
     assert!(file_node.is_some(), "Should find File node for geometry.c");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("c"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("c")
+        );
     }
 
     // @step Then Function nodes should be created with isPublic false for static functions
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 2, "Should extract at least 2 functions, got {fn_count}");
+    assert!(
+        fn_count >= 2,
+        "Should extract at least 2 functions, got {fn_count}"
+    );
 
     // Verify static function is not public
     let internal_fn = find_node(&entities, "Function", "src-geometry-c::internal_helper");
-    assert!(internal_fn.is_some(), "Should find static function internal_helper");
+    assert!(
+        internal_fn.is_some(),
+        "Should find static function internal_helper"
+    );
     if let Some(GraphEntity::Node { properties, .. }) = internal_fn {
         assert_eq!(
             properties.get("isPublic").and_then(|v| v.as_bool()),
@@ -359,7 +476,10 @@ void print_point(struct Point p) {
 
     // @step And Type nodes should be created for structs, enums, and typedefs
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 3, "Should find at least 3 Type nodes (struct + enum + typedef), got {type_count}");
+    assert!(
+        type_count >= 3,
+        "Should find at least 3 Type nodes (struct + enum + typedef), got {type_count}"
+    );
 }
 
 #[tokio::test]
@@ -390,12 +510,18 @@ int add(int a, int b) {
     assert!(file_node.is_some(), "Should find File node for point.h");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
         // Pure C header without C++ features
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("c-header"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("c-header")
+        );
     }
 
     // Verify extraction actually works for the header — at minimum functions should be found
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 function from header, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 function from header, got {fn_count}"
+    );
     // Struct may or may not be extracted depending on preprocessor guards, but function is the key check
 }
 
@@ -451,16 +577,25 @@ int main(int argc, char* argv[]) {
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "src-engine-cpp");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("cpp"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("cpp")
+        );
     }
 
     // @step Then Function nodes should be created for standalone and class methods
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 function, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 function, got {fn_count}"
+    );
 
     // @step And Type nodes should be created for classes, structs, enums, and namespaces
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node, got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node, got {type_count}"
+    );
 }
 
 #[tokio::test]
@@ -553,16 +688,25 @@ namespace MyApp {
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "src-UserController-cs");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("csharp"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("csharp")
+        );
     }
 
     // @step Then Function nodes should be created with access modifier visibility
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 method, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 method, got {fn_count}"
+    );
 
     // @step And Type nodes should be created for all C# type declarations
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node, got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node, got {type_count}"
+    );
 }
 
 // ============================================================================
@@ -603,15 +747,24 @@ end
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "lib-auth-user_auth-rb");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("ruby"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("ruby")
+        );
     }
 
     // @step Then Function nodes and Type nodes should be created
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 method, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 method, got {fn_count}"
+    );
 
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node, got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node, got {type_count}"
+    );
 }
 
 #[tokio::test]
@@ -627,7 +780,10 @@ async fn test_ruby_spec_file_detection() {
 
     let file_node = find_node(&entities, "File", "spec-auth_spec-rb");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("isTest").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(
+            properties.get("isTest").and_then(|v| v.as_bool()),
+            Some(true)
+        );
     }
 }
 
@@ -676,22 +832,34 @@ fun validateName(name: String): Boolean {
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "src-main-kotlin-User-kt");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("kotlin"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("kotlin")
+        );
     }
 
     // @step Then Function nodes should be created with isAsync for suspend functions
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 function, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 function, got {fn_count}"
+    );
 
     // Check suspend fun is marked async
     let fetch_fn = find_node(&entities, "Function", "src-main-kotlin-User-kt::fetchUser");
     if let Some(GraphEntity::Node { properties, .. }) = fetch_fn {
-        assert_eq!(properties.get("isAsync").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(
+            properties.get("isAsync").and_then(|v| v.as_bool()),
+            Some(true)
+        );
     }
 
     // @step And Type nodes should be created for all Kotlin type declarations
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node, got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node, got {type_count}"
+    );
 }
 
 // ============================================================================
@@ -742,19 +910,33 @@ func processRequest(url: String, timeout: Int) -> Bool {
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "Sources-App-Network-swift");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("swift"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("swift")
+        );
     }
 
     // @step Then Function nodes and Type nodes should be created
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 function, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 function, got {fn_count}"
+    );
 
     // @step And protocols should have typeKind "trait_kind"
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node, got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node, got {type_count}"
+    );
     // Verify at least one type has trait_kind (the protocol)
     let has_trait_kind = entities.iter().any(|e| {
-        if let GraphEntity::Node { node_type, properties, .. } = e {
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
             node_type == "Type"
                 && properties.get("typeKind").and_then(|v| v.as_str()) == Some("trait_kind")
         } else {
@@ -797,7 +979,11 @@ object UserRepo {
 
 case class User(id: Int, name: String)
 "#;
-    let file_path = write_test_file(temp_dir.path(), "src/main/scala/UserRepo.scala", scala_content);
+    let file_path = write_test_file(
+        temp_dir.path(),
+        "src/main/scala/UserRepo.scala",
+        scala_content,
+    );
 
     // @step When the Scala extractor parses the file
     let entities = extract_file(&file_path, temp_dir.path(), &HashSet::new())
@@ -806,26 +992,43 @@ case class User(id: Int, name: String)
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "src-main-scala-UserRepo-scala");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("scala"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("scala")
+        );
     }
 
     // @step Then Function nodes and Type nodes should be created
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 function, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 function, got {fn_count}"
+    );
 
     // @step And traits should have typeKind "trait_kind"
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node, got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node, got {type_count}"
+    );
     // Verify at least one type has trait_kind (the Scala trait)
     let has_trait_kind = entities.iter().any(|e| {
-        if let GraphEntity::Node { node_type, properties, .. } = e {
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
             node_type == "Type"
                 && properties.get("typeKind").and_then(|v| v.as_str()) == Some("trait_kind")
         } else {
             false
         }
     });
-    assert!(has_trait_kind, "Scala trait should have typeKind 'trait_kind'");
+    assert!(
+        has_trait_kind,
+        "Scala trait should have typeKind 'trait_kind'"
+    );
 }
 
 // ============================================================================
@@ -868,7 +1071,11 @@ function globalHelper($msg) {
     echo $msg;
 }
 "#;
-    let file_path = write_test_file(temp_dir.path(), "app/Controllers/UserController.php", php_content);
+    let file_path = write_test_file(
+        temp_dir.path(),
+        "app/Controllers/UserController.php",
+        php_content,
+    );
 
     // @step When the PHP extractor parses the file
     let entities = extract_file(&file_path, temp_dir.path(), &HashSet::new())
@@ -877,15 +1084,24 @@ function globalHelper($msg) {
     assert_eq!(count_nodes(&entities, "File"), 1);
     let file_node = find_node(&entities, "File", "app-Controllers-UserController-php");
     if let Some(GraphEntity::Node { properties, .. }) = file_node {
-        assert_eq!(properties.get("language").and_then(|v| v.as_str()), Some("php"));
+        assert_eq!(
+            properties.get("language").and_then(|v| v.as_str()),
+            Some("php")
+        );
     }
 
     // @step Then Function nodes and Type nodes should be created
     let fn_count = count_nodes(&entities, "Function");
-    assert!(fn_count >= 1, "Should extract at least 1 function, got {fn_count}");
+    assert!(
+        fn_count >= 1,
+        "Should extract at least 1 function, got {fn_count}"
+    );
 
     let type_count = count_nodes(&entities, "Type");
-    assert!(type_count >= 1, "Should find at least 1 Type node, got {type_count}");
+    assert!(
+        type_count >= 1,
+        "Should find at least 1 Type node, got {type_count}"
+    );
 }
 
 // ============================================================================
@@ -900,20 +1116,35 @@ async fn test_extract_python_dependencies() {
     write_test_file(temp_dir.path(), "requirements.txt", req_content);
 
     // @step When the pip dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::pip_dep_extractor::extract_python_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::pip_dep_extractor::extract_python_dependencies(
+            temp_dir.path(),
+        )
         .expect("Python dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "pip"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 3, "Should extract at least 3 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "pip"), "Dependency source should be 'pip'");
+    assert!(
+        dep_count >= 3,
+        "Should extract at least 3 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "pip"),
+        "Dependency source should be 'pip'"
+    );
 
     let file_count = count_nodes(&entities, "File");
-    assert!(file_count >= 1, "Should create File node for requirements.txt");
+    assert!(
+        file_count >= 1,
+        "Should create File node for requirements.txt"
+    );
 
     // @step And DependsOn edges should link manifest files to dependencies
     let depends_on_count = count_edges(&entities, "DependsOn");
-    assert!(depends_on_count >= 1, "Should have DependsOn edges linking manifest to deps, got {depends_on_count}");
+    assert!(
+        depends_on_count >= 1,
+        "Should have DependsOn edges linking manifest to deps, got {depends_on_count}"
+    );
 }
 
 #[tokio::test]
@@ -935,13 +1166,22 @@ dev = ["pytest>=7.0", "black"]
     write_test_file(temp_dir.path(), "pyproject.toml", pyproject_content);
 
     // @step When the pip dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::pip_dep_extractor::extract_python_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::pip_dep_extractor::extract_python_dependencies(
+            temp_dir.path(),
+        )
         .expect("Python pyproject dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "pip"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "pip"), "Dependency source should be 'pip'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "pip"),
+        "Dependency source should be 'pip'"
+    );
 }
 
 #[tokio::test]
@@ -961,13 +1201,21 @@ require (
     write_test_file(temp_dir.path(), "go.mod", gomod_content);
 
     // @step When the go.mod dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::gomod_dep_extractor::extract_go_dependencies(temp_dir.path())
-        .expect("Go dep extraction should succeed");
+    let entities = codelet_napi::graph::ast_pipeline::gomod_dep_extractor::extract_go_dependencies(
+        temp_dir.path(),
+    )
+    .expect("Go dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "go"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "go"), "Dependency source should be 'go'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "go"),
+        "Dependency source should be 'go'"
+    );
 }
 
 #[tokio::test]
@@ -988,13 +1236,22 @@ dependencies {
     write_test_file(temp_dir.path(), "build.gradle", gradle_content);
 
     // @step When the Java dependency extractors run
-    let entities = codelet_napi::graph::ast_pipeline::java_dep_extractor::extract_java_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::java_dep_extractor::extract_java_dependencies(
+            temp_dir.path(),
+        )
         .expect("Java dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "maven" or "gradle"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "gradle"), "Dependency source should be 'gradle'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "gradle"),
+        "Dependency source should be 'gradle'"
+    );
 }
 
 #[tokio::test]
@@ -1022,13 +1279,22 @@ async fn test_extract_java_dependencies_maven() {
     write_test_file(temp_dir.path(), "pom.xml", pom_content);
 
     // @step When the Java dependency extractors run
-    let entities = codelet_napi::graph::ast_pipeline::java_dep_extractor::extract_java_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::java_dep_extractor::extract_java_dependencies(
+            temp_dir.path(),
+        )
         .expect("Maven dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "maven" or "gradle"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "maven"), "Dependency source should be 'maven'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "maven"),
+        "Dependency source should be 'maven'"
+    );
 }
 
 #[tokio::test]
@@ -1048,13 +1314,22 @@ async fn test_extract_composer_dependencies() {
     write_test_file(temp_dir.path(), "composer.json", composer_content);
 
     // @step When the composer dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::composer_dep_extractor::extract_composer_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::composer_dep_extractor::extract_composer_dependencies(
+            temp_dir.path(),
+        )
         .expect("Composer dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "composer"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 3, "Should extract at least 3 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "composer"), "Dependency source should be 'composer'");
+    assert!(
+        dep_count >= 3,
+        "Should extract at least 3 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "composer"),
+        "Dependency source should be 'composer'"
+    );
 }
 
 #[tokio::test]
@@ -1074,13 +1349,22 @@ end
     write_test_file(temp_dir.path(), "Gemfile", gemfile_content);
 
     // @step When the Gemfile dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::gemfile_dep_extractor::extract_gemfile_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::gemfile_dep_extractor::extract_gemfile_dependencies(
+            temp_dir.path(),
+        )
         .expect("Gemfile dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "gem"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "gem"), "Dependency source should be 'gem'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "gem"),
+        "Dependency source should be 'gem'"
+    );
 }
 
 #[tokio::test]
@@ -1103,13 +1387,22 @@ let package = Package(
     write_test_file(temp_dir.path(), "Package.swift", pkg_content);
 
     // @step When the Swift dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::swift_dep_extractor::extract_swift_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::swift_dep_extractor::extract_swift_dependencies(
+            temp_dir.path(),
+        )
         .expect("Swift dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "spm"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "spm"), "Dependency source should be 'spm'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "spm"),
+        "Dependency source should be 'spm'"
+    );
 }
 
 #[tokio::test]
@@ -1127,13 +1420,22 @@ async fn test_extract_csproj_dependencies() {
     write_test_file(temp_dir.path(), "MyApp.csproj", csproj_content);
 
     // @step When the .csproj dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::csproj_dep_extractor::extract_csproj_dependencies(temp_dir.path())
+    let entities =
+        codelet_napi::graph::ast_pipeline::csproj_dep_extractor::extract_csproj_dependencies(
+            temp_dir.path(),
+        )
         .expect("Csproj dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "nuget"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "nuget"), "Dependency source should be 'nuget'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "nuget"),
+        "Dependency source should be 'nuget'"
+    );
 }
 
 #[tokio::test]
@@ -1153,13 +1455,21 @@ libraryDependencies ++= Seq(
     write_test_file(temp_dir.path(), "build.sbt", sbt_content);
 
     // @step When the sbt dependency extractor runs
-    let entities = codelet_napi::graph::ast_pipeline::sbt_dep_extractor::extract_sbt_dependencies(temp_dir.path())
-        .expect("SBT dep extraction should succeed");
+    let entities = codelet_napi::graph::ast_pipeline::sbt_dep_extractor::extract_sbt_dependencies(
+        temp_dir.path(),
+    )
+    .expect("SBT dep extraction should succeed");
 
     // @step Then Dependency nodes should be created with source "sbt"
     let dep_count = count_nodes(&entities, "Dependency");
-    assert!(dep_count >= 2, "Should extract at least 2 dependencies, got {dep_count}");
-    assert!(has_dependency_with_source(&entities, "sbt"), "Dependency source should be 'sbt'");
+    assert!(
+        dep_count >= 2,
+        "Should extract at least 2 dependencies, got {dep_count}"
+    );
+    assert!(
+        has_dependency_with_source(&entities, "sbt"),
+        "Dependency source should be 'sbt'"
+    );
 }
 
 // ============================================================================
@@ -1173,14 +1483,50 @@ async fn test_missing_dep_files_return_empty() {
 
     // @step When all dependency extractors run
     // @step Then each should return an empty list without errors
-    assert!(codelet_napi::graph::ast_pipeline::pip_dep_extractor::extract_python_dependencies(root).unwrap().is_empty());
-    assert!(codelet_napi::graph::ast_pipeline::gomod_dep_extractor::extract_go_dependencies(root).unwrap().is_empty());
-    assert!(codelet_napi::graph::ast_pipeline::java_dep_extractor::extract_java_dependencies(root).unwrap().is_empty());
-    assert!(codelet_napi::graph::ast_pipeline::composer_dep_extractor::extract_composer_dependencies(root).unwrap().is_empty());
-    assert!(codelet_napi::graph::ast_pipeline::gemfile_dep_extractor::extract_gemfile_dependencies(root).unwrap().is_empty());
-    assert!(codelet_napi::graph::ast_pipeline::swift_dep_extractor::extract_swift_dependencies(root).unwrap().is_empty());
-    assert!(codelet_napi::graph::ast_pipeline::csproj_dep_extractor::extract_csproj_dependencies(root).unwrap().is_empty());
-    assert!(codelet_napi::graph::ast_pipeline::sbt_dep_extractor::extract_sbt_dependencies(root).unwrap().is_empty());
+    assert!(
+        codelet_napi::graph::ast_pipeline::pip_dep_extractor::extract_python_dependencies(root)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        codelet_napi::graph::ast_pipeline::gomod_dep_extractor::extract_go_dependencies(root)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        codelet_napi::graph::ast_pipeline::java_dep_extractor::extract_java_dependencies(root)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        codelet_napi::graph::ast_pipeline::composer_dep_extractor::extract_composer_dependencies(
+            root
+        )
+        .unwrap()
+        .is_empty()
+    );
+    assert!(
+        codelet_napi::graph::ast_pipeline::gemfile_dep_extractor::extract_gemfile_dependencies(
+            root
+        )
+        .unwrap()
+        .is_empty()
+    );
+    assert!(
+        codelet_napi::graph::ast_pipeline::swift_dep_extractor::extract_swift_dependencies(root)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        codelet_napi::graph::ast_pipeline::csproj_dep_extractor::extract_csproj_dependencies(root)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        codelet_napi::graph::ast_pipeline::sbt_dep_extractor::extract_sbt_dependencies(root)
+            .unwrap()
+            .is_empty()
+    );
 }
 
 // ============================================================================
@@ -1196,30 +1542,54 @@ async fn test_walk_and_extract_finds_multi_language_files() {
 
     write_test_file(project_dir, "main.py", "def hello():\n    pass\n");
     write_test_file(project_dir, "main.go", "package main\nfunc main() {\n}\n");
-    write_test_file(project_dir, "Main.java", "public class Main {\n    public void run() {\n    }\n}\n");
+    write_test_file(
+        project_dir,
+        "Main.java",
+        "public class Main {\n    public void run() {\n    }\n}\n",
+    );
     write_test_file(project_dir, "main.c", "int main() {\n    return 0;\n}\n");
-    write_test_file(project_dir, "main.cpp", "int main(int argc, char* argv[]) {\n    return 0;\n}\n");
-    write_test_file(project_dir, "Program.cs", "class Program {\n    static void Main() {\n    }\n}\n");
+    write_test_file(
+        project_dir,
+        "main.cpp",
+        "int main(int argc, char* argv[]) {\n    return 0;\n}\n",
+    );
+    write_test_file(
+        project_dir,
+        "Program.cs",
+        "class Program {\n    static void Main() {\n    }\n}\n",
+    );
     write_test_file(project_dir, "main.rb", "def main\nend\n");
     write_test_file(project_dir, "Main.kt", "fun main() {\n}\n");
     write_test_file(project_dir, "main.swift", "func main() {\n}\n");
-    write_test_file(project_dir, "Main.scala", "object Main {\n  def main(): Unit = {\n  }\n}\n");
-    write_test_file(project_dir, "index.php", "<?php\nfunction index() {\n    return true;\n}\n");
+    write_test_file(
+        project_dir,
+        "Main.scala",
+        "object Main {\n  def main(): Unit = {\n  }\n}\n",
+    );
+    write_test_file(
+        project_dir,
+        "index.php",
+        "<?php\nfunction index() {\n    return true;\n}\n",
+    );
     write_test_file(project_dir, "app.ts", "export function app(): void {}\n");
     write_test_file(project_dir, "lib.rs", "pub fn init() {}\n");
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When walk_and_extract processes the project
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // Collect all File node languages
     let languages: Vec<String> = entities
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, properties, .. } if node_type == "File" => {
-                properties.get("language").and_then(|v| v.as_str()).map(|s| s.to_string())
-            }
+            GraphEntity::Node {
+                node_type,
+                properties,
+                ..
+            } if node_type == "File" => properties
+                .get("language")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string()),
             _ => None,
         })
         .collect();
@@ -1234,10 +1604,22 @@ async fn test_walk_and_extract_finds_multi_language_files() {
     );
 
     // Verify specific languages are represented
-    assert!(languages.contains(&"python".to_string()), "Should contain Python files");
-    assert!(languages.contains(&"go".to_string()), "Should contain Go files");
-    assert!(languages.contains(&"rust".to_string()), "Should contain Rust files");
-    assert!(languages.contains(&"typescript".to_string()), "Should contain TS files");
+    assert!(
+        languages.contains(&"python".to_string()),
+        "Should contain Python files"
+    );
+    assert!(
+        languages.contains(&"go".to_string()),
+        "Should contain Go files"
+    );
+    assert!(
+        languages.contains(&"rust".to_string()),
+        "Should contain Rust files"
+    );
+    assert!(
+        languages.contains(&"typescript".to_string()),
+        "Should contain TS files"
+    );
 }
 
 // ============================================================================
@@ -1252,14 +1634,17 @@ async fn test_multi_language_entities_load_into_graph() {
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let project_dir = temp_dir.path();
 
-    write_test_file(project_dir, "app.py", "class App:\n    def run(self):\n        pass\n");
+    write_test_file(
+        project_dir,
+        "app.py",
+        "class App:\n    def run(self):\n        pass\n",
+    );
     write_test_file(project_dir, "server.go", "package main\n\ntype Server struct {\n    Host string\n}\n\nfunc NewServer() *Server {\n    return nil\n}\n");
     write_test_file(project_dir, "main.ts", "export function main(): void {}\n");
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When walk_and_extract processes the project
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     let schema = include_str!("../../graph/schemas/ast-code.pg");
     let db_path = temp_dir.path().join("test-multi-lang.nano");

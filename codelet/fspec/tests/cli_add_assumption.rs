@@ -15,7 +15,9 @@ use common::fspec_bin;
 fn run_add_assumption(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
     let mut cmd = Command::new(fspec_bin());
     cmd.arg("add-assumption");
-    for a in extra_args { cmd.arg(a); }
+    for a in extra_args {
+        cmd.arg(a);
+    }
     cmd.current_dir(cwd);
     let output = cmd.output().expect("spawn fspec add-assumption");
     let code = output.status.code().unwrap_or(-1);
@@ -38,10 +40,20 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog","specifying","testing","implementing","validating","done","blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
-        } else { vec![] };
+        } else {
+            vec![]
+        };
         states.insert((*st).to_string(), serde_json::Value::Array(arr));
     }
     serde_json::to_string_pretty(&serde_json::json!({
@@ -54,7 +66,8 @@ fn seed_unit(id: &str, status: &str) -> String {
             }
         },
         "states": serde_json::Value::Object(states),
-    })).unwrap()
+    }))
+    .unwrap()
 }
 
 const TS_HELP_FIXTURE_AA: &str = include_str!("fixtures/help/add-assumption.txt");
@@ -64,14 +77,20 @@ fn scenario_add_assumption_help_matches_ts_formatcommandhelp_reference() {
     // @step Given the fspec Rust binary is built and on PATH
     // @step When I run `fspec add-assumption --help`
     let output = Command::new(fspec_bin())
-        .arg("add-assumption").arg("--help")
-        .env_remove("CLICOLOR_FORCE").env("NO_COLOR", "1")
-        .output().expect("spawn add-assumption --help");
+        .arg("add-assumption")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn add-assumption --help");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "add-assumption --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-assumption --help must exit 0; stderr={stderr}"
+    );
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-assumption.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_AA);
     // @step And stdout starts with a blank line followed by 'ADD-ASSUMPTION'
@@ -84,15 +103,20 @@ fn scenario_cli_successfully_appends_assumption_and_prints_success_line() {
     let ws = tempfile::tempdir().expect("tempdir");
     write_work_units(ws.path(), &seed_unit("AUTH-001", "specifying"));
     // @step When I run `fspec add-assumption AUTH-001 "Users have valid email"` in that tempdir
-    let (code, stdout, stderr) = run_add_assumption(ws.path(), &["AUTH-001", "Users have valid email"]);
+    let (code, stdout, stderr) =
+        run_add_assumption(ws.path(), &["AUTH-001", "Users have valid email"]);
     // @step Then the exit code is 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
     // @step And stdout contains the substring '✓ Assumption added successfully'
-    assert!(stdout.contains("✓ Assumption added successfully"),
-        "stdout must contain canonical success line; got:\n{stdout}");
+    assert!(
+        stdout.contains("✓ Assumption added successfully"),
+        "stdout must contain canonical success line; got:\n{stdout}"
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.assumptions has length 1
     let v = read_work_units(ws.path());
-    let arr = v["workUnits"]["AUTH-001"]["assumptions"].as_array().expect("assumptions");
+    let arr = v["workUnits"]["AUTH-001"]["assumptions"]
+        .as_array()
+        .expect("assumptions");
     assert_eq!(arr.len(), 1);
     // @step And spec/work-units.json on disk shows AUTH-001.assumptions[0]='Users have valid email'
     assert_eq!(arr[0].as_str(), Some("Users have valid email"));
@@ -108,7 +132,10 @@ fn scenario_cli_rejects_non_specifying_status_with_exit_1_and_error_prefix() {
     // @step Then the exit code is 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
     // @step And stderr contains the substring '✗ Failed to add assumption:'
-    assert!(stderr.contains("✗ Failed to add assumption:"), "stderr must contain TS error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("✗ Failed to add assumption:"),
+        "stderr must contain TS error prefix; got:\n{stderr}"
+    );
     // @step And stderr contains the substring "Can only add assumptions during discovery/specification phase. AUTH-001 is in 'backlog' state."
     assert!(
         stderr.contains("Can only add assumptions during discovery/specification phase. AUTH-001 is in 'backlog' state."),
@@ -132,10 +159,15 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert!(result.success, "dispatcher must succeed; got {result:?}");
     // @step And running `fspec add-assumption AUTH-001 "A2"` afterwards exits 0
     let (code, stdout, stderr) = run_add_assumption(ws.path(), &["AUTH-001", "A2"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.assumptions has length 2
     let v = read_work_units(ws.path());
-    let arr = v["workUnits"]["AUTH-001"]["assumptions"].as_array().expect("assumptions");
+    let arr = v["workUnits"]["AUTH-001"]["assumptions"]
+        .as_array()
+        .expect("assumptions");
     assert_eq!(arr.len(), 2);
     // @step And the CLI bridge module codelet/fspec/src/add_assumption.rs contains NO inline append, status guard, or file-write logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/add_assumption.rs");
@@ -149,8 +181,12 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         "✓ Assumption",
     ] {
         // "✓ Assumption" is allowed because the CLI prints it; we filter that.
-        if forbidden == "✓ Assumption" { continue; }
-        assert!(!bridge_src.contains(forbidden),
-            "bridge must NOT embed `{forbidden}`; got:\n{bridge_src}");
+        if forbidden == "✓ Assumption" {
+            continue;
+        }
+        assert!(
+            !bridge_src.contains(forbidden),
+            "bridge must NOT embed `{forbidden}`; got:\n{bridge_src}"
+        );
     }
 }

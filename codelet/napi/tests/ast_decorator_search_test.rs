@@ -132,11 +132,20 @@ fn test_no_decorator_languages_produce_empty() {
 
     // Also check C and C++
     let c_meta = metadata::extract_function_meta("void foo() {}", "c");
-    assert!(c_meta.decorators.is_empty(), "C should produce empty decorators");
+    assert!(
+        c_meta.decorators.is_empty(),
+        "C should produce empty decorators"
+    );
 
     let cpp_meta = metadata::extract_function_meta("void bar() {}", "cpp");
-    assert!(cpp_meta.decorators.is_empty(), "C++ should produce empty decorators");
+    assert!(
+        cpp_meta.decorators.is_empty(),
+        "C++ should produce empty decorators"
+    );
 
     let ruby_meta = metadata::extract_function_meta("def greet\n  puts 'hi'\nend", "ruby");
-    assert!(ruby_meta.decorators.is_empty(), "Ruby should produce empty decorators");
+    assert!(
+        ruby_meta.decorators.is_empty(),
+        "Ruby should produce empty decorators"
+    );
 }

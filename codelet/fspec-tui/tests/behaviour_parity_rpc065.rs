@@ -29,8 +29,7 @@
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{
-    Action, ViewMode, CREATE_SESSION_DIALOG_ID, MODEL_SELECTOR_DIALOG_ID, ROLE_DIALOG_ID,
-    THINKING_LEVEL_DIALOG_ID,
+    Action, ViewMode, CREATE_SESSION_DIALOG_ID, ROLE_DIALOG_ID, THINKING_LEVEL_DIALOG_ID,
 };
 use codelet_rpc_types::{SessionId, SessionStatus, ThinkingLevel, WorkUnitContext};
 use crossterm::event::KeyCode;
@@ -137,7 +136,9 @@ async fn slash_model_activates_model_selector_view() {
     // @step Then the navigator's active_view is ViewMode::ModelSelector
     assert_eq!(h.active_view(), ViewMode::ModelSelector);
     // @step And no Compositor modal is pushed (the modal is retired)
-    assert!(!h.compositor_contains(MODEL_SELECTOR_DIALOG_ID));
+    // PROV-101 FIX 2: the RPC-022 modal was deleted; assert its retired id
+    // never appears on the Compositor (the live path is the full-screen view).
+    assert!(!h.compositor_contains("model-selector-dialog"));
 }
 
 // ─────────────────────────────────────────────────────────────────────────

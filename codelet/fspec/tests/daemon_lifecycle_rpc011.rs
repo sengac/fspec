@@ -327,9 +327,7 @@ async fn daemon_json_schema_upgrade_carries_pid_started_at_version() {
     let mut reader = std::io::BufReader::new(child.stdout.take().expect("stdout"));
     let mut port_line = String::new();
     use std::io::BufRead;
-    reader
-        .read_line(&mut port_line)
-        .expect("read port line");
+    reader.read_line(&mut port_line).expect("read port line");
     let _port: u16 = port_line.trim().parse().expect("port u16");
     let guard = ChildGuard(child);
 
@@ -347,8 +345,14 @@ async fn daemon_json_schema_upgrade_carries_pid_started_at_version() {
     let v: serde_json::Value = serde_json::from_str(&body).expect("parse daemon.json");
 
     // @step Then the JSON file contains all of: "port" (u16), "pid" (u32), "workspace" (absolute path), "started_at" (ISO 8601 string), "version" (CARGO_PKG_VERSION string)
-    assert!(v.get("port").and_then(|p| p.as_u64()).is_some(), "missing port");
-    assert!(v.get("pid").and_then(|p| p.as_u64()).is_some(), "missing pid");
+    assert!(
+        v.get("port").and_then(|p| p.as_u64()).is_some(),
+        "missing port"
+    );
+    assert!(
+        v.get("pid").and_then(|p| p.as_u64()).is_some(),
+        "missing pid"
+    );
     assert!(
         v.get("workspace").and_then(|w| w.as_str()).is_some(),
         "missing workspace"
@@ -385,8 +389,10 @@ async fn daemon_json_schema_upgrade_carries_pid_started_at_version() {
 #[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn daemon_json_is_removed_on_every_clean_shutdown_path() {
-
-    fn spawn_daemon_with_xdg(workspace: &std::path::Path, xdg: &std::path::Path) -> (ChildGuard, u16) {
+    fn spawn_daemon_with_xdg(
+        workspace: &std::path::Path,
+        xdg: &std::path::Path,
+    ) -> (ChildGuard, u16) {
         use std::io::BufRead;
         let mut child = Command::new(env!("CARGO_BIN_EXE_fspec"))
             .arg("daemon")
@@ -419,8 +425,8 @@ async fn daemon_json_is_removed_on_every_clean_shutdown_path() {
     send_signal(pid_a as i32, "TERM");
 
     // @step Then daemon.json is removed from disk before exit
-    let exit_a = wait_for_exit(guard_a, Duration::from_secs(10))
-        .expect("daemon must exit on SIGTERM");
+    let exit_a =
+        wait_for_exit(guard_a, Duration::from_secs(10)).expect("daemon must exit on SIGTERM");
     assert!(exit_a.success(), "exit cleanly on SIGTERM");
     assert!(
         !djson_a.exists(),
@@ -440,8 +446,8 @@ async fn daemon_json_is_removed_on_every_clean_shutdown_path() {
     send_signal(pid_b as i32, "INT");
 
     // @step Then daemon.json is removed from disk before exit
-    let exit_b = wait_for_exit(guard_b, Duration::from_secs(5))
-        .expect("daemon must exit on SIGINT");
+    let exit_b =
+        wait_for_exit(guard_b, Duration::from_secs(5)).expect("daemon must exit on SIGINT");
     assert!(exit_b.success(), "exit cleanly on SIGINT");
     assert!(
         !djson_b.exists(),
@@ -471,10 +477,7 @@ fn send_signal(pid: i32, signame: &str) {
 
 /// Wait for a child process to exit, polling try_wait with a deadline.
 /// Consumes the ChildGuard so the caller can't accidentally double-kill.
-fn wait_for_exit(
-    mut guard: ChildGuard,
-    timeout: Duration,
-) -> Option<std::process::ExitStatus> {
+fn wait_for_exit(mut guard: ChildGuard, timeout: Duration) -> Option<std::process::ExitStatus> {
     let deadline = Instant::now() + timeout;
     while Instant::now() < deadline {
         match guard.0.try_wait().expect("try_wait") {

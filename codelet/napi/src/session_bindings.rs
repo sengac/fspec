@@ -21,7 +21,6 @@
 //! persist.rs, footer_poller.rs, bridges.rs, session_hooks.rs,
 //! interjection.rs.
 
-
 use crate::types::{
     CompactionResult, DebugCommandResult, NapiFileModification, NapiToolCall, NapiTurnDetails,
     StreamChunk, ToolCallInfo, ToolResultInfo,
@@ -31,12 +30,9 @@ use crate::types::{
 // codelet-core; session_bindings only needs the compaction-threshold +
 // debug-capture helpers (used by `session_compact`, `toggle_debug`,
 // `session_toggle_debug`, `session_update_debug_metadata`).
-use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
 use codelet_cli::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
-use codelet_common::debug_capture::{
-    handle_debug_command_with_dir,
-    SessionMetadata,
-};
+use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
+use codelet_common::debug_capture::{handle_debug_command_with_dir, SessionMetadata};
 // RPC-039 / RPC-043: PauseState shape flows over the NAPI boundary as
 // `NapiPauseState`; the JS callbacks dispatch via the `PauseKind` /
 // `PauseResponse` enums when the user resumes the agent.
@@ -67,7 +63,9 @@ use crate::bridges::{
 /// legacy chunk-callback OnceCell static and its unsafe Send/Sync impls.
 /// Wrapped in `parking_lot::Mutex<Option<...>>` so re-registration
 /// replaces (rather than duplicates) the stored handle.
-static CHUNK_FANOUT_TSFN: OnceCell<std::sync::Mutex<Option<ThreadsafeFunction<GlobalChunkCallbackArgs>>>> = OnceCell::new();
+static CHUNK_FANOUT_TSFN: OnceCell<
+    std::sync::Mutex<Option<ThreadsafeFunction<GlobalChunkCallbackArgs>>>,
+> = OnceCell::new();
 
 /// BRIDGE-012: Arguments passed to the global chunk callback
 #[napi(object)]
@@ -105,17 +103,16 @@ const MAX_SESSIONS: usize = 10;
 /// codelet-napi (the agent_loop, the `#[napi]` free functions, the
 /// in-file unit-test module) keep resolving paths they used pre-move.
 pub use codelet_sessions::background_session::{
-    BackgroundSession, BridgeImageData, CompactionProgress, IncomingMessage, PromptInput,
-    SessionError, SUPERVISOR_BROADCAST_CAPACITY, WorkUnitContext, format_incoming_message,
+    format_incoming_message, BackgroundSession, BridgeImageData, CompactionProgress,
+    IncomingMessage, PromptInput, SessionError, WorkUnitContext, SUPERVISOR_BROADCAST_CAPACITY,
 };
 
 // RPC-040: SessionManager + ChainOfCommand moved into codelet-sessions.
 // Re-export so every existing call site (scheduler engine, agent_job,
 // trigger, catch_up, and the in-file unit-test module) keeps resolving
 // `crate::session_manager::SessionManager::instance()` unchanged.
-pub use codelet_sessions::session_manager::SessionManager;
 pub use codelet_sessions::chain_of_command::ChainOfCommand;
-
+pub use codelet_sessions::session_manager::SessionManager;
 
 /// Session status values
 ///
@@ -136,14 +133,10 @@ pub use codelet_rpc_types::SessionStatus;
 // RPC-039: Moved into `codelet-sessions`. See the
 // `pub use codelet_sessions::background_session::{..}` re-export above.
 
-
 // TUI-059: Work unit context for session.
 //
 // RPC-039: Moved into `codelet-sessions`. See the
 // `pub use codelet_sessions::background_session::{..}` re-export above.
-
-
-
 
 // AMGR-008: Session role is now a simple string (was SupervisorRole struct)
 // Role is stored as Option<String> on BackgroundSession.
@@ -152,7 +145,6 @@ pub use codelet_rpc_types::SessionStatus;
 // IncomingMessage / BridgeImageData / format_incoming_message moved
 // into `codelet-sessions` by RPC-039. See the
 // `pub use codelet_sessions::background_session::{..}` re-export above.
-
 
 // `impl From<u8> for SessionStatus` and `impl SessionStatus { fn as_str() }`
 // were lifted into `codelet-rpc-types` alongside the `SessionStatus` enum
@@ -233,15 +225,11 @@ impl From<PauseState> for NapiPauseState {
 // RPC-039: Moved into `codelet-sessions`. See the
 // `pub use codelet_sessions::background_session::{..}` re-export above.
 
-
 // Broadcast channel capacity for supervisor stream observation (WATCH-003)
 // NOTE(RPC-039): `SUPERVISOR_BROADCAST_CAPACITY` is re-exported from
 // `codelet-sessions` via the `pub use codelet_sessions::background_session::{..}`
 // block at the top of this file. The duplicate `pub const` declaration
 // that used to live here was deleted in RPC-039.
-
-
-
 
 #[cfg(test)]
 mod session_role_tests {
@@ -341,11 +329,19 @@ mod chain_of_command_tests {
 
         // @step Then get_supervisors for "abc" should return ["xyz"]
         let supervisors = chain_of_command.get_supervisors(subordinate_id);
-        assert_eq!(supervisors, vec![supervisor_id], "get_supervisors should return [xyz]");
+        assert_eq!(
+            supervisors,
+            vec![supervisor_id],
+            "get_supervisors should return [xyz]"
+        );
 
         // @step And get_subordinate for "xyz" should return "abc"
         let subordinate = chain_of_command.get_subordinate(supervisor_id);
-        assert_eq!(subordinate, Some(subordinate_id), "get_subordinate should return abc");
+        assert_eq!(
+            subordinate,
+            Some(subordinate_id),
+            "get_subordinate should return abc"
+        );
     }
 
     /// Scenario: Subordinate with multiple supervisors
@@ -378,8 +374,14 @@ mod chain_of_command_tests {
 
         // @step Then get_supervisors for "abc" should return ["xyz", "def"]
         let supervisors = chain_of_command.get_supervisors(subordinate_id);
-        assert!(supervisors.contains(&supervisor_xyz), "supervisors should contain xyz");
-        assert!(supervisors.contains(&supervisor_def), "supervisors should contain def");
+        assert!(
+            supervisors.contains(&supervisor_xyz),
+            "supervisors should contain xyz"
+        );
+        assert!(
+            supervisors.contains(&supervisor_def),
+            "supervisors should contain def"
+        );
         assert_eq!(supervisors.len(), 2, "should have exactly 2 supervisors");
     }
 
@@ -404,7 +406,11 @@ mod chain_of_command_tests {
         let result = chain_of_command.get_subordinate(supervisor_id);
 
         // @step Then it should return "abc"
-        assert_eq!(result, Some(subordinate_id), "get_subordinate should return abc");
+        assert_eq!(
+            result,
+            Some(subordinate_id),
+            "get_subordinate should return abc"
+        );
     }
 
     /// Scenario: Remove a supervisor relationship
@@ -430,7 +436,10 @@ mod chain_of_command_tests {
 
         // @step Then get_supervisors for "abc" should return an empty list
         let supervisors = chain_of_command.get_supervisors(subordinate_id);
-        assert!(supervisors.is_empty(), "get_supervisors should return empty list");
+        assert!(
+            supervisors.is_empty(),
+            "get_supervisors should return empty list"
+        );
 
         // @step And get_subordinate for "xyz" should return None
         let subordinate = chain_of_command.get_subordinate(supervisor_id);
@@ -460,17 +469,30 @@ mod chain_of_command_tests {
         let result = chain_of_command.add_supervisor(subordinate_def, supervisor_id);
 
         // @step Then it should succeed
-        assert!(result.is_ok(), "add_supervisor should succeed for multiple subordinates");
+        assert!(
+            result.is_ok(),
+            "add_supervisor should succeed for multiple subordinates"
+        );
 
         // @step And get_subordinates for "xyz" should return ["abc", "def"]
         let subordinates = chain_of_command.get_subordinates(supervisor_id);
         assert_eq!(subordinates.len(), 2, "should have exactly 2 subordinates");
-        assert!(subordinates.contains(&subordinate_abc), "subordinates should contain abc");
-        assert!(subordinates.contains(&subordinate_def), "subordinates should contain def");
-        
+        assert!(
+            subordinates.contains(&subordinate_abc),
+            "subordinates should contain abc"
+        );
+        assert!(
+            subordinates.contains(&subordinate_def),
+            "subordinates should contain def"
+        );
+
         // get_subordinate (singular, backward compat) returns first
         let first = chain_of_command.get_subordinate(supervisor_id);
-        assert_eq!(first, Some(subordinate_abc), "get_subordinate should return first (abc)");
+        assert_eq!(
+            first,
+            Some(subordinate_abc),
+            "get_subordinate should return first (abc)"
+        );
     }
 
     /// Scenario: Duplicate subordinate under same supervisor is rejected
@@ -517,7 +539,10 @@ mod chain_of_command_tests {
         let result = chain_of_command.add_supervisor(session_b, session_a);
 
         // @step Then it should return an error "circular supervision not allowed"
-        assert!(result.is_err(), "add_supervisor should fail for circular supervision");
+        assert!(
+            result.is_err(),
+            "add_supervisor should fail for circular supervision"
+        );
         assert!(
             result.unwrap_err().contains("circular"),
             "error should mention 'circular'"
@@ -542,7 +567,10 @@ mod chain_of_command_tests {
         let subordinate = chain_of_command.get_subordinate(session_id);
 
         // @step Then it should return None
-        assert_eq!(subordinate, None, "regular session should have no subordinate");
+        assert_eq!(
+            subordinate, None,
+            "regular session should have no subordinate"
+        );
     }
 
     /// Scenario: Cleanup supervisors when subordinate session is removed
@@ -574,14 +602,23 @@ mod chain_of_command_tests {
 
         // @step Then get_subordinate for "xyz" should return None
         let sub_xyz = chain_of_command.get_subordinate(supervisor_xyz);
-        assert_eq!(sub_xyz, None, "get_subordinate for xyz should return None after cleanup");
+        assert_eq!(
+            sub_xyz, None,
+            "get_subordinate for xyz should return None after cleanup"
+        );
 
         // @step And get_subordinate for "def" should return None
         let sub_def = chain_of_command.get_subordinate(supervisor_def);
-        assert_eq!(sub_def, None, "get_subordinate for def should return None after cleanup");
+        assert_eq!(
+            sub_def, None,
+            "get_subordinate for def should return None after cleanup"
+        );
 
         // @step And the ChainOfCommand should have no entries
-        assert!(chain_of_command.is_empty(), "ChainOfCommand should be empty after cleanup");
+        assert!(
+            chain_of_command.is_empty(),
+            "ChainOfCommand should be empty after cleanup"
+        );
     }
 }
 
@@ -589,10 +626,6 @@ mod chain_of_command_tests {
 mod supervisor_loop_tests {
 
     // Feature: spec/features/watcher-agent-loop-with-dual-input.feature
-
-
-
-
 
     /// Scenario: Handle broadcast lag gracefully
     ///
@@ -627,13 +660,13 @@ mod supervisor_input_tests {
 
     /// Scenario: Format peer supervisor message with structured prefix
     ///
-    /// @step Given a supervisor session with role "code-reviewer" 
+    /// @step Given a supervisor session with role "code-reviewer"
     /// @step And the supervisor session id is "abc123"
     /// @step When the supervisor sends message "Consider adding error handling"
     /// @step Then the formatted message should be "[SUPERVISOR: code-reviewer | Session: abc123] Consider adding error handling"
     #[test]
     fn test_format_peer_supervisor_message() {
-        // @step Given a supervisor session with role "code-reviewer" 
+        // @step Given a supervisor session with role "code-reviewer"
         let role_name = "code-reviewer".to_string();
 
         // @step And the supervisor session id is "abc123"
@@ -653,14 +686,14 @@ mod supervisor_input_tests {
 
     /// Scenario: Format authority supervisor message with structured prefix
     ///
-    /// @step Given a supervisor session with role "security-auditor" 
+    /// @step Given a supervisor session with role "security-auditor"
     /// @step And the supervisor session id is "xyz789"
     /// @step When the supervisor sends message "CRITICAL: SQL injection vulnerability detected"
     /// @step Then the subordinate should receive a IncomingMessage chunk
     /// @step And the chunk should contain the formatted message with structured prefix
     #[test]
     fn test_format_authority_supervisor_message() {
-        // @step Given a supervisor session with role "security-auditor" 
+        // @step Given a supervisor session with role "security-auditor"
         let role_name = "security-auditor".to_string();
 
         // @step And the supervisor session id is "xyz789"
@@ -705,14 +738,18 @@ mod supervisor_input_tests {
             "session123".to_string(),
             "test-supervisor".to_string(),
             "Test message".to_string(),
-        ).unwrap();
+        )
+        .unwrap();
 
         // BackgroundSession.receive_incoming_message uses try_send (non-blocking)
         // This mirrors the exact implementation pattern
         let result = supervisor_tx.try_send(input);
 
         // @step Then the input should be queued via the supervisor input channel
-        assert!(result.is_ok(), "try_send should succeed when channel has capacity");
+        assert!(
+            result.is_ok(),
+            "try_send should succeed when channel has capacity"
+        );
 
         // @step And the method should return immediately without blocking
         // try_send is guaranteed non-blocking - verified by using try_send instead of send
@@ -731,13 +768,15 @@ mod supervisor_input_tests {
             "s1".to_string(),
             "supervisor".to_string(),
             "First".to_string(),
-        ).unwrap();
+        )
+        .unwrap();
 
         let input2 = IncomingMessage::new(
             "s2".to_string(),
             "supervisor".to_string(),
             "Second".to_string(),
-        ).unwrap();
+        )
+        .unwrap();
 
         // First send should succeed
         assert!(supervisor_tx.try_send(input1).is_ok());
@@ -749,13 +788,13 @@ mod supervisor_input_tests {
 
     /// Scenario: Empty supervisor message returns error
     ///
-    /// @step Given a supervisor session with role "test-supervisor" 
+    /// @step Given a supervisor session with role "test-supervisor"
     /// @step And the supervisor session id is "test123"
     /// @step When the supervisor sends an empty message
     /// @step Then an error should be returned with message "message cannot be empty"
     #[test]
     fn test_empty_supervisor_message_returns_error() {
-        // @step Given a supervisor session with role "test-supervisor" 
+        // @step Given a supervisor session with role "test-supervisor"
         let role_name = "test-supervisor".to_string();
 
         // @step And the supervisor session id is "test123"
@@ -771,21 +810,22 @@ mod supervisor_input_tests {
 
     /// Scenario: Multiline supervisor message preserves formatting
     ///
-    /// @step Given a supervisor session with role "code-reviewer" 
+    /// @step Given a supervisor session with role "code-reviewer"
     /// @step And the supervisor session id is "abc123"
     /// @step When the supervisor sends a multiline message
     /// @step Then the formatted message should have the prefix on the first line
     /// @step And subsequent lines should be preserved without additional prefixes
     #[test]
     fn test_multiline_supervisor_message_preserves_formatting() {
-        // @step Given a supervisor session with role "code-reviewer" 
+        // @step Given a supervisor session with role "code-reviewer"
         let role_name = "code-reviewer".to_string();
 
         // @step And the supervisor session id is "abc123"
         let session_id = "abc123".to_string();
 
         // @step When the supervisor sends a multiline message
-        let multiline_message = "Issue found on line 42:\n- Missing null check\n- Consider using Option<T>".to_string();
+        let multiline_message =
+            "Issue found on line 42:\n- Missing null check\n- Consider using Option<T>".to_string();
         let input = IncomingMessage::new(session_id, role_name, multiline_message).unwrap();
         let formatted = format_incoming_message(&input);
 
@@ -795,7 +835,7 @@ mod supervisor_input_tests {
         // @step And subsequent lines should be preserved without additional prefixes
         let lines: Vec<&str> = formatted.lines().collect();
         assert!(lines.len() >= 3); // Prefix line + 2 content lines (or content all on one line after prefix)
-        // The message content follows the prefix, newlines are preserved
+                                   // The message content follows the prefix, newlines are preserved
         assert!(formatted.contains("- Missing null check"));
         assert!(formatted.contains("- Consider using Option<T>"));
     }
@@ -828,10 +868,15 @@ mod napi_supervisor_tests {
         assert!(result.is_ok());
 
         // @step And the supervisor should be registered in ChainOfCommand with subordinate "parent-uuid"
-        assert_eq!(chain_of_command.get_subordinate(supervisor_id), Some(subordinate_id));
+        assert_eq!(
+            chain_of_command.get_subordinate(supervisor_id),
+            Some(subordinate_id)
+        );
 
         // Broadcast subscription is lazy - happens when supervisor loop starts via subscribe_to_stream()
-        assert!(chain_of_command.get_supervisors(subordinate_id).contains(&supervisor_id));
+        assert!(chain_of_command
+            .get_supervisors(subordinate_id)
+            .contains(&supervisor_id));
     }
 
     /// Scenario: Get subordinate of a supervisor session
@@ -845,7 +890,9 @@ mod napi_supervisor_tests {
         let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-000000000003").unwrap();
         let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-000000000004").unwrap();
         let chain_of_command = ChainOfCommand::new();
-        chain_of_command.add_supervisor(subordinate_id, supervisor_id).unwrap();
+        chain_of_command
+            .add_supervisor(subordinate_id, supervisor_id)
+            .unwrap();
 
         // @step When I call session_get_subordinate with "supervisor-uuid"
         let result = chain_of_command.get_subordinate(supervisor_id);
@@ -888,10 +935,14 @@ mod napi_supervisor_tests {
         let chain_of_command = ChainOfCommand::new();
 
         // @step And supervisor session "supervisor-1-uuid" supervising "parent-uuid"
-        chain_of_command.add_supervisor(subordinate_id, supervisor_1_id).unwrap();
+        chain_of_command
+            .add_supervisor(subordinate_id, supervisor_1_id)
+            .unwrap();
 
         // @step And supervisor session "supervisor-2-uuid" supervising "parent-uuid"
-        chain_of_command.add_supervisor(subordinate_id, supervisor_2_id).unwrap();
+        chain_of_command
+            .add_supervisor(subordinate_id, supervisor_2_id)
+            .unwrap();
 
         // @step When I call session_get_supervisors with "parent-uuid"
         let supervisors = chain_of_command.get_supervisors(subordinate_id);
@@ -921,7 +972,6 @@ mod napi_supervisor_tests {
     }
 }
 
-
 #[cfg(test)]
 mod supervisor_integration_tests {
     use super::*;
@@ -937,7 +987,8 @@ mod supervisor_integration_tests {
     #[test]
     fn test_supervisor_subscribes_to_subordinate_broadcast() {
         // @step Given a subordinate session exists with an active broadcast channel
-        let (subordinate_broadcast_tx, _) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
+        let (subordinate_broadcast_tx, _) =
+            broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
 
         // @step When session_create_supervisor is called with the subordinate session ID
         // Simulate what session_create_supervisor does: subscribe to subordinate's broadcast
@@ -946,10 +997,15 @@ mod supervisor_integration_tests {
         // @step Then the supervisor should have a broadcast receiver subscribed to the subordinate's stream
         // Send a chunk from subordinate and verify supervisor receives it
         let test_chunk = StreamChunk::text("test from subordinate".to_string());
-        subordinate_broadcast_tx.send(test_chunk.clone()).expect("Should send");
-        
+        subordinate_broadcast_tx
+            .send(test_chunk.clone())
+            .expect("Should send");
+
         let received = supervisor_broadcast_rx.try_recv();
-        assert!(received.is_ok(), "Supervisor should receive chunks from subordinate broadcast");
+        assert!(
+            received.is_ok(),
+            "Supervisor should receive chunks from subordinate broadcast"
+        );
         // NAPI-010: Check using pattern matching on the enum variant
         match received.unwrap() {
             StreamChunk::Text { text, .. } => {
@@ -992,7 +1048,10 @@ mod work_unit_context_tests {
         // @step Then I should be in the AgentView
         // @step And the environment information should contain "Current work unit: AUTH-001"
         let env_info = ctx.format_for_environment();
-        assert!(env_info.is_some(), "Should return environment info when context is set");
+        assert!(
+            env_info.is_some(),
+            "Should return environment info when context is set"
+        );
         assert_eq!(env_info.unwrap(), "Current work unit: AUTH-001");
     }
 
@@ -1011,10 +1070,16 @@ mod work_unit_context_tests {
         let env_info = ctx.format_for_environment().unwrap();
 
         // @step And the environment information should not contain the work unit title
-        assert!(!env_info.contains("User Authentication"), "Should NOT contain title");
+        assert!(
+            !env_info.contains("User Authentication"),
+            "Should NOT contain title"
+        );
 
         // @step And the environment information should not contain the work unit status
-        assert!(!env_info.contains("specifying"), "Should NOT contain status");
+        assert!(
+            !env_info.contains("specifying"),
+            "Should NOT contain status"
+        );
     }
 
     /// Test format_for_environment returns None when context is not set
@@ -1027,7 +1092,10 @@ mod work_unit_context_tests {
         let env_info = ctx.format_for_environment();
 
         // Then it should return None
-        assert!(env_info.is_none(), "Should return None when context is not set");
+        assert!(
+            env_info.is_none(),
+            "Should return None when context is not set"
+        );
     }
 
     // =========================================================================
@@ -1200,15 +1268,11 @@ mod work_unit_context_tests {
     }
 }
 
-
-
-
 // ==============================================================================
 // RPC-043: lines 1216-2917 (run_with_provider! macro, agent_loop_dispatch_supports_provider,
 // agent_loop_dispatch_tests, InputWithImages, agent_loop fn, BackgroundOutput,
 // BackgroundProgressEmitter) extracted into `crate::agent_loop`.
 // ==============================================================================
-
 
 // =============================================================================
 // NAPI Bindings
@@ -1217,7 +1281,10 @@ mod work_unit_context_tests {
 /// Create a new background session (generates new UUID)
 #[napi]
 pub async fn session_manager_create(model: String, project: String) -> Result<String> {
-    SessionManager::instance().create_session(&model, &project).await.map_err(napi::Error::from_reason)
+    SessionManager::instance()
+        .create_session(&model, &project)
+        .await
+        .map_err(napi::Error::from_reason)
 }
 
 /// Create a background session with a specific ID (for persistence integration).
@@ -1235,7 +1302,10 @@ pub async fn session_manager_create_with_id(
     project: String,
     name: String,
 ) -> Result<()> {
-    SessionManager::instance().create_session_with_id(&session_id, &model, &project, &name).await.map_err(napi::Error::from_reason)
+    SessionManager::instance()
+        .create_session_with_id(&session_id, &model, &project, &name)
+        .await
+        .map_err(napi::Error::from_reason)
 }
 
 /// GIT-028: Result of creating an isolated session
@@ -1297,7 +1367,8 @@ pub fn session_manager_list() -> Vec<SessionInfo> {
 #[napi]
 pub fn session_manager_destroy(session_id: String) -> Result<()> {
     let sm = SessionManager::instance();
-    sm.destroy_session(&session_id).map_err(napi::Error::from_reason)?;
+    sm.destroy_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
 
     // KGRAPH-002: Close graph database when no sessions remain to avoid Lance corruption
     let session_count = sm.list_sessions().len();
@@ -1323,7 +1394,9 @@ pub fn session_manager_destroy(session_id: String) -> Result<()> {
 /// `(SessionId, StreamChunk)` tuple into the stored TSFN. This
 /// replaces the old chunk-callback OnceCell static.
 #[napi]
-pub fn session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChunkCallbackArgs>) -> Result<()> {
+pub fn session_set_global_chunk_callback(
+    callback: ThreadsafeFunction<GlobalChunkCallbackArgs>,
+) -> Result<()> {
     // RPC-041: store the TSFN inside CHUNK_FANOUT_TSFN. The OnceCell
     // initializes the parking_lot::Mutex slot exactly once; subsequent
     // calls would overwrite the stored handle, so reject re-registration
@@ -1367,10 +1440,8 @@ pub fn session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChun
                                     session_id: sid.to_string(),
                                     chunk,
                                 };
-                                let _ = tsfn.call(
-                                    Ok(args),
-                                    ThreadsafeFunctionCallMode::NonBlocking,
-                                );
+                                let _ =
+                                    tsfn.call(Ok(args), ThreadsafeFunctionCallMode::NonBlocking);
                             }
                         }
                     }
@@ -1407,7 +1478,6 @@ pub fn session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChun
     Ok(())
 }
 
-
 /// Explicitly set the active session for navigation.
 ///
 /// Use this when switching sessions to update the navigation state.
@@ -1419,7 +1489,9 @@ pub fn session_set_active(session_id: String) -> Result<()> {
         .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
     let manager = SessionManager::instance();
     // Verify session exists
-    let _ = manager.get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let _ = manager
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     manager.set_active_session(uuid);
     Ok(())
 }
@@ -1432,8 +1504,14 @@ pub fn session_set_active(session_id: String) -> Result<()> {
 /// thin wrapper maps the String error back into the napi `Result<()>`
 /// shape so the TypeScript `Promise<void>` signature is preserved.
 #[napi]
-pub fn session_send_input(session_id: String, input: String, thinking_config: Option<String>) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+pub fn session_send_input(
+    session_id: String,
+    input: String,
+    thinking_config: Option<String>,
+) -> Result<()> {
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session
         .send_input(input, thinking_config)
         .map_err(Error::from_reason)
@@ -1442,7 +1520,9 @@ pub fn session_send_input(session_id: String, input: String, thinking_config: Op
 /// Interrupt a session
 #[napi]
 pub fn session_interrupt(session_id: String) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.interrupt();
     Ok(())
 }
@@ -1457,7 +1537,9 @@ pub fn session_interrupt(session_id: String) -> Result<()> {
 /// Both TUI /clear command and Telegram bridge /clear should use this.
 #[napi]
 pub fn session_clear_history(session_id: String) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.clear_history();
     Ok(())
 }
@@ -1465,7 +1547,9 @@ pub fn session_clear_history(session_id: String) -> Result<()> {
 /// Get session status
 #[napi]
 pub fn session_get_status(session_id: String) -> Result<String> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let status = session.get_status();
     Ok(status.as_str().to_string())
 }
@@ -1475,13 +1559,19 @@ pub fn session_get_status(session_id: String) -> Result<String> {
 /// Returns the current compaction progress if compaction is in progress, null otherwise.
 /// Used by TypeScript to display progress indication: "Preparing compaction..."
 #[napi]
-pub fn session_get_compaction_progress(session_id: String) -> Result<Option<crate::types::CompactionProgress>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
-    Ok(session.get_compaction_progress().map(|p| crate::types::CompactionProgress {
-        phase: p.phase,
-        current: p.current,
-        total: p.total,
-    }))
+pub fn session_get_compaction_progress(
+    session_id: String,
+) -> Result<Option<crate::types::CompactionProgress>> {
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
+    Ok(session
+        .get_compaction_progress()
+        .map(|p| crate::types::CompactionProgress {
+            phase: p.phase,
+            current: p.current,
+            total: p.total,
+        }))
 }
 
 // === PAUSE-001: Session pause NAPI functions ===
@@ -1492,7 +1582,9 @@ pub fn session_get_compaction_progress(session_id: String) -> Result<Option<crat
 /// TypeScript uses this to display pause UI (tool name, message, kind).
 #[napi]
 pub fn session_get_pause_state(session_id: String) -> Result<Option<NapiPauseState>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     Ok(session.get_pause_state().map(|s| s.into()))
 }
 
@@ -1501,21 +1593,33 @@ pub fn session_get_pause_state(session_id: String) -> Result<Option<NapiPauseSta
 /// Returns the current HITL questions if the session is paused waiting for user input.
 /// TypeScript polls this to render the HITL question UI inline (like pause state).
 #[napi]
-pub fn session_get_hitl_request(session_id: String) -> Result<Option<crate::types::NapiHitlRequestState>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
-    Ok(session.get_hitl_request().map(|req| crate::types::NapiHitlRequestState {
-        questions: req.questions.iter().map(|q| crate::types::HitlQuestionInfo {
-            id: q.id.clone(),
-            header: q.header.clone(),
-            question: q.question.clone(),
-            options: q.options.as_ref().map(|opts| {
-                opts.iter().map(|o| crate::types::HitlOptionInfo {
-                    label: o.label.clone(),
-                    description: o.description.clone(),
-                }).collect()
-            }),
-        }).collect(),
-    }))
+pub fn session_get_hitl_request(
+    session_id: String,
+) -> Result<Option<crate::types::NapiHitlRequestState>> {
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
+    Ok(session
+        .get_hitl_request()
+        .map(|req| crate::types::NapiHitlRequestState {
+            questions: req
+                .questions
+                .iter()
+                .map(|q| crate::types::HitlQuestionInfo {
+                    id: q.id.clone(),
+                    header: q.header.clone(),
+                    question: q.question.clone(),
+                    options: q.options.as_ref().map(|opts| {
+                        opts.iter()
+                            .map(|o| crate::types::HitlOptionInfo {
+                                label: o.label.clone(),
+                                description: o.description.clone(),
+                            })
+                            .collect()
+                    }),
+                })
+                .collect(),
+        }))
 }
 
 /// Resume a paused session (PAUSE-001)
@@ -1524,7 +1628,9 @@ pub fn session_get_hitl_request(session_id: String) -> Result<Option<crate::type
 /// Sends Resumed response to unblock the waiting tool.
 #[napi]
 pub fn session_pause_resume(session_id: String) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.send_pause_response(PauseResponse::Resumed);
     Ok(())
 }
@@ -1535,7 +1641,9 @@ pub fn session_pause_resume(session_id: String) -> Result<()> {
 /// Sends Approved or Denied response to unblock the waiting tool.
 #[napi]
 pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let response = if approved {
         PauseResponse::Approved
     } else {
@@ -1551,7 +1659,9 @@ pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
 /// Valid choices: "allow_once", "allow_session", "deny"
 #[napi]
 pub fn session_pause_triple(session_id: String, choice: String) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let response = match choice.as_str() {
         "allow_once" => PauseResponse::AllowOnce,
         "allow_session" => PauseResponse::AllowSession,
@@ -1580,8 +1690,13 @@ pub fn session_pause_triple(session_id: String, choice: String) -> Result<()> {
 /// });
 /// ```
 #[napi]
-pub fn session_send_fspec_result(session_id: String, result: crate::types::FspecResult) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+pub fn session_send_fspec_result(
+    session_id: String,
+    result: crate::types::FspecResult,
+) -> Result<()> {
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.send_fspec_result(result);
     Ok(())
 }
@@ -1603,8 +1718,13 @@ pub fn session_send_fspec_result(session_id: String, result: crate::types::Fspec
 /// });
 /// ```
 #[napi]
-pub fn session_send_hitl_response(session_id: String, response: crate::types::HitlResponseInfo) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+pub fn session_send_hitl_response(
+    session_id: String,
+    response: crate::types::HitlResponseInfo,
+) -> Result<()> {
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
 
     // Convert NAPI HitlResponseInfo to codelet_tools HitlResponse
     let hitl_response = if response.cancelled {
@@ -1637,7 +1757,9 @@ pub fn session_send_hitl_response(session_id: String, response: crate::types::Hi
 /// This is the level set via /thinking command dialog.
 #[napi]
 pub fn session_get_base_thinking_level(session_id: String) -> Result<u8> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     Ok(session.get_base_thinking_level())
 }
 
@@ -1648,7 +1770,9 @@ pub fn session_get_base_thinking_level(session_id: String) -> Result<u8> {
 /// This is called when user selects a level in the /thinking dialog.
 #[napi]
 pub fn session_set_base_thinking_level(session_id: String, level: u8) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.set_base_thinking_level(level);
     Ok(())
 }
@@ -1691,32 +1815,41 @@ pub fn session_clear_active() {
 ///
 /// The turn_index is 0-based and refers to the index in the session's turns vector.
 #[napi]
-pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Result<Option<NapiTurnDetails>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+pub async fn session_get_turn_details(
+    session_id: String,
+    turn_index: u32,
+) -> Result<Option<NapiTurnDetails>> {
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let inner = session.inner.lock().await;
-    
+
     // Get the turns from the inner session
     let turns = &inner.turns;
-    
+
     // Find the turn at the given index
     let turn_idx = turn_index as usize;
     if turn_idx >= turns.len() {
         return Ok(None);
     }
-    
+
     let turn = &turns[turn_idx];
-    
+
     // Convert tool calls to NAPI format
-    let tool_calls: Vec<NapiToolCall> = turn.tool_calls.iter().map(|tc| {
-        NapiToolCall {
+    let tool_calls: Vec<NapiToolCall> = turn
+        .tool_calls
+        .iter()
+        .map(|tc| NapiToolCall {
             tool: tc.tool.clone(),
             parameters: tc.parameters.to_string(),
             success: turn.tool_results.iter().any(|tr| tr.success),
-        }
-    }).collect();
-    
+        })
+        .collect();
+
     // Extract file modifications from tool calls (Edit, Write operations)
-    let file_modifications: Vec<NapiFileModification> = turn.tool_calls.iter()
+    let file_modifications: Vec<NapiFileModification> = turn
+        .tool_calls
+        .iter()
         .filter_map(|tc| {
             let file_path = tc.file_path()?;
             let operation = match tc.tool.as_str() {
@@ -1732,7 +1865,7 @@ pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Re
             })
         })
         .collect();
-    
+
     // Determine overall status from tool results
     let status = if turn.tool_results.iter().all(|tr| tr.success) {
         "success"
@@ -1743,14 +1876,14 @@ pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Re
     } else {
         "failed"
     };
-    
+
     // Build context summary
     let context = if !turn.tool_calls.is_empty() {
         format!("{} tool call(s)", turn.tool_calls.len())
     } else {
         "Conversation turn".to_string()
     };
-    
+
     Ok(Some(NapiTurnDetails {
         turn_index,
         user_message: turn.user_message.clone(),
@@ -1763,11 +1896,21 @@ pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Re
 }
 
 #[napi]
-pub async fn session_set_model(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, compaction_threshold_type: Option<String>, compaction_threshold_value: Option<u32>) -> Result<()> {
+pub async fn session_set_model(
+    session_id: String,
+    provider_id: String,
+    model_id: String,
+    context_window: Option<u32>,
+    max_output_tokens: Option<u32>,
+    compaction_threshold_type: Option<String>,
+    compaction_threshold_value: Option<u32>,
+) -> Result<()> {
     tracing::debug!("session_set_model called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, compaction_threshold_type={:?}, compaction_threshold_value={:?}", 
           session_id, provider_id, model_id, context_window, max_output_tokens, compaction_threshold_type, compaction_threshold_value);
-    
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
 
     // Update metadata for display
     session.set_model(Some(provider_id.clone()), Some(model_id.clone()));
@@ -1775,7 +1918,7 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     // Construct model string and update the inner ProviderManager
     let model_string = format!("{}/{}", provider_id, model_id);
     tracing::debug!("session_set_model: selecting model_string={}", model_string);
-    
+
     let mut inner = session.inner.lock().await;
 
     // PROV-095: For custom Rhai providers, fetch all three script-set
@@ -1793,10 +1936,7 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     } else {
         codelet_providers::custom::RhaiScriptedLimits::default()
     };
-    let effective_context_window = scripted
-        .context_window
-        .map(|v| v as u32)
-        .or(context_window);
+    let effective_context_window = scripted.context_window.map(|v| v as u32).or(context_window);
     let effective_max_output_tokens = scripted
         .max_output_tokens
         .map(|v| v as u32)
@@ -1807,10 +1947,12 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     // the selected provider is a Rhai custom provider, consult the
     // script's `get_model_limits(config).compaction_threshold` return
     // value so scripts can surface their own defaults.
-    if let (Some(ct_type), Some(ct_value)) = (&compaction_threshold_type, compaction_threshold_value) {
-        inner.provider_manager_mut().set_compaction_threshold_override(
-            Some((ct_type.clone(), ct_value as u64))
-        );
+    if let (Some(ct_type), Some(ct_value)) =
+        (&compaction_threshold_type, compaction_threshold_value)
+    {
+        inner
+            .provider_manager_mut()
+            .set_compaction_threshold_override(Some((ct_type.clone(), ct_value as u64)));
     } else {
         inner
             .provider_manager_mut()
@@ -1827,7 +1969,10 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
             None,
         )
     } else {
-        let select_result = inner.provider_manager_mut().select_model(&model_string).map(|_| ());
+        let select_result = inner
+            .provider_manager_mut()
+            .select_model(&model_string)
+            .map(|_| ());
         // MODEL-005: NAPI override takes priority over models.dev metadata
         // PROV-095: Script values (when present) take priority over TUI values.
         if select_result.is_ok() {
@@ -1845,11 +1990,15 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
             let max_output = inner.provider_manager().max_output_tokens() as u32;
             // CTX-007: Resolve and cache compaction threshold
             let model_id_str = inner.current_model_id();
-            let user_config = inner.provider_manager().compaction_threshold_override()
+            let user_config = inner
+                .provider_manager()
+                .compaction_threshold_override()
                 .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
             let compaction_thresh = resolve_compaction_threshold(
-                context_window as u64, max_output as u64,
-                model_id_str.as_deref(), user_config.as_ref(),
+                context_window as u64,
+                max_output as u64,
+                model_id_str.as_deref(),
+                user_config.as_ref(),
             ) as u32;
             session.set_model_limits(context_window, max_output, compaction_thresh);
             tracing::debug!("session_set_model: model set successfully (context_window={}, max_output={}, compaction_threshold={})", context_window, max_output, compaction_thresh);
@@ -1892,11 +2041,23 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 /// not found in provider 'openai'".
 #[napi]
 #[allow(clippy::too_many_arguments)] // NAPI boundary requires flat parameters
-pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, facade_override: Option<String>, compaction_threshold_type: Option<String>, compaction_threshold_value: Option<u32>, profile_name: Option<String>) -> Result<()> {
+pub async fn session_set_model_profile(
+    session_id: String,
+    provider_id: String,
+    model_id: String,
+    context_window: Option<u32>,
+    max_output_tokens: Option<u32>,
+    facade_override: Option<String>,
+    compaction_threshold_type: Option<String>,
+    compaction_threshold_value: Option<u32>,
+    profile_name: Option<String>,
+) -> Result<()> {
     tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, facade_override={:?}, compaction_threshold_type={:?}, compaction_threshold_value={:?}, profile_name={:?}",
           session_id, provider_id, model_id, context_window, max_output_tokens, facade_override, compaction_threshold_type, compaction_threshold_value, profile_name);
-    
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
 
     // Update metadata for display
     session.set_model(Some(provider_id.clone()), Some(model_id.clone()));
@@ -1919,10 +2080,7 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
     } else {
         codelet_providers::custom::RhaiScriptedLimits::default()
     };
-    let effective_context_window = scripted
-        .context_window
-        .map(|v| v as u32)
-        .or(context_window);
+    let effective_context_window = scripted.context_window.map(|v| v as u32).or(context_window);
     let effective_max_output_tokens = scripted
         .max_output_tokens
         .map(|v| v as u32)
@@ -1934,10 +2092,12 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
     // so scripts can surface their own defaults through this profile
     // path too (the TUI routes custom providers through here, not
     // through session_set_model).
-    if let (Some(ct_type), Some(ct_value)) = (&compaction_threshold_type, compaction_threshold_value) {
-        inner.provider_manager_mut().set_compaction_threshold_override(
-            Some((ct_type.clone(), ct_value as u64))
-        );
+    if let (Some(ct_type), Some(ct_value)) =
+        (&compaction_threshold_type, compaction_threshold_value)
+    {
+        inner
+            .provider_manager_mut()
+            .set_compaction_threshold_override(Some((ct_type.clone(), ct_value as u64)));
     } else {
         inner
             .provider_manager_mut()
@@ -1961,12 +2121,14 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
                 inner.provider_manager().current_provider_type(),
                 codelet_providers::ProviderType::Custom(_)
             ) {
-                let derived = facade_override.clone().or_else(|| {
-                    codelet_providers::custom::derive_facade_for_custom(&provider_id)
-                });
+                let derived = facade_override
+                    .clone()
+                    .or_else(|| codelet_providers::custom::derive_facade_for_custom(&provider_id));
                 if derived.is_some() && facade_override.is_none() {
                     // Store the derived facade so the agent loop picks it up.
-                    inner.provider_manager_mut().set_facade_override(derived.clone());
+                    inner
+                        .provider_manager_mut()
+                        .set_facade_override(derived.clone());
                 }
                 derived
             } else {
@@ -1996,13 +2158,21 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
             let resolved_max_output = inner.provider_manager().max_output_tokens() as u32;
             // CTX-007: Resolve and cache compaction threshold for profile models
             let profile_model_id = inner.current_model_id();
-            let profile_user_config = inner.provider_manager().compaction_threshold_override()
+            let profile_user_config = inner
+                .provider_manager()
+                .compaction_threshold_override()
                 .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
             let profile_compaction_thresh = resolve_compaction_threshold(
-                resolved_context_window as u64, resolved_max_output as u64,
-                profile_model_id.as_deref(), profile_user_config.as_ref(),
+                resolved_context_window as u64,
+                resolved_max_output as u64,
+                profile_model_id.as_deref(),
+                profile_user_config.as_ref(),
             ) as u32;
-            session.set_model_limits(resolved_context_window, resolved_max_output, profile_compaction_thresh);
+            session.set_model_limits(
+                resolved_context_window,
+                resolved_max_output,
+                profile_compaction_thresh,
+            );
             tracing::debug!("session_set_model_profile: model set successfully (context_window={}, max_output={}, compaction_threshold={})", resolved_context_window, resolved_max_output, profile_compaction_thresh);
 
             // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
@@ -2024,11 +2194,17 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
 /// Get the model info for a background session
 #[napi]
 pub fn session_get_model(session_id: String) -> Result<SessionModel> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
-    let provider_id = session.provider_id.read()
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
+    let provider_id = session
+        .provider_id
+        .read()
         .map_err(|e| Error::from_reason(format!("Failed to read provider_id: {}", e)))?
         .clone();
-    let model_id = session.model_id.read()
+    let model_id = session
+        .model_id
+        .read()
         .map_err(|e| Error::from_reason(format!("Failed to read model_id: {}", e)))?
         .clone();
     // CTX-006: Read cached model limits (0 means not yet resolved)
@@ -2039,9 +2215,21 @@ pub fn session_get_model(session_id: String) -> Result<SessionModel> {
     Ok(SessionModel {
         provider_id,
         model_id,
-        context_window: if context_window > 0 { Some(context_window) } else { None },
-        max_output_tokens: if max_output_tokens > 0 { Some(max_output_tokens) } else { None },
-        compaction_threshold: if compaction_threshold > 0 { Some(compaction_threshold) } else { None },
+        context_window: if context_window > 0 {
+            Some(context_window)
+        } else {
+            None
+        },
+        max_output_tokens: if max_output_tokens > 0 {
+            Some(max_output_tokens)
+        } else {
+            None
+        },
+        compaction_threshold: if compaction_threshold > 0 {
+            Some(compaction_threshold)
+        } else {
+            None
+        },
     })
 }
 
@@ -2050,7 +2238,9 @@ pub fn session_get_model(session_id: String) -> Result<SessionModel> {
 /// BUG-097: Used to verify that sessionSetModelProfile actually updates the provider_manager.
 #[napi]
 pub async fn session_get_internal_provider(session_id: String) -> Result<SessionModel> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let inner = session.inner.lock().await;
     let provider_name = inner.current_provider_name().to_string();
     let model_id = inner.current_model_id();
@@ -2059,25 +2249,43 @@ pub async fn session_get_internal_provider(session_id: String) -> Result<Session
     let max_output_tokens = inner.provider_manager().max_output_tokens() as u32;
     // CTX-007: Resolve compaction threshold from inner ProviderManager
     let internal_model_id = inner.current_model_id();
-    let internal_user_config = inner.provider_manager().compaction_threshold_override()
+    let internal_user_config = inner
+        .provider_manager()
+        .compaction_threshold_override()
         .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
     let compaction_threshold = resolve_compaction_threshold(
-        context_window as u64, max_output_tokens as u64,
-        internal_model_id.as_deref(), internal_user_config.as_ref(),
+        context_window as u64,
+        max_output_tokens as u64,
+        internal_model_id.as_deref(),
+        internal_user_config.as_ref(),
     ) as u32;
     Ok(SessionModel {
         provider_id: Some(provider_name),
         model_id,
-        context_window: if context_window > 0 { Some(context_window) } else { None },
-        max_output_tokens: if max_output_tokens > 0 { Some(max_output_tokens) } else { None },
-        compaction_threshold: if compaction_threshold > 0 { Some(compaction_threshold) } else { None },
+        context_window: if context_window > 0 {
+            Some(context_window)
+        } else {
+            None
+        },
+        max_output_tokens: if max_output_tokens > 0 {
+            Some(max_output_tokens)
+        } else {
+            None
+        },
+        compaction_threshold: if compaction_threshold > 0 {
+            Some(compaction_threshold)
+        } else {
+            None
+        },
     })
 }
 
 /// Get cached token counts for a background session
 #[napi]
 pub fn session_get_tokens(session_id: String) -> Result<SessionTokens> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let (input_tokens, output_tokens, reasoning_tokens) = session.get_tokens();
     Ok(SessionTokens {
         input_tokens,
@@ -2089,14 +2297,18 @@ pub fn session_get_tokens(session_id: String) -> Result<SessionTokens> {
 /// Get debug enabled state for a background session
 #[napi]
 pub fn session_get_debug_enabled(session_id: String) -> Result<bool> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     Ok(session.get_debug_enabled())
 }
 
 /// Set debug enabled state for a background session (without toggling global state)
 #[napi]
 pub fn session_set_debug_enabled(session_id: String, enabled: bool) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.set_debug_enabled(enabled);
     Ok(())
 }
@@ -2107,7 +2319,9 @@ pub fn session_set_debug_enabled(session_id: String, enabled: bool) -> Result<()
 /// Used to restore input field state when switching back to the session.
 #[napi]
 pub fn session_get_pending_input(session_id: String) -> Result<Option<String>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     Ok(session.get_pending_input())
 }
 
@@ -2117,7 +2331,9 @@ pub fn session_get_pending_input(session_id: String) -> Result<Option<String>> {
 /// Pass None to clear the pending input.
 #[napi]
 pub fn session_set_pending_input(session_id: String, input: Option<String>) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.set_pending_input(input);
     Ok(())
 }
@@ -2125,7 +2341,9 @@ pub fn session_set_pending_input(session_id: String, input: Option<String>) -> R
 /// Get buffered output from a session
 #[napi]
 pub fn session_get_buffered_output(session_id: String, limit: u32) -> Result<Vec<StreamChunk>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     Ok(session.get_buffered_output(limit as usize))
 }
 
@@ -2147,7 +2365,9 @@ pub fn session_set_role(
     _role_brief: Option<String>,
     _auto_inject: Option<bool>,
 ) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     if role_name.is_empty() {
         // BUG-121: Empty role_name clears the role instead of returning error
         session.clear_role();
@@ -2160,12 +2380,13 @@ pub fn session_set_role(
 /// Get the role for a session (AMGR-008: simplified — returns role string wrapped in SupervisorRoleInfo for compat)
 #[napi]
 pub fn session_get_role(session_id: String) -> Result<Option<SupervisorRoleInfo>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
-    
-    Ok(session.get_role().map(|name| SupervisorRoleInfo {
-        name,
-        brief: None,
-    }))
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
+
+    Ok(session
+        .get_role()
+        .map(|name| SupervisorRoleInfo { name, brief: None }))
 }
 
 // session_clear_role removed — dead code with no consumers
@@ -2175,15 +2396,25 @@ pub fn session_get_role(session_id: String) -> Result<Option<SupervisorRoleInfo>
 /// SCHED-004: Check if a session was spawned by the scheduler
 #[napi]
 pub fn session_is_scheduled(session_id: String) -> Result<bool> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
-    Ok(session.schedule_triggered.load(std::sync::atomic::Ordering::Relaxed))
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
+    Ok(session
+        .schedule_triggered
+        .load(std::sync::atomic::Ordering::Relaxed))
 }
 
 /// SCHED-004: Get the schedule name that triggered a session (if any)
 #[napi]
 pub fn session_schedule_name(session_id: String) -> Result<Option<String>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
-    let name = session.schedule_name.read().expect("schedule_name lock").clone();
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
+    let name = session
+        .schedule_name
+        .read()
+        .expect("schedule_name lock")
+        .clone();
     Ok(name)
 }
 
@@ -2212,7 +2443,9 @@ pub async fn loop_register(
 
     // Ensure the scheduler is running (it may not be if no schedules.json exists)
     let sm = SessionManager::instance();
-    let session = sm.get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = sm
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let project = session.project.clone();
     sm.ensure_scheduler_running(&project, &rt);
 
@@ -2233,10 +2466,7 @@ pub async fn loop_register(
     let on_fire: std::sync::Arc<dyn Fn(String) + Send + Sync + 'static> =
         std::sync::Arc::new(move |prompt_text: String| {
             if let Err(e) = session_for_fire.send_input(prompt_text, None) {
-                tracing::error!(
-                    "Loop fire failed for session {}: {}",
-                    uuid, e
-                );
+                tracing::error!("Loop fire failed for session {}: {}", uuid, e);
             }
         });
 
@@ -2244,9 +2474,7 @@ pub async fn loop_register(
     let idle_check: crate::scheduler::loop_store::IdleCheckFn =
         std::sync::Arc::new(move |_session_id: Uuid| {
             let s = session_for_idle.clone();
-            Box::pin(async move {
-                s.get_status() == SessionStatus::Idle
-            })
+            Box::pin(async move { s.get_status() == SessionStatus::Idle })
         });
 
     crate::scheduler::LoopStore::instance()
@@ -2262,7 +2490,9 @@ pub async fn loop_register(
 /// Must be async so NAPI-RS provides the Tokio runtime context.
 #[napi]
 pub async fn loop_cancel(loop_id: String) -> Result<bool> {
-    Ok(crate::scheduler::LoopStore::instance().cancel(&loop_id).await)
+    Ok(crate::scheduler::LoopStore::instance()
+        .cancel(&loop_id)
+        .await)
 }
 
 /// List all loops for a specific session. Returns JSON array string.
@@ -2294,7 +2524,6 @@ pub async fn loop_list(session_id: String) -> Result<String> {
 
 // === Supervisor Operations (WATCH-007) ===
 
-
 /// Get the subordinate session ID for a supervisor (WATCH-007)
 ///
 /// Returns the subordinate session ID if the session is a supervisor, None otherwise.
@@ -2302,7 +2531,7 @@ pub async fn loop_list(session_id: String) -> Result<String> {
 pub fn session_get_subordinate(session_id: String) -> Result<Option<String>> {
     let uuid = Uuid::parse_str(&session_id)
         .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
-    
+
     Ok(SessionManager::instance()
         .get_subordinate(uuid)
         .map(|id| id.to_string()))
@@ -2315,14 +2544,13 @@ pub fn session_get_subordinate(session_id: String) -> Result<Option<String>> {
 pub fn session_get_supervisors(session_id: String) -> Result<Vec<String>> {
     let uuid = Uuid::parse_str(&session_id)
         .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
-    
+
     Ok(SessionManager::instance()
         .get_supervisors(uuid)
         .into_iter()
         .map(|id| id.to_string())
         .collect())
 }
-
 
 /// Set pending observed correlation IDs for a supervisor session (WATCH-011)
 ///
@@ -2333,8 +2561,13 @@ pub fn session_get_supervisors(session_id: String) -> Result<Vec<String>> {
 /// This enables cross-pane highlighting: when viewing a supervisor session in split view,
 /// selecting a supervisor turn shows which subordinate turns it was responding to.
 #[napi]
-pub fn session_set_observed_correlation_ids(session_id: String, correlation_ids: Vec<String>) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+pub fn session_set_observed_correlation_ids(
+    session_id: String,
+    correlation_ids: Vec<String>,
+) -> Result<()> {
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.set_pending_observed_correlation_ids(correlation_ids);
     Ok(())
 }
@@ -2345,7 +2578,9 @@ pub fn session_set_observed_correlation_ids(session_id: String, correlation_ids:
 /// Subsequent output chunks will no longer have observed_correlation_ids set.
 #[napi]
 pub fn session_clear_observed_correlation_ids(session_id: String) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.clear_pending_observed_correlation_ids();
     Ok(())
 }
@@ -2354,7 +2589,9 @@ pub fn session_clear_observed_correlation_ids(session_id: String) -> Result<()> 
 /// This is more efficient for reattachment - JS can process fewer chunks.
 #[napi]
 pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let chunks = session.get_buffered_output(usize::MAX);
 
     let mut merged: Vec<StreamChunk> = Vec::new();
@@ -2363,7 +2600,11 @@ pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>>
         match &chunk {
             StreamChunk::Text { text, .. } => {
                 // Merge consecutive Text chunks
-                if let Some(StreamChunk::Text { text: existing_text, .. }) = merged.last_mut() {
+                if let Some(StreamChunk::Text {
+                    text: existing_text,
+                    ..
+                }) = merged.last_mut()
+                {
                     existing_text.push_str(text);
                     continue;
                 }
@@ -2371,7 +2612,11 @@ pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>>
             }
             StreamChunk::Thinking { thinking, .. } => {
                 // Merge consecutive Thinking chunks
-                if let Some(StreamChunk::Thinking { thinking: existing_thinking, .. }) = merged.last_mut() {
+                if let Some(StreamChunk::Thinking {
+                    thinking: existing_thinking,
+                    ..
+                }) = merged.last_mut()
+                {
                     existing_thinking.push_str(thinking);
                     continue;
                 }
@@ -2399,19 +2644,22 @@ pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>>
 /// proper UI replay when detaching and re-attaching via kanban.
 #[napi]
 pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
-    
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
+
     // Collect rig messages and StreamChunks to push
     let mut rig_messages: Vec<rig::message::Message> = Vec::new();
     let mut stream_chunks: Vec<StreamChunk> = Vec::new();
-    
+
     for envelope_json in envelopes {
         let envelope: serde_json::Value = serde_json::from_str(&envelope_json)
             .map_err(|e| Error::from_reason(format!("Failed to parse envelope: {}", e)))?;
 
         // Extract message from envelope
         if let Some(message) = envelope.get("message") {
-            let role = message.get("role")
+            let role = message
+                .get("role")
                 .and_then(|r| r.as_str())
                 .unwrap_or("user");
 
@@ -2420,16 +2668,20 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                 if let Some(content) = message.get("content") {
                     if let Some(arr) = content.as_array() {
                         let mut text_parts = Vec::new();
-                        
+
                         // Process each content block for StreamChunks
                         for block in arr {
-                            let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
-                            
+                            let block_type =
+                                block.get("type").and_then(|t| t.as_str()).unwrap_or("");
+
                             match block_type {
                                 "thinking" => {
-                                    if let Some(thinking) = block.get("thinking").and_then(|t| t.as_str()) {
+                                    if let Some(thinking) =
+                                        block.get("thinking").and_then(|t| t.as_str())
+                                    {
                                         if !thinking.is_empty() {
-                                            stream_chunks.push(StreamChunk::thinking(thinking.to_string()));
+                                            stream_chunks
+                                                .push(StreamChunk::thinking(thinking.to_string()));
                                         }
                                     }
                                 }
@@ -2442,12 +2694,21 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                                     }
                                 }
                                 "tool_use" => {
-                                    let id = block.get("id").and_then(|i| i.as_str()).unwrap_or("").to_string();
-                                    let name = block.get("name").and_then(|n| n.as_str()).unwrap_or("").to_string();
-                                    let input = block.get("input")
+                                    let id = block
+                                        .get("id")
+                                        .and_then(|i| i.as_str())
+                                        .unwrap_or("")
+                                        .to_string();
+                                    let name = block
+                                        .get("name")
+                                        .and_then(|n| n.as_str())
+                                        .unwrap_or("")
+                                        .to_string();
+                                    let input = block
+                                        .get("input")
                                         .map(|i| serde_json::to_string(i).unwrap_or_default())
                                         .unwrap_or_default();
-                                    
+
                                     if !id.is_empty() && !name.is_empty() {
                                         stream_chunks.push(StreamChunk::tool_call(ToolCallInfo {
                                             id,
@@ -2459,16 +2720,18 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                                 _ => {}
                             }
                         }
-                        
+
                         // Build rig message for LLM context
                         let joined_text = text_parts.join("");
                         if !joined_text.is_empty() {
                             rig_messages.push(rig::message::Message::Assistant {
                                 id: None,
-                                content: rig::OneOrMany::one(rig::message::AssistantContent::text(joined_text)),
+                                content: rig::OneOrMany::one(rig::message::AssistantContent::text(
+                                    joined_text,
+                                )),
                             });
                         }
-                        
+
                         // Push Done chunk to finalize assistant turn
                         stream_chunks.push(StreamChunk::done());
                     }
@@ -2478,56 +2741,67 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                 if let Some(content) = message.get("content") {
                     if let Some(arr) = content.as_array() {
                         let mut text_parts = Vec::new();
-                        
+
                         // Process each content block
                         for block in arr {
-                            let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
-                            
+                            let block_type =
+                                block.get("type").and_then(|t| t.as_str()).unwrap_or("");
+
                             match block_type {
                                 "text" => {
                                     if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
                                         text_parts.push(text.to_string());
                                         if !text.is_empty() {
-                                            stream_chunks.push(StreamChunk::user_input(text.to_string()));
+                                            stream_chunks
+                                                .push(StreamChunk::user_input(text.to_string()));
                                         }
                                     }
                                 }
                                 "tool_result" => {
-                                    let tool_use_id = block.get("tool_use_id")
+                                    let tool_use_id = block
+                                        .get("tool_use_id")
                                         .and_then(|i| i.as_str())
                                         .unwrap_or("")
                                         .to_string();
-                                    let result_content = block.get("content")
+                                    let result_content = block
+                                        .get("content")
                                         .and_then(|c| c.as_str())
                                         .unwrap_or("")
                                         .to_string();
-                                    let is_error = block.get("is_error")
+                                    let is_error = block
+                                        .get("is_error")
                                         .and_then(|e| e.as_bool())
                                         .unwrap_or(false);
-                                    
+
                                     if !tool_use_id.is_empty() {
-                                        stream_chunks.push(StreamChunk::tool_result(ToolResultInfo {
-                                            tool_call_id: tool_use_id,
-                                            content: result_content,
-                                            is_error,
-                                        }));
+                                        stream_chunks.push(StreamChunk::tool_result(
+                                            ToolResultInfo {
+                                                tool_call_id: tool_use_id,
+                                                content: result_content,
+                                                is_error,
+                                            },
+                                        ));
                                     }
                                 }
                                 _ => {}
                             }
                         }
-                        
+
                         // Build rig message for LLM context (text only)
                         let joined_text = text_parts.join("");
                         if !joined_text.is_empty() {
                             // Skip system reminders - they'll be re-injected fresh after restoration
                             // System reminders have both <system-reminder> tag AND <!-- type: marker
-                            if joined_text.contains("<system-reminder>") && joined_text.contains("<!-- type:") {
+                            if joined_text.contains("<system-reminder>")
+                                && joined_text.contains("<!-- type:")
+                            {
                                 // Skip - will be re-injected with fresh content
                                 continue;
                             }
                             rig_messages.push(rig::message::Message::User {
-                                content: rig::OneOrMany::one(rig::message::UserContent::text(joined_text)),
+                                content: rig::OneOrMany::one(rig::message::UserContent::text(
+                                    joined_text,
+                                )),
                             });
                         }
                     } else if let Some(s) = content.as_str() {
@@ -2540,7 +2814,9 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                             }
                             stream_chunks.push(StreamChunk::user_input(s.to_string()));
                             rig_messages.push(rig::message::Message::User {
-                                content: rig::OneOrMany::one(rig::message::UserContent::text(s.to_string())),
+                                content: rig::OneOrMany::one(rig::message::UserContent::text(
+                                    s.to_string(),
+                                )),
                             });
                         }
                     }
@@ -2548,7 +2824,7 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
             }
         }
     }
-    
+
     // Push rig messages to inner (for LLM context)
     {
         let mut inner = session.inner.lock().await;
@@ -2556,7 +2832,7 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
             inner.messages.push(msg);
         }
     }
-    
+
     // Push StreamChunks to output_buffer via handle_output (for UI replay)
     // This enables sessionGetMergedOutput() to return the restored conversation
     for chunk in stream_chunks {
@@ -2580,7 +2856,9 @@ pub async fn session_restore_token_state(
     cumulative_billed_input: u32,
     cumulative_billed_output: u32,
 ) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
 
     // Update cached tokens for sync access
     session.update_tokens(input_tokens, output_tokens);
@@ -2621,14 +2899,18 @@ pub fn toggle_debug(debug_dir: Option<String>) -> DebugCommandResult {
 /// Call this after creating a session if debug was enabled before the session existed.
 #[napi]
 pub async fn session_update_debug_metadata(session_id: String) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let inner = session.inner.lock().await;
 
     if let Ok(mut manager) = session.debug_capture.lock() {
         if manager.is_enabled() {
             manager.set_session_metadata(SessionMetadata {
                 provider: Some(inner.current_provider_name().to_string()),
-                model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
+                model: inner
+                    .current_model_id()
+                    .or_else(|| Some(inner.current_provider_name().to_string())),
                 context_window: Some(inner.provider_manager().context_window()),
                 max_output_tokens: None,
             });
@@ -2655,7 +2937,9 @@ pub async fn session_toggle_debug(
     session_id: String,
     debug_dir: Option<String>,
 ) -> Result<DebugCommandResult> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
 
     // Snapshot session-derived metadata BEFORE acquiring the debug_capture lock so that
     // when we enable capture we can seed the manager with the real provider/model values
@@ -2689,9 +2973,7 @@ pub async fn session_toggle_debug(
         } else {
             // Use default data dir with session id subdirectory
             if let Ok(data_dir) = codelet_common::get_data_dir() {
-                let session_debug_dir = data_dir
-                    .join("debug")
-                    .join(session.id.to_string());
+                let session_debug_dir = data_dir.join("debug").join(session.id.to_string());
                 manager.set_debug_directory_raw(session_debug_dir);
             }
         }
@@ -2754,7 +3036,9 @@ pub async fn session_toggle_debug(
 /// Returns error if session is empty (nothing to compact).
 #[napi]
 pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let mut inner = session.inner.lock().await;
 
     // Check if there's anything to compact
@@ -2766,7 +3050,9 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
 
     let original_tokens = inner.token_tracker.input_tokens;
     let total_messages = inner.messages.len() as u32;
-    session.pre_compaction_tokens.store(original_tokens as u32, Ordering::Release);
+    session
+        .pre_compaction_tokens
+        .store(original_tokens as u32, Ordering::Release);
 
     // BUG-134: Capture compaction.manual.start event using per-session debug capture
     if let Ok(mut manager) = session.debug_capture.lock() {
@@ -2830,7 +3116,10 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
 
     // Send "Continue" to trigger agent_loop processing of the compaction instruction.
     if let Err(e) = session.send_input("Continue".to_string(), None) {
-        tracing::warn!("[session_compact] Failed to send Continue to agent loop: {}", e);
+        tracing::warn!(
+            "[session_compact] Failed to send Continue to agent loop: {}",
+            e
+        );
         session.set_status(SessionStatus::Idle);
     }
 
@@ -2848,23 +3137,23 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
 // results are sent back via sessionSendFspecResult NAPI function.
 
 /// CONFIG-004: Test provider connection by validating credentials
-/// 
+///
 /// This is a lightweight check that validates provider credentials without
 /// creating a full session. Used by the settings UI to test connections.
-/// 
+///
 /// Returns Ok(()) if credentials are valid, or an error message if not.
 #[napi]
 pub fn test_provider_connection(provider_name: String) -> Result<()> {
     use codelet_providers::ProviderManager;
-    
+
     // Load environment variables (for API keys)
     let _ = dotenvy::dotenv();
-    
+
     // Try to create a ProviderManager with this provider
     // This validates that credentials exist and are non-empty
     ProviderManager::with_provider(&provider_name)
         .map_err(|e| Error::from_reason(format!("Connection failed: {e}")))?;
-    
+
     Ok(())
 }
 
@@ -2881,7 +3170,7 @@ pub struct JsWorkUnitContext {
 }
 
 /// TUI-059: Set work unit context for a session
-/// 
+///
 /// When a session is attached to a work unit (e.g., when entering AgentView
 /// from BoardView with a selected work unit), call this to set the context.
 /// Pass null for all parameters to clear the context.
@@ -2892,33 +3181,35 @@ pub fn session_set_work_unit_context(
     title: Option<String>,
     status: Option<String>,
 ) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     session.set_work_unit_context(id, title, status);
     Ok(())
 }
 
 /// TUI-059: Get work unit context for a session
-/// 
+///
 /// Returns the work unit context if set, or null if no context is set.
 #[napi]
 pub fn session_get_work_unit_context(session_id: String) -> Result<Option<JsWorkUnitContext>> {
-    let session = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let session = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     let ctx = session.get_work_unit_context();
-    
+
     match ctx {
-        Some(c) if c.is_set() => {
-            Ok(Some(JsWorkUnitContext {
-                id: c.id.unwrap_or_default(),
-                title: c.title.unwrap_or_default(),
-                status: c.status.unwrap_or_default(),
-            }))
-        },
+        Some(c) if c.is_set() => Ok(Some(JsWorkUnitContext {
+            id: c.id.unwrap_or_default(),
+            title: c.title.unwrap_or_default(),
+            status: c.status.unwrap_or_default(),
+        })),
         _ => Ok(None),
     }
 }
 
 /// TUI-059: Get the currently active session ID
-/// 
+///
 /// Returns the session ID of the currently active session (for navigation),
 /// or null if no session is active.
 #[napi]
@@ -2969,7 +3260,7 @@ pub fn session_validate_path(
     tool_name: String,
 ) -> PathValidationResult {
     use codelet_tools::facade::validate_and_resolve_path;
-    
+
     // Parse session ID
     let uuid = match uuid::Uuid::parse_str(&session_id) {
         Ok(id) => id,
@@ -2981,7 +3272,7 @@ pub fn session_validate_path(
             };
         }
     };
-    
+
     // Convert tool_name to static str for validate_and_resolve_path
     let tool_static: &'static str = match tool_name.as_str() {
         "read" => "read",
@@ -2994,7 +3285,7 @@ pub fn session_validate_path(
         "ast_grep_refactor" => "ast_grep_refactor",
         _ => "unknown",
     };
-    
+
     // Call the actual validation function used by all file tools
     match validate_and_resolve_path(uuid, &path, tool_static) {
         Ok(resolved) => PathValidationResult {
@@ -3046,12 +3337,18 @@ mod sub_agent_model_inheritance_tests {
         context_window: Option<usize>,
         max_output_tokens: Option<usize>,
     ) -> ProviderManager {
-        let provider_type: codelet_providers::ProviderType = provider.parse()
-            .expect("valid provider name");
+        let provider_type: codelet_providers::ProviderType =
+            provider.parse().expect("valid provider name");
         let mut pm = ProviderManager::for_testing(provider_type, None, None);
         if let Some(mid) = model_id {
-            pm.set_model_direct(registry_provider, mid, context_window, max_output_tokens, None)
-                .expect("set_model_direct should succeed for test provider");
+            pm.set_model_direct(
+                registry_provider,
+                mid,
+                context_window,
+                max_output_tokens,
+                None,
+            )
+            .expect("set_model_direct should succeed for test provider");
         }
         pm
     }
@@ -3068,202 +3365,273 @@ mod sub_agent_model_inheritance_tests {
     mod bug132_tests {
         use super::*;
 
-    // =========================================================================
-    // Scenario: DeepSearch uses updated model after mid-session model switch
-    // =========================================================================
+        // =========================================================================
+        // Scenario: DeepSearch uses updated model after mid-session model switch
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_deep_search_uses_updated_model_after_switch() {
-        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
-        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
-        let (provider_before, model_before, _, _) = crate::bridges::extract_deep_search_handler_values(&pm_before);
-        assert_eq!(provider_before, "claude");
-        assert_eq!(model_before, Some("claude-sonnet-4-20250514".to_string()));
+        #[test]
+        fn test_bug132_deep_search_uses_updated_model_after_switch() {
+            // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+            let pm_before = test_pm(
+                "claude",
+                "anthropic",
+                Some("claude-sonnet-4-20250514"),
+                Some(200000),
+                Some(16384),
+            );
+            let (provider_before, model_before, _, _) =
+                crate::bridges::extract_deep_search_handler_values(&pm_before);
+            assert_eq!(provider_before, "claude");
+            assert_eq!(model_before, Some("claude-sonnet-4-20250514".to_string()));
 
-        // @step And the DeepSearch handler was registered at session creation
-        // (values captured above)
+            // @step And the DeepSearch handler was registered at session creation
+            // (values captured above)
 
-        // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model
-        let pm_after = test_pm("gemini", "google", Some("gemini-2.5-pro"), Some(1048576), Some(65536));
-        let (provider_after, model_after, _, _) = crate::bridges::extract_deep_search_handler_values(&pm_after);
+            // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model
+            let pm_after = test_pm(
+                "gemini",
+                "google",
+                Some("gemini-2.5-pro"),
+                Some(1048576),
+                Some(65536),
+            );
+            let (provider_after, model_after, _, _) =
+                crate::bridges::extract_deep_search_handler_values(&pm_after);
 
-        // @step And the user invokes DeepSearch
-        // (extracting values simulates what re-registration would capture)
+            // @step And the user invokes DeepSearch
+            // (extracting values simulates what re-registration would capture)
 
-        // @step Then the DeepSearch sub-agent should use provider "gemini" and model "gemini-2.5-pro"
-        assert_eq!(provider_after, "gemini");
-        assert_eq!(model_after, Some("gemini-2.5-pro".to_string()));
-        // Verify the values actually changed
-        assert_ne!(provider_before, provider_after);
-        assert_ne!(model_before, model_after);
-    }
+            // @step Then the DeepSearch sub-agent should use provider "gemini" and model "gemini-2.5-pro"
+            assert_eq!(provider_after, "gemini");
+            assert_eq!(model_after, Some("gemini-2.5-pro".to_string()));
+            // Verify the values actually changed
+            assert_ne!(provider_before, provider_after);
+            assert_ne!(model_before, model_after);
+        }
 
-    // =========================================================================
-    // Scenario: AgentManager uses updated model after mid-session model switch
-    // =========================================================================
+        // =========================================================================
+        // Scenario: AgentManager uses updated model after mid-session model switch
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_agent_manager_uses_updated_model_after_switch() {
-        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
-        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
-        let (model_string_before, _, _) = crate::bridges::extract_agent_manager_handler_values(&pm_before);
-        // BUG-136: selected_model_string() now returns the full registry
-        // composite so AgentManager's create_session_with_id call can
-        // round-trip it even when the model id contains slashes.
-        assert_eq!(model_string_before, Some("anthropic/claude-sonnet-4-20250514".to_string()));
+        #[test]
+        fn test_bug132_agent_manager_uses_updated_model_after_switch() {
+            // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+            let pm_before = test_pm(
+                "claude",
+                "anthropic",
+                Some("claude-sonnet-4-20250514"),
+                Some(200000),
+                Some(16384),
+            );
+            let (model_string_before, _, _) =
+                crate::bridges::extract_agent_manager_handler_values(&pm_before);
+            // BUG-136: selected_model_string() now returns the full registry
+            // composite so AgentManager's create_session_with_id call can
+            // round-trip it even when the model id contains slashes.
+            assert_eq!(
+                model_string_before,
+                Some("anthropic/claude-sonnet-4-20250514".to_string())
+            );
 
-        // @step And the AgentManager handler was registered at session creation
-        // (values captured above)
+            // @step And the AgentManager handler was registered at session creation
+            // (values captured above)
 
-        // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model
-        let pm_after = test_pm("gemini", "google", Some("gemini-2.5-pro"), Some(1048576), Some(65536));
-        let (model_string_after, _, _) = crate::bridges::extract_agent_manager_handler_values(&pm_after);
+            // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model
+            let pm_after = test_pm(
+                "gemini",
+                "google",
+                Some("gemini-2.5-pro"),
+                Some(1048576),
+                Some(65536),
+            );
+            let (model_string_after, _, _) =
+                crate::bridges::extract_agent_manager_handler_values(&pm_after);
 
-        // @step And the user spawns a subordinate via AgentManager
-        // (extracting values simulates what re-registration would capture)
+            // @step And the user spawns a subordinate via AgentManager
+            // (extracting values simulates what re-registration would capture)
 
-        // @step Then the subordinate should be created with the updated model "gemini-2.5-pro"
-        assert_eq!(model_string_after, Some("google/gemini-2.5-pro".to_string()));
-        assert_ne!(model_string_before, model_string_after);
-    }
+            // @step Then the subordinate should be created with the updated model "gemini-2.5-pro"
+            assert_eq!(
+                model_string_after,
+                Some("google/gemini-2.5-pro".to_string())
+            );
+            assert_ne!(model_string_before, model_string_after);
+        }
 
-    // =========================================================================
-    // Scenario: DeepSearch respects facade_override for custom models
-    // =========================================================================
+        // =========================================================================
+        // Scenario: DeepSearch respects facade_override for custom models
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_deep_search_respects_facade_override() {
-        // @step Given a session was created with a MODEL-004 custom model registered under "openai" with facade_override "claude"
-        let mut pm = test_pm("openai", "openai", Some("my-custom-model"), Some(128000), Some(4096));
-        pm.set_facade_override(Some("claude".to_string()));
+        #[test]
+        fn test_bug132_deep_search_respects_facade_override() {
+            // @step Given a session was created with a MODEL-004 custom model registered under "openai" with facade_override "claude"
+            let mut pm = test_pm(
+                "openai",
+                "openai",
+                Some("my-custom-model"),
+                Some(128000),
+                Some(4096),
+            );
+            pm.set_facade_override(Some("claude".to_string()));
 
-        // @step When the user invokes DeepSearch
-        let (provider, _, _, _) = crate::bridges::extract_deep_search_handler_values(&pm);
+            // @step When the user invokes DeepSearch
+            let (provider, _, _, _) = crate::bridges::extract_deep_search_handler_values(&pm);
 
-        // @step Then the DeepSearch sub-agent should use provider "claude" not "openai"
-        assert_eq!(provider, "claude", "facade_override should take precedence over current_provider_name");
-    }
+            // @step Then the DeepSearch sub-agent should use provider "claude" not "openai"
+            assert_eq!(
+                provider, "claude",
+                "facade_override should take precedence over current_provider_name"
+            );
+        }
 
-    // =========================================================================
-    // Scenario: Handler re-registration updates all four captured values
-    // =========================================================================
+        // =========================================================================
+        // Scenario: Handler re-registration updates all four captured values
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_handler_reregistration_updates_all_four_values() {
-        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
-        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
-        let (p1, m1, cw1, mo1) = crate::bridges::extract_deep_search_handler_values(&pm_before);
-        assert_eq!(p1, "claude");
-        assert_eq!(m1, Some("claude-sonnet-4-20250514".to_string()));
-        // Note: values are clamped by provider limits (Claude max_output = 8192)
-        assert!(cw1.is_some(), "context_window should be set");
-        assert!(mo1.is_some(), "max_output should be set");
+        #[test]
+        fn test_bug132_handler_reregistration_updates_all_four_values() {
+            // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+            let pm_before = test_pm(
+                "claude",
+                "anthropic",
+                Some("claude-sonnet-4-20250514"),
+                Some(200000),
+                Some(16384),
+            );
+            let (p1, m1, cw1, mo1) = crate::bridges::extract_deep_search_handler_values(&pm_before);
+            assert_eq!(p1, "claude");
+            assert_eq!(m1, Some("claude-sonnet-4-20250514".to_string()));
+            // Note: values are clamped by provider limits (Claude max_output = 8192)
+            assert!(cw1.is_some(), "context_window should be set");
+            assert!(mo1.is_some(), "max_output should be set");
 
-        // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model with context_window 1048576 and max_output_tokens 65536
-        let pm_after = test_pm("gemini", "google", Some("gemini-2.5-pro"), Some(1048576), Some(65536));
+            // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model with context_window 1048576 and max_output_tokens 65536
+            let pm_after = test_pm(
+                "gemini",
+                "google",
+                Some("gemini-2.5-pro"),
+                Some(1048576),
+                Some(65536),
+            );
 
-        // @step Then the DeepSearch handler should capture provider "gemini", model "gemini-2.5-pro", context_window 1048576, and max_output_tokens 65536
-        let (p2, m2, cw2, mo2) = crate::bridges::extract_deep_search_handler_values(&pm_after);
-        assert_eq!(p2, "gemini");
-        assert_eq!(m2, Some("gemini-2.5-pro".to_string()));
-        assert_eq!(cw2, Some(1048576));
-        assert_eq!(mo2, Some(65536));
+            // @step Then the DeepSearch handler should capture provider "gemini", model "gemini-2.5-pro", context_window 1048576, and max_output_tokens 65536
+            let (p2, m2, cw2, mo2) = crate::bridges::extract_deep_search_handler_values(&pm_after);
+            assert_eq!(p2, "gemini");
+            assert_eq!(m2, Some("gemini-2.5-pro".to_string()));
+            assert_eq!(cw2, Some(1048576));
+            assert_eq!(mo2, Some(65536));
 
-        // Verify all four values changed from the original
-        assert_ne!(p1, p2, "provider should change");
-        assert_ne!(m1, m2, "model should change");
-        assert_ne!(cw1, cw2, "context_window should change");
-        assert_ne!(mo1, mo2, "max_output should change");
+            // Verify all four values changed from the original
+            assert_ne!(p1, p2, "provider should change");
+            assert_ne!(m1, m2, "model should change");
+            assert_ne!(cw1, cw2, "context_window should change");
+            assert_ne!(mo1, mo2, "max_output should change");
 
-        // @step And the AgentManager handler should capture model "gemini-2.5-pro", context_window 1048576, and max_output_tokens 65536
-        let (ms, cw3, mo3) = crate::bridges::extract_agent_manager_handler_values(&pm_after);
-        // BUG-136: full registry composite, not bare id
-        assert_eq!(ms, Some("google/gemini-2.5-pro".to_string()));
-        assert_eq!(cw3, Some(1048576));
-        assert_eq!(mo3, Some(65536));
-    }
+            // @step And the AgentManager handler should capture model "gemini-2.5-pro", context_window 1048576, and max_output_tokens 65536
+            let (ms, cw3, mo3) = crate::bridges::extract_agent_manager_handler_values(&pm_after);
+            // BUG-136: full registry composite, not bare id
+            assert_eq!(ms, Some("google/gemini-2.5-pro".to_string()));
+            assert_eq!(cw3, Some(1048576));
+            assert_eq!(mo3, Some(65536));
+        }
 
-    // =========================================================================
-    // Scenario: No regression when model is never changed
-    // =========================================================================
+        // =========================================================================
+        // Scenario: No regression when model is never changed
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_no_regression_when_model_never_changed() {
-        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
-        let pm = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
+        #[test]
+        fn test_bug132_no_regression_when_model_never_changed() {
+            // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+            let pm = test_pm(
+                "claude",
+                "anthropic",
+                Some("claude-sonnet-4-20250514"),
+                Some(200000),
+                Some(16384),
+            );
 
-        // @step And no model switch occurs during the session
-        // (no mutation of pm)
+            // @step And no model switch occurs during the session
+            // (no mutation of pm)
 
-        // @step When the user invokes DeepSearch
-        let (provider, model, cw, mo) = crate::bridges::extract_deep_search_handler_values(&pm);
+            // @step When the user invokes DeepSearch
+            let (provider, model, cw, mo) = crate::bridges::extract_deep_search_handler_values(&pm);
 
-        // @step Then the DeepSearch sub-agent should use provider "claude" and model "claude-sonnet-4-20250514"
-        assert_eq!(provider, "claude");
-        assert_eq!(model, Some("claude-sonnet-4-20250514".to_string()));
-        // Values are set (clamped by Claude's provider limits)
-        assert!(cw.is_some(), "context_window should be set");
-        assert!(mo.is_some(), "max_output should be set");
-    }
+            // @step Then the DeepSearch sub-agent should use provider "claude" and model "claude-sonnet-4-20250514"
+            assert_eq!(provider, "claude");
+            assert_eq!(model, Some("claude-sonnet-4-20250514".to_string()));
+            // Values are set (clamped by Claude's provider limits)
+            assert!(cw.is_some(), "context_window should be set");
+            assert!(mo.is_some(), "max_output should be set");
+        }
 
-    // =========================================================================
-    // Scenario: session_set_model_profile also triggers handler re-registration
-    // =========================================================================
+        // =========================================================================
+        // Scenario: session_set_model_profile also triggers handler re-registration
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_set_model_profile_triggers_reregistration() {
-        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
-        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
-        let (p_before, _, _, _) = crate::bridges::extract_deep_search_handler_values(&pm_before);
-        assert_eq!(p_before, "claude");
+        #[test]
+        fn test_bug132_set_model_profile_triggers_reregistration() {
+            // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+            let pm_before = test_pm(
+                "claude",
+                "anthropic",
+                Some("claude-sonnet-4-20250514"),
+                Some(200000),
+                Some(16384),
+            );
+            let (p_before, _, _, _) =
+                crate::bridges::extract_deep_search_handler_values(&pm_before);
+            assert_eq!(p_before, "claude");
 
-        // @step When the user switches the model via session_set_model_profile to provider "openai" model "gpt-4o"
-        // set_model_direct is what session_set_model_profile calls
-        let mut pm_after = test_pm("openai", "openai", None, None, None);
-        pm_after.set_model_direct(
-            "openai",
-            "gpt-4o",
-            Some(128000),
-            Some(16384),
-            None,
-        ).expect("set_model_direct should succeed");
-        let (p_after, m_after, _, _) = crate::bridges::extract_deep_search_handler_values(&pm_after);
+            // @step When the user switches the model via session_set_model_profile to provider "openai" model "gpt-4o"
+            // set_model_direct is what session_set_model_profile calls
+            let mut pm_after = test_pm("openai", "openai", None, None, None);
+            pm_after
+                .set_model_direct("openai", "gpt-4o", Some(128000), Some(16384), None)
+                .expect("set_model_direct should succeed");
+            let (p_after, m_after, _, _) =
+                crate::bridges::extract_deep_search_handler_values(&pm_after);
 
-        // @step And the user invokes DeepSearch
+            // @step And the user invokes DeepSearch
 
-        // @step Then the DeepSearch sub-agent should use provider "openai" and model "gpt-4o"
-        assert_eq!(p_after, "openai");
-        assert_eq!(m_after, Some("gpt-4o".to_string()));
-    }
+            // @step Then the DeepSearch sub-agent should use provider "openai" and model "gpt-4o"
+            assert_eq!(p_after, "openai");
+            assert_eq!(m_after, Some("gpt-4o".to_string()));
+        }
 
-    // =========================================================================
-    // Additional: Verify facade_override=None falls through to current_provider
-    // =========================================================================
+        // =========================================================================
+        // Additional: Verify facade_override=None falls through to current_provider
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_no_facade_override_uses_current_provider() {
-        // When facade_override is None, extract_deep_search_handler_values
-        // must fall through to current_provider_name().
-        let pm = test_pm("gemini", "google", Some("gemini-2.5-pro"), None, None);
-        assert!(pm.facade_override().is_none());
-        let (provider, _, _, _) = crate::bridges::extract_deep_search_handler_values(&pm);
-        assert_eq!(provider, "gemini");
-    }
+        #[test]
+        fn test_bug132_no_facade_override_uses_current_provider() {
+            // When facade_override is None, extract_deep_search_handler_values
+            // must fall through to current_provider_name().
+            let pm = test_pm("gemini", "google", Some("gemini-2.5-pro"), None, None);
+            assert!(pm.facade_override().is_none());
+            let (provider, _, _, _) = crate::bridges::extract_deep_search_handler_values(&pm);
+            assert_eq!(provider, "gemini");
+        }
 
-    // =========================================================================
-    // Additional: AgentManager uses selected_model_string (registry format)
-    // =========================================================================
+        // =========================================================================
+        // Additional: AgentManager uses selected_model_string (registry format)
+        // =========================================================================
 
-    #[test]
-    fn test_bug132_agent_manager_uses_selected_model_string_format() {
-        // AMGR-013 / BUG-136: AgentManager must use selected_model_string()
-        // which returns the full "provider/model" registry composite, not
-        // the bare model id. Previously this test asserted the BUG-136 bug
-        // (bare id "claude-opus-4-6"); now we require the full composite.
-        let pm = test_pm("claude", "anthropic", Some("claude-opus-4-6"), Some(200000), Some(32768));
-        let (model_string, _, _) = crate::bridges::extract_agent_manager_handler_values(&pm);
-        assert_eq!(model_string, Some("anthropic/claude-opus-4-6".to_string()));
-    }
+        #[test]
+        fn test_bug132_agent_manager_uses_selected_model_string_format() {
+            // AMGR-013 / BUG-136: AgentManager must use selected_model_string()
+            // which returns the full "provider/model" registry composite, not
+            // the bare model id. Previously this test asserted the BUG-136 bug
+            // (bare id "claude-opus-4-6"); now we require the full composite.
+            let pm = test_pm(
+                "claude",
+                "anthropic",
+                Some("claude-opus-4-6"),
+                Some(200000),
+                Some(32768),
+            );
+            let (model_string, _, _) = crate::bridges::extract_agent_manager_handler_values(&pm);
+            assert_eq!(model_string, Some("anthropic/claude-opus-4-6".to_string()));
+        }
     } // end mod bug132_tests
 }
 
@@ -3279,7 +3647,7 @@ mod sub_agent_model_inheritance_tests {
 #[napi]
 pub fn session_get_effective_cwd(session_id: String) -> Option<String> {
     let manager = SessionManager::instance();
-    
+
     match manager.get_session(&session_id) {
         Ok(session) => Some(session.effective_cwd().to_string_lossy().to_string()),
         Err(_) => None,
@@ -3293,7 +3661,7 @@ pub fn session_get_effective_cwd(session_id: String) -> Option<String> {
 #[napi]
 pub fn session_is_isolated(session_id: String) -> Option<bool> {
     let manager = SessionManager::instance();
-    
+
     match manager.get_session(&session_id) {
         Ok(session) => Some(session.worktree_path.is_some()),
         Err(_) => None,
@@ -3325,7 +3693,7 @@ pub struct BashExecutionResult {
 #[napi]
 pub fn session_execute_bash(session_id: String, command: String) -> BashExecutionResult {
     use std::process::Command;
-    
+
     // Get the effective_cwd for this session
     let cwd = match session_get_effective_cwd(session_id.clone()) {
         Some(path) => path,
@@ -3337,29 +3705,37 @@ pub fn session_execute_bash(session_id: String, command: String) -> BashExecutio
             };
         }
     };
-    
+
     // Execute the command with the session's effective_cwd
     let result = Command::new("bash")
         .arg("-c")
         .arg(&command)
         .current_dir(&cwd)
         .output();
-    
+
     match result {
         Ok(output) => {
             let stdout = String::from_utf8_lossy(&output.stdout).to_string();
             let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-            
+
             if output.status.success() {
                 BashExecutionResult {
                     success: true,
                     output: Some(stdout),
-                    error: if stderr.is_empty() { None } else { Some(stderr) },
+                    error: if stderr.is_empty() {
+                        None
+                    } else {
+                        Some(stderr)
+                    },
                 }
             } else {
                 BashExecutionResult {
                     success: false,
-                    output: if stdout.is_empty() { None } else { Some(stdout) },
+                    output: if stdout.is_empty() {
+                        None
+                    } else {
+                        Some(stdout)
+                    },
                     error: Some(if stderr.is_empty() {
                         format!("Command failed with exit code: {:?}", output.status.code())
                     } else {
@@ -3508,11 +3884,7 @@ pub async fn test_provider(name: String) -> Result<JsProviderTestResult> {
 /// PROV-067: Scaffold `.fspec/providers/<name>.json` from a named
 /// template (supported: `"openai-compatible"`).
 #[napi]
-pub async fn init_provider(
-    project_root: String,
-    name: String,
-    template: String,
-) -> Result<String> {
+pub async fn init_provider(project_root: String, name: String, template: String) -> Result<String> {
     codelet_providers::custom::init_provider_template(
         std::path::Path::new(&project_root),
         &name,
@@ -3535,6 +3907,8 @@ pub async fn init_provider(
 /// shape ahead of the override.
 #[napi]
 pub fn get_model_info(session_id: String) -> Result<codelet_rpc_types::ModelInfo> {
-    let _ = SessionManager::instance().get_session(&session_id).map_err(napi::Error::from_reason)?;
+    let _ = SessionManager::instance()
+        .get_session(&session_id)
+        .map_err(napi::Error::from_reason)?;
     Ok(codelet_rpc_types::ModelInfo::default())
 }

@@ -65,7 +65,10 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // core. Optionals are only inserted when present (parity with the TS
     // command's conditional field assignment).
     let mut body = Map::new();
-    body.insert("workUnitId".to_string(), Value::String(args.work_unit_id.clone()));
+    body.insert(
+        "workUnitId".to_string(),
+        Value::String(args.work_unit_id.clone()),
+    );
     body.insert("text".to_string(), Value::String(args.text));
     if let Some(t) = args.system_type {
         body.insert("type".to_string(), Value::String(t));

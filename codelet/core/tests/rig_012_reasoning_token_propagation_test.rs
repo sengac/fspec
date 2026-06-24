@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/reasoning-token-propagation.feature
 //!
@@ -10,9 +9,9 @@
 //! - StreamingTokenDisplay propagates reasoning from final response
 //! - Compaction TokenTracker includes reasoning in total_tokens
 
-use codelet_core::ApiTokenUsage;
 use codelet_core::compaction::TokenTracker;
 use codelet_core::streaming_display::StreamingTokenDisplay;
+use codelet_core::ApiTokenUsage;
 use codelet_core::TokenDisplayUpdate;
 use rig::completion::Usage;
 
@@ -172,8 +171,7 @@ fn test_compaction_token_tracker_total_tokens_includes_reasoning() {
 #[test]
 fn test_compaction_token_tracker_update_from_usage_preserves_reasoning() {
     let mut tracker = TokenTracker::default();
-    let usage = ApiTokenUsage::new(100_000, 50_000, 5_000, 10_000)
-        .with_reasoning_tokens(8_000);
+    let usage = ApiTokenUsage::new(100_000, 50_000, 5_000, 10_000).with_reasoning_tokens(8_000);
 
     tracker.update_from_usage(&usage, 25_000);
 

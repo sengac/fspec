@@ -35,8 +35,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `format` clap subcommand.
 /// Returns the process exit code so `main` can propagate it verbatim.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut obj: Map<String, Value> = Map::new();
     if let Some(file) = args.file.as_deref() {

@@ -251,10 +251,7 @@ pub fn reset_for_tests() {
 /// by lazy-init regression tests in the NAPI crate that need to observe
 /// the per-store init semantics across the RPC-025 lift.
 pub fn is_initialized_for_tests() -> bool {
-    HISTORY_STORE
-        .lock()
-        .map(|g| g.is_some())
-        .unwrap_or(false)
+    HISTORY_STORE.lock().map(|g| g.is_some()).unwrap_or(false)
 }
 
 /// Append a history entry.
@@ -263,17 +260,11 @@ pub fn add(entry: HistoryEntry) -> Result<(), String> {
 }
 
 /// Return entries newest-first, optionally filtered by project + capped.
-pub fn get(
-    project: Option<&Path>,
-    limit: Option<usize>,
-) -> Result<Vec<HistoryEntry>, String> {
+pub fn get(project: Option<&Path>, limit: Option<usize>) -> Result<Vec<HistoryEntry>, String> {
     with_store(|s| s.get(project, limit))
 }
 
 /// Case-insensitive substring search on display, optionally scoped to project.
-pub fn search(
-    query: &str,
-    project: Option<&Path>,
-) -> Result<Vec<HistoryEntry>, String> {
+pub fn search(query: &str, project: Option<&Path>) -> Result<Vec<HistoryEntry>, String> {
     with_store(|s| s.search(query, project))
 }

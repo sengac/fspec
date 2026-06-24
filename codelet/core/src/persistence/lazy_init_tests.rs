@@ -23,8 +23,8 @@
     clippy::uninlined_format_args
 )]
 
-use crate::persistence::*;
 use super::tests::TEST_MUTEX;
+use crate::persistence::*;
 use std::path::PathBuf;
 
 /// Setup an isolated temp directory for a test.
@@ -174,22 +174,18 @@ fn test_lazy_session_resume_loads_only_that_session() {
     // @step Given a session manifest with 200 message UUIDs
     let mut target_session = create_session("Target Session", &project).expect("create");
     for i in 0..200 {
-        append_message(&mut target_session, "user", &format!("Target msg {}", i))
-            .expect("append");
+        append_message(&mut target_session, "user", &format!("Target msg {}", i)).expect("append");
     }
 
     // @step And a MessageStore with 362000 indexed messages
     // (We can't create 362K in a test, but we create a second session to prove isolation)
     let mut other_session = create_session("Other Session", &project).expect("create");
     for i in 0..300 {
-        append_message(&mut other_session, "user", &format!("Other msg {}", i))
-            .expect("append");
+        append_message(&mut other_session, "user", &format!("Other msg {}", i)).expect("append");
     }
 
     // Reset store to verify messages load from storage
     crate::persistence::reset_message_store_for_tests();
-
-
 
     // @step When get_session_messages() is called for that session
     let messages =
@@ -229,16 +225,13 @@ fn test_lazy_cross_session_search_loads_on_demand() {
     // Reset store
     crate::persistence::reset_message_store_for_tests();
 
-
-
     // @step And a MessageStore with a binary index
     // (Initialized lazily on first access)
 
     // @step When SessionSearch searches across all sessions with a regex query
     // Simulate what session_search_handler does: load messages for a session
     let target_session = &sessions[5];
-    let messages =
-        get_session_messages_full(target_session).expect("get_session_messages_full");
+    let messages = get_session_messages_full(target_session).expect("get_session_messages_full");
 
     // @step Then messages are loaded per-session via index seek as needed
     assert_eq!(messages.len(), 100);
@@ -317,8 +310,7 @@ fn test_lazy_search_command_cross_session() {
     .expect("add_history_entry");
 
     // @step When the developer runs /search and types "deploy"
-    let results =
-        history::search("deploy", Some(project.as_path())).expect("search_history");
+    let results = history::search("deploy", Some(project.as_path())).expect("search_history");
 
     // @step Then results from both session 1 and session 3 are shown
     assert_eq!(results.len(), 2, "Should find 2 results matching 'deploy'");
@@ -340,8 +332,7 @@ fn test_lazy_forked_message_accessible() {
     // @step Given session A has message UUID-123 via Native source
     let mut session_a = create_session("Session A", &project).expect("create");
     for i in 0..5 {
-        append_message(&mut session_a, "user", &format!("Original msg {}", i))
-            .expect("append");
+        append_message(&mut session_a, "user", &format!("Original msg {}", i)).expect("append");
     }
     let original_msg_id = session_a.messages[2].message_id;
 
@@ -354,8 +345,6 @@ fn test_lazy_forked_message_accessible() {
 
     // Reset store to force reload from storage
     crate::persistence::reset_message_store_for_tests();
-
-
 
     // @step When get_session_messages() is called for session B
     let messages_b = get_session_messages(&session_b).expect("get messages B");
@@ -380,8 +369,7 @@ fn test_lazy_append_and_immediate_read() {
     let mut session = create_session("Append Test", &project).expect("create");
 
     // @step When a new message is stored via store()
-    let msg_id =
-        append_message(&mut session, "user", "Freshly appended content").expect("append");
+    let msg_id = append_message(&mut session, "user", "Freshly appended content").expect("append");
 
     // @step Then the message is immediately available via get()
     let loaded = get_message(msg_id)
@@ -395,8 +383,6 @@ fn test_lazy_append_and_immediate_read() {
     // @step And the binary index is updated on disk
     // Verify by resetting store and re-loading
     crate::persistence::reset_message_store_for_tests();
-
-
 
     let loaded_again = get_message(msg_id)
         .expect("get after reset should succeed")

@@ -21,14 +21,16 @@ pub mod work_units;
 pub mod work_units_write;
 
 pub use compaction_hook::{CompactionHook, TokenState};
-pub use gemini_history_hook::{ensure_thought_signatures, GeminiHistoryHook, SYNTHETIC_THOUGHT_SIGNATURE};
+pub use gemini_history_hook::{
+    ensure_thought_signatures, GeminiHistoryHook, SYNTHETIC_THOUGHT_SIGNATURE,
+};
 pub use message_estimator::estimate_messages_tokens;
+pub use rig_agent::{RigAgent, DEFAULT_MAX_DEPTH};
 pub use streaming_display::{
     DisplayThrottle, OutputTokenTracker, StreamingTokenDisplay, TokPerSecCalculator,
     TokenDisplayUpdate,
 };
 pub use token_usage::ApiTokenUsage;
-pub use rig_agent::{RigAgent, DEFAULT_MAX_DEPTH};
 pub use tool_specs::ToolSpec;
 
 // RPC-042: re-export `SessionManagerHandle` at the crate root so the
@@ -40,7 +42,8 @@ pub use session_manager_handle::SessionManagerHandle;
 
 // Re-export turn completion facade from codelet-tools for convenience
 pub use codelet_tools::facade::{
-    ContinuationStrategy, GeminiTurnCompletionFacade, DefaultTurnCompletionFacade, TurnCompletionFacade,
+    ContinuationStrategy, DefaultTurnCompletionFacade, GeminiTurnCompletionFacade,
+    TurnCompletionFacade,
 };
 
 // Re-export token_estimator from codelet-common for backwards compatibility

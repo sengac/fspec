@@ -28,9 +28,7 @@ pub fn trim_base64_image(content: &str, path: &str) -> String {
     let (width, height) = extract_image_dimensions(content);
     let byte_count = estimate_image_bytes(content);
 
-    format!(
-        "[image: {width}x{height}, {byte_count} bytes, from {path}]",
-    )
+    format!("[image: {width}x{height}, {byte_count} bytes, from {path}]",)
 }
 
 /// Extract image dimensions from base64-encoded PNG data.

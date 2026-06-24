@@ -392,7 +392,10 @@ fn endpoint_selector_edge_cases() {
 #[test]
 fn behavior_selector_dispatches_by_prefix() {
     assert_eq!(select_copilot_behavior_facade("gpt-4").family(), "gpt");
-    assert_eq!(select_copilot_behavior_facade("gpt-5-codex").family(), "gpt");
+    assert_eq!(
+        select_copilot_behavior_facade("gpt-5-codex").family(),
+        "gpt"
+    );
     assert_eq!(
         select_copilot_behavior_facade("claude-sonnet-4.5").family(),
         "claude"
@@ -426,7 +429,10 @@ fn classifier_detects_responses_api_input_image() {
         ]
     });
     let c = CopilotRequestClassifier::classify(&body);
-    assert!(c.is_vision, "input_image in /responses body must be detected");
+    assert!(
+        c.is_vision,
+        "input_image in /responses body must be detected"
+    );
 }
 
 #[test]

@@ -131,8 +131,7 @@ async fn test_login_to_github_com_copilot_deployment_via_oauth_device_flow() {
 
     // @step And the new-schema copilot_token fields are absent until the first exchange
     assert!(
-        parsed.get("copilot_token").is_none()
-            || parsed["copilot_token"].is_null(),
+        parsed.get("copilot_token").is_none() || parsed["copilot_token"].is_null(),
         "copilot_token must be absent on fresh login"
     );
     assert!(
@@ -395,8 +394,7 @@ async fn test_logout_deletes_the_github_copilot_credential_file() {
     // @step Given I am logged in to github-copilot with a credential at "~/.fspec/credentials/copilot_auth.json"
     let (_temp_dir, _guard) = setup_fspec_home();
 
-    let auth =
-        CopilotAuthJson::from_github_oauth_token("ghu_logged_in".to_string(), None);
+    let auth = CopilotAuthJson::from_github_oauth_token("ghu_logged_in".to_string(), None);
     write_copilot_auth(&auth)
         .await
         .expect("Should be able to write initial auth");

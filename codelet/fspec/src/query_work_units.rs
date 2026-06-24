@@ -28,8 +28,8 @@ use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use codelet_fspec_core::FspecCoreError;
 use codelet_fspec_core::commands::query_work_units;
+use codelet_fspec_core::FspecCoreError;
 use serde_json::{json, Value};
 
 /// Strongly-typed args mirrored from the TS Commander.js flag set

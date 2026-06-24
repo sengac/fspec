@@ -260,7 +260,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher writes spec/work-units.json
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let v = read_work_units(ws.path());
     let us = &v["workUnits"]["AUTH-001"]["userStory"];
     assert_eq!(us["role"].as_str(), Some("dev"));

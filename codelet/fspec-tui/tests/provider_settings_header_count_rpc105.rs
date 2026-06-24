@@ -61,6 +61,8 @@ fn plain_info(id: &str) -> ProviderDisplayInfo {
         profiles: Vec::new(),
         oauth_login_methods: Vec::new(),
         oauth_status_label: None,
+        masked_key: None,
+        source: None,
     }
 }
 
@@ -80,6 +82,8 @@ fn anthropic_with_3_children() -> ProviderDisplayInfo {
         profiles: Vec::new(),
         oauth_login_methods: vec![(OAuthMethod::Browser, "Browser login".to_string())],
         oauth_status_label: Some("Logout from OAuth [Anthropic]".to_string()),
+        masked_key: None,
+        source: None,
     }
 }
 
@@ -101,6 +105,12 @@ fn seventeen_provider_infos() -> Vec<ProviderDisplayInfo> {
 fn view_with_nav_items(infos: Vec<ProviderDisplayInfo>) -> ProviderSettingsView {
     let mut v = ProviderSettingsView::new();
     v.set_provider_display_infos(infos);
+    // PROV-113: browser OAuth-login rows are gated out of the nav tree unless
+    // the transport supports the local OAuth server. These RPC-105 count
+    // fixtures shape anthropic to contribute a Browser oauth-login child row,
+    // so enable browser login to count the full tree (matches the embedded
+    // transport the App runs under).
+    v.set_browser_login_enabled(true);
     v
 }
 

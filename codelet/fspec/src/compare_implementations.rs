@@ -38,8 +38,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `compare-implementations` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut obj: Map<String, Value> = Map::new();
     obj.insert("tag".to_string(), Value::String(args.tag.clone()));
@@ -58,8 +57,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 // JSON.stringify(result, null, 2)).
                 let value: Value =
                     serde_json::from_str(&payload).context("parse core JSON payload")?;
-                let pretty = serde_json::to_string_pretty(&value)
-                    .context("pretty-print compare result")?;
+                let pretty =
+                    serde_json::to_string_pretty(&value).context("pretty-print compare result")?;
                 println!("{pretty}");
             } else {
                 let value: Value =

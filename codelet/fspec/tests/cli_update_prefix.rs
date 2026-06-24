@@ -91,21 +91,28 @@ fn scenario_cli_updates_description_on_existing_prefix() {
     );
 
     // @step Then spec/prefixes.json now has AUTH.description equal to 'new'
-    let on_disk: serde_json::Value = serde_json::from_str(&read_prefixes_raw(ws.path()))
-        .expect("parse spec/prefixes.json");
+    let on_disk: serde_json::Value =
+        serde_json::from_str(&read_prefixes_raw(ws.path())).expect("parse spec/prefixes.json");
     let auth = &on_disk["prefixes"]["AUTH"];
     assert_eq!(auth["description"].as_str(), Some("new"));
 
     // @step Then spec/prefixes.json now has AUTH.updatedAt set to a non-empty ISO-8601 UTC timestamp
     let updated_at = auth["updatedAt"].as_str().expect("updatedAt present");
     assert!(!updated_at.is_empty(), "updatedAt must be non-empty");
-    assert_eq!(updated_at.len(), 24, "ISO-8601 UTC must be 24 bytes; got: {updated_at}");
+    assert_eq!(
+        updated_at.len(),
+        24,
+        "ISO-8601 UTC must be 24 bytes; got: {updated_at}"
+    );
     // Shape: `YYYY-MM-DDTHH:MM:SS.sssZ` — millisecond fraction matches
     // the shared `crate::io::time` helper used in production code,
     // which in turn mirrors TS `new Date().toISOString()`.
     assert!(
-        updated_at.ends_with('Z') && updated_at.as_bytes()[19] == b'.'
-            && updated_at.as_bytes()[20..23].iter().all(|b| b.is_ascii_digit()),
+        updated_at.ends_with('Z')
+            && updated_at.as_bytes()[19] == b'.'
+            && updated_at.as_bytes()[20..23]
+                .iter()
+                .all(|b| b.is_ascii_digit()),
         "updatedAt must end with `.sssZ` millisecond fraction; got: {updated_at}"
     );
 }
@@ -131,8 +138,8 @@ fn scenario_cli_no_op_bumps_only_updated_at() {
     );
 
     // @step Then spec/prefixes.json AUTH.description is preserved verbatim as 'kept'
-    let on_disk: serde_json::Value = serde_json::from_str(&read_prefixes_raw(ws.path()))
-        .expect("parse spec/prefixes.json");
+    let on_disk: serde_json::Value =
+        serde_json::from_str(&read_prefixes_raw(ws.path())).expect("parse spec/prefixes.json");
     let auth = &on_disk["prefixes"]["AUTH"];
     assert_eq!(auth["description"].as_str(), Some("kept"));
 
@@ -141,8 +148,11 @@ fn scenario_cli_no_op_bumps_only_updated_at() {
     assert!(!updated_at.is_empty(), "updatedAt must be non-empty");
     assert_eq!(updated_at.len(), 24);
     assert!(
-        updated_at.ends_with('Z') && updated_at.as_bytes()[19] == b'.'
-            && updated_at.as_bytes()[20..23].iter().all(|b| b.is_ascii_digit()),
+        updated_at.ends_with('Z')
+            && updated_at.as_bytes()[19] == b'.'
+            && updated_at.as_bytes()[20..23]
+                .iter()
+                .all(|b| b.is_ascii_digit()),
         "updatedAt must end with `.sssZ` millisecond fraction; got: {updated_at}"
     );
 }
@@ -219,7 +229,10 @@ fn scenario_cli_requires_prefix_positional() {
     let (code, _stdout, stderr) = run_update_prefix(ws.path(), &[]);
 
     // @step Then the process exits with code 1
-    assert_eq!(code, 1, "Commander rejects missing positional with exit 1; stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "Commander rejects missing positional with exit 1; stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'required'
     assert!(

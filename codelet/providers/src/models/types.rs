@@ -94,9 +94,7 @@ pub enum ExperimentalConfig {
     /// Simple boolean flag
     Boolean(bool),
     /// Configuration with modes and provider settings
-    Config {
-        modes: Option<serde_json::Value>,
-    },
+    Config { modes: Option<serde_json::Value> },
 }
 
 impl ExperimentalConfig {

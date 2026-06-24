@@ -90,7 +90,10 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 .get("jobType")
                 .and_then(Value::as_str)
                 .unwrap_or(&args.job_type);
-            let cron = entry.get("cron").and_then(Value::as_str).unwrap_or(&args.cron);
+            let cron = entry
+                .get("cron")
+                .and_then(Value::as_str)
+                .unwrap_or(&args.cron);
             let tz = entry
                 .get("timezone")
                 .and_then(Value::as_str)

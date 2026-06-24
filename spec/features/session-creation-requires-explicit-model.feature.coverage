@@ -1,0 +1,135 @@
+{
+  "scenarios": [
+    {
+      "name": "create_session declines when no default model is set",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+          "lines": "51-74",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create_session uses the explicit default model, never anthropic",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+          "lines": "77-105",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create_isolated_session errors when no default model is set",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+          "lines": "108-127",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837,
+                838,
+                839,
+                840,
+                841,
+                842,
+                843,
+                844,
+                845
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/prov101_no_selection_fallbacks.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 144
+  }
+}

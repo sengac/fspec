@@ -14,8 +14,8 @@ use serde_json::json;
 use tempfile::TempDir;
 
 use codelet_core::lifecycle_hooks::{
-    CompiledHookCommand, CompiledHookGroup, CompiledLifecycleHooks, HookContext, HookMatcher,
-    PreToolHookDecision, run_pre_tool,
+    run_pre_tool, CompiledHookCommand, CompiledHookGroup, CompiledLifecycleHooks, HookContext,
+    HookMatcher, PreToolHookDecision,
 };
 
 // ===== Helpers =====
@@ -35,9 +35,8 @@ fn make_context(workspace: &std::path::Path) -> HookContext {
 fn create_marker_script(dir: &std::path::Path, name: &str, decision: &str) -> String {
     let marker_file = dir.join(format!("{name}.marker"));
     let script = dir.join(format!("{name}.sh"));
-    let json_output = format!(
-        r#"{{ "hookSpecificOutput": {{ "permissionDecision": "{decision}" }} }}"#
-    );
+    let json_output =
+        format!(r#"{{ "hookSpecificOutput": {{ "permissionDecision": "{decision}" }} }}"#);
     let script_content = format!(
         "#!/bin/sh\ntouch '{}'\necho '{}'\n",
         marker_file.to_string_lossy(),

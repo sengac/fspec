@@ -298,7 +298,8 @@ fn test_decorator_extraction_language_specific() {
     );
 
     // @step And Rust #[attribute] syntax is captured
-    let rust_text = "#[derive(Debug, Clone)]\n#[serde(rename_all = \"camelCase\")]\npub fn something() {}";
+    let rust_text =
+        "#[derive(Debug, Clone)]\n#[serde(rename_all = \"camelCase\")]\npub fn something() {}";
     let rust_decs = metadata::extract_decorators(rust_text, "rust");
     assert!(
         rust_decs.contains("#[derive(Debug, Clone)]"),

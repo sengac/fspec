@@ -16,9 +16,7 @@
 
 use std::time::Duration;
 
-use codelet_tools::{
-    cleanup_mcp_session, get_mcp_connections, init_mcp_session, McpInjection,
-};
+use codelet_tools::{cleanup_mcp_session, get_mcp_connections, init_mcp_session, McpInjection};
 use uuid::Uuid;
 
 /// Helper: drain any pending MCP injections so the test can prove the
@@ -62,10 +60,14 @@ async fn scenario_init_registers_state_and_get_mcp_connections_returns_some() {
         "the freshly-created receiver must have no pending messages"
     );
     let map_len = map.read().await.len();
-    assert_eq!(map_len, 0, "the freshly-created connection map must be empty");
+    assert_eq!(
+        map_len, 0,
+        "the freshly-created connection map must be empty"
+    );
 
     // @step And codelet_tools::get_mcp_connections(uuid) returns Some(map)
-    let observed = get_mcp_connections(uuid).expect("get_mcp_connections must return Some after init");
+    let observed =
+        get_mcp_connections(uuid).expect("get_mcp_connections must return Some after init");
     assert_eq!(
         observed.read().await.len(),
         0,

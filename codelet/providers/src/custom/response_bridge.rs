@@ -190,9 +190,7 @@ fn extract_content(value: Dynamic) -> Result<MessageContent, CustomProviderError
         let mut parts: Vec<ContentPart> = Vec::with_capacity(arr.len());
         for entry in arr {
             let entry_map = entry.try_cast::<Map>().ok_or_else(|| {
-                CustomProviderError::RhaiRuntimeError(
-                    "content part must be a Map".to_string(),
-                )
+                CustomProviderError::RhaiRuntimeError("content part must be a Map".to_string())
             })?;
             parts.push(part_from_map(entry_map)?);
         }

@@ -109,8 +109,14 @@ fn scenario_standalone_fspec_binary_exposes_query_work_units_as_a_clap_subcomman
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step Then stdout lists the flags --status, --prefix, --epic, --type, --tag, and --format
-    let help = if stdout.is_empty() { stderr.clone() } else { stdout.clone() };
-    for flag in ["--status", "--prefix", "--epic", "--type", "--tag", "--format"] {
+    let help = if stdout.is_empty() {
+        stderr.clone()
+    } else {
+        stdout.clone()
+    };
+    for flag in [
+        "--status", "--prefix", "--epic", "--type", "--tag", "--format",
+    ] {
         assert!(
             help.contains(flag),
             "help output must list {flag}; got:\n{help}"
@@ -124,22 +130,15 @@ fn scenario_cli_format_json_prints_parseable_json_to_stdout() {
     let ws = workspace_with_work_units_json(&store_with_two_units());
 
     // @step When I run `./codelet/target/release/fspec query-work-units --status=implementing --format=json`
-    let (code, stdout, stderr) =
-        run_qwu(ws.path(), &["--status=implementing", "--format=json"]);
+    let (code, stdout, stderr) = run_qwu(ws.path(), &["--status=implementing", "--format=json"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
 
     // @step Then stdout is a parseable JSON object whose workUnits array contains only AUTH-001
-    let parsed: Value =
-        serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
-    let arr = parsed["workUnits"]
-        .as_array()
-        .expect("workUnits array");
-    let ids: Vec<&str> = arr
-        .iter()
-        .map(|e| e["id"].as_str().unwrap_or(""))
-        .collect();
+    let parsed: Value = serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
+    let arr = parsed["workUnits"].as_array().expect("workUnits array");
+    let ids: Vec<&str> = arr.iter().map(|e| e["id"].as_str().unwrap_or("")).collect();
     assert_eq!(ids, vec!["AUTH-001"]);
 
     // @step Then the parsed JSON object contains a top-level `format` field equal to 'json'
@@ -152,8 +151,7 @@ fn scenario_cli_format_text_prints_nothing_to_stdout_per_ts_quirk() {
     let ws = workspace_with_work_units_json(&store_with_two_units());
 
     // @step When I run `./codelet/target/release/fspec query-work-units --status=implementing --format=text`
-    let (code, stdout, stderr) =
-        run_qwu(ws.path(), &["--status=implementing", "--format=text"]);
+    let (code, stdout, stderr) = run_qwu(ws.path(), &["--status=implementing", "--format=text"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
@@ -177,8 +175,7 @@ fn scenario_cli_tag_filter_matches_dispatcher_behavior() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step Then stdout's workUnits array contains only AUTH-001
-    let parsed: Value =
-        serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
+    let parsed: Value = serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
     let ids: Vec<&str> = parsed["workUnits"]
         .as_array()
         .expect("workUnits array")

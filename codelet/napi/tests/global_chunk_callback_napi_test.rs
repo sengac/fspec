@@ -34,12 +34,12 @@ mod register_global_chunk_callback_at_startup {
     #[test]
     fn test_global_callback_registration_exports() {
         let declarations = read_napi_declarations();
-        
+
         // Verify sessionSetGlobalChunkCallback is exported in NAPI declarations
         // The declaration may span multiple lines, so check for the function name
         let has_global_callback_export = declarations.contains("sessionSetGlobalChunkCallback(")
             && declarations.contains("callback:");
-        
+
         assert!(
             has_global_callback_export,
             "BRIDGE-012: NAPI should export sessionSetGlobalChunkCallback for TypeScript to call at startup."
@@ -49,12 +49,12 @@ mod register_global_chunk_callback_at_startup {
     #[test]
     fn test_global_callback_accepts_callback_parameter() {
         let declarations = read_napi_declarations();
-        
+
         // Verify the callback parameter accepts a function
         // The declaration may span multiple lines with callback: on the next line
         let has_callback_param = declarations.contains("sessionSetGlobalChunkCallback(")
             && declarations.contains("callback: (");
-        
+
         assert!(
             has_callback_param,
             "BRIDGE-012: sessionSetGlobalChunkCallback should accept a callback function parameter."
@@ -64,11 +64,12 @@ mod register_global_chunk_callback_at_startup {
     #[test]
     fn test_global_callback_returns_void() {
         let source = read_session_manager_source();
-        
+
         // Verify sessionSetGlobalChunkCallback returns Result<()> in Rust
-        let has_correct_signature = source.contains("pub fn session_set_global_chunk_callback(callback:") 
+        let has_correct_signature = source
+            .contains("pub fn session_set_global_chunk_callback(callback:")
             && source.contains("-> Result<()>");
-        
+
         assert!(
             has_correct_signature,
             "BRIDGE-012: session_set_global_chunk_callback should return Result<()>."
@@ -204,7 +205,7 @@ mod no_attachment_state_in_rust {
     #[test]
     fn test_no_is_attached_field_in_background_session() {
         let source = read_session_manager_source();
-        
+
         // Search for is_attached field declaration in BackgroundSession struct
         // Must be an actual field declaration with a colon, not a comment about it
         // The pattern "is_attached: AtomicBool" at start of line (after whitespace)
@@ -216,9 +217,10 @@ mod no_attachment_state_in_rust {
                 return false;
             }
             // Check for field declaration
-            trimmed.starts_with("is_attached: AtomicBool") || trimmed.starts_with("is_attached: bool")
+            trimmed.starts_with("is_attached: AtomicBool")
+                || trimmed.starts_with("is_attached: bool")
         });
-        
+
         assert!(
             !has_is_attached_field,
             "BRIDGE-012: BackgroundSession should NOT have is_attached field. \
@@ -230,7 +232,7 @@ mod no_attachment_state_in_rust {
     #[test]
     fn test_no_attached_callback_field_in_background_session() {
         let source = read_session_manager_source();
-        
+
         // Search for attached_callback field declaration (not in comments)
         let has_attached_callback_field = source.lines().any(|line| {
             let trimmed = line.trim();
@@ -241,7 +243,7 @@ mod no_attachment_state_in_rust {
             // Check for field declaration
             trimmed.starts_with("attached_callback:")
         });
-        
+
         assert!(
             !has_attached_callback_field,
             "BRIDGE-012: BackgroundSession should NOT have attached_callback field. \
@@ -253,7 +255,7 @@ mod no_attachment_state_in_rust {
     #[test]
     fn test_no_attach_method_in_background_session() {
         let source = read_session_manager_source();
-        
+
         // Search for pub fn attach method (not in comments)
         // We're looking for the method on BackgroundSession, not the NAPI export
         let has_attach_method = source.lines().any(|line| {
@@ -265,7 +267,7 @@ mod no_attachment_state_in_rust {
             // Check for method declaration
             trimmed.starts_with("pub fn attach(&self, callback:")
         });
-        
+
         assert!(
             !has_attach_method,
             "BRIDGE-012: BackgroundSession should NOT have attach() method. \
@@ -277,7 +279,7 @@ mod no_attachment_state_in_rust {
     #[test]
     fn test_no_detach_method_in_background_session() {
         let source = read_session_manager_source();
-        
+
         // Search for pub fn detach method (not in comments)
         let has_detach_method = source.lines().any(|line| {
             let trimmed = line.trim();
@@ -288,7 +290,7 @@ mod no_attachment_state_in_rust {
             // Check for method declaration
             trimmed.starts_with("pub fn detach(&self)")
         });
-        
+
         assert!(
             !has_detach_method,
             "BRIDGE-012: BackgroundSession should NOT have detach() method. \
@@ -300,7 +302,7 @@ mod no_attachment_state_in_rust {
     #[test]
     fn test_no_is_attached_method_in_background_session() {
         let source = read_session_manager_source();
-        
+
         // Search for pub fn is_attached method (not in comments)
         let has_is_attached_method = source.lines().any(|line| {
             let trimmed = line.trim();
@@ -311,7 +313,7 @@ mod no_attachment_state_in_rust {
             // Check for method declaration
             trimmed.starts_with("pub fn is_attached(&self)")
         });
-        
+
         assert!(
             !has_is_attached_method,
             "BRIDGE-012: BackgroundSession should NOT have is_attached() method. \
@@ -331,11 +333,11 @@ mod no_per_session_napi_attachment_functions {
     #[test]
     fn test_no_session_attach_napi_export() {
         let declarations = read_napi_declarations();
-        
+
         // Check TypeScript declarations for session_attach export
         // NAPI generates "export declare function" not "export function"
         let has_session_attach = declarations.contains("sessionAttach(sessionId:");
-        
+
         assert!(
             !has_session_attach,
             "BRIDGE-012: NAPI should NOT export sessionAttach function. \
@@ -347,11 +349,11 @@ mod no_per_session_napi_attachment_functions {
     #[test]
     fn test_no_session_detach_napi_export() {
         let declarations = read_napi_declarations();
-        
+
         // Check TypeScript declarations for session_detach export
         // NAPI generates "export declare function" not "export function"
         let has_session_detach = declarations.contains("sessionDetach(sessionId:");
-        
+
         assert!(
             !has_session_detach,
             "BRIDGE-012: NAPI should NOT export sessionDetach function. \
@@ -363,12 +365,12 @@ mod no_per_session_napi_attachment_functions {
     #[test]
     fn test_has_session_set_global_chunk_callback_napi_export() {
         let declarations = read_napi_declarations();
-        
+
         // Check TypeScript declarations for sessionSetGlobalChunkCallback export
         // The declaration may span multiple lines with callback: on the next line
         let has_global_callback = declarations.contains("sessionSetGlobalChunkCallback(")
             && declarations.contains("callback:");
-        
+
         assert!(
             has_global_callback,
             "BRIDGE-012: NAPI should export sessionSetGlobalChunkCallback function. \
@@ -386,16 +388,16 @@ mod handle_output_uses_global_callback {
     #[test]
     fn test_handle_output_does_not_use_attached_callback() {
         let source = read_session_manager_source();
-        
+
         // Find the handle_output function and check it doesn't use attached_callback
         // We need to verify that handle_output does NOT reference attached_callback
-        
+
         // This is a structural test - if attached_callback field doesn't exist,
         // handle_output can't use it. The other tests already verify the field is gone.
         // This test verifies there's no lingering reference.
-        let has_attached_callback_usage_in_handle_output = 
+        let has_attached_callback_usage_in_handle_output =
             source.contains("self.attached_callback");
-        
+
         assert!(
             !has_attached_callback_usage_in_handle_output,
             "BRIDGE-012: handle_output should NOT use attached_callback. \
@@ -407,9 +409,9 @@ mod handle_output_uses_global_callback {
     #[test]
     fn test_handle_output_does_not_check_is_attached() {
         let source = read_session_manager_source();
-        
+
         let has_is_attached_check = source.contains("self.is_attached");
-        
+
         assert!(
             !has_is_attached_check,
             "BRIDGE-012: handle_output should NOT check is_attached. \

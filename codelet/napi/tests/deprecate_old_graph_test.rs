@@ -34,36 +34,68 @@ fn test_graphsearch_action_enum_only_ast_and_learnings_variants() {
     // Verify new actions DO parse
     let ast_search: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"ast_search","query":"test"}"#);
-    assert!(ast_search.is_ok(), "AstSearch should parse: {:?}", ast_search.err());
+    assert!(
+        ast_search.is_ok(),
+        "AstSearch should parse: {:?}",
+        ast_search.err()
+    );
 
     let ast_neighbors: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"ast_neighbors","node_id":"test"}"#);
-    assert!(ast_neighbors.is_ok(), "AstNeighbors should parse: {:?}", ast_neighbors.err());
+    assert!(
+        ast_neighbors.is_ok(),
+        "AstNeighbors should parse: {:?}",
+        ast_neighbors.err()
+    );
 
     let ast_stats: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"ast_stats"}"#);
-    assert!(ast_stats.is_ok(), "AstStats should parse: {:?}", ast_stats.err());
+    assert!(
+        ast_stats.is_ok(),
+        "AstStats should parse: {:?}",
+        ast_stats.err()
+    );
 
     let learnings_search: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"learnings_search","query":"test"}"#);
-    assert!(learnings_search.is_ok(), "LearningsSearch should parse: {:?}", learnings_search.err());
+    assert!(
+        learnings_search.is_ok(),
+        "LearningsSearch should parse: {:?}",
+        learnings_search.err()
+    );
 
     let learnings_decisions: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"learnings_decisions"}"#);
-    assert!(learnings_decisions.is_ok(), "LearningsDecisions should parse: {:?}", learnings_decisions.err());
+    assert!(
+        learnings_decisions.is_ok(),
+        "LearningsDecisions should parse: {:?}",
+        learnings_decisions.err()
+    );
 
     let learnings_stats: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"learnings_stats"}"#);
-    assert!(learnings_stats.is_ok(), "LearningsStats should parse: {:?}", learnings_stats.err());
+    assert!(
+        learnings_stats.is_ok(),
+        "LearningsStats should parse: {:?}",
+        learnings_stats.err()
+    );
 
     let learnings_related: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"learnings_related","topic":"test"}"#);
-    assert!(learnings_related.is_ok(), "LearningsRelated should parse: {:?}", learnings_related.err());
+    assert!(
+        learnings_related.is_ok(),
+        "LearningsRelated should parse: {:?}",
+        learnings_related.err()
+    );
 
     // Verify AstIndex action also deserializes correctly (added post-migration)
     let ast_index: Result<GraphSearchAction, _> =
         serde_json::from_str(r#"{"action_type":"ast_index"}"#);
-    assert!(ast_index.is_ok(), "AstIndex should parse: {:?}", ast_index.err());
+    assert!(
+        ast_index.is_ok(),
+        "AstIndex should parse: {:?}",
+        ast_index.err()
+    );
 
     // @step And the old agent-memory variants Search, Neighbors, Path, Related, Decisions, History, Stats, and Index should not exist
     for old_action_json in &old_actions {
@@ -93,8 +125,14 @@ fn test_registry_only_ast_and_learnings_graphs() {
     let learnings_name = registry::LEARNINGS_GRAPH;
 
     // @step Then it should only contain AST_CODE_GRAPH and LEARNINGS_GRAPH constants
-    assert_eq!(ast_name, "ast-code", "AST graph constant should be 'ast-code'");
-    assert_eq!(learnings_name, "learnings", "Learnings graph constant should be 'learnings'");
+    assert_eq!(
+        ast_name, "ast-code",
+        "AST graph constant should be 'ast-code'"
+    );
+    assert_eq!(
+        learnings_name, "learnings",
+        "Learnings graph constant should be 'learnings'"
+    );
 
     // @step And the AGENT_MEMORY_GRAPH constant should not exist
     // Compile-time check: the following line should NOT compile after migration
@@ -112,7 +150,10 @@ fn test_registry_only_ast_and_learnings_graphs() {
     // We can't test actual DB creation without a temp dir, but we verify
     // the constant values are what we expect for the registry lookup
     assert!(!ast_name.is_empty(), "AST graph name should not be empty");
-    assert!(!learnings_name.is_empty(), "Learnings graph name should not be empty");
+    assert!(
+        !learnings_name.is_empty(),
+        "Learnings graph name should not be empty"
+    );
 }
 
 /// Scenario: DeepSearch uses Learnings graph context instead of agent-memory
@@ -125,8 +166,8 @@ fn test_deepsearch_uses_learnings_graph() {
     // @step When DeepSearch builds graph context for a sub-agent system prompt
     // The old deepsearch_integration.rs module should not exist.
     // Verify by checking the graph module does NOT export it.
-    let deepsearch_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/graph/deepsearch_integration.rs");
+    let deepsearch_path =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/graph/deepsearch_integration.rs");
 
     // @step Then it should query the Learnings graph for relevant decisions and learnings
     // @step And it should not reference the old agent-memory Concept nodes
@@ -149,10 +190,7 @@ fn test_graph_module_only_exports_dual_graph() {
     // resolve under the codelet-graph crate.
 
     let napi_base = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let graph_crate = napi_base
-        .parent()
-        .expect("napi parent")
-        .join("graph");
+    let graph_crate = napi_base.parent().expect("napi parent").join("graph");
     let graph_dir = graph_crate.join("src");
     let schemas_dir = graph_crate.join("schemas");
 
@@ -160,16 +198,46 @@ fn test_graph_module_only_exports_dual_graph() {
 
     // @step Then it should export database, registry, ast_pipeline, ast_dispatch, learnings_extraction, learnings_dispatch, learnings_context, dispatch_helpers, graph_entities, and llm_response_parser modules
     // Verify new files exist
-    assert!(graph_dir.join("database.rs").exists(), "database.rs should exist");
-    assert!(graph_dir.join("registry.rs").exists(), "registry.rs should exist");
-    assert!(graph_dir.join("ast_pipeline").is_dir(), "ast_pipeline/ should exist");
-    assert!(graph_dir.join("ast_dispatch.rs").exists(), "ast_dispatch.rs should exist");
-    assert!(graph_dir.join("learnings_extraction.rs").exists(), "learnings_extraction.rs should exist");
-    assert!(graph_dir.join("learnings_dispatch.rs").exists(), "learnings_dispatch.rs should exist");
-    assert!(graph_dir.join("learnings_context.rs").exists(), "learnings_context.rs should exist");
-    assert!(graph_dir.join("dispatch_helpers.rs").exists(), "dispatch_helpers.rs should exist");
-    assert!(graph_dir.join("graph_entities.rs").exists(), "graph_entities.rs should exist");
-    assert!(graph_dir.join("llm_response_parser.rs").exists(), "llm_response_parser.rs should exist");
+    assert!(
+        graph_dir.join("database.rs").exists(),
+        "database.rs should exist"
+    );
+    assert!(
+        graph_dir.join("registry.rs").exists(),
+        "registry.rs should exist"
+    );
+    assert!(
+        graph_dir.join("ast_pipeline").is_dir(),
+        "ast_pipeline/ should exist"
+    );
+    assert!(
+        graph_dir.join("ast_dispatch.rs").exists(),
+        "ast_dispatch.rs should exist"
+    );
+    assert!(
+        graph_dir.join("learnings_extraction.rs").exists(),
+        "learnings_extraction.rs should exist"
+    );
+    assert!(
+        graph_dir.join("learnings_dispatch.rs").exists(),
+        "learnings_dispatch.rs should exist"
+    );
+    assert!(
+        graph_dir.join("learnings_context.rs").exists(),
+        "learnings_context.rs should exist"
+    );
+    assert!(
+        graph_dir.join("dispatch_helpers.rs").exists(),
+        "dispatch_helpers.rs should exist"
+    );
+    assert!(
+        graph_dir.join("graph_entities.rs").exists(),
+        "graph_entities.rs should exist"
+    );
+    assert!(
+        graph_dir.join("llm_response_parser.rs").exists(),
+        "llm_response_parser.rs should exist"
+    );
 
     // RPC-092: verify the codelet-napi shim file still exists so legacy
     // crate::graph::* import paths keep working without modification.
@@ -215,9 +283,18 @@ fn test_graph_module_only_exports_dual_graph() {
     );
 
     // Verify new schema files still exist
-    assert!(schemas_dir.join("ast-code.pg").exists(), "ast-code.pg should still exist");
-    assert!(schemas_dir.join("learnings.pg").exists(), "learnings.pg should still exist");
-    assert!(schemas_dir.join("learnings-queries.gq").exists(), "learnings-queries.gq should still exist");
+    assert!(
+        schemas_dir.join("ast-code.pg").exists(),
+        "ast-code.pg should still exist"
+    );
+    assert!(
+        schemas_dir.join("learnings.pg").exists(),
+        "learnings.pg should still exist"
+    );
+    assert!(
+        schemas_dir.join("learnings-queries.gq").exists(),
+        "learnings-queries.gq should still exist"
+    );
 }
 
 /// Scenario: All existing AST and Learnings tests pass after migration
@@ -254,5 +331,8 @@ async fn test_existing_graphs_functional_after_migration() {
         .expect("Learnings graph should initialize");
 
     let learnings_stats = learnings_db.stats().expect("learnings stats should work");
-    assert!(learnings_stats.get("nodes").is_some(), "Should have nodes in learnings stats");
+    assert!(
+        learnings_stats.get("nodes").is_some(),
+        "Should have nodes in learnings stats"
+    );
 }

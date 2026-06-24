@@ -109,7 +109,10 @@ async fn test_catch_up_fires_for_never_run_schedule() {
     let result = needs_catch_up(&schedule, now);
 
     // @step Then one catch-up job fires for "new-check"
-    assert!(result, "never-run schedule with past cron trigger should need catch-up");
+    assert!(
+        result,
+        "never-run schedule with past cron trigger should need catch-up"
+    );
 }
 
 // =====================================================================
@@ -159,7 +162,10 @@ async fn test_catch_up_prevents_double_fire() {
     let two_days_ago = (Utc::now() - Duration::days(2)).to_rfc3339();
     let schedule = make_schedule("0 2 * * *", "active", Some(two_days_ago.clone()), "shell");
     let now = Utc::now();
-    assert!(needs_catch_up(&schedule, now), "should need catch-up initially");
+    assert!(
+        needs_catch_up(&schedule, now),
+        "should need catch-up initially"
+    );
 
     // @step When catch-up fires and updates lastRunAt
     let updated_schedule = make_schedule("0 2 * * *", "active", Some(now.to_rfc3339()), "shell");
@@ -168,7 +174,10 @@ async fn test_catch_up_prevents_double_fire() {
     let tick_result = needs_catch_up(&updated_schedule, now);
 
     // @step Then the regular tick does not trigger the schedule again
-    assert!(!tick_result, "schedule with just-updated lastRunAt should not need catch-up");
+    assert!(
+        !tick_result,
+        "schedule with just-updated lastRunAt should not need catch-up"
+    );
 }
 
 // =====================================================================
@@ -217,7 +226,10 @@ async fn test_catch_up_respects_session_limit() {
     }
 
     // @step Then the catch-up job is deferred to the deferred queue
-    assert!(should_defer, "catch-up for agent job at limit should be deferred");
+    assert!(
+        should_defer,
+        "catch-up for agent job at limit should be deferred"
+    );
     let deferred = state.deferred_jobs.read().await;
     assert_eq!(deferred.len(), 1);
     assert_eq!(deferred[0].schedule_name, "missed-agent");

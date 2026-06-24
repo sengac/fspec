@@ -333,7 +333,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_epics() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -400,12 +401,13 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
-    let dispatcher_auth = &dispatcher_data["epics"]
-        .as_array()
-        .expect("epics array")[0];
+    let dispatcher_auth = &dispatcher_data["epics"].as_array().expect("epics array")[0];
 
     // @step Then the dispatcher's DispatchResult.data parses to an epics structure with auth at 1/2 (50%)
     assert_eq!(dispatcher_auth["id"].as_str(), Some("auth"));

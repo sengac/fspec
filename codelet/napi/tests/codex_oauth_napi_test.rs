@@ -166,9 +166,8 @@ async fn test_successful_browser_oauth_login_via_napi() {
     tokio::time::sleep(std::time::Duration::from_millis(50)).await;
 
     // @step When TypeScript calls codex_oauth_browser_login()
-    let callback_url = format!(
-        "http://127.0.0.1:{port}/auth/callback?code=napi_auth_code&state={known_state}"
-    );
+    let callback_url =
+        format!("http://127.0.0.1:{port}/auth/callback?code=napi_auth_code&state={known_state}");
     let client = reqwest::Client::new();
     let resp = client
         .get(&callback_url)
@@ -189,7 +188,10 @@ async fn test_successful_browser_oauth_login_via_napi() {
     let napi_tokens = NapiCodexTokens::from(tokens);
 
     // @step And the tokens should contain id_token, access_token, refresh_token, and account_id
-    assert!(!napi_tokens.id_token.is_empty(), "id_token should be non-empty");
+    assert!(
+        !napi_tokens.id_token.is_empty(),
+        "id_token should be non-empty"
+    );
     assert_eq!(napi_tokens.access_token, "at_napi_browser");
     assert_eq!(napi_tokens.refresh_token, "rt_napi_browser");
     assert_eq!(napi_tokens.account_id, account_id);
@@ -378,14 +380,16 @@ async fn test_device_auth_login_poll_resolves_with_tokens_after_user_authorizes(
     .expect("Token exchange should succeed");
 
     // @step Then the Promise should resolve with NapiCodexTokens
-    let napi_tokens =
-        build_and_persist_tokens(&token_response, "Device auth token persist failed");
+    let napi_tokens = build_and_persist_tokens(&token_response, "Device auth token persist failed");
     assert_eq!(napi_tokens.access_token, "at_napi_device");
     assert_eq!(napi_tokens.refresh_token, "rt_napi_device");
     assert_eq!(napi_tokens.account_id, account_id);
 
     // @step And the tokens should be persisted to auth.json
-    assert!(auth_path.exists(), "auth.json should exist after device auth");
+    assert!(
+        auth_path.exists(),
+        "auth.json should exist after device auth"
+    );
     let persisted = std::fs::read_to_string(&auth_path).unwrap();
     let persisted_json: serde_json::Value = serde_json::from_str(&persisted).unwrap();
     assert_eq!(persisted_json["tokens"]["access_token"], "at_napi_device");
@@ -526,7 +530,10 @@ async fn test_token_refresh_fails_with_invalid_refresh_token() {
     let result = refresh_access_token_at(&mock_server.uri(), "rt_completely_invalid").await;
 
     // @step Then the Promise should reject with an error describing the failure
-    assert!(result.is_err(), "Token refresh should fail with invalid token");
+    assert!(
+        result.is_err(),
+        "Token refresh should fail with invalid token"
+    );
     let err = result.unwrap_err();
     let napi_reason = convert_error_to_napi_reason(&err);
     assert!(

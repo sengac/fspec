@@ -27,7 +27,9 @@ fn run_remove(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec remove-foundation-bounded-context");
+    let output = cmd
+        .output()
+        .expect("spawn fspec remove-foundation-bounded-context");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -151,7 +153,10 @@ fn scenario_cli_soft_deletes_childless_context_and_prints_success_line() {
 
     // @step And spec/foundation.json on disk shows the 'Identity' bounded_context item has deleted=true
     let data = read_foundation(ws.path());
-    assert_eq!(item_by_text(&data, "Identity")["deleted"].as_bool(), Some(true));
+    assert_eq!(
+        item_by_text(&data, "Identity")["deleted"].as_bool(),
+        Some(true)
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -172,14 +177,22 @@ fn scenario_cli_cascade_removes_context_and_prints_cascade_success_line() {
 
     // @step And stdout contains the substring '✓ Removed bounded context "Sales" and all its children from foundation Event Storm'
     assert!(
-        stdout.contains("✓ Removed bounded context \"Sales\" and all its children from foundation Event Storm"),
+        stdout.contains(
+            "✓ Removed bounded context \"Sales\" and all its children from foundation Event Storm"
+        ),
         "missing cascade success line; got:\n{stdout}"
     );
 
     // @step And spec/foundation.json on disk shows both child items have deleted=true
     let data = read_foundation(ws.path());
-    assert_eq!(item_by_text(&data, "Order")["deleted"].as_bool(), Some(true));
-    assert_eq!(item_by_text(&data, "OrderPlaced")["deleted"].as_bool(), Some(true));
+    assert_eq!(
+        item_by_text(&data, "Order")["deleted"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        item_by_text(&data, "OrderPlaced")["deleted"].as_bool(),
+        Some(true)
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -237,11 +250,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec remove-foundation-bounded-context "C2"` afterwards exits 0
     let (code, stdout, stderr) = run_remove(ws.path(), &["C2"]);
-    assert_eq!(code, 0, "CLI remove must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI remove must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows both 'C1' and 'C2' items have deleted=true
     let data = read_foundation(ws.path());

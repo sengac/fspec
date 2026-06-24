@@ -42,8 +42,7 @@ pub struct CliArgs {
 }
 
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut body = serde_json::Map::new();
     body.insert(

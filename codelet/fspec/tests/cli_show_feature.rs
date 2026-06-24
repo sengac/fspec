@@ -186,7 +186,9 @@ fn scenario_cli_text_output_renders_work_unit_progress_block() {
 
     // @step And stdout contains the exact line '  AUTH-001 (feature-level) - Login'
     assert!(
-        stdout.lines().any(|l| l == "  AUTH-001 (feature-level) - Login"),
+        stdout
+            .lines()
+            .any(|l| l == "  AUTH-001 (feature-level) - Login"),
         "stdout must contain exact AUTH-001 header line; got:\n{stdout}"
     );
 
@@ -299,7 +301,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And I run `./codelet/target/release/fspec show-feature auth` against the same workspace
     let (code, stdout, stderr) = run_show_feature(ws.path(), &["auth"]);

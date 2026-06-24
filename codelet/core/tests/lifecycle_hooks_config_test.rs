@@ -196,7 +196,10 @@ fn test_no_agent_events_returns_none() {
 
     // @step Then the engine should return None
     let engine = result.expect("should not error");
-    assert!(engine.is_none(), "engine should be None when no agent events configured");
+    assert!(
+        engine.is_none(),
+        "engine should be None when no agent events configured"
+    );
 
     // @step And zero overhead should be added to the agent loop
     // (None means no engine instantiated — implicit zero overhead)
@@ -324,7 +327,9 @@ fn test_config_compiled_once_not_hot_reloaded() {
 
     // @step And only a new session should pick up the config change
     let new_result = load_lifecycle_hooks(Some(&project_path), None);
-    let new_compiled = new_result.expect("should load").expect("should not be None");
+    let new_compiled = new_result
+        .expect("should load")
+        .expect("should not be None");
     assert_eq!(
         new_compiled.user_prompt_submit.len(),
         1,

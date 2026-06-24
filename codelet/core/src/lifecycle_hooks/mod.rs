@@ -21,11 +21,11 @@ pub use compiled::{
     HookMatcher,
 };
 pub use config::{
-    FspecHooksConfig, GlobalConfig, HookCommandConfig, HookDefinition, HookGroupConfig,
-    is_agent_lifecycle_event, is_tool_hook_event, AGENT_LIFECYCLE_EVENTS, TOOL_HOOK_EVENTS,
+    is_agent_lifecycle_event, is_tool_hook_event, FspecHooksConfig, GlobalConfig,
+    HookCommandConfig, HookDefinition, HookGroupConfig, AGENT_LIFECYCLE_EVENTS, TOOL_HOOK_EVENTS,
 };
 pub use engine::{
-    HookContext, run_notification, run_session_end, run_session_start, run_user_prompt,
+    run_notification, run_session_end, run_session_start, run_user_prompt, HookContext,
 };
 pub use loader::load_lifecycle_hooks;
 pub use outcome::{

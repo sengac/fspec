@@ -149,7 +149,8 @@ fn test_checkpoint_namespace_uses_session_id() {
     // @step Then each checkpoint should be stored under its own session ID
     // Verify the call passes session ID
     assert!(
-        checkpoint_section.contains("self.id") && checkpoint_section.contains("create_ghost_commit"),
+        checkpoint_section.contains("self.id")
+            && checkpoint_section.contains("create_ghost_commit"),
         "checkpoint should pass self.id to create_ghost_commit for namespace isolation"
     );
 
@@ -243,7 +244,7 @@ fn test_session_manager_imports_ghost_commit_functions() {
     // Check for use statement or fully qualified path
     let has_import = source.contains("use codelet_git::ghost_commit")
         || source.contains("codelet_git::ghost_commit::create_ghost_commit");
-    
+
     assert!(
         has_import || source.contains("create_ghost_commit"),
         "session_manager should import or use create_ghost_commit from codelet_git"

@@ -1,0 +1,168 @@
+{
+  "scenarios": [
+    {
+      "name": "Deleting one of several profiles returns the cursor to the provider row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "lines": "202-238",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "lines": "202-238",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "lines": "202-238",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting the only profile returns the cursor to the provider row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "lines": "244-298",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "lines": "244-298",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed delete does not move the cursor and preserves the profiles",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "lines": "304-343",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Saving a profile does not move the cursor to the provider row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs",
+          "lines": "349-378",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_profile_delete_navigation_prov116.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_provider_settings_profiles.rs"
+    ],
+    "totalLinesCovered": 508
+  }
+}

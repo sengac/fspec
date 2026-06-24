@@ -26,8 +26,7 @@ pub struct CliArgs {
 
 /// Entry point for the `show-acceptance-criteria` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut payload: Map<String, Value> = Map::new();
     if !args.tags.is_empty() {
@@ -46,8 +45,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
 
     match show_acceptance_criteria::run(&args_json, &project_root).await {
         Ok(rendered) => {
-            let envelope: Value = serde_json::from_str(&rendered)
-                .context("parse fspec_core envelope")?;
+            let envelope: Value =
+                serde_json::from_str(&rendered).context("parse fspec_core envelope")?;
             let ok = envelope
                 .get("success")
                 .and_then(|v| v.as_bool())

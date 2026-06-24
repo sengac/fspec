@@ -195,7 +195,8 @@ fn scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi() {
     }
 
     // Map node ids back to package names by looking each up in packages.
-    let mut transitive_names: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+    let mut transitive_names: std::collections::BTreeSet<String> =
+        std::collections::BTreeSet::new();
     for id in &seen {
         if let Some(pkg) = packages
             .iter()

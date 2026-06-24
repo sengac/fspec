@@ -62,7 +62,11 @@ const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/delete-scenario.txt");
 fn scenario_cli_deletes_a_scenario_and_prints_the_success_line() {
     // @step Given a tempdir with spec/features/login.feature containing scenarios 'Old' and 'Keep'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", TWO_SCENARIO_FEATURE);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        TWO_SCENARIO_FEATURE,
+    );
 
     // @step When I run 'fspec delete-scenario spec/features/login.feature "Old"' in that tempdir
     let (code, stdout, stderr) =
@@ -93,7 +97,11 @@ fn scenario_cli_deletes_a_scenario_and_prints_the_success_line() {
 fn scenario_cli_surfaces_a_missing_scenario_with_stderr_error_prefix_and_exit_1() {
     // @step Given a tempdir with spec/features/login.feature containing a scenario 'Keep'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", ONE_SCENARIO_FEATURE);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        ONE_SCENARIO_FEATURE,
+    );
 
     // @step When I run 'fspec delete-scenario spec/features/login.feature "Missing"' in that tempdir
     let (code, _stdout, stderr) =
@@ -130,7 +138,10 @@ fn scenario_cli_help_output_matches_captured_typescript_fixture_byte_for_byte() 
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "delete-scenario --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "delete-scenario --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/delete-scenario.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -145,8 +156,16 @@ fn scenario_cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher
     // @step Given a project root tempdir with spec/features/login.feature containing scenarios 'Old' and 'Keep'
     let ws_cli = tempfile::tempdir().expect("tempdir cli");
     let ws_disp = tempfile::tempdir().expect("tempdir disp");
-    write_feature(ws_cli.path(), "spec/features/login.feature", TWO_SCENARIO_FEATURE);
-    write_feature(ws_disp.path(), "spec/features/login.feature", TWO_SCENARIO_FEATURE);
+    write_feature(
+        ws_cli.path(),
+        "spec/features/login.feature",
+        TWO_SCENARIO_FEATURE,
+    );
+    write_feature(
+        ws_disp.path(),
+        "spec/features/login.feature",
+        TWO_SCENARIO_FEATURE,
+    );
 
     // @step When I delete scenario 'Old' once via the dispatcher and once via the CLI on identical inputs
     let req = codelet_fspec_core::DispatchRequest {
@@ -186,12 +205,18 @@ fn scenario_cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher
 fn scenario_cli_rejects_force_flag_as_unknown_option() {
     // @step Given a tempdir with spec/features/login.feature containing scenarios 'Old' and 'Keep'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", TWO_SCENARIO_FEATURE);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        TWO_SCENARIO_FEATURE,
+    );
     let before = read_feature(ws.path(), "spec/features/login.feature");
 
     // @step When I run 'fspec delete-scenario spec/features/login.feature "Old" --force' in that tempdir
-    let (code, _stdout, stderr) =
-        run_delete_scenario(ws.path(), &["spec/features/login.feature", "Old", "--force"]);
+    let (code, _stdout, stderr) = run_delete_scenario(
+        ws.path(),
+        &["spec/features/login.feature", "Old", "--force"],
+    );
 
     // @step Then the process exits with code 1
     assert_eq!(

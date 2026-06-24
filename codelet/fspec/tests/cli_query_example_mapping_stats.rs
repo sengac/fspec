@@ -30,7 +30,9 @@ fn run_qems(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec query-example-mapping-stats");
+    let output = cmd
+        .output()
+        .expect("spawn fspec query-example-mapping-stats");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -63,9 +65,7 @@ fn wu_with_arrays(
     assumptions: usize,
 ) -> String {
     let make_arr = |n: usize, prefix: &str| -> String {
-        let items: Vec<String> = (0..n)
-            .map(|i| format!(r#""{prefix}-{i}""#))
-            .collect();
+        let items: Vec<String> = (0..n).map(|i| format!(r#""{prefix}-{i}""#)).collect();
         format!("[{}]", items.join(","))
     };
     format!(
@@ -111,25 +111,41 @@ fn scenario_clap_exposes_query_example_mapping_stats_with_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "fspec query-example-mapping-stats --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "fspec query-example-mapping-stats --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step Then stdout contains the substring 'query-example-mapping-stats'
     assert!(
-        stdout.contains("query-example-mapping-stats") || stdout.contains("QUERY-EXAMPLE-MAPPING-STATS"),
+        stdout.contains("query-example-mapping-stats")
+            || stdout.contains("QUERY-EXAMPLE-MAPPING-STATS"),
         "help must describe the subcommand; got:\n{stdout}"
     );
 
     // @step Then stdout advertises the '--status' flag (TS parity — TS help advertises --status even though the CLI accepts --format)
-    assert!(stdout.contains("--status"), "help must advertise --status; got:\n{stdout}");
+    assert!(
+        stdout.contains("--status"),
+        "help must advertise --status; got:\n{stdout}"
+    );
 
     // @step Then stdout does NOT contain the substring '--workUnitId'
-    assert!(!stdout.contains("--workUnitId"), "help must NOT expose --workUnitId; got:\n{stdout}");
+    assert!(
+        !stdout.contains("--workUnitId"),
+        "help must NOT expose --workUnitId; got:\n{stdout}"
+    );
 
     // @step Then stdout does NOT contain the substring '--hasQuestions'
-    assert!(!stdout.contains("--hasQuestions"), "help must NOT expose --hasQuestions; got:\n{stdout}");
+    assert!(
+        !stdout.contains("--hasQuestions"),
+        "help must NOT expose --hasQuestions; got:\n{stdout}"
+    );
 
     // @step Then stdout does NOT contain the substring '--questionsFor'
-    assert!(!stdout.contains("--questionsFor"), "help must NOT expose --questionsFor; got:\n{stdout}");
+    assert!(
+        !stdout.contains("--questionsFor"),
+        "help must NOT expose --questionsFor; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -148,12 +164,20 @@ fn scenario_cli_format_json_prints_canonical_empty_stats() {
     let parsed: serde_json::Value = serde_json::from_str(&stdout)
         .unwrap_or_else(|e| panic!("stdout must be valid JSON: {e}\nstdout:\n{stdout}"));
     for field in [
-        "workUnits", "workUnitsWithRules", "workUnitsWithExamples",
-        "workUnitsWithQuestions", "workUnitsWithAssumptions",
-        "avgRulesPerWorkUnit", "avgExamplesPerWorkUnit",
-        "avgQuestionsPerWorkUnit", "avgAssumptionsPerWorkUnit",
+        "workUnits",
+        "workUnitsWithRules",
+        "workUnitsWithExamples",
+        "workUnitsWithQuestions",
+        "workUnitsWithAssumptions",
+        "avgRulesPerWorkUnit",
+        "avgExamplesPerWorkUnit",
+        "avgQuestionsPerWorkUnit",
+        "avgAssumptionsPerWorkUnit",
     ] {
-        assert!(parsed.get(field).is_some(), "missing field `{field}` in:\n{stdout}");
+        assert!(
+            parsed.get(field).is_some(),
+            "missing field `{field}` in:\n{stdout}"
+        );
     }
 
     // @step Then the parsed JSON workUnits is the empty array
@@ -178,7 +202,10 @@ fn scenario_cli_without_format_prints_nothing_to_stdout() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout is exactly empty
-    assert_eq!(stdout, "", "stdout must be empty (TS silent-text parity); got:\n{stdout}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (TS silent-text parity); got:\n{stdout}"
+    );
 
     // @step Then stderr is exactly empty
     assert_eq!(stderr, "", "stderr must be empty; got:\n{stderr}");
@@ -196,7 +223,10 @@ fn scenario_cli_format_text_prints_nothing_to_stdout() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout is exactly empty
-    assert_eq!(stdout, "", "stdout must be empty for --format text; got:\n{stdout}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty for --format text; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -209,10 +239,16 @@ fn scenario_cli_malformed_work_units_json_exits_1_with_stderr() {
     let (code, stdout, stderr) = run_qems(ws.path(), &["--format", "json"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'Failed to parse work-units.json'
     assert!(
@@ -225,25 +261,41 @@ fn scenario_cli_malformed_work_units_json_exits_1_with_stderr() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root whose spec/work-units.json contains AUTH-001 with 2 rules and 1 example
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(ws.path(), &wu_with_arrays("AUTH-001", "Login", "backlog", 2, 1, 0, 0));
+    write_work_units(
+        ws.path(),
+        &wu_with_arrays("AUTH-001", "Login", "backlog", 2, 1, 0, 0),
+    );
 
     // @step When I dispatch query-example-mapping-stats through fspec_core::dispatch::dispatch_command with format='json'
     let result = dispatch_qems(ws.path(), r#"{"format":"json"}"#);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the DispatchResult.data parses as JSON with workUnitsWithRules=1 and workUnitsWithExamples=1
-    let data: serde_json::Value = serde_json::from_str(&result.data).expect("dispatcher data is JSON");
+    let data: serde_json::Value =
+        serde_json::from_str(&result.data).expect("dispatcher data is JSON");
     assert_eq!(data["workUnitsWithRules"].as_u64(), Some(1));
     assert_eq!(data["workUnitsWithExamples"].as_u64(), Some(1));
 
     // @step Then the CLI bridge module codelet/fspec/src/query_example_mapping_stats.rs contains NO inline aggregation, filter, or rendering logic — its only computation is JSON arg marshalling and stdout printing
-    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_example_mapping_stats.rs");
-    assert!(bridge_path.exists(), "bridge module must exist: {}", bridge_path.display());
+    let bridge_path =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_example_mapping_stats.rs");
+    assert!(
+        bridge_path.exists(),
+        "bridge module must exist: {}",
+        bridge_path.display()
+    );
     let bridge_src = fs::read_to_string(&bridge_path).expect("bridge module readable");
     for forbidden in [
-        "completenessScore", "workUnitsWithRules", "workUnitsWithExamples",
-        "workUnitsWithQuestions", "workUnitsWithAssumptions",
-        "avgRulesPerWorkUnit", "calculateCompletenessScore",
+        "completenessScore",
+        "workUnitsWithRules",
+        "workUnitsWithExamples",
+        "workUnitsWithQuestions",
+        "workUnitsWithAssumptions",
+        "avgRulesPerWorkUnit",
+        "calculateCompletenessScore",
         "calculate_completeness_score",
     ] {
         assert!(
@@ -313,14 +365,20 @@ fn scenario_returns_empty_stats_when_work_units_auto_created_in_empty_workspace(
     assert_eq!(data["avgAssumptionsPerWorkUnit"].as_f64(), Some(0.0));
 
     // @step Then spec/work-units.json exists after the call (auto-created by ensure_work_units_file)
-    assert!(ws.path().join("spec/work-units.json").exists(), "spec/work-units.json must be auto-created");
+    assert!(
+        ws.path().join("spec/work-units.json").exists(),
+        "spec/work-units.json must be auto-created"
+    );
 }
 
 #[test]
 fn scenario_completeness_score_100_when_rules_and_examples_nonempty_and_no_questions() {
     // @step Given spec/work-units.json contains AUTH-001 with 2 rules, 1 example, 0 questions, 0 assumptions
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(ws.path(), &wu_with_arrays("AUTH-001", "Login", "backlog", 2, 1, 0, 0));
+    write_work_units(
+        ws.path(),
+        &wu_with_arrays("AUTH-001", "Login", "backlog", 2, 1, 0, 0),
+    );
 
     // @step When I dispatch query-example-mapping-stats with format='json'
     let result = dispatch_qems(ws.path(), r#"{"format":"json"}"#);
@@ -330,7 +388,10 @@ fn scenario_completeness_score_100_when_rules_and_examples_nonempty_and_no_quest
     let data: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
 
     // @step Then the returned JSON workUnits[0] has workUnitId='AUTH-001'
-    assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-001"));
+    assert_eq!(
+        data["workUnits"][0]["workUnitId"].as_str(),
+        Some("AUTH-001")
+    );
 
     // @step Then the returned JSON workUnits[0] has rules=2, examples=1, questions=0, assumptions=0
     assert_eq!(data["workUnits"][0]["rules"].as_u64(), Some(2));
@@ -339,14 +400,20 @@ fn scenario_completeness_score_100_when_rules_and_examples_nonempty_and_no_quest
     assert_eq!(data["workUnits"][0]["assumptions"].as_u64(), Some(0));
 
     // @step Then the returned JSON workUnits[0] has completenessScore=100
-    assert_eq!(data["workUnits"][0]["completenessScore"].as_u64(), Some(100));
+    assert_eq!(
+        data["workUnits"][0]["completenessScore"].as_u64(),
+        Some(100)
+    );
 }
 
 #[test]
 fn scenario_completeness_score_0_when_only_questions() {
     // @step Given spec/work-units.json contains AUTH-002 with 0 rules, 0 examples, 1 question, 0 assumptions
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(ws.path(), &wu_with_arrays("AUTH-002", "X", "backlog", 0, 0, 1, 0));
+    write_work_units(
+        ws.path(),
+        &wu_with_arrays("AUTH-002", "X", "backlog", 0, 0, 1, 0),
+    );
 
     // @step When I dispatch query-example-mapping-stats with format='json'
     let result = dispatch_qems(ws.path(), r#"{"format":"json"}"#);
@@ -360,7 +427,10 @@ fn scenario_completeness_score_0_when_only_questions() {
 fn scenario_completeness_score_66_with_rules_only_and_no_questions() {
     // @step Given spec/work-units.json contains AUTH-001 with 1 rule, 0 examples, 0 questions, 0 assumptions
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(ws.path(), &wu_with_arrays("AUTH-001", "X", "backlog", 1, 0, 0, 0));
+    write_work_units(
+        ws.path(),
+        &wu_with_arrays("AUTH-001", "X", "backlog", 1, 0, 0, 0),
+    );
 
     // @step When I dispatch query-example-mapping-stats with format='json'
     let result = dispatch_qems(ws.path(), r#"{"format":"json"}"#);
@@ -374,7 +444,10 @@ fn scenario_completeness_score_66_with_rules_only_and_no_questions() {
 fn scenario_completeness_score_67_with_examples_only_and_no_questions() {
     // @step Given spec/work-units.json contains AUTH-001 with 0 rules, 1 example, 0 questions, 0 assumptions
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(ws.path(), &wu_with_arrays("AUTH-001", "X", "backlog", 0, 1, 0, 0));
+    write_work_units(
+        ws.path(),
+        &wu_with_arrays("AUTH-001", "X", "backlog", 0, 1, 0, 0),
+    );
 
     // @step When I dispatch query-example-mapping-stats with format='json'
     let result = dispatch_qems(ws.path(), r#"{"format":"json"}"#);
@@ -443,7 +516,10 @@ fn scenario_work_unit_id_filter_narrows_to_single_work_unit() {
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-001'
     assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
-    assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-001"));
+    assert_eq!(
+        data["workUnits"][0]["workUnitId"].as_str(),
+        Some("AUTH-001")
+    );
 
     // @step Then the returned JSON has workUnitsWithRules=1 and workUnitsWithQuestions=0
     assert_eq!(data["workUnitsWithRules"].as_u64(), Some(1));
@@ -475,7 +551,11 @@ fn scenario_work_unit_id_filter_against_missing_id_surfaces_error() {
     // @step Then the dispatcher returns success=false with an error message containing the substring "Work unit 'NOPE-999' does not exist"
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_ref().map(|e| e.contains("Work unit 'NOPE-999' does not exist")).unwrap_or(false),
+        result
+            .error
+            .as_ref()
+            .map(|e| e.contains("Work unit 'NOPE-999' does not exist"))
+            .unwrap_or(false),
         "error must mention missing work unit; got {result:?}"
     );
 }
@@ -501,7 +581,10 @@ fn scenario_has_questions_true_keeps_only_units_with_questions() {
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-001'
     assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
-    assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-001"));
+    assert_eq!(
+        data["workUnits"][0]["workUnitId"].as_str(),
+        Some("AUTH-001")
+    );
 }
 
 #[test]
@@ -525,7 +608,10 @@ fn scenario_has_questions_false_keeps_only_units_with_zero_questions() {
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-002'
     assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
-    assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-002"));
+    assert_eq!(
+        data["workUnits"][0]["workUnitId"].as_str(),
+        Some("AUTH-002")
+    );
 }
 
 #[test]
@@ -549,14 +635,20 @@ fn scenario_questions_for_alice_keeps_only_units_mentioning_alice() {
 
     // @step Then the returned JSON workUnits has exactly one entry whose workUnitId='AUTH-001'
     assert_eq!(data["workUnits"].as_array().map(Vec::len), Some(1));
-    assert_eq!(data["workUnits"][0]["workUnitId"].as_str(), Some("AUTH-001"));
+    assert_eq!(
+        data["workUnits"][0]["workUnitId"].as_str(),
+        Some("AUTH-001")
+    );
 }
 
 #[test]
 fn scenario_result_json_field_order_matches_ts_shape() {
     // @step Given spec/work-units.json contains AUTH-001 with 1 rule and 1 example
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(ws.path(), &wu_with_arrays("AUTH-001", "A", "backlog", 1, 1, 0, 0));
+    write_work_units(
+        ws.path(),
+        &wu_with_arrays("AUTH-001", "A", "backlog", 1, 1, 0, 0),
+    );
 
     // @step When I dispatch query-example-mapping-stats with format='json'
     let result = dispatch_qems(ws.path(), r#"{"format":"json"}"#);
@@ -564,17 +656,29 @@ fn scenario_result_json_field_order_matches_ts_shape() {
 
     // @step Then the returned JSON field declaration order is workUnits, workUnitsWithRules, workUnitsWithExamples, workUnitsWithQuestions, workUnitsWithAssumptions, avgRulesPerWorkUnit, avgExamplesPerWorkUnit, avgQuestionsPerWorkUnit, avgAssumptionsPerWorkUnit
     let expected_order = [
-        "workUnits", "workUnitsWithRules", "workUnitsWithExamples",
-        "workUnitsWithQuestions", "workUnitsWithAssumptions",
-        "avgRulesPerWorkUnit", "avgExamplesPerWorkUnit",
-        "avgQuestionsPerWorkUnit", "avgAssumptionsPerWorkUnit",
+        "workUnits",
+        "workUnitsWithRules",
+        "workUnitsWithExamples",
+        "workUnitsWithQuestions",
+        "workUnitsWithAssumptions",
+        "avgRulesPerWorkUnit",
+        "avgExamplesPerWorkUnit",
+        "avgQuestionsPerWorkUnit",
+        "avgAssumptionsPerWorkUnit",
     ];
     let mut last_pos: i64 = -1;
     for field in expected_order {
         let key_pattern = format!("\"{field}\"");
-        let pos = result.data.find(&key_pattern)
-            .unwrap_or_else(|| panic!("field {field} missing from data:\n{}", result.data)) as i64;
-        assert!(pos > last_pos, "field order broken at {field}: pos {pos} <= last {last_pos}\nin:\n{}", result.data);
+        let pos = result
+            .data
+            .find(&key_pattern)
+            .unwrap_or_else(|| panic!("field {field} missing from data:\n{}", result.data))
+            as i64;
+        assert!(
+            pos > last_pos,
+            "field order broken at {field}: pos {pos} <= last {last_pos}\nin:\n{}",
+            result.data
+        );
         last_pos = pos;
     }
 }
@@ -591,7 +695,11 @@ fn scenario_escalates_malformed_work_units_json_dispatcher() {
     // @step Then the dispatcher returns success=false with an error message containing the substring 'Failed to parse work-units.json'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_ref().map(|e| e.contains("Failed to parse work-units.json")).unwrap_or(false),
+        result
+            .error
+            .as_ref()
+            .map(|e| e.contains("Failed to parse work-units.json"))
+            .unwrap_or(false),
         "error must mention parse failure; got {result:?}"
     );
 }
@@ -616,5 +724,8 @@ fn scenario_per_work_unit_stats_record_carries_title_and_status() {
 
     // @step Then the returned JSON workUnits[0] has title='Login flow' and status='implementing'
     assert_eq!(data["workUnits"][0]["title"].as_str(), Some("Login flow"));
-    assert_eq!(data["workUnits"][0]["status"].as_str(), Some("implementing"));
+    assert_eq!(
+        data["workUnits"][0]["status"].as_str(),
+        Some("implementing")
+    );
 }

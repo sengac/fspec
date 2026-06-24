@@ -50,23 +50,34 @@ pub struct CliArgs {
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Marshal clap args into the canonical JSON shape consumed by
     // fspec_core::commands::add_dependencies::run.
     let mut deps = serde_json::Map::new();
     if let Some(v) = args.blocks.as_ref() {
-        deps.insert("blocks".to_string(), Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()));
+        deps.insert(
+            "blocks".to_string(),
+            Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()),
+        );
     }
     if let Some(v) = args.blocked_by.as_ref() {
-        deps.insert("blockedBy".to_string(), Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()));
+        deps.insert(
+            "blockedBy".to_string(),
+            Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()),
+        );
     }
     if let Some(v) = args.depends_on.as_ref() {
-        deps.insert("dependsOn".to_string(), Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()));
+        deps.insert(
+            "dependsOn".to_string(),
+            Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()),
+        );
     }
     if let Some(v) = args.relates_to.as_ref() {
-        deps.insert("relatesTo".to_string(), Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()));
+        deps.insert(
+            "relatesTo".to_string(),
+            Value::Array(v.iter().map(|s| Value::String(s.clone())).collect()),
+        );
     }
     let args_json = json!({
         "workUnitId": args.work_unit_id,

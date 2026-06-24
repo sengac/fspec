@@ -13,7 +13,7 @@ use super::compiled::{
     HookMatcher,
 };
 use super::config::{
-    FspecHooksConfig, HookDefinition, HookGroupConfig, is_agent_lifecycle_event, is_tool_hook_event,
+    is_agent_lifecycle_event, is_tool_hook_event, FspecHooksConfig, HookDefinition, HookGroupConfig,
 };
 
 /// Default timeout in seconds when neither global nor per-hook timeout is set.
@@ -54,18 +54,42 @@ pub fn load_lifecycle_hooks(
     let global_shell = resolve_global_shell(&user_config, &project_config);
 
     // Merge and compile each agent lifecycle event
-    let session_start =
-        merge_and_compile_definitions("session_start", &user_config, &project_config, global_timeout)?;
-    let session_end =
-        merge_and_compile_definitions("session_end", &user_config, &project_config, global_timeout)?;
-    let user_prompt_submit =
-        merge_and_compile_definitions("user_prompt_submit", &user_config, &project_config, global_timeout)?;
-    let notification =
-        merge_and_compile_definitions("notification", &user_config, &project_config, global_timeout)?;
-    let pre_tool_use =
-        merge_and_compile_groups("pre_tool_use", &user_config, &project_config, global_timeout)?;
-    let post_tool_use =
-        merge_and_compile_groups("post_tool_use", &user_config, &project_config, global_timeout)?;
+    let session_start = merge_and_compile_definitions(
+        "session_start",
+        &user_config,
+        &project_config,
+        global_timeout,
+    )?;
+    let session_end = merge_and_compile_definitions(
+        "session_end",
+        &user_config,
+        &project_config,
+        global_timeout,
+    )?;
+    let user_prompt_submit = merge_and_compile_definitions(
+        "user_prompt_submit",
+        &user_config,
+        &project_config,
+        global_timeout,
+    )?;
+    let notification = merge_and_compile_definitions(
+        "notification",
+        &user_config,
+        &project_config,
+        global_timeout,
+    )?;
+    let pre_tool_use = merge_and_compile_groups(
+        "pre_tool_use",
+        &user_config,
+        &project_config,
+        global_timeout,
+    )?;
+    let post_tool_use = merge_and_compile_groups(
+        "post_tool_use",
+        &user_config,
+        &project_config,
+        global_timeout,
+    )?;
 
     let compiled = CompiledLifecycleHooks {
         global_timeout,
@@ -175,10 +199,7 @@ fn extract_definitions(
 }
 
 /// Extract hook groups for a tool event from a config.
-fn extract_groups(
-    event: &str,
-    config: &Option<FspecHooksConfig>,
-) -> Result<Vec<HookGroupConfig>> {
+fn extract_groups(event: &str, config: &Option<FspecHooksConfig>) -> Result<Vec<HookGroupConfig>> {
     let config = match config {
         Some(c) => c,
         None => return Ok(vec![]),
@@ -245,10 +266,7 @@ fn merge_and_compile_groups(
 }
 
 /// Compile a single hook group, including regex matcher compilation.
-fn compile_hook_group(
-    group: HookGroupConfig,
-    global_timeout: u64,
-) -> Result<CompiledHookGroup> {
+fn compile_hook_group(group: HookGroupConfig, global_timeout: u64) -> Result<CompiledHookGroup> {
     let matcher = match &group.matcher {
         None => HookMatcher::Any,
         Some(pattern) if pattern.is_empty() => HookMatcher::Any,

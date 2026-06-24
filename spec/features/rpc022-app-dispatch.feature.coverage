@@ -165,34 +165,6 @@
       ]
     },
     {
-      "name": "Action::ListProvidersLoaded folds the provider list into the open ModelSelectorDialog",
-      "testMappings": [
-        {
-          "file": "codelet/fspec-tui/tests/app_dispatch_rpc022.rs",
-          "lines": "199-248",
-          "implMappings": [
-            {
-              "file": "codelet/fspec-tui/src/components/model_selector_dialog.rs",
-              "lines": [
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Action::SessionCreated triggers a backend.get_session_role spawn that fills AgentViewStore.role_by_session",
       "testMappings": [
         {
@@ -553,8 +525,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 9,
-    "coveredScenarios": 9,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-tui/tests/app_dispatch_rpc022.rs"

@@ -149,7 +149,11 @@ impl TokenTracker {
     /// // Use:
     /// session.token_tracker.update_from_usage(&turn_usage, turn_cumulative_output);
     /// ```
-    pub fn update_from_usage(&mut self, usage: &crate::token_usage::ApiTokenUsage, cumulative_output: u64) {
+    pub fn update_from_usage(
+        &mut self,
+        usage: &crate::token_usage::ApiTokenUsage,
+        cumulative_output: u64,
+    ) {
         // PROV-001: Store TOTAL context for display and threshold checks
         self.input_tokens = usage.total_input();
         // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value.
@@ -176,7 +180,11 @@ impl TokenTracker {
     /// # Arguments
     /// * `usage` - The ApiTokenUsage from the current turn/request
     /// * `cumulative_output` - The session-wide cumulative output token count
-    pub fn update_display_only(&mut self, usage: &crate::token_usage::ApiTokenUsage, cumulative_output: u64) {
+    pub fn update_display_only(
+        &mut self,
+        usage: &crate::token_usage::ApiTokenUsage,
+        cumulative_output: u64,
+    ) {
         // Update display values only (no billing accumulation)
         self.input_tokens = usage.total_input();
         self.output_tokens = cumulative_output;
@@ -559,4 +567,3 @@ pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<D
 
     filtered
 }
-

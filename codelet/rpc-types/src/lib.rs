@@ -375,6 +375,32 @@ pub struct CustomModelDefinition {
     pub has_vision: Option<bool>,
 }
 
+/// PROV-108: transport-portable definition of a local-server profile's
+/// connection settings (`providers.openai.profiles.<name>`, PROV-007). Maps to
+/// the on-disk profile object written by
+/// `codelet_sessions::profile_persistence::save_profile`; the
+/// `codelet-sessions` conversion (`profile_def_from_wire`) is the single place
+/// the wire shape and the on-disk shape meet, keeping `codelet-core` /
+/// `codelet-rpc-types` free of any dependency on `codelet-sessions`.
+///
+/// `customModels` is deliberately NOT part of this definition: the
+/// custom-model write path (RPC-347, `CustomModelDefinition`) owns that array,
+/// and the profile read-modify-write preserves it. `base_url` and `api_key`
+/// are required; the CTX-008 compaction-threshold override is carried as two
+/// flat optional fields (`compaction_threshold_type` /
+/// `compaction_threshold_value`) so the `napi(object)` projection stays a
+/// plain struct (mirroring [`CustomModelDefinition`]).
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProfileDefinition {
+    pub base_url: String,
+    pub api_key: String,
+    pub context_window: Option<u32>,
+    pub max_output_tokens: Option<u32>,
+    pub compaction_threshold_type: Option<String>,
+    pub compaction_threshold_value: Option<u32>,
+}
+
 /// One provider's display metadata plus its set of available models —
 /// returned (in a Vec) by `FspecService::list_providers`. Mirrors the
 /// TS `NapiProviderModels` shape (codelet/napi/src/models/napi_bindings.rs)
@@ -455,6 +481,28 @@ pub struct ProviderCredentialInfo {
     /// "dotenv"` mirroring TS `ProviderConfigResult.source` at
     /// `src/utils/credentials.ts:56-59`. `None` when unconfigured.
     pub source: Option<String>,
+}
+
+/// PROV-113: result of the synchronous-ish headless OAuth start (anthropic).
+/// `authorize_url` is shown to the user immediately and `pkce_verifier` is
+/// round-tripped back to `oauth_headless_complete` for CSRF validation. Not
+/// napi-exposed — the TS TUI has its own napi bindings; this shape only
+/// crosses the Rust tarpc boundary.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OAuthHeadlessStart {
+    pub authorize_url: String,
+    pub pkce_verifier: String,
+}
+
+/// PROV-113: result of the codex device-auth start. `user_code` +
+/// `verification_url` are displayed immediately; `device_auth_id` + `interval`
+/// drive the follow-up poll. Not napi-exposed (Rust tarpc boundary only).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OAuthDeviceStart {
+    pub user_code: String,
+    pub verification_url: String,
+    pub device_auth_id: String,
+    pub interval: u64,
 }
 
 /// Credential write payload consumed by
@@ -1032,7 +1080,6 @@ pub struct IsolatedSessionInfo {
     pub base_commit: String,
 }
 
-
 // ============================================================================
 // RPC-007: StreamChunk (23 variants, lifted verbatim from
 //   codelet/napi/src/types.rs:217 with #[napi(discriminant = "type")] and
@@ -1410,10 +1457,7 @@ mod tests {
     /// helper is uniformly applicable.
     fn round_trip<T>(value: T)
     where
-        T: serde::Serialize
-            + for<'de> serde::Deserialize<'de>
-            + PartialEq
-            + core::fmt::Debug,
+        T: serde::Serialize + for<'de> serde::Deserialize<'de> + PartialEq + core::fmt::Debug,
     {
         let json = serde_json::to_string(&value).expect("serialize must succeed");
         let back: T = serde_json::from_str(&json).expect("deserialize must succeed");

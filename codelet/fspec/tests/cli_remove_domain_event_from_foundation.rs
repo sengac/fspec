@@ -48,8 +48,8 @@ fn write_foundation(project_root: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(project_root: &Path) -> serde_json::Value {
-    let raw =
-        fs::read_to_string(project_root.join("spec/foundation.json")).expect("read foundation.json");
+    let raw = fs::read_to_string(project_root.join("spec/foundation.json"))
+        .expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -243,16 +243,30 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec remove-domain-event-from-foundation "Work Management" "E2"` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["Work Management", "E2"]);
-    assert_eq!(code, 0, "CLI remove must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI remove must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows both event items E1 and E2 with deleted=true
     let v = read_foundation(ws.path());
-    assert_eq!(event_deleted(&v, "E1"), Some(true), "E1 must be soft-deleted");
-    assert_eq!(event_deleted(&v, "E2"), Some(true), "E2 must be soft-deleted");
+    assert_eq!(
+        event_deleted(&v, "E1"),
+        Some(true),
+        "E1 must be soft-deleted"
+    );
+    assert_eq!(
+        event_deleted(&v, "E2"),
+        Some(true),
+        "E2 must be soft-deleted"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/remove_domain_event_from_foundation.rs contains NO inline context lookup, event match, or file-write logic — its only computation is JSON arg marshalling
     let bridge_path =

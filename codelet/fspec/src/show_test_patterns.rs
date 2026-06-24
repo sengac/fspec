@@ -27,8 +27,7 @@ pub struct CliArgs {
 
 /// Entry point for the `show-test-patterns` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut payload: Map<String, Value> = Map::new();
     payload.insert("tag".to_string(), Value::String(args.tag.clone()));
@@ -48,8 +47,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 // (see commands/show_test_patterns.rs). The bridge simply
                 // surfaces it — no inline rendering of work-unit counts
                 // or tags lives here.
-                let envelope: Value = serde_json::from_str(&rendered)
-                    .context("parse fspec_core envelope")?;
+                let envelope: Value =
+                    serde_json::from_str(&rendered).context("parse fspec_core envelope")?;
                 let msg = envelope
                     .get("message")
                     .and_then(|m| m.as_str())

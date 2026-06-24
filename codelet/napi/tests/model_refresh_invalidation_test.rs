@@ -18,9 +18,7 @@
 #[allow(clippy::unwrap_used, clippy::expect_used)]
 mod model_refresh_invalidation {
     use codelet_napi::models::testing;
-    use codelet_providers::models::{
-        LimitInfo, ModelInfo, ModelsDevResponse, ProviderInfo,
-    };
+    use codelet_providers::models::{LimitInfo, ModelInfo, ModelsDevResponse, ProviderInfo};
     use serial_test::serial;
     use std::collections::HashMap;
     use std::sync::Arc;
@@ -96,9 +94,7 @@ mod model_refresh_invalidation {
     }
 
     /// Extract all model IDs from a registry.
-    fn get_model_ids(
-        registry: &codelet_providers::models::ModelRegistry,
-    ) -> Vec<String> {
+    fn get_model_ids(registry: &codelet_providers::models::ModelRegistry) -> Vec<String> {
         registry
             .list_providers()
             .iter()

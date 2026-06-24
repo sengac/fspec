@@ -180,8 +180,7 @@ impl RhaiCustomProvider {
         );
         let raw = json_value_to_dynamic(body);
         let result = self.call_fn1("parse_response", raw).await?;
-        let (response, usage) =
-            rhai_to_completion_response(result).map_err(ProviderError::from)?;
+        let (response, usage) = rhai_to_completion_response(result).map_err(ProviderError::from)?;
         tracing::warn!(
             provider = %self.config_name(),
             stop_reason = ?response.stop_reason,

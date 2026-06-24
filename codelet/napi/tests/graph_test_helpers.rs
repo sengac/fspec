@@ -69,9 +69,7 @@ pub fn has_dependency_with_source(entities: &[GraphEntity], expected_source: &st
         } = e
         {
             node_type == "Dependency"
-                && (properties
-                    .get("source")
-                    .and_then(|v| v.as_str()) == Some(expected_source))
+                && (properties.get("source").and_then(|v| v.as_str()) == Some(expected_source))
         } else {
             false
         }

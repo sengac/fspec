@@ -1,12 +1,10 @@
 use super::*;
 use crate::deep_search_provider_config::{request_config_for_provider, SUB_AGENT_MAX_TOKENS};
-use rig::agent::MultiTurnStreamItem;
 use codelet_cli::interactive::{
+    build_deep_search_timeout_message, deep_search_wall_clock_timeout, is_stall_timeout_error,
     DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS,
-    build_deep_search_timeout_message,
-    deep_search_wall_clock_timeout,
-    is_stall_timeout_error,
 };
+use rig::agent::MultiTurnStreamItem;
 
 #[derive(Clone)]
 struct TestStreamResponse;
@@ -83,7 +81,9 @@ fn zai_config_includes_max_tokens_in_additional_params() {
 async fn collect_final_response_from_stream_uses_final_response_only() {
     let stream = futures::stream::iter(vec![
         Ok(MultiTurnStreamItem::StreamAssistantItem(
-            rig::streaming::StreamedAssistantContent::<TestStreamResponse>::text("intermediate chunk"),
+            rig::streaming::StreamedAssistantContent::<TestStreamResponse>::text(
+                "intermediate chunk",
+            ),
         )),
         Ok(MultiTurnStreamItem::final_response(
             "final synthesized answer",
@@ -109,26 +109,23 @@ async fn collect_final_response_from_stream_errors_when_final_missing() {
 
     let result = collect_final_response_from_stream(stream).await;
     assert!(result.is_err());
-    assert!(
-        result
-            .expect_err("expected missing final response error")
-            .contains("missing final response")
-    );
+    assert!(result
+        .expect_err("expected missing final response error")
+        .contains("missing final response"));
 }
 
 #[tokio::test]
 async fn collect_final_response_from_stream_propagates_stream_errors() {
-    let stream = futures::stream::iter(vec![Err::<MultiTurnStreamItem<TestStreamResponse>, anyhow::Error>(
-        anyhow::anyhow!("stream blew up"),
-    )]);
+    let stream = futures::stream::iter(vec![Err::<
+        MultiTurnStreamItem<TestStreamResponse>,
+        anyhow::Error,
+    >(anyhow::anyhow!("stream blew up"))]);
 
     let result = collect_final_response_from_stream(stream).await;
     assert!(result.is_err());
-    assert!(
-        result
-            .expect_err("expected stream error")
-            .contains("stream blew up")
-    );
+    assert!(result
+        .expect_err("expected stream error")
+        .contains("stream blew up"));
 }
 
 // ====================================================================
@@ -153,14 +150,13 @@ async fn deep_search_wall_clock_timeout_fires_on_stalled_sub_agent() {
     };
 
     // Apply wall-clock timeout (short duration for test speed)
-    let result = tokio::time::timeout(
-        std::time::Duration::from_millis(50),
-        never_completing,
-    )
-    .await;
+    let result = tokio::time::timeout(std::time::Duration::from_millis(50), never_completing).await;
 
     // The timeout must fire — this is the wrapping pattern for build_and_run_agent
-    assert!(result.is_err(), "Wall-clock timeout must fire on stalled sub-agent");
+    assert!(
+        result.is_err(),
+        "Wall-clock timeout must fire on stalled sub-agent"
+    );
 
     // When timeout fires, the error message returned to the parent must be descriptive
     let timeout_msg = build_deep_search_timeout_message(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS);
@@ -206,7 +202,9 @@ async fn collect_final_response_stalled_stream_aborted_by_wall_clock_timeout() {
             Some((
                 Ok::<MultiTurnStreamItem<TestStreamResponse>, anyhow::Error>(
                     MultiTurnStreamItem::StreamAssistantItem(
-                        rig::streaming::StreamedAssistantContent::<TestStreamResponse>::text("partial"),
+                        rig::streaming::StreamedAssistantContent::<TestStreamResponse>::text(
+                            "partial",
+                        ),
                     ),
                 ),
                 count + 1,

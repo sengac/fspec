@@ -191,10 +191,8 @@ fn test_all_system_reminder_types_preserved_through_compaction() {
 #[test]
 fn test_only_latest_reminder_per_type_preserved() {
     // @step Given a session where environment reminder was updated (old + new)
-    let env_old = create_system_reminder_message(
-        SystemReminderType::Environment,
-        "OLD: Platform: darwin",
-    );
+    let env_old =
+        create_system_reminder_message(SystemReminderType::Environment, "OLD: Platform: darwin");
     let user1 = create_user_message("Some conversation");
     let assistant1 = create_assistant_message("Response");
     // When environment is updated, a new reminder is appended (old preserved for cache)
@@ -270,8 +268,7 @@ fn test_system_reminders_should_be_identifiable_for_skip_during_restore() {
     assert!(text.contains("<!-- type:"), "Should have type marker");
 
     // This is exactly what session_restore_messages checks to skip old reminders
-    let should_skip =
-        text.contains("<system-reminder>") && text.contains("<!-- type:");
+    let should_skip = text.contains("<system-reminder>") && text.contains("<!-- type:");
     assert!(
         should_skip,
         "System reminder should be identifiable for skip during restore"
@@ -345,16 +342,22 @@ fn test_simulated_compaction_flow_preserves_reminders() {
     );
 
     // @step And environment reminder should be first or second
-    let env_present = reconstructed[..2].iter().any(|msg| {
-        is_reminder_of_type(msg, "<!-- type:environment -->")
-    });
-    assert!(env_present, "Environment reminder should be in first 2 messages");
+    let env_present = reconstructed[..2]
+        .iter()
+        .any(|msg| is_reminder_of_type(msg, "<!-- type:environment -->"));
+    assert!(
+        env_present,
+        "Environment reminder should be in first 2 messages"
+    );
 
     // @step And claudeMd reminder should be first or second
-    let claude_md_present = reconstructed[..2].iter().any(|msg| {
-        is_reminder_of_type(msg, "<!-- type:claudeMd -->")
-    });
-    assert!(claude_md_present, "ClaudeMd reminder should be in first 2 messages");
+    let claude_md_present = reconstructed[..2]
+        .iter()
+        .any(|msg| is_reminder_of_type(msg, "<!-- type:claudeMd -->"));
+    assert!(
+        claude_md_present,
+        "ClaudeMd reminder should be in first 2 messages"
+    );
 
     // @step And the summary should come AFTER system reminders
     let summary_idx = reconstructed
@@ -387,14 +390,8 @@ fn test_simulated_compaction_flow_preserves_reminders() {
 #[test]
 fn test_multiple_reminder_types_each_preserve_only_latest() {
     // @step Given a session where both env and claudeMd were updated
-    let env_old = create_system_reminder_message(
-        SystemReminderType::Environment,
-        "OLD ENV",
-    );
-    let claude_old = create_system_reminder_message(
-        SystemReminderType::ClaudeMd,
-        "OLD CLAUDE.md",
-    );
+    let env_old = create_system_reminder_message(SystemReminderType::Environment, "OLD ENV");
+    let claude_old = create_system_reminder_message(SystemReminderType::ClaudeMd, "OLD CLAUDE.md");
     let user1 = create_user_message("conversation");
     let env_new_messages = add_system_reminder(
         std::slice::from_ref(&env_old),
@@ -412,8 +409,8 @@ fn test_multiple_reminder_types_each_preserve_only_latest() {
         env_old,
         claude_old,
         user1,
-        env_new_messages[1].clone(),     // new env
-        claude_new_messages[1].clone(),  // new claude
+        env_new_messages[1].clone(),    // new env
+        claude_new_messages[1].clone(), // new claude
     ];
 
     // @step When I partition for compaction
@@ -471,14 +468,10 @@ fn test_empty_session_partition_handles_gracefully() {
 #[test]
 fn test_session_with_only_reminders_partition_correctly() {
     // @step Given a fresh session with only system reminders (just created, no conversation yet)
-    let env_reminder = create_system_reminder_message(
-        SystemReminderType::Environment,
-        "Platform: linux",
-    );
-    let claude_md_reminder = create_system_reminder_message(
-        SystemReminderType::ClaudeMd,
-        "# Project",
-    );
+    let env_reminder =
+        create_system_reminder_message(SystemReminderType::Environment, "Platform: linux");
+    let claude_md_reminder =
+        create_system_reminder_message(SystemReminderType::ClaudeMd, "# Project");
 
     let messages = vec![env_reminder, claude_md_reminder];
 
@@ -493,8 +486,5 @@ fn test_session_with_only_reminders_partition_correctly() {
     );
 
     // @step And compactable should be empty
-    assert!(
-        compactable.is_empty(),
-        "No conversation to compact"
-    );
+    assert!(compactable.is_empty(), "No conversation to compact");
 }

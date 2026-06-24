@@ -76,7 +76,10 @@ fn scenario_help_output_matches_the_captured_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "generate-coverage --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "generate-coverage --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/generate-coverage.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -212,7 +215,10 @@ fn scenario_cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher
         project_root: ws_disp.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And I run `fspec generate-coverage` against an identical workspace
     let (code, stdout, stderr) = run_generate(ws_cli.path(), &[]);
@@ -235,8 +241,7 @@ fn scenario_cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher
     );
 
     // @step And the CLI bridge module codelet/fspec/src/generate_coverage.rs contains NO inline scanning or rendering logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/generate_coverage.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/generate_coverage.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/generate_coverage.rs must exist as the CLI bridge module"

@@ -45,7 +45,8 @@ fn estimate_assistant_content_tokens(content: &AssistantContent) -> usize {
         AssistantContent::Text(text) => count_tokens(&text.text),
         AssistantContent::ToolCall(tool_call) => {
             let name_tokens = count_tokens(&tool_call.function.name);
-            let args_json = serde_json::to_string(&tool_call.function.arguments).unwrap_or_default();
+            let args_json =
+                serde_json::to_string(&tool_call.function.arguments).unwrap_or_default();
             let args_tokens = count_tokens(&args_json);
             name_tokens + args_tokens + TOOL_CALL_OVERHEAD
         }
@@ -87,7 +88,9 @@ mod tests {
             content: OneOrMany::one(UserContent::ToolResult(ToolResult {
                 id: "test".to_string(),
                 call_id: None,
-                content: OneOrMany::one(ToolResultContent::Text(Text { text: large_content })),
+                content: OneOrMany::one(ToolResultContent::Text(Text {
+                    text: large_content,
+                })),
             })),
         };
         let tokens = estimate_message_tokens(&message);
@@ -141,7 +144,10 @@ mod tests {
             },
         ];
         let tokens = estimate_messages_tokens(&messages);
-        assert!(tokens > 5, "Expected >5 tokens for 3 messages, got {tokens}");
+        assert!(
+            tokens > 5,
+            "Expected >5 tokens for 3 messages, got {tokens}"
+        );
     }
 
     #[test]
@@ -177,13 +183,16 @@ mod tests {
         ];
         let tokens = estimate_messages_tokens(&messages);
         // Large file content should dominate the token count
-        assert!(tokens > 5000, "Expected >5000 tokens for large file, got {tokens}");
+        assert!(
+            tokens > 5000,
+            "Expected >5000 tokens for large file, got {tokens}"
+        );
     }
 
     #[test]
     fn test_image_content_has_fixed_estimate() {
         use rig::message::{DocumentSourceKind, Image};
-        
+
         let message = Message::User {
             content: OneOrMany::one(UserContent::Image(Image {
                 data: DocumentSourceKind::Base64("fake_base64_data".to_string()),

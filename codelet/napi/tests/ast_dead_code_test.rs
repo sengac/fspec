@@ -223,7 +223,10 @@ query orphan_files() {
 }
 "#;
     let db = db.with_query_source(dead_code_queries);
-    let result = db.query("orphan_files", None).await.expect("query should succeed");
+    let result = db
+        .query("orphan_files", None)
+        .await
+        .expect("query should succeed");
     let orphans = result.as_array().expect("should be array");
 
     // Filter: exclude test files and stubs (language=null)
@@ -428,7 +431,10 @@ query orphan_files() {
 }
 "#;
     let db = db.with_query_source(dead_code_queries);
-    let result = db.query("orphan_files", None).await.expect("query should succeed");
+    let result = db
+        .query("orphan_files", None)
+        .await
+        .expect("query should succeed");
     let orphans = result.as_array().expect("should be array");
 
     // Apply the test file filter (same as dispatch_ast_dead_code will do)

@@ -137,10 +137,7 @@ pub fn needs_catch_up(schedule: &ScheduleEntry, now: chrono::DateTime<Utc>) -> b
 }
 
 /// Update lastRunAt to now for a schedule (prevents double-fire on first tick).
-async fn update_last_run_now(
-    schedules_path: &Path,
-    name: &str,
-) -> Result<(), anyhow::Error> {
+async fn update_last_run_now(schedules_path: &Path, name: &str) -> Result<(), anyhow::Error> {
     let content = tokio::fs::read_to_string(schedules_path).await?;
     let mut schedules: SchedulesFile = serde_json::from_str(&content)?;
 

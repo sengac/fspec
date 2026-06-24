@@ -63,12 +63,7 @@ impl RhaiSystemPromptFacade {
     /// Infallible by design: no Rhai functions are invoked at construction
     /// time. Evaluation happens lazily on the first call to each trait
     /// method, and any Rhai errors are logged and fall back to defaults.
-    pub fn new(
-        provider_name: String,
-        engine: Arc<Engine>,
-        ast: Arc<AST>,
-        config: Dynamic,
-    ) -> Self {
+    pub fn new(provider_name: String, engine: Arc<Engine>, ast: Arc<AST>, config: Dynamic) -> Self {
         Self {
             provider_name,
             engine,
@@ -90,11 +85,7 @@ impl RhaiSystemPromptFacade {
     /// Invoke a Rhai function and return the resulting [`Dynamic`],
     /// logging and swallowing any error. Callers are responsible for
     /// interpreting the returned value.
-    fn call_script_fn(
-        &self,
-        fn_name: &str,
-        args: impl rhai::FuncArgs,
-    ) -> Option<Dynamic> {
+    fn call_script_fn(&self, fn_name: &str, args: impl rhai::FuncArgs) -> Option<Dynamic> {
         let mut scope = Scope::new();
         match self
             .engine
@@ -188,10 +179,7 @@ impl RhaiSystemPromptFacade {
             return None;
         }
         let block_list = blocks.into_typed_array::<Dynamic>().ok()?;
-        let json_blocks: Vec<Value> = block_list
-            .iter()
-            .map(dynamic_to_json_value)
-            .collect();
+        let json_blocks: Vec<Value> = block_list.iter().map(dynamic_to_json_value).collect();
         Some(Value::Array(json_blocks))
     }
 }

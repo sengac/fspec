@@ -15,7 +15,7 @@ use std::sync::Arc;
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{
     parse_slash_command, Action, App, FspecBackend, Priority, SlashCommandParse, ViewMode,
-    MODEL_SELECTOR_DIALOG_ID, THINKING_LEVEL_DIALOG_ID,
+    THINKING_LEVEL_DIALOG_ID,
 };
 use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId, ThinkingLevel};
 
@@ -98,7 +98,7 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
     let (mut app, mock) = fresh_app();
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     drain_pending(&mut app).await;
-    assert!(!app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
+    assert!(!app.compositor().contains("model-selector-dialog"));
     // @step And the backend's list_providers returns [ProviderInfo{ key: "openai", ... }]
     mock.seed_providers(vec![ProviderInfo {
         key: "openai".to_string(),
@@ -127,7 +127,7 @@ async fn submitting_slash_model_opens_dialog_and_spawns_list_providers() {
     );
     // @step And the Navigator flips to ViewMode::ModelSelector (no Compositor modal)
     assert_eq!(app.active_view(), ViewMode::ModelSelector);
-    assert!(!app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
+    assert!(!app.compositor().contains("model-selector-dialog"));
     // @step And a tokio task is spawned that calls backend.list_providers()
     assert!(
         mock.list_providers_calls() > prior_lp,
@@ -322,7 +322,7 @@ async fn submitting_plain_text_falls_through_to_backend_send_input() {
     assert_eq!(last.0, SessionId::new("s-1"));
     assert_eq!(last.1, "hello world");
     // @step And no dialog is pushed onto the Compositor
-    assert!(!app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
+    assert!(!app.compositor().contains("model-selector-dialog"));
     assert!(!app.compositor().contains(THINKING_LEVEL_DIALOG_ID));
     // @step And no Action::SetSessionRole is dispatched
     assert_eq!(mock.set_session_role_calls(), prior_role);
@@ -378,7 +378,7 @@ async fn slash_popup_selection_of_model_opens_the_dialog() {
     drain_pending(&mut app).await;
     // @step And the Navigator flips to ViewMode::ModelSelector (no Compositor modal)
     assert_eq!(app.active_view(), ViewMode::ModelSelector);
-    assert!(!app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
+    assert!(!app.compositor().contains("model-selector-dialog"));
     // @step And a tokio task is spawned that calls backend.list_providers()
     assert!(
         mock.list_providers_calls() > prior_lp,

@@ -85,9 +85,18 @@ async fn test_export_creates_valid_astbundle_zip() {
         .read_to_string(&mut metadata_content)
         .expect("read metadata");
     let metadata: Value = serde_json::from_str(&metadata_content).expect("parse metadata");
-    assert!(metadata.get("version").is_some(), "metadata should have version");
-    assert!(metadata.get("node_count").is_some(), "metadata should have node_count");
-    assert!(metadata.get("edge_count").is_some(), "metadata should have edge_count");
+    assert!(
+        metadata.get("version").is_some(),
+        "metadata should have version"
+    );
+    assert!(
+        metadata.get("node_count").is_some(),
+        "metadata should have node_count"
+    );
+    assert!(
+        metadata.get("edge_count").is_some(),
+        "metadata should have edge_count"
+    );
 
     // @step And the archive contains schema.pg matching the current schema
     let mut schema_content = String::new();
@@ -96,7 +105,10 @@ async fn test_export_creates_valid_astbundle_zip() {
         .expect("schema.pg in archive")
         .read_to_string(&mut schema_content)
         .expect("read schema");
-    assert_eq!(schema_content, AST_CODE_SCHEMA, "schema.pg should match current schema");
+    assert_eq!(
+        schema_content, AST_CODE_SCHEMA,
+        "schema.pg should match current schema"
+    );
 }
 
 // ============================================================================
@@ -230,7 +242,11 @@ async fn test_import_rejects_incompatible_schema() {
 
     // Tamper with the schema inside the bundle to simulate a different version
     let tampered_path = temp_dir.path().join("tampered.astbundle");
-    tamper_bundle_schema(&bundle_path, &tampered_path, "// MODIFIED SCHEMA\nnode Fake { slug: String @key }");
+    tamper_bundle_schema(
+        &bundle_path,
+        &tampered_path,
+        "// MODIFIED SCHEMA\nnode Fake { slug: String @key }",
+    );
 
     // @step When I attempt to import the bundle
     let import_db_path = temp_dir.path().join("reject-target.nano");
@@ -256,7 +272,10 @@ async fn test_import_rejects_incompatible_schema() {
         .and_then(|n| n.as_object())
         .map(|obj| obj.values().filter_map(|v| v.as_u64()).sum())
         .unwrap_or(0);
-    assert_eq!(total_nodes, 0, "graph should remain empty after failed import");
+    assert_eq!(
+        total_nodes, 0,
+        "graph should remain empty after failed import"
+    );
 }
 
 /// Helper: create a tampered bundle with a different schema.pg
@@ -270,8 +289,8 @@ fn tamper_bundle_schema(
 
     let target_file = std::fs::File::create(target_path).expect("create target");
     let mut writer = zip::ZipWriter::new(target_file);
-    let options =
-        zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+    let options = zip::write::SimpleFileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated);
 
     for i in 0..source_archive.len() {
         let mut entry = source_archive.by_index(i).expect("read entry");

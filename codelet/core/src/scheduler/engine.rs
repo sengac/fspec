@@ -44,9 +44,7 @@ pub fn spawn_scheduler(
         info!("Scheduler started for project: {}", project_path);
 
         // SCHED-007: Run catch-up once before the tick loop
-        if let Err(e) =
-            super::catch_up::run_catch_up(&project_path, &state, hooks.clone()).await
-        {
+        if let Err(e) = super::catch_up::run_catch_up(&project_path, &state, hooks.clone()).await {
             error!("Catch-up check failed: {}", e);
         }
 
@@ -183,7 +181,11 @@ pub async fn evaluate_and_run(
                     duration_ms: None,
                     exit_code: None,
                     error: None,
-                    message: Some(format!("{}/{} sessions active", current_count, max_sessions())),
+                    message: Some(format!(
+                        "{}/{} sessions active",
+                        current_count,
+                        max_sessions()
+                    )),
                 };
                 let log_path = Path::new(project_path).join("spec/schedule-log.jsonl");
                 tokio::spawn(async move { append_log_entry(&log_path, &entry).await });
@@ -311,12 +313,8 @@ fn evaluate_single_schedule(
     };
 
     // Use shared should_trigger logic
-    let should_trigger = cron_utils::should_trigger(
-        &cron,
-        &tz,
-        schedule.last_run_at.as_deref(),
-        now,
-    );
+    let should_trigger =
+        cron_utils::should_trigger(&cron, &tz, schedule.last_run_at.as_deref(), now);
 
     EvaluationResult {
         name: name.to_string(),

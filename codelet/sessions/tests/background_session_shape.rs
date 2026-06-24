@@ -84,15 +84,13 @@ fn strip_line_comments(src: &str) -> String {
     out
 }
 
-
-
 /// Compile-time proof that the moved type's path resolves from the new home.
 /// This `use` line FAILS to compile if RPC-039 has not been applied because
 /// the placeholder background_session.rs declares no symbols.
 #[allow(unused_imports)]
 use codelet_sessions::background_session::{
-    BackgroundSession, BridgeImageData, CompactionProgress, IncomingMessage, PromptInput,
-    SessionError, WorkUnitContext, format_incoming_message,
+    format_incoming_message, BackgroundSession, BridgeImageData, CompactionProgress,
+    IncomingMessage, PromptInput, SessionError, WorkUnitContext,
 };
 
 #[test]
@@ -303,9 +301,8 @@ fn scenario_the_moved_background_session_rs_has_no_crate_persistence_or_crate_ty
         "AssistantMessage",
         "AssistantContent",
     ];
-    let mentions_any_persistence_symbol = persistence_symbols
-        .iter()
-        .any(|s| moved_code.contains(s));
+    let mentions_any_persistence_symbol =
+        persistence_symbols.iter().any(|s| moved_code.contains(s));
     if mentions_any_persistence_symbol {
         assert!(
             moved_code.contains("codelet_core::persistence"),
@@ -356,7 +353,10 @@ fn scenario_send_input_is_rewritten_to_a_non_napi_result_type() {
         .find(sig_marker)
         .expect("send_input signature must exist");
     let after_sig = &moved[body_start..];
-    let next_fn = after_sig[1..].find("\n    pub fn ").map(|i| i + 1).unwrap_or(after_sig.len());
+    let next_fn = after_sig[1..]
+        .find("\n    pub fn ")
+        .map(|i| i + 1)
+        .unwrap_or(after_sig.len());
     let body = &after_sig[..next_fn];
     let body_code = strip_line_comments(body);
     assert!(
@@ -376,13 +376,29 @@ fn scenario_send_input_is_rewritten_to_a_non_napi_result_type() {
     // @step And the napi-side free function session_send_input maps the new String error back to napi::Error::from_reason at the wire boundary so the TypeScript Promise<void> signature is preserved
     let napi = read(&napi_shell_path());
     // Locate the napi-side free function.
-    assert!(
-        napi.contains("pub fn session_send_input(session_id: String, input: String, thinking_config: Option<String>) -> Result<()>"),
-        "codelet/napi/src/session_manager.rs must still expose `session_send_input(...) -> Result<()>` to preserve the TS Promise<void> shape"
-    );
     let napi_sig_start = napi
         .find("pub fn session_send_input")
         .expect("session_send_input must exist in napi");
+    // The signature may be rustfmt-wrapped across multiple lines once it
+    // exceeds the line width (the code is fmt-correct; only its layout
+    // changed). Normalize whitespace across the signature span (up to the
+    // opening brace) so the assertion checks the SHAPE — the three param
+    // types and the `-> Result<()>` return that preserves the TS
+    // `Promise<void>` surface — independent of line wrapping.
+    let sig_span = &napi[napi_sig_start..];
+    let sig_brace = sig_span.find('{').unwrap_or(sig_span.len());
+    let sig_ws = sig_span[..sig_brace]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert!(
+        sig_ws.contains("session_id: String")
+            && sig_ws.contains("input: String")
+            && sig_ws.contains("thinking_config: Option<String>")
+            && sig_ws.contains("-> Result<()>"),
+        "codelet/napi/src/session_bindings.rs must still expose `session_send_input(session_id: String, input: String, thinking_config: Option<String>) -> Result<()>` to preserve the TS Promise<void> shape. Got signature:\n{}",
+        &sig_span[..sig_brace]
+    );
     let after_napi_sig = &napi[napi_sig_start..];
     let napi_fn_end = after_napi_sig[1..]
         .find("\npub fn ")
@@ -401,7 +417,8 @@ fn scenario_send_input_is_rewritten_to_a_non_napi_result_type() {
 // =============================================================================
 
 #[test]
-fn scenario_handle_output_uses_the_new_chunks_tx_broadcast_and_no_longer_touches_global_chunk_callback() {
+fn scenario_handle_output_uses_the_new_chunks_tx_broadcast_and_no_longer_touches_global_chunk_callback(
+) {
     // @step Given the BackgroundSession code has been moved into codelet/sessions/src/background_session.rs
     let moved = read(&moved_file_path());
 
@@ -415,7 +432,10 @@ fn scenario_handle_output_uses_the_new_chunks_tx_broadcast_and_no_longer_touches
         .find(sig_marker)
         .expect("handle_output signature must exist");
     let after_sig = &moved[body_start..];
-    let next_fn = after_sig[1..].find("\n    pub fn ").map(|i| i + 1).unwrap_or(after_sig.len());
+    let next_fn = after_sig[1..]
+        .find("\n    pub fn ")
+        .map(|i| i + 1)
+        .unwrap_or(after_sig.len());
     let body = &after_sig[..next_fn];
 
     // @step Then it still pushes the chunk into output_buffer
@@ -719,8 +739,7 @@ fn scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi() {
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let json: serde_json::Value =
-        serde_json::from_str(&stdout).expect("metadata JSON must parse");
+    let json: serde_json::Value = serde_json::from_str(&stdout).expect("metadata JSON must parse");
     let resolve = json
         .get("resolve")
         .expect("cargo metadata must include a resolve");
@@ -934,11 +953,8 @@ fn scenario_codelet_sessions_tests_assert_background_session_is_reachable_from_i
     // already inspects the literal signature. Here we ALSO verify the
     // method's return type at compile time by referencing the function
     // pointer.
-    let _send_input_witness: fn(
-        &BackgroundSession,
-        String,
-        Option<String>,
-    ) -> Result<(), String> = BackgroundSession::send_input;
+    let _send_input_witness: fn(&BackgroundSession, String, Option<String>) -> Result<(), String> =
+        BackgroundSession::send_input;
 }
 
 // =============================================================================
@@ -1062,7 +1078,6 @@ fn scenario_napi_typescript_surface_is_byte_stable_across_the_move() {
     // diff is handled by the project's git workflow (manual review of
     // `git diff codelet/napi/index.d.ts` after the move).
 }
-
 
 // =============================================================================
 // RPC-041 Scenario: The GLOBAL_CHUNK_CALLBACK static, GlobalChunkCallback

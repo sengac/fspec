@@ -43,8 +43,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `delete-features` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let args_json = json!({
         "tags": args.tags,
@@ -60,8 +59,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         }
     };
 
-    let value: Value =
-        serde_json::from_str(&json_text).context("parse core response as JSON")?;
+    let value: Value = serde_json::from_str(&json_text).context("parse core response as JSON")?;
 
     let success = value
         .get("success")

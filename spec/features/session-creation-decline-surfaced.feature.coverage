@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "A declined session creation maps to an explicit decline action",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/prov101_session_creation_decline.rs",
+          "lines": "48-62",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/session_creation.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A successful session creation maps to a session-created action",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/prov101_session_creation_decline.rs",
+          "lines": "66-80",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/session_creation.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The TUI surfaces a declined session creation as an explicit error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/prov101_session_creation_decline.rs",
+          "lines": "85-106",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/prov101_session_creation_decline.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/session_creation.rs",
+      "codelet/fspec-tui/src/app/dispatch_create_session_dialog.rs"
+    ],
+    "totalLinesCovered": 98
+  }
+}

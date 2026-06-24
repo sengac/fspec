@@ -37,11 +37,7 @@ fn run_cmd(cwd: &Path, args: &[&str]) -> (i32, String, String) {
     (code, stdout, stderr)
 }
 
-fn seed_work_units(
-    cwd: &Path,
-    units: &[(&str, &str)],
-    deps: &[(&str, &str, &[&str])],
-) {
+fn seed_work_units(cwd: &Path, units: &[(&str, &str)], deps: &[(&str, &str, &[&str])]) {
     let spec = cwd.join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
     let mut wus = serde_json::Map::new();
@@ -139,7 +135,10 @@ fn help_output_matches_captured_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "fspec remove-dependency --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "fspec remove-dependency --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-dependency.txt
     assert!(
@@ -165,7 +164,10 @@ fn positional_shorthand_removes_depends_on_edge() {
     assert_eq!(code, 0, "exit must be 0; stderr={stderr}, stdout={stdout}");
 
     // @step And stdout contains the substring '✓ Dependency removed successfully'
-    assert!(stdout.contains("Dependency removed successfully"), "stdout: {stdout}");
+    assert!(
+        stdout.contains("Dependency removed successfully"),
+        "stdout: {stdout}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no dependsOn field
     let disk = read_work_units(tmp.path());
@@ -189,7 +191,10 @@ fn depends_on_flag_removes_same_edge_as_positional_shorthand() {
     assert_eq!(code, 0, "exit must be 0; stderr={stderr}, stdout={stdout}");
 
     // @step And stdout contains the substring '✓ Dependency removed successfully'
-    assert!(stdout.contains("Dependency removed successfully"), "stdout: {stdout}");
+    assert!(
+        stdout.contains("Dependency removed successfully"),
+        "stdout: {stdout}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001 has no dependsOn field
     let disk = read_work_units(tmp.path());
@@ -216,7 +221,10 @@ fn positional_and_depends_on_with_same_value_succeed_without_conflict() {
     assert_eq!(code, 0, "exit must be 0; stderr={stderr}, stdout={stdout}");
 
     // @step And stdout contains the substring '✓ Dependency removed successfully'
-    assert!(stdout.contains("Dependency removed successfully"), "stdout: {stdout}");
+    assert!(
+        stdout.contains("Dependency removed successfully"),
+        "stdout: {stdout}"
+    );
 }
 
 #[test]
@@ -225,7 +233,11 @@ fn positional_and_depends_on_with_different_values_exits_1_with_conflict_message
     let tmp = TempDir::new().expect("tempdir");
     seed_work_units(
         tmp.path(),
-        &[("AUTH-001", "backlog"), ("AUTH-002", "backlog"), ("AUTH-003", "backlog")],
+        &[
+            ("AUTH-001", "backlog"),
+            ("AUTH-002", "backlog"),
+            ("AUTH-003", "backlog"),
+        ],
         &[("AUTH-001", "dependsOn", &["AUTH-002"])],
     );
 

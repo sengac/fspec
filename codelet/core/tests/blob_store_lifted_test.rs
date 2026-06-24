@@ -96,7 +96,11 @@ fn tool_result_round_trips_through_lifted_blob_storage_in_codelet_core() {
                     &format!("{BLOB_REF_PREFIX}{hash}"),
                     "the blob reference must be the canonical blob:sha256:<hash> form"
                 );
-                assert_eq!(hash.len(), 64, "hash must be a 64 hex character SHA-256 digest");
+                assert_eq!(
+                    hash.len(),
+                    64,
+                    "hash must be a 64 hex character SHA-256 digest"
+                );
                 assert!(
                     hash.chars().all(|c| c.is_ascii_hexdigit()),
                     "hash must be lowercase ASCII hex"
@@ -150,14 +154,20 @@ fn identical_blobs_deduplicate_to_a_single_on_disk_file() {
     let hash_b = store_blob(&buffer).expect("second store_blob");
 
     // @step Then both calls return the identical SHA-256 hash string
-    assert_eq!(hash_a, hash_b, "identical content must hash to the same value");
+    assert_eq!(
+        hash_a, hash_b,
+        "identical content must hash to the same value"
+    );
     assert_eq!(hash_a.len(), 64);
 
     // @step And exactly one file exists at {data_dir}/blobs/{first2hex}/{full_hash} and no .tmp file is left behind
     let blobs_dir = data_dir.path().join("blobs");
     let subdir = blobs_dir.join(&hash_a[0..2]);
     let blob_path = subdir.join(&hash_a);
-    assert!(blob_path.exists(), "blob file must exist at the canonical path");
+    assert!(
+        blob_path.exists(),
+        "blob file must exist at the canonical path"
+    );
 
     let entries: Vec<_> = fs::read_dir(&subdir)
         .expect("read blob subdir")
@@ -195,7 +205,7 @@ fn core_consumers_can_hash_store_and_rehydrate_blobs_without_napi() {
     let _data_dir = setup_data_dir();
 
     // @step When a downstream crate that does not depend on codelet-napi writes `use codelet_core::persistence::{BlobStore, store_blob, get_blob, blob_exists, is_blob_reference, extract_blob_hash, make_blob_reference, process_envelope_for_blob_storage, rehydrate_envelope_blobs, should_use_blob_storage, BLOB_REF_PREFIX}`
-    let payload = b"core-only blob payload that is large enough to be blobified" .repeat(300);
+    let payload = b"core-only blob payload that is large enough to be blobified".repeat(300);
     assert!(should_use_blob_storage(&payload));
     let hash = store_blob(&payload).expect("store_blob from core-only consumer");
     assert!(blob_exists(&hash).expect("blob_exists from core-only consumer"));
@@ -365,10 +375,9 @@ fn assistant_thinking_and_image_blob_storage_through_core() {
         _ => panic!("expected Assistant message"),
     }
 
-    let rehydrated_json = rehydrate_envelope_blobs(
-        &serde_json::to_string(&processed).expect("serialize"),
-    )
-    .expect("rehydrate thinking blob");
+    let rehydrated_json =
+        rehydrate_envelope_blobs(&serde_json::to_string(&processed).expect("serialize"))
+            .expect("rehydrate thinking blob");
     let rehydrated: MessageEnvelope = serde_json::from_str(&rehydrated_json).expect("parse");
     match &rehydrated.message {
         MessagePayload::Assistant(msg) => match &msg.content[0] {

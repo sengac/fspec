@@ -90,10 +90,16 @@ fn scenario_add_hook_help_matches_ts_formatcommandhelp_reference() {
     );
 
     // @step Then stdout contains the section header "ARGUMENTS"
-    assert!(stdout.contains("ARGUMENTS\n"), "help must contain ARGUMENTS section");
+    assert!(
+        stdout.contains("ARGUMENTS\n"),
+        "help must contain ARGUMENTS section"
+    );
 
     // @step Then stdout contains the section header "OPTIONS"
-    assert!(stdout.contains("OPTIONS\n"), "help must contain OPTIONS section");
+    assert!(
+        stdout.contains("OPTIONS\n"),
+        "help must contain OPTIONS section"
+    );
 
     // @step Then stdout contains the substring '--command <path>'
     assert!(
@@ -102,7 +108,10 @@ fn scenario_add_hook_help_matches_ts_formatcommandhelp_reference() {
     );
 
     // @step Then stdout contains the substring '--blocking'
-    assert!(stdout.contains("--blocking"), "help must advertise --blocking");
+    assert!(
+        stdout.contains("--blocking"),
+        "help must advertise --blocking"
+    );
 
     // @step Then stdout contains the substring '--timeout <seconds>'
     assert!(
@@ -124,7 +133,12 @@ fn scenario_cli_writes_zero_stdout_bytes_on_success() {
     // @step When I run `fspec add-hook pre-implementing lint --command spec/hooks/lint.sh`
     let (code, stdout, stderr) = run_add_hook(
         tmp.path(),
-        &["pre-implementing", "lint", "--command", "spec/hooks/lint.sh"],
+        &[
+            "pre-implementing",
+            "lint",
+            "--command",
+            "spec/hooks/lint.sh",
+        ],
     );
 
     // @step Then the command exits 0
@@ -203,7 +217,12 @@ fn scenario_cli_is_silent_against_populated_config() {
     // @step When I run `fspec add-hook pre-implementing test --command spec/hooks/test.sh`
     let (code, stdout, stderr) = run_add_hook(
         tmp.path(),
-        &["pre-implementing", "test", "--command", "spec/hooks/test.sh"],
+        &[
+            "pre-implementing",
+            "test",
+            "--command",
+            "spec/hooks/test.sh",
+        ],
     );
 
     // @step Then the command exits 0

@@ -171,9 +171,12 @@ fn engine_accepts_extensible_module_list() {
 
     // @step And the engine factory accepts an extensible module list for future modules
     let mut custom_module = Module::new();
-    custom_module.set_native_fn("hello", || -> Result<rhai::Dynamic, Box<rhai::EvalAltResult>> {
-        Ok(rhai::Dynamic::from("world".to_string()))
-    });
+    custom_module.set_native_fn(
+        "hello",
+        || -> Result<rhai::Dynamic, Box<rhai::EvalAltResult>> {
+            Ok(rhai::Dynamic::from("world".to_string()))
+        },
+    );
 
     let modules = vec![RhaiModule {
         name: "custom".to_string(),

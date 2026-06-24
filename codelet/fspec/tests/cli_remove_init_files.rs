@@ -126,7 +126,10 @@ fn scenario_cli_keep_config_preserves_spec_fspec_config_json() {
     let (code, stdout, stderr) = run_remove(ws.path(), &["--keep-config"]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "must exit 0; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/fspec-config.json still exists
     assert!(
@@ -166,7 +169,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher returns JSON whose filesRemoved includes 'spec/CLAUDE.md'
     let parsed: Value = serde_json::from_str(&result.data).expect("dispatcher data must be JSON");
@@ -174,9 +180,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         .as_array()
         .expect("filesRemoved must be an array");
     assert!(
-        removed
-            .iter()
-            .any(|v| v.as_str() == Some("spec/CLAUDE.md")),
+        removed.iter().any(|v| v.as_str() == Some("spec/CLAUDE.md")),
         "filesRemoved must include spec/CLAUDE.md; got {}",
         result.data
     );
@@ -221,7 +225,10 @@ fn scenario_remove_init_files_help_matches_ts_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "remove-init-files --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-init-files --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/remove-init-files.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

@@ -364,8 +364,7 @@ impl SessionStore {
         let filename = format!("{id}.json");
         let path = self.sessions_dir.join(&filename);
         if path.exists() {
-            fs::remove_file(&path)
-                .map_err(|e| format!("Failed to delete session file: {e}"))?;
+            fs::remove_file(&path).map_err(|e| format!("Failed to delete session file: {e}"))?;
         }
         Ok(())
     }
@@ -405,9 +404,7 @@ impl SessionStore {
                     "Cannot fork at index {} which is before compaction boundary {}. \
                      Compacted messages cannot be individually accessed. \
                      Fork at index {} or later.",
-                    at_index,
-                    compaction.compacted_before_index,
-                    compaction.compacted_before_index
+                    at_index, compaction.compacted_before_index, compaction.compacted_before_index
                 ));
             }
         }
@@ -758,9 +755,8 @@ pub fn delete_session(id: Uuid) -> Result<(), String> {
     let sessions_dir = codelet_common::get_data_dir()?.join("sessions");
     let path = sessions_dir.join(format!("{id}.json"));
     if path.exists() {
-        fs::remove_file(&path).map_err(|e| {
-            format!("Failed to delete session file {}: {e}", path.display())
-        })?;
+        fs::remove_file(&path)
+            .map_err(|e| format!("Failed to delete session file {}: {e}", path.display()))?;
     }
 
     // (2) Best-effort in-memory cache eviction if the singleton happens
@@ -907,10 +903,7 @@ pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessa
     let mut messages = Vec::new();
 
     if let Some(ref compaction) = session.compaction {
-        let summary_content = format!(
-            "[Previous conversation summary]\n\n{}",
-            compaction.summary
-        );
+        let summary_content = format!("[Previous conversation summary]\n\n{}", compaction.summary);
         let summary_tokens = count_tokens(&summary_content) as u32;
 
         let mut meta = HashMap::new();
@@ -953,9 +946,7 @@ pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessa
 }
 
 /// Get ALL messages for a session, ignoring compaction state.
-pub fn get_session_messages_full(
-    session: &SessionManifest,
-) -> Result<Vec<StoredMessage>, String> {
+pub fn get_session_messages_full(session: &SessionManifest) -> Result<Vec<StoredMessage>, String> {
     init_message_store()?;
     let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
     let store_ref = store.as_ref().ok_or("Message store not initialized")?;

@@ -41,7 +41,15 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_unit(id: &str, status: &str) -> serde_json::Value {
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
         } else {
@@ -97,13 +105,20 @@ fn scenario_answer_question_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "answer-question --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "answer-question --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/answer-question.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_AQ);
 
     // @step And stdout starts with a blank line followed by 'ANSWER-QUESTION'
-    assert!(stdout.starts_with("\nANSWER-QUESTION\n"), "got start: {:?}", &stdout[..stdout.len().min(40)]);
+    assert!(
+        stdout.starts_with("\nANSWER-QUESTION\n"),
+        "got start: {:?}",
+        &stdout[..stdout.len().min(40)]
+    );
 }
 
 #[test]
@@ -111,12 +126,23 @@ fn scenario_cli_successfully_answers_question_with_add_to_rule_and_prints_succes
     // @step Given a project root tempdir with spec/work-units.json containing AUTH-001 status=specifying with questions=[{id:0,text:'Should we support OAuth?',deleted:false,createdAt:'x'}] and nextRuleId=0
     let ws = tempfile::tempdir().expect("tempdir");
     let mut pre = seed_unit("AUTH-001", "specifying");
-    pre["workUnits"]["AUTH-001"]["questions"] = serde_json::json!([q(0, "Should we support OAuth?")]);
+    pre["workUnits"]["AUTH-001"]["questions"] =
+        serde_json::json!([q(0, "Should we support OAuth?")]);
     pre["workUnits"]["AUTH-001"]["nextRuleId"] = serde_json::json!(0);
     write_work_units(ws.path(), &pretty(&pre));
 
     // @step When I run `fspec answer-question AUTH-001 0 --answer "Yes, Google OAuth" --add-to rule` in that tempdir
-    let (code, stdout, stderr) = run_aq(ws.path(), &["AUTH-001", "0", "--answer", "Yes, Google OAuth", "--add-to", "rule"]);
+    let (code, stdout, stderr) = run_aq(
+        ws.path(),
+        &[
+            "AUTH-001",
+            "0",
+            "--answer",
+            "Yes, Google OAuth",
+            "--add-to",
+            "rule",
+        ],
+    );
 
     // @step Then the exit code is 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
@@ -127,15 +153,27 @@ fn scenario_cli_successfully_answers_question_with_add_to_rule_and_prints_succes
         "stdout must contain success line; got:\n{stdout}"
     );
     // @step And stdout contains the substring 'Answer: "Yes, Google OAuth"'
-    assert!(stdout.contains(r#"Answer: "Yes, Google OAuth""#), "got: {stdout}");
+    assert!(
+        stdout.contains(r#"Answer: "Yes, Google OAuth""#),
+        "got: {stdout}"
+    );
     // @step And stdout contains the substring 'Added to rules: "Yes, Google OAuth"'
-    assert!(stdout.contains(r#"Added to rules: "Yes, Google OAuth""#), "got: {stdout}");
+    assert!(
+        stdout.contains(r#"Added to rules: "Yes, Google OAuth""#),
+        "got: {stdout}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].text='Yes, Google OAuth'
     let v = read_work_units(ws.path());
-    assert_eq!(v["workUnits"]["AUTH-001"]["rules"][0]["text"].as_str(), Some("Yes, Google OAuth"));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["rules"][0]["text"].as_str(),
+        Some("Yes, Google OAuth")
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].id=0
-    assert_eq!(v["workUnits"]["AUTH-001"]["rules"][0]["id"].as_u64(), Some(0));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["rules"][0]["id"].as_u64(),
+        Some(0)
+    );
 }
 
 #[test]
@@ -153,7 +191,10 @@ fn scenario_cli_defaults_add_to_to_none_no_rule_or_assumption_added() {
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
     // @step And stdout contains the substring '✓ Answered question: "Q?"'
-    assert!(stdout.contains(r#"✓ Answered question: "Q?""#), "got: {stdout}");
+    assert!(
+        stdout.contains(r#"✓ Answered question: "Q?""#),
+        "got: {stdout}"
+    );
     // @step And stdout contains the substring 'Answer: "Maybe"'
     assert!(stdout.contains(r#"Answer: "Maybe""#), "got: {stdout}");
     // @step And stdout does NOT contain the substring 'Added to'
@@ -161,9 +202,13 @@ fn scenario_cli_defaults_add_to_to_none_no_rule_or_assumption_added() {
 
     let v = read_work_units(ws.path());
     // @step And spec/work-units.json on disk shows AUTH-001 has no rules added
-    assert!(v["workUnits"]["AUTH-001"]["rules"].as_array().is_none_or(Vec::is_empty));
+    assert!(v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
     // @step And spec/work-units.json on disk shows AUTH-001 has no assumptions added
-    assert!(v["workUnits"]["AUTH-001"]["assumptions"].as_array().is_none_or(Vec::is_empty));
+    assert!(v["workUnits"]["AUTH-001"]["assumptions"]
+        .as_array()
+        .is_none_or(Vec::is_empty));
 }
 
 #[test]
@@ -176,12 +221,18 @@ fn scenario_cli_rejects_non_specifying_status_with_exit_1() {
     let pre_bytes = fs::read(ws.path().join("spec/work-units.json")).unwrap();
 
     // @step When I run `fspec answer-question AUTH-001 0 --answer "Yes" --add-to rule` in that tempdir
-    let (code, _stdout, stderr) = run_aq(ws.path(), &["AUTH-001", "0", "--answer", "Yes", "--add-to", "rule"]);
+    let (code, _stdout, stderr) = run_aq(
+        ws.path(),
+        &["AUTH-001", "0", "--answer", "Yes", "--add-to", "rule"],
+    );
 
     // @step Then the exit code is 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
     // @step And stderr contains the substring '✗ Failed to answer question:'
-    assert!(stderr.contains("✗ Failed to answer question:"), "got: {stderr}");
+    assert!(
+        stderr.contains("✗ Failed to answer question:"),
+        "got: {stderr}"
+    );
     // @step And stderr contains the substring "Can only answer questions during discovery/specification phase. AUTH-001 is in 'backlog' state."
     assert!(
         stderr.contains("Can only answer questions during discovery/specification phase. AUTH-001 is in 'backlog' state."),
@@ -202,14 +253,23 @@ fn scenario_cli_rejects_out_of_range_index_with_exit_1() {
     write_work_units(ws.path(), &pretty(&pre));
 
     // @step When I run `fspec answer-question AUTH-001 99 --answer "X" --add-to rule` in that tempdir
-    let (code, _stdout, stderr) = run_aq(ws.path(), &["AUTH-001", "99", "--answer", "X", "--add-to", "rule"]);
+    let (code, _stdout, stderr) = run_aq(
+        ws.path(),
+        &["AUTH-001", "99", "--answer", "X", "--add-to", "rule"],
+    );
 
     // @step Then the exit code is 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
     // @step And stderr contains the substring '✗ Failed to answer question:'
-    assert!(stderr.contains("✗ Failed to answer question:"), "got: {stderr}");
+    assert!(
+        stderr.contains("✗ Failed to answer question:"),
+        "got: {stderr}"
+    );
     // @step And stderr contains the substring 'Invalid question index 99'
-    assert!(stderr.contains("Invalid question index 99"), "got: {stderr}");
+    assert!(
+        stderr.contains("Invalid question index 99"),
+        "got: {stderr}"
+    );
 }
 
 #[test]
@@ -223,21 +283,33 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step When I dispatch answer-question via fspec_core::dispatch::dispatch_command with workUnitId='AUTH-001' index=0 answer='Yes' addTo='rule'
     let req = codelet_fspec_core::DispatchRequest {
         command: "answer-question".to_string(),
-        args_json: r#"{"workUnitId":"AUTH-001","index":0,"answer":"Yes","addTo":"rule"}"#.to_string(),
+        args_json: r#"{"workUnitId":"AUTH-001","index":0,"answer":"Yes","addTo":"rule"}"#
+            .to_string(),
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec answer-question AUTH-001 0 --answer "Twice" --add-to rule` afterwards exits 0
-    let (code, stdout, stderr) = run_aq(ws.path(), &["AUTH-001", "0", "--answer", "Twice", "--add-to", "rule"]);
-    assert_eq!(code, 0, "follow-up CLI invocation must succeed; stdout={stdout}, stderr={stderr}");
+    let (code, stdout, stderr) = run_aq(
+        ws.path(),
+        &["AUTH-001", "0", "--answer", "Twice", "--add-to", "rule"],
+    );
+    assert_eq!(
+        code, 0,
+        "follow-up CLI invocation must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules has length 2
     let v = read_work_units(ws.path());
-    let rules = v["workUnits"]["AUTH-001"]["rules"].as_array().expect("rules array");
+    let rules = v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .expect("rules array");
     assert_eq!(rules.len(), 2);
 
     // @step And the CLI bridge module codelet/fspec/src/answer_question.rs contains NO inline question lookup, status guard, RuleItem construction, or file-write logic — its only computation is clap parsing + JSON arg marshalling

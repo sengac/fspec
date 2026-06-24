@@ -32,8 +32,8 @@ use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use codelet_fspec_core::FspecCoreError;
 use codelet_fspec_core::commands::list_tags;
+use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
 
 /// Strongly-typed args mirrored from the TypeScript Commander.js flag
@@ -55,8 +55,7 @@ pub struct CliArgs {
 /// it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Marshal CliArgs → JSON object expected by
     // `fspec_core::commands::list_tags::run`. Only emit the

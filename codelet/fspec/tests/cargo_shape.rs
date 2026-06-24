@@ -19,7 +19,10 @@ use std::fs;
 use std::process::{Command, Stdio};
 
 use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
-use common::{codelet_root, fspec_bin, fspec_crate_root, make_workspace, spawn_fspec_daemon, strip_comments, ChildGuard};
+use common::{
+    codelet_root, fspec_bin, fspec_crate_root, make_workspace, spawn_fspec_daemon, strip_comments,
+    ChildGuard,
+};
 use url::Url;
 
 #[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
@@ -125,10 +128,7 @@ async fn scenario_workspace_defaults_to_cwd_when_omitted() {
         .expect("connect WebSocketFspecBackend");
 
     // @step And calls to `list_work_units` return the work units seeded in `<W>/spec/work-units.json`
-    let units = backend
-        .list_work_units()
-        .await
-        .expect("list_work_units");
+    let units = backend.list_work_units().await.expect("list_work_units");
     assert!(
         units.iter().any(|u| u.id == "WS-CWD-1"),
         "list_work_units must return the WS-CWD-1 unit seeded into CWD; got: {units:?}"
@@ -174,10 +174,7 @@ async fn scenario_workspace_path_overrides_cwd_for_the_work_units_watcher_root()
         .expect("connect WebSocketFspecBackend");
 
     // @step And `list_work_units` returns the work units from `<B>` (NOT `<A>`)
-    let units = backend
-        .list_work_units()
-        .await
-        .expect("list_work_units");
+    let units = backend.list_work_units().await.expect("list_work_units");
     assert!(
         units.iter().any(|u| u.id == "B-1"),
         "list_work_units must return B-1 (from --workspace override); got: {units:?}"
@@ -248,10 +245,9 @@ fn scenario_codelet_fspec_is_registered_as_a_workspace_member() {
     let body = fs::read_to_string(&cargo).expect("read codelet/Cargo.toml");
 
     // @step When the test parses `[workspace].members`
-    let members_section = extract_section(&body, "[workspace]")
-        .expect("[workspace] section must exist");
-    let members_list = extract_members(&members_section)
-        .expect("[workspace].members must exist");
+    let members_section =
+        extract_section(&body, "[workspace]").expect("[workspace] section must exist");
+    let members_list = extract_members(&members_section).expect("[workspace].members must exist");
 
     // @step Then the members list contains the string `fspec`
     assert!(
@@ -292,8 +288,7 @@ fn scenario_codelet_fspec_is_registered_as_a_workspace_member() {
         "tui",
     ];
     assert_eq!(
-        members_list,
-        expected,
+        members_list, expected,
         "members must be exactly the locked alphabetical sequence"
     );
 }
@@ -323,10 +318,7 @@ fn scenario_cargo_toml_declares_a_single_bin_named_fspec() {
     );
 
     // @step And no other `[[bin]]` table is declared
-    let bin_header_lines = body
-        .lines()
-        .filter(|l| l.trim() == "[[bin]]")
-        .count();
+    let bin_header_lines = body.lines().filter(|l| l.trim() == "[[bin]]").count();
     assert_eq!(
         bin_header_lines, 1,
         "exactly one [[bin]] section header is permitted in codelet/fspec/Cargo.toml"
@@ -386,6 +378,8 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "client.rs",
         "common.rs",
         "status.rs",
+        // PROV-097: dotenv-at-startup seam module.
+        "startup_env.rs",
         "list_work_units.rs",
         "list_prefixes.rs",
         "list_epics.rs",
@@ -512,6 +506,8 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "client.rs",
         "common.rs",
         "status.rs",
+        // PROV-097: dotenv-at-startup seam module.
+        "startup_env.rs",
         "list_work_units.rs",
         "list_prefixes.rs",
         "list_epics.rs",
@@ -708,7 +704,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 163 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 164 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
@@ -794,7 +790,14 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // intercept_ts_help extraction if it approaches this again.
     let main_cap: usize = 3600;
     let standard_cap: usize = 300;
-    for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
+    for f in [
+        "main.rs",
+        "combined.rs",
+        "daemon.rs",
+        "client.rs",
+        "common.rs",
+        "status.rs",
+    ] {
         let p = src.join(f);
         let body = fs::read_to_string(&p).expect("read source file");
         let line_count = body.lines().count();
@@ -819,8 +822,7 @@ fn scenario_cargo_toml_dependencies_does_not_list_codelet_napi() {
     let body = fs::read_to_string(&cargo).expect("read fspec/Cargo.toml");
 
     // @step When the test parses the `[dependencies]` table
-    let deps = extract_section(&body, "[dependencies]")
-        .expect("[dependencies] section must exist");
+    let deps = extract_section(&body, "[dependencies]").expect("[dependencies] section must exist");
 
     // @step Then there is no key named `codelet-napi`
     // @step And there is no key whose name starts with `codelet-napi`
@@ -868,8 +870,7 @@ fn scenario_cargo_toml_declares_the_expected_production_dependencies() {
     let body = fs::read_to_string(&cargo).expect("read fspec/Cargo.toml");
 
     // @step When the test parses the `[dependencies]` table
-    let deps = extract_section(&body, "[dependencies]")
-        .expect("[dependencies] section must exist");
+    let deps = extract_section(&body, "[dependencies]").expect("[dependencies] section must exist");
 
     // @step Then it contains keys: `clap`, `tokio`, `anyhow`, `tracing`, `tracing-subscriber`, `tracing-appender`, `dirs`, `serde`, `serde_json`, `url`
     // @step And it contains keys: `codelet-rpc`, `codelet-rpc-types`, `codelet-rpc-embedded`, `codelet-rpc-server`, `codelet-fspec-tui`, `codelet-core`
@@ -890,6 +891,8 @@ fn scenario_cargo_toml_declares_the_expected_production_dependencies() {
         "codelet-rpc-server",
         "codelet-fspec-tui",
         "codelet-core",
+        // PROV-097: dotenv-at-startup load (mirrors codelet/cli).
+        "dotenvy",
     ];
     let mut missing = Vec::new();
     for needle in expected {
@@ -897,7 +900,9 @@ fn scenario_cargo_toml_declares_the_expected_production_dependencies() {
         let pat_dot = format!("{needle}.");
         let found = deps.lines().any(|l| {
             let t = l.trim();
-            t.starts_with(&pat_eq) || t.starts_with(&pat_dot) || t.starts_with(&format!("{needle}="))
+            t.starts_with(&pat_eq)
+                || t.starts_with(&pat_dot)
+                || t.starts_with(&format!("{needle}="))
         });
         if !found {
             missing.push(needle);
@@ -968,7 +973,10 @@ fn scenario_rpc_005_source_shape_invariant_is_widened_to_scan_fspec_src() {
 #[test]
 fn scenario_existing_codelet_rpc_server_dev_helper_binary_stays_in_place() {
     // @step Given the file `codelet/rpc-server/src/main.rs` exists
-    let main_rs = codelet_root().join("rpc-server").join("src").join("main.rs");
+    let main_rs = codelet_root()
+        .join("rpc-server")
+        .join("src")
+        .join("main.rs");
     assert!(main_rs.is_file(), "rpc-server/src/main.rs must still exist");
     let body = fs::read_to_string(&main_rs).expect("read rpc-server main.rs");
 
@@ -1008,11 +1016,13 @@ fn scenario_spawn_fspec_daemon_helper_proves_port_line_contract_is_verbatim() {
 
     // @step Then it defines a `spawn_fspec_daemon` helper that uses `BufReader::read_line`
     // (The helper itself lives in tests/common/mod.rs and is imported.)
-    let common = fspec_crate_root().join("tests").join("common").join("mod.rs");
+    let common = fspec_crate_root()
+        .join("tests")
+        .join("common")
+        .join("mod.rs");
     let common_body = fs::read_to_string(&common).expect("read tests/common/mod.rs");
     assert!(
-        common_body.contains("pub fn spawn_fspec_daemon")
-            && common_body.contains("BufReader::new"),
+        common_body.contains("pub fn spawn_fspec_daemon") && common_body.contains("BufReader::new"),
         "tests/common/mod.rs must define spawn_fspec_daemon using BufReader::read_line"
     );
 
@@ -1050,10 +1060,7 @@ fn extract_section(toml: &str, header: &str) -> Option<String> {
             in_section = true;
             continue;
         }
-        if in_section
-            && trimmed.starts_with('[')
-            && trimmed.ends_with(']')
-        {
+        if in_section && trimmed.starts_with('[') && trimmed.ends_with(']') {
             break;
         }
         if in_section {
@@ -1098,7 +1105,9 @@ fn collect_rs_files(dir: &std::path::Path) -> Vec<std::path::PathBuf> {
     let mut out = Vec::new();
     let mut stack: Vec<std::path::PathBuf> = vec![dir.to_path_buf()];
     while let Some(d) = stack.pop() {
-        let Ok(rd) = std::fs::read_dir(&d) else { continue };
+        let Ok(rd) = std::fs::read_dir(&d) else {
+            continue;
+        };
         for entry in rd.flatten() {
             let p = entry.path();
             if p.is_dir() {
@@ -1110,7 +1119,6 @@ fn collect_rs_files(dir: &std::path::Path) -> Vec<std::path::PathBuf> {
     }
     out
 }
-
 
 // === Validating-phase attestation stubs ===
 // These tests carry the @step comments required by the cargo-shape
@@ -1141,7 +1149,10 @@ fn scenario_cargo_build_p_fspec_release_produces_codelet_target_release_fspec() 
     );
 
     // @step And the file `codelet/target/release/fspec` exists and is executable
-    let artifact = common::codelet_root().join("target").join("release").join("fspec");
+    let artifact = common::codelet_root()
+        .join("target")
+        .join("release")
+        .join("fspec");
     assert!(
         artifact.is_file(),
         "release artifact must exist at {}",
@@ -1150,7 +1161,10 @@ fn scenario_cargo_build_p_fspec_release_produces_codelet_target_release_fspec() 
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        let mode = fs::metadata(&artifact).expect("metadata").permissions().mode();
+        let mode = fs::metadata(&artifact)
+            .expect("metadata")
+            .permissions()
+            .mode();
         assert!(mode & 0o111 != 0, "release artifact must be executable");
     }
 }
@@ -1163,7 +1177,11 @@ fn scenario_existing_codelet_rpc_server_test_harness_still_works_port_line_contr
         .join("rpc-server")
         .join("tests")
         .join("websocket_transport.rs");
-    assert!(path.is_file(), "websocket_transport.rs must exist at {}", path.display());
+    assert!(
+        path.is_file(),
+        "websocket_transport.rs must exist at {}",
+        path.display()
+    );
 
     // @step When the developer runs `cargo test -p codelet-rpc-server`
     let output = Command::new("cargo")
@@ -1182,7 +1200,10 @@ fn scenario_existing_codelet_rpc_server_test_harness_still_works_port_line_contr
     );
 
     // @step And no behaviour change has been introduced to the RPC-006 binary
-    let main_rs = common::codelet_root().join("rpc-server").join("src").join("main.rs");
+    let main_rs = common::codelet_root()
+        .join("rpc-server")
+        .join("src")
+        .join("main.rs");
     let body = fs::read_to_string(&main_rs).expect("read rpc-server main.rs");
     assert!(
         body.contains("#[tokio::main]") && body.contains("async fn main()"),
@@ -1194,12 +1215,18 @@ fn scenario_existing_codelet_rpc_server_test_harness_still_works_port_line_contr
 fn scenario_package_json_declares_the_build_rust_fspec_script() {
     // @step Given the file `package.json` exists
     let pkg_path = common::project_root().join("package.json");
-    assert!(pkg_path.is_file(), "package.json must exist at {}", pkg_path.display());
+    assert!(
+        pkg_path.is_file(),
+        "package.json must exist at {}",
+        pkg_path.display()
+    );
 
     // @step When the test parses the `scripts` object
     let body = fs::read_to_string(&pkg_path).expect("read package.json");
     let json: serde_json::Value = serde_json::from_str(&body).expect("parse package.json");
-    let scripts = json.get("scripts").expect("package.json must have `scripts`");
+    let scripts = json
+        .get("scripts")
+        .expect("package.json must have `scripts`");
 
     // @step Then `scripts["build:rust:fspec"]` exists
     let script = scripts
@@ -1247,7 +1274,10 @@ fn scenario_npm_run_build_rust_fspec_produces_dist_fspec_for_parity_with_the_ts_
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        let mode = fs::metadata(&artifact).expect("metadata").permissions().mode();
+        let mode = fs::metadata(&artifact)
+            .expect("metadata")
+            .permissions()
+            .mode();
         assert!(mode & 0o111 != 0, "dist/fspec must be executable");
     }
 }

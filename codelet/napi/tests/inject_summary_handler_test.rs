@@ -7,8 +7,8 @@
 //! - Handler stores DAG content in pending_dag (no session lock)
 //! - apply_pending_dag applies it when agent_loop holds the lock
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 use codelet_cli::session::system_reminders::{
     add_system_reminder, is_system_reminder, SystemReminderType,
@@ -136,12 +136,8 @@ fn test_handler_clears_compaction_flag() {
     let pending_dag = Arc::new(std::sync::Mutex::new(None));
     let compaction_flag = Arc::new(AtomicBool::new(true));
 
-    let handler = inject_summary_handler::create_handler(
-        pending_dag,
-        200_000,
-        compaction_flag.clone(),
-        None,
-    );
+    let handler =
+        inject_summary_handler::create_handler(pending_dag, 200_000, compaction_flag.clone(), None);
 
     // @step When the handler is called
     let result = handler(Uuid::new_v4(), "# Summary".to_string());
@@ -170,15 +166,18 @@ fn test_handler_returns_token_counts() {
         None,
     );
 
-    let dag_content = "# D2: Architecture\n".to_string()
-        + "- Design pattern detail. ".repeat(50).as_str();
+    let dag_content =
+        "# D2: Architecture\n".to_string() + "- Design pattern detail. ".repeat(50).as_str();
 
     let result = handler(Uuid::new_v4(), dag_content);
     assert!(result.is_ok());
     let result = result.unwrap();
 
     assert!(result.injected_tokens > 0, "injected_tokens should be > 0");
-    assert!(result.remaining_budget > 0, "remaining_budget should be > 0");
+    assert!(
+        result.remaining_budget > 0,
+        "remaining_budget should be > 0"
+    );
     assert!(
         result.remaining_budget < context_window,
         "remaining_budget should be less than context_window"
@@ -193,7 +192,9 @@ fn test_handler_returns_token_counts() {
 fn test_apply_pending_dag_full_cycle() {
     // @step Given a session with 5 system reminders and 97 conversation pairs
     let mut session = create_session_with_messages(5, 97);
-    session.messages.push(create_user_message("Final user message"));
+    session
+        .messages
+        .push(create_user_message("Final user message"));
     assert_eq!(session.messages.len(), 200);
 
     // @step And a pending_dag with wrapped DAG content
@@ -209,7 +210,8 @@ fn test_apply_pending_dag_full_cycle() {
 
     // @step And session should have 5 system reminders + 1 DAG = 6 messages
     assert_eq!(
-        session.messages.len(), 6,
+        session.messages.len(),
+        6,
         "Should have 5 system reminders + 1 DAG = 6, got {}",
         session.messages.len()
     );
@@ -242,7 +244,11 @@ fn test_apply_pending_dag_no_content() {
     let applied = inject_summary_handler::apply_pending_dag(&mut session, &pending_dag);
 
     assert!(applied.is_none(), "Should return None when no pending DAG");
-    assert_eq!(session.messages.len(), original_count, "Messages should be unchanged");
+    assert_eq!(
+        session.messages.len(),
+        original_count,
+        "Messages should be unchanged"
+    );
 }
 
 // =============================================================================
@@ -254,15 +260,17 @@ fn test_apply_pending_dag_resets_tracker() {
     let mut session = create_session_with_messages(3, 10);
 
     // Simulate accumulated state
-    session.turns.push(codelet_core::compaction::ConversationTurn {
-        user_message: "Hello".to_string(),
-        assistant_response: "Hi".to_string(),
-        tool_calls: vec![],
-        tool_results: vec![],
-        tokens: 50,
-        timestamp: std::time::SystemTime::now(),
-        previous_error: None,
-    });
+    session
+        .turns
+        .push(codelet_core::compaction::ConversationTurn {
+            user_message: "Hello".to_string(),
+            assistant_response: "Hi".to_string(),
+            tool_calls: vec![],
+            tool_results: vec![],
+            tokens: 50,
+            timestamp: std::time::SystemTime::now(),
+            previous_error: None,
+        });
     session.token_tracker.input_tokens = 50_000;
     session.token_tracker.output_tokens = 10_000;
 
@@ -274,7 +282,10 @@ fn test_apply_pending_dag_resets_tracker() {
     assert!(applied.is_some());
 
     // Turns should be cleared
-    assert!(session.turns.is_empty(), "turns should be empty after injection");
+    assert!(
+        session.turns.is_empty(),
+        "turns should be empty after injection"
+    );
 
     // Token tracker should reflect only post-injection messages
     let actual_tokens: u64 = session
@@ -286,7 +297,10 @@ fn test_apply_pending_dag_resets_tracker() {
         session.token_tracker.input_tokens, actual_tokens,
         "input_tokens should match actual message tokens"
     );
-    assert_eq!(session.token_tracker.output_tokens, 0, "output_tokens should be 0");
+    assert_eq!(
+        session.token_tracker.output_tokens, 0,
+        "output_tokens should be 0"
+    );
 }
 
 // =============================================================================
@@ -304,10 +318,14 @@ fn test_handler_registration_callable() {
     });
 
     set_inject_summary_handler(session_id, Some(handler));
-    assert!(codelet_tools::inject_summary::has_inject_summary_handler(session_id));
+    assert!(codelet_tools::inject_summary::has_inject_summary_handler(
+        session_id
+    ));
 
     set_inject_summary_handler(session_id, None);
-    assert!(!codelet_tools::inject_summary::has_inject_summary_handler(session_id));
+    assert!(!codelet_tools::inject_summary::has_inject_summary_handler(
+        session_id
+    ));
 }
 
 // =============================================================================

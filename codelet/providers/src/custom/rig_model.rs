@@ -39,7 +39,8 @@ use std::sync::Arc;
 use async_stream::stream;
 use futures::StreamExt;
 use rig::completion::{
-    CompletionError, CompletionModel, CompletionRequest, CompletionResponse as RigCompletionResponse,
+    CompletionError, CompletionModel, CompletionRequest,
+    CompletionResponse as RigCompletionResponse,
 };
 use rig::message::AssistantContent;
 use rig::streaming::{
@@ -163,9 +164,7 @@ fn extract_thinking_config(req: &CompletionRequest) -> Option<serde_json::Value>
 }
 
 /// Convert our internal `CompletionResponse` shape to rig's choice list.
-fn internal_response_to_rig_choice(
-    response: &CompletionResponse,
-) -> OneOrMany<AssistantContent> {
+fn internal_response_to_rig_choice(response: &CompletionResponse) -> OneOrMany<AssistantContent> {
     let mut items: Vec<AssistantContent> = Vec::new();
     match &response.content {
         MessageContent::Text(text) => {
@@ -257,7 +256,8 @@ impl CompletionModel for RhaiCustomProviderModel {
         request: CompletionRequest,
     ) -> Result<RigCompletionResponse<RhaiCustomCompletion>, CompletionError> {
         let preamble = request.preamble.as_deref();
-        let history: Vec<rig::completion::Message> = request.chat_history.clone().into_iter().collect();
+        let history: Vec<rig::completion::Message> =
+            request.chat_history.clone().into_iter().collect();
         let messages = rig_messages_to_internal(preamble, &history);
         let tools = tools_for_rhai(&request);
         let thinking = extract_thinking_config(&request);
@@ -373,7 +373,8 @@ impl CompletionModel for RhaiCustomProviderModel {
         request: CompletionRequest,
     ) -> Result<StreamingCompletionResponse<RhaiCustomCompletion>, CompletionError> {
         let preamble = request.preamble.as_deref();
-        let history: Vec<rig::completion::Message> = request.chat_history.clone().into_iter().collect();
+        let history: Vec<rig::completion::Message> =
+            request.chat_history.clone().into_iter().collect();
         let messages = rig_messages_to_internal(preamble, &history);
         let tools = tools_for_rhai(&request);
         let thinking = extract_thinking_config(&request);

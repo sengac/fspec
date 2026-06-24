@@ -20,16 +20,15 @@ pub mod engine;
 pub mod http_middleware;
 pub mod json_convert;
 pub mod log_module;
+pub mod script_invoke;
 pub mod script_provider;
 pub mod script_provider_aliases;
-pub mod script_invoke;
 pub mod scripted_refreshing_client;
 pub mod token_refresh;
 
 // Re-exports for ergonomic use
 pub use building_blocks::{
-    build_cred_module, fspec_home, register_all_modules,
-    register_all_modules_for_provider,
+    build_cred_module, fspec_home, register_all_modules, register_all_modules_for_provider,
 };
 pub use callback_server::{CodeExchangeHandler, OAuthCallbackServer};
 pub use credential_store::CredentialStore;

@@ -202,10 +202,7 @@ mod tests {
         assert_eq!(entries[0].event, "deferred");
 
         // @step And the entry contains message "10/10 sessions active"
-        assert_eq!(
-            entries[0].message.as_deref(),
-            Some("10/10 sessions active")
-        );
+        assert_eq!(entries[0].message.as_deref(), Some("10/10 sessions active"));
     }
 
     // ---- Scenario: Log queued event on overlap queue policy ----

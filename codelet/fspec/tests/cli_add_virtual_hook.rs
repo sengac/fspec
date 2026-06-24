@@ -44,16 +44,13 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec").join("work-units.json"))
-        .expect("read work-units.json");
+    let raw =
+        fs::read_to_string(cwd.join("spec").join("work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse work-units.json")
 }
 
 /// Build a single-work-unit JSON document.
-fn work_units_with_optional_hooks(
-    id: &str,
-    hooks: Option<&[serde_json::Value]>,
-) -> String {
+fn work_units_with_optional_hooks(id: &str, hooks: Option<&[serde_json::Value]>) -> String {
     let mut wu = serde_json::Map::new();
     wu.insert("id".to_string(), serde_json::json!(id));
     wu.insert(
@@ -160,10 +157,7 @@ fn scenario_clap_exposes_add_virtual_hook_with_flag_aware_help() {
 fn scenario_cli_adds_simple_hook_and_prints_canonical_success_lines() {
     // @step Given spec/work-units.json contains AUTH-001 with no virtualHooks field
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_optional_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_optional_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec add-virtual-hook AUTH-001 post-implementing "npm test" --blocking`
     let (code, stdout, stderr) = run_add_virtual_hook(
@@ -172,10 +166,7 @@ fn scenario_cli_adds_simple_hook_and_prints_canonical_success_lines() {
     );
 
     // @step Then the command exits 0
-    assert_eq!(
-        code, 0,
-        "exit code must be 0; got {code}, stderr={stderr}"
-    );
+    assert_eq!(code, 0, "exit code must be 0; got {code}, stderr={stderr}");
 
     // @step And stdout contains the substring '✓ Virtual hook added to AUTH-001'
     assert!(
@@ -205,16 +196,11 @@ fn scenario_cli_adds_simple_hook_and_prints_canonical_success_lines() {
 fn scenario_cli_fails_with_exit_1_when_work_unit_does_not_exist() {
     // @step Given spec/work-units.json contains AUTH-001
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_optional_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_optional_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec add-virtual-hook AUTH-999 post-implementing "npm test"`
-    let (code, _stdout, stderr) = run_add_virtual_hook(
-        ws.path(),
-        &["AUTH-999", "post-implementing", "npm test"],
-    );
+    let (code, _stdout, stderr) =
+        run_add_virtual_hook(ws.path(), &["AUTH-999", "post-implementing", "npm test"]);
 
     // @step Then the command exits 1
     assert_eq!(code, 1, "expected exit 1; got {code}, stderr={stderr}");
@@ -240,10 +226,7 @@ fn scenario_cli_fails_with_exit_1_when_work_unit_does_not_exist() {
 fn scenario_cli_with_git_context_generates_script_and_stores_relative_path() {
     // @step Given an empty project root directory with an AUTH-001 work unit
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_optional_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_optional_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec add-virtual-hook AUTH-001 post-implementing "eslint src/" --git-context --blocking`
     let (code, _stdout, stderr) = run_add_virtual_hook(
@@ -261,9 +244,7 @@ fn scenario_cli_with_git_context_generates_script_and_stores_relative_path() {
     assert_eq!(code, 0, "expected exit 0; got {code}, stderr={stderr}");
 
     // @step And the file spec/hooks/.virtual/AUTH-001-eslint.sh exists
-    let script_path = ws
-        .path()
-        .join("spec/hooks/.virtual/AUTH-001-eslint.sh");
+    let script_path = ws.path().join("spec/hooks/.virtual/AUTH-001-eslint.sh");
     assert!(
         script_path.exists(),
         "expected generated script at {}",
@@ -302,10 +283,7 @@ fn scenario_cli_with_git_context_generates_script_and_stores_relative_path() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root whose spec/work-units.json contains AUTH-001 with no virtualHooks
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_optional_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_optional_hooks("AUTH-001", None));
 
     // @step When I dispatch add-virtual-hook through fspec_core::dispatch::dispatch_command with workUnitId='AUTH-001' event='post-implementing' command='npm test'
     let req = codelet_fspec_core::DispatchRequest {
@@ -330,8 +308,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/add_virtual_hook.rs contains NO inline script-generation, hook-name-derivation, or work-unit-lookup logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/add_virtual_hook.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/add_virtual_hook.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/add_virtual_hook.rs must exist as the CLI bridge module; got missing: {}",
@@ -379,7 +356,10 @@ fn scenario_add_virtual_hook_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "add-virtual-hook --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-virtual-hook --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/add-virtual-hook.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_AVH);

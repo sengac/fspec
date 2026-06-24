@@ -64,9 +64,7 @@ fn resolve_url(explicit: Option<String>) -> Result<Url> {
         Err(e) => {
             // The error text already contains "stale daemon.json removed"
             // when the file was deleted in the verify step.
-            return Err(anyhow::anyhow!(
-                "fspec daemon: not running ({e})"
-            ));
+            return Err(anyhow::anyhow!("fspec daemon: not running ({e})"));
         }
     };
     Url::parse(&format!("ws://127.0.0.1:{}", handshake.port)).context("synthesize ws url")

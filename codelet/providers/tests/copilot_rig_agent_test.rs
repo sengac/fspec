@@ -37,12 +37,8 @@ fn test_provider() -> CopilotProvider {
         endpoints_api: None,
         enterprise_url: None,
     };
-    CopilotProvider::from_auth(
-        CopilotDeploymentType::GitHubCom,
-        auth,
-        "gpt-4o-copilot",
-    )
-    .expect("provider should construct with valid test auth")
+    CopilotProvider::from_auth(CopilotDeploymentType::GitHubCom, auth, "gpt-4o-copilot")
+        .expect("provider should construct with valid test auth")
 }
 
 // =========================================================================

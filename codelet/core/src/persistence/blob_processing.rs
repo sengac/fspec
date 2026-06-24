@@ -74,10 +74,8 @@ pub fn process_envelope_for_blob_storage(
                         ..
                     } => {
                         if let Some(hash) = maybe_store_blob(result_content)? {
-                            blob_refs.push((
-                                format!("tool_result:{idx}:{tool_use_id}"),
-                                hash.clone(),
-                            ));
+                            blob_refs
+                                .push((format!("tool_result:{idx}:{tool_use_id}"), hash.clone()));
                             // REPLACE content with blob reference.
                             *result_content = make_blob_reference(&hash);
                         }

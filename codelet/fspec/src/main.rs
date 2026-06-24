@@ -16,21 +16,21 @@
 
 #![allow(clippy::expect_used, clippy::unwrap_used)]
 
+mod add_architecture_note;
+mod add_assumption;
+mod add_dependencies;
+mod add_example;
+mod add_question;
+mod add_rule;
+mod clear_dependencies;
 mod client;
 mod combined;
 mod common;
 mod create_epic;
 mod create_prefix;
-mod clear_dependencies;
 mod daemon;
 mod delete_epic;
 mod delete_tag;
-mod add_dependencies;
-mod add_architecture_note;
-mod add_assumption;
-mod add_example;
-mod add_question;
-mod add_rule;
 mod remove_architecture_note;
 mod remove_dependency;
 mod remove_example;
@@ -42,12 +42,6 @@ mod add_dependency;
 mod add_tag_to_feature;
 mod add_tag_to_scenario;
 mod answer_question;
-mod remove_tag_from_feature;
-mod remove_tag_from_scenario;
-mod restore_architecture_note;
-mod restore_example;
-mod restore_question;
-mod restore_rule;
 mod list_attachments;
 mod list_checkpoints;
 mod list_epics;
@@ -70,6 +64,12 @@ mod query_metrics;
 mod query_orphans;
 mod query_work_units;
 mod register_tag;
+mod remove_tag_from_feature;
+mod remove_tag_from_scenario;
+mod restore_architecture_note;
+mod restore_example;
+mod restore_question;
+mod restore_rule;
 mod show_acceptance_criteria;
 mod show_coverage;
 mod show_deleted;
@@ -118,29 +118,29 @@ mod repair_work_units;
 mod update_work_unit;
 mod update_work_unit_estimate;
 // Batch 13 (2026-06-12) — foundation mutation commands
-mod add_capability;
-mod remove_capability;
-mod add_persona;
-mod remove_persona;
-mod add_foundation_bounded_context;
-mod remove_foundation_bounded_context;
 mod add_aggregate_to_foundation;
-mod remove_aggregate_from_foundation;
+mod add_capability;
 mod add_command_to_foundation;
-mod remove_command_from_foundation;
+mod add_foundation_bounded_context;
+mod add_persona;
 mod generate_foundation_md;
+mod remove_aggregate_from_foundation;
+mod remove_capability;
+mod remove_command_from_foundation;
+mod remove_foundation_bounded_context;
+mod remove_persona;
 
 // Batch 14 (2026-06-13)
-mod add_schedule;
-mod remove_schedule;
-mod pause_schedule;
-mod resume_schedule;
 mod add_domain_event_to_foundation;
-mod remove_domain_event_from_foundation;
+mod add_schedule;
+mod configure_tools;
 mod dependencies;
 mod get_scenarios;
+mod pause_schedule;
+mod remove_domain_event_from_foundation;
+mod remove_schedule;
+mod resume_schedule;
 mod update_foundation;
-mod configure_tools;
 // Batch 15 (2026-06-14) — feature-file (.feature) mutation command bridges.
 mod add_architecture;
 mod add_background;
@@ -179,25 +179,27 @@ mod link_coverage;
 
 // Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
 mod auto_advance;
-mod discover_event_storm;
-mod generate_example_mapping_from_event_storm;
-mod remove_init_files;
-mod suggest_dependencies;
-mod validate_spec_alignment;
-mod workflow_automation;
+mod bootstrap;
 mod checkpoint;
 mod cleanup_checkpoints;
-mod restore_checkpoint;
-mod reverse;
+mod discover_event_storm;
 mod discover_foundation;
-mod update_work_unit_status;
+mod generate_example_mapping_from_event_storm;
 mod generate_scenarios;
 mod init;
 mod init_selector;
-mod research;
-mod bootstrap;
+mod remove_init_files;
 mod report_bug_to_github;
+mod research;
+mod restore_checkpoint;
+mod reverse;
 mod review;
+mod suggest_dependencies;
+mod update_work_unit_status;
+mod validate_spec_alignment;
+mod workflow_automation;
+// PROV-097: dotenv-at-startup seam (load_startup_env / load_dotenv_from).
+mod startup_env;
 
 use std::path::PathBuf;
 
@@ -376,7 +378,10 @@ enum Mode {
         work_unit_id: String,
     },
     /// RPC-301: show soft-deleted items for a work unit.
-    #[command(name = "show-deleted", about = "Show all soft-deleted items for a work unit")]
+    #[command(
+        name = "show-deleted",
+        about = "Show all soft-deleted items for a work unit"
+    )]
     ShowDeleted {
         /// Required work-unit identifier (e.g. `AUTH-001`).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -406,10 +411,16 @@ enum Mode {
         output: Option<String>,
     },
     /// RPC-310: print tag usage statistics across the project.
-    #[command(name = "tag-stats", about = "Show tag usage statistics across feature files")]
+    #[command(
+        name = "tag-stats",
+        about = "Show tag usage statistics across feature files"
+    )]
     TagStats,
     /// RPC-308: show full details of a single work unit.
-    #[command(name = "show-work-unit", about = "Show full details of a single work unit")]
+    #[command(
+        name = "show-work-unit",
+        about = "Show full details of a single work unit"
+    )]
     ShowWorkUnit {
         /// Required work-unit identifier (e.g. `AUTH-001`).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -562,10 +573,7 @@ enum Mode {
         context: Option<String>,
     },
     /// RPC-307: show test patterns across coverage files for a tag.
-    #[command(
-        name = "show-test-patterns",
-        about = "Show test patterns for a tag"
-    )]
+    #[command(name = "show-test-patterns", about = "Show test patterns for a tag")]
     ShowTestPatterns {
         /// Tag to filter on (required).
         #[arg(long, value_name = "TAG")]
@@ -683,7 +691,10 @@ enum Mode {
         description: Option<String>,
     },
     /// RPC-176: add multiple dependencies to a work unit at once.
-    #[command(name = "add-dependencies", about = "Add multiple dependencies to a work unit")]
+    #[command(
+        name = "add-dependencies",
+        about = "Add multiple dependencies to a work unit"
+    )]
     AddDependencies {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -737,7 +748,10 @@ enum Mode {
         relates_to: Option<String>,
     },
     /// RPC-204: clear all dependencies from a work unit.
-    #[command(name = "clear-dependencies", about = "Clear all dependencies from a work unit")]
+    #[command(
+        name = "clear-dependencies",
+        about = "Clear all dependencies from a work unit"
+    )]
     ClearDependencies {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -747,7 +761,10 @@ enum Mode {
         confirm: bool,
     },
     /// RPC-189: add a business rule to a work unit (Blue card in Example Mapping).
-    #[command(name = "add-rule", about = "Add a business rule to a work unit (Blue card in Example Mapping)")]
+    #[command(
+        name = "add-rule",
+        about = "Add a business rule to a work unit (Blue card in Example Mapping)"
+    )]
     AddRule {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -757,7 +774,10 @@ enum Mode {
         rule: String,
     },
     /// RPC-279: remove a business rule from a work unit by index.
-    #[command(name = "remove-rule", about = "Remove a business rule from a work unit by index")]
+    #[command(
+        name = "remove-rule",
+        about = "Remove a business rule from a work unit by index"
+    )]
     RemoveRule {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -770,7 +790,10 @@ enum Mode {
         index: String,
     },
     /// RPC-169: add an assumption to a work unit during specification.
-    #[command(name = "add-assumption", about = "Add assumption to work unit during specification")]
+    #[command(
+        name = "add-assumption",
+        about = "Add assumption to work unit during specification"
+    )]
     AddAssumption {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -780,7 +803,10 @@ enum Mode {
         assumption: String,
     },
     /// RPC-181: add an example to a work unit (Green card in Example Mapping).
-    #[command(name = "add-example", about = "Add an example to a work unit during specification phase")]
+    #[command(
+        name = "add-example",
+        about = "Add an example to a work unit during specification phase"
+    )]
     AddExample {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -790,7 +816,10 @@ enum Mode {
         example: String,
     },
     /// RPC-273: remove an example from a work unit by index.
-    #[command(name = "remove-example", about = "Remove an example from a work unit by index")]
+    #[command(
+        name = "remove-example",
+        about = "Remove an example from a work unit by index"
+    )]
     RemoveExample {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -805,7 +834,10 @@ enum Mode {
         index: String,
     },
     /// RPC-188: add a question to a work unit (Red card in Example Mapping).
-    #[command(name = "add-question", about = "Add a question to a work unit during specification phase")]
+    #[command(
+        name = "add-question",
+        about = "Add a question to a work unit during specification phase"
+    )]
     AddQuestion {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -815,7 +847,10 @@ enum Mode {
         question: String,
     },
     /// RPC-278: remove a question from a work unit by index.
-    #[command(name = "remove-question", about = "Remove a question from a work unit by index")]
+    #[command(
+        name = "remove-question",
+        about = "Remove a question from a work unit by index"
+    )]
     RemoveQuestion {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -827,7 +862,10 @@ enum Mode {
         index: String,
     },
     /// RPC-168: add an architecture note to a work unit during Example Mapping.
-    #[command(name = "add-architecture-note", about = "Add architecture note to work unit during Example Mapping")]
+    #[command(
+        name = "add-architecture-note",
+        about = "Add architecture note to work unit during Example Mapping"
+    )]
     AddArchitectureNote {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -837,7 +875,10 @@ enum Mode {
         note: String,
     },
     /// RPC-267: remove an architecture note from a work unit by index.
-    #[command(name = "remove-architecture-note", about = "Remove architecture note from work unit by index")]
+    #[command(
+        name = "remove-architecture-note",
+        about = "Remove architecture note from work unit by index"
+    )]
     RemoveArchitectureNote {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -866,7 +907,10 @@ enum Mode {
         benefit: String,
     },
     /// RPC-177: add a dependency relationship between two work units.
-    #[command(name = "add-dependency", about = "Add dependency relationship between two work units")]
+    #[command(
+        name = "add-dependency",
+        about = "Add dependency relationship between two work units"
+    )]
     AddDependency {
         /// Required source work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -888,7 +932,10 @@ enum Mode {
         relates_to: Option<String>,
     },
     /// RPC-196: answer an Example Mapping question and optionally promote it to a rule/assumption.
-    #[command(name = "answer-question", about = "Answer a question and optionally promote it")]
+    #[command(
+        name = "answer-question",
+        about = "Answer a question and optionally promote it"
+    )]
     AnswerQuestion {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -934,7 +981,10 @@ enum Mode {
         index: u64,
     },
     /// RPC-287: restore a soft-deleted architecture note on a work unit.
-    #[command(name = "restore-architecture-note", about = "Restore a soft-deleted architecture note")]
+    #[command(
+        name = "restore-architecture-note",
+        about = "Restore a soft-deleted architecture note"
+    )]
     RestoreArchitectureNote {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -957,7 +1007,10 @@ enum Mode {
         validate_registry: bool,
     },
     /// RPC-281: remove one or more tags from a feature file.
-    #[command(name = "remove-tag-from-feature", about = "Remove tags from a feature file")]
+    #[command(
+        name = "remove-tag-from-feature",
+        about = "Remove tags from a feature file"
+    )]
     RemoveTagFromFeature {
         /// Feature file path (positional).
         #[arg(value_name = "FILE")]
@@ -967,7 +1020,10 @@ enum Mode {
         tags: Vec<String>,
     },
     /// RPC-194: add one or more tags to a specific scenario in a feature file.
-    #[command(name = "add-tag-to-scenario", about = "Add tags to a scenario in a feature file")]
+    #[command(
+        name = "add-tag-to-scenario",
+        about = "Add tags to a scenario in a feature file"
+    )]
     AddTagToScenario {
         /// Feature file path (positional).
         #[arg(value_name = "FILE")]
@@ -983,7 +1039,10 @@ enum Mode {
         validate_registry: bool,
     },
     /// RPC-282: remove one or more tags from a specific scenario in a feature file.
-    #[command(name = "remove-tag-from-scenario", about = "Remove tags from a scenario in a feature file")]
+    #[command(
+        name = "remove-tag-from-scenario",
+        about = "Remove tags from a scenario in a feature file"
+    )]
     RemoveTagFromScenario {
         /// Feature file path (positional).
         #[arg(value_name = "FILE")]
@@ -1009,7 +1068,10 @@ enum Mode {
         description: Option<String>,
     },
     /// RPC-268: remove an attachment from a work unit.
-    #[command(name = "remove-attachment", about = "Remove an attachment from a work unit")]
+    #[command(
+        name = "remove-attachment",
+        about = "Remove an attachment from a work unit"
+    )]
     RemoveAttachment {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -1041,7 +1103,10 @@ enum Mode {
         git_context: bool,
     },
     /// RPC-283: remove a virtual hook from a work unit by name.
-    #[command(name = "remove-virtual-hook", about = "Remove a virtual hook from a work unit by name")]
+    #[command(
+        name = "remove-virtual-hook",
+        about = "Remove a virtual hook from a work unit by name"
+    )]
     RemoveVirtualHook {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
@@ -1051,14 +1116,20 @@ enum Mode {
         hook_name: String,
     },
     /// RPC-205: remove all virtual hooks from a work unit.
-    #[command(name = "clear-virtual-hooks", about = "Clear all virtual hooks from a work unit")]
+    #[command(
+        name = "clear-virtual-hooks",
+        about = "Clear all virtual hooks from a work unit"
+    )]
     ClearVirtualHooks {
         /// Required work-unit ID (positional).
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
     },
     /// RPC-209: copy virtual hooks from one work unit to another.
-    #[command(name = "copy-virtual-hooks", about = "Copy virtual hooks from one work unit to another")]
+    #[command(
+        name = "copy-virtual-hooks",
+        about = "Copy virtual hooks from one work unit to another"
+    )]
     CopyVirtualHooks {
         /// Source work-unit ID.
         #[arg(long = "from", value_name = "FROM_ID")]
@@ -1100,7 +1171,10 @@ enum Mode {
         name: String,
     },
     /// RPC-178: add a mermaid diagram to a foundation section.
-    #[command(name = "add-diagram", about = "Add a mermaid diagram to a foundation section")]
+    #[command(
+        name = "add-diagram",
+        about = "Add a mermaid diagram to a foundation section"
+    )]
     AddDiagram {
         /// Foundation section (positional).
         #[arg(value_name = "SECTION")]
@@ -1113,7 +1187,10 @@ enum Mode {
         code: String,
     },
     /// RPC-216: delete a mermaid diagram from a foundation section.
-    #[command(name = "delete-diagram", about = "Delete a mermaid diagram from a foundation section")]
+    #[command(
+        name = "delete-diagram",
+        about = "Delete a mermaid diagram from a foundation section"
+    )]
     DeleteDiagram {
         /// Foundation section (positional).
         #[arg(value_name = "SECTION")]
@@ -1124,7 +1201,10 @@ enum Mode {
     },
     // Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
     /// RPC-165: add an aggregate to a work unit's Event Storm section.
-    #[command(name = "add-aggregate", about = "Add aggregate to Event Storm section of work unit")]
+    #[command(
+        name = "add-aggregate",
+        about = "Add aggregate to Event Storm section of work unit"
+    )]
     AddAggregate {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
@@ -1138,7 +1218,10 @@ enum Mode {
         bounded_context: Option<String>,
     },
     /// RPC-174: add a command to a work unit's Event Storm section.
-    #[command(name = "add-command", about = "Add command to Event Storm section of work unit")]
+    #[command(
+        name = "add-command",
+        about = "Add command to Event Storm section of work unit"
+    )]
     AddCommand {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
@@ -1152,7 +1235,10 @@ enum Mode {
         bounded_context: Option<String>,
     },
     /// RPC-179: add a domain event to a work unit's Event Storm section.
-    #[command(name = "add-domain-event", about = "Add domain event to Event Storm section of work unit")]
+    #[command(
+        name = "add-domain-event",
+        about = "Add domain event to Event Storm section of work unit"
+    )]
     AddDomainEvent {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
@@ -1164,7 +1250,10 @@ enum Mode {
         bounded_context: Option<String>,
     },
     /// RPC-185: add a hotspot to a work unit's Event Storm section.
-    #[command(name = "add-hotspot", about = "Add hotspot to Event Storm section of work unit")]
+    #[command(
+        name = "add-hotspot",
+        about = "Add hotspot to Event Storm section of work unit"
+    )]
     AddHotspot {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
@@ -1178,7 +1267,10 @@ enum Mode {
         bounded_context: Option<String>,
     },
     /// RPC-172: add a bounded context to a work unit's Event Storm section.
-    #[command(name = "add-bounded-context", about = "Add bounded context to Event Storm section of work unit")]
+    #[command(
+        name = "add-bounded-context",
+        about = "Add bounded context to Event Storm section of work unit"
+    )]
     AddBoundedContext {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
@@ -1192,7 +1284,10 @@ enum Mode {
         context: Option<String>,
     },
     /// RPC-182: add an external system to a work unit's Event Storm section.
-    #[command(name = "add-external-system", about = "Add external system to Event Storm section of work unit")]
+    #[command(
+        name = "add-external-system",
+        about = "Add external system to Event Storm section of work unit"
+    )]
     AddExternalSystem {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
@@ -1206,7 +1301,10 @@ enum Mode {
         context: Option<String>,
     },
     /// RPC-187: add a policy item to a work unit's Event Storm section.
-    #[command(name = "add-policy", about = "Add policy to Event Storm section for reactive business logic (WHEN event THEN command)")]
+    #[command(
+        name = "add-policy",
+        about = "Add policy to Event Storm section for reactive business logic (WHEN event THEN command)"
+    )]
     AddPolicy {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
@@ -1222,7 +1320,10 @@ enum Mode {
         bounded_context: Option<String>,
     },
     /// RPC-214: create a new story work unit.
-    #[command(name = "create-story", about = "Create a new story with Example Mapping guidance for defining acceptance criteria")]
+    #[command(
+        name = "create-story",
+        about = "Create a new story with Example Mapping guidance for defining acceptance criteria"
+    )]
     CreateStory {
         #[arg(value_name = "PREFIX")]
         prefix: String,
@@ -1250,7 +1351,10 @@ enum Mode {
         parent: Option<String>,
     },
     /// RPC-215: create a new task work unit.
-    #[command(name = "create-task", about = "Create a new task with minimal requirements")]
+    #[command(
+        name = "create-task",
+        about = "Create a new task with minimal requirements"
+    )]
     CreateTask {
         #[arg(value_name = "PREFIX")]
         prefix: String,
@@ -1264,7 +1368,10 @@ enum Mode {
         parent: Option<String>,
     },
     /// RPC-317: update work unit metadata.
-    #[command(name = "update-work-unit", about = "Update work unit fields (title, description, epic, parent)")]
+    #[command(
+        name = "update-work-unit",
+        about = "Update work unit fields (title, description, epic, parent)"
+    )]
     UpdateWorkUnit {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1278,7 +1385,10 @@ enum Mode {
         parent: Option<String>,
     },
     /// RPC-318: set a Fibonacci story-point estimate.
-    #[command(name = "update-work-unit-estimate", about = "Set a Fibonacci story-point estimate on a work unit")]
+    #[command(
+        name = "update-work-unit-estimate",
+        about = "Set a Fibonacci story-point estimate on a work unit"
+    )]
     UpdateWorkUnitEstimate {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1298,13 +1408,19 @@ enum Mode {
         cascade_dependencies: bool,
     },
     /// RPC-206: permanently remove soft-deleted items from a work unit.
-    #[command(name = "compact-work-unit", about = "Permanently remove all soft-deleted items from a work unit")]
+    #[command(
+        name = "compact-work-unit",
+        about = "Permanently remove all soft-deleted items from a work unit"
+    )]
     CompactWorkUnit {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
     },
     /// RPC-255: reorder a work unit within its status column.
-    #[command(name = "prioritize-work-unit", about = "Reorder a work unit within its status column")]
+    #[command(
+        name = "prioritize-work-unit",
+        about = "Reorder a work unit within its status column"
+    )]
     PrioritizeWorkUnit {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1316,13 +1432,19 @@ enum Mode {
         after: Option<String>,
     },
     /// RPC-284: rebuild work-unit state arrays and bidirectional dependency links.
-    #[command(name = "repair-work-units", about = "Repair work unit state arrays and bidirectional dependency links")]
+    #[command(
+        name = "repair-work-units",
+        about = "Repair work unit state arrays and bidirectional dependency links"
+    )]
     RepairWorkUnits {
         #[arg(long = "dry-run")]
         dry_run: bool,
     },
     /// RPC-264: record an iteration increment on a work unit.
-    #[command(name = "record-iteration", about = "Record an iteration increment on a work unit")]
+    #[command(
+        name = "record-iteration",
+        about = "Record an iteration increment on a work unit"
+    )]
     RecordIteration {
         #[arg(value_name = "name")]
         name: String,
@@ -1332,7 +1454,10 @@ enum Mode {
         end: Option<String>,
     },
     /// RPC-229: export all work units to a file.
-    #[command(name = "export-work-units", about = "Export all work units to a JSON file")]
+    #[command(
+        name = "export-work-units",
+        about = "Export all work units to a JSON file"
+    )]
     ExportWorkUnits {
         #[arg(value_name = "format")]
         format: String,
@@ -1342,7 +1467,10 @@ enum Mode {
         status: Option<String>,
     },
     /// RPC-228: export a work unit's Example Map to a JSON file.
-    #[command(name = "export-example-map", about = "Export a work unit's Example Map to a JSON file")]
+    #[command(
+        name = "export-example-map",
+        about = "Export a work unit's Example Map to a JSON file"
+    )]
     ExportExampleMap {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1350,7 +1478,10 @@ enum Mode {
         file: String,
     },
     /// RPC-227: export the dependency graph to mermaid or JSON.
-    #[command(name = "export-dependencies", about = "Export the work-unit dependency graph to mermaid or JSON")]
+    #[command(
+        name = "export-dependencies",
+        about = "Export the work-unit dependency graph to mermaid or JSON"
+    )]
     ExportDependencies {
         #[arg(value_name = "format")]
         format: String,
@@ -1359,7 +1490,10 @@ enum Mode {
     },
     // Batch 13 (2026-06-12) — foundation mutation commands
     /// RPC-173: add a capability to foundation.json / .draft.
-    #[command(name = "add-capability", about = "Add a capability to foundation.json or foundation.json.draft")]
+    #[command(
+        name = "add-capability",
+        about = "Add a capability to foundation.json or foundation.json.draft"
+    )]
     AddCapability {
         #[arg(value_name = "name")]
         name: String,
@@ -1367,13 +1501,19 @@ enum Mode {
         description: String,
     },
     /// RPC-269: remove a capability from foundation.json / .draft.
-    #[command(name = "remove-capability", about = "Remove a capability from foundation.json or foundation.json.draft")]
+    #[command(
+        name = "remove-capability",
+        about = "Remove a capability from foundation.json or foundation.json.draft"
+    )]
     RemoveCapability {
         #[arg(value_name = "name")]
         name: String,
     },
     /// RPC-186: add a user persona to foundation.json / .draft.
-    #[command(name = "add-persona", about = "Add a user persona to foundation.json or foundation.json.draft")]
+    #[command(
+        name = "add-persona",
+        about = "Add a user persona to foundation.json or foundation.json.draft"
+    )]
     AddPersona {
         #[arg(value_name = "name")]
         name: String,
@@ -1383,19 +1523,28 @@ enum Mode {
         goal: Vec<String>,
     },
     /// RPC-277: remove a persona from foundation.json / .draft.
-    #[command(name = "remove-persona", about = "Remove a persona from foundation.json or foundation.json.draft")]
+    #[command(
+        name = "remove-persona",
+        about = "Remove a persona from foundation.json or foundation.json.draft"
+    )]
     RemovePersona {
         #[arg(value_name = "name")]
         name: String,
     },
     /// RPC-183: add a bounded context to the foundation Big Picture Event Storm.
-    #[command(name = "add-foundation-bounded-context", about = "Add a bounded context to foundation Big Picture Event Storm")]
+    #[command(
+        name = "add-foundation-bounded-context",
+        about = "Add a bounded context to foundation Big Picture Event Storm"
+    )]
     AddFoundationBoundedContext {
         #[arg(value_name = "text")]
         text: String,
     },
     /// RPC-274: remove a bounded context from the foundation Big Picture Event Storm (soft-delete).
-    #[command(name = "remove-foundation-bounded-context", about = "Remove a bounded context from foundation Big Picture Event Storm (soft-delete)")]
+    #[command(
+        name = "remove-foundation-bounded-context",
+        about = "Remove a bounded context from foundation Big Picture Event Storm (soft-delete)"
+    )]
     RemoveFoundationBoundedContext {
         #[arg(value_name = "context-name")]
         context_name: String,
@@ -1403,7 +1552,10 @@ enum Mode {
         cascade: bool,
     },
     /// RPC-166: add an aggregate to a foundation bounded context.
-    #[command(name = "add-aggregate-to-foundation", about = "Add an aggregate to a foundation bounded context in Big Picture Event Storm")]
+    #[command(
+        name = "add-aggregate-to-foundation",
+        about = "Add an aggregate to a foundation bounded context in Big Picture Event Storm"
+    )]
     AddAggregateToFoundation {
         #[arg(value_name = "context-name")]
         context_name: String,
@@ -1413,7 +1565,10 @@ enum Mode {
         description: Option<String>,
     },
     /// RPC-266: remove an aggregate from a foundation bounded context (soft-delete).
-    #[command(name = "remove-aggregate-from-foundation", about = "Remove an aggregate from a foundation bounded context (soft-delete)")]
+    #[command(
+        name = "remove-aggregate-from-foundation",
+        about = "Remove an aggregate from a foundation bounded context (soft-delete)"
+    )]
     RemoveAggregateFromFoundation {
         #[arg(value_name = "context-name")]
         context_name: String,
@@ -1421,7 +1576,10 @@ enum Mode {
         aggregate_name: String,
     },
     /// RPC-175: add a command to a foundation bounded context.
-    #[command(name = "add-command-to-foundation", about = "Add a command to a foundation bounded context in Big Picture Event Storm")]
+    #[command(
+        name = "add-command-to-foundation",
+        about = "Add a command to a foundation bounded context in Big Picture Event Storm"
+    )]
     AddCommandToFoundation {
         #[arg(value_name = "context-name")]
         context_name: String,
@@ -1431,7 +1589,10 @@ enum Mode {
         description: Option<String>,
     },
     /// RPC-270: remove a command from a foundation bounded context (soft-delete).
-    #[command(name = "remove-command-from-foundation", about = "Remove a command from a foundation bounded context (soft-delete)")]
+    #[command(
+        name = "remove-command-from-foundation",
+        about = "Remove a command from a foundation bounded context (soft-delete)"
+    )]
     RemoveCommandFromFoundation {
         #[arg(value_name = "context-name")]
         context_name: String,
@@ -1439,29 +1600,71 @@ enum Mode {
         command_name: String,
     },
     /// RPC-233: generate FOUNDATION.md from foundation.json.
-    #[command(name = "generate-foundation-md", about = "Generate FOUNDATION.md from foundation.json")]
+    #[command(
+        name = "generate-foundation-md",
+        about = "Generate FOUNDATION.md from foundation.json"
+    )]
     GenerateFoundationMd {
         #[arg(long = "output", value_name = "path")]
         output: Option<String>,
     },
     /// RPC-191: add a scheduled job (agent or shell) to schedules.json.
-    #[command(name = "add-schedule", about = "Add a scheduled workflow automation job")]
+    #[command(
+        name = "add-schedule",
+        about = "Add a scheduled workflow automation job"
+    )]
     AddSchedule {
-        #[arg(short = 'n', long = "name", value_name = "name", allow_hyphen_values = true)]
+        #[arg(
+            short = 'n',
+            long = "name",
+            value_name = "name",
+            allow_hyphen_values = true
+        )]
         name: String,
-        #[arg(short = 'c', long = "cron", value_name = "expression", allow_hyphen_values = true)]
+        #[arg(
+            short = 'c',
+            long = "cron",
+            value_name = "expression",
+            allow_hyphen_values = true
+        )]
         cron: String,
-        #[arg(short = 'z', long = "timezone", value_name = "tz", allow_hyphen_values = true)]
+        #[arg(
+            short = 'z',
+            long = "timezone",
+            value_name = "tz",
+            allow_hyphen_values = true
+        )]
         timezone: String,
-        #[arg(short = 't', long = "type", value_name = "type", allow_hyphen_values = true)]
+        #[arg(
+            short = 't',
+            long = "type",
+            value_name = "type",
+            allow_hyphen_values = true
+        )]
         r#type: String,
-        #[arg(short = 'r', long = "role", value_name = "role", allow_hyphen_values = true)]
+        #[arg(
+            short = 'r',
+            long = "role",
+            value_name = "role",
+            allow_hyphen_values = true
+        )]
         role: Option<String>,
-        #[arg(short = 'p', long = "prompt", value_name = "prompt", allow_hyphen_values = true)]
+        #[arg(
+            short = 'p',
+            long = "prompt",
+            value_name = "prompt",
+            allow_hyphen_values = true
+        )]
         prompt: Option<String>,
         #[arg(long = "command", value_name = "command", allow_hyphen_values = true)]
         command: Option<String>,
-        #[arg(short = 'o', long = "overlap", value_name = "policy", default_value = "skip", allow_hyphen_values = true)]
+        #[arg(
+            short = 'o',
+            long = "overlap",
+            value_name = "policy",
+            default_value = "skip",
+            allow_hyphen_values = true
+        )]
         overlap: String,
     },
     /// RPC-280: remove a scheduled job from schedules.json.
@@ -1483,7 +1686,10 @@ enum Mode {
         name: String,
     },
     /// RPC-180: add a domain event to a foundation bounded context.
-    #[command(name = "add-domain-event-to-foundation", about = "Add a domain event to a foundation bounded context in Big Picture Event Storm")]
+    #[command(
+        name = "add-domain-event-to-foundation",
+        about = "Add a domain event to a foundation bounded context in Big Picture Event Storm"
+    )]
     AddDomainEventToFoundation {
         #[arg(value_name = "context-name")]
         context_name: String,
@@ -1493,7 +1699,10 @@ enum Mode {
         description: Option<String>,
     },
     /// RPC-272: remove a domain event from a foundation bounded context (soft-delete).
-    #[command(name = "remove-domain-event-from-foundation", about = "Remove a domain event from a foundation bounded context (soft-delete)")]
+    #[command(
+        name = "remove-domain-event-from-foundation",
+        about = "Remove a domain event from a foundation bounded context (soft-delete)"
+    )]
     RemoveDomainEventFromFoundation {
         #[arg(value_name = "context-name")]
         context_name: String,
@@ -1501,7 +1710,10 @@ enum Mode {
         event_name: String,
     },
     /// RPC-224: show dependency relationships for a work unit.
-    #[command(name = "dependencies", about = "Show all dependency relationships for a work unit")]
+    #[command(
+        name = "dependencies",
+        about = "Show all dependency relationships for a work unit"
+    )]
     Dependencies {
         #[arg(value_name = "work-unit-id")]
         work_unit_id: String,
@@ -1509,7 +1721,10 @@ enum Mode {
         graph: bool,
     },
     /// RPC-237: extract scenarios from feature files.
-    #[command(name = "get-scenarios", about = "Extract scenarios from feature files with optional tag filtering")]
+    #[command(
+        name = "get-scenarios",
+        about = "Extract scenarios from feature files with optional tag filtering"
+    )]
     GetScenarios {
         #[arg(long = "tag", value_name = "tag")]
         tag: Vec<String>,
@@ -1525,7 +1740,10 @@ enum Mode {
         content: String,
     },
     /// RPC-208: configure test and quality-check tool commands.
-    #[command(name = "configure-tools", about = "Configure test and quality check commands")]
+    #[command(
+        name = "configure-tools",
+        about = "Configure test and quality check commands"
+    )]
     ConfigureTools {
         #[arg(long = "test-command", value_name = "command")]
         test_command: Option<String>,
@@ -1535,13 +1753,19 @@ enum Mode {
         reconfigure: bool,
     },
     /// RPC-212: create a new feature file from a template.
-    #[command(name = "create-feature", about = "Create a new feature file with proper Gherkin structure template")]
+    #[command(
+        name = "create-feature",
+        about = "Create a new feature file with proper Gherkin structure template"
+    )]
     CreateFeature {
         #[arg(value_name = "name")]
         name: String,
     },
     /// RPC-190: add a scenario to an existing feature file.
-    #[command(name = "add-scenario", about = "Add a new scenario to an existing feature file")]
+    #[command(
+        name = "add-scenario",
+        about = "Add a new scenario to an existing feature file"
+    )]
     AddScenario {
         #[arg(value_name = "file")]
         file: String,
@@ -1549,7 +1773,10 @@ enum Mode {
         scenario_name: String,
     },
     /// RPC-192: add a step to a scenario in a feature file.
-    #[command(name = "add-step", about = "Add a step to a scenario in a feature file")]
+    #[command(
+        name = "add-step",
+        about = "Add a step to a scenario in a feature file"
+    )]
     AddStep {
         #[arg(value_name = "file")]
         file: String,
@@ -1561,7 +1788,10 @@ enum Mode {
         text: String,
     },
     /// RPC-171: add or update the Background (user story) section.
-    #[command(name = "add-background", about = "Add or update Background (user story) section in a feature file")]
+    #[command(
+        name = "add-background",
+        about = "Add or update Background (user story) section in a feature file"
+    )]
     AddBackground {
         #[arg(value_name = "feature")]
         feature: String,
@@ -1569,7 +1799,10 @@ enum Mode {
         text: String,
     },
     /// RPC-167: add architecture notes to a feature file via doc strings.
-    #[command(name = "add-architecture", about = "Add architecture notes to a feature file using doc strings")]
+    #[command(
+        name = "add-architecture",
+        about = "Add architecture notes to a feature file using doc strings"
+    )]
     AddArchitecture {
         #[arg(value_name = "feature")]
         file: String,
@@ -1577,7 +1810,10 @@ enum Mode {
         notes: String,
     },
     /// RPC-219: delete a scenario from a feature file.
-    #[command(name = "delete-scenario", about = "Delete a scenario from a feature file")]
+    #[command(
+        name = "delete-scenario",
+        about = "Delete a scenario from a feature file"
+    )]
     DeleteScenario {
         #[arg(value_name = "feature")]
         file: String,
@@ -1603,7 +1839,10 @@ enum Mode {
         dry_run: bool,
     },
     /// RPC-314: update a scenario name in a feature file.
-    #[command(name = "update-scenario", about = "Update a scenario name in a feature file")]
+    #[command(
+        name = "update-scenario",
+        about = "Update a scenario name in a feature file"
+    )]
     UpdateScenario {
         #[arg(value_name = "feature")]
         file: String,
@@ -1613,7 +1852,10 @@ enum Mode {
         new_name: String,
     },
     /// RPC-315: update step text or keyword in a scenario.
-    #[command(name = "update-step", about = "Update step text or keyword in a scenario by finding and replacing the current step")]
+    #[command(
+        name = "update-step",
+        about = "Update step text or keyword in a scenario by finding and replacing the current step"
+    )]
     UpdateStep {
         #[arg(value_name = "feature")]
         feature: String,
@@ -1628,7 +1870,10 @@ enum Mode {
     },
     // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag.
     /// RPC-324: validate feature-file tags against spec/tags.json.
-    #[command(name = "validate-tags", about = "Validate that all tags used in feature files are registered")]
+    #[command(
+        name = "validate-tags",
+        about = "Validate that all tags used in feature files are registered"
+    )]
     ValidateTags {
         #[arg(value_name = "file")]
         file: Option<String>,
@@ -1645,16 +1890,28 @@ enum Mode {
     /// runtime as an unknown option. The clap variant therefore declares NO
     /// fields — passing `--fix` raises `UnknownArgument` →
     /// `error: unknown option '--fix'`, exit 1 (parity, RPC-325 rule [9]).
-    #[command(name = "validate-work-units", about = "Validate work units data integrity")]
+    #[command(
+        name = "validate-work-units",
+        about = "Validate work units data integrity"
+    )]
     ValidateWorkUnits {},
     /// RPC-322: validate hook configuration and verify scripts exist.
-    #[command(name = "validate-hooks", about = "Validate hook configuration and verify that all hook scripts exist")]
+    #[command(
+        name = "validate-hooks",
+        about = "Validate hook configuration and verify that all hook scripts exist"
+    )]
     ValidateHooks {},
     /// RPC-321: validate foundation.json against its JSON schema.
-    #[command(name = "validate-foundation-schema", about = "Validate foundation.json against its JSON schema using Ajv")]
+    #[command(
+        name = "validate-foundation-schema",
+        about = "Validate foundation.json against its JSON schema using Ajv"
+    )]
     ValidateFoundationSchema {},
     /// RPC-320: validate Gherkin syntax in feature files.
-    #[command(name = "validate", about = "Validate Gherkin syntax in feature files using @cucumber/gherkin parser")]
+    #[command(
+        name = "validate",
+        about = "Validate Gherkin syntax in feature files using @cucumber/gherkin parser"
+    )]
     Validate {
         #[arg(value_name = "file")]
         file: Option<String>,
@@ -1662,7 +1919,10 @@ enum Mode {
         verbose: bool,
     },
     /// RPC-297: search scenarios across all feature files.
-    #[command(name = "search-scenarios", about = "Search for scenarios across all feature files")]
+    #[command(
+        name = "search-scenarios",
+        about = "Search for scenarios across all feature files"
+    )]
     SearchScenarios {
         #[arg(long = "query", value_name = "pattern")]
         query: String,
@@ -1672,7 +1932,10 @@ enum Mode {
         json: bool,
     },
     /// RPC-296: search implementation files linked via coverage data.
-    #[command(name = "search-implementation", about = "Search implementation files for a specific function")]
+    #[command(
+        name = "search-implementation",
+        about = "Search implementation files for a specific function"
+    )]
     SearchImplementation {
         #[arg(long = "function", value_name = "name")]
         function: String,
@@ -1682,7 +1945,10 @@ enum Mode {
         json: bool,
     },
     /// RPC-311: remove test/impl mappings from a scenario's coverage sidecar.
-    #[command(name = "unlink-coverage", about = "Remove test or implementation mappings from a scenario")]
+    #[command(
+        name = "unlink-coverage",
+        about = "Remove test or implementation mappings from a scenario"
+    )]
     UnlinkCoverage {
         #[arg(value_name = "feature-name")]
         feature_name: String,
@@ -1696,7 +1962,10 @@ enum Mode {
         all: bool,
     },
     /// RPC-236: render spec/TAGS.md from spec/tags.json.
-    #[command(name = "generate-tags-md", about = "Generate TAGS.md from spec/tags.json")]
+    #[command(
+        name = "generate-tags-md",
+        about = "Generate TAGS.md from spec/tags.json"
+    )]
     GenerateTagsMd {
         #[arg(long = "output", value_name = "output")]
         output: Option<String>,
@@ -1713,13 +1982,19 @@ enum Mode {
     },
     // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
     /// RPC-197: verify coverage-mapped test/impl files exist.
-    #[command(name = "audit-coverage", about = "Verify that test files and implementation files referenced in coverage mappings actually exist")]
+    #[command(
+        name = "audit-coverage",
+        about = "Verify that test files and implementation files referenced in coverage mappings actually exist"
+    )]
     AuditCoverage {
         #[arg(value_name = "feature-name")]
         feature_name: String,
     },
     /// RPC-199: display Kanban board of work units grouped by status.
-    #[command(name = "board", about = "Display Kanban board of all work units grouped by status")]
+    #[command(
+        name = "board",
+        about = "Display Kanban board of all work units grouped by status"
+    )]
     Board {
         #[arg(long = "format", value_name = "format")]
         format: Option<String>,
@@ -1727,13 +2002,19 @@ enum Mode {
         limit: Option<usize>,
     },
     /// RPC-201: run all validation checks (Gherkin, tags, formatting).
-    #[command(name = "check", about = "Run all validation checks: Gherkin syntax, tag compliance, and formatting")]
+    #[command(
+        name = "check",
+        about = "Run all validation checks: Gherkin syntax, tag compliance, and formatting"
+    )]
     Check {
         #[arg(short = 'v', long = "verbose")]
         verbose: bool,
     },
     /// RPC-207: compare implementation approaches across work units.
-    #[command(name = "compare-implementations", about = "Compare implementation approaches across work units to identify patterns and inconsistencies")]
+    #[command(
+        name = "compare-implementations",
+        about = "Compare implementation approaches across work units to identify patterns and inconsistencies"
+    )]
     CompareImplementations {
         #[arg(long = "tag", value_name = "tag")]
         tag: String,
@@ -1743,7 +2024,10 @@ enum Mode {
         json: bool,
     },
     /// RPC-220: bulk delete scenarios by tag across multiple files.
-    #[command(name = "delete-scenarios", about = "Bulk delete scenarios by tag across multiple files")]
+    #[command(
+        name = "delete-scenarios",
+        about = "Bulk delete scenarios by tag across multiple files"
+    )]
     DeleteScenarios {
         #[arg(long = "tag", value_name = "tag")]
         tags: Vec<String>,
@@ -1751,19 +2035,28 @@ enum Mode {
         dry_run: bool,
     },
     /// RPC-230: format feature files with the AST-based Gherkin formatter.
-    #[command(name = "format", about = "Format feature files with custom AST-based Gherkin formatter")]
+    #[command(
+        name = "format",
+        about = "Format feature files with custom AST-based Gherkin formatter"
+    )]
     Format {
         #[arg(value_name = "file")]
         file: Option<String>,
     },
     /// RPC-231: generate/update .feature.coverage files.
-    #[command(name = "generate-coverage", about = "Generate or update .feature.coverage files for existing .feature files")]
+    #[command(
+        name = "generate-coverage",
+        about = "Generate or update .feature.coverage files for existing .feature files"
+    )]
     GenerateCoverage {
         #[arg(long = "dry-run")]
         dry_run: bool,
     },
     /// RPC-240: link scenarios to test/impl files for traceability.
-    #[command(name = "link-coverage", about = "Link Gherkin scenarios to test files and implementation code for full traceability")]
+    #[command(
+        name = "link-coverage",
+        about = "Link Gherkin scenarios to test files and implementation code for full traceability"
+    )]
     LinkCoverage {
         #[arg(value_name = "feature-name")]
         feature_name: String,
@@ -1783,7 +2076,10 @@ enum Mode {
         skip_step_validation: bool,
     },
     /// RPC-235: generate a comprehensive project summary report.
-    #[command(name = "generate-summary-report", about = "Generate a comprehensive project summary report")]
+    #[command(
+        name = "generate-summary-report",
+        about = "Generate a comprehensive project summary report"
+    )]
     GenerateSummaryReport {
         #[arg(long = "format", value_name = "format")]
         format: Option<String>,
@@ -1791,7 +2087,10 @@ enum Mode {
         output: Option<String>,
     },
     /// RPC-238: import Example Mapping data from JSON into a work unit.
-    #[command(name = "import-example-map", about = "Import Example Mapping data from JSON file to work unit")]
+    #[command(
+        name = "import-example-map",
+        about = "Import Example Mapping data from JSON file to work unit"
+    )]
     ImportExampleMap {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1800,25 +2099,37 @@ enum Mode {
     },
     // Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
     /// RPC-225: scaffold an Event Storm session on a work unit.
-    #[command(name = "discover-event-storm", about = "Start Event Storming discovery for a work unit")]
+    #[command(
+        name = "discover-event-storm",
+        about = "Start Event Storming discovery for a work unit"
+    )]
     DiscoverEventStorm {
         #[arg(value_name = "work-unit-id")]
         work_unit_id: String,
     },
     /// RPC-232: transform an Event Storm into Example Mapping entries.
-    #[command(name = "generate-example-mapping-from-event-storm", about = "Transform Event Storm artifacts into Example Mapping rules, examples, and questions")]
+    #[command(
+        name = "generate-example-mapping-from-event-storm",
+        about = "Transform Event Storm artifacts into Example Mapping rules, examples, and questions"
+    )]
     GenerateExampleMappingFromEventStorm {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
     },
     /// RPC-309: suggest dependencies between work units.
-    #[command(name = "suggest-dependencies", about = "Suggest dependencies between work units based on heuristics")]
+    #[command(
+        name = "suggest-dependencies",
+        about = "Suggest dependencies between work units based on heuristics"
+    )]
     SuggestDependencies {
         #[arg(long = "output", value_name = "format")]
         output: Option<String>,
     },
     /// RPC-323: validate spec/test/impl alignment for a work unit.
-    #[command(name = "validate-spec-alignment", about = "Validate that specifications align with tests and implementation")]
+    #[command(
+        name = "validate-spec-alignment",
+        about = "Validate that specifications align with tests and implementation"
+    )]
     ValidateSpecAlignment {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1826,7 +2137,10 @@ enum Mode {
         fix: bool,
     },
     /// RPC-276: remove fspec init files for the detected agent.
-    #[command(name = "remove-init-files", about = "Remove fspec initialization files created by init")]
+    #[command(
+        name = "remove-init-files",
+        about = "Remove fspec initialization files created by init"
+    )]
     RemoveInitFiles {
         #[arg(long = "keep-config")]
         keep_config: bool,
@@ -1834,13 +2148,19 @@ enum Mode {
         no_keep_config: bool,
     },
     /// RPC-198: auto-advance a work unit through its lifecycle.
-    #[command(name = "auto-advance", about = "Automatically advance work units through their lifecycle")]
+    #[command(
+        name = "auto-advance",
+        about = "Automatically advance work units through their lifecycle"
+    )]
     AutoAdvance {
         #[arg(long = "dry-run")]
         dry_run: bool,
     },
     /// RPC-326: drive workflow automation actions for a work unit.
-    #[command(name = "workflow-automation", about = "Run workflow automation actions for a work unit")]
+    #[command(
+        name = "workflow-automation",
+        about = "Run workflow automation actions for a work unit"
+    )]
     WorkflowAutomation {
         #[arg(value_name = "action")]
         action: String,
@@ -1852,7 +2172,10 @@ enum Mode {
         from_state: Option<String>,
     },
     /// RPC-202: create a manual git checkpoint for a work unit.
-    #[command(name = "checkpoint", about = "Create a manual checkpoint for safe experimentation")]
+    #[command(
+        name = "checkpoint",
+        about = "Create a manual checkpoint for safe experimentation"
+    )]
     Checkpoint {
         #[arg(value_name = "work-unit-id")]
         work_unit_id: String,
@@ -1860,7 +2183,10 @@ enum Mode {
         checkpoint_name: String,
     },
     /// RPC-203: prune old checkpoints for a work unit.
-    #[command(name = "cleanup-checkpoints", about = "Clean up old checkpoints for a work unit, keeping the most recent N")]
+    #[command(
+        name = "cleanup-checkpoints",
+        about = "Clean up old checkpoints for a work unit, keeping the most recent N"
+    )]
     CleanupCheckpoints {
         #[arg(value_name = "work-unit-id")]
         work_unit_id: String,
@@ -1881,7 +2207,10 @@ enum Mode {
         keep_last: String,
     },
     /// RPC-288: restore a checkpoint for a work unit.
-    #[command(name = "restore-checkpoint", about = "Restore a checkpoint for a work unit")]
+    #[command(
+        name = "restore-checkpoint",
+        about = "Restore a checkpoint for a work unit"
+    )]
     RestoreCheckpoint {
         #[arg(value_name = "work-unit-id")]
         work_unit_id: String,
@@ -1889,7 +2218,10 @@ enum Mode {
         checkpoint_name: String,
     },
     /// RPC-294: reverse-engineer specifications from an existing codebase.
-    #[command(name = "reverse", about = "Reverse-engineer specifications from existing code")]
+    #[command(
+        name = "reverse",
+        about = "Reverse-engineer specifications from existing code"
+    )]
     Reverse {
         #[arg(long, value_name = "A|B|C|D")]
         strategy: Option<String>,
@@ -1905,7 +2237,10 @@ enum Mode {
         dry_run: bool,
     },
     /// RPC-319: update a work unit's workflow status.
-    #[command(name = "update-work-unit-status", about = "Update a work unit's workflow status")]
+    #[command(
+        name = "update-work-unit-status",
+        about = "Update a work unit's workflow status"
+    )]
     UpdateWorkUnitStatus {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1919,7 +2254,10 @@ enum Mode {
         skip_temporal_validation: bool,
     },
     /// RPC-226: interactive AI-guided foundation discovery.
-    #[command(name = "discover-foundation", about = "Discover and scaffold the project foundation")]
+    #[command(
+        name = "discover-foundation",
+        about = "Discover and scaffold the project foundation"
+    )]
     DiscoverFoundation {
         #[arg(long = "output", value_name = "path")]
         output: Option<String>,
@@ -1939,7 +2277,10 @@ enum Mode {
         force: bool,
     },
     /// RPC-234: generate a context-only Gherkin scaffold from an Example Map.
-    #[command(name = "generate-scenarios", about = "Generate scenarios from a work unit's example map")]
+    #[command(
+        name = "generate-scenarios",
+        about = "Generate scenarios from a work unit's example map"
+    )]
     GenerateScenarios {
         #[arg(value_name = "workUnitId")]
         work_unit_id: String,
@@ -1963,10 +2304,16 @@ enum Mode {
         work_unit: Option<String>,
     },
     /// RPC-200: print the fspec bootstrap workflow document.
-    #[command(name = "bootstrap", about = "Print the fspec workflow bootstrap document")]
+    #[command(
+        name = "bootstrap",
+        about = "Print the fspec workflow bootstrap document"
+    )]
     Bootstrap {},
     /// RPC-285: build a pre-filled GitHub bug-report issue URL.
-    #[command(name = "report-bug-to-github", about = "Report a bug to the fspec GitHub repository")]
+    #[command(
+        name = "report-bug-to-github",
+        about = "Report a bug to the fspec GitHub repository"
+    )]
     ReportBugToGitHub {
         #[arg(long = "project-root", value_name = "path")]
         project_root: Option<String>,
@@ -1993,6 +2340,11 @@ enum Mode {
 
 #[tokio::main]
 async fn main() -> std::process::ExitCode {
+    // PROV-097: load <cwd>/.env into the process environment before any
+    // clap parsing / mode dispatch, so combined::run / daemon::run reach
+    // ProviderCredentials::detect() with .env-sourced keys visible.
+    startup_env::load_startup_env();
+
     // RPC-247 / strict byte-parity: intercept `fspec <list-*> --help` before
     // clap parses, so we can emit the TS-formatted help block instead of
     // clap's auto-generated one. Returns Some(exit_code) when handled.
@@ -2022,9 +2374,7 @@ async fn main() -> std::process::ExitCode {
 
     let res = match cli.cmd {
         None => combined::run(cli.workspace).await,
-        Some(Mode::Daemon { bind, pidfile }) => {
-            daemon::run(cli.workspace, bind, pidfile).await
-        }
+        Some(Mode::Daemon { bind, pidfile }) => daemon::run(cli.workspace, bind, pidfile).await,
         Some(Mode::Client { connect }) => client::run(connect).await,
         Some(Mode::Status { connect }) => status::run(connect).await,
         Some(Mode::ListWorkUnits {
@@ -2095,14 +2445,12 @@ async fn main() -> std::process::ExitCode {
             list_checkpoints::run,
             list_checkpoints::CliArgs { work_unit_id }
         ),
-        Some(Mode::ShowDeleted { work_unit_id }) => forward!(
-            show_deleted::run,
-            show_deleted::CliArgs { work_unit_id }
-        ),
-        Some(Mode::ShowEpic { epic_id, format }) => forward!(
-            show_epic::run,
-            show_epic::CliArgs { epic_id, format }
-        ),
+        Some(Mode::ShowDeleted { work_unit_id }) => {
+            forward!(show_deleted::run, show_deleted::CliArgs { work_unit_id })
+        }
+        Some(Mode::ShowEpic { epic_id, format }) => {
+            forward!(show_epic::run, show_epic::CliArgs { epic_id, format })
+        }
         Some(Mode::ShowFeature {
             feature,
             format,
@@ -2116,9 +2464,15 @@ async fn main() -> std::process::ExitCode {
             }
         ),
         Some(Mode::TagStats) => forward!(tag_stats::run, tag_stats::CliArgs::default()),
-        Some(Mode::ShowWorkUnit { work_unit_id, format }) => forward!(
+        Some(Mode::ShowWorkUnit {
+            work_unit_id,
+            format,
+        }) => forward!(
             show_work_unit::run,
-            show_work_unit::CliArgs { work_unit_id, format }
+            show_work_unit::CliArgs {
+                work_unit_id,
+                format
+            }
         ),
         Some(Mode::QueryDependencyStats { format }) => forward!(
             query_dependency_stats::run,
@@ -2162,13 +2516,25 @@ async fn main() -> std::process::ExitCode {
             query_bottlenecks::run,
             query_bottlenecks::CliArgs { output }
         ),
-        Some(Mode::QueryOrphans { output, exclude_done }) => forward!(
+        Some(Mode::QueryOrphans {
+            output,
+            exclude_done,
+        }) => forward!(
             query_orphans::run,
-            query_orphans::CliArgs { output, exclude_done }
+            query_orphans::CliArgs {
+                output,
+                exclude_done
+            }
         ),
-        Some(Mode::QueryEstimationGuide { work_unit_id, format }) => forward!(
+        Some(Mode::QueryEstimationGuide {
+            work_unit_id,
+            format,
+        }) => forward!(
             query_estimation_guide::run,
-            query_estimation_guide::CliArgs { work_unit_id, format }
+            query_estimation_guide::CliArgs {
+                work_unit_id,
+                format
+            }
         ),
         Some(Mode::QueryExampleMappingStats { format }) => forward!(
             query_example_mapping_stats::run,
@@ -2200,51 +2566,137 @@ async fn main() -> std::process::ExitCode {
             show_foundation_event_storm::run,
             show_foundation_event_storm::CliArgs { r#type, context }
         ),
-        Some(Mode::ShowTestPatterns { tag, include_coverage, json }) => forward!(
+        Some(Mode::ShowTestPatterns {
+            tag,
+            include_coverage,
+            json,
+        }) => forward!(
             show_test_patterns::run,
-            show_test_patterns::CliArgs { tag, include_coverage, json }
+            show_test_patterns::CliArgs {
+                tag,
+                include_coverage,
+                json
+            }
         ),
-        Some(Mode::ShowAcceptanceCriteria { tag, format, output }) => forward!(
+        Some(Mode::ShowAcceptanceCriteria {
+            tag,
+            format,
+            output,
+        }) => forward!(
             show_acceptance_criteria::run,
-            show_acceptance_criteria::CliArgs { tags: tag, format: Some(format), output }
+            show_acceptance_criteria::CliArgs {
+                tags: tag,
+                format: Some(format),
+                output
+            }
         ),
-        Some(Mode::ShowCoverage { feature_name, format, output }) => forward!(
+        Some(Mode::ShowCoverage {
+            feature_name,
+            format,
+            output,
+        }) => forward!(
             show_coverage::run,
-            show_coverage::CliArgs { feature_name, format, output }
+            show_coverage::CliArgs {
+                feature_name,
+                format,
+                output
+            }
         ),
-        Some(Mode::CreateEpic { epic_id, title, description }) => forward!(
+        Some(Mode::CreateEpic {
+            epic_id,
+            title,
+            description,
+        }) => forward!(
             create_epic::run,
-            create_epic::CliArgs { epic_id, title, description }
+            create_epic::CliArgs {
+                epic_id,
+                title,
+                description
+            }
         ),
-        Some(Mode::DeleteEpic { epic_id, force }) => forward!(
-            delete_epic::run,
-            delete_epic::CliArgs { epic_id, force }
-        ),
-        Some(Mode::CreatePrefix { prefix, description }) => forward!(
+        Some(Mode::DeleteEpic { epic_id, force }) => {
+            forward!(delete_epic::run, delete_epic::CliArgs { epic_id, force })
+        }
+        Some(Mode::CreatePrefix {
+            prefix,
+            description,
+        }) => forward!(
             create_prefix::run,
-            create_prefix::CliArgs { prefix, description }
+            create_prefix::CliArgs {
+                prefix,
+                description
+            }
         ),
-        Some(Mode::RegisterTag { tag, category, description }) => forward!(
+        Some(Mode::RegisterTag {
+            tag,
+            category,
+            description,
+        }) => forward!(
             register_tag::run,
-            register_tag::CliArgs { tag, category, description }
+            register_tag::CliArgs {
+                tag,
+                category,
+                description
+            }
         ),
-        Some(Mode::UpdatePrefix { prefix, description }) => forward!(
+        Some(Mode::UpdatePrefix {
+            prefix,
+            description,
+        }) => forward!(
             update_prefix::run,
-            update_prefix::CliArgs { prefix, description }
+            update_prefix::CliArgs {
+                prefix,
+                description
+            }
         ),
-        Some(Mode::UpdateTag { tag, category, description }) => forward!(
+        Some(Mode::UpdateTag {
+            tag,
+            category,
+            description,
+        }) => forward!(
             update_tag::run,
-            update_tag::CliArgs { tag, category, description }
+            update_tag::CliArgs {
+                tag,
+                category,
+                description
+            }
         ),
-        Some(Mode::AddDependencies { work_unit_id, blocks, blocked_by, depends_on, relates_to }) => forward!(
+        Some(Mode::AddDependencies {
+            work_unit_id,
+            blocks,
+            blocked_by,
+            depends_on,
+            relates_to,
+        }) => forward!(
             add_dependencies::run,
-            add_dependencies::CliArgs { work_unit_id, blocks, blocked_by, depends_on, relates_to }
+            add_dependencies::CliArgs {
+                work_unit_id,
+                blocks,
+                blocked_by,
+                depends_on,
+                relates_to
+            }
         ),
-        Some(Mode::DeleteTag { tag, force, dry_run }) => forward!(
+        Some(Mode::DeleteTag {
+            tag,
+            force,
+            dry_run,
+        }) => forward!(
             delete_tag::run,
-            delete_tag::CliArgs { tag, force, dry_run }
+            delete_tag::CliArgs {
+                tag,
+                force,
+                dry_run
+            }
         ),
-        Some(Mode::RemoveDependency { work_unit_id, depends_on_positional, blocks, blocked_by, depends_on, relates_to }) => forward!(
+        Some(Mode::RemoveDependency {
+            work_unit_id,
+            depends_on_positional,
+            blocks,
+            blocked_by,
+            depends_on,
+            relates_to,
+        }) => forward!(
             remove_dependency::run,
             remove_dependency::CliArgs {
                 work_unit_id,
@@ -2255,49 +2707,106 @@ async fn main() -> std::process::ExitCode {
                 relates_to,
             }
         ),
-        Some(Mode::ClearDependencies { work_unit_id, confirm }) => forward!(
+        Some(Mode::ClearDependencies {
+            work_unit_id,
+            confirm,
+        }) => forward!(
             clear_dependencies::run,
-            clear_dependencies::CliArgs { work_unit_id, confirm }
+            clear_dependencies::CliArgs {
+                work_unit_id,
+                confirm
+            }
         ),
-        Some(Mode::AddRule { work_unit_id, rule }) => forward!(
-            add_rule::run,
-            add_rule::CliArgs { work_unit_id, rule }
-        ),
-        Some(Mode::RemoveRule { work_unit_id, index }) => forward!(
+        Some(Mode::AddRule { work_unit_id, rule }) => {
+            forward!(add_rule::run, add_rule::CliArgs { work_unit_id, rule })
+        }
+        Some(Mode::RemoveRule {
+            work_unit_id,
+            index,
+        }) => forward!(
             remove_rule::run,
-            remove_rule::CliArgs { work_unit_id, index }
+            remove_rule::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
-        Some(Mode::AddAssumption { work_unit_id, assumption }) => forward!(
+        Some(Mode::AddAssumption {
+            work_unit_id,
+            assumption,
+        }) => forward!(
             add_assumption::run,
-            add_assumption::CliArgs { work_unit_id, assumption }
+            add_assumption::CliArgs {
+                work_unit_id,
+                assumption
+            }
         ),
-        Some(Mode::AddExample { work_unit_id, example }) => forward!(
+        Some(Mode::AddExample {
+            work_unit_id,
+            example,
+        }) => forward!(
             add_example::run,
-            add_example::CliArgs { work_unit_id, example }
+            add_example::CliArgs {
+                work_unit_id,
+                example
+            }
         ),
-        Some(Mode::RemoveExample { work_unit_id, index }) => forward!(
+        Some(Mode::RemoveExample {
+            work_unit_id,
+            index,
+        }) => forward!(
             remove_example::run,
-            remove_example::CliArgs { work_unit_id, index }
+            remove_example::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
-        Some(Mode::AddQuestion { work_unit_id, question }) => forward!(
+        Some(Mode::AddQuestion {
+            work_unit_id,
+            question,
+        }) => forward!(
             add_question::run,
-            add_question::CliArgs { work_unit_id, question }
+            add_question::CliArgs {
+                work_unit_id,
+                question
+            }
         ),
-        Some(Mode::RemoveQuestion { work_unit_id, index }) => forward!(
+        Some(Mode::RemoveQuestion {
+            work_unit_id,
+            index,
+        }) => forward!(
             remove_question::run,
-            remove_question::CliArgs { work_unit_id, index }
+            remove_question::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
         Some(Mode::AddArchitectureNote { work_unit_id, note }) => forward!(
             add_architecture_note::run,
             add_architecture_note::CliArgs { work_unit_id, note }
         ),
-        Some(Mode::RemoveArchitectureNote { work_unit_id, index }) => forward!(
+        Some(Mode::RemoveArchitectureNote {
+            work_unit_id,
+            index,
+        }) => forward!(
             remove_architecture_note::run,
-            remove_architecture_note::CliArgs { work_unit_id, index }
+            remove_architecture_note::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
-        Some(Mode::SetUserStory { work_unit_id, role, action, benefit }) => forward!(
+        Some(Mode::SetUserStory {
+            work_unit_id,
+            role,
+            action,
+            benefit,
+        }) => forward!(
             set_user_story::run,
-            set_user_story::CliArgs { work_unit_id, role, action, benefit }
+            set_user_story::CliArgs {
+                work_unit_id,
+                role,
+                action,
+                benefit
+            }
         ),
         // Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
         Some(Mode::AddDependency {
@@ -2318,142 +2827,421 @@ async fn main() -> std::process::ExitCode {
                 relates_to,
             }
         ),
-        Some(Mode::AnswerQuestion { work_unit_id, index, answer, add_to }) => forward!(
+        Some(Mode::AnswerQuestion {
+            work_unit_id,
+            index,
+            answer,
+            add_to,
+        }) => forward!(
             answer_question::run,
-            answer_question::CliArgs { work_unit_id, index, answer, add_to }
+            answer_question::CliArgs {
+                work_unit_id,
+                index,
+                answer,
+                add_to
+            }
         ),
-        Some(Mode::RestoreExample { work_unit_id, index }) => forward!(
+        Some(Mode::RestoreExample {
+            work_unit_id,
+            index,
+        }) => forward!(
             restore_example::run,
-            restore_example::CliArgs { work_unit_id, index }
+            restore_example::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
-        Some(Mode::RestoreRule { work_unit_id, index }) => forward!(
+        Some(Mode::RestoreRule {
+            work_unit_id,
+            index,
+        }) => forward!(
             restore_rule::run,
-            restore_rule::CliArgs { work_unit_id, index }
+            restore_rule::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
-        Some(Mode::RestoreQuestion { work_unit_id, index }) => forward!(
+        Some(Mode::RestoreQuestion {
+            work_unit_id,
+            index,
+        }) => forward!(
             restore_question::run,
-            restore_question::CliArgs { work_unit_id, index }
+            restore_question::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
-        Some(Mode::RestoreArchitectureNote { work_unit_id, index }) => forward!(
+        Some(Mode::RestoreArchitectureNote {
+            work_unit_id,
+            index,
+        }) => forward!(
             restore_architecture_note::run,
-            restore_architecture_note::CliArgs { work_unit_id, index }
+            restore_architecture_note::CliArgs {
+                work_unit_id,
+                index
+            }
         ),
-        Some(Mode::AddTagToFeature { file, tags, validate_registry }) => forward!(
+        Some(Mode::AddTagToFeature {
+            file,
+            tags,
+            validate_registry,
+        }) => forward!(
             add_tag_to_feature::run,
-            add_tag_to_feature::CliArgs { file, tags, validate_registry }
+            add_tag_to_feature::CliArgs {
+                file,
+                tags,
+                validate_registry
+            }
         ),
         Some(Mode::RemoveTagFromFeature { file, tags }) => forward!(
             remove_tag_from_feature::run,
             remove_tag_from_feature::CliArgs { file, tags }
         ),
-        Some(Mode::AddTagToScenario { file, scenario_name, tags, validate_registry }) => forward!(
+        Some(Mode::AddTagToScenario {
+            file,
+            scenario_name,
+            tags,
+            validate_registry,
+        }) => forward!(
             add_tag_to_scenario::run,
-            add_tag_to_scenario::CliArgs { file, scenario_name, tags, validate_registry }
+            add_tag_to_scenario::CliArgs {
+                file,
+                scenario_name,
+                tags,
+                validate_registry
+            }
         ),
-        Some(Mode::RemoveTagFromScenario { file, scenario_name, tags }) => forward!(
+        Some(Mode::RemoveTagFromScenario {
+            file,
+            scenario_name,
+            tags,
+        }) => forward!(
             remove_tag_from_scenario::run,
-            remove_tag_from_scenario::CliArgs { file, scenario_name, tags }
+            remove_tag_from_scenario::CliArgs {
+                file,
+                scenario_name,
+                tags
+            }
         ),
-        Some(Mode::AddAttachment { work_unit_id, file_path, description }) => forward!(
+        Some(Mode::AddAttachment {
+            work_unit_id,
+            file_path,
+            description,
+        }) => forward!(
             add_attachment::run,
-            add_attachment::CliArgs { work_unit_id, file_path, description }
+            add_attachment::CliArgs {
+                work_unit_id,
+                file_path,
+                description
+            }
         ),
-        Some(Mode::RemoveAttachment { work_unit_id, file_name, keep_file }) => forward!(
+        Some(Mode::RemoveAttachment {
+            work_unit_id,
+            file_name,
+            keep_file,
+        }) => forward!(
             remove_attachment::run,
-            remove_attachment::CliArgs { work_unit_id, file_name, keep_file }
+            remove_attachment::CliArgs {
+                work_unit_id,
+                file_name,
+                keep_file
+            }
         ),
-        Some(Mode::AddVirtualHook { work_unit_id, event, command, blocking, git_context }) => forward!(
+        Some(Mode::AddVirtualHook {
+            work_unit_id,
+            event,
+            command,
+            blocking,
+            git_context,
+        }) => forward!(
             add_virtual_hook::run,
-            add_virtual_hook::CliArgs { work_unit_id, event, command, blocking, git_context }
+            add_virtual_hook::CliArgs {
+                work_unit_id,
+                event,
+                command,
+                blocking,
+                git_context
+            }
         ),
-        Some(Mode::RemoveVirtualHook { work_unit_id, hook_name }) => forward!(
+        Some(Mode::RemoveVirtualHook {
+            work_unit_id,
+            hook_name,
+        }) => forward!(
             remove_virtual_hook::run,
-            remove_virtual_hook::CliArgs { work_unit_id, hook_name }
+            remove_virtual_hook::CliArgs {
+                work_unit_id,
+                hook_name
+            }
         ),
         Some(Mode::ClearVirtualHooks { work_unit_id }) => forward!(
             clear_virtual_hooks::run,
             clear_virtual_hooks::CliArgs { work_unit_id }
         ),
-        Some(Mode::CopyVirtualHooks { from, to, hook_name }) => forward!(
+        Some(Mode::CopyVirtualHooks {
+            from,
+            to,
+            hook_name,
+        }) => forward!(
             copy_virtual_hooks::run,
-            copy_virtual_hooks::CliArgs { from, to, hook_name }
+            copy_virtual_hooks::CliArgs {
+                from,
+                to,
+                hook_name
+            }
         ),
-        Some(Mode::AddHook { event, name, command, blocking, timeout }) => forward!(
+        Some(Mode::AddHook {
+            event,
+            name,
+            command,
+            blocking,
+            timeout,
+        }) => forward!(
             add_hook::run,
-            add_hook::CliArgs { event, name, command, blocking, timeout }
+            add_hook::CliArgs {
+                event,
+                name,
+                command,
+                blocking,
+                timeout
+            }
         ),
-        Some(Mode::RemoveHook { event, name }) => forward!(
-            remove_hook::run,
-            remove_hook::CliArgs { event, name }
-        ),
-        Some(Mode::AddDiagram { section, title, code }) => forward!(
+        Some(Mode::RemoveHook { event, name }) => {
+            forward!(remove_hook::run, remove_hook::CliArgs { event, name })
+        }
+        Some(Mode::AddDiagram {
+            section,
+            title,
+            code,
+        }) => forward!(
             add_diagram::run,
-            add_diagram::CliArgs { section, title, code }
+            add_diagram::CliArgs {
+                section,
+                title,
+                code
+            }
         ),
         Some(Mode::DeleteDiagram { section, title }) => forward!(
             delete_diagram::run,
             delete_diagram::CliArgs { section, title }
         ),
         // Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
-        Some(Mode::AddAggregate { work_unit_id, text, responsibilities, timestamp, bounded_context }) => forward!(
+        Some(Mode::AddAggregate {
+            work_unit_id,
+            text,
+            responsibilities,
+            timestamp,
+            bounded_context,
+        }) => forward!(
             add_aggregate::run,
-            add_aggregate::CliArgs { work_unit_id, text, responsibilities, timestamp, bounded_context }
+            add_aggregate::CliArgs {
+                work_unit_id,
+                text,
+                responsibilities,
+                timestamp,
+                bounded_context
+            }
         ),
-        Some(Mode::AddCommand { work_unit_id, text, actor, timestamp, bounded_context }) => forward!(
+        Some(Mode::AddCommand {
+            work_unit_id,
+            text,
+            actor,
+            timestamp,
+            bounded_context,
+        }) => forward!(
             add_command::run,
-            add_command::CliArgs { work_unit_id, text, actor, timestamp, bounded_context }
+            add_command::CliArgs {
+                work_unit_id,
+                text,
+                actor,
+                timestamp,
+                bounded_context
+            }
         ),
-        Some(Mode::AddDomainEvent { work_unit_id, text, timestamp, bounded_context }) => forward!(
+        Some(Mode::AddDomainEvent {
+            work_unit_id,
+            text,
+            timestamp,
+            bounded_context,
+        }) => forward!(
             add_domain_event::run,
-            add_domain_event::CliArgs { work_unit_id, text, timestamp, bounded_context }
+            add_domain_event::CliArgs {
+                work_unit_id,
+                text,
+                timestamp,
+                bounded_context
+            }
         ),
-        Some(Mode::AddHotspot { work_unit_id, text, concern, timestamp, bounded_context }) => forward!(
+        Some(Mode::AddHotspot {
+            work_unit_id,
+            text,
+            concern,
+            timestamp,
+            bounded_context,
+        }) => forward!(
             add_hotspot::run,
-            add_hotspot::CliArgs { work_unit_id, text, concern, timestamp, bounded_context }
+            add_hotspot::CliArgs {
+                work_unit_id,
+                text,
+                concern,
+                timestamp,
+                bounded_context
+            }
         ),
-        Some(Mode::AddBoundedContext { work_unit_id, text, description, timestamp, context }) => forward!(
+        Some(Mode::AddBoundedContext {
+            work_unit_id,
+            text,
+            description,
+            timestamp,
+            context,
+        }) => forward!(
             add_bounded_context::run,
-            add_bounded_context::CliArgs { work_unit_id, text, description, timestamp, context }
+            add_bounded_context::CliArgs {
+                work_unit_id,
+                text,
+                description,
+                timestamp,
+                context
+            }
         ),
-        Some(Mode::AddExternalSystem { work_unit_id, text, system_type, timestamp, context }) => forward!(
+        Some(Mode::AddExternalSystem {
+            work_unit_id,
+            text,
+            system_type,
+            timestamp,
+            context,
+        }) => forward!(
             add_external_system::run,
-            add_external_system::CliArgs { work_unit_id, text, system_type, timestamp, context }
+            add_external_system::CliArgs {
+                work_unit_id,
+                text,
+                system_type,
+                timestamp,
+                context
+            }
         ),
-        Some(Mode::AddPolicy { work_unit_id, text, when, then, timestamp, bounded_context }) => forward!(
+        Some(Mode::AddPolicy {
+            work_unit_id,
+            text,
+            when,
+            then,
+            timestamp,
+            bounded_context,
+        }) => forward!(
             add_policy::run,
-            add_policy::CliArgs { work_unit_id, text, when, then, timestamp, bounded_context }
+            add_policy::CliArgs {
+                work_unit_id,
+                text,
+                when,
+                then,
+                timestamp,
+                bounded_context
+            }
         ),
-        Some(Mode::CreateStory { prefix, title, description, epic, parent }) => forward!(
+        Some(Mode::CreateStory {
+            prefix,
+            title,
+            description,
+            epic,
+            parent,
+        }) => forward!(
             create_story::run,
-            create_story::CliArgs { prefix, title, description, epic, parent }
+            create_story::CliArgs {
+                prefix,
+                title,
+                description,
+                epic,
+                parent
+            }
         ),
-        Some(Mode::CreateBug { prefix, title, description, epic, parent }) => forward!(
+        Some(Mode::CreateBug {
+            prefix,
+            title,
+            description,
+            epic,
+            parent,
+        }) => forward!(
             create_bug::run,
-            create_bug::CliArgs { prefix, title, description, epic, parent }
+            create_bug::CliArgs {
+                prefix,
+                title,
+                description,
+                epic,
+                parent
+            }
         ),
-        Some(Mode::CreateTask { prefix, title, description, epic, parent }) => forward!(
+        Some(Mode::CreateTask {
+            prefix,
+            title,
+            description,
+            epic,
+            parent,
+        }) => forward!(
             create_task::run,
-            create_task::CliArgs { prefix, title, description, epic, parent }
+            create_task::CliArgs {
+                prefix,
+                title,
+                description,
+                epic,
+                parent
+            }
         ),
-        Some(Mode::UpdateWorkUnit { work_unit_id, title, description, epic, parent }) => forward!(
+        Some(Mode::UpdateWorkUnit {
+            work_unit_id,
+            title,
+            description,
+            epic,
+            parent,
+        }) => forward!(
             update_work_unit::run,
-            update_work_unit::CliArgs { work_unit_id, title, description, epic, parent }
+            update_work_unit::CliArgs {
+                work_unit_id,
+                title,
+                description,
+                epic,
+                parent
+            }
         ),
-        Some(Mode::UpdateWorkUnitEstimate { work_unit_id, estimate }) => forward!(
+        Some(Mode::UpdateWorkUnitEstimate {
+            work_unit_id,
+            estimate,
+        }) => forward!(
             update_work_unit_estimate::run,
-            update_work_unit_estimate::CliArgs { work_unit_id, points: estimate }
+            update_work_unit_estimate::CliArgs {
+                work_unit_id,
+                points: estimate
+            }
         ),
-        Some(Mode::DeleteWorkUnit { work_unit_id, force, skip_confirmation, cascade_dependencies }) => forward!(
+        Some(Mode::DeleteWorkUnit {
+            work_unit_id,
+            force,
+            skip_confirmation,
+            cascade_dependencies,
+        }) => forward!(
             delete_work_unit::run,
-            delete_work_unit::CliArgs { work_unit_id, force, skip_confirmation, cascade_dependencies }
+            delete_work_unit::CliArgs {
+                work_unit_id,
+                force,
+                skip_confirmation,
+                cascade_dependencies
+            }
         ),
         Some(Mode::CompactWorkUnit { work_unit_id }) => forward!(
             compact_work_unit::run,
             compact_work_unit::CliArgs { work_unit_id }
         ),
-        Some(Mode::PrioritizeWorkUnit { work_unit_id, position, before, after }) => forward!(
+        Some(Mode::PrioritizeWorkUnit {
+            work_unit_id,
+            position,
+            before,
+            after,
+        }) => forward!(
             prioritize_work_unit::run,
-            prioritize_work_unit::CliArgs { work_unit_id, position, before, after }
+            prioritize_work_unit::CliArgs {
+                work_unit_id,
+                position,
+                before,
+                after
+            }
         ),
         Some(Mode::RepairWorkUnits { dry_run }) => forward!(
             repair_work_units::run,
@@ -2463,9 +3251,17 @@ async fn main() -> std::process::ExitCode {
             record_iteration::run,
             record_iteration::CliArgs { name, start, end }
         ),
-        Some(Mode::ExportWorkUnits { format, output, status }) => forward!(
+        Some(Mode::ExportWorkUnits {
+            format,
+            output,
+            status,
+        }) => forward!(
             export_work_units::run,
-            export_work_units::CliArgs { format, output, status }
+            export_work_units::CliArgs {
+                format,
+                output,
+                status
+            }
         ),
         Some(Mode::ExportExampleMap { work_unit_id, file }) => forward!(
             export_example_map::run,
@@ -2480,41 +3276,81 @@ async fn main() -> std::process::ExitCode {
             add_capability::run,
             add_capability::CliArgs { name, description }
         ),
-        Some(Mode::RemoveCapability { name }) => forward!(
-            remove_capability::run,
-            remove_capability::CliArgs { name }
-        ),
-        Some(Mode::AddPersona { name, description, goal }) => forward!(
+        Some(Mode::RemoveCapability { name }) => {
+            forward!(remove_capability::run, remove_capability::CliArgs { name })
+        }
+        Some(Mode::AddPersona {
+            name,
+            description,
+            goal,
+        }) => forward!(
             add_persona::run,
-            add_persona::CliArgs { name, description, goals: goal }
+            add_persona::CliArgs {
+                name,
+                description,
+                goals: goal
+            }
         ),
-        Some(Mode::RemovePersona { name }) => forward!(
-            remove_persona::run,
-            remove_persona::CliArgs { name }
-        ),
+        Some(Mode::RemovePersona { name }) => {
+            forward!(remove_persona::run, remove_persona::CliArgs { name })
+        }
         Some(Mode::AddFoundationBoundedContext { text }) => forward!(
             add_foundation_bounded_context::run,
             add_foundation_bounded_context::CliArgs { text }
         ),
-        Some(Mode::RemoveFoundationBoundedContext { context_name, cascade }) => forward!(
+        Some(Mode::RemoveFoundationBoundedContext {
+            context_name,
+            cascade,
+        }) => forward!(
             remove_foundation_bounded_context::run,
-            remove_foundation_bounded_context::CliArgs { context_name, cascade }
+            remove_foundation_bounded_context::CliArgs {
+                context_name,
+                cascade
+            }
         ),
-        Some(Mode::AddAggregateToFoundation { context_name, aggregate_name, description }) => forward!(
+        Some(Mode::AddAggregateToFoundation {
+            context_name,
+            aggregate_name,
+            description,
+        }) => forward!(
             add_aggregate_to_foundation::run,
-            add_aggregate_to_foundation::CliArgs { context_name, aggregate_name, description }
+            add_aggregate_to_foundation::CliArgs {
+                context_name,
+                aggregate_name,
+                description
+            }
         ),
-        Some(Mode::RemoveAggregateFromFoundation { context_name, aggregate_name }) => forward!(
+        Some(Mode::RemoveAggregateFromFoundation {
+            context_name,
+            aggregate_name,
+        }) => forward!(
             remove_aggregate_from_foundation::run,
-            remove_aggregate_from_foundation::CliArgs { context_name, aggregate_name }
+            remove_aggregate_from_foundation::CliArgs {
+                context_name,
+                aggregate_name
+            }
         ),
-        Some(Mode::AddCommandToFoundation { context_name, command_name, description }) => forward!(
+        Some(Mode::AddCommandToFoundation {
+            context_name,
+            command_name,
+            description,
+        }) => forward!(
             add_command_to_foundation::run,
-            add_command_to_foundation::CliArgs { context_name, command_name, description }
+            add_command_to_foundation::CliArgs {
+                context_name,
+                command_name,
+                description
+            }
         ),
-        Some(Mode::RemoveCommandFromFoundation { context_name, command_name }) => forward!(
+        Some(Mode::RemoveCommandFromFoundation {
+            context_name,
+            command_name,
+        }) => forward!(
             remove_command_from_foundation::run,
-            remove_command_from_foundation::CliArgs { context_name, command_name }
+            remove_command_from_foundation::CliArgs {
+                context_name,
+                command_name
+            }
         ),
         Some(Mode::GenerateFoundationMd { output }) => forward!(
             generate_foundation_md::run,
@@ -2551,17 +3387,37 @@ async fn main() -> std::process::ExitCode {
         Some(Mode::ResumeSchedule { name }) => {
             forward!(resume_schedule::run, resume_schedule::CliArgs { name })
         }
-        Some(Mode::AddDomainEventToFoundation { context_name, event_name, description }) => forward!(
+        Some(Mode::AddDomainEventToFoundation {
+            context_name,
+            event_name,
+            description,
+        }) => forward!(
             add_domain_event_to_foundation::run,
-            add_domain_event_to_foundation::CliArgs { context_name, event_name, description }
+            add_domain_event_to_foundation::CliArgs {
+                context_name,
+                event_name,
+                description
+            }
         ),
-        Some(Mode::RemoveDomainEventFromFoundation { context_name, event_name }) => forward!(
+        Some(Mode::RemoveDomainEventFromFoundation {
+            context_name,
+            event_name,
+        }) => forward!(
             remove_domain_event_from_foundation::run,
-            remove_domain_event_from_foundation::CliArgs { context_name, event_name }
+            remove_domain_event_from_foundation::CliArgs {
+                context_name,
+                event_name
+            }
         ),
-        Some(Mode::Dependencies { work_unit_id, graph }) => forward!(
+        Some(Mode::Dependencies {
+            work_unit_id,
+            graph,
+        }) => forward!(
             dependencies::run,
-            dependencies::CliArgs { work_unit_id, graph }
+            dependencies::CliArgs {
+                work_unit_id,
+                graph
+            }
         ),
         Some(Mode::GetScenarios { tag, format }) => forward!(
             get_scenarios::run,
@@ -2571,22 +3427,45 @@ async fn main() -> std::process::ExitCode {
             update_foundation::run,
             update_foundation::CliArgs { section, content }
         ),
-        Some(Mode::ConfigureTools { test_command, quality_commands, reconfigure }) => forward!(
+        Some(Mode::ConfigureTools {
+            test_command,
+            quality_commands,
+            reconfigure,
+        }) => forward!(
             configure_tools::run,
-            configure_tools::CliArgs { test_command, quality_commands, reconfigure }
+            configure_tools::CliArgs {
+                test_command,
+                quality_commands,
+                reconfigure
+            }
         ),
         // Batch 15 (2026-06-14) — feature-file (.feature) mutation commands
-        Some(Mode::CreateFeature { name }) => forward!(
-            create_feature::run,
-            create_feature::CliArgs { name }
-        ),
-        Some(Mode::AddScenario { file, scenario_name }) => forward!(
+        Some(Mode::CreateFeature { name }) => {
+            forward!(create_feature::run, create_feature::CliArgs { name })
+        }
+        Some(Mode::AddScenario {
+            file,
+            scenario_name,
+        }) => forward!(
             add_scenario::run,
-            add_scenario::CliArgs { feature: file, scenario: scenario_name }
+            add_scenario::CliArgs {
+                feature: file,
+                scenario: scenario_name
+            }
         ),
-        Some(Mode::AddStep { file, scenario, r#type, text }) => forward!(
+        Some(Mode::AddStep {
+            file,
+            scenario,
+            r#type,
+            text,
+        }) => forward!(
             add_step::run,
-            add_step::CliArgs { feature: file, scenario, step_type: r#type, text }
+            add_step::CliArgs {
+                feature: file,
+                scenario,
+                step_type: r#type,
+                text
+            }
         ),
         Some(Mode::AddBackground { feature, text }) => forward!(
             add_background::run,
@@ -2594,94 +3473,150 @@ async fn main() -> std::process::ExitCode {
         ),
         Some(Mode::AddArchitecture { file, notes }) => forward!(
             add_architecture::run,
-            add_architecture::CliArgs { feature: file, text: notes }
+            add_architecture::CliArgs {
+                feature: file,
+                text: notes
+            }
         ),
         Some(Mode::DeleteScenario { file, scenario }) => forward!(
             delete_scenario::run,
-            delete_scenario::CliArgs { feature: file, scenario }
+            delete_scenario::CliArgs {
+                feature: file,
+                scenario
+            }
         ),
-        Some(Mode::DeleteStep { file, scenario, step }) => forward!(
+        Some(Mode::DeleteStep {
+            file,
+            scenario,
+            step,
+        }) => forward!(
             delete_step::run,
-            delete_step::CliArgs { feature: file, scenario, step }
+            delete_step::CliArgs {
+                feature: file,
+                scenario,
+                step
+            }
         ),
         Some(Mode::DeleteFeatures { tag, dry_run }) => forward!(
             delete_features::run,
             delete_features::CliArgs { tags: tag, dry_run }
         ),
-        Some(Mode::UpdateScenario { file, old_name, new_name }) => forward!(
+        Some(Mode::UpdateScenario {
+            file,
+            old_name,
+            new_name,
+        }) => forward!(
             update_scenario::run,
-            update_scenario::CliArgs { file, old_name, new_name }
+            update_scenario::CliArgs {
+                file,
+                old_name,
+                new_name
+            }
         ),
-        Some(Mode::UpdateStep { feature, scenario, current_step, text, keyword }) => forward!(
+        Some(Mode::UpdateStep {
+            feature,
+            scenario,
+            current_step,
+            text,
+            keyword,
+        }) => forward!(
             update_step::run,
-            update_step::CliArgs { feature, scenario, current_step, text, keyword }
+            update_step::CliArgs {
+                feature,
+                scenario,
+                current_step,
+                text,
+                keyword
+            }
         ),
         // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag
-        Some(Mode::ValidateTags { file, verbose, summary }) => forward!(
+        Some(Mode::ValidateTags {
+            file,
+            verbose,
+            summary,
+        }) => forward!(
             validate_tags::run,
-            validate_tags::CliArgs { file, verbose, summary }
+            validate_tags::CliArgs {
+                file,
+                verbose,
+                summary
+            }
         ),
-        Some(Mode::ValidateWorkUnits {}) => forward!(
-            validate_work_units::run,
-            validate_work_units::CliArgs {}
-        ),
-        Some(Mode::ValidateHooks {}) => forward!(
-            validate_hooks::run,
-            validate_hooks::CliArgs {}
-        ),
+        Some(Mode::ValidateWorkUnits {}) => {
+            forward!(validate_work_units::run, validate_work_units::CliArgs {})
+        }
+        Some(Mode::ValidateHooks {}) => forward!(validate_hooks::run, validate_hooks::CliArgs {}),
         Some(Mode::ValidateFoundationSchema {}) => forward!(
             validate_foundation_schema::run,
             validate_foundation_schema::CliArgs
         ),
-        Some(Mode::Validate { file, verbose }) => forward!(
-            validate::run,
-            validate::CliArgs { file, verbose }
-        ),
+        Some(Mode::Validate { file, verbose }) => {
+            forward!(validate::run, validate::CliArgs { file, verbose })
+        }
         Some(Mode::SearchScenarios { query, regex, json }) => forward!(
             search_scenarios::run,
             search_scenarios::CliArgs { query, regex, json }
         ),
-        Some(Mode::SearchImplementation { function, show_work_units, json }) => forward!(
+        Some(Mode::SearchImplementation {
+            function,
+            show_work_units,
+            json,
+        }) => forward!(
             search_implementation::run,
-            search_implementation::CliArgs { function, show_work_units, json }
+            search_implementation::CliArgs {
+                function,
+                show_work_units,
+                json
+            }
         ),
-        Some(Mode::UnlinkCoverage { feature_name, scenario, test_file, impl_file, all }) => forward!(
+        Some(Mode::UnlinkCoverage {
+            feature_name,
+            scenario,
+            test_file,
+            impl_file,
+            all,
+        }) => forward!(
             unlink_coverage::run,
-            unlink_coverage::CliArgs { feature_name, scenario, test_file, impl_file, all }
+            unlink_coverage::CliArgs {
+                feature_name,
+                scenario,
+                test_file,
+                impl_file,
+                all
+            }
         ),
-        Some(Mode::GenerateTagsMd { output }) => forward!(
-            generate_tags_md::run,
-            generate_tags_md::CliArgs { output }
-        ),
-        Some(Mode::Retag { from, to, dry_run }) => forward!(
-            retag::run,
-            retag::CliArgs { from, to, dry_run }
-        ),
+        Some(Mode::GenerateTagsMd { output }) => {
+            forward!(generate_tags_md::run, generate_tags_md::CliArgs { output })
+        }
+        Some(Mode::Retag { from, to, dry_run }) => {
+            forward!(retag::run, retag::CliArgs { from, to, dry_run })
+        }
         // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
         Some(Mode::AuditCoverage { feature_name }) => forward!(
             audit_coverage::run,
             audit_coverage::CliArgs { feature_name }
         ),
-        Some(Mode::Board { format, limit }) => forward!(
-            board::run,
-            board::CliArgs { format, limit }
-        ),
-        Some(Mode::Check { verbose }) => forward!(
-            check::run,
-            check::CliArgs { verbose }
-        ),
-        Some(Mode::CompareImplementations { tag, show_coverage, json }) => forward!(
+        Some(Mode::Board { format, limit }) => {
+            forward!(board::run, board::CliArgs { format, limit })
+        }
+        Some(Mode::Check { verbose }) => forward!(check::run, check::CliArgs { verbose }),
+        Some(Mode::CompareImplementations {
+            tag,
+            show_coverage,
+            json,
+        }) => forward!(
             compare_implementations::run,
-            compare_implementations::CliArgs { tag, show_coverage, json }
+            compare_implementations::CliArgs {
+                tag,
+                show_coverage,
+                json
+            }
         ),
         Some(Mode::DeleteScenarios { tags, dry_run }) => forward!(
             delete_scenarios::run,
             delete_scenarios::CliArgs { tags, dry_run }
         ),
-        Some(Mode::Format { file }) => forward!(
-            format::run,
-            format::CliArgs { file }
-        ),
+        Some(Mode::Format { file }) => forward!(format::run, format::CliArgs { file }),
         Some(Mode::GenerateCoverage { dry_run }) => forward!(
             generate_coverage::run,
             generate_coverage::CliArgs { dry_run }
@@ -2733,7 +3668,10 @@ async fn main() -> std::process::ExitCode {
             validate_spec_alignment::run,
             validate_spec_alignment::CliArgs { work_unit_id, fix }
         ),
-        Some(Mode::RemoveInitFiles { keep_config, no_keep_config }) => forward!(
+        Some(Mode::RemoveInitFiles {
+            keep_config,
+            no_keep_config,
+        }) => forward!(
             remove_init_files::run,
             remove_init_files::CliArgs {
                 keep_config: if no_keep_config {
@@ -2745,29 +3683,70 @@ async fn main() -> std::process::ExitCode {
                 }
             }
         ),
-        Some(Mode::AutoAdvance { dry_run }) => forward!(
-            auto_advance::run,
-            auto_advance::CliArgs { dry_run }
-        ),
-        Some(Mode::WorkflowAutomation { action, work_unit_id, event, from_state }) => forward!(
+        Some(Mode::AutoAdvance { dry_run }) => {
+            forward!(auto_advance::run, auto_advance::CliArgs { dry_run })
+        }
+        Some(Mode::WorkflowAutomation {
+            action,
+            work_unit_id,
+            event,
+            from_state,
+        }) => forward!(
             workflow_automation::run,
-            workflow_automation::CliArgs { action, work_unit_id, event, from_state }
+            workflow_automation::CliArgs {
+                action,
+                work_unit_id,
+                event,
+                from_state
+            }
         ),
-        Some(Mode::Checkpoint { work_unit_id, checkpoint_name }) => forward!(
+        Some(Mode::Checkpoint {
+            work_unit_id,
+            checkpoint_name,
+        }) => forward!(
             checkpoint::run,
-            checkpoint::CliArgs { work_unit_id, checkpoint_name }
+            checkpoint::CliArgs {
+                work_unit_id,
+                checkpoint_name
+            }
         ),
-        Some(Mode::CleanupCheckpoints { work_unit_id, keep_last }) => forward!(
+        Some(Mode::CleanupCheckpoints {
+            work_unit_id,
+            keep_last,
+        }) => forward!(
             cleanup_checkpoints::run,
-            cleanup_checkpoints::CliArgs { work_unit_id, keep_last }
+            cleanup_checkpoints::CliArgs {
+                work_unit_id,
+                keep_last
+            }
         ),
-        Some(Mode::RestoreCheckpoint { work_unit_id, checkpoint_name }) => forward!(
+        Some(Mode::RestoreCheckpoint {
+            work_unit_id,
+            checkpoint_name,
+        }) => forward!(
             restore_checkpoint::run,
-            restore_checkpoint::CliArgs { work_unit_id, checkpoint_name }
+            restore_checkpoint::CliArgs {
+                work_unit_id,
+                checkpoint_name
+            }
         ),
-        Some(Mode::Reverse { strategy, r#continue, status, reset, complete, dry_run }) => forward!(
+        Some(Mode::Reverse {
+            strategy,
+            r#continue,
+            status,
+            reset,
+            complete,
+            dry_run,
+        }) => forward!(
             reverse::run,
-            reverse::CliArgs { strategy, r#continue, status, reset, complete, dry_run }
+            reverse::CliArgs {
+                strategy,
+                r#continue,
+                status,
+                reset,
+                complete,
+                dry_run
+            }
         ),
         Some(Mode::UpdateWorkUnitStatus {
             work_unit_id,
@@ -2801,17 +3780,24 @@ async fn main() -> std::process::ExitCode {
                 force,
             }
         ),
-        Some(Mode::GenerateScenarios { work_unit_id, feature, ignore_possible_duplicates }) => {
+        Some(Mode::GenerateScenarios {
+            work_unit_id,
+            feature,
+            ignore_possible_duplicates,
+        }) => {
             forward!(
                 generate_scenarios::run,
-                generate_scenarios::CliArgs { work_unit_id, feature, ignore_possible_duplicates }
+                generate_scenarios::CliArgs {
+                    work_unit_id,
+                    feature,
+                    ignore_possible_duplicates
+                }
             )
         }
         Some(Mode::Init { agents }) => forward!(init::run, init::CliArgs { agents }),
-        Some(Mode::Research { tool, work_unit }) => forward!(
-            research::run,
-            research::CliArgs { tool, work_unit }
-        ),
+        Some(Mode::Research { tool, work_unit }) => {
+            forward!(research::run, research::CliArgs { tool, work_unit })
+        }
         Some(Mode::Bootstrap {}) => forward!(bootstrap::run, bootstrap::CliArgs {}),
         Some(Mode::ReportBugToGitHub {
             project_root,
@@ -2829,10 +3815,9 @@ async fn main() -> std::process::ExitCode {
                 interactive,
             }
         ),
-        Some(Mode::Review { work_unit_id }) => forward!(
-            review::run,
-            review::CliArgs { work_unit_id }
-        ),
+        Some(Mode::Review { work_unit_id }) => {
+            forward!(review::run, review::CliArgs { work_unit_id })
+        }
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -3041,11 +4026,7 @@ fn commander_option_spec(typed: &str) -> String {
     // "--description <DESCRIPTION>" or "-d, --description <DESCRIPTION>".
     // Reduce it to the bare flag token (first whitespace/comma-delimited
     // piece) before matching against the declared arguments.
-    let flag_token = typed
-        .split([' ', ','])
-        .next()
-        .unwrap_or(typed)
-        .trim();
+    let flag_token = typed.split([' ', ',']).next().unwrap_or(typed).trim();
     let flag = flag_token.trim_start_matches('-');
     for arg in search.get_arguments() {
         let matches_long = arg.get_long().map(|l| l == flag).unwrap_or(false);
@@ -3054,7 +4035,10 @@ fn commander_option_spec(typed: &str) -> String {
             .map(|s| s.to_string() == flag)
             .unwrap_or(false);
         if matches_long || matches_short {
-            let short = arg.get_short().map(|s| format!("-{s}, ")).unwrap_or_default();
+            let short = arg
+                .get_short()
+                .map(|s| format!("-{s}, "))
+                .unwrap_or_default();
             let long = arg.get_long().map(|l| format!("--{l}")).unwrap_or_default();
             let value = arg
                 .get_value_names()
@@ -3075,9 +4059,7 @@ fn too_many_arguments_message() -> String {
     let argv: Vec<String> = std::env::args().collect();
     let sub_name = subcommand_token().unwrap_or_default();
     let sub = cmd.get_subcommands().find(|c| c.get_name() == sub_name);
-    let expected = sub
-        .map(|c| c.get_positionals().count())
-        .unwrap_or(0);
+    let expected = sub.map(|c| c.get_positionals().count()).unwrap_or(0);
     // Supplied positionals: argv after the subcommand, excluding flags and
     // their values. This is a best-effort count that matches Commander's
     // "got M" for the common all-positional commands.
@@ -3085,10 +4067,12 @@ fn too_many_arguments_message() -> String {
     // Commander pluralises the EXPECTED noun: `argument` for 1, else
     // `arguments` (`expected === 1 ? '' : 's'`). The `got` count is never
     // pluralised in Commander's template.
-    let noun = if expected == 1 { "argument" } else { "arguments" };
-    format!(
-        "error: too many arguments for '{sub_name}'. Expected {expected} {noun} but got {got}."
-    )
+    let noun = if expected == 1 {
+        "argument"
+    } else {
+        "arguments"
+    };
+    format!("error: too many arguments for '{sub_name}'. Expected {expected} {noun} but got {got}.")
 }
 
 /// Count positional tokens supplied after the subcommand, skipping options
@@ -3230,7 +4214,9 @@ fn intercept_ts_help() -> Option<u8> {
         "add-question" => format_command_help(&configs::add_question::CONFIG),
         "remove-question" => format_command_help(&configs::remove_question::CONFIG),
         "add-architecture-note" => format_command_help(&configs::add_architecture_note::CONFIG),
-        "remove-architecture-note" => format_command_help(&configs::remove_architecture_note::CONFIG),
+        "remove-architecture-note" => {
+            format_command_help(&configs::remove_architecture_note::CONFIG)
+        }
         "set-user-story" => format_command_help(&configs::set_user_story::CONFIG),
         // Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
         "add-dependency" => format_command_help(&configs::add_dependency::CONFIG),
@@ -3242,9 +4228,7 @@ fn intercept_ts_help() -> Option<u8> {
             format_command_help(&configs::restore_architecture_note::CONFIG)
         }
         "add-tag-to-feature" => format_command_help(&configs::add_tag_to_feature::CONFIG),
-        "remove-tag-from-feature" => {
-            format_command_help(&configs::remove_tag_from_feature::CONFIG)
-        }
+        "remove-tag-from-feature" => format_command_help(&configs::remove_tag_from_feature::CONFIG),
         "add-tag-to-scenario" => format_command_help(&configs::add_tag_to_scenario::CONFIG),
         "remove-tag-from-scenario" => {
             format_command_help(&configs::remove_tag_from_scenario::CONFIG)
@@ -3308,9 +4292,7 @@ fn intercept_ts_help() -> Option<u8> {
             format_command_help(&configs::remove_command_from_foundation::CONFIG)
         }
         // RPC-233 — generate-foundation-md
-        "generate-foundation-md" => {
-            format_command_help(&configs::generate_foundation_md::CONFIG)
-        }
+        "generate-foundation-md" => format_command_help(&configs::generate_foundation_md::CONFIG),
         // Batch 14 (2026-06-13)
         "add-schedule" => format_command_help(&configs::add_schedule::CONFIG),
         "remove-schedule" => format_command_help(&configs::remove_schedule::CONFIG),
@@ -3361,15 +4343,11 @@ fn intercept_ts_help() -> Option<u8> {
             return Some(0);
         }
         "check" => format_command_help(&configs::check::CONFIG),
-        "compare-implementations" => {
-            format_command_help(&configs::compare_implementations::CONFIG)
-        }
+        "compare-implementations" => format_command_help(&configs::compare_implementations::CONFIG),
         "format" => format_command_help(&configs::format::CONFIG),
         "generate-coverage" => format_command_help(&configs::generate_coverage::CONFIG),
         "link-coverage" => format_command_help(&configs::link_coverage::CONFIG),
-        "generate-summary-report" => {
-            format_command_help(&configs::generate_summary_report::CONFIG)
-        }
+        "generate-summary-report" => format_command_help(&configs::generate_summary_report::CONFIG),
         "import-example-map" => format_command_help(&configs::import_example_map::CONFIG),
         // Batch 18 (2026-06-16) — event-storm/analysis/work-unit-status
         "discover-event-storm" => format_command_help(&configs::discover_event_storm::CONFIG),
@@ -3377,9 +4355,7 @@ fn intercept_ts_help() -> Option<u8> {
             format_command_help(&configs::generate_example_mapping_from_event_storm::CONFIG)
         }
         "suggest-dependencies" => format_command_help(&configs::suggest_dependencies::CONFIG),
-        "validate-spec-alignment" => {
-            format_command_help(&configs::validate_spec_alignment::CONFIG)
-        }
+        "validate-spec-alignment" => format_command_help(&configs::validate_spec_alignment::CONFIG),
         "remove-init-files" => format_command_help(&configs::remove_init_files::CONFIG),
         "auto-advance" => format_command_help(&configs::auto_advance::CONFIG),
         "workflow-automation" => format_command_help(&configs::workflow_automation::CONFIG),
@@ -3388,16 +4364,12 @@ fn intercept_ts_help() -> Option<u8> {
         "restore-checkpoint" => format_command_help(&configs::restore_checkpoint::CONFIG),
         "reverse" => format_command_help(&configs::reverse::CONFIG),
         "discover-foundation" => format_command_help(&configs::discover_foundation::CONFIG),
-        "update-work-unit-status" => {
-            format_command_help(&configs::update_work_unit_status::CONFIG)
-        }
+        "update-work-unit-status" => format_command_help(&configs::update_work_unit_status::CONFIG),
         "generate-scenarios" => format_command_help(&configs::generate_scenarios::CONFIG),
         "init" => format_command_help(&configs::init::CONFIG),
         "research" => format_command_help(&configs::research::CONFIG),
         "bootstrap" => format_command_help(&configs::bootstrap::CONFIG),
-        "report-bug-to-github" => {
-            format_command_help(&configs::report_bug_to_github::CONFIG)
-        }
+        "report-bug-to-github" => format_command_help(&configs::report_bug_to_github::CONFIG),
         // RPC-220: delete-scenarios has no custom -help.ts in TS; the reference
         // is bare Commander.js output (mirrors the delete-features special-case).
         "delete-scenarios" => {

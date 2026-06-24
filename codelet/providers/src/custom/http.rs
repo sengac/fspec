@@ -25,10 +25,7 @@ pub(crate) async fn post_json(
         "[rhai-dispatch] http::post_json ENTER"
     );
     let body_string = serde_json::to_string(body).map_err(|e| {
-        ProviderError::api(
-            provider.to_string(),
-            format!("serialise request body: {e}"),
-        )
+        ProviderError::api(provider.to_string(), format!("serialise request body: {e}"))
     })?;
     let body_len = body_string.len();
     let response = client
@@ -44,17 +41,11 @@ pub(crate) async fn post_json(
                 error = %e,
                 "[rhai-dispatch] http::post_json: request send failed"
             );
-            ProviderError::api(
-                provider.to_string(),
-                format!("HTTP request failed: {e}"),
-            )
+            ProviderError::api(provider.to_string(), format!("HTTP request failed: {e}"))
         })?;
     let status = response.status().as_u16();
     let body_text = response.text().await.map_err(|e| {
-        ProviderError::api(
-            provider.to_string(),
-            format!("reading response body: {e}"),
-        )
+        ProviderError::api(provider.to_string(), format!("reading response body: {e}"))
     })?;
     tracing::warn!(
         provider = provider,
@@ -97,10 +88,7 @@ pub(crate) async fn post_sse(
         headers.insert(ACCEPT, HeaderValue::from_static("text/event-stream"));
     }
     let body_string = serde_json::to_string(body).map_err(|e| {
-        ProviderError::api(
-            provider.to_string(),
-            format!("serialise request body: {e}"),
-        )
+        ProviderError::api(provider.to_string(), format!("serialise request body: {e}"))
     })?;
     let body_len = body_string.len();
     let response = client
@@ -116,10 +104,7 @@ pub(crate) async fn post_sse(
                 error = %e,
                 "[rhai-dispatch] http::post_sse: request send failed"
             );
-            ProviderError::api(
-                provider.to_string(),
-                format!("HTTP request failed: {e}"),
-            )
+            ProviderError::api(provider.to_string(), format!("HTTP request failed: {e}"))
         })?;
     let status = response.status().as_u16();
     tracing::warn!(

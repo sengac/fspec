@@ -361,10 +361,7 @@ fn build_ephemeral_provider(
 /// Rhai script to be authoritative over (a) the TUI's hard-coded
 /// context-window default (`customProviderSectionBuilder.ts`) and
 /// (b) the CTX-008 TUI-supplied compaction-threshold override.
-pub fn lookup_script_model_limits(
-    provider_slug: &str,
-    model_alias: &str,
-) -> RhaiScriptedLimits {
+pub fn lookup_script_model_limits(provider_slug: &str, model_alias: &str) -> RhaiScriptedLimits {
     if let Some(p) = cache_get(provider_slug, model_alias) {
         return RhaiScriptedLimits {
             context_window: p.script_context_window(),

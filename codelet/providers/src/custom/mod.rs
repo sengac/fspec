@@ -60,11 +60,11 @@ pub use management::{
     list_providers_info, resolve_custom_model_id, show_provider_info, test_provider_connection,
     validate_provider_config, ProviderInfo, ProviderModelInfo, ProviderTestResult,
 };
+#[doc(hidden)]
+pub use model_limits::__clear_lookup_cache_for_tests;
 pub use model_limits::{
     lookup_script_compaction_threshold, lookup_script_model_limits, RhaiScriptedLimits,
 };
-#[doc(hidden)]
-pub use model_limits::__clear_lookup_cache_for_tests;
 pub use provider::RhaiCustomProvider;
 pub use rig_model::{RhaiCustomCompletion, RhaiCustomProviderModel};
 pub use rig_tool::{RhaiToolArgs, RhaiToolWrapper};

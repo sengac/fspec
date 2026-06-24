@@ -34,10 +34,7 @@ pub const COPILOT_FETCH_TIMEOUT: Duration = Duration::from_millis(5_000);
 /// # Errors
 ///
 /// Returns [`ProviderError::Api`] for transport, status, or JSON parse failures.
-pub async fn fetch_models(
-    base_url: &str,
-    token: &str,
-) -> Result<Vec<ModelInfo>, ProviderError> {
+pub async fn fetch_models(base_url: &str, token: &str) -> Result<Vec<ModelInfo>, ProviderError> {
     let client = reqwest::Client::builder()
         .timeout(COPILOT_FETCH_TIMEOUT)
         .build()
@@ -46,11 +43,7 @@ pub async fn fetch_models(
             message: format!("failed to build HTTP client: {e}"),
         })?;
 
-    let url = format!(
-        "{}{}",
-        base_url.trim_end_matches('/'),
-        COPILOT_MODELS_PATH
-    );
+    let url = format!("{}{}", base_url.trim_end_matches('/'), COPILOT_MODELS_PATH);
 
     let response = client
         .get(&url)

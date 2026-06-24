@@ -126,7 +126,9 @@ fn test_list_sessions_accepts_filter() {
     let source = read_git_napi_source();
 
     // listSessions should accept an optional filter parameter
-    let list_sessions_start = source.find("fn list_sessions").expect("list_sessions not found");
+    let list_sessions_start = source
+        .find("fn list_sessions")
+        .expect("list_sessions not found");
     let func_sig = &source[list_sessions_start..list_sessions_start + 300];
 
     assert!(
@@ -236,7 +238,9 @@ fn test_merge_session_returns_napi_error() {
     let source = read_git_napi_source();
 
     // Verify the function signature returns napi::Result
-    let merge_start = source.find("fn merge_session").expect("merge_session not found");
+    let merge_start = source
+        .find("fn merge_session")
+        .expect("merge_session not found");
     let func_sig = &source[merge_start..merge_start + 200];
 
     assert!(
@@ -333,12 +337,12 @@ fn test_session_status_functions_are_importable() {
     #[allow(unused_imports)]
     use codelet_git::{
         discard_session, inspect_session, list_sessions, merge_session, prune_orphaned,
-        SessionFilter, SessionInfo, MergeResult, DiscardResult, PruneResult, SessionResult, Result,
+        DiscardResult, MergeResult, PruneResult, Result, SessionFilter, SessionInfo, SessionResult,
     };
 
     // Verify types are usable (don't need to call functions)
     let _filter: SessionFilter = SessionFilter::All;
-    
+
     // Function signatures are correct if this compiles
     fn _verify_list_sessions_sig() {
         fn _test<P: AsRef<std::path::Path>>(

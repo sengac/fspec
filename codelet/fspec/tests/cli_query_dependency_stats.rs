@@ -259,7 +259,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the DispatchResult.data parses as JSON with totalBlocks=1 and maxDependencyChainDepth=1
     let dispatcher_data: serde_json::Value =
@@ -268,8 +271,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert_eq!(dispatcher_data["maxDependencyChainDepth"].as_u64(), Some(1));
 
     // @step Then the CLI bridge module codelet/fspec/src/query_dependency_stats.rs contains NO inline aggregation, DFS, or rendering logic — its only computation is JSON arg marshalling and stdout printing
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_dependency_stats.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_dependency_stats.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/query_dependency_stats.rs must exist as the CLI bridge module; got missing: {}",

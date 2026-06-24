@@ -96,8 +96,7 @@ fn work_units_with_attachments(id: &str, attachments: Option<&[&str]>) -> String
 // Scenario: list-attachments --help is byte-for-byte identical to TS reference output
 // ─────────────────────────────────────────────────────────────────────────
 
-const TS_LA_HELP_FIXTURE: &str =
-    include_str!("fixtures/help/list-attachments.txt");
+const TS_LA_HELP_FIXTURE: &str = include_str!("fixtures/help/list-attachments.txt");
 
 #[test]
 fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
@@ -136,7 +135,10 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the section header "PREREQUISITES"
-    assert!(stdout.contains("PREREQUISITES\n"), "help must contain PREREQUISITES section");
+    assert!(
+        stdout.contains("PREREQUISITES\n"),
+        "help must contain PREREQUISITES section"
+    );
 
     // @step Then stdout contains the section header "USAGE" followed by "  fspec list-attachments <workUnitId>"
     assert!(
@@ -145,7 +147,10 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the section header "ARGUMENTS"
-    assert!(stdout.contains("ARGUMENTS\n"), "help must contain ARGUMENTS section");
+    assert!(
+        stdout.contains("ARGUMENTS\n"),
+        "help must contain ARGUMENTS section"
+    );
 
     // @step Then stdout contains the section header "OPTIONS" followed by "  No options available"
     assert!(
@@ -154,13 +159,22 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the section header "TYPICAL WORKFLOW"
-    assert!(stdout.contains("TYPICAL WORKFLOW\n"), "help must contain TYPICAL WORKFLOW section");
+    assert!(
+        stdout.contains("TYPICAL WORKFLOW\n"),
+        "help must contain TYPICAL WORKFLOW section"
+    );
 
     // @step Then stdout contains the section header "EXAMPLES"
-    assert!(stdout.contains("EXAMPLES\n"), "help must contain EXAMPLES section");
+    assert!(
+        stdout.contains("EXAMPLES\n"),
+        "help must contain EXAMPLES section"
+    );
 
     // @step Then stdout contains the section header "COMMON ERRORS" with the literal token "Fix: undefined" twice
-    assert!(stdout.contains("COMMON ERRORS\n"), "help must contain COMMON ERRORS section");
+    assert!(
+        stdout.contains("COMMON ERRORS\n"),
+        "help must contain COMMON ERRORS section"
+    );
     assert_eq!(
         stdout.matches("Fix: undefined").count(),
         2,
@@ -168,7 +182,10 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the section header "RELATED COMMANDS" with three entries each prefixed by "fspec fspec "
-    assert!(stdout.contains("RELATED COMMANDS\n"), "help must contain RELATED COMMANDS section");
+    assert!(
+        stdout.contains("RELATED COMMANDS\n"),
+        "help must contain RELATED COMMANDS section"
+    );
     assert_eq!(
         stdout.matches("fspec fspec ").count(),
         3,
@@ -176,7 +193,10 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the section header "NOTES"
-    assert!(stdout.contains("NOTES\n"), "help must contain NOTES section");
+    assert!(
+        stdout.contains("NOTES\n"),
+        "help must contain NOTES section"
+    );
 
     // @step Then stdout does NOT contain the substring '--status'
     assert!(
@@ -418,7 +438,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_attachments() 
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -456,10 +477,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let ws = tempfile::tempdir().expect("tempdir");
     write_work_units(
         ws.path(),
-        &work_units_with_attachments(
-            "AUTH-001",
-            Some(&["spec/attachments/AUTH-001/x.png"]),
-        ),
+        &work_units_with_attachments("AUTH-001", Some(&["spec/attachments/AUTH-001/x.png"])),
     );
 
     // @step Given the file spec/attachments/AUTH-001/x.png exists on disk with exactly 1024 bytes
@@ -486,8 +504,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert_eq!(arr.len(), 1, "attachments array length 1; got {arr:?}");
 
     // @step Then the CLI bridge module codelet/fspec/src/list_attachments.rs contains NO inline rendering, file-stat, or work-unit-lookup logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_attachments.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_attachments.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/list_attachments.rs must exist as the CLI bridge module; got missing: {}",

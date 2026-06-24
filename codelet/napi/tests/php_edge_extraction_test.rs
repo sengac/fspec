@@ -55,7 +55,12 @@ class RouteResolver {
         .expect("PHP extraction should succeed");
 
     // @step Then an Imports edge should be emitted from the source file to the target file
-    let local_imports = find_edges(&entities, "Imports", Some("Slim-App-php"), Some("RouteResolver"));
+    let local_imports = find_edges(
+        &entities,
+        "Imports",
+        Some("Slim-App-php"),
+        Some("RouteResolver"),
+    );
     assert!(
         !local_imports.is_empty(),
         "Should have Imports edge to RouteResolver target. All Imports: {:?}",

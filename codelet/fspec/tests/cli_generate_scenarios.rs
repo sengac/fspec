@@ -107,8 +107,7 @@ fn ready_unit(id: &str, title: &str) -> Value {
         json!([{ "id": 0, "text": "Password must be 8+ characters", "deleted": false }]);
     data["workUnits"][id]["examples"] =
         json!([{ "id": 0, "text": "User views the account settings page", "deleted": false }]);
-    data["workUnits"][id]["userStory"] =
-        json!({ "role": "registered user", "action": "log in securely", "benefit": "access my account" });
+    data["workUnits"][id]["userStory"] = json!({ "role": "registered user", "action": "log in securely", "benefit": "access my account" });
     data
 }
 
@@ -145,7 +144,10 @@ fn scenario_clap_exposes_generate_scenarios_with_byte_parity_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "generate-scenarios --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "generate-scenarios --help must exit 0; stderr={stderr}"
+    );
 
     // @step Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/generate-scenarios.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -231,11 +233,18 @@ fn scenario_cli_accepts_the_ignore_possible_duplicates_flag() {
     // @step When I run `fspec generate-scenarios RPC-002 --feature=widgets --ignore-possible-duplicates` from that directory
     let (code, stdout, stderr) = run_gs(
         tmp.path(),
-        &["RPC-002", "--feature=widgets", "--ignore-possible-duplicates"],
+        &[
+            "RPC-002",
+            "--feature=widgets",
+            "--ignore-possible-duplicates",
+        ],
     );
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "ignore-possible-duplicates run must exit 0; stderr={stderr}; stdout={stdout}");
+    assert_eq!(
+        code, 0,
+        "ignore-possible-duplicates run must exit 0; stderr={stderr}; stdout={stdout}"
+    );
 
     // @step Then the file spec/features/widgets.feature exists on disk
     assert!(
@@ -260,7 +269,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_generate_scenarios(
     // @step Then the command exits 0
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );

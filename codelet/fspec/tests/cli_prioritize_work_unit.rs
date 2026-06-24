@@ -194,7 +194,8 @@ fn scenario_reject_cross_column_relative_placement() {
 
     // @step And stderr contains "Data integrity error"
     assert!(
-        stderr.contains("Cannot prioritize across columns") || stderr.contains("Data integrity error"),
+        stderr.contains("Cannot prioritize across columns")
+            || stderr.contains("Data integrity error"),
         "stderr must reject cross-column placement; got:\n{stderr}"
     );
 }
@@ -333,7 +334,10 @@ fn scenario_cli_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "prioritize-work-unit --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "prioritize-work-unit --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured TS fixture byte-for-byte
     assert_eq!(stdout, TS_HELP_FIXTURE);

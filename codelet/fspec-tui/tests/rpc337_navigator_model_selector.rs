@@ -79,7 +79,7 @@ fn model_selected_returns_to_agent_view() {
     // @step When I press Enter
     // (the view emits ModelSelected; the Navigator commits + closes)
     nav.apply_action(&Action::ModelSelected(
-        codelet_rpc_types::SessionId::new("s-1"),
+        Some(codelet_rpc_types::SessionId::new("s-1")),
         "openai".to_string(),
         "gpt-4o".to_string(),
     ));

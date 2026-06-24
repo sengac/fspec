@@ -13,8 +13,8 @@ use serde_json::json;
 use tempfile::TempDir;
 
 use codelet_core::lifecycle_hooks::{
-    CompiledHookCommand, CompiledHookDefinition, CompiledHookGroup, CompiledLifecycleHooks,
-    HookContext, HookMatcher, run_notification, run_session_end, run_user_prompt, run_pre_tool,
+    run_notification, run_pre_tool, run_session_end, run_user_prompt, CompiledHookCommand,
+    CompiledHookDefinition, CompiledHookGroup, CompiledLifecycleHooks, HookContext, HookMatcher,
 };
 
 // ===== Helpers =====
@@ -137,7 +137,10 @@ async fn test_user_prompt_blocks_via_json_continue_false() {
     let outcome = run_user_prompt(&hooks, &ctx, "some forbidden prompt").await;
 
     // @step Then the prompt should be rejected
-    assert!(!outcome.allow_prompt, "prompt should be blocked by JSON continue:false");
+    assert!(
+        !outcome.allow_prompt,
+        "prompt should be blocked by JSON continue:false"
+    );
 
     // @step And the block reason should contain "Prompt violates content policy"
     assert!(
@@ -171,7 +174,9 @@ async fn test_user_prompt_allows_and_injects_context() {
 
     // @step And "User is an admin" should be injected as additional context
     assert!(
-        outcome.additional_context.contains(&"User is an admin".to_string()),
+        outcome
+            .additional_context
+            .contains(&"User is an admin".to_string()),
         "additional context should contain injected text: {:?}",
         outcome.additional_context
     );
@@ -187,22 +192,22 @@ async fn test_session_end_receives_reason_and_executes() {
     let ctx = make_context(tmp.path());
 
     // @step Given a spec/fspec-hooks.json with a "session_end" hook named "notify-slack"
-    let hooks = make_session_end_hooks(
-        &format!("cat > '{}'", capture_file.to_string_lossy()),
-        10,
-    );
+    let hooks = make_session_end_hooks(&format!("cat > '{}'", capture_file.to_string_lossy()), 10);
 
     // @step When the agent session ends with reason "completed"
     let _outcome = run_session_end(&hooks, &ctx, "completed").await;
 
     // @step Then the "notify-slack" hook should execute
-    assert!(capture_file.exists(), "hook should have written payload to file");
+    assert!(
+        capture_file.exists(),
+        "hook should have written payload to file"
+    );
 
     // @step And the hook payload should include session_id, cwd, reason "completed", and transcript_path
-    let payload_str = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("read payload: {e}"));
-    let payload: serde_json::Value = serde_json::from_str(&payload_str)
-        .unwrap_or_else(|e| panic!("parse payload: {e}"));
+    let payload_str =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("read payload: {e}"));
+    let payload: serde_json::Value =
+        serde_json::from_str(&payload_str).unwrap_or_else(|e| panic!("parse payload: {e}"));
 
     assert_eq!(payload["session_id"], "session-016-test");
     assert_eq!(payload["reason"], "completed");
@@ -224,10 +229,7 @@ async fn test_notification_hook_fires_via_global_engine() {
     let ctx = make_context(tmp.path());
 
     // @step Given a spec/fspec-hooks.json with a "notification" hook
-    let hooks = make_notification_hooks(
-        &format!("cat > '{}'", capture_file.to_string_lossy()),
-        10,
-    );
+    let hooks = make_notification_hooks(&format!("cat > '{}'", capture_file.to_string_lossy()), 10);
 
     // @step When a notification event fires with type "permission_prompt" and title "Tool Permission"
     let _outcome = run_notification(
@@ -240,13 +242,16 @@ async fn test_notification_hook_fires_via_global_engine() {
     .await;
 
     // @step Then the notification hook should execute
-    assert!(capture_file.exists(), "notification hook should have written payload");
+    assert!(
+        capture_file.exists(),
+        "notification hook should have written payload"
+    );
 
     // @step And the hook payload should include notification_type, title, and message
-    let payload_str = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("read payload: {e}"));
-    let payload: serde_json::Value = serde_json::from_str(&payload_str)
-        .unwrap_or_else(|e| panic!("parse payload: {e}"));
+    let payload_str =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("read payload: {e}"));
+    let payload: serde_json::Value =
+        serde_json::from_str(&payload_str).unwrap_or_else(|e| panic!("parse payload: {e}"));
 
     assert_eq!(payload["notification_type"], "permission_prompt");
     assert_eq!(payload["title"], "Tool Permission");
@@ -293,8 +298,14 @@ async fn test_sequential_command_execution_in_hook_group() {
 
     // @step Then the first command should complete before the second command starts
     // (Sequential execution means both files exist after the call returns)
-    assert!(marker_a.exists(), "first command should have written marker_a");
-    assert!(marker_b.exists(), "second command should have written marker_b");
+    assert!(
+        marker_a.exists(),
+        "first command should have written marker_a"
+    );
+    assert!(
+        marker_b.exists(),
+        "second command should have written marker_b"
+    );
 
     // @step And both command results should contribute to the hook group outcome
     // Both commands exit 0 (success), so the overall decision should be Continue

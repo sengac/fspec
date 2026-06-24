@@ -60,12 +60,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             // module doc). Extract `message` and emit the canonical
             // `✓ <message>` line — parity with TS
             // `output.log(`✓ ${result.message}`)`.
-            let v: Value = serde_json::from_str(&data_json)
-                .context("parse core JSON response")?;
-            let message = v
-                .get("message")
-                .and_then(|m| m.as_str())
-                .unwrap_or("");
+            let v: Value = serde_json::from_str(&data_json).context("parse core JSON response")?;
+            let message = v.get("message").and_then(|m| m.as_str()).unwrap_or("");
             println!("✓ {message}");
             Ok(0)
         }

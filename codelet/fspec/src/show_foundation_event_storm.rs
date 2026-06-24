@@ -22,8 +22,7 @@ pub struct CliArgs {
 
 /// Entry point for the `show-foundation-event-storm` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut payload: Map<String, Value> = Map::new();
     if let Some(t) = args.r#type.as_deref() {
@@ -37,11 +36,13 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     match show_foundation_event_storm::run(&args_json, &project_root).await {
         Ok(rendered) => {
             // Re-pretty-print the `data` field as the top-level stdout body.
-            let envelope: Value = serde_json::from_str(&rendered)
-                .context("parse fspec_core JSON envelope")?;
-            let data = envelope.get("data").cloned().unwrap_or(Value::Array(vec![]));
-            let body = serde_json::to_string_pretty(&data)
-                .context("re-render data array")?;
+            let envelope: Value =
+                serde_json::from_str(&rendered).context("parse fspec_core JSON envelope")?;
+            let data = envelope
+                .get("data")
+                .cloned()
+                .unwrap_or(Value::Array(vec![]));
+            let body = serde_json::to_string_pretty(&data).context("re-render data array")?;
             println!("{body}");
             Ok(0)
         }

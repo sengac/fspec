@@ -169,7 +169,10 @@ fn scenario_cli_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "repair-work-units --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "repair-work-units --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured TS fixture byte-for-byte
     assert_eq!(stdout, TS_HELP_FIXTURE);

@@ -25,7 +25,9 @@ fn assert_agent_classification(body: &Value, context: &str) {
     );
     let headers = CopilotHeaderFacade::build_headers(&classification, "ghu_token");
     assert_eq!(
-        headers.get("x-initiator").map(|v| v.to_str().expect("valid header value")),
+        headers
+            .get("x-initiator")
+            .map(|v| v.to_str().expect("valid header value")),
         Some("agent"),
         "{context}: x-initiator must be 'agent'"
     );
@@ -41,7 +43,9 @@ fn assert_user_classification(body: &Value, context: &str) {
     );
     let headers = CopilotHeaderFacade::build_headers(&classification, "ghu_token");
     assert_eq!(
-        headers.get("x-initiator").map(|v| v.to_str().expect("valid header value")),
+        headers
+            .get("x-initiator")
+            .map(|v| v.to_str().expect("valid header value")),
         Some("user"),
         "{context}: x-initiator must be 'user'"
     );
@@ -71,7 +75,9 @@ fn scenario_metadata_mode_agent_flows_through_classifier_to_header() {
     // @step And CopilotHeaderFacade should set x-initiator to "agent"
     let headers = CopilotHeaderFacade::build_headers(&classification, "ghu_test_token");
     assert_eq!(
-        headers.get("x-initiator").map(|v| v.to_str().expect("valid header value")),
+        headers
+            .get("x-initiator")
+            .map(|v| v.to_str().expect("valid header value")),
         Some("agent"),
         "CopilotHeaderFacade must set x-initiator: agent when is_agent is true"
     );
@@ -100,7 +106,9 @@ fn scenario_request_without_metadata_defaults_to_user_initiator() {
     // @step And CopilotHeaderFacade should set x-initiator to "user"
     let headers = CopilotHeaderFacade::build_headers(&classification, "ghu_test_token");
     assert_eq!(
-        headers.get("x-initiator").map(|v| v.to_str().expect("valid header value")),
+        headers
+            .get("x-initiator")
+            .map(|v| v.to_str().expect("valid header value")),
         Some("user"),
         "CopilotHeaderFacade must set x-initiator: user when is_agent is false"
     );

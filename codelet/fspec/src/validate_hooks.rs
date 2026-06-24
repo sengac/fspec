@@ -47,8 +47,7 @@ pub struct CliArgs {}
 /// subcommand. Prints the core's `message` to stdout and returns its
 /// `exitCode`, per the feature file's acceptance criteria.
 pub async fn run(_args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     match validate_hooks::run("{}", &project_root).await {
         Ok(data_json) => {
@@ -56,10 +55,7 @@ pub async fn run(_args: CliArgs) -> Result<u8> {
             if let Some(message) = parsed.get("message").and_then(Value::as_str) {
                 println!("{message}");
             }
-            let exit_code = parsed
-                .get("exitCode")
-                .and_then(Value::as_u64)
-                .unwrap_or(0) as u8;
+            let exit_code = parsed.get("exitCode").and_then(Value::as_u64).unwrap_or(0) as u8;
             Ok(exit_code)
         }
         Err(err) => {

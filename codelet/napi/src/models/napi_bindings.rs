@@ -342,3 +342,39 @@ pub async fn delete_custom_model(
     codelet_sessions::profile_sections::delete_custom_model(&provider_id, &profile_name, &model_id)
         .map_err(|e| Error::from_reason(format!("delete_custom_model failed: {e}")))
 }
+
+// ============================================================================
+// PROV-108: Profile write surface (save / delete) NAPI bindings.
+//
+// Mirror the FspecService profile RPC surface for the JS/TS host. save_profile
+// converts the transport-portable `ProfileDefinition` into the on-disk
+// `ProfileDef` via the shared `codelet_sessions::conversions` helper and
+// persists through the `profile_persistence` read-modify-write (preserving
+// customModels + sibling keys). The openai-only guard mirrors the TS
+// `saveProfile` throw; missing-file / absent-profile no-op semantics live in
+// `profile_persistence`.
+// ============================================================================
+
+/// Create or update a local-server profile's connection settings.
+#[napi]
+pub async fn save_profile(
+    provider_id: String,
+    profile_name: String,
+    definition: codelet_rpc_types::ProfileDefinition,
+) -> Result<()> {
+    if !codelet_sessions::profile_persistence::profiles_supported(&provider_id) {
+        return Err(Error::from_reason(
+            codelet_sessions::profile_persistence::profiles_unsupported_error(&provider_id),
+        ));
+    }
+    let def = codelet_sessions::conversions::profile_def_from_wire(&definition);
+    codelet_sessions::profile_persistence::save_profile(&provider_id, &profile_name, &def)
+        .map_err(|e| Error::from_reason(format!("save_profile failed: {e}")))
+}
+
+/// Delete a local-server profile by name.
+#[napi]
+pub async fn delete_profile(provider_id: String, profile_name: String) -> Result<()> {
+    codelet_sessions::profile_persistence::delete_profile(&provider_id, &profile_name)
+        .map_err(|e| Error::from_reason(format!("delete_profile failed: {e}")))
+}

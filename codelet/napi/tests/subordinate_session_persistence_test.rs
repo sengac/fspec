@@ -14,8 +14,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use codelet_napi::persistence::{
-    append_message, list_sessions_for_project, load_session, save_session,
-    SessionManifest,
+    append_message, list_sessions_for_project, load_session, save_session, SessionManifest,
 };
 use codelet_napi::test_support::setup_test_env;
 use std::path::PathBuf;
@@ -40,14 +39,12 @@ fn test_manifest_saved_with_subordinate_uuid_and_provider() {
     // @step When the parent spawns a subordinate via AgentManager
     // Reproduce the exact code path from handle_spawn:
     let provider = model_str.split('/').next().unwrap_or("");
-    let mut manifest =
-        SessionManifest::with_provider(&name, project_path.clone(), provider);
+    let mut manifest = SessionManifest::with_provider(&name, project_path.clone(), provider);
     manifest.id = subordinate_id;
     save_session(&manifest).expect("save_session should succeed");
 
     // @step Then a persistence manifest is saved with the subordinate's UUID
-    let loaded = load_session(subordinate_id)
-        .expect("load_session should find the saved manifest");
+    let loaded = load_session(subordinate_id).expect("load_session should find the saved manifest");
     assert_eq!(loaded.id, subordinate_id);
     assert_eq!(loaded.name, name);
 
@@ -76,22 +73,24 @@ fn test_subordinate_messages_searchable_via_session_search() {
     let project_path = PathBuf::from("/test/project/subordinate-search");
     let name = format!("Agent {}", &subordinate_id.to_string()[..8]);
 
-    let mut manifest =
-        SessionManifest::with_provider(&name, project_path.clone(), "anthropic");
+    let mut manifest = SessionManifest::with_provider(&name, project_path.clone(), "anthropic");
     manifest.id = subordinate_id;
     save_session(&manifest).expect("save_session should succeed");
 
     // @step When the subordinate processes a message and produces a response
-    let mut session = load_session(subordinate_id)
-        .expect("load_session should succeed after save");
+    let mut session = load_session(subordinate_id).expect("load_session should succeed after save");
     append_message(&mut session, "user", "Analyze the auth module")
         .expect("append user message should succeed");
-    append_message(&mut session, "assistant", "The auth module uses JWT tokens with bcrypt hashing.")
-        .expect("append assistant message should succeed");
+    append_message(
+        &mut session,
+        "assistant",
+        "The auth module uses JWT tokens with bcrypt hashing.",
+    )
+    .expect("append assistant message should succeed");
 
     // @step Then the subordinate session appears in SessionSearch recent results for the project
-    let project_sessions = list_sessions_for_project(&project_path)
-        .expect("list_sessions_for_project should succeed");
+    let project_sessions =
+        list_sessions_for_project(&project_path).expect("list_sessions_for_project should succeed");
     assert!(
         project_sessions.iter().any(|s| s.id == subordinate_id),
         "Subordinate session {} should appear in project listing, found: {:?}",
@@ -101,11 +100,14 @@ fn test_subordinate_messages_searchable_via_session_search() {
 
     // @step Then the subordinate's messages are found via SessionSearch search action
     // SessionSearch loads messages via get_session_messages; verify the round-trip.
-    let reloaded = load_session(subordinate_id)
-        .expect("reload should succeed");
+    let reloaded = load_session(subordinate_id).expect("reload should succeed");
     let messages = codelet_napi::persistence::get_session_messages(&reloaded)
         .expect("get_session_messages should succeed");
-    assert_eq!(messages.len(), 2, "Should have both user and assistant messages");
+    assert_eq!(
+        messages.len(),
+        2,
+        "Should have both user and assistant messages"
+    );
     assert_eq!(messages[0].role, "user");
     assert!(messages[0].content.contains("Analyze the auth module"));
     assert_eq!(messages[1].role, "assistant");
@@ -131,16 +133,14 @@ fn test_spawn_continues_when_persistence_fails() {
     // @step Given the persistence layer will fail to save the manifest
     // Trigger store initialization so the sessions directory is created,
     // then make it unwritable so save_session fails on fs::write.
-    codelet_napi::persistence::ensure_directories()
-        .expect("ensure_directories should succeed");
+    codelet_napi::persistence::ensure_directories().expect("ensure_directories should succeed");
     let sessions_dir = temp_dir.path().join("sessions");
     let original_perms = std::fs::metadata(&sessions_dir)
         .expect("sessions dir should exist after ensure_directories")
         .permissions();
     let mut readonly_perms = original_perms.clone();
     std::os::unix::fs::PermissionsExt::set_mode(&mut readonly_perms, 0o444);
-    std::fs::set_permissions(&sessions_dir, readonly_perms)
-        .expect("chmod should succeed");
+    std::fs::set_permissions(&sessions_dir, readonly_perms).expect("chmod should succeed");
 
     // @step When the parent spawns a subordinate via AgentManager
     let provider = model_str.split('/').next().unwrap_or("");
@@ -164,12 +164,11 @@ fn test_spawn_continues_when_persistence_fails() {
     // In handle_spawn: tracing::warn!("Failed to create persistence manifest...")
     // Here we verify the error message is meaningful (not empty/opaque)
     let err_msg = save_result.unwrap_err();
+    assert!(!err_msg.is_empty(), "Error message should be non-empty");
     assert!(
-        !err_msg.is_empty(),
-        "Error message should be non-empty"
-    );
-    assert!(
-        err_msg.contains("Failed to write") || err_msg.contains("Permission denied") || err_msg.contains("permission denied"),
+        err_msg.contains("Failed to write")
+            || err_msg.contains("Permission denied")
+            || err_msg.contains("permission denied"),
         "Error should mention write failure, got: {err_msg}"
     );
 
@@ -206,15 +205,14 @@ fn test_multiple_subordinates_all_listed_for_project() {
     for i in 0..3 {
         let sub_id = Uuid::new_v4();
         let name = format!("Agent-{i} {}", &sub_id.to_string()[..8]);
-        let mut manifest =
-            SessionManifest::with_provider(&name, project_path.clone(), "anthropic");
+        let mut manifest = SessionManifest::with_provider(&name, project_path.clone(), "anthropic");
         manifest.id = sub_id;
         save_session(&manifest).expect("save_session should succeed");
         expected_ids.push(sub_id);
     }
 
-    let project_sessions = list_sessions_for_project(&project_path)
-        .expect("list_sessions_for_project should succeed");
+    let project_sessions =
+        list_sessions_for_project(&project_path).expect("list_sessions_for_project should succeed");
     let found_ids: Vec<Uuid> = project_sessions.iter().map(|s| s.id).collect();
 
     for expected in &expected_ids {

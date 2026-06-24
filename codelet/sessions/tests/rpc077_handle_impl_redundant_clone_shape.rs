@@ -28,8 +28,7 @@ fn workspace_root() -> PathBuf {
 
 fn read_source(rel_from_workspace: &str) -> String {
     let path = workspace_root().join(rel_from_workspace);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 // ===========================================================================

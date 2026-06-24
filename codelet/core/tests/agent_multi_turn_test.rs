@@ -139,7 +139,7 @@ async fn test_all_tools_implement_rig_tool_trait() {
     // @step Given codelet has 7 tools (Read, Write, Edit, Bash, Grep, Glob, AstGrep)
     // Tools now implement rig::tool::Tool trait directly
     // ProviderToolRegistry manages facades, not the base tools
-    
+
     // @step When I refactor tools to implement rig::tool::Tool
     // @step Then each tool should provide a tool definition via the Tool trait
     // @step And each tool should implement the call() method

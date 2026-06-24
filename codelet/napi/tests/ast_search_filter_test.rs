@@ -75,12 +75,12 @@ async fn test_name_only_search_excludes_source_matches() {
     let result_str = ast_dispatch::dispatch_ast_search(
         &db,
         "dispatch",
-        None,  // all entity types
-        None,  // default limit
-        None,  // no path filter
-        Some("name"),  // search_mode = name
-        None,  // no decorator filter
-        None,  // no parameter filter
+        None,         // all entity types
+        None,         // default limit
+        None,         // no path filter
+        Some("name"), // search_mode = name
+        None,         // no decorator filter
+        None,         // no parameter filter
     )
     .await;
     let result: Value = serde_json::from_str(&result_str).expect("valid JSON");
@@ -88,11 +88,17 @@ async fn test_name_only_search_excludes_source_matches() {
     // @step Then results include functions whose names contain "dispatch"
     let results = result["results"].as_array().expect("results array");
     let names: Vec<&str> = results.iter().filter_map(|r| r["name"].as_str()).collect();
-    assert!(names.contains(&"dispatch_ast_search"), "Should find dispatch_ast_search by name");
+    assert!(
+        names.contains(&"dispatch_ast_search"),
+        "Should find dispatch_ast_search by name"
+    );
 
     // @step And results do not include functions that only mention "dispatch" in their source code
     // get_user_name doesn't have "dispatch" in name — it shouldn't appear
-    assert!(!names.contains(&"get_user_name"), "Should not find get_user_name (no 'dispatch' in name)");
+    assert!(
+        !names.contains(&"get_user_name"),
+        "Should not find get_user_name (no 'dispatch' in name)"
+    );
 }
 
 // ============================================================================
@@ -113,7 +119,7 @@ async fn test_content_search_finds_source_and_docstring_matches() {
         Some("Function"),
         None,
         None,
-        Some("content"),  // search_mode = content (source + docstring only)
+        Some("content"), // search_mode = content (source + docstring only)
         None,
         None,
     )
@@ -125,16 +131,28 @@ async fn test_content_search_finds_source_and_docstring_matches() {
     // @step Then results include functions whose source code contains "authentication"
     // dispatch_ast_search source: "performs authentication check"
     // process_login source: "authentication flow"
-    assert!(names.contains(&"dispatch_ast_search"), "dispatch_ast_search source mentions authentication");
-    assert!(names.contains(&"process_login"), "process_login source mentions authentication");
+    assert!(
+        names.contains(&"dispatch_ast_search"),
+        "dispatch_ast_search source mentions authentication"
+    );
+    assert!(
+        names.contains(&"process_login"),
+        "process_login source mentions authentication"
+    );
 
     // @step And results include functions whose docstrings contain "authentication"
     // validate_credentials docstring: "Validates user authentication credentials"
-    assert!(names.contains(&"validate_credentials"), "validate_credentials docstring mentions authentication");
+    assert!(
+        names.contains(&"validate_credentials"),
+        "validate_credentials docstring mentions authentication"
+    );
 
     // @step And results do not include functions that only match "authentication" in their name
     // get_user_name has no "authentication" in source or docstring
-    assert!(!names.contains(&"get_user_name"), "get_user_name has no authentication in content");
+    assert!(
+        !names.contains(&"get_user_name"),
+        "get_user_name has no authentication in content"
+    );
 }
 
 // ============================================================================
@@ -155,7 +173,7 @@ async fn test_default_search_mode_is_name_only() {
         Some("Function"),
         None,
         None,
-        None,  // no search_mode — defaults to "name"
+        None, // no search_mode — defaults to "name"
         None,
         None,
     )
@@ -166,11 +184,17 @@ async fn test_default_search_mode_is_name_only() {
 
     // @step Then results only include entities whose name, slug, path, or qualifiedName contains "process"
     // process_login has "process" in its name
-    assert!(names.contains(&"process_login"), "process_login matches by name");
+    assert!(
+        names.contains(&"process_login"),
+        "process_login matches by name"
+    );
     // dispatch_ast_search does NOT have "process" in name/slug/path/qualifiedName
     // (its source mentions "process" but name mode shouldn't match that)
     // handle_request source has "process(request)" but name doesn't contain "process"
-    assert!(!names.contains(&"handle_request"), "handle_request source mentions process but name mode skips source");
+    assert!(
+        !names.contains(&"handle_request"),
+        "handle_request source mentions process but name mode skips source"
+    );
 }
 
 // ============================================================================
@@ -187,12 +211,12 @@ async fn test_decorator_filter_returns_matching_functions() {
     // @step When I search with decorator filter "Test"
     let result_str = ast_dispatch::dispatch_ast_search(
         &db,
-        "",  // empty query matches everything in name mode when combined with decorator filter
+        "", // empty query matches everything in name mode when combined with decorator filter
         None,
         None,
         None,
         Some("all"),  // use "all" so empty query doesn't filter out
-        Some("Test"),  // decorator filter
+        Some("Test"), // decorator filter
         None,
     )
     .await;
@@ -201,14 +225,29 @@ async fn test_decorator_filter_returns_matching_functions() {
     let names: Vec<&str> = results.iter().filter_map(|r| r["name"].as_str()).collect();
 
     // @step Then results include only functions whose decorators contain "Test"
-    assert!(names.contains(&"run_auth_tests"), "run_auth_tests has @Test decorator");
-    assert!(names.contains(&"handle_request"), "handle_request has #[test] decorator");
-    assert!(names.contains(&"test_login_flow"), "test_login_flow has @test decorator");
+    assert!(
+        names.contains(&"run_auth_tests"),
+        "run_auth_tests has @Test decorator"
+    );
+    assert!(
+        names.contains(&"handle_request"),
+        "handle_request has #[test] decorator"
+    );
+    assert!(
+        names.contains(&"test_login_flow"),
+        "test_login_flow has @test decorator"
+    );
 
     // @step And decorator matching is case-insensitive
     // "Test" matches "@Test", "#[test]", "@test" — all three found above
-    assert!(!names.contains(&"validate_credentials"), "validate_credentials has @Injectable, not Test");
-    assert!(!names.contains(&"get_user_name"), "get_user_name has no decorators");
+    assert!(
+        !names.contains(&"validate_credentials"),
+        "validate_credentials has @Injectable, not Test"
+    );
+    assert!(
+        !names.contains(&"get_user_name"),
+        "get_user_name has no decorators"
+    );
 }
 
 // ============================================================================
@@ -231,7 +270,7 @@ async fn test_parameter_filter_returns_matching_functions() {
         None,
         Some("all"),
         None,
-        Some("request"),  // parameter filter
+        Some("request"), // parameter filter
     )
     .await;
     let result: Value = serde_json::from_str(&result_str).expect("valid JSON");
@@ -239,11 +278,23 @@ async fn test_parameter_filter_returns_matching_functions() {
     let names: Vec<&str> = results.iter().filter_map(|r| r["name"].as_str()).collect();
 
     // @step Then results include only functions whose parameters contain "request"
-    assert!(names.contains(&"validate_credentials"), "validate_credentials has 'request' param");
-    assert!(names.contains(&"handle_request"), "handle_request has 'request' param");
+    assert!(
+        names.contains(&"validate_credentials"),
+        "validate_credentials has 'request' param"
+    );
+    assert!(
+        names.contains(&"handle_request"),
+        "handle_request has 'request' param"
+    );
     // Others should NOT be in results
-    assert!(!names.contains(&"get_user_name"), "get_user_name has 'user_id' param, not 'request'");
-    assert!(!names.contains(&"run_auth_tests"), "run_auth_tests has 'ctx' param, not 'request'");
+    assert!(
+        !names.contains(&"get_user_name"),
+        "get_user_name has 'user_id' param, not 'request'"
+    );
+    assert!(
+        !names.contains(&"run_auth_tests"),
+        "run_auth_tests has 'ctx' param, not 'request'"
+    );
 }
 
 // ============================================================================
@@ -260,7 +311,7 @@ async fn test_query_combined_with_decorator_uses_and_logic() {
     let result_str = ast_dispatch::dispatch_ast_search(
         &db,
         "User",
-        None,  // search all entity types (Function + Type)
+        None, // search all entity types (Function + Type)
         None,
         None,
         Some("name"),
@@ -274,11 +325,20 @@ async fn test_query_combined_with_decorator_uses_and_logic() {
 
     // @step Then results include only functions named "User" that also have the "Injectable" decorator
     // UserService type has "User" in name AND @Injectable decorator
-    assert!(names.contains(&"UserService"), "UserService matches name 'User' AND decorator 'Injectable'");
+    assert!(
+        names.contains(&"UserService"),
+        "UserService matches name 'User' AND decorator 'Injectable'"
+    );
     // validate_credentials has @Injectable but name doesn't contain "User"
-    assert!(!names.contains(&"validate_credentials"), "validate_credentials has Injectable but name doesn't match 'User'");
+    assert!(
+        !names.contains(&"validate_credentials"),
+        "validate_credentials has Injectable but name doesn't match 'User'"
+    );
     // get_user_name has "user" in name but no @Injectable
-    assert!(!names.contains(&"get_user_name"), "get_user_name matches 'User' but has no Injectable decorator");
+    assert!(
+        !names.contains(&"get_user_name"),
+        "get_user_name matches 'User' but has no Injectable decorator"
+    );
 }
 
 // ============================================================================
@@ -298,7 +358,7 @@ async fn test_all_search_mode_searches_every_field() {
         Some("Function"),
         None,
         None,
-        Some("all"),  // search everything
+        Some("all"), // search everything
         None,
         None,
     )
@@ -309,7 +369,10 @@ async fn test_all_search_mode_searches_every_field() {
 
     // @step Then results include functions matching "validate" in name, source, docstring, parameters, or decorators
     // validate_credentials — name match
-    assert!(names.contains(&"validate_credentials"), "validate_credentials matches by name");
+    assert!(
+        names.contains(&"validate_credentials"),
+        "validate_credentials matches by name"
+    );
     // validate_input doesn't exist in our test data but "Validates" appears in validate_credentials docstring
     // process_login source doesn't contain "validate" so it shouldn't match
 }
@@ -335,7 +398,7 @@ async fn test_decorator_matching_strips_leading_symbols() {
         None,
         None,
         Some("all"),  // so empty query matches everything
-        Some("test"),  // lowercase "test"
+        Some("test"), // lowercase "test"
         None,
     )
     .await;
@@ -344,8 +407,17 @@ async fn test_decorator_matching_strips_leading_symbols() {
     let names: Vec<&str> = results.iter().filter_map(|r| r["name"].as_str()).collect();
 
     // @step Then results include all three functions regardless of decorator syntax prefix
-    assert!(names.contains(&"run_auth_tests"), "Matches @Test (capital T)");
-    assert!(names.contains(&"handle_request"), "Matches #[test] (Rust syntax)");
-    assert!(names.contains(&"test_login_flow"), "Matches @test (lowercase)");
+    assert!(
+        names.contains(&"run_auth_tests"),
+        "Matches @Test (capital T)"
+    );
+    assert!(
+        names.contains(&"handle_request"),
+        "Matches #[test] (Rust syntax)"
+    );
+    assert!(
+        names.contains(&"test_login_flow"),
+        "Matches @test (lowercase)"
+    );
     assert_eq!(names.len(), 3, "Exactly 3 functions match 'test' decorator");
 }

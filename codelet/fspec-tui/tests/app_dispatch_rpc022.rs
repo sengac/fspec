@@ -16,8 +16,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use codelet_fspec_tui::{Action, App, FspecBackend, ModelSelectorDialog, MODEL_SELECTOR_DIALOG_ID};
-use codelet_rpc_types::{ModelEntry, ProviderInfo, SessionId, ThinkingLevel};
+use codelet_fspec_tui::{Action, App, FspecBackend};
+use codelet_rpc_types::{SessionId, ThinkingLevel};
 
 mod common;
 use common::MockBackend;
@@ -61,7 +61,7 @@ async fn action_model_selected_spawns_set_session_model_and_refreshes_chrome() {
 
     // @step When the App dispatches Action::ModelSelected(SessionId("s-1"), "openai", "gpt-5.1-codex")
     app.dispatch(Action::ModelSelected(
-        SessionId::new("s-1"),
+        Some(SessionId::new("s-1")),
         "openai".to_string(),
         "gpt-5.1-codex".to_string(),
     ));
@@ -198,59 +198,6 @@ async fn action_session_role_loaded_folds_backend_role_into_store() {
     );
 }
 
-/// Scenario: Action::ListProvidersLoaded folds the provider list into the open ModelSelectorDialog
-#[test]
-fn action_list_providers_loaded_folds_into_open_model_selector_dialog() {
-    let (mut app, _mock) = fresh_app();
-    // @step Given an App with a ModelSelectorDialog already pushed onto the Compositor against SessionId("s-1") with empty provider list
-    let dialog = ModelSelectorDialog::new(SessionId::new("s-1"), Vec::new())
-        .with_action_tx(app.action_tx_clone());
-    app.compositor_mut().push(Box::new(dialog));
-    assert!(app.compositor().contains(MODEL_SELECTOR_DIALOG_ID));
-    // @step When the App dispatches Action::ListProvidersLoaded(vec![ProviderInfo { key: "openai", display_name: "OpenAI", models: vec![ModelEntry{ id: "gpt-5.1-codex", display_name: "gpt-5.1-codex", context_window: 200_000, supports_reasoning: true, supports_vision: false, is_custom: false }]}])
-    let providers = vec![ProviderInfo {
-        key: "openai".to_string(),
-        display_name: "OpenAI".to_string(),
-        models: vec![ModelEntry {
-            id: "gpt-5.1-codex".to_string(),
-            display_name: "gpt-5.1-codex".to_string(),
-            context_window: 200_000,
-            supports_reasoning: true,
-            supports_vision: false,
-            is_custom: false,
-        }],
-        profile_name: None,
-        is_unreachable: false,
-    }];
-    app.dispatch(Action::ListProvidersLoaded(providers));
-    // @step Then the ModelSelectorDialog's provider list has length 1 with key "openai"
-    // The dialog reads ListProvidersLoaded through the Compositor's
-    // action fan-out (Component::update). We verify the dialog's
-    // internal state by re-rendering and asserting that the OpenAI
-    // header row appears.
-    use ratatui::backend::TestBackend;
-    use ratatui::Terminal;
-    let backend = TestBackend::new(100, 30);
-    let mut term = Terminal::new(backend).expect("Terminal::new");
-    term.draw(|frame| {
-        app.compositor_mut()
-            .render(frame.area(), frame.buffer_mut());
-    })
-    .expect("draw");
-    let buf = term.backend().buffer().clone();
-    let mut painted = String::new();
-    for y in 0..buf.area.height {
-        for x in 0..buf.area.width {
-            painted.push_str(buf[(x, y)].symbol());
-        }
-        painted.push('\n');
-    }
-    assert!(
-        painted.contains("OpenAI"),
-        "ListProvidersLoaded must seed the open dialog so 'OpenAI' appears in the next render; got:\n{painted}"
-    );
-}
-
 /// Scenario: Action::SessionCreated triggers a backend.get_session_role spawn that fills AgentViewStore.role_by_session
 #[tokio::test]
 async fn action_session_created_spawns_get_session_role() {
@@ -293,7 +240,7 @@ async fn action_model_selected_against_no_session_manager_is_silent_no_op() {
     // (Skip SessionCreated.)
     // @step When the App dispatches Action::ModelSelected(SessionId("any"), "openai", "gpt-5.1-codex")
     app.dispatch(Action::ModelSelected(
-        SessionId::new("any"),
+        Some(SessionId::new("any")),
         "openai".to_string(),
         "gpt-5.1-codex".to_string(),
     ));

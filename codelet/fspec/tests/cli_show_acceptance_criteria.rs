@@ -226,8 +226,16 @@ fn rust_port_tag_filter_selects_only_features_carrying_that_tag() {
 fn rust_port_multiple_tag_filters_require_all_tags_present() {
     // @step Given a temp project root with one feature tagged '@critical @auth' and one tagged '@critical' only
     let ws = tempfile::tempdir().expect("tempdir");
-    write_file(ws.path(), "spec/features/both.feature", CRITICAL_AUTH_FEATURE);
-    write_file(ws.path(), "spec/features/only.feature", CRITICAL_ONLY_FEATURE);
+    write_file(
+        ws.path(),
+        "spec/features/both.feature",
+        CRITICAL_AUTH_FEATURE,
+    );
+    write_file(
+        ws.path(),
+        "spec/features/only.feature",
+        CRITICAL_ONLY_FEATURE,
+    );
 
     // @step When I dispatch show-acceptance-criteria with tags=['@critical','@auth']
     let result = dispatch(ws.path(), r#"{"tags":["@critical","@auth"]}"#);
@@ -270,10 +278,16 @@ fn rust_port_format_markdown_renders_h1_blockquote_h2_bullet_steps() {
     assert!(out.contains("# "), "output must contain '# '; got:\n{out}");
 
     // @step And the data.output contains the substring '## '
-    assert!(out.contains("## "), "output must contain '## '; got:\n{out}");
+    assert!(
+        out.contains("## "),
+        "output must contain '## '; got:\n{out}"
+    );
 
     // @step And the data.output contains the substring '- **'
-    assert!(out.contains("- **"), "output must contain '- **'; got:\n{out}");
+    assert!(
+        out.contains("- **"),
+        "output must contain '- **'; got:\n{out}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -374,7 +388,11 @@ fn rust_port_feature_without_background_rendered_with_no_background_block() {
 fn rust_port_feature_with_no_scenarios_shows_no_scenarios_defined_marker() {
     // @step Given a temp project root with one feature 'empty.feature' tagged '@empty' having no scenarios
     let ws = tempfile::tempdir().expect("tempdir");
-    write_file(ws.path(), "spec/features/empty.feature", EMPTY_SCENARIOS_FEATURE);
+    write_file(
+        ws.path(),
+        "spec/features/empty.feature",
+        EMPTY_SCENARIOS_FEATURE,
+    );
 
     // @step When I dispatch show-acceptance-criteria with tags=['@empty'] and format='markdown'
     let result = dispatch(ws.path(), r#"{"tags":["@empty"],"format":"markdown"}"#);
@@ -513,8 +531,7 @@ fn cli_clap_exposes_subcommand_with_flag_help() {
 
     // @step And stdout contains the substring 'show-acceptance-criteria'
     assert!(
-        stdout.contains("show-acceptance-criteria")
-            || stdout.contains("SHOW-ACCEPTANCE-CRITERIA"),
+        stdout.contains("show-acceptance-criteria") || stdout.contains("SHOW-ACCEPTANCE-CRITERIA"),
         "help must mention subcommand; got:\n{stdout}"
     );
 }
@@ -536,7 +553,10 @@ fn cli_against_workspace_with_no_spec_features_exits_1() {
     assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'spec/features'
     assert!(
@@ -591,10 +611,16 @@ fn cli_format_markdown_prints_h1_h2_bullet_step_output() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout contains the substring '# '
-    assert!(stdout.contains("# "), "stdout must contain '# '; got:\n{stdout}");
+    assert!(
+        stdout.contains("# "),
+        "stdout must contain '# '; got:\n{stdout}"
+    );
 
     // @step And stdout contains the substring '## '
-    assert!(stdout.contains("## "), "stdout must contain '## '; got:\n{stdout}");
+    assert!(
+        stdout.contains("## "),
+        "stdout must contain '## '; got:\n{stdout}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -633,7 +659,9 @@ fn cli_output_writes_file_and_prints_message_without_dumping_content() {
     // @step When I run `./codelet/target/release/fspec show-acceptance-criteria --tag @auth --format markdown --output out.md` from that workspace
     let (code, stdout, stderr) = run_sac(
         ws.path(),
-        &["--tag", "@auth", "--format", "markdown", "--output", "out.md"],
+        &[
+            "--tag", "@auth", "--format", "markdown", "--output", "out.md",
+        ],
     );
 
     // @step Then the command exits 0
@@ -765,8 +793,12 @@ fn cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step Then both invocations produce equivalent JSON for the features array
     // (The CLI prints message line + the JSON body; extract the JSON array.)
-    let cli_json_start = stdout.find('[').expect("CLI stdout must contain JSON array");
-    let cli_json_end = stdout.rfind(']').expect("CLI stdout must contain JSON array end");
+    let cli_json_start = stdout
+        .find('[')
+        .expect("CLI stdout must contain JSON array");
+    let cli_json_end = stdout
+        .rfind(']')
+        .expect("CLI stdout must contain JSON array end");
     let cli_json_slice = &stdout[cli_json_start..=cli_json_end];
     let cli_features: serde_json::Value =
         serde_json::from_str(cli_json_slice).expect("CLI JSON slice parses");
@@ -776,8 +808,7 @@ fn cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/show_acceptance_criteria.rs contains NO inline gherkin parsing, filter, or rendering logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/show_acceptance_criteria.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/show_acceptance_criteria.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/show_acceptance_criteria.rs must exist as the CLI bridge module"

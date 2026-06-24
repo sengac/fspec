@@ -93,12 +93,9 @@ async fn test_shell_command_success() {
         overlap_policy: None,
     };
 
-    let result = codelet_napi::scheduler::shell_job::trigger_shell_job(
-        "nightly-lint",
-        project_path,
-        &entry,
-    )
-    .await;
+    let result =
+        codelet_napi::scheduler::shell_job::trigger_shell_job("nightly-lint", project_path, &entry)
+            .await;
 
     // @step Then the command executes via "sh -c" in the project directory
     // @step And the ShellJobResult exit_code is 0
@@ -144,12 +141,9 @@ async fn test_shell_command_failure() {
     };
 
     // @step When the scheduler fires the shell job
-    let result = codelet_napi::scheduler::shell_job::trigger_shell_job(
-        "health-check",
-        project_path,
-        &entry,
-    )
-    .await;
+    let result =
+        codelet_napi::scheduler::shell_job::trigger_shell_job("health-check", project_path, &entry)
+            .await;
 
     // @step Then the ShellJobResult exit_code is 1
     let result = result.expect("shell job should return result even on non-zero exit");
@@ -190,12 +184,9 @@ async fn test_shell_job_empty_command() {
     };
 
     // @step When the scheduler fires the shell job
-    let result = codelet_napi::scheduler::shell_job::trigger_shell_job(
-        "bad-shell",
-        project_path,
-        &entry,
-    )
-    .await;
+    let result =
+        codelet_napi::scheduler::shell_job::trigger_shell_job("bad-shell", project_path, &entry)
+            .await;
 
     // @step Then trigger_shell_job returns an error immediately
     assert!(result.is_err());
@@ -287,12 +278,9 @@ async fn test_shell_multiline_stdout() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the scheduler fires the shell job
-    let result = codelet_napi::scheduler::shell_job::trigger_shell_job(
-        "multiline",
-        project_path,
-        &entry,
-    )
-    .await;
+    let result =
+        codelet_napi::scheduler::shell_job::trigger_shell_job("multiline", project_path, &entry)
+            .await;
 
     // @step Then ShellJobResult stdout contains "hello" and "world"
     let result = result.expect("should succeed");
@@ -328,12 +316,9 @@ async fn test_shell_stdout_and_stderr() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the scheduler fires the shell job
-    let result = codelet_napi::scheduler::shell_job::trigger_shell_job(
-        "mixed-output",
-        project_path,
-        &entry,
-    )
-    .await;
+    let result =
+        codelet_napi::scheduler::shell_job::trigger_shell_job("mixed-output", project_path, &entry)
+            .await;
 
     let result = result.expect("should succeed");
 
@@ -385,9 +370,13 @@ async fn test_shell_job_updates_timestamps() {
     // @step When the scheduler fires the shell job and it completes
     // Use evaluate_and_run which handles the full trigger_and_update flow
     let state = codelet_napi::scheduler::SchedulerState::new();
-    codelet_napi::scheduler::evaluate_and_run(project_path, &state, std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks))
-        .await
-        .expect("evaluate_and_run should succeed");
+    codelet_napi::scheduler::evaluate_and_run(
+        project_path,
+        &state,
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
+    )
+    .await
+    .expect("evaluate_and_run should succeed");
 
     // @step Then lastRunAt in spec/schedules.json is updated to a newer ISO timestamp
     // @step And lastRunStatus reflects the actual exit code outcome
@@ -418,7 +407,12 @@ async fn test_engine_routes_shell_job() {
     // Run evaluate_and_run — cron may or may not trigger, but we verify
     // the shell_job module is accessible and the routing doesn't error
     let state = codelet_napi::scheduler::SchedulerState::new();
-    let result = codelet_napi::scheduler::evaluate_and_run(project_path, &state, std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks)).await;
+    let result = codelet_napi::scheduler::evaluate_and_run(
+        project_path,
+        &state,
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
+    )
+    .await;
 
     // @step Then it calls trigger_shell_job instead of trigger_agent_job
     // The fact that evaluate_and_run doesn't error proves routing works.
@@ -452,19 +446,24 @@ async fn test_shell_runs_in_project_dir() {
     let project_str = project_path.to_str().unwrap();
 
     // @step When the scheduler fires the shell job
-    let result = codelet_napi::scheduler::shell_job::trigger_shell_job(
-        "pwd-test",
-        project_str,
-        &entry,
-    )
-    .await;
+    let result =
+        codelet_napi::scheduler::shell_job::trigger_shell_job("pwd-test", project_str, &entry)
+            .await;
 
     // @step Then stdout contains the project path
     let result = result.expect("should succeed");
     // pwd output should match the project directory (canonicalized)
     let stdout_trimmed = result.stdout.trim();
     assert!(
-        stdout_trimmed == project_str || tmp.path().starts_with(stdout_trimmed) || stdout_trimmed.contains(&tmp.path().file_name().unwrap().to_string_lossy().to_string()),
+        stdout_trimmed == project_str
+            || tmp.path().starts_with(stdout_trimmed)
+            || stdout_trimmed.contains(
+                &tmp.path()
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string()
+            ),
         "pwd output '{}' should match project path '{}'",
         stdout_trimmed,
         project_str
@@ -499,12 +498,9 @@ async fn test_shell_job_missing_command_field() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the scheduler fires the shell job
-    let result = codelet_napi::scheduler::shell_job::trigger_shell_job(
-        "no-command",
-        project_path,
-        &entry,
-    )
-    .await;
+    let result =
+        codelet_napi::scheduler::shell_job::trigger_shell_job("no-command", project_path, &entry)
+            .await;
 
     // @step Then trigger_shell_job returns an error about missing command
     assert!(result.is_err());

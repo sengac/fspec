@@ -60,8 +60,11 @@ fn write_canonical_tags_json(project_root: &Path) {
     });
     let spec = project_root.join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
-    fs::write(spec.join("tags.json"), serde_json::to_string_pretty(&body).unwrap())
-        .expect("write tags.json");
+    fs::write(
+        spec.join("tags.json"),
+        serde_json::to_string_pretty(&body).unwrap(),
+    )
+    .expect("write tags.json");
 }
 
 const FEATURE_LOGIN_PLAIN: &str = "Feature: Login\n  Scenario: A\n    Given x\n";
@@ -76,13 +79,15 @@ const TS_HELP_FIXTURE_ATTF: &str = include_str!("fixtures/help/add-tag-to-featur
 fn scenario_cli_successfully_adds_single_tag_and_prints_success_line() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-tag-to-feature spec/features/login.feature @critical' in that tempdir
-    let (code, stdout, stderr) = run_add_tag(
-        ws.path(),
-        &["spec/features/login.feature", "@critical"],
-    );
+    let (code, stdout, stderr) =
+        run_add_tag(ws.path(), &["spec/features/login.feature", "@critical"]);
 
     // @step Then the process exits with code 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
@@ -96,8 +101,14 @@ fn scenario_cli_successfully_adds_single_tag_and_prints_success_line() {
     // @step And the file spec/features/login.feature in the tempdir contains the line '@critical' above 'Feature: Login'
     let after = read_feature(ws.path(), "spec/features/login.feature");
     let lines: Vec<&str> = after.lines().collect();
-    let crit = lines.iter().position(|l| *l == "@critical").expect("@critical line");
-    let feat = lines.iter().position(|l| *l == "Feature: Login").expect("Feature line");
+    let crit = lines
+        .iter()
+        .position(|l| *l == "@critical")
+        .expect("@critical line");
+    let feat = lines
+        .iter()
+        .position(|l| *l == "Feature: Login")
+        .expect("Feature line");
     assert!(crit < feat, "@critical must appear above Feature header");
 }
 
@@ -109,13 +120,15 @@ fn scenario_cli_successfully_adds_single_tag_and_prints_success_line() {
 fn scenario_cli_surfaces_invalid_format_errors_with_stderr_error_prefix() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-tag-to-feature spec/features/login.feature InvalidTag' in that tempdir
-    let (code, _stdout, stderr) = run_add_tag(
-        ws.path(),
-        &["spec/features/login.feature", "InvalidTag"],
-    );
+    let (code, _stdout, stderr) =
+        run_add_tag(ws.path(), &["spec/features/login.feature", "InvalidTag"]);
 
     // @step Then the process exits with code 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
@@ -141,7 +154,11 @@ fn scenario_cli_surfaces_invalid_format_errors_with_stderr_error_prefix() {
 fn scenario_cli_validate_registry_rejects_unregistered_tag() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n' and spec/tags.json carrying the canonical 9-category default
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
     write_canonical_tags_json(ws.path());
 
     // @step When I run 'fspec add-tag-to-feature spec/features/login.feature @unregistered --validate-registry' in that tempdir
@@ -158,7 +175,10 @@ fn scenario_cli_validate_registry_rejects_unregistered_tag() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Tag @unregistered is not registered in spec/tags.json'
     assert!(
@@ -175,14 +195,16 @@ fn scenario_cli_validate_registry_rejects_unregistered_tag() {
 fn scenario_cli_prints_consolidated_system_reminder_after_success_line() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n' and spec/tags.json carrying the canonical 9-category default
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
     write_canonical_tags_json(ws.path());
 
     // @step When I run 'fspec add-tag-to-feature spec/features/login.feature @unknown' in that tempdir
-    let (code, stdout, stderr) = run_add_tag(
-        ws.path(),
-        &["spec/features/login.feature", "@unknown"],
-    );
+    let (code, stdout, stderr) =
+        run_add_tag(ws.path(), &["spec/features/login.feature", "@unknown"]);
 
     // @step Then the process exits with code 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
@@ -194,7 +216,10 @@ fn scenario_cli_prints_consolidated_system_reminder_after_success_line() {
     );
 
     // @step And stdout contains the substring '<system-reminder>'
-    assert!(stdout.contains("<system-reminder>"), "stdout must contain reminder opener; got:\n{stdout}");
+    assert!(
+        stdout.contains("<system-reminder>"),
+        "stdout must contain reminder opener; got:\n{stdout}"
+    );
 
     // @step And stdout contains the substring 'is not registered in spec/tags.json'
     assert!(
@@ -203,7 +228,10 @@ fn scenario_cli_prints_consolidated_system_reminder_after_success_line() {
     );
 
     // @step And stdout contains the substring '</system-reminder>'
-    assert!(stdout.contains("</system-reminder>"), "stdout must contain reminder closer; got:\n{stdout}");
+    assert!(
+        stdout.contains("</system-reminder>"),
+        "stdout must contain reminder closer; got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -227,7 +255,10 @@ fn scenario_cli_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "add-tag-to-feature --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-tag-to-feature --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/add-tag-to-feature.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_ATTF);
@@ -241,7 +272,11 @@ fn scenario_cli_help_matches_ts_formatcommandhelp_reference() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-tag-to-feature through fspec_core::dispatch::dispatch_command with file='spec/features/login.feature' and tags=['@cli']
     let req = codelet_fspec_core::DispatchRequest {

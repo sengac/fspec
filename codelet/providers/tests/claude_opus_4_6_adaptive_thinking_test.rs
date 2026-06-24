@@ -555,7 +555,7 @@ mod tests {
         assert!(supports_1m_context(CLAUDE_SONNET_4_5));
         assert!(supports_1m_context("claude-sonnet-4-5-20250929")); // Variant auto-covered
         assert!(supports_1m_context("claude-opus-4-7")); // Future: auto-covered
-        // Opus 4.5 does NOT support 1M
+                                                         // Opus 4.5 does NOT support 1M
         assert!(!supports_1m_context(CLAUDE_OPUS_4_5));
         // Claude 3.x does not support 1M
         assert!(!supports_1m_context("claude-3-opus-20240229"));

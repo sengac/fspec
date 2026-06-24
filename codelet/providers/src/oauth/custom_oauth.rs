@@ -142,8 +142,7 @@ pub fn write_stored_tokens(provider_name: &str, tokens: &Map) -> Result<()> {
 pub fn custom_oauth_clear_sync(provider_name: &str) -> Result<()> {
     let path = custom_oauth_store_path(provider_name);
     if path.exists() {
-        std::fs::remove_file(&path)
-            .with_context(|| format!("remove {}", path.display()))?;
+        std::fs::remove_file(&path).with_context(|| format!("remove {}", path.display()))?;
     }
     Ok(())
 }
@@ -163,9 +162,7 @@ pub async fn custom_oauth_clear(provider_name: &str) -> Result<()> {
 /// produce `code`/`state` pairs on its own — the TypeScript TUI owns
 /// the browser + HTTP listener runtime so this layer stays
 /// deterministic and testable.
-pub async fn custom_oauth_authorize_start(
-    provider: &ScriptedOAuthProvider,
-) -> Result<Map> {
+pub async fn custom_oauth_authorize_start(provider: &ScriptedOAuthProvider) -> Result<Map> {
     auth_start_or_legacy(provider).await
 }
 
@@ -267,9 +264,9 @@ fn script_config_from(
             Some(client_id.clone()),
             scopes.clone(),
         ),
-        AuthConfig::Bearer { .. }
-        | AuthConfig::ApiKeyHeader { .. }
-        | AuthConfig::Custom { .. } => (None, None, None),
+        AuthConfig::Bearer { .. } | AuthConfig::ApiKeyHeader { .. } | AuthConfig::Custom { .. } => {
+            (None, None, None)
+        }
     };
     ScriptProviderConfig {
         name: cfg.name.clone(),
@@ -327,8 +324,7 @@ fn set_mode_0600(path: &Path) -> Result<()> {
         .with_context(|| format!("metadata {}", path.display()))?
         .permissions();
     perms.set_mode(0o600);
-    std::fs::set_permissions(path, perms)
-        .with_context(|| format!("chmod {}", path.display()))?;
+    std::fs::set_permissions(path, perms).with_context(|| format!("chmod {}", path.display()))?;
     Ok(())
 }
 

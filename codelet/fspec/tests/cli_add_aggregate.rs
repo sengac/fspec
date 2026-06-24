@@ -48,7 +48,15 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
         } else {
@@ -132,24 +140,38 @@ fn scenario_cli_persists_aggregate_but_no_output_and_exits_1() {
     );
 
     // @step Then the exit code is 1
-    assert_eq!(code, 1, "expected exit 1 (TS logger.success bug parity); stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "expected exit 1 (TS logger.success bug parity); stderr={stderr}"
+    );
 
     // @step And stdout is empty
-    assert_eq!(stdout, "", "stdout must be empty (TS logger is file-only); got:\n{stdout}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (TS logger is file-only); got:\n{stdout}"
+    );
 
     // @step And stderr is empty
-    assert_eq!(stderr, "", "stderr must be empty (TS logger is file-only); got:\n{stderr}");
+    assert_eq!(
+        stderr, "",
+        "stderr must be empty (TS logger is file-only); got:\n{stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 1
     let v = read_work_units(ws.path());
-    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"].as_array().expect("items array");
+    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"]
+        .as_array()
+        .expect("items array");
     assert_eq!(items.len(), 1);
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items[0].text='Order'
     assert_eq!(items[0]["text"].as_str(), Some("Order"));
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items[0].responsibilities equals the array ["Place","Cancel"]
-    assert_eq!(items[0]["responsibilities"], serde_json::json!(["Place", "Cancel"]));
+    assert_eq!(
+        items[0]["responsibilities"],
+        serde_json::json!(["Place", "Cancel"])
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -171,12 +193,18 @@ fn scenario_cli_rejects_done_work_unit_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stdout is empty
-    assert_eq!(stdout, "", "stdout must be empty (TS logger is file-only); got:\n{stdout}");
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (TS logger is file-only); got:\n{stdout}"
+    );
 
     // @step And stderr is empty
     // The TS error path calls `logger.error(...)` which writes ONLY to the
     // log file — nothing reaches the console.
-    assert_eq!(stderr, "", "stderr must be empty (TS logger is file-only); got:\n{stderr}");
+    assert_eq!(
+        stderr, "",
+        "stderr must be empty (TS logger is file-only); got:\n{stderr}"
+    );
 
     // @step And spec/work-units.json on disk is byte-equal to its pre-call contents
     let post_bytes = fs::read(ws.path().join("spec/work-units.json")).unwrap();
@@ -202,17 +230,31 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-aggregate AUTH-001 "A2"` afterwards exits 1 with no console output (TS logger.success bug parity)
     let (code, stdout, stderr) = run_add_aggregate(ws.path(), &["AUTH-001", "A2"]);
-    assert_eq!(code, 1, "CLI add exits 1 (TS logger.success bug parity); stdout={stdout}, stderr={stderr}");
-    assert_eq!(stdout, "", "stdout must be empty (TS logger is file-only); got:\n{stdout}");
-    assert_eq!(stderr, "", "stderr must be empty (TS logger is file-only); got:\n{stderr}");
+    assert_eq!(
+        code, 1,
+        "CLI add exits 1 (TS logger.success bug parity); stdout={stdout}, stderr={stderr}"
+    );
+    assert_eq!(
+        stdout, "",
+        "stdout must be empty (TS logger is file-only); got:\n{stdout}"
+    );
+    assert_eq!(
+        stderr, "",
+        "stderr must be empty (TS logger is file-only); got:\n{stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 2
     let v = read_work_units(ws.path());
-    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"].as_array().expect("items array");
+    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"]
+        .as_array()
+        .expect("items array");
     assert_eq!(items.len(), 2);
 
     // @step And the CLI bridge module codelet/fspec/src/add_aggregate.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling

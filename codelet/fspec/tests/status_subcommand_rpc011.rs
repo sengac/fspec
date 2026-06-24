@@ -33,15 +33,11 @@ fn write_daemon_json(path: &std::path::Path, port: u16, pid: u32) {
         "started_at": "2026-05-11T00:00:00Z",
         "version": "0.0.0-test",
     });
-    fs::write(path, serde_json::to_string_pretty(&body).unwrap())
-        .expect("write daemon.json");
+    fs::write(path, serde_json::to_string_pretty(&body).unwrap()).expect("write daemon.json");
 }
 
 /// Spawn fspec daemon with an explicit XDG_RUNTIME_DIR and read its port.
-fn spawn_daemon_with_xdg(
-    workspace: &std::path::Path,
-    xdg: &std::path::Path,
-) -> (ChildGuard, u16) {
+fn spawn_daemon_with_xdg(workspace: &std::path::Path, xdg: &std::path::Path) -> (ChildGuard, u16) {
     use std::io::BufRead;
     let mut child = Command::new(env!("CARGO_BIN_EXE_fspec"))
         .arg("daemon")
@@ -133,9 +129,7 @@ async fn fspec_status_against_a_live_daemon_prints_health_and_exits_0() {
         "stdout must contain 'broadcast_lag:'. Got: {stdout}"
     );
     assert!(
-        stdout.contains("chunks=0")
-            && stdout.contains("logs=0")
-            && stdout.contains("work_units=0"),
+        stdout.contains("chunks=0") && stdout.contains("logs=0") && stdout.contains("work_units=0"),
         "stdout broadcast_lag must show chunks=0, logs=0, work_units=0. Got: {stdout}"
     );
     assert!(
@@ -235,8 +229,7 @@ async fn fspec_status_against_stale_daemon_json_deletes_the_file_and_exits_1() {
         "stderr must contain 'fspec daemon: not running'. Got: {stderr}"
     );
     assert!(
-        stderr.contains("stale daemon.json removed")
-            || stderr.contains("stale"),
+        stderr.contains("stale daemon.json removed") || stderr.contains("stale"),
         "stderr must indicate 'stale daemon.json removed'. Got: {stderr}"
     );
 

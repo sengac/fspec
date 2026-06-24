@@ -61,10 +61,8 @@ fn scenario_cli_successfully_removes_tag_and_prints_success_line() {
     );
 
     // @step When I run 'fspec remove-tag-from-feature spec/features/login.feature @wip' in that tempdir
-    let (code, stdout, stderr) = run_remove_tag(
-        ws.path(),
-        &["spec/features/login.feature", "@wip"],
-    );
+    let (code, stdout, stderr) =
+        run_remove_tag(ws.path(), &["spec/features/login.feature", "@wip"]);
 
     // @step Then the process exits with code 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
@@ -98,16 +96,17 @@ fn scenario_cli_rejects_removal_of_tag_not_on_feature() {
     );
 
     // @step When I run 'fspec remove-tag-from-feature spec/features/login.feature @notthere' in that tempdir
-    let (code, _stdout, stderr) = run_remove_tag(
-        ws.path(),
-        &["spec/features/login.feature", "@notthere"],
-    );
+    let (code, _stdout, stderr) =
+        run_remove_tag(ws.path(), &["spec/features/login.feature", "@notthere"]);
 
     // @step Then the process exits with code 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Tag @notthere not found on this feature'
     assert!(
@@ -126,16 +125,17 @@ fn scenario_cli_rejects_missing_file() {
     let ws = tempfile::tempdir().expect("tempdir");
 
     // @step When I run 'fspec remove-tag-from-feature spec/features/missing.feature @wip' in that tempdir
-    let (code, _stdout, stderr) = run_remove_tag(
-        ws.path(),
-        &["spec/features/missing.feature", "@wip"],
-    );
+    let (code, _stdout, stderr) =
+        run_remove_tag(ws.path(), &["spec/features/missing.feature", "@wip"]);
 
     // @step Then the process exits with code 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'File not found: spec/features/missing.feature'
     assert!(
@@ -165,7 +165,10 @@ fn scenario_cli_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "remove-tag-from-feature --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-tag-from-feature --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/remove-tag-from-feature.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_RTFF);
@@ -203,8 +206,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/remove_tag_from_feature.rs contains NO inline gherkin parsing or tag-filter logic
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/remove_tag_from_feature.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/remove_tag_from_feature.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/remove_tag_from_feature.rs must exist as the CLI bridge module"

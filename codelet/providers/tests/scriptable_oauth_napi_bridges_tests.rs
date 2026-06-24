@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::await_holding_lock
+)]
 //! Feature: spec/features/scriptable-oauth-napi-bridges-browser-loopback-pkce-flow.feature
 //!
 //! Integration tests for PROV-087.
@@ -26,15 +31,13 @@
 
 use std::sync::{Mutex, MutexGuard, OnceLock};
 
-use codelet_providers::oauth::script_provider::{
-    ScriptProviderConfig, ScriptedOAuthProvider,
-};
-use codelet_providers::oauth::script_provider_aliases::{
-    auth_exchange_or_legacy, auth_needs_refresh_or_legacy,
-    auth_refresh_or_legacy, auth_start_or_legacy,
-};
 use codelet_providers::oauth::custom_oauth::{
     custom_oauth_store_path, resolve_login_implementation, LoginImplementation,
+};
+use codelet_providers::oauth::script_provider::{ScriptProviderConfig, ScriptedOAuthProvider};
+use codelet_providers::oauth::script_provider_aliases::{
+    auth_exchange_or_legacy, auth_needs_refresh_or_legacy, auth_refresh_or_legacy,
+    auth_start_or_legacy,
 };
 use rhai::Map;
 
@@ -141,9 +144,8 @@ async fn user_logs_in_with_custom_shadow_using_new_names() {
     let _lock = env_lock();
     // @step Given a Rhai script my-custom.rhai defining auth_start and auth_exchange is registered with provider name "my-custom"
     let (_dir, _env) = with_temp_fspec_home();
-    let provider =
-        ScriptedOAuthProvider::from_script(NEW_STYLE_SCRIPT, config("my-custom"))
-            .expect("load script");
+    let provider = ScriptedOAuthProvider::from_script(NEW_STYLE_SCRIPT, config("my-custom"))
+        .expect("load script");
 
     // @step When I invoke custom_oauth_authorize("my-custom") and then custom_oauth_exchange("my-custom", code, verifier) with the values returned from the loopback callback
     let start: Map = auth_start_or_legacy(&provider).await.expect("auth_start");
@@ -159,10 +161,9 @@ async fn user_logs_in_with_custom_shadow_using_new_names() {
         .clone()
         .into_string()
         .expect("string");
-    let tokens: Map =
-        auth_exchange_or_legacy(&provider, "AUTHCODE", &verifier)
-            .await
-            .expect("exchange");
+    let tokens: Map = auth_exchange_or_legacy(&provider, "AUTHCODE", &verifier)
+        .await
+        .expect("exchange");
 
     // @step Then the script's auth_start is called to produce the authorization URL and pkce_verifier
     assert!(url.contains("client_id="), "url must contain client_id");
@@ -180,9 +181,9 @@ async fn user_logs_in_with_custom_shadow_using_new_names() {
     // @step Then the resulting tokens are persisted in CredentialStore under provider_name "my-custom"
     let path = custom_oauth_store_path("my-custom");
     let json = serde_json::to_string(
-        &codelet_providers::oauth::json_convert::dynamic_to_json_value(
-            &rhai::Dynamic::from_map(tokens),
-        ),
+        &codelet_providers::oauth::json_convert::dynamic_to_json_value(&rhai::Dynamic::from_map(
+            tokens,
+        )),
     )
     .unwrap();
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -212,10 +213,9 @@ async fn legacy_script_using_deprecated_aliases_still_authenticates() {
         .clone()
         .into_string()
         .expect("string");
-    let tokens: Map =
-        auth_exchange_or_legacy(&provider, "CODE42", &verifier)
-            .await
-            .expect("exchange");
+    let tokens: Map = auth_exchange_or_legacy(&provider, "CODE42", &verifier)
+        .await
+        .expect("exchange");
 
     // @step Then the NAPI layer falls back to build_authorization_request when auth_start is not defined
     assert_eq!(verifier, "legacy-verifier");
@@ -246,11 +246,17 @@ async fn expired_tokens_are_refreshed_silently() {
     let (_dir, _env) = with_temp_fspec_home();
 
     // @step Given tokens for provider "my-custom" exist in CredentialStore but are expired
-    let provider = ScriptedOAuthProvider::from_script(NEW_STYLE_SCRIPT, config("my-custom"))
-        .expect("load");
+    let provider =
+        ScriptedOAuthProvider::from_script(NEW_STYLE_SCRIPT, config("my-custom")).expect("load");
     let mut existing = Map::new();
-    existing.insert("access_token".into(), rhai::Dynamic::from("old_at".to_string()));
-    existing.insert("refresh_token".into(), rhai::Dynamic::from("rt".to_string()));
+    existing.insert(
+        "access_token".into(),
+        rhai::Dynamic::from("old_at".to_string()),
+    );
+    existing.insert(
+        "refresh_token".into(),
+        rhai::Dynamic::from("rt".to_string()),
+    );
     existing.insert("expires_at".into(), rhai::Dynamic::from(0_i64));
 
     // @step When custom_oauth_needs_refresh("my-custom") is called
@@ -316,8 +322,7 @@ fn custom_oauth_clear_removes_stored_tokens() {
     assert!(path.exists());
 
     // @step When custom_oauth_clear("my-custom") is called
-    codelet_providers::oauth::custom_oauth::custom_oauth_clear_sync("my-custom")
-        .expect("clear");
+    codelet_providers::oauth::custom_oauth::custom_oauth_clear_sync("my-custom").expect("clear");
 
     // @step Then the stored tokens for "my-custom" are removed from CredentialStore
     assert!(!path.exists(), "tokens file must be removed by clear");

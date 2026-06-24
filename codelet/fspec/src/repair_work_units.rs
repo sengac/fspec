@@ -71,10 +71,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             Ok(0)
         }
         Err(err) => {
-            eprintln!(
-                "✗ Failed to repair work units: {}",
-                render_core_error(&err)
-            );
+            eprintln!("✗ Failed to repair work units: {}", render_core_error(&err));
             Ok(1)
         }
     }

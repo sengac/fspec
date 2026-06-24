@@ -127,8 +127,7 @@ impl MessageStore {
         let messages_file = messages_dir.join("messages.jsonl");
         let index_file = messages_dir.join("messages.idx");
 
-        let capacity = NonZeroUsize::new(LRU_CACHE_CAPACITY)
-            .ok_or("Invalid LRU cache capacity")?;
+        let capacity = NonZeroUsize::new(LRU_CACHE_CAPACITY).ok_or("Invalid LRU cache capacity")?;
 
         let mut store = Self {
             messages_dir,
@@ -205,12 +204,8 @@ impl MessageStore {
     /// Calling `create_dir_all` is a no-op when the directory already
     /// exists, so this guard has zero cost on the happy path.
     fn ensure_messages_dir(&self) -> Result<(), String> {
-        fs::create_dir_all(&self.messages_dir).map_err(|e| {
-            format!(
-                "Failed to ensure messages dir {:?}: {e}",
-                self.messages_dir
-            )
-        })
+        fs::create_dir_all(&self.messages_dir)
+            .map_err(|e| format!("Failed to ensure messages dir {:?}: {e}", self.messages_dir))
     }
 
     /// Store a new message and return its ID
@@ -270,8 +265,8 @@ impl MessageStore {
             .open(&self.messages_file)
             .map_err(|e| format!("Failed to open messages file: {e}"))?;
 
-        let json = serde_json::to_string(&msg)
-            .map_err(|e| format!("Failed to serialize message: {e}"))?;
+        let json =
+            serde_json::to_string(&msg).map_err(|e| format!("Failed to serialize message: {e}"))?;
         let line = format!("{json}\n");
         file.write_all(line.as_bytes())
             .map_err(|e| format!("Failed to write message: {e}"))?;
@@ -279,7 +274,13 @@ impl MessageStore {
         let byte_length = line.len() as u32;
 
         // Update in-memory index
-        self.index.insert(id, IndexEntry { byte_offset, byte_length });
+        self.index.insert(
+            id,
+            IndexEntry {
+                byte_offset,
+                byte_length,
+            },
+        );
 
         // Update LRU cache
         if let Ok(mut cache) = self.cache.lock() {
@@ -330,7 +331,8 @@ impl MessageStore {
         self.ensure_messages_dir()?;
 
         // Read current message
-        let mut msg = self.get(id)
+        let mut msg = self
+            .get(id)
             .ok_or_else(|| format!("Message {id} not found"))?;
 
         msg.metadata.extend(entries);
@@ -351,8 +353,8 @@ impl MessageStore {
             .open(&self.messages_file)
             .map_err(|e| format!("Failed to open messages file: {e}"))?;
 
-        let json = serde_json::to_string(&msg)
-            .map_err(|e| format!("Failed to serialize message: {e}"))?;
+        let json =
+            serde_json::to_string(&msg).map_err(|e| format!("Failed to serialize message: {e}"))?;
         let line = format!("{json}\n");
         file.write_all(line.as_bytes())
             .map_err(|e| format!("Failed to write message: {e}"))?;
@@ -360,7 +362,13 @@ impl MessageStore {
         let byte_length = line.len() as u32;
 
         // Update index to point to the new position
-        self.index.insert(id, IndexEntry { byte_offset, byte_length });
+        self.index.insert(
+            id,
+            IndexEntry {
+                byte_offset,
+                byte_length,
+            },
+        );
 
         // Update LRU cache
         if let Ok(mut cache) = self.cache.lock() {
@@ -406,8 +414,8 @@ impl MessageStore {
         // full rationale.
         self.ensure_messages_dir()?;
         let temp_file = self.messages_dir.join("messages.jsonl.tmp");
-        let mut out = File::create(&temp_file)
-            .map_err(|e| format!("Failed to create temp file: {e}"))?;
+        let mut out =
+            File::create(&temp_file).map_err(|e| format!("Failed to create temp file: {e}"))?;
 
         let mut new_index: HashMap<Uuid, IndexEntry> = HashMap::new();
         let mut current_offset: u64 = 0;
@@ -426,10 +434,13 @@ impl MessageStore {
                 .map_err(|e| format!("Failed to write message: {e}"))?;
 
             let byte_length = line.len() as u32;
-            new_index.insert(*id, IndexEntry {
-                byte_offset: current_offset,
-                byte_length,
-            });
+            new_index.insert(
+                *id,
+                IndexEntry {
+                    byte_offset: current_offset,
+                    byte_length,
+                },
+            );
             current_offset += byte_length as u64;
         }
 

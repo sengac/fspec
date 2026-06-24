@@ -36,9 +36,8 @@ use super::error::CustomProviderError;
 /// `messages_to_rhai(&messages)` directly and then unwrap the array, so
 /// the outer `Dynamic` layer is provided here.
 pub fn messages_to_rhai(messages: &[Message]) -> Result<Dynamic, CustomProviderError> {
-    let json = serde_json::to_value(messages).map_err(|e| {
-        CustomProviderError::RhaiRuntimeError(format!("serialize messages: {e}"))
-    })?;
+    let json = serde_json::to_value(messages)
+        .map_err(|e| CustomProviderError::RhaiRuntimeError(format!("serialize messages: {e}")))?;
     Ok(json_value_to_dynamic(&json))
 }
 
@@ -71,13 +70,9 @@ pub fn request_to_rhai(
     // Guarantee the messages/tools sides are actually arrays before
     // inserting them into the outer map — this matches the contract the
     // scripts expect and makes failures surface early.
-    let messages_arr = messages_dyn
-        .into_typed_array::<Dynamic>()
-        .map_err(|typ| {
-            CustomProviderError::RhaiRuntimeError(format!(
-                "messages bridge produced non-array ({typ})"
-            ))
-        })?;
+    let messages_arr = messages_dyn.into_typed_array::<Dynamic>().map_err(|typ| {
+        CustomProviderError::RhaiRuntimeError(format!("messages bridge produced non-array ({typ})"))
+    })?;
     let tools_arr: Array = tools_dyn.into_typed_array::<Dynamic>().map_err(|typ| {
         CustomProviderError::RhaiRuntimeError(format!("tools bridge produced non-array ({typ})"))
     })?;

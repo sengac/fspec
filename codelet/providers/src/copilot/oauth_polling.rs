@@ -8,8 +8,8 @@ use anyhow::{anyhow, Result};
 use serde::Deserialize;
 
 use crate::copilot::oauth_types::{
-    CopilotDeviceCodeResponse, CopilotPollConfig, CopilotPollResult, COPILOT_CLIENT_ID,
-    AUTHORIZATION_PENDING_SAFETY_MARGIN_MS, SLOW_DOWN_INCREMENT_MS,
+    CopilotDeviceCodeResponse, CopilotPollConfig, CopilotPollResult,
+    AUTHORIZATION_PENDING_SAFETY_MARGIN_MS, COPILOT_CLIENT_ID, SLOW_DOWN_INCREMENT_MS,
 };
 
 /// Internal: response shape for the device token polling endpoint.

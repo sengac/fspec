@@ -89,10 +89,7 @@ pub struct TokenExchangeResponse {
 
 impl From<TokenExchangeWireResponse> for TokenExchangeResponse {
     fn from(wire: TokenExchangeWireResponse) -> Self {
-        let endpoints_api = wire
-            .endpoints
-            .and_then(|e| e.api)
-            .unwrap_or_default();
+        let endpoints_api = wire.endpoints.and_then(|e| e.api).unwrap_or_default();
         Self {
             token: wire.token,
             expires_at: wire.expires_at,

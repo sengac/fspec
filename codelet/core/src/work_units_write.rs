@@ -51,8 +51,7 @@ pub fn move_work_unit(cwd: &Path, id: &str, direction: Direction) -> Result<()> 
     // Ensure the parent directory exists before attempting to acquire
     // the lock (mkdir requires the parent to exist on POSIX).
     if let Some(parent) = lock_dir.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("create {}", parent.display()))?;
+        fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
     }
 
     let id = id.to_string();
@@ -63,11 +62,7 @@ pub fn move_work_unit(cwd: &Path, id: &str, direction: Direction) -> Result<()> 
 }
 
 /// Inner reorder that runs while the inter-process lock is held.
-fn move_work_unit_locked(
-    work_units_path: &Path,
-    id: &str,
-    direction: Direction,
-) -> Result<()> {
+fn move_work_unit_locked(work_units_path: &Path, id: &str, direction: Direction) -> Result<()> {
     let content = fs::read_to_string(work_units_path)
         .with_context(|| format!("read {}", work_units_path.display()))?;
     let mut root: Value = serde_json::from_str(&content)
@@ -97,9 +92,9 @@ fn move_work_unit_locked(
     let column = states_obj
         .get_mut(&status)
         .and_then(|c| c.as_array_mut())
-        .ok_or_else(|| anyhow!(
-            "spec/work-units.json::states.{status} is missing or not an array"
-        ))?;
+        .ok_or_else(|| {
+            anyhow!("spec/work-units.json::states.{status} is missing or not an array")
+        })?;
 
     let pos = column
         .iter()
@@ -134,10 +129,9 @@ fn move_work_unit_locked(
     }
 
     // Atomic write: serialise to a sibling temp file, then rename.
-    let pretty = serde_json::to_string_pretty(&root)
-        .context("re-serialise work-units.json")?;
-    let temp_path: PathBuf = work_units_path
-        .with_file_name(format!("work-units.json.tmp.{}", Uuid::new_v4()));
+    let pretty = serde_json::to_string_pretty(&root).context("re-serialise work-units.json")?;
+    let temp_path: PathBuf =
+        work_units_path.with_file_name(format!("work-units.json.tmp.{}", Uuid::new_v4()));
     fs::write(&temp_path, &pretty)
         .with_context(|| format!("write temp file {}", temp_path.display()))?;
     fs::rename(&temp_path, work_units_path).with_context(|| {

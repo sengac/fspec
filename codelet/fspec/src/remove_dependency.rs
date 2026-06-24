@@ -65,7 +65,10 @@ pub struct CliArgs {
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // ── Shorthand reconciliation ── (TS lines 159-170)
-    let final_depends_on = match (args.depends_on_positional.as_deref(), args.depends_on.as_deref()) {
+    let final_depends_on = match (
+        args.depends_on_positional.as_deref(),
+        args.depends_on.as_deref(),
+    ) {
         (Some(pos), Some(flag)) if pos != flag => {
             eprintln!(
                 "✗ Failed to remove dependency: Cannot specify dependency both as argument and --depends-on option"
@@ -90,13 +93,15 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     }
 
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Marshal CLI args into the canonical JSON shape consumed by
     // fspec_core::commands::remove_dependency::run.
     let mut obj = serde_json::Map::new();
-    obj.insert("workUnitId".into(), Value::String(args.work_unit_id.clone()));
+    obj.insert(
+        "workUnitId".into(),
+        Value::String(args.work_unit_id.clone()),
+    );
     if let Some(v) = args.blocks.as_ref() {
         obj.insert("blocks".into(), Value::String(v.clone()));
     }
@@ -121,10 +126,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             // `render_core_error` strips the dispatcher-only
             // `"Invalid args for fspec command remove-dependency: "`
             // envelope so the shell stderr is byte-identical to TS.
-            eprintln!(
-                "✗ Failed to remove dependency: {}",
-                render_core_error(&err)
-            );
+            eprintln!("✗ Failed to remove dependency: {}", render_core_error(&err));
             Ok(1)
         }
     }

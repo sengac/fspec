@@ -30,8 +30,8 @@ mod tests {
         let config_str = result.unwrap();
 
         // @step And the thinking type should be "adaptive"
-        let config: serde_json::Value = serde_json::from_str(&config_str)
-            .expect("Should be valid JSON");
+        let config: serde_json::Value =
+            serde_json::from_str(&config_str).expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
             Some("adaptive"),
@@ -56,8 +56,8 @@ mod tests {
         let config_str = result.unwrap();
 
         // @step And the thinking type should be "adaptive"
-        let config: serde_json::Value = serde_json::from_str(&config_str)
-            .expect("Should be valid JSON");
+        let config: serde_json::Value =
+            serde_json::from_str(&config_str).expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
             Some("adaptive"),
@@ -82,8 +82,8 @@ mod tests {
         let config_str = result.unwrap();
 
         // @step And the thinking type should be "enabled" (budgeted)
-        let config: serde_json::Value = serde_json::from_str(&config_str)
-            .expect("Should be valid JSON");
+        let config: serde_json::Value =
+            serde_json::from_str(&config_str).expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
             Some("enabled"),
@@ -109,8 +109,8 @@ mod tests {
         let config_str = result.unwrap();
 
         // @step And the thinking type should be "enabled" (budgeted - not adaptive!)
-        let config: serde_json::Value = serde_json::from_str(&config_str)
-            .expect("Should be valid JSON");
+        let config: serde_json::Value =
+            serde_json::from_str(&config_str).expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
             Some("enabled"),
@@ -135,8 +135,8 @@ mod tests {
         let config_str = result.unwrap();
 
         // @step And the result should be empty object
-        let config: serde_json::Value = serde_json::from_str(&config_str)
-            .expect("Should be valid JSON");
+        let config: serde_json::Value =
+            serde_json::from_str(&config_str).expect("Should be valid JSON");
         assert_eq!(
             config,
             serde_json::json!({}),
@@ -148,7 +148,8 @@ mod tests {
     #[test]
     fn test_napi_model_variant_inherits_adaptive() {
         // @step Given I call get_thinking_config with model variant "claude-opus-4-6-preview"
-        let result = get_thinking_config("claude-opus-4-6-preview".to_string(), JsThinkingLevel::High);
+        let result =
+            get_thinking_config("claude-opus-4-6-preview".to_string(), JsThinkingLevel::High);
 
         // @step Then the result should be valid JSON
         assert!(result.is_ok(), "Should return valid result");
@@ -157,8 +158,8 @@ mod tests {
         // Default-adaptive: model variants (preview, dated, etc.) inherit adaptive behavior
         // from their base model. "claude-opus-4-6-preview" starts with "claude-" and is not
         // a known budgeted model prefix, so it defaults to adaptive thinking.
-        let config: serde_json::Value = serde_json::from_str(&config_str)
-            .expect("Should be valid JSON");
+        let config: serde_json::Value =
+            serde_json::from_str(&config_str).expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
             Some("adaptive"),
@@ -170,7 +171,10 @@ mod tests {
     #[test]
     fn test_napi_versioned_model_inherits_adaptive() {
         // @step Given I call get_thinking_config with versioned model "claude-opus-4-6-20260201"
-        let result = get_thinking_config("claude-opus-4-6-20260201".to_string(), JsThinkingLevel::High);
+        let result = get_thinking_config(
+            "claude-opus-4-6-20260201".to_string(),
+            JsThinkingLevel::High,
+        );
 
         // @step Then the result should be valid JSON
         assert!(result.is_ok(), "Should return valid result");
@@ -179,8 +183,8 @@ mod tests {
         // Default-adaptive: versioned variants inherit behavior from their base model prefix.
         // "claude-opus-4-6-20260201" starts with "claude-" and is not a known budgeted model,
         // so it defaults to adaptive thinking.
-        let config: serde_json::Value = serde_json::from_str(&config_str)
-            .expect("Should be valid JSON");
+        let config: serde_json::Value =
+            serde_json::from_str(&config_str).expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
             Some("adaptive"),

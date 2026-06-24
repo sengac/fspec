@@ -98,7 +98,10 @@ fn scenario_add_tag_to_scenario_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "add-tag-to-scenario --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-tag-to-scenario --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-tag-to-scenario.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -115,7 +118,11 @@ fn scenario_add_tag_to_scenario_help_matches_ts_formatcommandhelp_reference() {
 fn scenario_cli_successfully_adds_tag_and_prints_success_line() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' with no tags
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_no_tags());
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_no_tags(),
+    );
 
     // @step When I run `fspec add-tag-to-scenario spec/features/login.feature "Login" @smoke` in that tempdir
     let (code, stdout, stderr) = run_add(
@@ -148,7 +155,11 @@ fn scenario_cli_successfully_adds_tag_and_prints_success_line() {
 fn scenario_cli_rejects_duplicate_tag_with_exit_1_and_error_prefix() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' tagged @smoke
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_with_tags(&["@smoke"]));
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_with_tags(&["@smoke"]),
+    );
     let pre = fs::read(ws.path().join("spec/features/login.feature")).unwrap();
 
     // @step When I run `fspec add-tag-to-scenario spec/features/login.feature "Login" @smoke` in that tempdir
@@ -161,7 +172,10 @@ fn scenario_cli_rejects_duplicate_tag_with_exit_1_and_error_prefix() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:' prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:' prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Tag @smoke already exists on this scenario'
     assert!(
@@ -182,12 +196,21 @@ fn scenario_cli_rejects_duplicate_tag_with_exit_1_and_error_prefix() {
 fn scenario_cli_variadic_positional_collects_multiple_tags() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' with no tags
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_no_tags());
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_no_tags(),
+    );
 
     // @step When I run `fspec add-tag-to-scenario spec/features/login.feature "Login" @critical @regression` in that tempdir
     let (code, stdout, stderr) = run_add(
         ws.path(),
-        &["spec/features/login.feature", "Login", "@critical", "@regression"],
+        &[
+            "spec/features/login.feature",
+            "Login",
+            "@critical",
+            "@regression",
+        ],
     );
 
     // @step Then the exit code is 0
@@ -215,7 +238,11 @@ fn scenario_cli_variadic_positional_collects_multiple_tags() {
 fn scenario_cli_validate_registry_rejects_unregistered_tag() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' with no tags and spec/tags.json that does NOT register @unregistered
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_no_tags());
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_no_tags(),
+    );
     write_tags_json(
         ws.path(),
         r#"{
@@ -259,25 +286,36 @@ fn scenario_cli_validate_registry_rejects_unregistered_tag() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' with no tags
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_no_tags());
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_no_tags(),
+    );
 
     // @step When I dispatch add-tag-to-scenario via fspec_core::dispatch::dispatch_command with file='spec/features/login.feature' scenario='Login' tags=['@smoke']
     let req = codelet_fspec_core::DispatchRequest {
         command: "add-tag-to-scenario".to_string(),
-        args_json: r#"{"file":"spec/features/login.feature","scenario":"Login","tags":["@smoke"]}"#.to_string(),
+        args_json: r#"{"file":"spec/features/login.feature","scenario":"Login","tags":["@smoke"]}"#
+            .to_string(),
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-tag-to-scenario spec/features/login.feature "Login" @critical` afterwards exits 0
     let (code, stdout, stderr) = run_add(
         ws.path(),
         &["spec/features/login.feature", "Login", "@critical"],
     );
-    assert_eq!(code, 0, "CLI must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/features/login.feature on disk shows '  @smoke' then '  @critical' immediately above the Scenario line
     let body = read_feature(ws.path(), "spec/features/login.feature");

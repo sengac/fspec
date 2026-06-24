@@ -13,9 +13,9 @@ use serde_json::json;
 use tempfile::TempDir;
 
 use codelet_core::lifecycle_hooks::{
-    CompiledHookCommand, CompiledHookDefinition, CompiledHookGroup, CompiledLifecycleHooks,
-    HookContext, HookMatcher, PreToolHookDecision, run_post_tool, run_pre_tool,
-    run_session_end, run_session_start,
+    run_post_tool, run_pre_tool, run_session_end, run_session_start, CompiledHookCommand,
+    CompiledHookDefinition, CompiledHookGroup, CompiledLifecycleHooks, HookContext, HookMatcher,
+    PreToolHookDecision,
 };
 
 // ===== Helpers =====
@@ -154,10 +154,10 @@ async fn test_hook_receives_json_payload_on_stdin() {
     let _outcome = run_pre_tool(&hooks, &ctx, "Bash", &tool_input).await;
 
     // @step Then the hook should receive a JSON payload on stdin containing:
-    let captured = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("reading capture file: {e}"));
-    let payload: serde_json::Value = serde_json::from_str(&captured)
-        .unwrap_or_else(|e| panic!("parsing payload JSON: {e}"));
+    let captured =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("reading capture file: {e}"));
+    let payload: serde_json::Value =
+        serde_json::from_str(&captured).unwrap_or_else(|e| panic!("parsing payload JSON: {e}"));
 
     assert_eq!(payload["hook_event_name"], "PreToolUse");
     assert_eq!(payload["tool_name"], "Bash");
@@ -174,15 +174,18 @@ async fn test_hook_receives_environment_variables() {
     let ctx = make_context(tmp.path());
 
     // @step Given a spec/fspec-hooks.json with a "session_start" hook that writes env vars to a file
-    let cmd = format!("printenv | grep FSPEC_ | sort > '{}'", capture_file.display());
+    let cmd = format!(
+        "printenv | grep FSPEC_ | sort > '{}'",
+        capture_file.display()
+    );
     let hooks = make_session_start_hooks(&cmd, 10);
 
     // @step When the session_start hook executes
     let _outcome = run_session_start(&hooks, &ctx, "startup").await;
 
     // @step Then the hook process should have FSPEC_PROJECT_DIR set to the workspace path
-    let captured = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("reading env capture: {e}"));
+    let captured =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("reading env capture: {e}"));
 
     assert!(
         captured.contains(&format!("FSPEC_PROJECT_DIR={}", tmp.path().display())),
@@ -227,20 +230,20 @@ async fn test_session_start_payload_includes_source() {
     let _outcome = run_session_start(&hooks, &ctx, "startup").await;
 
     // @step Then the hook payload should include source "startup"
-    let captured = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("reading capture: {e}"));
-    let payload: serde_json::Value = serde_json::from_str(&captured)
-        .unwrap_or_else(|e| panic!("parsing JSON: {e}"));
+    let captured =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("reading capture: {e}"));
+    let payload: serde_json::Value =
+        serde_json::from_str(&captured).unwrap_or_else(|e| panic!("parsing JSON: {e}"));
     assert_eq!(payload["source"], "startup");
 
     // @step When a session is resumed
     let _outcome = run_session_start(&hooks, &ctx, "resume").await;
 
     // @step Then the hook payload should include source "resume"
-    let captured = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("reading capture: {e}"));
-    let payload: serde_json::Value = serde_json::from_str(&captured)
-        .unwrap_or_else(|e| panic!("parsing JSON: {e}"));
+    let captured =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("reading capture: {e}"));
+    let payload: serde_json::Value =
+        serde_json::from_str(&captured).unwrap_or_else(|e| panic!("parsing JSON: {e}"));
     assert_eq!(payload["source"], "resume");
 }
 
@@ -257,14 +260,13 @@ async fn test_post_tool_use_payload_includes_tool_response() {
 
     // @step When the agent invokes the "Read" tool and it returns file contents
     let tool_input = json!({"file_path": "/tmp/test.txt"});
-    let _outcome =
-        run_post_tool(&hooks, &ctx, "Read", &tool_input, "file contents here").await;
+    let _outcome = run_post_tool(&hooks, &ctx, "Read", &tool_input, "file contents here").await;
 
     // @step Then the post_tool_use hook should receive a payload containing tool_name, tool_input, and tool_response
-    let captured = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("reading capture: {e}"));
-    let payload: serde_json::Value = serde_json::from_str(&captured)
-        .unwrap_or_else(|e| panic!("parsing JSON: {e}"));
+    let captured =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("reading capture: {e}"));
+    let payload: serde_json::Value =
+        serde_json::from_str(&captured).unwrap_or_else(|e| panic!("parsing JSON: {e}"));
 
     assert_eq!(payload["hook_event_name"], "PostToolUse");
     assert_eq!(payload["tool_name"], "Read");
@@ -287,10 +289,10 @@ async fn test_session_end_payload_includes_reason() {
     let _outcome = run_session_end(&hooks, &ctx, "cancelled").await;
 
     // @step Then the hook payload should include reason "cancelled"
-    let captured = fs::read_to_string(&capture_file)
-        .unwrap_or_else(|e| panic!("reading capture: {e}"));
-    let payload: serde_json::Value = serde_json::from_str(&captured)
-        .unwrap_or_else(|e| panic!("parsing JSON: {e}"));
+    let captured =
+        fs::read_to_string(&capture_file).unwrap_or_else(|e| panic!("reading capture: {e}"));
+    let payload: serde_json::Value =
+        serde_json::from_str(&captured).unwrap_or_else(|e| panic!("parsing JSON: {e}"));
     assert_eq!(payload["reason"], "cancelled");
 }
 
@@ -415,8 +417,7 @@ async fn test_exit_code_2_with_stderr_means_deny() {
     let ctx = make_context(tmp.path());
 
     // @step Given a spec/fspec-hooks.json with a "pre_tool_use" hook that exits with code 2 and stderr "Destructive command blocked"
-    let hooks =
-        make_pre_tool_hooks("echo 'Destructive command blocked' >&2; exit 2", 10);
+    let hooks = make_pre_tool_hooks("echo 'Destructive command blocked' >&2; exit 2", 10);
 
     // @step When the agent tries to execute "rm -rf /"
     let outcome = run_pre_tool(&hooks, &ctx, "Bash", &json!({"command": "rm -rf /"})).await;
@@ -614,8 +615,7 @@ async fn test_session_start_plain_text_context() {
     let ctx = make_context(tmp.path());
 
     // @step Given a spec/fspec-hooks.json with a "session_start" hook that outputs plain text "Remember: use TypeScript only"
-    let hooks =
-        make_session_start_hooks("echo 'Remember: use TypeScript only'", 10);
+    let hooks = make_session_start_hooks("echo 'Remember: use TypeScript only'", 10);
 
     // @step When the session starts
     let outcome = run_session_start(&hooks, &ctx, "startup").await;
@@ -645,8 +645,7 @@ async fn test_post_tool_injects_context() {
     );
 
     // @step When the agent completes a Write tool call
-    let outcome =
-        run_post_tool(&hooks, &ctx, "Write", &json!({}), "file written").await;
+    let outcome = run_post_tool(&hooks, &ctx, "Write", &json!({}), "file written").await;
 
     // @step Then "Lint warning: unused import on line 5" should be injected as a system message
     assert!(

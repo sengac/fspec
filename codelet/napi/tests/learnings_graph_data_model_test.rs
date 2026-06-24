@@ -1,4 +1,10 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::await_holding_lock)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect,
+    clippy::await_holding_lock
+)]
 // Feature: spec/features/learnings-graph-data-model.feature
 //
 // Learnings Graph Data Model & Schema
@@ -6,7 +12,6 @@
 // and registry integration.
 //
 // Each test uses an isolated temp directory to avoid polluting real data.
-
 
 use codelet_napi::graph::database::GraphDatabase;
 use codelet_napi::graph::registry;
@@ -78,7 +83,10 @@ async fn test_initialize_learnings_graph_database_with_schema() {
         .expect("Learnings graph init should succeed");
 
     // @step Then the database should be created at "~/.fspec/graph/learnings.nano/"
-    assert!(db_path.exists(), "Database directory should exist after init");
+    assert!(
+        db_path.exists(),
+        "Database directory should exist after init"
+    );
     assert!(
         db_path.join("schema.ir.json").exists(),
         "schema.ir.json should exist"
@@ -170,7 +178,11 @@ async fn test_load_batch_learning_and_exploration_nodes_via_jsonl() {
         .await
         .expect("all_learnings query should succeed");
     let learnings_arr = learnings.as_array().expect("Result should be an array");
-    assert_eq!(learnings_arr.len(), 3, "Should have loaded 3 Learning nodes");
+    assert_eq!(
+        learnings_arr.len(),
+        3,
+        "Should have loaded 3 Learning nodes"
+    );
 
     let categories: Vec<&str> = learnings_arr
         .iter()
@@ -191,18 +203,20 @@ async fn test_load_batch_learning_and_exploration_nodes_via_jsonl() {
         .await
         .expect("all_explorations query should succeed");
     let exps_arr = explorations.as_array().expect("Result should be an array");
-    assert_eq!(
-        exps_arr.len(),
-        2,
-        "Should have loaded 2 Exploration nodes"
-    );
+    assert_eq!(exps_arr.len(), 2, "Should have loaded 2 Exploration nodes");
 
     let outcomes: Vec<&str> = exps_arr
         .iter()
         .filter_map(|e| e.get("outcome").and_then(Value::as_str))
         .collect();
-    assert!(outcomes.contains(&"failure"), "Should contain failed exploration");
-    assert!(outcomes.contains(&"success"), "Should contain successful exploration");
+    assert!(
+        outcomes.contains(&"failure"),
+        "Should contain failed exploration"
+    );
+    assert!(
+        outcomes.contains(&"success"),
+        "Should contain successful exploration"
+    );
 
     // @step And no Lance version amplification should occur from the batch load
     let stats = db.stats().expect("Stats should succeed");
@@ -256,15 +270,13 @@ async fn test_load_relationship_edges_and_traverse_connections() {
         .expect("Discovered edge load should succeed");
 
     // @step And I load Supersedes edges between learnings
-    let supersedes_jsonl =
-        r#"{"edge":"Supersedes","from":"registry-pattern","to":"old-pattern","data":{"supersededAt":"2026-03-22T00:00:00","reason":"Registry is cleaner than monolithic singleton"}}"#;
+    let supersedes_jsonl = r#"{"edge":"Supersedes","from":"registry-pattern","to":"old-pattern","data":{"supersededAt":"2026-03-22T00:00:00","reason":"Registry is cleaner than monolithic singleton"}}"#;
     db.load_jsonl(supersedes_jsonl)
         .await
         .expect("Supersedes edge load should succeed");
 
     // @step And I load RelatesTo edges between learnings
-    let relates_jsonl =
-        r#"{"edge":"RelatesTo","from":"batch-load","to":"use-bool","data":{"strength":0.7,"relationType":"uses","firstSeen":"2026-03-22T00:00:00","lastSeen":"2026-03-22T00:00:00"}}"#;
+    let relates_jsonl = r#"{"edge":"RelatesTo","from":"batch-load","to":"use-bool","data":{"strength":0.7,"relationType":"uses","firstSeen":"2026-03-22T00:00:00","lastSeen":"2026-03-22T00:00:00"}}"#;
     db.load_jsonl(relates_jsonl)
         .await
         .expect("RelatesTo edge load should succeed");
@@ -278,7 +290,11 @@ async fn test_load_relationship_edges_and_traverse_connections() {
         .await
         .expect("learning_related query should succeed");
     let related_arr = related.as_array().expect("Related should be an array");
-    assert_eq!(related_arr.len(), 1, "batch-load should relate to 1 learning");
+    assert_eq!(
+        related_arr.len(),
+        1,
+        "batch-load should relate to 1 learning"
+    );
     assert_eq!(
         related_arr[0].get("slug").and_then(Value::as_str),
         Some("use-bool"),
@@ -293,7 +309,9 @@ async fn test_load_relationship_edges_and_traverse_connections() {
         )
         .await
         .expect("exploration_discoveries query should succeed");
-    let disc_arr = discoveries.as_array().expect("Discoveries should be an array");
+    let disc_arr = discoveries
+        .as_array()
+        .expect("Discoveries should be an array");
     assert_eq!(
         disc_arr.len(),
         2,

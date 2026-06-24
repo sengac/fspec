@@ -41,8 +41,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `validate-tags` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut obj = serde_json::Map::new();
     if let Some(f) = &args.file {
@@ -58,15 +57,17 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         }
     };
 
-    let value: Value =
-        serde_json::from_str(&json_text).context("parse core response as JSON")?;
+    let value: Value = serde_json::from_str(&json_text).context("parse core response as JSON")?;
 
     let rendered = validate_tags::render_cli_output(&value, args.verbose, args.summary);
     if !rendered.is_empty() {
         println!("{rendered}");
     }
 
-    let invalid_count = value.get("invalidCount").and_then(Value::as_u64).unwrap_or(0);
+    let invalid_count = value
+        .get("invalidCount")
+        .and_then(Value::as_u64)
+        .unwrap_or(0);
     if invalid_count > 0 {
         Ok(1)
     } else {

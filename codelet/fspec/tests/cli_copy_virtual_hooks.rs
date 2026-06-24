@@ -65,10 +65,7 @@ fn write_workspace(cwd: &Path, units: &[(&str, Option<Vec<serde_json::Value>>)])
     for (id, hooks) in units {
         let mut wu = serde_json::Map::new();
         wu.insert("id".into(), serde_json::json!(id));
-        wu.insert(
-            "title".into(),
-            serde_json::json!(format!("title for {id}")),
-        );
+        wu.insert("title".into(), serde_json::json!(format!("title for {id}")));
         wu.insert("status".into(), serde_json::json!("backlog"));
         wu.insert(
             "createdAt".into(),
@@ -149,7 +146,14 @@ fn scenario_cli_prints_success_message_when_copying_named_hook() {
     // @step When I run `./codelet/target/release/fspec copy-virtual-hooks --from AUTH-001 --to AUTH-002 --hook-name eslint` in that project root
     let (code, stdout, stderr) = run_copy_virtual_hooks(
         ws.path(),
-        &["--from", "AUTH-001", "--to", "AUTH-002", "--hook-name", "eslint"],
+        &[
+            "--from",
+            "AUTH-001",
+            "--to",
+            "AUTH-002",
+            "--hook-name",
+            "eslint",
+        ],
     );
 
     // @step Then the command exits 0
@@ -176,8 +180,7 @@ fn scenario_cli_exits_1_when_from_is_omitted() {
     assert!(!ws.path().join("spec").exists());
 
     // @step When I run `./codelet/target/release/fspec copy-virtual-hooks --to AUTH-002` in that project root
-    let (code, stdout, stderr) =
-        run_copy_virtual_hooks(ws.path(), &["--to", "AUTH-002"]);
+    let (code, stdout, stderr) = run_copy_virtual_hooks(ws.path(), &["--to", "AUTH-002"]);
 
     // @step Then the command exits 1
     assert_eq!(
@@ -203,8 +206,7 @@ fn scenario_cli_exits_1_when_to_is_omitted() {
     assert!(!ws.path().join("spec").exists());
 
     // @step When I run `./codelet/target/release/fspec copy-virtual-hooks --from AUTH-001` in that project root
-    let (code, stdout, stderr) =
-        run_copy_virtual_hooks(ws.path(), &["--from", "AUTH-001"]);
+    let (code, stdout, stderr) = run_copy_virtual_hooks(ws.path(), &["--from", "AUTH-001"]);
 
     // @step Then the command exits 1
     assert_eq!(
@@ -227,10 +229,7 @@ fn scenario_cli_exits_1_when_to_is_omitted() {
 fn scenario_cli_exits_1_when_source_has_no_hooks() {
     // @step Given a project root whose spec/work-units.json contains AUTH-001 with no virtualHooks and AUTH-002 with no virtualHooks
     let ws = tempfile::tempdir().expect("tempdir");
-    write_workspace(
-        ws.path(),
-        &[("AUTH-001", None), ("AUTH-002", None)],
-    );
+    write_workspace(ws.path(), &[("AUTH-001", None), ("AUTH-002", None)]);
 
     // @step When I run `./codelet/target/release/fspec copy-virtual-hooks --from AUTH-001 --to AUTH-002` in that project root
     let (code, stdout, stderr) =
@@ -259,10 +258,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let ws = tempfile::tempdir().expect("tempdir");
     write_workspace(
         ws.path(),
-        &[
-            ("AUTH-001", Some(vec![lint_hook()])),
-            ("AUTH-002", None),
-        ],
+        &[("AUTH-001", Some(vec![lint_hook()])), ("AUTH-002", None)],
     );
 
     // @step When I dispatch copy-virtual-hooks through fspec_core::dispatch::dispatch_command with from='AUTH-001' and to='AUTH-002'
@@ -288,8 +284,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/copy_virtual_hooks.rs contains NO inline rendering, file IO beyond cwd resolution, or work-unit-lookup logic — its only computation is JSON arg marshalling plus the --from/--to presence guard
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/copy_virtual_hooks.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/copy_virtual_hooks.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/copy_virtual_hooks.rs must exist as the CLI bridge module; got missing: {}",
@@ -338,7 +333,10 @@ fn scenario_copy_virtual_hooks_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "copy-virtual-hooks --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "copy-virtual-hooks --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/copy-virtual-hooks.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_CPVH);

@@ -48,8 +48,15 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"]
-    {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
         } else {
@@ -112,7 +119,10 @@ fn scenario_add_domain_event_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step then the exit code is 0
-    assert_eq!(code, 0, "add-domain-event --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-domain-event --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-domain-event.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_ADE);
@@ -156,7 +166,10 @@ fn scenario_cli_appends_domain_event_and_prints_success_line() {
 fn scenario_cli_rejects_duplicate_event_with_exit_1_and_error_prefix() {
     // @step given a project root tempdir with spec/work-units.json containing RPC-179 status=specifying with a non-deleted event "UserRegistered" at id 0
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(ws.path(), &seed_unit_with_event("RPC-179", "specifying", "UserRegistered"));
+    write_work_units(
+        ws.path(),
+        &seed_unit_with_event("RPC-179", "specifying", "UserRegistered"),
+    );
     let pre_bytes = fs::read(ws.path().join("spec/work-units.json")).unwrap();
 
     // @step when I run `fspec add-domain-event RPC-179 "UserRegistered"` in that tempdir
@@ -201,11 +214,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-domain-event RPC-179 "E2"` afterwards exits 0
     let (code, stdout, stderr) = run_add_domain_event(ws.path(), &["RPC-179", "E2"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows RPC-179 eventStorm items has length 2
     let v = read_work_units(ws.path());

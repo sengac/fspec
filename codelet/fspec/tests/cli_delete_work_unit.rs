@@ -41,8 +41,8 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec").join("work-units.json"))
-        .expect("read work-units.json");
+    let raw =
+        fs::read_to_string(cwd.join("spec").join("work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse JSON")
 }
 
@@ -101,7 +101,10 @@ fn scenario_clap_exposes_delete_work_unit_with_arg_and_flags() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "delete-work-unit --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "delete-work-unit --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout describes the delete-work-unit subcommand
     assert!(
@@ -146,7 +149,9 @@ fn scenario_cli_deletes_existing_leaf_work_unit_and_prints_success_line() {
 
     // @step And stdout contains the line '✓ Work unit AUTH-001 deleted successfully'
     assert!(
-        stdout.lines().any(|l| l == "✓ Work unit AUTH-001 deleted successfully"),
+        stdout
+            .lines()
+            .any(|l| l == "✓ Work unit AUTH-001 deleted successfully"),
         "missing success line; got:\n{stdout}"
     );
 
@@ -222,7 +227,9 @@ fn scenario_cli_cascades_dependencies_and_prints_blocks_warning() {
 
     // @step And stdout contains the line '✓ Work unit AUTH-001 deleted successfully'
     assert!(
-        stdout.lines().any(|l| l == "✓ Work unit AUTH-001 deleted successfully"),
+        stdout
+            .lines()
+            .any(|l| l == "✓ Work unit AUTH-001 deleted successfully"),
         "missing success line; got:\n{stdout}"
     );
 
@@ -252,16 +259,28 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `./codelet/target/release/fspec delete-work-unit DASH-001` afterwards exits 0
     let (code, stdout, stderr) = run_delete_work_unit(ws.path(), &["DASH-001"]);
-    assert_eq!(code, 0, "CLI delete must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI delete must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json contains neither AUTH-001 nor DASH-001 work units
     let data = read_work_units(ws.path());
-    assert!(data["workUnits"].get("AUTH-001").is_none(), "AUTH-001 must be gone");
-    assert!(data["workUnits"].get("DASH-001").is_none(), "DASH-001 must be gone");
+    assert!(
+        data["workUnits"].get("AUTH-001").is_none(),
+        "AUTH-001 must be gone"
+    );
+    assert!(
+        data["workUnits"].get("DASH-001").is_none(),
+        "DASH-001 must be gone"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/delete_work_unit.rs contains NO inline file-read, mutation, or rendering logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/delete_work_unit.rs");
@@ -308,7 +327,10 @@ fn scenario_delete_work_unit_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "delete-work-unit --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "delete-work-unit --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/delete-work-unit.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_DWU);

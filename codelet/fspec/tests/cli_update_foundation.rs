@@ -109,7 +109,10 @@ fn scenario_update_foundation_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "update-foundation --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "update-foundation --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/update-foundation.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -239,7 +242,10 @@ fn scenario_cli_rejects_unknown_section_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error: prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error: prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Unknown section: "bogusSection"'
     assert!(
@@ -271,11 +277,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec update-foundation projectVision "Via CLI"` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["projectVision", "Via CLI"]);
-    assert_eq!(code, 0, "CLI update must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI update must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows project.name='Via Dispatcher' and project.vision='Via CLI'
     let v = read_json(&ws.path().join("spec/foundation.json"));

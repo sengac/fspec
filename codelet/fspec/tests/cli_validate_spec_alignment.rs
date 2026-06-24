@@ -125,7 +125,10 @@ fn scenario_cli_exits_1_and_prints_the_warning_when_no_scenarios_are_tagged() {
     assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}");
 
     // @step And stderr contains the substring 'No scenarios for AUTH-001'
-    assert!(stderr.contains("No scenarios for AUTH-001"), "stderr:\n{stderr}");
+    assert!(
+        stderr.contains("No scenarios for AUTH-001"),
+        "stderr:\n{stderr}"
+    );
 }
 
 #[test]
@@ -164,7 +167,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_json: Value =
         serde_json::from_str(&result.data).expect("dispatcher data must be JSON");
 
@@ -184,8 +190,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/validate_spec_alignment.rs contains NO inline scan logic — its only computation is JSON arg marshalling and stdout/stderr printing
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/validate_spec_alignment.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/validate_spec_alignment.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/validate_spec_alignment.rs must exist as the CLI bridge module"
@@ -237,7 +242,10 @@ fn scenario_validate_spec_alignment_help_matches_ts_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "validate-spec-alignment --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "validate-spec-alignment --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/validate-spec-alignment.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

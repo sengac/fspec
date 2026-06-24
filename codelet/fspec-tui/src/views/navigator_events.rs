@@ -68,8 +68,19 @@ impl Navigator {
                 EventResult::consumed()
             }
             ModelSelectorEvent::Emit(action) => {
+                tracing::info!(
+                    target: "model_select",
+                    action = ?action,
+                    has_tx = self.action_tx.is_some(),
+                    "[MODEL-SELECT] navigator relaying Emit onto action bus"
+                );
                 if let Some(tx) = self.action_tx.as_ref() {
-                    let _ = tx.send(action);
+                    let send_res = tx.send(action);
+                    tracing::info!(
+                        target: "model_select",
+                        ok = send_res.is_ok(),
+                        "[MODEL-SELECT] navigator action_tx.send result"
+                    );
                 }
                 EventResult::consumed()
             }

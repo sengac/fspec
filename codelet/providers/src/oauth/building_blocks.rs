@@ -143,8 +143,7 @@ fn build_crypto_module() -> RhaiModule {
         "base64url_encode",
         |data: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
             use base64::Engine;
-            let encoded =
-                base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(data.as_bytes());
+            let encoded = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(data.as_bytes());
             Ok(Dynamic::from(encoded))
         },
     );

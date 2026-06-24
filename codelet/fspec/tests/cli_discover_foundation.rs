@@ -112,14 +112,19 @@ fn cli_creates_the_draft_and_prints_next_steps_guidance() {
     assert_eq!(code, 0, "expected exit 0; stdout={stdout}");
 
     // @step And stdout contains "✓ Generated spec/foundation.json.draft"
-    assert!(stdout.contains("✓ Generated spec/foundation.json.draft"), "stdout={stdout}");
+    assert!(
+        stdout.contains("✓ Generated spec/foundation.json.draft"),
+        "stdout={stdout}"
+    );
 
     // @step And stdout contains "Next steps:"
     assert!(stdout.contains("Next steps:"), "stdout={stdout}");
 
     // @step And stdout contains "1. Use fspec update-foundation commands to fill [QUESTION: ...] placeholders"
     assert!(
-        stdout.contains("1. Use fspec update-foundation commands to fill [QUESTION: ...] placeholders"),
+        stdout.contains(
+            "1. Use fspec update-foundation commands to fill [QUESTION: ...] placeholders"
+        ),
         "stdout={stdout}"
     );
 
@@ -143,10 +148,16 @@ fn cli_fails_when_draft_already_exists_without_force() {
     assert_eq!(code, 1, "expected exit 1; stdout={stdout} stderr={stderr}");
 
     // @step And stderr contains "✗ Failed to create draft"
-    assert!(stderr.contains("✗ Failed to create draft"), "stderr={stderr}");
+    assert!(
+        stderr.contains("✗ Failed to create draft"),
+        "stderr={stderr}"
+    );
 
     // @step And stdout contains "ERROR: foundation.json.draft already exists!"
-    assert!(stdout.contains("ERROR: foundation.json.draft already exists!"), "stdout={stdout}");
+    assert!(
+        stdout.contains("ERROR: foundation.json.draft already exists!"),
+        "stdout={stdout}"
+    );
 }
 
 #[test]
@@ -162,10 +173,16 @@ fn cli_finalize_success_prints_generated_foundation_lines() {
     assert_eq!(code, 0, "expected exit 0; stdout={stdout} stderr={stderr}");
 
     // @step And stdout contains "✓ Generated spec/foundation.json"
-    assert!(stdout.contains("✓ Generated spec/foundation.json"), "stdout={stdout}");
+    assert!(
+        stdout.contains("✓ Generated spec/foundation.json"),
+        "stdout={stdout}"
+    );
 
     // @step And stdout contains "✓ Foundation discovered and validated successfully"
-    assert!(stdout.contains("✓ Foundation discovered and validated successfully"), "stdout={stdout}");
+    assert!(
+        stdout.contains("✓ Foundation discovered and validated successfully"),
+        "stdout={stdout}"
+    );
 }
 
 #[test]
@@ -181,7 +198,10 @@ fn cli_finalize_failure_on_incomplete_draft_exits_1_with_validation_errors() {
     assert_eq!(code, 1, "expected exit 1; stdout={stdout} stderr={stderr}");
 
     // @step And stderr contains "✗ Foundation validation failed"
-    assert!(stderr.contains("✗ Foundation validation failed"), "stderr={stderr}");
+    assert!(
+        stderr.contains("✗ Foundation validation failed"),
+        "stderr={stderr}"
+    );
 
     // @step And stderr contains "Cannot finalize: draft still has unfilled placeholder fields"
     assert!(
@@ -208,7 +228,10 @@ fn cli_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then stdout is byte-for-byte identical to tests/fixtures/help/discover-foundation.txt
-    assert_eq!(code, 0, "discover-foundation --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "discover-foundation --help must exit 0; stderr={stderr}"
+    );
     assert_eq!(stdout, TS_HELP_FIXTURE);
 }
 
@@ -232,10 +255,16 @@ fn cli_bridge_delegates_to_same_fspec_core_function_as_dispatcher() {
     });
     assert!(result.success, "dispatcher path failed: {result:?}");
     let (code, stdout, stderr) = run_cmd(tmp_binary.path(), &[]);
-    assert_eq!(code, 0, "binary path must exit 0; stdout={stdout} stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "binary path must exit 0; stdout={stdout} stderr={stderr}"
+    );
 
     // @step Then both invocations produce the same draft content on disk
     let dispatch_draft = read_to_string(&tmp_dispatch.path().join("spec/foundation.json.draft"));
     let binary_draft = read_to_string(&tmp_binary.path().join("spec/foundation.json.draft"));
-    assert_eq!(dispatch_draft, binary_draft, "both front doors must write identical drafts");
+    assert_eq!(
+        dispatch_draft, binary_draft,
+        "both front doors must write identical drafts"
+    );
 }

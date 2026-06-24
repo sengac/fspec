@@ -49,8 +49,7 @@ async fn scenario_daemon_emits_the_port_on_stdout_rpc_005_contract_verbatim() {
     // codelet/rpc-server/tests/common/mod.rs::spawn_rpc_server_with_workspace.)
 
     // @step When the test connects a `WebSocketFspecBackend` to `ws://127.0.0.1:<that-port>`
-    let url = Url::parse(&format!("ws://127.0.0.1:{port}"))
-        .expect("parse ws url");
+    let url = Url::parse(&format!("ws://127.0.0.1:{port}")).expect("parse ws url");
     let backend = WebSocketFspecBackend::connect(url)
         .await
         .expect("connect WebSocketFspecBackend to fspec daemon");
@@ -72,8 +71,7 @@ async fn scenario_daemon_emits_the_port_on_stdout_rpc_005_contract_verbatim() {
 fn scenario_daemon_does_not_call_ratatui_init() {
     // @step Given the file `codelet/fspec/src/daemon.rs` exists
     let daemon_rs = fspec_crate_root().join("src").join("daemon.rs");
-    let body = std::fs::read_to_string(&daemon_rs)
-        .expect("read codelet/fspec/src/daemon.rs");
+    let body = std::fs::read_to_string(&daemon_rs).expect("read codelet/fspec/src/daemon.rs");
     let stripped = strip_comments(&body);
 
     // @step Then it contains no occurrence of `ratatui::init`
@@ -104,8 +102,7 @@ fn scenario_daemon_does_not_call_ratatui_init() {
 fn scenario_daemon_keeps_stderr_fmt_tracing_subscriber_rpc_005_pattern() {
     // @step Given the file `codelet/fspec/src/daemon.rs` exists
     let daemon_rs = fspec_crate_root().join("src").join("daemon.rs");
-    let body = std::fs::read_to_string(&daemon_rs)
-        .expect("read codelet/fspec/src/daemon.rs");
+    let body = std::fs::read_to_string(&daemon_rs).expect("read codelet/fspec/src/daemon.rs");
 
     // @step Then it calls `common::init_tracing_daemon()` exactly once
     let calls = body.matches("init_tracing_daemon(").count();
@@ -116,8 +113,8 @@ fn scenario_daemon_keeps_stderr_fmt_tracing_subscriber_rpc_005_pattern() {
 
     // @step And the `init_tracing_daemon()` body in `common.rs` registers a `tracing_subscriber::fmt` layer that writes to `std::io::stderr`
     let common_rs = fspec_crate_root().join("src").join("common.rs");
-    let common_body = std::fs::read_to_string(&common_rs)
-        .expect("read codelet/fspec/src/common.rs");
+    let common_body =
+        std::fs::read_to_string(&common_rs).expect("read codelet/fspec/src/common.rs");
     assert!(
         common_body.contains("init_tracing_daemon"),
         "common.rs must define init_tracing_daemon"
@@ -133,8 +130,7 @@ fn scenario_daemon_keeps_stderr_fmt_tracing_subscriber_rpc_005_pattern() {
 
     // @step And the same body also registers the LogEvent broadcast layer from `codelet_rpc::register_log_layer`
     assert!(
-        common_body.contains("register_log_layer")
-            || common_body.contains("BroadcastLogLayer"),
+        common_body.contains("register_log_layer") || common_body.contains("BroadcastLogLayer"),
         "init_tracing_daemon must wire codelet_rpc::register_log_layer / BroadcastLogLayer"
     );
 }
@@ -198,10 +194,11 @@ async fn scenario_bind_127_0_0_1_8080_succeeds_custom_loopback_port() {
 
     // @step And the test can connect a WebSocketFspecBackend to `ws://127.0.0.1:8080`
     let url = Url::parse("ws://127.0.0.1:8080").unwrap();
-    let _backend = tokio::time::timeout(Duration::from_secs(5), WebSocketFspecBackend::connect(url))
-        .await
-        .expect("connect timeout")
-        .expect("connect ws://127.0.0.1:8080");
+    let _backend =
+        tokio::time::timeout(Duration::from_secs(5), WebSocketFspecBackend::connect(url))
+            .await
+            .expect("connect timeout")
+            .expect("connect ws://127.0.0.1:8080");
 }
 
 #[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]

@@ -15,8 +15,7 @@ use std::path::Path;
 /// @returns Array of file paths (relative to repository root) that are staged
 #[napi]
 pub fn get_staged_files(dir: String) -> napi::Result<Vec<String>> {
-    codelet_git::get_staged_files(&dir)
-        .map_err(|e| napi::Error::from_reason(e.to_string()))
+    codelet_git::get_staged_files(&dir).map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 /// Get list of unstaged files (modified files not yet staged)
@@ -25,8 +24,7 @@ pub fn get_staged_files(dir: String) -> napi::Result<Vec<String>> {
 /// @returns Array of file paths that have unstaged modifications
 #[napi]
 pub fn get_unstaged_files(dir: String) -> napi::Result<Vec<String>> {
-    codelet_git::get_unstaged_files(&dir)
-        .map_err(|e| napi::Error::from_reason(e.to_string()))
+    codelet_git::get_unstaged_files(&dir).map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 /// Get list of untracked files (files not tracked by git)
@@ -35,8 +33,7 @@ pub fn get_unstaged_files(dir: String) -> napi::Result<Vec<String>> {
 /// @returns Array of file paths that are not tracked by git
 #[napi]
 pub fn get_untracked_files(dir: String) -> napi::Result<Vec<String>> {
-    codelet_git::get_untracked_files(&dir)
-        .map_err(|e| napi::Error::from_reason(e.to_string()))
+    codelet_git::get_untracked_files(&dir).map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 /// Get unified diff for a file comparing working directory to HEAD
@@ -46,8 +43,7 @@ pub fn get_untracked_files(dir: String) -> napi::Result<Vec<String>> {
 /// @returns Unified diff string, or null if no changes
 #[napi]
 pub fn get_file_diff(dir: String, filepath: String) -> napi::Result<Option<String>> {
-    codelet_git::get_file_diff(&dir, &filepath)
-        .map_err(|e| napi::Error::from_reason(e.to_string()))
+    codelet_git::get_file_diff(&dir, &filepath).map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 /// Get unified diff for a single file between HEAD and a checkpoint commit
@@ -75,8 +71,7 @@ pub fn get_checkpoint_file_diff(
 /// @returns Branch name, or undefined if in detached HEAD state
 #[napi]
 pub fn get_current_branch(dir: String) -> napi::Result<Option<String>> {
-    codelet_git::get_current_branch(&dir)
-        .map_err(|e| napi::Error::from_reason(e.to_string()))
+    codelet_git::get_current_branch(&dir).map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 // =============================================================================
@@ -119,7 +114,10 @@ pub struct WorktreeInfoJs {
 /// @param sessionId - Unique session identifier
 /// @returns WorktreeCreateResult with worktree info and metadata
 #[napi]
-pub fn create_worktree(repo_path: String, session_id: String) -> napi::Result<WorktreeCreateResultJs> {
+pub fn create_worktree(
+    repo_path: String,
+    session_id: String,
+) -> napi::Result<WorktreeCreateResultJs> {
     let result = codelet_git::create_worktree(&repo_path, &session_id)
         .map_err(|e| napi::Error::from_reason(e.to_string()))?;
 
@@ -145,12 +143,9 @@ pub fn create_worktree_at_ref(
     session_id: String,
     commit_ref: Option<String>,
 ) -> napi::Result<WorktreeCreateResultJs> {
-    let result = codelet_git::create_worktree_at_ref(
-        &repo_path,
-        &session_id,
-        commit_ref.as_deref(),
-    )
-    .map_err(|e| napi::Error::from_reason(e.to_string()))?;
+    let result =
+        codelet_git::create_worktree_at_ref(&repo_path, &session_id, commit_ref.as_deref())
+            .map_err(|e| napi::Error::from_reason(e.to_string()))?;
 
     Ok(WorktreeCreateResultJs {
         session_id: result.info.session_id,
@@ -356,15 +351,9 @@ pub fn restore_ghost_checkpoint(
 /// @param workUnitId - Work unit identifier
 /// @returns Array of checkpoint names
 #[napi]
-pub fn list_ghost_checkpoints(
-    dir: String,
-    work_unit_id: String,
-) -> napi::Result<Vec<String>> {
-    codelet_git::ghost_commit::list_ghost_checkpoints(
-        Path::new(&dir),
-        &work_unit_id,
-    )
-    .map_err(|e| napi::Error::from_reason(e.to_string()))
+pub fn list_ghost_checkpoints(dir: String, work_unit_id: String) -> napi::Result<Vec<String>> {
+    codelet_git::ghost_commit::list_ghost_checkpoints(Path::new(&dir), &work_unit_id)
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 /// Delete a ghost commit checkpoint
@@ -440,10 +429,7 @@ pub fn get_workspace_info(cwd: String) -> napi::Result<codelet_rpc_types::Worksp
     let git_branch = codelet_git::status::get_current_branch(Path::new(&cwd))
         .ok()
         .flatten();
-    Ok(codelet_rpc_types::WorkspaceInfo {
-        cwd,
-        git_branch,
-    })
+    Ok(codelet_rpc_types::WorkspaceInfo { cwd, git_branch })
 }
 
 // =============================================================================
@@ -457,8 +443,7 @@ pub fn get_workspace_info(cwd: String) -> napi::Result<codelet_rpc_types::Worksp
 /// @returns Hex string of the resolved commit SHA
 #[napi]
 pub fn resolve_ref(dir: String, ref_name: String) -> napi::Result<String> {
-    codelet_git::resolve_ref(&dir, &ref_name)
-        .map_err(|e| napi::Error::from_reason(e.to_string()))
+    codelet_git::resolve_ref(&dir, &ref_name).map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 /// Initialize a new git repository
@@ -488,8 +473,7 @@ pub fn git_set_config(dir: String, key: String, value: String) -> napi::Result<(
 /// @param filepath - Path to the file relative to repository root
 #[napi]
 pub fn git_add(dir: String, filepath: String) -> napi::Result<()> {
-    codelet_git::git_add(&dir, &filepath)
-        .map_err(|e| napi::Error::from_reason(e.to_string()))
+    codelet_git::git_add(&dir, &filepath).map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
 /// Create a commit from the current index
@@ -580,7 +564,7 @@ pub fn list_sessions(
     filter: Option<String>,
 ) -> napi::Result<Vec<SessionInfoJs>> {
     let active_set: HashSet<String> = active_sessions.into_iter().collect();
-    
+
     let session_filter = match filter.as_deref() {
         Some("active") => codelet_git::SessionFilter::Active,
         Some("pending_merge") => codelet_git::SessionFilter::PendingMerge,
@@ -588,10 +572,10 @@ pub fn list_sessions(
         Some("orphaned") => codelet_git::SessionFilter::Orphaned,
         _ => codelet_git::SessionFilter::All,
     };
-    
+
     let sessions = codelet_git::list_sessions(&repo_path, &active_set, session_filter)
         .map_err(|e| napi::Error::from_reason(e.to_string()))?;
-    
+
     Ok(sessions
         .into_iter()
         .map(|s| SessionInfoJs {
@@ -616,7 +600,7 @@ pub fn list_sessions(
 pub fn inspect_session(repo_path: String, session_id: String) -> napi::Result<SessionResultJs> {
     let result = codelet_git::inspect_session(&repo_path, &session_id)
         .map_err(|e| napi::Error::from_reason(e.to_string()))?;
-    
+
     Ok(SessionResultJs {
         session_id: result.session_id,
         diff: result.diff,
@@ -640,7 +624,7 @@ pub fn inspect_session(repo_path: String, session_id: String) -> napi::Result<Se
 pub fn merge_session(repo_path: String, session_id: String) -> napi::Result<MergeResultJs> {
     let result = codelet_git::merge_session(&repo_path, &session_id)
         .map_err(|e| napi::Error::from_reason(e.to_string()))?;
-    
+
     Ok(MergeResultJs {
         session_id: result.session_id,
         files_modified: result.files_modified,
@@ -661,7 +645,7 @@ pub fn merge_session(repo_path: String, session_id: String) -> napi::Result<Merg
 pub fn discard_session(repo_path: String, session_id: String) -> napi::Result<DiscardResultJs> {
     let result = codelet_git::discard_session(&repo_path, &session_id)
         .map_err(|e| napi::Error::from_reason(e.to_string()))?;
-    
+
     Ok(DiscardResultJs {
         session_id: result.session_id,
         files_discarded: result.files_discarded as u32,
@@ -682,10 +666,10 @@ pub fn prune_orphaned(
     active_sessions: Vec<String>,
 ) -> napi::Result<PruneResultJs> {
     let active_set: HashSet<String> = active_sessions.into_iter().collect();
-    
+
     let result = codelet_git::prune_orphaned(&repo_path, &active_set)
         .map_err(|e| napi::Error::from_reason(e.to_string()))?;
-    
+
     Ok(PruneResultJs {
         count: result.count as u32,
         pruned: result.pruned,

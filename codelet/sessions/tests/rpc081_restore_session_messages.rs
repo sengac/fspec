@@ -121,13 +121,19 @@ async fn restore_messages_replays_user_and_assistant_text_into_inner_and_output(
     // @step When restore_session_messages is invoked with those two envelopes via SessionManagerHandle
     let handle: &dyn SessionManagerHandle = &*manager;
     let result = handle.restore_session_messages(&sid, vec![user_env, assistant_env]);
-    assert!(result.is_ok(), "restore_session_messages must succeed: {result:?}");
+    assert!(
+        result.is_ok(),
+        "restore_session_messages must succeed: {result:?}"
+    );
 
     // @step Then session.inner.lock().await.messages.len() equals 2 (post-restoration delta)
     let session = manager.get_session(&sid.value).expect("session must exist");
     let inner = session.inner.lock().await;
     let added = inner.messages.len() - baseline_len;
-    assert_eq!(added, 2, "expected 2 rig messages to be appended, got {added}");
+    assert_eq!(
+        added, 2,
+        "expected 2 rig messages to be appended, got {added}"
+    );
     let restored = &inner.messages[baseline_len..];
 
     // @step And the first inner message is a rig::message::Message::User whose joined text equals "hello"
@@ -177,10 +183,16 @@ async fn restore_messages_replays_user_and_assistant_text_into_inner_and_output(
             _ => None,
         })
         .collect();
-    let done_count = chunks.iter().filter(|c| matches!(c, StreamChunk::Done)).count();
+    let done_count = chunks
+        .iter()
+        .filter(|c| matches!(c, StreamChunk::Done))
+        .count();
     assert_eq!(user_inputs, vec!["hello"], "UserInput chunks mismatch");
     assert_eq!(texts, vec!["hi back"], "Text chunks mismatch");
-    assert!(done_count >= 1, "expected at least one Done chunk, got {done_count}");
+    assert!(
+        done_count >= 1,
+        "expected at least one Done chunk, got {done_count}"
+    );
 }
 
 // ============================================================================
@@ -217,7 +229,10 @@ async fn restore_messages_replays_assistant_thinking_text_and_tool_use() {
     // @step When restore_session_messages is invoked with that envelope via SessionManagerHandle
     let handle: &dyn SessionManagerHandle = &*manager;
     let result = handle.restore_session_messages(&sid, vec![envelope]);
-    assert!(result.is_ok(), "restore_session_messages must succeed: {result:?}");
+    assert!(
+        result.is_ok(),
+        "restore_session_messages must succeed: {result:?}"
+    );
 
     // @step Then the broadcasted StreamChunks for that session are, in order, Thinking("hmm"), Text("reading"), ToolCall{...}, Done
     let chunks = drain_chunks_for(&mut chunks_rx, &sid.value, Duration::from_secs(2)).await;
@@ -314,7 +329,10 @@ async fn restore_messages_replays_tool_result_without_appending_inner() {
     // @step When restore_session_messages is invoked with that envelope via SessionManagerHandle
     let handle: &dyn SessionManagerHandle = &*manager;
     let result = handle.restore_session_messages(&sid, vec![envelope]);
-    assert!(result.is_ok(), "restore_session_messages must succeed: {result:?}");
+    assert!(
+        result.is_ok(),
+        "restore_session_messages must succeed: {result:?}"
+    );
 
     // @step Then the broadcasted StreamChunks for that session contain a ToolResult with tool_call_id "t1" and content "contents" and is_error false
     let chunks = drain_chunks_for(&mut chunks_rx, &sid.value, Duration::from_secs(1)).await;
@@ -325,7 +343,11 @@ async fn restore_messages_replays_tool_result_without_appending_inner() {
             _ => None,
         })
         .collect();
-    assert_eq!(tool_results.len(), 1, "expected exactly one ToolResult chunk");
+    assert_eq!(
+        tool_results.len(),
+        1,
+        "expected exactly one ToolResult chunk"
+    );
     let tr = tool_results[0];
     assert_eq!(tr.tool_call_id, "t1");
     assert_eq!(tr.content, "contents");
@@ -370,7 +392,10 @@ async fn restore_messages_skips_system_reminder_envelopes_silently() {
     // @step When restore_session_messages is invoked with that envelope via SessionManagerHandle
     let handle: &dyn SessionManagerHandle = &*manager;
     let result = handle.restore_session_messages(&sid, vec![envelope]);
-    assert!(result.is_ok(), "restore_session_messages must succeed: {result:?}");
+    assert!(
+        result.is_ok(),
+        "restore_session_messages must succeed: {result:?}"
+    );
 
     // @step Then session.inner.lock().await.messages.len() equals 0 (delta from baseline)
     let session = manager.get_session(&sid.value).expect("session must exist");

@@ -73,11 +73,13 @@ impl CopilotProvider {
         access_token: String,
         model: &str,
     ) -> Result<Self, ProviderError> {
-        let auth =
-            CopilotAuthJson::from_github_oauth_token(access_token, match &deployment {
+        let auth = CopilotAuthJson::from_github_oauth_token(
+            access_token,
+            match &deployment {
                 CopilotDeploymentType::GitHubCom => None,
                 CopilotDeploymentType::Enterprise { host } => Some(host.clone()),
-            });
+            },
+        );
         Self::from_auth(deployment, auth, model)
     }
 
@@ -110,9 +112,7 @@ impl CopilotProvider {
 
         // PROV-057: prefer the endpoints_api URL from the token exchange.
         let base_url = match auth.endpoints_api.as_deref() {
-            Some(api) if !api.is_empty() => {
-                CopilotBaseUrl::from_string(api.to_string())
-            }
+            Some(api) if !api.is_empty() => CopilotBaseUrl::from_string(api.to_string()),
             _ => base_url_for(&deployment),
         };
 
@@ -138,8 +138,7 @@ impl CopilotProvider {
 
         // PROV-057 Layer 2: keep a cloneable handle for the NAPI DeepSearch
         // `build_and_run!` macro path.
-        let completion_model =
-            openai::completion::CompletionModel::new(rig_client.clone(), model);
+        let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model);
 
         Ok(Self {
             deployment,

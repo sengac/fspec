@@ -71,7 +71,10 @@ fn scenario_validate_hooks_help_matches_ts_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "validate-hooks --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "validate-hooks --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/validate-hooks.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_VH);
@@ -182,7 +185,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 
     // @step Then both paths agree the configuration is invalid

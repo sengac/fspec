@@ -198,8 +198,5 @@ fn test_isolated_session_info_is_importable() {
     // Verify we can create instances
     let info = IsolatedSessionInfo::new_non_isolated("/project");
     assert!(!info.is_isolated());
-    assert_eq!(
-        info.effective_cwd(),
-        std::path::PathBuf::from("/project")
-    );
+    assert_eq!(info.effective_cwd(), std::path::PathBuf::from("/project"));
 }

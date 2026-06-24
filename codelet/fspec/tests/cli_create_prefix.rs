@@ -147,8 +147,8 @@ fn scenario_cli_creates_prefixes_file_and_prints_success() {
     );
 
     // @step Then spec/prefixes.json contains a top-level prefixes object with an AUTH key whose description is 'Auth features'
-    let on_disk: serde_json::Value = serde_json::from_str(&read_prefixes_raw(ws.path()))
-        .expect("parse spec/prefixes.json");
+    let on_disk: serde_json::Value =
+        serde_json::from_str(&read_prefixes_raw(ws.path())).expect("parse spec/prefixes.json");
     let auth = &on_disk["prefixes"]["AUTH"];
     assert_eq!(auth["prefix"].as_str(), Some("AUTH"));
     assert_eq!(auth["description"].as_str(), Some("Auth features"));
@@ -168,7 +168,10 @@ fn scenario_cli_rejects_lowercase_prefix() {
     let (code, _stdout, stderr) = run_create_prefix(ws.path(), &["auth", "bad case"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1 on validation failure; stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1 on validation failure; stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring '✗ Failed to create prefix:'
     // Parity with TS `src/commands/create-prefix.ts:83`:
@@ -242,7 +245,10 @@ fn scenario_cli_malformed_prefixes_json_exits_1_with_stderr() {
     let (code, _stdout, stderr) = run_create_prefix(ws.path(), &["AUTH", "Auth features"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1 on malformed prefixes.json; stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1 on malformed prefixes.json; stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring '✗ Failed to create prefix:'
     assert!(
@@ -274,7 +280,10 @@ fn scenario_cli_missing_positional_fails() {
 
     // @step Then stderr contains the substring 'prefix' or 'description'
     assert!(
-        stderr.contains("prefix") || stderr.contains("description") || stderr.contains("PREFIX") || stderr.contains("DESCRIPTION"),
+        stderr.contains("prefix")
+            || stderr.contains("description")
+            || stderr.contains("PREFIX")
+            || stderr.contains("DESCRIPTION"),
         "stderr must complain about the missing argument; got:\n{stderr}"
     );
 
@@ -300,7 +309,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_create_prefix() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );

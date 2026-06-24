@@ -24,9 +24,9 @@ pub mod testing;
 #[cfg(not(feature = "noop"))]
 pub use napi_bindings::*;
 
-use codelet_providers::models::{ModelCache, ModelInfo, ModelRegistry};
 #[cfg(feature = "noop")]
 use codelet_providers::models::ModelsDevResponse;
+use codelet_providers::models::{ModelCache, ModelInfo, ModelRegistry};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -60,8 +60,8 @@ pub(crate) async fn get_registry() -> Result<Arc<ModelRegistry>, String> {
     } // Lock dropped here — safe to do IO without starving readers
 
     // Slow path: build the registry without holding the lock
-    let cache = ModelCache::new()
-        .map_err(|e| format!("Failed to initialize model cache: {}", e))?;
+    let cache =
+        ModelCache::new().map_err(|e| format!("Failed to initialize model cache: {}", e))?;
     let registry = ModelRegistry::new(&cache)
         .await
         .map_err(|e| format!("Failed to load model registry: {}", e))?;
@@ -99,8 +99,8 @@ pub(crate) async fn invalidate_registry_cache() {
 pub(crate) async fn refresh_registry_from_data(data: &ModelsDevResponse) -> Result<(), String> {
     use tokio::fs;
 
-    let cache = ModelCache::new()
-        .map_err(|e| format!("Failed to initialize model cache: {}", e))?;
+    let cache =
+        ModelCache::new().map_err(|e| format!("Failed to initialize model cache: {}", e))?;
 
     let json = serde_json::to_string(data)
         .map_err(|e| format!("Failed to serialize model data: {}", e))?;

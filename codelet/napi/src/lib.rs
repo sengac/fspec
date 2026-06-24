@@ -59,27 +59,27 @@ pub mod navigation;
 //   - session_hooks: NapiSessionManagerHooks + install helper.
 //   - interjection: parse_interjection + Interjection struct.
 #[cfg(not(feature = "noop"))]
-pub mod session_bindings;
-#[cfg(not(feature = "noop"))]
 pub mod agent_loop;
 #[cfg(not(feature = "noop"))]
-pub mod session_hooks;
-#[cfg(not(feature = "noop"))]
-pub mod interjection;
+pub mod bridges;
 #[cfg(not(feature = "noop"))]
 pub mod footer_poller;
 #[cfg(not(feature = "noop"))]
+pub mod interjection;
+#[cfg(not(feature = "noop"))]
 pub mod persist;
 #[cfg(not(feature = "noop"))]
-pub mod bridges;
+pub mod session_bindings;
+#[cfg(not(feature = "noop"))]
+pub mod session_hooks;
+#[cfg(not(feature = "noop"))]
+mod simple_test;
 #[cfg(not(feature = "noop"))]
 mod thinking_config;
 #[cfg(not(feature = "noop"))]
 mod thinking_level_detection;
 #[cfg(not(feature = "noop"))]
 mod types;
-#[cfg(not(feature = "noop"))]
-mod simple_test;
 #[cfg(not(feature = "noop"))]
 mod work_units_watcher;
 
@@ -147,17 +147,17 @@ pub use models::*;
 #[cfg(not(feature = "noop"))]
 pub use session_bindings::*;
 #[cfg(not(feature = "noop"))]
+pub use simple_test::*;
+#[cfg(not(feature = "noop"))]
 pub use thinking_config::{
     extract_thinking_text, get_thinking_config, is_thinking_content, JsThinkingLevel,
 };
 #[cfg(not(feature = "noop"))]
 pub use thinking_level_detection::{
-    napi_detect_thinking_level, napi_has_disable_keywords, napi_compute_effective_thinking_level,
+    napi_compute_effective_thinking_level, napi_detect_thinking_level, napi_has_disable_keywords,
 };
 #[cfg(not(feature = "noop"))]
 pub use types::*;
-#[cfg(not(feature = "noop"))]
-pub use simple_test::*;
 #[cfg(not(feature = "noop"))]
 pub use work_units_watcher::*;
 
@@ -284,7 +284,7 @@ mod logging {
     pub fn set_rust_log_callback(env: Env, callback: LogCallback) -> napi::Result<()> {
         // LOG-004: No need to call unref() manually - Weak=true in type handles this
         let _ = env; // Silence unused warning - env was needed for deprecated unref()
-        
+
         // Store the callback
         if let Ok(mut guard) = LOG_CALLBACK.lock() {
             *guard = Some(callback);
@@ -323,7 +323,7 @@ mod logging {
                 *initialized = true;
             }
         }
-        
+
         Ok(())
     }
 }

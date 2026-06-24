@@ -48,7 +48,15 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
         } else {
@@ -132,7 +140,9 @@ fn scenario_cli_successfully_appends_command_and_prints_success_line() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 1
     let v = read_work_units(ws.path());
-    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"].as_array().expect("items array");
+    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"]
+        .as_array()
+        .expect("items array");
     assert_eq!(items.len(), 1);
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items[0].text='PlaceOrder'
@@ -195,15 +205,23 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-command AUTH-001 "C2"` afterwards exits 0
     let (code, stdout, stderr) = run_add_command(ws.path(), &["AUTH-001", "C2"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 2
     let v = read_work_units(ws.path());
-    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"].as_array().expect("items array");
+    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"]
+        .as_array()
+        .expect("items array");
     assert_eq!(items.len(), 2);
 
     // @step And the CLI bridge module codelet/fspec/src/add_command.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling

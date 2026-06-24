@@ -15,13 +15,46 @@
 //! passing it through.
 
 use super::nav_item::NavItemKind;
+use super::profile_form_render::FORM_FOOTER;
 use super::row_render::RowKind;
-use super::ProviderSettingsView;
+use super::{DetailSub, ProviderSettingsMode, ProviderSettingsView};
 
 /// The shared suffix appended to every per-row-kind hint. Verbatim copy
 /// of the TS constant at `src/tui/utils/providerSettingsHelpers.ts:11`.
 /// The separator is U+00B7 MIDDLE DOT.
 pub const FOOTER_COMMON: &str = "/ filter · Tab: Switch to models · Esc: close";
+
+/// Compute the full mode-sensitive footer hint for the view. List mode
+/// dispatches on the focused row kind; Detail and form modes use their
+/// dedicated strings.
+pub(super) fn compute_footer_hint(view: &ProviderSettingsView) -> String {
+    match &view.mode {
+        ProviderSettingsMode::List => footer_hint_for(focused_row_kind(view)),
+        ProviderSettingsMode::CreateProfile { .. } | ProviderSettingsMode::EditProfile { .. } => {
+            FORM_FOOTER.to_string()
+        }
+        ProviderSettingsMode::DisconnectOAuth { .. } => "y: confirm · n/Esc: cancel".to_string(),
+        ProviderSettingsMode::OAuthBrowserWaiting { .. }
+        | ProviderSettingsMode::OAuthDeviceWaiting { .. } => "Esc: cancel".to_string(),
+        ProviderSettingsMode::OAuthHeadlessCodeEntry { .. } => {
+            "Enter: submit · c: copy · o: open · Esc: cancel".to_string()
+        }
+        ProviderSettingsMode::OAuthSuccess { .. } => "Enter/Esc: continue".to_string(),
+        ProviderSettingsMode::OAuthError { .. } => "Enter: retry · Esc: back".to_string(),
+        // PROV-114: the github-copilot device preamble modes.
+        ProviderSettingsMode::OAuthDeploymentTypeSelect { .. } => {
+            "↑/↓: select · Enter: continue · Esc: cancel".to_string()
+        }
+        ProviderSettingsMode::OAuthEnterpriseUrlEntry { .. } => {
+            "Enter: continue · Esc: cancel".to_string()
+        }
+        ProviderSettingsMode::Detail { sub, .. } => match sub {
+            DetailSub::Summary { .. } => "r: refresh models · Esc: back".to_string(),
+            DetailSub::EditApiKey { .. } => "Enter: save · Esc: cancel".to_string(),
+            DetailSub::OAuthNotice => "Esc: back".to_string(),
+        },
+    }
+}
 
 /// Return the per-row-kind footer hint with `FOOTER_COMMON` appended.
 ///

@@ -113,7 +113,10 @@ fn print_listing(envelope: &Value) {
             .and_then(Value::as_str)
             .unwrap_or("✗");
         let name = tool.get("name").and_then(Value::as_str).unwrap_or("");
-        let description = tool.get("description").and_then(Value::as_str).unwrap_or("");
+        let description = tool
+            .get("description")
+            .and_then(Value::as_str)
+            .unwrap_or("");
 
         println!("  {indicator} {name}");
         println!("    {description}");

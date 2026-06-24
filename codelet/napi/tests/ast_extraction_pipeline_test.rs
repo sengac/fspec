@@ -113,16 +113,17 @@ export const logout = async (): Promise<void> => {
 
     // @step And each Function node should have a paramCount matching the declaration
     if let Some(GraphEntity::Node { properties, .. }) = login_fn {
-        let param_count = properties
-            .get("paramCount")
-            .and_then(|v| v.as_i64());
+        let param_count = properties.get("paramCount").and_then(|v| v.as_i64());
         assert_eq!(param_count, Some(2), "login should have 2 params");
     }
 
     // @step And a File node should be created for "src/auth/login.ts"
     // Note: import targets also create File nodes, so there may be more than 1
     let source_file = find_node(&entities, "File", "src-auth-login-ts");
-    assert!(source_file.is_some(), "Should create a File node for the source file");
+    assert!(
+        source_file.is_some(),
+        "Should create a File node for the source file"
+    );
 
     // @step And Contains edges should link the File to each Function
     assert!(
@@ -220,7 +221,11 @@ fn internal_helper(x: i32) -> i32 {
     );
 
     // @step And a File node should be created for "src/graph/database.rs"
-    assert_eq!(count_nodes(&entities, "File"), 1, "Should create 1 File node");
+    assert_eq!(
+        count_nodes(&entities, "File"),
+        1,
+        "Should create 1 File node"
+    );
 }
 
 // ============================================================================
@@ -331,19 +336,23 @@ async fn test_walk_project_directory_with_gitignore_and_batch_load() {
     );
 
     // @step When the extraction pipeline walks the project directory
-    let all_entities = walk_and_extract(project_dir, true)
-        .expect("Walk and extract should succeed");
+    let all_entities =
+        walk_and_extract(project_dir, true).expect("Walk and extract should succeed");
 
     // @step Then files in node_modules should be skipped
     let file_slugs: Vec<String> = all_entities
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, slug, .. } if node_type == "File" => Some(slug.clone()),
+            GraphEntity::Node {
+                node_type, slug, ..
+            } if node_type == "File" => Some(slug.clone()),
             _ => None,
         })
         .collect();
     assert!(
-        !file_slugs.iter().any(|s| s.contains("node_modules") || s.contains("node-modules")),
+        !file_slugs
+            .iter()
+            .any(|s| s.contains("node_modules") || s.contains("node-modules")),
         "Should not contain files from node_modules, got: {:?}",
         file_slugs
     );
@@ -375,7 +384,9 @@ async fn test_walk_project_directory_with_gitignore_and_batch_load() {
         .collect::<Vec<_>>()
         .join("\n");
 
-    db.load_jsonl(&jsonl).await.expect("Batch load should succeed");
+    db.load_jsonl(&jsonl)
+        .await
+        .expect("Batch load should succeed");
 
     // @step And the AST graph should contain File, Function, and Type nodes from the processed files
     let db = db.with_query_source(AST_QUERIES);
@@ -434,15 +445,16 @@ export function helper(): string {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step Then only one File node should exist for "src/utils.ts"
     let utils_file_nodes: Vec<_> = entities
         .iter()
-        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+        .filter(|e| {
+            matches!(e, GraphEntity::Node { node_type, properties, .. }
             if node_type == "File"
-                && properties.get("path").and_then(|v| v.as_str()) == Some("src/utils.ts")))
+                && properties.get("path").and_then(|v| v.as_str()) == Some("src/utils.ts"))
+        })
         .collect();
     assert_eq!(
         utils_file_nodes.len(),
@@ -500,15 +512,16 @@ export function createApp(): void {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step Then a stub File node should exist for the external import target
     let external_file_nodes: Vec<_> = entities
         .iter()
-        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+        .filter(|e| {
+            matches!(e, GraphEntity::Node { node_type, properties, .. }
             if node_type == "File"
-                && properties.get("path").and_then(|v| v.as_str()) == Some("express")))
+                && properties.get("path").and_then(|v| v.as_str()) == Some("express"))
+        })
         .collect();
     assert!(
         !external_file_nodes.is_empty(),
@@ -565,15 +578,16 @@ export function util(): string {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step Then only one File node should exist for "src/shared.ts"
     let shared_file_nodes: Vec<_> = entities
         .iter()
-        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+        .filter(|e| {
+            matches!(e, GraphEntity::Node { node_type, properties, .. }
             if node_type == "File"
-                && properties.get("path").and_then(|v| v.as_str()) == Some("src/shared.ts")))
+                && properties.get("path").and_then(|v| v.as_str()) == Some("src/shared.ts"))
+        })
         .collect();
     assert_eq!(
         shared_file_nodes.len(),
@@ -654,8 +668,7 @@ export function formatMessage(text: string): string {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the AST index operation runs via walk_and_extract
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step And the entities are loaded into the graph database
     let db_path = temp_dir.path().join("test-ast-full.nano");
@@ -835,15 +848,16 @@ export function showWorkUnit(): void {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step Then "src/types/index.ts" should be resolved correctly (not "src/types.ts")
     let types_index_nodes: Vec<_> = entities
         .iter()
-        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+        .filter(|e| {
+            matches!(e, GraphEntity::Node { node_type, properties, .. }
             if node_type == "File"
-                && properties.get("path").and_then(|v| v.as_str()) == Some("src/types/index.ts")))
+                && properties.get("path").and_then(|v| v.as_str()) == Some("src/types/index.ts"))
+        })
         .collect();
     assert_eq!(
         types_index_nodes.len(),
@@ -854,9 +868,11 @@ export function showWorkUnit(): void {
     // @step And NO phantom File node should exist for "src/types.ts"
     let phantom_nodes: Vec<_> = entities
         .iter()
-        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+        .filter(|e| {
+            matches!(e, GraphEntity::Node { node_type, properties, .. }
             if node_type == "File"
-                && properties.get("path").and_then(|v| v.as_str()) == Some("src/types.ts")))
+                && properties.get("path").and_then(|v| v.as_str()) == Some("src/types.ts"))
+        })
         .collect();
     assert_eq!(
         phantom_nodes.len(),
@@ -868,7 +884,13 @@ export function showWorkUnit(): void {
     let import_edges: Vec<_> = entities
         .iter()
         .filter_map(|e| {
-            if let GraphEntity::Edge { edge_type, to_slug, from_slug, .. } = e {
+            if let GraphEntity::Edge {
+                edge_type,
+                to_slug,
+                from_slug,
+                ..
+            } = e
+            {
                 if edge_type == "Imports" && to_slug.contains("types") {
                     return Some((from_slug.clone(), to_slug.clone()));
                 }
@@ -877,7 +899,11 @@ export function showWorkUnit(): void {
         })
         .collect();
 
-    assert_eq!(import_edges.len(), 2, "Should have 2 Imports edges to types");
+    assert_eq!(
+        import_edges.len(),
+        2,
+        "Should have 2 Imports edges to types"
+    );
     for (from, to) in &import_edges {
         assert_eq!(
             to, "src-types-index-ts",
@@ -918,12 +944,20 @@ export { removeSchedule } from './remove-schedule';
     let add_content = r#"
 export function addSchedule(): void {}
 "#;
-    write_test_file(project_dir, "src/commands/schedule/add-schedule.ts", add_content);
+    write_test_file(
+        project_dir,
+        "src/commands/schedule/add-schedule.ts",
+        add_content,
+    );
 
     let remove_content = r#"
 export function removeSchedule(): void {}
 "#;
-    write_test_file(project_dir, "src/commands/schedule/remove-schedule.ts", remove_content);
+    write_test_file(
+        project_dir,
+        "src/commands/schedule/remove-schedule.ts",
+        remove_content,
+    );
 
     // @step And a CLI file "src/cli/program.ts" that imports from "../commands/schedule"
     let program_content = r#"
@@ -938,15 +972,23 @@ export function registerCommands(): void {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir, true)
-        .expect("walk_and_extract should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("walk_and_extract should succeed");
 
     // @step Then the import should resolve to "src/commands/schedule/index.ts"
     let import_edges: Vec<_> = entities
         .iter()
         .filter_map(|e| {
-            if let GraphEntity::Edge { edge_type, to_slug, from_slug, .. } = e {
-                if edge_type == "Imports" && from_slug.contains("program") && to_slug.contains("schedule") {
+            if let GraphEntity::Edge {
+                edge_type,
+                to_slug,
+                from_slug,
+                ..
+            } = e
+            {
+                if edge_type == "Imports"
+                    && from_slug.contains("program")
+                    && to_slug.contains("schedule")
+                {
                     return Some(to_slug.clone());
                 }
             }
@@ -954,7 +996,10 @@ export function registerCommands(): void {
         })
         .collect();
 
-    assert!(!import_edges.is_empty(), "Should have import edge from program to schedule");
+    assert!(
+        !import_edges.is_empty(),
+        "Should have import edge from program to schedule"
+    );
     assert_eq!(
         import_edges[0], "src-commands-schedule-index-ts",
         "Import should resolve to schedule/index.ts barrel, not schedule.ts"

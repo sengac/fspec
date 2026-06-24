@@ -501,8 +501,7 @@ mod tests {
     /// Test user input with special characters
     #[test]
     fn test_special_characters_in_user_input() {
-        let special_message =
-            "Test with émojis 🎉 and symbols: <>&\"' and unicode: 你好世界";
+        let special_message = "Test with émojis 🎉 and symbols: <>&\"' and unicode: 你好世界";
         let chunk = StreamChunk::user_input(special_message.to_string());
 
         match chunk {

@@ -129,8 +129,7 @@ fn cli_all_empties_the_scenario_mappings_and_prints_the_success_message() {
     write_login_sidecar(ws.path());
 
     // @step When I run `./codelet/target/release/fspec unlink-coverage user-login --scenario Login --all` from that workspace
-    let (code, stdout, stderr) =
-        run_uc(ws.path(), &["user-login", "--scenario", "Login", "--all"]);
+    let (code, stdout, stderr) = run_uc(ws.path(), &["user-login", "--scenario", "Login", "--all"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
@@ -159,7 +158,10 @@ fn cli_without_all_or_test_file_exits_1() {
     assert_ne!(code, 0, "must exit non-zero without --all or --test-file");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -179,7 +181,10 @@ fn cli_exits_1_when_the_coverage_file_is_missing() {
     assert_ne!(code, 0, "must exit non-zero when coverage file missing");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -263,11 +268,16 @@ fn cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher() {
     );
 
     // @step And I run `./codelet/target/release/fspec unlink-coverage user-login --scenario Login --all` against an identical workspace
-    let (code, _stdout, _stderr) =
-        run_uc(ws_cli.path(), &["user-login", "--scenario", "Login", "--all"]);
+    let (code, _stdout, _stderr) = run_uc(
+        ws_cli.path(),
+        &["user-login", "--scenario", "Login", "--all"],
+    );
 
     // @step Then both invocations report success
-    assert!(result.success, "dispatcher must report success; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher must report success; got {result:?}"
+    );
     assert_eq!(code, 0, "CLI must exit 0");
 
     // @step And the CLI bridge module codelet/fspec/src/unlink_coverage.rs contains NO inline mutation or rendering logic — its only computation is JSON arg marshalling

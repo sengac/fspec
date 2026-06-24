@@ -43,7 +43,10 @@ fn test_parse_package_json_dependencies() {
 
     // @step Then Dependency nodes should be created for each dependency with name, version, and isDev=false
     let express_node = find_node(&entities, "Dependency", "dep::express");
-    assert!(express_node.is_some(), "Should find express Dependency node");
+    assert!(
+        express_node.is_some(),
+        "Should find express Dependency node"
+    );
     if let Some(GraphEntity::Node { properties, .. }) = express_node {
         assert_eq!(
             properties.get("isDev").and_then(|v| v.as_bool()),
@@ -75,7 +78,11 @@ fn test_parse_package_json_dependencies() {
     assert!(ts_node.is_some(), "Should find typescript Dependency node");
 
     // @step And each Dependency node should have a slug in the format "dep::<package-name>"
-    assert_eq!(count_nodes(&entities, "Dependency"), 4, "Should have 4 Dependency nodes");
+    assert_eq!(
+        count_nodes(&entities, "Dependency"),
+        4,
+        "Should have 4 Dependency nodes"
+    );
 
     // @step And each Dependency node should have source "npm"
     for entity in &entities {

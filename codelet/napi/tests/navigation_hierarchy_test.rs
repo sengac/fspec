@@ -241,30 +241,50 @@ fn test_full_shift_right_navigation_with_watchers() {
 
     // Start from board (no active session)
     let mut active: Option<Uuid> = None;
-    
+
     // Shift+Right → A
     let next = get_next_target(&nav_list, active);
-    assert_eq!(next, NavigationTarget::Session(a), "From board, should go to A");
+    assert_eq!(
+        next,
+        NavigationTarget::Session(a),
+        "From board, should go to A"
+    );
     active = Some(a);
 
     // Shift+Right → W1
     let next = get_next_target(&nav_list, active);
-    assert_eq!(next, NavigationTarget::Session(w1), "From A, should go to W1");
+    assert_eq!(
+        next,
+        NavigationTarget::Session(w1),
+        "From A, should go to W1"
+    );
     active = Some(w1);
 
     // Shift+Right → W2
     let next = get_next_target(&nav_list, active);
-    assert_eq!(next, NavigationTarget::Session(w2), "From W1, should go to W2");
+    assert_eq!(
+        next,
+        NavigationTarget::Session(w2),
+        "From W1, should go to W2"
+    );
     active = Some(w2);
 
     // Shift+Right → B
     let next = get_next_target(&nav_list, active);
-    assert_eq!(next, NavigationTarget::Session(b), "From W2, should go to B");
+    assert_eq!(
+        next,
+        NavigationTarget::Session(b),
+        "From W2, should go to B"
+    );
     active = Some(b);
 
     // Shift+Right → CreateDialog
     let next = get_next_target(&nav_list, active);
-    assert_eq!(next, NavigationTarget::CreateDialog, "From B (last), should show create dialog");
+    assert_eq!(
+        next,
+        NavigationTarget::CreateDialog,
+        "From B (last), should show create dialog"
+    );
 }
 
 /// Test: Full backward navigation cycle with watchers
@@ -295,25 +315,41 @@ fn test_full_shift_left_navigation_with_watchers() {
 
     // Start from B
     let mut active: Option<Uuid> = Some(b);
-    
+
     // Shift+Left → W2
     let prev = get_prev_target(&nav_list, active);
-    assert_eq!(prev, NavigationTarget::Session(w2), "From B, should go to W2");
+    assert_eq!(
+        prev,
+        NavigationTarget::Session(w2),
+        "From B, should go to W2"
+    );
     active = Some(w2);
 
     // Shift+Left → W1
     let prev = get_prev_target(&nav_list, active);
-    assert_eq!(prev, NavigationTarget::Session(w1), "From W2, should go to W1");
+    assert_eq!(
+        prev,
+        NavigationTarget::Session(w1),
+        "From W2, should go to W1"
+    );
     active = Some(w1);
 
     // Shift+Left → A
     let prev = get_prev_target(&nav_list, active);
-    assert_eq!(prev, NavigationTarget::Session(a), "From W1, should go to A");
+    assert_eq!(
+        prev,
+        NavigationTarget::Session(a),
+        "From W1, should go to A"
+    );
     active = Some(a);
 
     // Shift+Left → Board
     let prev = get_prev_target(&nav_list, active);
-    assert_eq!(prev, NavigationTarget::Board, "From A (first), should go to board");
+    assert_eq!(
+        prev,
+        NavigationTarget::Board,
+        "From A (first), should go to board"
+    );
 }
 
 /// Test: Navigation from watcher to next session (crossing parent boundary)
@@ -339,11 +375,19 @@ fn test_shift_right_from_last_watcher_goes_to_next_session() {
     chain_of_command.add_supervisor(a, w1);
 
     let nav_list = build_navigation_list(&sessions, &chain_of_command);
-    assert_eq!(nav_list, vec![a, w1, b], "Navigation list should be A → W1 → B");
+    assert_eq!(
+        nav_list,
+        vec![a, w1, b],
+        "Navigation list should be A → W1 → B"
+    );
 
     // From W1, should go to B
     let next = get_next_target(&nav_list, Some(w1));
-    assert_eq!(next, NavigationTarget::Session(b), "From W1 (last watcher), should go to B");
+    assert_eq!(
+        next,
+        NavigationTarget::Session(b),
+        "From W1 (last watcher), should go to B"
+    );
 }
 
 /// Test: Navigation from first watcher to parent
@@ -369,11 +413,19 @@ fn test_shift_left_from_first_watcher_goes_to_parent() {
     chain_of_command.add_supervisor(a, w2);
 
     let nav_list = build_navigation_list(&sessions, &chain_of_command);
-    assert_eq!(nav_list, vec![a, w1, w2], "Navigation list should be A → W1 → W2");
+    assert_eq!(
+        nav_list,
+        vec![a, w1, w2],
+        "Navigation list should be A → W1 → W2"
+    );
 
     // From W1, should go to A
     let prev = get_prev_target(&nav_list, Some(w1));
-    assert_eq!(prev, NavigationTarget::Session(a), "From W1 (first watcher), should go to A (parent)");
+    assert_eq!(
+        prev,
+        NavigationTarget::Session(a),
+        "From W1 (first watcher), should go to A (parent)"
+    );
 }
 
 /// Test: Last watcher of last session shows create dialog
@@ -399,11 +451,19 @@ fn test_shift_right_from_last_watcher_of_last_session_shows_create_dialog() {
     chain_of_command.add_supervisor(a, w2);
 
     let nav_list = build_navigation_list(&sessions, &chain_of_command);
-    assert_eq!(nav_list, vec![a, w1, w2], "Navigation list should be A → W1 → W2");
+    assert_eq!(
+        nav_list,
+        vec![a, w1, w2],
+        "Navigation list should be A → W1 → W2"
+    );
 
     // From W2 (last watcher of last session), should show create dialog
     let next = get_next_target(&nav_list, Some(w2));
-    assert_eq!(next, NavigationTarget::CreateDialog, "From W2 (last), should show create dialog");
+    assert_eq!(
+        next,
+        NavigationTarget::CreateDialog,
+        "From W2 (last), should show create dialog"
+    );
 }
 
 // =============================================================================
@@ -540,7 +600,10 @@ fn test_bug124_shift_right_visits_every_session_exactly_once() {
     assert_eq!(visited, vec![supervisor, s1, s2, s3, s4, s5]);
 
     // @step And the next press shows the create-session dialog
-    assert_eq!(get_next_target(&nav_list, active), NavigationTarget::CreateDialog);
+    assert_eq!(
+        get_next_target(&nav_list, active),
+        NavigationTarget::CreateDialog
+    );
 }
 
 /// BUG-124 Scenario: Shift+Left from the last subordinate cycles back to the board
@@ -580,7 +643,9 @@ fn test_bug124_shift_left_visits_every_session_in_reverse_exactly_once() {
                 active = Some(id);
             }
             NavigationTarget::Board => break,
-            NavigationTarget::CreateDialog => panic!("unexpected create dialog while shifting left"),
+            NavigationTarget::CreateDialog => {
+                panic!("unexpected create dialog while shifting left")
+            }
         }
     }
 

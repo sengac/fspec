@@ -28,8 +28,7 @@ pub struct CliArgs {
 
 /// Entry point for the `unlink-coverage` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut payload: Map<String, Value> = Map::new();
     payload.insert(

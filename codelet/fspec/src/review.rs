@@ -34,8 +34,8 @@ use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use codelet_fspec_core::FspecCoreError;
 use codelet_fspec_core::commands::review;
+use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
 
 /// Strongly-typed args mirrored from the TS Commander.js surface for
@@ -50,8 +50,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `review` clap subcommand.
 /// Returns the process exit code so `main` can propagate it verbatim.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let args_json = json!({ "workUnitId": args.work_unit_id }).to_string();
 

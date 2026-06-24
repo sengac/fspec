@@ -58,7 +58,10 @@ fn cli_prints_gathering_banner_and_exits_successfully() {
     assert_eq!(code, 0, "expected exit 0; stdout={stdout} stderr={stderr}");
 
     // @step And stdout contains "Gathering system context..."
-    assert!(stdout.contains("Gathering system context..."), "stdout={stdout}");
+    assert!(
+        stdout.contains("Gathering system context..."),
+        "stdout={stdout}"
+    );
 }
 
 #[test]
@@ -97,7 +100,10 @@ fn cli_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits with code 0
-    assert_eq!(code, 0, "report-bug-to-github --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "report-bug-to-github --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to tests/fixtures/help/report-bug-to-github.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

@@ -82,8 +82,7 @@ fn scenario_cli_exports_work_units_to_json_and_prints_framing_a_success_line() {
     assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
 
     // @step And the file "out.json" is written with the exported work units
-    let written =
-        fs::read_to_string(ws.path().join("out.json")).expect("out.json must be written");
+    let written = fs::read_to_string(ws.path().join("out.json")).expect("out.json must be written");
     let arr: Value = serde_json::from_str(&written).expect("out.json is valid JSON");
     let ids: Vec<&str> = arr
         .as_array()
@@ -109,7 +108,10 @@ fn scenario_cli_export_work_units_csv_fails_with_unsupported_format_error() {
     let (code, stdout, stderr) = run_export(ws.path(), &["csv", "out.csv"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1 on csv; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1 on csv; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains "Failed to export work units: Unsupported format: csv"
     assert!(

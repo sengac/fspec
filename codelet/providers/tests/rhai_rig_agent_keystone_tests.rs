@@ -11,14 +11,16 @@ use std::fs;
 use std::sync::Arc;
 
 use codelet_common::{Message, MessageContent};
+use codelet_providers::custom::tool_facade::RhaiToolDef;
 use codelet_providers::custom::{
     rig_message_convert::rig_messages_to_internal, AuthConfig, CustomProvider, ModelDef,
     ProviderConfig, RhaiCustomCompletion, RhaiCustomProvider, RhaiCustomProviderModel,
     RhaiToolArgs, RhaiToolFacadeAdapter, RhaiToolWrapper, ScriptLoader,
 };
-use codelet_providers::custom::tool_facade::RhaiToolDef;
 use codelet_tools::facade::SystemPromptFacade;
-use rig::completion::{CompletionModel, CompletionRequest, Message as RigMessage, ToolDefinition as RigToolDefinition};
+use rig::completion::{
+    CompletionModel, CompletionRequest, Message as RigMessage, ToolDefinition as RigToolDefinition,
+};
 use rig::message::{AssistantContent, UserContent};
 use rig::streaming::RawStreamingChoice;
 use rig::tool::Tool;
@@ -219,7 +221,11 @@ fn map_error(status, body) {{ #{{ type: "api", message: "other" }} }}
 async fn create_rig_agent_returns_real_rig_agent_over_rhai_custom_provider_model() {
     // @step Given a custom provider config "my-script" exists with a Rhai script defining build_url, build_headers, build_request, parse_response
     let fx = ProjectFixture::new();
-    fx.write_provider("my-script", &happy_script("http://127.0.0.1:0"), "http://127.0.0.1:0");
+    fx.write_provider(
+        "my-script",
+        &happy_script("http://127.0.0.1:0"),
+        "http://127.0.0.1:0",
+    );
 
     // @step When the agent loop calls CustomProvider::create_rig_agent with name "my-script", model_alias "default", and a session_id
     let session_id = Uuid::new_v4();
@@ -589,7 +595,11 @@ fn transform_preamble(config, preamble, fspec_guidance) { "PREFIX\n" + preamble 
 async fn agent_loop_dispatch_for_custom_provider_routes_through_custom_provider_create_rig_agent() {
     // @step Given a session whose current_provider is "my-script" and a registered custom-provider config of the same name
     let fx = ProjectFixture::new();
-    fx.write_provider("my-script", &happy_script("http://127.0.0.1:0"), "http://127.0.0.1:0");
+    fx.write_provider(
+        "my-script",
+        &happy_script("http://127.0.0.1:0"),
+        "http://127.0.0.1:0",
+    );
 
     // @step When the agent_loop receives a user prompt for that session
     // @step Then the dispatch matches the custom-provider arm
@@ -729,10 +739,13 @@ fn map_error(status, body) {{ #{{ type: "api", message: "err" }} }}
     model.completion(request).await.expect("completion ok");
 
     let received = &server.received_requests().await.expect("received")[0];
-    let body: serde_json::Value =
-        serde_json::from_slice(&received.body).expect("json body");
+    let body: serde_json::Value = serde_json::from_slice(&received.body).expect("json body");
     let tools = body["tools"].as_array().expect("tools is array");
-    assert_eq!(tools.len(), 2, "expected both tools forwarded, got {tools:?}");
+    assert_eq!(
+        tools.len(),
+        2,
+        "expected both tools forwarded, got {tools:?}"
+    );
     assert_eq!(tools[0]["name"], "read_file");
     assert_eq!(tools[0]["description"], "read a file");
     assert_eq!(tools[0]["input_schema"]["required"][0], "file_path");

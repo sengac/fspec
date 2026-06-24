@@ -27,9 +27,7 @@ fn enterprise_base_url_uses_copilot_api_subdomain() {
 
 #[test]
 fn chat_completions_endpoint_uses_openai_system_prompt_facade() {
-    let f = system_prompt_facade_for_endpoint(
-        CopilotEndpoint::ChatCompletions,
-    );
+    let f = system_prompt_facade_for_endpoint(CopilotEndpoint::ChatCompletions);
     assert_eq!(f.provider(), "openai");
 }
 
@@ -126,19 +124,22 @@ fn from_auth_uses_endpoints_api_over_deployment_base_url() {
         "https://copilot-api.ghe.example.com"
     );
     // @step And the request URL host is NOT "api.githubcopilot.com"
-    assert!(!provider.base_url().as_str().contains("api.githubcopilot.com"));
+    assert!(!provider
+        .base_url()
+        .as_str()
+        .contains("api.githubcopilot.com"));
 }
 
 #[test]
 fn from_auth_falls_back_to_computed_url_when_endpoints_api_missing() {
     let auth = CopilotAuthJson::from_github_oauth_token("gho_dotcom".to_string(), None);
-    let provider = CopilotProvider::from_auth(
-        CopilotDeploymentType::GitHubCom,
-        auth,
-        "gpt-4o-copilot",
-    )
-    .expect("github.com provider should construct");
-    assert_eq!(provider.base_url().as_str(), "https://api.githubcopilot.com");
+    let provider =
+        CopilotProvider::from_auth(CopilotDeploymentType::GitHubCom, auth, "gpt-4o-copilot")
+            .expect("github.com provider should construct");
+    assert_eq!(
+        provider.base_url().as_str(),
+        "https://api.githubcopilot.com"
+    );
 }
 
 #[test]
@@ -150,12 +151,9 @@ fn from_auth_prefers_cached_copilot_token_over_github_oauth_token_for_bearer() {
         endpoints_api: None,
         enterprise_url: None,
     };
-    let provider = CopilotProvider::from_auth(
-        CopilotDeploymentType::GitHubCom,
-        auth,
-        "gpt-4o-copilot",
-    )
-    .expect("provider should construct");
+    let provider =
+        CopilotProvider::from_auth(CopilotDeploymentType::GitHubCom, auth, "gpt-4o-copilot")
+            .expect("provider should construct");
     assert_eq!(
         provider.access_token(),
         "tid=cached;:sig",

@@ -57,10 +57,16 @@ fn scenario_clap_exposes_init_subcommand_and_prints_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "init --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "init --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step Then stdout contains the substring 'init'
-    assert!(stdout.contains("init"), "help must mention init; got:\n{stdout}");
+    assert!(
+        stdout.contains("init"),
+        "help must mention init; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring '--agent'
     assert!(
@@ -117,8 +123,7 @@ fn scenario_cli_installs_multiple_agents_from_repeated_agent_flags() {
     let ws = tempfile::tempdir().expect("tempdir");
 
     // @step When I run `./codelet/target/release/fspec init --agent claude --agent cursor` from that directory
-    let (code, stdout, stderr) =
-        run_init(ws.path(), &["--agent", "claude", "--agent", "cursor"]);
+    let (code, stdout, stderr) = run_init(ws.path(), &["--agent", "claude", "--agent", "cursor"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "init must exit 0; got {code}, stderr={stderr}");
@@ -184,7 +189,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 
@@ -207,7 +215,12 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         "codelet/fspec/src/init.rs must exist as the CLI bridge module"
     );
     let bridge_src = std::fs::read_to_string(&bridge_path).expect("bridge module readable");
-    for forbidden in ["CLAUDE.md", "create_dir_all", "AGENT_REGISTRY", "docTemplate"] {
+    for forbidden in [
+        "CLAUDE.md",
+        "create_dir_all",
+        "AGENT_REGISTRY",
+        "docTemplate",
+    ] {
         assert!(
             !bridge_src.contains(forbidden),
             "bridge must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"

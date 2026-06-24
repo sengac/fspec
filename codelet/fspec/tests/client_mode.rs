@@ -23,7 +23,9 @@ use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
-use common::{fspec_bin, fspec_crate_root, make_workspace, spawn_fspec_daemon, strip_comments, ChildGuard};
+use common::{
+    fspec_bin, fspec_crate_root, make_workspace, spawn_fspec_daemon, strip_comments, ChildGuard,
+};
 use url::Url;
 
 #[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
@@ -149,7 +151,10 @@ async fn scenario_plain_fspec_client_reads_home_fspec_daemon_json_for_autodiscov
         .await
         .expect("observer post-bootstrap")
         .len();
-    assert_eq!(post, baseline, "daemon must still respond to observer queries");
+    assert_eq!(
+        post, baseline,
+        "daemon must still respond to observer queries"
+    );
 
     // @step And the client did not need to be told the port explicitly
     // (Implicit: the `fspec client` invocation above had no --connect
@@ -386,8 +391,7 @@ async fn scenario_client_mode_emits_nothing_on_stdout_or_stderr_under_normal_ope
 fn scenario_client_mode_does_not_construct_a_shared_fspec_service() {
     // @step Given the file `codelet/fspec/src/client.rs` exists
     let client_rs = fspec_crate_root().join("src").join("client.rs");
-    let body = std::fs::read_to_string(&client_rs)
-        .expect("read codelet/fspec/src/client.rs");
+    let body = std::fs::read_to_string(&client_rs).expect("read codelet/fspec/src/client.rs");
 
     // @step Then it contains no call to `common::build_service`
     assert!(
@@ -418,8 +422,7 @@ fn scenario_client_mode_does_not_construct_a_shared_fspec_service() {
 fn scenario_client_mode_does_not_call_ratatui_init_directly_app_owns_terminal_guard() {
     // @step Given the file `codelet/fspec/src/client.rs` exists
     let client_rs = fspec_crate_root().join("src").join("client.rs");
-    let body = std::fs::read_to_string(&client_rs)
-        .expect("read codelet/fspec/src/client.rs");
+    let body = std::fs::read_to_string(&client_rs).expect("read codelet/fspec/src/client.rs");
 
     // @step Then the file constructs an App via `App::new(Arc::new(backend))` exactly once
     let new_calls = body.matches("App::new(").count();
@@ -530,7 +533,9 @@ async fn scenario_pressing_q_in_the_disconnect_dialog_quits_the_app() {
     // @step When a synthetic `Key('q')` event is dispatched to the App
     use std::io::Write;
     let stdin_handle = client_child.stdin.as_mut().expect("client stdin");
-    stdin_handle.write_all(b"q").expect("write 'q' to client stdin");
+    stdin_handle
+        .write_all(b"q")
+        .expect("write 'q' to client stdin");
     drop(client_child.stdin.take());
 
     // @step Then the App's `should_quit` flag flips to true
@@ -585,7 +590,9 @@ async fn scenario_reconnect_attempt_does_not_loop_single_try_only_in_this_card()
     use std::io::Write;
     {
         let stdin_handle = client_child.stdin.as_mut().expect("client stdin");
-        stdin_handle.write_all(b"r").expect("write 'r' to client stdin");
+        stdin_handle
+            .write_all(b"r")
+            .expect("write 'r' to client stdin");
     }
 
     // @step Then the new `WebSocketFspecBackend::connect` attempt fails with a connection-refused error
@@ -682,7 +689,9 @@ async fn scenario_pressing_r_performs_a_full_reconnect_bootstrap() {
         let mut reader = std::io::BufReader::new(stdout);
         let mut line = String::new();
         use std::io::BufRead;
-        reader.read_line(&mut line).expect("read port line from daemon #2");
+        reader
+            .read_line(&mut line)
+            .expect("read port line from daemon #2");
     }
     let _daemon2_guard = ChildGuard(daemon2);
 
@@ -704,7 +713,9 @@ async fn scenario_pressing_r_performs_a_full_reconnect_bootstrap() {
     use std::io::Write;
     {
         let stdin_handle = client_child.stdin.as_mut().expect("client stdin");
-        stdin_handle.write_all(b"r").expect("write 'r' to client stdin");
+        stdin_handle
+            .write_all(b"r")
+            .expect("write 'r' to client stdin");
     }
     drop(client_child.stdin.take());
 
@@ -738,10 +749,7 @@ async fn scenario_pressing_r_performs_a_full_reconnect_bootstrap() {
 
 // === Helpers ===
 
-fn drain_with_timeout(
-    stream: std::process::ChildStderr,
-    timeout: std::time::Duration,
-) -> String {
+fn drain_with_timeout(stream: std::process::ChildStderr, timeout: std::time::Duration) -> String {
     use std::sync::{Arc, Mutex};
     let buf: Arc<Mutex<Vec<u8>>> = Arc::new(Mutex::new(Vec::new()));
     let buf_clone = Arc::clone(&buf);
@@ -752,7 +760,10 @@ fn drain_with_timeout(
         loop {
             match s.read(&mut chunk) {
                 Ok(0) => break,
-                Ok(n) => buf_clone.lock().expect("mutex").extend_from_slice(&chunk[..n]),
+                Ok(n) => buf_clone
+                    .lock()
+                    .expect("mutex")
+                    .extend_from_slice(&chunk[..n]),
                 Err(_) => break,
             }
         }

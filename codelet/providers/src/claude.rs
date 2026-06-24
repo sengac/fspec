@@ -107,7 +107,6 @@ pub fn build_beta_headers(model: &str, is_oauth: bool) -> String {
     headers.join(",")
 }
 
-
 /// Cache control metadata for Anthropic prompt caching (CLI-017)
 ///
 /// Used to mark content blocks for caching with `type: ephemeral`.

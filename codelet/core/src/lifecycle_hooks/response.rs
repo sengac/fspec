@@ -5,8 +5,8 @@
 
 use serde::Deserialize;
 
-use super::outcome::{HookMessage, HookMessageLevel, PreToolHookDecision};
 use super::executor::CommandResult;
+use super::outcome::{HookMessage, HookMessageLevel, PreToolHookDecision};
 
 /// Parsed hook stdout JSON response (Claude Code compatible).
 #[derive(Debug, Default, Deserialize)]
@@ -96,9 +96,7 @@ pub(crate) fn interpret_pre_tool_result(
         if code != 0 {
             messages.push(HookMessage {
                 level: HookMessageLevel::Warning,
-                content: format!(
-                    "Hook exited with code {code} — treating as non-blocking warning"
-                ),
+                content: format!("Hook exited with code {code} — treating as non-blocking warning"),
             });
             return PreToolHookDecision::Continue;
         }

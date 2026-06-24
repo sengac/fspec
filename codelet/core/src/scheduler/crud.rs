@@ -35,7 +35,9 @@ where
     F: FnOnce() -> Result<T, String>,
 {
     let lock_dir = lock_dir_path(project);
-    match with_file_lock(&lock_dir, || -> Result<Result<T, String>, String> { Ok(f()) }) {
+    match with_file_lock(&lock_dir, || -> Result<Result<T, String>, String> {
+        Ok(f())
+    }) {
         Ok(result) => result,
         Err(e) => Err(e),
     }

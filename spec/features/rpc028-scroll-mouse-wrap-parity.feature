@@ -95,14 +95,6 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
 
   @model-selector
   @page-keys
-  Scenario: ModelSelectorDialog PageDown jumps by visible_rows and skips non-selectable headers
-    Given the ModelSelectorDialog is open with 30 rows including provider headers
-    And visible_rows is 12 and selected_index is on the first selectable row
-    When the user presses PageDown
-    Then the selected_index advances by visible_rows and lands on a selectable row
-    And the scroll_offset has advanced so the new selection is visible
-    And the bottom body row paints the "↓" glyph if more rows lie below
-
   @resume
   @page-keys
   Scenario: ResumeSessionView Home jumps to the first session and scrolls to the top

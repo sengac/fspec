@@ -7,7 +7,6 @@
 // - The compaction module public API only exports kept types
 // - Deleted types are no longer accessible
 
-
 use std::time::SystemTime;
 
 // ==========================================
@@ -67,8 +66,7 @@ fn test_mod_rs_updated_after_deletion() {
     // @step And mod.rs still declares mod trimmer, mod trimmer_base64, mod trimmer_metadata, mod annotation_detector, mod model
     // Verified by these imports compiling:
     use codelet_core::compaction::{
-        ConversationTurn, FileOp, StructuralAnnotation, TokenTracker, ToolCall, ToolResult,
-        Trimmer,
+        ConversationTurn, FileOp, StructuralAnnotation, TokenTracker, ToolCall, ToolResult, Trimmer,
     };
     let _tracker = TokenTracker::new();
     let _trimmer = Trimmer::new();
@@ -105,11 +103,10 @@ fn test_mod_rs_updated_after_deletion() {
 #[test]
 fn test_preserved_modules_remain_intact() {
     // @step Given model.rs contains TokenTracker, ConversationTurn, ToolCall, ToolResult, StructuralAnnotation, FileOp
-    use codelet_core::compaction::{
-        ConversationTurn, FileOp, StructuralAnnotation, TokenTracker, ToolCall, ToolResult,
-        Trimmer,
-    };
     use codelet_core::compaction::annotation_detector::{detect_annotations, TurnContext};
+    use codelet_core::compaction::{
+        ConversationTurn, FileOp, StructuralAnnotation, TokenTracker, ToolCall, ToolResult, Trimmer,
+    };
 
     // @step And trimmer.rs, trimmer_base64.rs, trimmer_metadata.rs contain Layer 0 structurally lossless trimming
     // @step And annotation_detector.rs contains per-turn structural annotation detection
@@ -173,7 +170,10 @@ fn test_preserved_modules_remain_intact() {
         previous_tool_calls: None,
     };
     let annotations = detect_annotations(&ctx);
-    assert!(annotations.is_empty(), "No annotations for empty tool calls");
+    assert!(
+        annotations.is_empty(),
+        "No annotations for empty tool calls"
+    );
 }
 
 // ==========================================

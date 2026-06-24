@@ -87,7 +87,10 @@ fn scenario_clap_exposes_create_bug_with_args_and_option_flags() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "create-bug --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "create-bug --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step And stdout describes the create-bug subcommand
     assert!(
@@ -96,10 +99,16 @@ fn scenario_clap_exposes_create_bug_with_args_and_option_flags() {
     );
 
     // @step And stdout mentions the `<prefix>` argument
-    assert!(stdout.contains("prefix"), "help must mention prefix; got:\n{stdout}");
+    assert!(
+        stdout.contains("prefix"),
+        "help must mention prefix; got:\n{stdout}"
+    );
 
     // @step And stdout mentions the `<title>` argument
-    assert!(stdout.contains("title"), "help must mention title; got:\n{stdout}");
+    assert!(
+        stdout.contains("title"),
+        "help must mention title; got:\n{stdout}"
+    );
 
     // @step And stdout advertises the `--description` flag (or its `-d` short form)
     assert!(
@@ -181,28 +190,54 @@ fn scenario_cli_creates_bug_with_description_epic_parent() {
   "prefixCounters": {"BUG": 1}
 }"#,
     );
-    write_epics(ws.path(), r#"{"epics":{"auth":{"id":"auth","title":"Authentication","createdAt":"x"}}}"#);
+    write_epics(
+        ws.path(),
+        r#"{"epics":{"auth":{"id":"auth","title":"Authentication","createdAt":"x"}}}"#,
+    );
 
     // @step When I run `./codelet/target/release/fspec create-bug BUG "Login crash" -d "Crashes on submit" -e auth -p BUG-001`
     let (code, stdout, stderr) = run_create_bug(
         ws.path(),
-        &["BUG", "Login crash", "-d", "Crashes on submit", "-e", "auth", "-p", "BUG-001"],
+        &[
+            "BUG",
+            "Login crash",
+            "-d",
+            "Crashes on submit",
+            "-e",
+            "auth",
+            "-p",
+            "BUG-001",
+        ],
     );
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
     // @step And stdout contains the line '✓ Created bug BUG-002'
-    assert!(stdout.lines().any(|l| l == "✓ Created bug BUG-002"), "got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "✓ Created bug BUG-002"),
+        "got:\n{stdout}"
+    );
 
     // @step And stdout contains the line '  Description: Crashes on submit'
-    assert!(stdout.lines().any(|l| l == "  Description: Crashes on submit"), "got:\n{stdout}");
+    assert!(
+        stdout
+            .lines()
+            .any(|l| l == "  Description: Crashes on submit"),
+        "got:\n{stdout}"
+    );
 
     // @step And stdout contains the line '  Epic: auth'
-    assert!(stdout.lines().any(|l| l == "  Epic: auth"), "got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "  Epic: auth"),
+        "got:\n{stdout}"
+    );
 
     // @step And stdout contains the line '  Parent: BUG-001'
-    assert!(stdout.lines().any(|l| l == "  Parent: BUG-001"), "got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "  Parent: BUG-001"),
+        "got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -221,10 +256,16 @@ fn scenario_cli_fails_when_foundation_missing() {
     assert_eq!(code, 1, "expected exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Project foundation not found'
-    assert!(stderr.contains("Project foundation not found"), "got:\n{stderr}");
+    assert!(
+        stderr.contains("Project foundation not found"),
+        "got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -247,7 +288,10 @@ fn scenario_cli_rejects_unregistered_prefix() {
     assert!(stderr.contains("Error:"), "got:\n{stderr}");
 
     // @step And stderr contains the substring "Prefix 'BUG' is not registered"
-    assert!(stderr.contains("Prefix 'BUG' is not registered"), "got:\n{stderr}");
+    assert!(
+        stderr.contains("Prefix 'BUG' is not registered"),
+        "got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -268,20 +312,35 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/work-units.json with 'BUG-001'
     let data = read_wu_value(ws.path());
-    assert!(data["workUnits"].get("BUG-001").is_some(), "BUG-001 must be present");
+    assert!(
+        data["workUnits"].get("BUG-001").is_some(),
+        "BUG-001 must be present"
+    );
 
     // @step And running `./codelet/target/release/fspec create-bug BUG "Second"` afterwards exits 0
     let (code, stdout, stderr) = run_create_bug(ws.path(), &["BUG", "Second"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json now contains both 'BUG-001' and 'BUG-002'
     let data = read_wu_value(ws.path());
-    assert!(data["workUnits"].get("BUG-001").is_some(), "BUG-001 must be present");
-    assert!(data["workUnits"].get("BUG-002").is_some(), "BUG-002 must be present");
+    assert!(
+        data["workUnits"].get("BUG-001").is_some(),
+        "BUG-001 must be present"
+    );
+    assert!(
+        data["workUnits"].get("BUG-002").is_some(),
+        "BUG-002 must be present"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/create_bug.rs contains NO inline validation, id-generation, or file-write logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/create_bug.rs");

@@ -11,10 +11,9 @@
 //! for backwards compatibility. Routing is invoked from `App::dispatch`'s
 //! match arms via these explicit helper methods.
 
-use codelet_rpc_types::{ProviderInfo, SessionId, ThinkingLevel};
+use codelet_rpc_types::{SessionId, ThinkingLevel};
 
 use crate::components::{
-    model_selector_dialog::{ModelSelectorDialog, MODEL_SELECTOR_DIALOG_ID},
     thinking_level_dialog::{ThinkingLevelDialog, THINKING_LEVEL_DIALOG_ID},
     Action,
 };
@@ -22,34 +21,6 @@ use crate::components::{
 use super::state::App;
 
 impl App {
-    /// RPC-022: push a fresh ModelSelectorDialog onto the Compositor
-    /// AND spawn `backend.list_providers()` whose result is
-    /// dispatched back via `Action::ListProvidersLoaded`. Idempotent
-    /// — if the dialog is already pushed (id collision) we leave it
-    /// alone and only re-spawn the list_providers task.
-    pub(crate) fn handle_open_model_dialog(&mut self) {
-        let session_id = match self.agent_view_store.current_session().cloned() {
-            Some(sid) => sid,
-            None => return,
-        };
-        if !self.compositor.contains(MODEL_SELECTOR_DIALOG_ID) {
-            let dialog = ModelSelectorDialog::new(session_id, Vec::new())
-                .with_action_tx(self.action_tx.clone());
-            self.compositor.push(Box::new(dialog));
-        }
-        if tokio::runtime::Handle::try_current().is_err() {
-            return;
-        }
-        let backend = self.backend.clone();
-        let action_tx = self.action_tx.clone();
-        let handle = tokio::spawn(async move {
-            if let Ok(providers) = backend.list_providers().await {
-                let _ = action_tx.send(Action::ListProvidersLoaded(providers));
-            }
-        });
-        self.pending_tasks.push(handle);
-    }
-
     /// RPC-022: push a fresh ThinkingLevelDialog onto the Compositor,
     /// seeded with the cached thinking level for the focused session.
     pub(crate) fn handle_open_thinking_dialog(&mut self) {
@@ -70,40 +41,104 @@ impl App {
         self.compositor.push(Box::new(dialog));
     }
 
-    /// RPC-022: fold a backend-fetched provider list into the open
-    /// ModelSelectorDialog. The dialog reads the action from the
-    /// Compositor's top-down action fan-out (see `App::dispatch`'s
-    /// `compositor.update(action)` call at the end of every dispatch
-    /// tick), so we only emit the action — the dialog itself updates
-    /// its internal state via `ModelSelectorDialog::update`. We keep
-    /// this helper as a hook for future explicit-find routing.
-    pub(crate) fn handle_list_providers_loaded(&mut self, _providers: Vec<ProviderInfo>) {
-        // Intentionally empty — the action fan-out delivers the
-        // ProviderInfo list to the open ModelSelectorDialog directly.
-    }
-
     /// RPC-022: persist the model selection through the backend and
     /// re-fetch ModelInfo so the SessionHeader chrome repaints.
+    /// PROV-117/PROV-118: `session_id` is optional. With a present session the
+    /// live-session write (`set_session_model`) fires and the `(current)`
+    /// marker is updated. With NO session the choice is persisted as the
+    /// in-process DEFAULT model via `set_default_model` (TS parity: the
+    /// session guard gates ONLY the live-session write; the default write is
+    /// unconditional), breaking the no-default-model deadlock so the next
+    /// `create_session` succeeds.
     pub(crate) fn handle_model_selected(
         &mut self,
-        session_id: SessionId,
+        session_id: Option<SessionId>,
         provider_id: String,
         model_id: String,
     ) {
+        tracing::info!(
+            target: "model_select",
+            session_id = ?session_id,
+            provider_id = %provider_id,
+            model_id = %model_id,
+            "[MODEL-SELECT] handle_model_selected ENTER"
+        );
+        // PROV-118: with NO active session we cannot bind a per-session
+        // model, but we MUST still persist the user's choice as the in-process
+        // DEFAULT model — otherwise the next create_session is declined
+        // (PROV-101: no anthropic fallback) and the selection is silently
+        // dropped (the chicken-and-egg deadlock). TS parity: the session guard
+        // gates ONLY the live-session write; the default/store write happens
+        // unconditionally. Empty strings are ignored downstream (PROV-101).
+        let Some(session_id) = session_id else {
+            tracing::info!(
+                target: "model_select",
+                provider_id = %provider_id,
+                model_id = %model_id,
+                "[MODEL-SELECT] handle_model_selected: session_id is None -> setting DEFAULT model (PROV-118)"
+            );
+            if tokio::runtime::Handle::try_current().is_err() {
+                tracing::warn!(
+                    target: "model_select",
+                    "[MODEL-SELECT] handle_model_selected (None): no tokio runtime -> skipping set_default_model"
+                );
+                return;
+            }
+            let backend = self.backend.clone();
+            let model_string = format!("{provider_id}/{model_id}");
+            let handle = tokio::spawn(async move {
+                match backend.set_default_model(model_string.clone()).await {
+                    Ok(()) => tracing::info!(
+                        target: "model_select",
+                        model = %model_string,
+                        "[MODEL-SELECT] backend.set_default_model OK"
+                    ),
+                    Err(e) => tracing::error!(
+                        target: "model_select",
+                        error = %e,
+                        "[MODEL-SELECT] backend.set_default_model FAILED"
+                    ),
+                }
+            });
+            self.pending_tasks.push(handle);
+            return;
+        };
         // RPC-337: remember the chosen model id so the ModelSelector's
         // green `(current)` marker lights up on reopen.
         self.agent_view_store
             .set_selected_model_id(session_id.clone(), model_id.clone());
         if tokio::runtime::Handle::try_current().is_err() {
+            tracing::warn!(
+                target: "model_select",
+                "[MODEL-SELECT] handle_model_selected: no tokio runtime -> skipping backend write"
+            );
             return;
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let sid_for_refresh = session_id.clone();
+        tracing::info!(
+            target: "model_select",
+            session_id = ?session_id,
+            provider_id = %provider_id,
+            model_id = %model_id,
+            "[MODEL-SELECT] handle_model_selected: spawning backend.set_session_model write"
+        );
         let handle = tokio::spawn(async move {
-            let _ = backend
+            match backend
                 .set_session_model(session_id, provider_id, model_id)
-                .await;
+                .await
+            {
+                Ok(()) => tracing::info!(
+                    target: "model_select",
+                    "[MODEL-SELECT] backend.set_session_model OK"
+                ),
+                Err(e) => tracing::error!(
+                    target: "model_select",
+                    error = %e,
+                    "[MODEL-SELECT] backend.set_session_model FAILED"
+                ),
+            }
             // Best-effort chrome refresh — the SessionHeader badges
             // come from RPC-018's get_model_info path.
             if let Ok(info) = backend.get_model_info(sid_for_refresh.clone()).await {
@@ -211,9 +246,7 @@ impl App {
     /// the 300-LoC ceiling. Returns `true` if the action was handled.
     pub(crate) fn try_dispatch_model_thinking_dialogs(&mut self, action: &Action) -> bool {
         match action {
-            Action::OpenModelDialog => self.handle_open_model_dialog(),
             Action::OpenThinkingDialog => self.handle_open_thinking_dialog(),
-            Action::ListProvidersLoaded(p) => self.handle_list_providers_loaded(p.clone()),
             Action::ModelSelected(s, p, m) => {
                 self.handle_model_selected(s.clone(), p.clone(), m.clone());
             }

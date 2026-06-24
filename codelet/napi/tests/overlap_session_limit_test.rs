@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 //! Feature: spec/features/overlap-session-limit.feature
 //!
 //! Tests for Overlap & Session Limit Management (SCHED-006).
@@ -80,7 +85,10 @@ async fn test_skip_policy_prevents_trigger() {
     assert_eq!(policy, "skip");
     // With skip + active → should not trigger
     let should_trigger = !(is_active && policy == "skip");
-    assert!(!should_trigger, "skip policy with active run should prevent trigger");
+    assert!(
+        !should_trigger,
+        "skip policy with active run should prevent trigger"
+    );
 
     // @step And a skip event is logged with the schedule name
     // (Log verification delegated to integration test — here we verify the decision logic)
@@ -146,7 +154,10 @@ async fn test_default_overlap_policy_is_skip() {
     // @step Then the trigger is skipped as if overlap_policy were "skip"
     assert_eq!(policy, "skip", "default policy should be 'skip'");
     let should_trigger = !(is_active && policy == "skip");
-    assert!(!should_trigger, "default skip policy with active run should prevent trigger");
+    assert!(
+        !should_trigger,
+        "default skip policy with active run should prevent trigger"
+    );
 }
 
 // =====================================================================
@@ -184,7 +195,10 @@ async fn test_queued_job_fires_on_completion() {
     let should_fire = !has_active && !queue.is_empty();
 
     // @step Then the queued job is fired
-    assert!(should_fire, "queued job should fire when active run is gone");
+    assert!(
+        should_fire,
+        "queued job should fire when active run is gone"
+    );
     let fired = queue.pop_front().unwrap();
     assert_eq!(fired.0, "health-check");
 
@@ -243,7 +257,10 @@ async fn test_shell_job_ignores_session_limit() {
     let should_defer = session_count >= max_sessions && schedule.job_type == "agent";
 
     // @step Then the shell command runs immediately
-    assert!(!should_defer, "shell jobs should not be deferred by session limit");
+    assert!(
+        !should_defer,
+        "shell jobs should not be deferred by session limit"
+    );
 
     // @step And session count remains at 10
     // Shell runs via tokio::process::Command, not BackgroundSession
@@ -306,7 +323,10 @@ async fn test_completion_detection_sweeps_active_runs() {
     runs.retain(|_name, sid| live_sessions.contains(sid));
 
     // @step Then the session ID is removed from active_runs for "daily-check"
-    assert!(!runs.contains_key("daily-check"), "completed session should be swept");
+    assert!(
+        !runs.contains_key("daily-check"),
+        "completed session should be swept"
+    );
 }
 
 // =====================================================================
@@ -355,8 +375,14 @@ async fn test_only_one_deferred_per_tick() {
     // Simulate next tick: process one from deferred queue
     let mut deferred = deferred_jobs.write().await;
     let next_tick_spawn = deferred.pop_front();
-    assert!(next_tick_spawn.is_some(), "one deferred job should spawn per tick");
-    assert!(deferred.is_empty(), "queue should be empty after processing");
+    assert!(
+        next_tick_spawn.is_some(),
+        "one deferred job should spawn per tick"
+    );
+    assert!(
+        deferred.is_empty(),
+        "queue should be empty after processing"
+    );
 }
 
 // =====================================================================

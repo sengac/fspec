@@ -101,8 +101,8 @@ impl Tool for RhaiToolWrapper {
         let mapped = apply_map_tool_params(&self.adapter, args.0).map_err(rhai_err_to_tool_err)?;
 
         // 2. default_to_internal — typed dispatch on `maps_to`.
-        let dispatched = default_to_internal(self.adapter.maps_to(), &mapped)
-            .map_err(rhai_err_to_tool_err)?;
+        let dispatched =
+            default_to_internal(self.adapter.maps_to(), &mapped).map_err(rhai_err_to_tool_err)?;
 
         // 3. execute_dispatched — run the inner internal tool.
         let output = Arc::new(self.clone());
@@ -148,8 +148,7 @@ mod tests {
             "script": "",
             "models": {"default": {"id": "x"}}
         });
-        let cfg: ProviderConfig =
-            serde_json::from_value(cfg_json).expect("ProviderConfig parse");
+        let cfg: ProviderConfig = serde_json::from_value(cfg_json).expect("ProviderConfig parse");
         let _ = HashMap::<String, String>::new();
         let engine = build_sandboxed_engine(register_all_modules());
         let loader = Arc::new(crate::custom::ScriptLoader::new(engine));

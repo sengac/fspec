@@ -43,12 +43,12 @@ pub mod oauth_types;
 pub mod prompt_cache;
 pub mod provider;
 pub mod provider_options;
-pub mod token_refresh;
 pub mod refreshing_client;
 pub mod response;
 pub mod rig_agent;
 pub mod system_prompt_facade;
 pub mod token_exchange;
+pub mod token_refresh;
 
 /// Default context window for Copilot-hosted models, in tokens.
 ///

@@ -104,10 +104,16 @@ fn scenario_clap_exposes_show_foundation_with_help() {
     );
 
     // @step Then stdout advertises the '--list-sections' flag
-    assert!(stdout.contains("--list-sections"), "help must advertise --list-sections; got:\n{stdout}");
+    assert!(
+        stdout.contains("--list-sections"),
+        "help must advertise --list-sections; got:\n{stdout}"
+    );
 
     // @step Then stdout advertises the '--line-numbers' flag
-    assert!(stdout.contains("--line-numbers"), "help must advertise --line-numbers; got:\n{stdout}");
+    assert!(
+        stdout.contains("--line-numbers"),
+        "help must advertise --line-numbers; got:\n{stdout}"
+    );
 
     // Note: --section, --format, --output, --draft flags exist on the
     // command but are intentionally NOT advertised in --help to mirror
@@ -128,10 +134,16 @@ fn scenario_cli_default_render_prints_project_section() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout contains the exact line '=== PROJECT ==='
-    assert!(stdout.lines().any(|l| l == "=== PROJECT ==="), "stdout must contain '=== PROJECT ==='; got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "=== PROJECT ==="),
+        "stdout must contain '=== PROJECT ==='; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the line 'Name: fspec'
-    assert!(stdout.lines().any(|l| l == "Name: fspec"), "stdout must contain 'Name: fspec'; got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "Name: fspec"),
+        "stdout must contain 'Name: fspec'; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -147,7 +159,10 @@ fn scenario_cli_positional_section_emits_raw_string_in_text_format() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout equals exactly 'fspec' (with a trailing newline)
-    assert_eq!(stdout, "fspec\n", "stdout must equal 'fspec\\n'; got: {stdout:?}");
+    assert_eq!(
+        stdout, "fspec\n",
+        "stdout must equal 'fspec\\n'; got: {stdout:?}"
+    );
 }
 
 #[test]
@@ -163,7 +178,10 @@ fn scenario_cli_format_json_emits_json() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout starts with the bytes '"fspec"'
-    assert!(stdout.starts_with("\"fspec\""), "stdout must start with '\"fspec\"'; got: {stdout:?}");
+    assert!(
+        stdout.starts_with("\"fspec\""),
+        "stdout must start with '\"fspec\"'; got: {stdout:?}"
+    );
 }
 
 #[test]
@@ -176,10 +194,16 @@ fn scenario_cli_exits_1_when_section_unknown() {
     let (code, stdout, stderr) = run_sf(ws.path(), &["nonexistent"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring "Field 'nonexistent' not found"
     assert!(
@@ -198,10 +222,16 @@ fn scenario_cli_draft_surfaces_missing_draft_error() {
     let (code, stdout, stderr) = run_sf(ws.path(), &["--draft"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'No draft found at spec/foundation.json.draft'
     assert!(
@@ -223,11 +253,18 @@ fn scenario_cli_output_writes_file_and_prints_success_line() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then the file out/name.txt exists with the exact bytes 'fspec'
-    let written = fs::read_to_string(ws.path().join("out/name.txt")).expect("out/name.txt must exist");
-    assert_eq!(written, "fspec", "out/name.txt must contain exactly 'fspec'; got: {written:?}");
+    let written =
+        fs::read_to_string(ws.path().join("out/name.txt")).expect("out/name.txt must exist");
+    assert_eq!(
+        written, "fspec",
+        "out/name.txt must contain exactly 'fspec'; got: {written:?}"
+    );
 
     // @step Then stdout contains the substring '✓'
-    assert!(stdout.contains("✓"), "stdout must contain '✓'; got:\n{stdout}");
+    assert!(
+        stdout.contains("✓"),
+        "stdout must contain '✓'; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring 'Output written to out/name.txt'
     assert!(
@@ -246,10 +283,16 @@ fn scenario_cli_exits_1_when_foundation_malformed() {
     let (code, stdout, stderr) = run_sf(ws.path(), &[]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 }
 
 #[test]
@@ -265,7 +308,10 @@ fn scenario_cli_list_sections_is_parsed_but_ignored() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout contains the exact line '=== PROJECT ==='
-    assert!(stdout.lines().any(|l| l == "=== PROJECT ==="), "stdout must contain '=== PROJECT ==='; got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "=== PROJECT ==="),
+        "stdout must contain '=== PROJECT ==='; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -281,7 +327,10 @@ fn scenario_cli_line_numbers_is_parsed_but_ignored() {
     assert_eq!(code, 0, "must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout contains the exact line '=== PROJECT ==='
-    assert!(stdout.lines().any(|l| l == "=== PROJECT ==="), "stdout must contain '=== PROJECT ==='; got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "=== PROJECT ==="),
+        "stdout must contain '=== PROJECT ==='; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -295,16 +344,31 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert!(result.success, "dispatcher must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data equals exactly '"fspec"'
-    assert_eq!(result.data, "\"fspec\"", "data must equal '\"fspec\"'; got: {:?}", result.data);
+    assert_eq!(
+        result.data, "\"fspec\"",
+        "data must equal '\"fspec\"'; got: {:?}",
+        result.data
+    );
 
     // @step Then the CLI bridge module codelet/fspec/src/show_foundation.rs contains NO inline FIELD_MAP, formatter, or filesystem logic — its only computation is JSON arg marshalling and stdout printing
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/show_foundation.rs");
-    assert!(bridge_path.exists(), "bridge module must exist: {}", bridge_path.display());
+    assert!(
+        bridge_path.exists(),
+        "bridge module must exist: {}",
+        bridge_path.display()
+    );
     let bridge_src = fs::read_to_string(&bridge_path).expect("bridge module readable");
     for forbidden in [
-        "FIELD_MAP", "projectName", "problemSpace", "primaryProblem",
-        "=== PROJECT ===", "=== PERSONAS ===", "formatFoundationAsText",
-        "format_foundation_as_text", "getNestedProperty", "get_nested_property",
+        "FIELD_MAP",
+        "projectName",
+        "problemSpace",
+        "primaryProblem",
+        "=== PROJECT ===",
+        "=== PERSONAS ===",
+        "formatFoundationAsText",
+        "format_foundation_as_text",
+        "getNestedProperty",
+        "get_nested_property",
     ] {
         assert!(
             !bridge_src.contains(forbidden),
@@ -357,25 +421,53 @@ fn scenario_returns_text_render_with_project_and_other_sections() {
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data contains the exact line '=== PROJECT ==='
-    assert!(result.data.lines().any(|l| l == "=== PROJECT ==="), "data must contain '=== PROJECT ==='; got:\n{}", result.data);
+    assert!(
+        result.data.lines().any(|l| l == "=== PROJECT ==="),
+        "data must contain '=== PROJECT ==='; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data contains the line 'Name: fspec'
-    assert!(result.data.lines().any(|l| l == "Name: fspec"), "data must contain 'Name: fspec'; got:\n{}", result.data);
+    assert!(
+        result.data.lines().any(|l| l == "Name: fspec"),
+        "data must contain 'Name: fspec'; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data contains the line 'Vision: V'
-    assert!(result.data.lines().any(|l| l == "Vision: V"), "data must contain 'Vision: V'; got:\n{}", result.data);
+    assert!(
+        result.data.lines().any(|l| l == "Vision: V"),
+        "data must contain 'Vision: V'; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data contains the line 'Type: cli-tool'
-    assert!(result.data.lines().any(|l| l == "Type: cli-tool"), "data must contain 'Type: cli-tool'; got:\n{}", result.data);
+    assert!(
+        result.data.lines().any(|l| l == "Type: cli-tool"),
+        "data must contain 'Type: cli-tool'; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data contains the exact line '=== PROBLEM SPACE ==='
-    assert!(result.data.lines().any(|l| l == "=== PROBLEM SPACE ==="), "data must contain '=== PROBLEM SPACE ==='; got:\n{}", result.data);
+    assert!(
+        result.data.lines().any(|l| l == "=== PROBLEM SPACE ==="),
+        "data must contain '=== PROBLEM SPACE ==='; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data contains the exact line '=== SOLUTION SPACE ==='
-    assert!(result.data.lines().any(|l| l == "=== SOLUTION SPACE ==="), "data must contain '=== SOLUTION SPACE ==='; got:\n{}", result.data);
+    assert!(
+        result.data.lines().any(|l| l == "=== SOLUTION SPACE ==="),
+        "data must contain '=== SOLUTION SPACE ==='; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data contains the exact line '=== PERSONAS ==='
-    assert!(result.data.lines().any(|l| l == "=== PERSONAS ==="), "data must contain '=== PERSONAS ==='; got:\n{}", result.data);
+    assert!(
+        result.data.lines().any(|l| l == "=== PERSONAS ==="),
+        "data must contain '=== PERSONAS ==='; got:\n{}",
+        result.data
+    );
 }
 
 #[test]
@@ -392,10 +484,18 @@ fn scenario_returns_entire_foundation_as_pretty_json_when_format_json() {
 
     // @step Then the DispatchResult.data parses as JSON whose root has a 'project' field
     let parsed: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert!(parsed.get("project").is_some(), "data root must have 'project' field; got:\n{}", result.data);
+    assert!(
+        parsed.get("project").is_some(),
+        "data root must have 'project' field; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data uses 2-space indentation
-    assert!(result.data.contains("\n  "), "data must use 2-space indentation; got:\n{}", result.data);
+    assert!(
+        result.data.contains("\n  "),
+        "data must use 2-space indentation; got:\n{}",
+        result.data
+    );
 }
 
 #[test]
@@ -411,7 +511,11 @@ fn scenario_resolves_project_name_via_field_map_text_format() {
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data equals exactly 'fspec'
-    assert_eq!(result.data, "fspec", "data must equal 'fspec'; got: {:?}", result.data);
+    assert_eq!(
+        result.data, "fspec",
+        "data must equal 'fspec'; got: {:?}",
+        result.data
+    );
 }
 
 #[test]
@@ -427,7 +531,11 @@ fn scenario_resolves_project_name_via_field_map_json_format() {
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data equals exactly '"fspec"'
-    assert_eq!(result.data, "\"fspec\"", "data must equal '\"fspec\"'; got: {:?}", result.data);
+    assert_eq!(
+        result.data, "\"fspec\"",
+        "data must equal '\"fspec\"'; got: {:?}",
+        result.data
+    );
 }
 
 #[test]
@@ -444,11 +552,23 @@ fn scenario_section_pointing_to_object_emits_pretty_json_in_text_format() {
 
     // @step Then the DispatchResult.data parses as JSON whose root has 'name' and 'projectType'
     let parsed: serde_json::Value = serde_json::from_str(&result.data).expect("data is JSON");
-    assert!(parsed.get("name").is_some(), "data must have 'name' field; got:\n{}", result.data);
-    assert!(parsed.get("projectType").is_some(), "data must have 'projectType' field; got:\n{}", result.data);
+    assert!(
+        parsed.get("name").is_some(),
+        "data must have 'name' field; got:\n{}",
+        result.data
+    );
+    assert!(
+        parsed.get("projectType").is_some(),
+        "data must have 'projectType' field; got:\n{}",
+        result.data
+    );
 
     // @step Then the DispatchResult.data uses 2-space indentation
-    assert!(result.data.contains("\n  "), "data must use 2-space indentation; got:\n{}", result.data);
+    assert!(
+        result.data.contains("\n  "),
+        "data must use 2-space indentation; got:\n{}",
+        result.data
+    );
 }
 
 #[test]
@@ -463,7 +583,11 @@ fn scenario_missing_section_returns_field_not_found_error() {
     // @step Then the dispatcher returns success=false with an error message exactly "Field 'nonexistent' not found"
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_deref().unwrap_or("").contains("Field 'nonexistent' not found"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("Field 'nonexistent' not found"),
         "error must contain canonical message; got {result:?}"
     );
 }
@@ -481,7 +605,11 @@ fn scenario_dotted_path_bypasses_field_map_for_unmapped_sections() {
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data equals exactly 'fspec'
-    assert_eq!(result.data, "fspec", "data must equal 'fspec'; got: {:?}", result.data);
+    assert_eq!(
+        result.data, "fspec",
+        "data must equal 'fspec'; got: {:?}",
+        result.data
+    );
 }
 
 #[test]
@@ -511,13 +639,20 @@ fn scenario_draft_true_reads_draft_file_instead_of_foundation() {
     write_foundation_draft(ws.path(), &minimal_foundation("draft-name"));
 
     // @step When I dispatch show-foundation with section='projectName' and draft=true and format='text'
-    let result = dispatch_sf(ws.path(), r#"{"section":"projectName","draft":true,"format":"text"}"#);
+    let result = dispatch_sf(
+        ws.path(),
+        r#"{"section":"projectName","draft":true,"format":"text"}"#,
+    );
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data equals exactly 'draft-name'
-    assert_eq!(result.data, "draft-name", "data must equal 'draft-name'; got: {:?}", result.data);
+    assert_eq!(
+        result.data, "draft-name",
+        "data must equal 'draft-name'; got: {:?}",
+        result.data
+    );
 }
 
 #[test]
@@ -533,10 +668,17 @@ fn scenario_empty_workspace_auto_creates_foundation_json() {
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data equals exactly 'Project Name'
-    assert_eq!(result.data, "Project Name", "data must equal 'Project Name' (canonical default); got: {:?}", result.data);
+    assert_eq!(
+        result.data, "Project Name",
+        "data must equal 'Project Name' (canonical default); got: {:?}",
+        result.data
+    );
 
     // @step Then spec/foundation.json exists after the call (auto-created by ensure_foundation_file)
-    assert!(ws.path().join("spec/foundation.json").exists(), "spec/foundation.json must be auto-created");
+    assert!(
+        ws.path().join("spec/foundation.json").exists(),
+        "spec/foundation.json must be auto-created"
+    );
 }
 
 #[test]
@@ -551,7 +693,11 @@ fn scenario_escalates_malformed_foundation_json_dispatcher() {
     // @step Then the dispatcher returns success=false with an error message containing the substring 'Failed to parse foundation.json'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_ref().map(|e| e.contains("Failed to parse foundation.json")).unwrap_or(false),
+        result
+            .error
+            .as_ref()
+            .map(|e| e.contains("Failed to parse foundation.json"))
+            .unwrap_or(false),
         "error must mention parse failure; got {result:?}"
     );
 }
@@ -563,14 +709,21 @@ fn scenario_output_writes_formatted_content_to_disk_via_dispatcher() {
     write_foundation(ws.path(), &minimal_foundation("fspec"));
 
     // @step When I dispatch show-foundation with section='projectName' and format='text' and output='out/name.txt'
-    let result = dispatch_sf(ws.path(), r#"{"section":"projectName","format":"text","output":"out/name.txt"}"#);
+    let result = dispatch_sf(
+        ws.path(),
+        r#"{"section":"projectName","format":"text","output":"out/name.txt"}"#,
+    );
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the file <project_root>/out/name.txt exists with the exact bytes 'fspec'
-    let written = fs::read_to_string(ws.path().join("out/name.txt")).expect("out/name.txt must exist");
-    assert_eq!(written, "fspec", "file must contain exactly 'fspec'; got: {written:?}");
+    let written =
+        fs::read_to_string(ws.path().join("out/name.txt")).expect("out/name.txt must exist");
+    assert_eq!(
+        written, "fspec",
+        "file must contain exactly 'fspec'; got: {written:?}"
+    );
 }
 
 #[test]
@@ -586,5 +739,9 @@ fn scenario_default_format_is_text_when_format_flag_omitted() {
     assert!(result.success, "must succeed; got {result:?}");
 
     // @step Then the DispatchResult.data equals exactly 'fspec'
-    assert_eq!(result.data, "fspec", "data must equal 'fspec' (default format text); got: {:?}", result.data);
+    assert_eq!(
+        result.data, "fspec",
+        "data must equal 'fspec' (default format text); got: {:?}",
+        result.data
+    );
 }

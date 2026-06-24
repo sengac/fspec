@@ -124,10 +124,7 @@ impl SchedulerState {
     /// Returns the job to fire, if any.
     pub async fn drain_queued_for(&self, completed_name: &str) -> Option<QueuedJob> {
         let mut queue = self.queued_jobs.write().await;
-        if let Some(pos) = queue
-            .iter()
-            .position(|j| j.schedule_name == completed_name)
-        {
+        if let Some(pos) = queue.iter().position(|j| j.schedule_name == completed_name) {
             queue.remove(pos)
         } else {
             None

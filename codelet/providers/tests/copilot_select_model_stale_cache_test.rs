@@ -21,9 +21,7 @@
 
 mod fixtures;
 
-use codelet_providers::copilot::{
-    get_copilot_auth_path, write_copilot_auth, CopilotAuthJson,
-};
+use codelet_providers::copilot::{get_copilot_auth_path, write_copilot_auth, CopilotAuthJson};
 use codelet_providers::{ProviderCredentials, ProviderManager};
 use fixtures::setup_fspec_home;
 use serial_test::serial;
@@ -49,10 +47,8 @@ async fn select_model_re_detects_copilot_credentials_in_running_session() {
     );
 
     // @step And copilot_auth.json has just been written by the OAuth login flow
-    let auth = CopilotAuthJson::from_github_oauth_token(
-        "gho_prov_057_e2e_no_restart".to_string(),
-        None,
-    );
+    let auth =
+        CopilotAuthJson::from_github_oauth_token("gho_prov_057_e2e_no_restart".to_string(), None);
     write_copilot_auth(&auth)
         .await
         .expect("write_copilot_auth should succeed in temp HOME");
@@ -97,10 +93,8 @@ async fn end_to_end_select_model_after_login_succeeds() {
     let (_temp_dir, _guard) = setup_fspec_home();
 
     // @step And copilot_auth.json contains a valid github_oauth_token
-    let auth = CopilotAuthJson::from_github_oauth_token(
-        "gho_prov_057_e2e_after_login".to_string(),
-        None,
-    );
+    let auth =
+        CopilotAuthJson::from_github_oauth_token("gho_prov_057_e2e_after_login".to_string(), None);
     write_copilot_auth(&auth)
         .await
         .expect("write_copilot_auth should succeed in temp HOME");

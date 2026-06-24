@@ -142,7 +142,10 @@ fn scenario_remove_attachment_help_matches_ts_fixture_byte_for_byte() {
     );
 
     // @step And stdout contains the section header 'ARGUMENTS'
-    assert!(stdout.contains("ARGUMENTS\n"), "help must contain ARGUMENTS");
+    assert!(
+        stdout.contains("ARGUMENTS\n"),
+        "help must contain ARGUMENTS"
+    );
 
     // @step And stdout contains the section header 'OPTIONS'
     assert!(stdout.contains("OPTIONS\n"), "help must contain OPTIONS");
@@ -222,7 +225,11 @@ fn scenario_cli_passes_keep_file_through_to_core_preserving_file_on_disk() {
     );
 
     // @step And the file spec/attachments/AUTH-001/keep.pdf exists on disk
-    write_file(ws.path(), "spec/attachments/AUTH-001/keep.pdf", b"pdf-bytes");
+    write_file(
+        ws.path(),
+        "spec/attachments/AUTH-001/keep.pdf",
+        b"pdf-bytes",
+    );
 
     // @step When I run `fspec remove-attachment AUTH-001 keep.pdf --keep-file` in that tempdir
     let (code, stdout, stderr) =
@@ -402,9 +409,7 @@ fn scenario_cli_exits_1_when_filename_does_not_match_any_attachment() {
 
     // @step And stderr contains the substring "Error: Attachment 'missing.png' not found for work unit 'AUTH-001'"
     assert!(
-        stderr.contains(
-            "Error: Attachment 'missing.png' not found for work unit 'AUTH-001'"
-        ),
+        stderr.contains("Error: Attachment 'missing.png' not found for work unit 'AUTH-001'"),
         "stderr must contain canonical not-found error; got:\n{stderr}"
     );
 }

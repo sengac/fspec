@@ -928,9 +928,9 @@ fn scenario_codelet_napi_builds_with_noop_feature() {
         "interjection",
     ] {
         let needle = format!("mod {name};");
-        let pos = stripped.find(&needle).unwrap_or_else(|| {
-            panic!("RPC-043: lib.rs missing `mod {name};` declaration")
-        });
+        let pos = stripped
+            .find(&needle)
+            .unwrap_or_else(|| panic!("RPC-043: lib.rs missing `mod {name};` declaration"));
         let window_start = pos.saturating_sub(120);
         let window = &stripped[window_start..pos];
         assert!(
@@ -1141,7 +1141,13 @@ fn scenario_cargo_test_p_codelet_sessions_continues_to_pass() {
     // of test-binary writes for codelet-sessions). Compilation is
     // still verified for every test target in the crate.
     let output = cargo_cmd()
-        .args(["check", "--tests", "-p", "codelet-sessions", "--manifest-path"])
+        .args([
+            "check",
+            "--tests",
+            "-p",
+            "codelet-sessions",
+            "--manifest-path",
+        ])
         .arg(workspace_root().join("Cargo.toml"))
         .output()
         .expect("cargo check --tests -p codelet-sessions must run");

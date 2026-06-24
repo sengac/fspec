@@ -61,7 +61,10 @@ async fn ensure_fresh_copilot_token_delegates_to_free_function() {
     // @step Then it delegates to the free function in token_refresh.rs with the auth RwLock
     // A far-future expiry means no refresh needed → Ok(false).
     assert!(refreshed.is_ok(), "free function should succeed");
-    assert!(!refreshed.unwrap(), "token is not near expiry — should not refresh");
+    assert!(
+        !refreshed.unwrap(),
+        "token is not near expiry — should not refresh"
+    );
 }
 
 // =========================================================================
@@ -78,9 +81,9 @@ fn module_level_functions_are_directly_callable() {
 
     // @step Then test callers import and use the module-level functions directly
     use crate::copilot::base_url::base_url_for;
+    use crate::copilot::endpoint::CopilotEndpoint;
     use crate::copilot::oauth_types::CopilotDeploymentType;
     use crate::copilot::system_prompt_facade::system_prompt_facade_for_endpoint;
-    use crate::copilot::endpoint::CopilotEndpoint;
 
     let url = base_url_for(&CopilotDeploymentType::GitHubCom);
     assert_eq!(url.as_str(), "https://api.githubcopilot.com");

@@ -127,10 +127,7 @@ async fn scenario_multiple_subscribers_each_observe_every_broadcast() {
     ids_a.sort();
     ids_b.sort();
     assert_eq!(ids_a, ids_b);
-    assert_eq!(
-        ids_a,
-        vec!["AUTH-001".to_string(), "AUTH-002".to_string()],
-    );
+    assert_eq!(ids_a, vec!["AUTH-001".to_string(), "AUTH-002".to_string()],);
     assert_eq!(payload_a, payload_b, "broadcast must be value-identical");
 }
 

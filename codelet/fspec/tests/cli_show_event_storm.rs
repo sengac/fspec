@@ -70,7 +70,10 @@ fn scenario_clap_exposes_show_event_storm_with_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "fspec show-event-storm --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "fspec show-event-storm --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step Then stdout contains the substring 'show-event-storm'
     assert!(
@@ -80,12 +83,17 @@ fn scenario_clap_exposes_show_event_storm_with_help() {
 
     // @step Then stdout advertises the required positional <work-unit-id> argument
     assert!(
-        stdout.contains("work-unit-id") || stdout.contains("WORK-UNIT-ID") || stdout.contains("workUnitId"),
+        stdout.contains("work-unit-id")
+            || stdout.contains("WORK-UNIT-ID")
+            || stdout.contains("workUnitId"),
         "help must advertise <work-unit-id>; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring '--format'
-    assert!(!stdout.contains("--format"), "help must NOT advertise --format; got:\n{stdout}");
+    assert!(
+        !stdout.contains("--format"),
+        "help must NOT advertise --format; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -98,10 +106,16 @@ fn scenario_cli_empty_workspace_exits_1_with_not_found() {
     let (code, stdout, stderr) = run_ses(ws.path(), &["AUTH-001"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'Work unit AUTH-001 not found'
     assert!(
@@ -127,10 +141,16 @@ fn scenario_cli_exits_1_when_no_event_storm_data() {
     let (code, stdout, stderr) = run_ses(ws.path(), &["AUTH-001"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'Work unit AUTH-001 has no Event Storm data'
     assert!(
@@ -186,10 +206,16 @@ fn scenario_cli_exits_1_when_malformed_work_units() {
     let (code, stdout, stderr) = run_ses(ws.path(), &["AUTH-001"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'Failed to parse work-units.json'
     assert!(
@@ -223,11 +249,19 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step Then the CLI bridge module codelet/fspec/src/show_event_storm.rs contains NO inline filter or rendering logic — its only computation is JSON arg marshalling and stdout printing
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/show_event_storm.rs");
-    assert!(bridge_path.exists(), "bridge module must exist: {}", bridge_path.display());
+    assert!(
+        bridge_path.exists(),
+        "bridge module must exist: {}",
+        bridge_path.display()
+    );
     let bridge_src = fs::read_to_string(&bridge_path).expect("bridge module readable");
     for forbidden in [
-        "eventStorm", "has no Event Storm data", "Work unit", "deleted",
-        ".filter(", "active_items",
+        "eventStorm",
+        "has no Event Storm data",
+        "Work unit",
+        "deleted",
+        ".filter(",
+        "active_items",
     ] {
         assert!(
             !bridge_src.contains(forbidden),
@@ -279,12 +313,19 @@ fn scenario_returns_work_unit_not_found_when_empty_workspace() {
     // @step Then the dispatcher returns success=false with an error message exactly 'Work unit AUTH-001 not found'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_deref().unwrap_or("").contains("Work unit AUTH-001 not found"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("Work unit AUTH-001 not found"),
         "error must contain canonical message; got {result:?}"
     );
 
     // @step Then spec/work-units.json exists after the call (auto-created by ensure_work_units_file)
-    assert!(ws.path().join("spec/work-units.json").exists(), "spec/work-units.json must be auto-created");
+    assert!(
+        ws.path().join("spec/work-units.json").exists(),
+        "spec/work-units.json must be auto-created"
+    );
 }
 
 #[test]
@@ -306,7 +347,11 @@ fn scenario_returns_work_unit_not_found_when_id_missing() {
     // @step Then the dispatcher returns success=false with an error message exactly 'Work unit AUTH-001 not found'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_deref().unwrap_or("").contains("Work unit AUTH-001 not found"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("Work unit AUTH-001 not found"),
         "error must contain canonical message; got {result:?}"
     );
 }
@@ -330,7 +375,11 @@ fn scenario_returns_no_event_storm_data_when_no_event_storm_field() {
     // @step Then the dispatcher returns success=false with an error message exactly 'Work unit AUTH-001 has no Event Storm data'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_deref().unwrap_or("").contains("Work unit AUTH-001 has no Event Storm data"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("Work unit AUTH-001 has no Event Storm data"),
         "error must contain canonical message; got {result:?}"
     );
 }
@@ -354,7 +403,11 @@ fn scenario_returns_no_event_storm_data_when_no_items_array() {
     // @step Then the dispatcher returns success=false with an error message exactly 'Work unit AUTH-001 has no Event Storm data'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_deref().unwrap_or("").contains("Work unit AUTH-001 has no Event Storm data"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("Work unit AUTH-001 has no Event Storm data"),
         "error must contain canonical message; got {result:?}"
     );
 }
@@ -396,7 +449,11 @@ fn scenario_returns_active_items_as_pretty_printed_json_array() {
     assert_eq!(parsed[1]["type"].as_str(), Some("command"));
 
     // @step Then the DispatchResult.data uses 2-space indentation
-    assert!(result.data.contains("\n  "), "data must use 2-space indentation; got:\n{}", result.data);
+    assert!(
+        result.data.contains("\n  "),
+        "data must use 2-space indentation; got:\n{}",
+        result.data
+    );
 }
 
 #[test]
@@ -531,7 +588,11 @@ fn scenario_escalates_malformed_work_units_dispatcher() {
     // @step Then the dispatcher returns success=false with an error message containing the substring 'Failed to parse work-units.json'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_ref().map(|e| e.contains("Failed to parse work-units.json")).unwrap_or(false),
+        result
+            .error
+            .as_ref()
+            .map(|e| e.contains("Failed to parse work-units.json"))
+            .unwrap_or(false),
         "error must mention parse failure; got {result:?}"
     );
 }
@@ -557,7 +618,11 @@ fn scenario_missing_work_unit_id_surfaces_invalid_args_error() {
     // @step Then the dispatcher returns success=false with an error message containing the substring 'failed to parse args'
     assert!(!result.success, "must fail; got {result:?}");
     assert!(
-        result.error.as_ref().map(|e| e.to_lowercase().contains("failed to parse args")).unwrap_or(false),
+        result
+            .error
+            .as_ref()
+            .map(|e| e.to_lowercase().contains("failed to parse args"))
+            .unwrap_or(false),
         "error must mention args parse failure; got {result:?}"
     );
 }

@@ -28,12 +28,9 @@
 //! conversion as a free function `pause_state_to_rpc(...)` rather than
 //! through `Into`/`From`.
 
-use codelet_rpc_types::{
-    ApprovalChoice, PauseKind as RpcPauseKind, PauseState as RpcPauseState,
-};
+use codelet_rpc_types::{ApprovalChoice, PauseKind as RpcPauseKind, PauseState as RpcPauseState};
 use codelet_tools::tool_pause::{
-    PauseKind as ToolPauseKind, PauseResponse as ToolPauseResponse,
-    PauseState as ToolPauseState,
+    PauseKind as ToolPauseKind, PauseResponse as ToolPauseResponse, PauseState as ToolPauseState,
 };
 
 /// Map the internal `tool_pause::PauseState` shape onto the
@@ -113,9 +110,7 @@ impl From<crate::background_session::WorkUnitContext> for codelet_rpc_types::Wor
     }
 }
 
-impl From<crate::background_session::CompactionProgress>
-    for codelet_rpc_types::CompactionProgress
-{
+impl From<crate::background_session::CompactionProgress> for codelet_rpc_types::CompactionProgress {
     fn from(internal: crate::background_session::CompactionProgress) -> Self {
         codelet_rpc_types::CompactionProgress {
             phase: internal.phase,
@@ -141,12 +136,10 @@ pub fn custom_model_def_from_wire(
         wire.compaction_threshold_type.as_ref(),
         wire.compaction_threshold_value,
     ) {
-        (Some(threshold_type), Some(value)) => {
-            Some(crate::profile_sections::CompactionThreshold {
-                threshold_type: threshold_type.clone(),
-                value,
-            })
-        }
+        (Some(threshold_type), Some(value)) => Some(crate::profile_sections::CompactionThreshold {
+            threshold_type: threshold_type.clone(),
+            value,
+        }),
         _ => None,
     };
     crate::profile_sections::CustomModelDef {
@@ -158,5 +151,35 @@ pub fn custom_model_def_from_wire(
         compaction_threshold,
         reasoning: wire.reasoning,
         has_vision: wire.has_vision,
+    }
+}
+
+/// PROV-108: build a persistence-layer
+/// [`crate::profile_persistence::ProfileDef`] from the transport-portable
+/// [`codelet_rpc_types::ProfileDefinition`]. The two flat compaction fields
+/// (`compaction_threshold_type` / `compaction_threshold_value`) are folded back
+/// into the nested [`crate::profile_sections::CompactionThreshold`] only when
+/// BOTH are present; otherwise the override is dropped (`None`). Mirrors
+/// [`custom_model_def_from_wire`] — the single place the wire shape and the
+/// on-disk shape meet.
+pub fn profile_def_from_wire(
+    wire: &codelet_rpc_types::ProfileDefinition,
+) -> crate::profile_persistence::ProfileDef {
+    let compaction_threshold = match (
+        wire.compaction_threshold_type.as_ref(),
+        wire.compaction_threshold_value,
+    ) {
+        (Some(threshold_type), Some(value)) => Some(crate::profile_sections::CompactionThreshold {
+            threshold_type: threshold_type.clone(),
+            value,
+        }),
+        _ => None,
+    };
+    crate::profile_persistence::ProfileDef {
+        base_url: wire.base_url.clone(),
+        api_key: wire.api_key.clone(),
+        context_window: wire.context_window,
+        max_output_tokens: wire.max_output_tokens,
+        compaction_threshold,
     }
 }

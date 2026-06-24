@@ -80,8 +80,8 @@ end
     // @step Given a Ruby file with `def process(data)` that calls `validate(data)`
     // @step And `validate` is defined in the same file
     // @step When the Ruby extractor processes the source file
-    let entities = extract_ruby(ruby_source, "app.rb", &known_files)
-        .expect("Ruby extraction should succeed");
+    let entities =
+        extract_ruby(ruby_source, "app.rb", &known_files).expect("Ruby extraction should succeed");
 
     // @step Then a Calls edge should be emitted from `process` to `validate`
     let calls = find_edges(&entities, "Calls", Some("process"), Some("validate"));

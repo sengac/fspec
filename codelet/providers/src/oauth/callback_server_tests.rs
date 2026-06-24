@@ -20,10 +20,7 @@ impl CodeExchangeHandler for FakeCodexHandler {
     fn error_html(&self, message: &str) -> String {
         format!("<h1>Error: {message}</h1>")
     }
-    fn extract_code_and_state(
-        &self,
-        params: &HashMap<String, String>,
-    ) -> Result<(String, String)> {
+    fn extract_code_and_state(&self, params: &HashMap<String, String>) -> Result<(String, String)> {
         let code = params
             .get("code")
             .ok_or_else(|| anyhow::anyhow!("Missing code"))?
@@ -55,10 +52,7 @@ impl CodeExchangeHandler for FakeClaudeHandler {
     fn error_html(&self, message: &str) -> String {
         format!("<h1>Error: {message}</h1>")
     }
-    fn extract_code_and_state(
-        &self,
-        params: &HashMap<String, String>,
-    ) -> Result<(String, String)> {
+    fn extract_code_and_state(&self, params: &HashMap<String, String>) -> Result<(String, String)> {
         let code = params
             .get("code")
             .ok_or_else(|| anyhow::anyhow!("Missing code"))?
@@ -119,10 +113,7 @@ fn claude_handler_supports_iss_parameter() {
     let mut params = HashMap::new();
     params.insert("code".to_string(), "claude_code".to_string());
     params.insert("state".to_string(), "claude_state".to_string());
-    params.insert(
-        "iss".to_string(),
-        "https://eu.anthropic.com".to_string(),
-    );
+    params.insert("iss".to_string(), "https://eu.anthropic.com".to_string());
 
     let (code, state) = handler.extract_code_and_state(&params).unwrap();
     assert_eq!(code, "claude_code");

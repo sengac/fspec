@@ -25,16 +25,16 @@ use tempfile::TempDir;
 
 /// Write a minimal `spec/work-units.json` covering only the columns and
 /// units the test cares about. Returns the workspace tempdir.
-fn workspace_with(
-    backlog: &[&str],
-    done: &[&str],
-    meta_last_updated: Option<&str>,
-) -> TempDir {
+fn workspace_with(backlog: &[&str], done: &[&str], meta_last_updated: Option<&str>) -> TempDir {
     let dir = tempfile::tempdir().expect("tempdir");
     fs::create_dir_all(dir.path().join("spec")).expect("mkdir spec/");
     let mut work_units_obj = serde_json::Map::new();
     for id in backlog.iter().chain(done.iter()) {
-        let status = if backlog.iter().any(|b| b == id) { "backlog" } else { "done" };
+        let status = if backlog.iter().any(|b| b == id) {
+            "backlog"
+        } else {
+            "done"
+        };
         work_units_obj.insert(
             id.to_string(),
             serde_json::json!({

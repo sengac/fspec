@@ -53,6 +53,8 @@ fn display_info(id: &str) -> ProviderDisplayInfo {
         profiles: Vec::new(),
         oauth_login_methods: Vec::new(),
         oauth_status_label: None,
+        masked_key: None,
+        source: None,
     }
 }
 

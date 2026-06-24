@@ -27,7 +27,9 @@ fn run_vfs(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec validate-foundation-schema");
+    let output = cmd
+        .output()
+        .expect("spawn fspec validate-foundation-schema");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -96,7 +98,10 @@ fn cli_exits_1_and_writes_to_stderr_when_foundation_json_is_missing() {
     assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must carry 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must carry 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'foundation.json not found in spec/ directory'
     assert!(

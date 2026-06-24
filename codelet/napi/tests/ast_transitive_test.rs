@@ -85,13 +85,7 @@ async fn test_find_all_transitive_callers() {
     // @step When I request ast_callers for a deeply-called function
     // func_d is called by func_c (depth 1), which is called by func_b (depth 2),
     // which is called by func_a (depth 3)
-    let result = ast_transitive::dispatch_ast_callers(
-        &db,
-        "src-main-rs::func_d",
-        None,
-        None,
-    )
-    .await;
+    let result = ast_transitive::dispatch_ast_callers(&db, "src-main-rs::func_d", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive a list of all direct and transitive callers
@@ -99,7 +93,11 @@ async fn test_find_all_transitive_callers() {
         .get("results")
         .and_then(|v| v.as_array())
         .expect("results array");
-    assert_eq!(results.len(), 3, "func_d has 3 callers: func_c (d1), func_b (d2), func_a (d3)");
+    assert_eq!(
+        results.len(),
+        3,
+        "func_d has 3 callers: func_c (d1), func_b (d2), func_a (d3)"
+    );
 
     // @step And each caller should include its depth from the target function
     for r in results {
@@ -124,7 +122,11 @@ async fn test_find_all_transitive_callers() {
         .iter()
         .filter(|r| r.get("depth").and_then(|v| v.as_u64()).unwrap_or(0) >= 2)
         .collect();
-    assert_eq!(depth_2_plus.len(), 2, "Should have 2 transitive callers (depth 2+)");
+    assert_eq!(
+        depth_2_plus.len(),
+        2,
+        "Should have 2 transitive callers (depth 2+)"
+    );
 }
 
 // ============================================================================
@@ -139,13 +141,7 @@ async fn test_find_all_transitive_callees() {
     let db = setup_linear_chain_db(temp_dir.path()).await;
 
     // @step When I request ast_callees for a high-level entry point function
-    let result = ast_transitive::dispatch_ast_callees(
-        &db,
-        "src-main-rs::func_a",
-        None,
-        None,
-    )
-    .await;
+    let result = ast_transitive::dispatch_ast_callees(&db, "src-main-rs::func_a", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive a list of all functions it transitively calls
@@ -153,7 +149,11 @@ async fn test_find_all_transitive_callees() {
         .get("results")
         .and_then(|v| v.as_array())
         .expect("results array");
-    assert_eq!(results.len(), 3, "func_a calls: func_b (d1), func_c (d2), func_d (d3)");
+    assert_eq!(
+        results.len(),
+        3,
+        "func_a calls: func_b (d1), func_c (d2), func_d (d3)"
+    );
 
     // @step And each callee should include slug, name, file path, line numbers, and depth
     let first = &results[0];
@@ -178,13 +178,7 @@ async fn test_function_with_no_callers_returns_empty() {
 
     // @step When I request ast_callers for a function that is never called
     // func_a is at the top of the chain — no one calls it
-    let result = ast_transitive::dispatch_ast_callers(
-        &db,
-        "src-main-rs::func_a",
-        None,
-        None,
-    )
-    .await;
+    let result = ast_transitive::dispatch_ast_callers(&db, "src-main-rs::func_a", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive an empty results array
@@ -192,7 +186,10 @@ async fn test_function_with_no_callers_returns_empty() {
         .get("results")
         .and_then(|v| v.as_array())
         .expect("results array");
-    assert!(results.is_empty(), "func_a has no callers, results should be empty");
+    assert!(
+        results.is_empty(),
+        "func_a has no callers, results should be empty"
+    );
 }
 
 // ============================================================================
@@ -207,13 +204,7 @@ async fn test_function_with_no_callees_returns_empty() {
 
     // @step When I request ast_callees for a leaf function that calls nothing
     // func_d is at the bottom of the chain — it calls nothing
-    let result = ast_transitive::dispatch_ast_callees(
-        &db,
-        "src-main-rs::func_d",
-        None,
-        None,
-    )
-    .await;
+    let result = ast_transitive::dispatch_ast_callees(&db, "src-main-rs::func_d", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive an empty results array
@@ -221,7 +212,10 @@ async fn test_function_with_no_callees_returns_empty() {
         .get("results")
         .and_then(|v| v.as_array())
         .expect("results array");
-    assert!(results.is_empty(), "func_d calls nothing, results should be empty");
+    assert!(
+        results.is_empty(),
+        "func_d calls nothing, results should be empty"
+    );
 }
 
 // ============================================================================
@@ -236,13 +230,8 @@ async fn test_max_depth_limits_transitive_traversal() {
     let db = setup_deep_chain_db(temp_dir.path()).await;
 
     // @step When I request ast_callees with max_depth 2
-    let result = ast_transitive::dispatch_ast_callees(
-        &db,
-        "src-deep-rs::entry",
-        Some(2),
-        None,
-    )
-    .await;
+    let result =
+        ast_transitive::dispatch_ast_callees(&db, "src-deep-rs::entry", Some(2), None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should only receive callees within 2 hops
@@ -250,7 +239,11 @@ async fn test_max_depth_limits_transitive_traversal() {
         .get("results")
         .and_then(|v| v.as_array())
         .expect("results array");
-    assert_eq!(results.len(), 2, "max_depth=2 should find step1 (d1) and step2 (d2)");
+    assert_eq!(
+        results.len(),
+        2,
+        "max_depth=2 should find step1 (d1) and step2 (d2)"
+    );
 
     // @step And functions at depth 3 and beyond should not appear in results
     let slugs: Vec<&str> = results
@@ -266,8 +259,14 @@ async fn test_max_depth_limits_transitive_traversal() {
         "leaf (depth 4) should not appear with max_depth=2"
     );
     // Verify correct functions are present
-    assert!(slugs.contains(&"src-deep-rs::step1"), "step1 (depth 1) should be present");
-    assert!(slugs.contains(&"src-deep-rs::step2"), "step2 (depth 2) should be present");
+    assert!(
+        slugs.contains(&"src-deep-rs::step1"),
+        "step1 (depth 1) should be present"
+    );
+    assert!(
+        slugs.contains(&"src-deep-rs::step2"),
+        "step2 (depth 2) should be present"
+    );
 }
 
 // ============================================================================
@@ -281,13 +280,8 @@ async fn test_nonexistent_function_returns_error_callers() {
     let db = setup_linear_chain_db(temp_dir.path()).await;
 
     // @step When I request ast_callers for a non-existent function slug
-    let result = ast_transitive::dispatch_ast_callers(
-        &db,
-        "nonexistent_function",
-        None,
-        None,
-    )
-    .await;
+    let result =
+        ast_transitive::dispatch_ast_callers(&db, "nonexistent_function", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive an error indicating the function was not found
@@ -307,13 +301,8 @@ async fn test_nonexistent_function_returns_error_callees() {
     let db = setup_linear_chain_db(temp_dir.path()).await;
 
     // @step When I request ast_callees for a non-existent function slug
-    let result = ast_transitive::dispatch_ast_callees(
-        &db,
-        "nonexistent_function",
-        None,
-        None,
-    )
-    .await;
+    let result =
+        ast_transitive::dispatch_ast_callees(&db, "nonexistent_function", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive an error indicating the function was not found

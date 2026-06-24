@@ -82,7 +82,10 @@ fn scenario_clap_exposes_remove_capability_with_positional_arg_in_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "remove-capability --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-capability --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout describes the remove-capability subcommand
     assert!(
@@ -244,14 +247,20 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/foundation.json
     assert!(ws.path().join("spec/foundation.json").exists());
 
     // @step And running `./codelet/target/release/fspec remove-capability "B"` afterwards exits 0
     let (code, stdout, stderr) = run_remove_cap(ws.path(), &["B"]);
-    assert_eq!(code, 0, "CLI remove must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI remove must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json solutionSpace.capabilities is empty
     let data = read_foundation(ws.path());
@@ -302,7 +311,10 @@ fn scenario_remove_capability_help_matches_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "remove-capability --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-capability --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/remove-capability.txt
     assert_eq!(stdout, HELP_FIXTURE);

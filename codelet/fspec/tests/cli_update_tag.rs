@@ -132,10 +132,8 @@ fn cli_moves_tag_between_categories_with_category_flag() {
     write_tags(ws.path(), FIXTURE_CRITICAL);
 
     // @step When I run 'fspec update-tag @critical --category "Priority Tags"' in that tempdir
-    let (code, stdout, stderr) = run_update_tag(
-        ws.path(),
-        &["@critical", "--category", "Priority Tags"],
-    );
+    let (code, stdout, stderr) =
+        run_update_tag(ws.path(), &["@critical", "--category", "Priority Tags"]);
 
     // @step Then the process exits with code 0
     assert_eq!(

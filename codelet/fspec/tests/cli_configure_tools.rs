@@ -66,7 +66,10 @@ fn scenario_configure_tools_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "configure-tools --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "configure-tools --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/configure-tools.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -182,19 +185,31 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then spec/fspec-config.json shows tools.test.command='via-dispatcher'
     let v = read_config(ws.path());
-    assert_eq!(v["tools"]["test"]["command"].as_str(), Some("via-dispatcher"));
+    assert_eq!(
+        v["tools"]["test"]["command"].as_str(),
+        Some("via-dispatcher")
+    );
 
     // @step And running `fspec configure-tools --quality-commands "via-cli"` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["--quality-commands", "via-cli"]);
-    assert_eq!(code, 0, "CLI configure must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI configure must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/fspec-config.json still shows tools.test.command='via-dispatcher' and tools.qualityCheck.commands=['via-cli']
     let v = read_config(ws.path());
-    assert_eq!(v["tools"]["test"]["command"].as_str(), Some("via-dispatcher"));
+    assert_eq!(
+        v["tools"]["test"]["command"].as_str(),
+        Some("via-dispatcher")
+    );
     let cmds = v["tools"]["qualityCheck"]["commands"]
         .as_array()
         .expect("commands array");

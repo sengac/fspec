@@ -64,12 +64,12 @@ fn strip_rust_comments(src: &str) -> String {
 /// the byte where `header` first appears and the matching closing `}`
 /// of that function body (best-effort brace counter).
 fn extract_fn_body<'a>(src: &'a str, header: &str) -> &'a str {
-    let start = src.find(header).unwrap_or_else(|| {
-        panic!("expected to find function header `{header}` in source")
-    });
-    let body_start_rel = src[start..].find('{').unwrap_or_else(|| {
-        panic!("expected an opening `{{` after `{header}`")
-    });
+    let start = src
+        .find(header)
+        .unwrap_or_else(|| panic!("expected to find function header `{header}` in source"));
+    let body_start_rel = src[start..]
+        .find('{')
+        .unwrap_or_else(|| panic!("expected an opening `{{` after `{header}`"));
     let body_start = start + body_start_rel + 1;
     let bytes = src.as_bytes();
     let mut depth = 1usize;
@@ -298,9 +298,25 @@ fn scenario_napi_agent_loop_consumes_mcp_injection_rx() {
 fn scenario_no_mcp_method_leaks_into_rpc_surface() {
     // @step Given the files codelet/core/src/session_manager_handle.rs, codelet/rpc/src/lib.rs, and codelet/fspec-tui/src/transport/mod.rs are compiled
     let targets = [
-        ("codelet/core/src/session_manager_handle.rs", workspace_root().join("core").join("src").join("session_manager_handle.rs")),
-        ("codelet/rpc/src/lib.rs", workspace_root().join("rpc").join("src").join("lib.rs")),
-        ("codelet/fspec-tui/src/transport/mod.rs", workspace_root().join("fspec-tui").join("src").join("transport").join("mod.rs")),
+        (
+            "codelet/core/src/session_manager_handle.rs",
+            workspace_root()
+                .join("core")
+                .join("src")
+                .join("session_manager_handle.rs"),
+        ),
+        (
+            "codelet/rpc/src/lib.rs",
+            workspace_root().join("rpc").join("src").join("lib.rs"),
+        ),
+        (
+            "codelet/fspec-tui/src/transport/mod.rs",
+            workspace_root()
+                .join("fspec-tui")
+                .join("src")
+                .join("transport")
+                .join("mod.rs"),
+        ),
     ];
 
     // @step When I scan their source bytes after stripping Rust comments
@@ -377,8 +393,7 @@ fn scenario_codelet_sessions_has_no_transitive_napi_dependency() {
         String::from_utf8_lossy(&output.stderr)
     );
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let json: serde_json::Value =
-        serde_json::from_str(&stdout).expect("metadata JSON must parse");
+    let json: serde_json::Value = serde_json::from_str(&stdout).expect("metadata JSON must parse");
     let packages = json
         .get("packages")
         .and_then(|v| v.as_array())

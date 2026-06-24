@@ -146,7 +146,12 @@ fn rust_port_missing_tag_argument_surfaces_invalid_args_error() {
 
     // @step And the error field contains the substring 'tag'
     assert!(
-        result.error.as_deref().unwrap_or("").to_lowercase().contains("tag"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .to_lowercase()
+            .contains("tag"),
         "error must mention tag; got: {:?}",
         result.error
     );
@@ -364,7 +369,10 @@ fn cli_clap_exposes_subcommand_with_flag_help() {
     );
 
     // @step And stdout contains the substring '--tag'
-    assert!(stdout.contains("--tag"), "help must mention --tag; got:\n{stdout}");
+    assert!(
+        stdout.contains("--tag"),
+        "help must mention --tag; got:\n{stdout}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -424,10 +432,12 @@ fn cli_json_flag_prints_json_envelope_to_stdout() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as JSON with workUnits, testFiles, patterns, and format fields
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     for field in ["workUnits", "testFiles", "patterns", "format"] {
-        assert!(parsed.get(field).is_some(), "missing field `{field}` in:\n{stdout}");
+        assert!(
+            parsed.get(field).is_some(),
+            "missing field `{field}` in:\n{stdout}"
+        );
     }
 
     // @step And the JSON.format field equals 'json'
@@ -455,8 +465,7 @@ fn cli_include_coverage_includes_deduplicated_test_file_paths() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And the JSON.testFiles array has 3 unique elements
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     let tf = parsed["testFiles"].as_array().expect("testFiles array");
     assert_eq!(tf.len(), 3, "expected 3 unique test files; got {tf:?}");
 }
@@ -478,7 +487,10 @@ fn cli_exits_1_when_work_units_json_missing() {
     assert_ne!(code, 0, "must exit non-zero when work-units.json missing");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════

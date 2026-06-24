@@ -57,7 +57,9 @@ pub fn resolve_tools(
     let script_path = std::path::PathBuf::from(&config.script);
     let ast = loader.load(&script_path)?;
 
-    let has_fn = ast.iter_functions().any(|meta| meta.name == FN_DEFINE_TOOLS);
+    let has_fn = ast
+        .iter_functions()
+        .any(|meta| meta.name == FN_DEFINE_TOOLS);
     if !has_fn {
         let tools = preset_tools(config.tool_style);
         config.resolved_tools = Some(tools.clone());
@@ -74,8 +76,7 @@ pub fn resolve_tools(
 
     let engine = loader.engine();
     let mut scope = Scope::new();
-    let result =
-        engine.call_fn::<Dynamic>(&mut scope, &ast, FN_DEFINE_TOOLS, (config_dyn,));
+    let result = engine.call_fn::<Dynamic>(&mut scope, &ast, FN_DEFINE_TOOLS, (config_dyn,));
 
     let dyn_result = match result {
         Ok(value) => value,
@@ -106,9 +107,7 @@ fn parse_define_tools_result(value: Dynamic) -> Result<Vec<RhaiToolDef>, CustomP
         ));
     }
     let entries = value.into_typed_array::<Dynamic>().map_err(|typ| {
-        CustomProviderError::RhaiRuntimeError(format!(
-            "define_tools returned a non-array ({typ})"
-        ))
+        CustomProviderError::RhaiRuntimeError(format!("define_tools returned a non-array ({typ})"))
     })?;
 
     let mut out: Vec<RhaiToolDef> = Vec::with_capacity(entries.len());

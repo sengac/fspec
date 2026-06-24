@@ -132,7 +132,7 @@ fn test_handler_sets_session_state() {
             };
             session_clone.set_pause_state(Some(state));
             session_clone.set_status(STATUS_PAUSED);
-            
+
             // In real impl, would block here; for test, immediate return
             PauseResponse::Resumed
         });
@@ -140,12 +140,15 @@ fn test_handler_sets_session_state() {
         set_pause_handler(sid, Some(handler));
 
         // Call pause_for_user
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         assert_eq!(response, PauseResponse::Resumed);
 
@@ -183,12 +186,15 @@ fn test_handler_is_scoped() {
         assert!(has_pause_handler(sid));
 
         // Call pause_for_user
-        pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "Test".to_string(),
-            message: "Test".to_string(),
-            details: None,
-        });
+        pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "Test".to_string(),
+                message: "Test".to_string(),
+                details: None,
+            },
+        );
 
         assert!(handler_called.load(Ordering::SeqCst));
 
@@ -211,7 +217,7 @@ fn test_full_pause_flow_with_blocking() {
         let session = Arc::new(SimulatedSession::new());
         // Set initial status to running
         session.set_status(STATUS_RUNNING);
-        
+
         let response_signal: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
             Arc::new((Mutex::new(None), Condvar::new()));
 
@@ -259,19 +265,22 @@ fn test_full_pause_flow_with_blocking() {
         set_pause_handler(sid, Some(handler));
 
         // Tool calls pause_for_user (will block)
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         ui_thread.join().unwrap();
 
         assert_eq!(response, PauseResponse::Resumed);
         assert!(session.get_pause_state().is_none()); // Cleared after resume
         assert_eq!(session.get_status(), STATUS_RUNNING);
-        
+
         // Clean up
         set_pause_handler(sid, None);
     });
@@ -289,12 +298,15 @@ fn test_handler_returns_approved() {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
         set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Confirm,
-            tool_name: "Test".to_string(),
-            message: "Test".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Confirm,
+                tool_name: "Test".to_string(),
+                message: "Test".to_string(),
+                details: None,
+            },
+        );
 
         assert_eq!(response, PauseResponse::Approved);
     });
@@ -307,22 +319,25 @@ fn test_handler_returns_denied() {
     with_clean_handler(|sid| {
         // Ensure no handler first
         assert!(!has_pause_handler(sid));
-        
+
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
         set_pause_handler(sid, Some(handler));
-        
+
         // Verify handler is set
         assert!(has_pause_handler(sid));
 
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Confirm,
-            tool_name: "Test".to_string(),
-            message: "Test".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Confirm,
+                tool_name: "Test".to_string(),
+                message: "Test".to_string(),
+                details: None,
+            },
+        );
 
         assert_eq!(response, PauseResponse::Denied);
-        
+
         // Clean up explicitly
         set_pause_handler(sid, None);
         assert!(!has_pause_handler(sid));
@@ -337,12 +352,15 @@ fn test_handler_returns_interrupted() {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
         set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "Test".to_string(),
-            message: "Test".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "Test".to_string(),
+                message: "Test".to_string(),
+                details: None,
+            },
+        );
 
         assert_eq!(response, PauseResponse::Interrupted);
     });
@@ -379,7 +397,10 @@ fn test_web_search_action_has_pause_field() {
     };
     match action {
         WebSearchAction::CaptureScreenshot { pause, .. } => {
-            assert!(pause, "CaptureScreenshot should have pause field set to true");
+            assert!(
+                pause,
+                "CaptureScreenshot should have pause field set to true"
+            );
         }
         _ => panic!("Expected CaptureScreenshot variant"),
     }
@@ -406,9 +427,7 @@ fn test_web_search_action_has_pause_field() {
 #[test]
 fn test_pause_types_are_exported() {
     // Verify all pause types are exported from codelet_tools
-    use codelet_tools::{
-        PauseHandler, PauseKind, PauseRequest, PauseResponse, PauseState,
-    };
+    use codelet_tools::{PauseHandler, PauseKind, PauseRequest, PauseResponse, PauseState};
 
     // Verify enums have expected variants
     assert_eq!(PauseKind::Continue, PauseKind::Continue);
@@ -496,12 +515,15 @@ fn test_session_handler_pattern() {
         });
 
         // Call pause_for_user within the scope
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded: https://example.com".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded: https://example.com".to_string(),
+                details: None,
+            },
+        );
 
         ui_thread.join().unwrap();
 

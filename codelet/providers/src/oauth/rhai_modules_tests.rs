@@ -32,7 +32,12 @@ fn oauth_generate_pkce_returns_map_with_verifier_challenge() {
     assert!(map.contains_key("challenge"));
     assert!(map.contains_key("challenge_method"));
 
-    let method = map.get("challenge_method").unwrap().clone().into_string().unwrap();
+    let method = map
+        .get("challenge_method")
+        .unwrap()
+        .clone()
+        .into_string()
+        .unwrap();
     assert_eq!(method, "S256");
 
     let verifier = map.get("verifier").unwrap().clone().into_string().unwrap();
@@ -45,9 +50,7 @@ fn crypto_sha256_returns_hex_hash() {
     // @step When a script calls crypto::sha256
     let engine = build_default_engine();
 
-    let result: String = engine
-        .eval(r#"crypto::sha256("hello")"#)
-        .unwrap();
+    let result: String = engine.eval(r#"crypto::sha256("hello")"#).unwrap();
 
     // SHA-256 of "hello" is well-known
     assert_eq!(
@@ -146,7 +149,9 @@ fn all_four_modules_registered_in_default_engine() {
     let engine = build_default_engine();
 
     // Verify each module namespace is accessible
-    let _ = engine.eval::<Dynamic>(r#"oauth::generate_state()"#).unwrap();
+    let _ = engine
+        .eval::<Dynamic>(r#"oauth::generate_state()"#)
+        .unwrap();
     let _ = engine.eval::<Dynamic>(r#"crypto::sha256("test")"#).unwrap();
     let _ = engine.eval::<Dynamic>(r#"json::parse("{}")"#).unwrap();
     // http:: module is registered but calls real HTTP — just verify namespace exists

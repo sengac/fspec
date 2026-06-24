@@ -33,13 +33,17 @@ func Execute() {
 }
 "#;
     write_test_file(project_dir, "cmd/root.go", go_source);
-    write_test_file(project_dir, "internal/util/helpers.go", "package util\nfunc Helper() {}\n");
+    write_test_file(
+        project_dir,
+        "internal/util/helpers.go",
+        "package util\nfunc Helper() {}\n",
+    );
 
     let known_files = build_known_files(project_dir);
 
     // @step When the Go extractor processes the source file
-    let entities = extract_go(go_source, "cmd/root.go", &known_files)
-        .expect("Go extraction should succeed");
+    let entities =
+        extract_go(go_source, "cmd/root.go", &known_files).expect("Go extraction should succeed");
 
     // @step Then an Imports edge should be emitted for the local `./internal/util` import
     let local_imports = find_edges(&entities, "Imports", Some("cmd-root-go"), Some("internal"));
@@ -77,8 +81,8 @@ func initConfig() {
     // @step Given a Go file with function `Execute()` that calls `initConfig()`
     // @step And `initConfig` is defined in the same file
     // @step When the Go extractor processes the source file
-    let entities = extract_go(go_source, "cmd/root.go", &known_files)
-        .expect("Go extraction should succeed");
+    let entities =
+        extract_go(go_source, "cmd/root.go", &known_files).expect("Go extraction should succeed");
 
     // @step Then a Calls edge should be emitted from `Execute` to `initConfig`
     let calls = find_edges(&entities, "Calls", Some("Execute"), Some("initConfig"));

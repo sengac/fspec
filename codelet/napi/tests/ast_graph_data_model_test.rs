@@ -82,7 +82,10 @@ async fn test_initialize_ast_graph_database_with_schema() {
         .expect("AST graph init should succeed");
 
     // @step Then the database should be created at ".fspec/graph/ast-code.nano/"
-    assert!(db_path.exists(), "Database directory should exist after init");
+    assert!(
+        db_path.exists(),
+        "Database directory should exist after init"
+    );
     assert!(
         db_path.join("schema.ir.json").exists(),
         "schema.ir.json should exist"
@@ -315,11 +318,7 @@ async fn test_load_structural_edges_and_traverse_neighbors() {
         .await
         .expect("file_functions query should succeed");
     let contained_arr = contained.as_array().expect("Contained should be an array");
-    assert_eq!(
-        contained_arr.len(),
-        3,
-        "mod-rs should contain 3 functions"
-    );
+    assert_eq!(contained_arr.len(), 3, "mod-rs should contain 3 functions");
 }
 
 // ============================================================================
@@ -372,8 +371,7 @@ async fn test_reusable_graph_database_supports_multiple_instances() {
         .await
         .expect("AST load should succeed");
 
-    let alt_jsonl =
-        r#"{"type":"Widget","data":{"slug":"widget-1","label":"My Widget"}}"#;
+    let alt_jsonl = r#"{"type":"Widget","data":{"slug":"widget-1","label":"My Widget"}}"#;
     alt_db
         .load_jsonl(alt_jsonl)
         .await

@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 // Feature: spec/features/claude-oauth-credential-detection-and-session-routing.feature
 //
 // PROV-026: Credential Resolver Integration Test
@@ -53,7 +58,7 @@ fn restore_claude_env(orig_api_key: Option<String>, orig_oauth_token: Option<Str
 #[test]
 #[serial]
 fn test_credential_resolver_finds_oauth_tokens_from_claude_auth() {
-    use codelet_napi::credentials::{resolve_credential};
+    use codelet_napi::credentials::resolve_credential;
 
     // @step Given I have authenticated with Claude via OAuth
     let original_home = env::var("FSPEC_HOME").ok();
@@ -61,7 +66,12 @@ fn test_credential_resolver_finds_oauth_tokens_from_claude_auth() {
     env::set_var("FSPEC_HOME", temp_dir.path());
 
     // @step And claude_auth.json exists with access_token starting with sk-ant-oat
-    setup_claude_auth("sk-ant-oat-resolver-test", "sk-ant-ort-resolver-refresh", 9999999999999).unwrap();
+    setup_claude_auth(
+        "sk-ant-oat-resolver-test",
+        "sk-ant-ort-resolver-refresh",
+        9999999999999,
+    )
+    .unwrap();
 
     // @step And no ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env vars exist
     let (orig_api_key, orig_oauth_token) = save_and_clear_claude_env();
@@ -75,12 +85,19 @@ fn test_credential_resolver_finds_oauth_tokens_from_claude_auth() {
     // @step Then the access_token from claude_auth.json should be returned
     assert!(result.is_ok());
     let credential = result.unwrap();
-    assert!(credential.is_some(), "Resolver should find OAuth tokens from claude_auth.json");
+    assert!(
+        credential.is_some(),
+        "Resolver should find OAuth tokens from claude_auth.json"
+    );
     assert_eq!(credential.unwrap(), "sk-ant-oat-resolver-test");
 
     // Restore
     restore_claude_env(orig_api_key, orig_oauth_token);
-    if let Some(home) = original_home { env::set_var("FSPEC_HOME", home); } else { env::remove_var("FSPEC_HOME"); }
+    if let Some(home) = original_home {
+        env::set_var("FSPEC_HOME", home);
+    } else {
+        env::remove_var("FSPEC_HOME");
+    }
 }
 
 #[test]
@@ -94,7 +111,12 @@ fn test_credential_resolver_sets_claude_code_oauth_token_env_var() {
     env::set_var("FSPEC_HOME", temp_dir.path());
 
     // @step And claude_auth.json exists with access_token starting with sk-ant-oat
-    setup_claude_auth("sk-ant-oat-resolver-env-test", "sk-ant-ort-resolver-refresh", 9999999999999).unwrap();
+    setup_claude_auth(
+        "sk-ant-oat-resolver-env-test",
+        "sk-ant-ort-resolver-refresh",
+        9999999999999,
+    )
+    .unwrap();
 
     // @step And no ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env vars exist
     let (orig_api_key, orig_oauth_token) = save_and_clear_claude_env();
@@ -104,7 +126,10 @@ fn test_credential_resolver_sets_claude_code_oauth_token_env_var() {
 
     // @step Then CLAUDE_CODE_OAUTH_TOKEN should be set as the environment variable
     assert!(set_result.is_ok());
-    assert!(set_result.unwrap(), "resolve_and_set_env_var should return true");
+    assert!(
+        set_result.unwrap(),
+        "resolve_and_set_env_var should return true"
+    );
     // @step And CLAUDE_CODE_OAUTH_TOKEN should be set as the environment variable
     assert_eq!(
         env::var("CLAUDE_CODE_OAUTH_TOKEN").ok(),
@@ -114,7 +139,11 @@ fn test_credential_resolver_sets_claude_code_oauth_token_env_var() {
 
     // Restore
     restore_claude_env(orig_api_key, orig_oauth_token);
-    if let Some(home) = original_home { env::set_var("FSPEC_HOME", home); } else { env::remove_var("FSPEC_HOME"); }
+    if let Some(home) = original_home {
+        env::set_var("FSPEC_HOME", home);
+    } else {
+        env::remove_var("FSPEC_HOME");
+    }
 }
 
 #[test]
@@ -137,9 +166,20 @@ fn test_resolver_does_not_use_claude_auth_for_non_anthropic_providers() {
 
     // @step Then no credential should be found (claude_auth.json is only for anthropic)
     assert!(result.is_ok());
-    assert!(result.unwrap().is_none(), "Claude OAuth tokens should not be returned for openai provider");
+    assert!(
+        result.unwrap().is_none(),
+        "Claude OAuth tokens should not be returned for openai provider"
+    );
 
     // Restore
-    if let Some(key) = orig_openai { env::set_var("OPENAI_API_KEY", key); } else { env::remove_var("OPENAI_API_KEY"); }
-    if let Some(home) = original_home { env::set_var("FSPEC_HOME", home); } else { env::remove_var("FSPEC_HOME"); }
+    if let Some(key) = orig_openai {
+        env::set_var("OPENAI_API_KEY", key);
+    } else {
+        env::remove_var("OPENAI_API_KEY");
+    }
+    if let Some(home) = original_home {
+        env::set_var("FSPEC_HOME", home);
+    } else {
+        env::remove_var("FSPEC_HOME");
+    }
 }

@@ -63,8 +63,16 @@ const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/format.txt");
 fn scenario_cli_formats_all_feature_files_and_prints_the_green_summary() {
     // @step Given a temp workspace contains two well-formed feature files under spec/features
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/one.feature", &messy_feature("One"));
-    write_feature(ws.path(), "spec/features/two.feature", &messy_feature("Two"));
+    write_feature(
+        ws.path(),
+        "spec/features/one.feature",
+        &messy_feature("One"),
+    );
+    write_feature(
+        ws.path(),
+        "spec/features/two.feature",
+        &messy_feature("Two"),
+    );
 
     // @step When I run `./codelet/target/release/fspec format` from that workspace
     let (code, stdout, stderr) = run_format(ws.path(), &[]);
@@ -87,7 +95,11 @@ fn scenario_cli_formats_all_feature_files_and_prints_the_green_summary() {
 fn scenario_cli_formats_a_single_supplied_file() {
     // @step Given a temp workspace contains spec/features/login.feature
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &messy_feature("Login"));
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &messy_feature("Login"),
+    );
 
     // @step When I run `./codelet/target/release/fspec format spec/features/login.feature` from that workspace
     let (code, stdout, stderr) = run_format(ws.path(), &["spec/features/login.feature"]);
@@ -173,7 +185,10 @@ fn scenario_cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher
     for rel in ["spec/features/one.feature", "spec/features/two.feature"] {
         let disp = read_feature(ws_disp.path(), rel);
         let cli = read_feature(ws_cli.path(), rel);
-        assert_eq!(disp, cli, "front doors must produce identical {rel} content");
+        assert_eq!(
+            disp, cli,
+            "front doors must produce identical {rel} content"
+        );
     }
 }
 

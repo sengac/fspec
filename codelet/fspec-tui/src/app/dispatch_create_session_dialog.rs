@@ -23,6 +23,7 @@ use tokio::task::JoinHandle;
 use crate::components::create_session_dialog::{
     CreateSessionDialog, CreateSessionOption, CREATE_SESSION_DIALOG_ID,
 };
+use crate::components::error_dialog::{ErrorDialog, ERROR_DIALOG_ID};
 use crate::components::Action;
 
 use super::state::App;
@@ -94,7 +95,12 @@ impl App {
             } else {
                 match backend.create_session(None).await {
                     Ok(session_id) => {
-                        let _ = action_tx.send(Action::SessionCreated(session_id));
+                        // PROV-101 FIX 1: an empty id is a decline (no default
+                        // model). Map it to the explicit decline action — never
+                        // append an empty-id session.
+                        let _ = action_tx.send(
+                            crate::app::session_creation::post_create_session_action(session_id),
+                        );
                     }
                     Err(e) => {
                         if let Some(sid) = originating_session {
@@ -108,6 +114,45 @@ impl App {
             }
         });
         self.pending_tasks.push(handle);
+    }
+
+    /// Fold a freshly-created (non-empty) session into the AgentViewStore and
+    /// wire its chrome/attachments. Extracted from `App::dispatch` so the
+    /// orchestrator file stays under the 300-LoC ceiling (PROV-101 FIX 3).
+    pub(crate) fn handle_session_created(&mut self, session: codelet_rpc_types::SessionId) {
+        self.agent_view_store
+            .append_session(crate::store::SessionContext::new(session.clone()));
+        let _ = self.active_session_tx.send(Some(session.clone()));
+        if let Some(id) = self
+            .agent_view_store
+            .current_work_unit_id()
+            .map(std::string::ToString::to_string)
+        {
+            let _ = self
+                .action_tx
+                .send(Action::AttachSession(id.clone(), session.clone()));
+            // RPC-050: late-binding attach for the lazy-session path.
+            let _ = self.action_tx.send(Action::AttachWorkUnitToSession(id));
+        }
+        self.refresh_session_chrome(session.clone());
+        self.spawn_hydrate_pending_input(session.clone()); // RPC-052
+        self.spawn_load_supervisors(session); // RPC-061
+    }
+
+    /// PROV-101 FIX 1: surface a declined `create_session` (empty SessionId,
+    /// i.e. no default model is set) as a Priority::Critical [`ErrorDialog`] so
+    /// the user is alerted instead of an empty-id session being silently
+    /// appended. Idempotent: a second decline while the dialog is open is a
+    /// no-op.
+    pub(crate) fn handle_session_creation_declined(&mut self) {
+        if !self.compositor.contains(ERROR_DIALOG_ID) {
+            let dialog = ErrorDialog::new(
+                "Session creation declined: no default model is set. \
+                 Select a model first (/model)."
+                    .to_string(),
+            );
+            self.compositor.push(Box::new(dialog));
+        }
     }
 
     /// Route RPC-060 Action variants through their helpers. Called from

@@ -44,15 +44,12 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec").join("work-units.json"))
-        .expect("read work-units.json");
+    let raw =
+        fs::read_to_string(cwd.join("spec").join("work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse work-units.json")
 }
 
-fn work_units_with_optional_hooks(
-    id: &str,
-    hooks: Option<&[serde_json::Value]>,
-) -> String {
+fn work_units_with_optional_hooks(id: &str, hooks: Option<&[serde_json::Value]>) -> String {
     let mut wu = serde_json::Map::new();
     wu.insert("id".to_string(), serde_json::json!(id));
     wu.insert(
@@ -167,8 +164,7 @@ fn scenario_cli_removes_existing_hook_and_prints_canonical_success_lines() {
     );
 
     // @step When I run `./codelet/target/release/fspec remove-virtual-hook AUTH-001 eslint`
-    let (code, stdout, stderr) =
-        run_remove_virtual_hook(ws.path(), &["AUTH-001", "eslint"]);
+    let (code, stdout, stderr) = run_remove_virtual_hook(ws.path(), &["AUTH-001", "eslint"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; got {code}, stderr={stderr}");
@@ -190,7 +186,10 @@ fn scenario_cli_removes_existing_hook_and_prints_canonical_success_lines() {
     let hooks = v["workUnits"]["AUTH-001"]["virtualHooks"]
         .as_array()
         .expect("virtualHooks array");
-    assert!(hooks.is_empty(), "expected empty virtualHooks; got {hooks:?}");
+    assert!(
+        hooks.is_empty(),
+        "expected empty virtualHooks; got {hooks:?}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -201,14 +200,10 @@ fn scenario_cli_removes_existing_hook_and_prints_canonical_success_lines() {
 fn scenario_cli_fails_with_exit_1_when_no_virtual_hooks() {
     // @step Given spec/work-units.json contains AUTH-001 with no virtualHooks field
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_optional_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_optional_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec remove-virtual-hook AUTH-001 eslint`
-    let (code, _stdout, stderr) =
-        run_remove_virtual_hook(ws.path(), &["AUTH-001", "eslint"]);
+    let (code, _stdout, stderr) = run_remove_virtual_hook(ws.path(), &["AUTH-001", "eslint"]);
 
     // @step Then the command exits 1
     assert_eq!(code, 1, "expected exit 1; got {code}, stderr={stderr}");
@@ -234,14 +229,10 @@ fn scenario_cli_fails_with_exit_1_when_no_virtual_hooks() {
 fn scenario_cli_fails_with_exit_1_when_work_unit_does_not_exist() {
     // @step Given spec/work-units.json contains AUTH-001
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_optional_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_optional_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec remove-virtual-hook AUTH-999 eslint`
-    let (code, _stdout, stderr) =
-        run_remove_virtual_hook(ws.path(), &["AUTH-999", "eslint"]);
+    let (code, _stdout, stderr) = run_remove_virtual_hook(ws.path(), &["AUTH-999", "eslint"]);
 
     // @step Then the command exits 1
     assert_eq!(code, 1, "expected exit 1; got {code}, stderr={stderr}");
@@ -274,8 +265,7 @@ fn scenario_cli_fails_with_exit_1_when_named_hook_not_found() {
     );
 
     // @step When I run `./codelet/target/release/fspec remove-virtual-hook AUTH-001 missing`
-    let (code, _stdout, stderr) =
-        run_remove_virtual_hook(ws.path(), &["AUTH-001", "missing"]);
+    let (code, _stdout, stderr) = run_remove_virtual_hook(ws.path(), &["AUTH-001", "missing"]);
 
     // @step Then the command exits 1
     assert_eq!(code, 1, "expected exit 1; got {code}, stderr={stderr}");
@@ -315,8 +305,7 @@ fn scenario_cli_deletes_associated_script_file_on_removal() {
     assert!(script_path.exists());
 
     // @step When I run `./codelet/target/release/fspec remove-virtual-hook AUTH-001 eslint`
-    let (code, _stdout, stderr) =
-        run_remove_virtual_hook(ws.path(), &["AUTH-001", "eslint"]);
+    let (code, _stdout, stderr) = run_remove_virtual_hook(ws.path(), &["AUTH-001", "eslint"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; got {code}, stderr={stderr}");
@@ -365,8 +354,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/remove_virtual_hook.rs contains NO inline script-removal, retain, or work-unit-lookup logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/remove_virtual_hook.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/remove_virtual_hook.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/remove_virtual_hook.rs must exist as the CLI bridge module; got missing: {}",
@@ -412,7 +400,10 @@ fn scenario_remove_virtual_hook_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "remove-virtual-hook --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-virtual-hook --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/remove-virtual-hook.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_RVH);

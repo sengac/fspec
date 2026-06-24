@@ -62,6 +62,8 @@ fn anthropic(has_oauth_tokens: bool) -> ProviderDisplayInfo {
         } else {
             None
         },
+        masked_key: None,
+        source: None,
     }
 }
 
@@ -80,6 +82,8 @@ fn openai_with_profiles(profiles: &[&str]) -> ProviderDisplayInfo {
         profiles: profiles.iter().map(ToString::to_string).collect(),
         oauth_login_methods: Vec::new(),
         oauth_status_label: None,
+        masked_key: None,
+        source: None,
     }
 }
 
@@ -99,6 +103,8 @@ fn api_key_provider(id: &str, name: &str) -> ProviderDisplayInfo {
         profiles: Vec::new(),
         oauth_login_methods: Vec::new(),
         oauth_status_label: None,
+        masked_key: None,
+        source: None,
     }
 }
 

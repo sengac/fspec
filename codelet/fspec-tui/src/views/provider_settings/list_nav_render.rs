@@ -107,14 +107,20 @@ fn paint_test_result_decoration(
 }
 
 fn row_kind_and_label(item: &NavItem, view: &ProviderSettingsView) -> (RowKind, String) {
+    let display = view
+        .display_providers
+        .iter()
+        .find(|p| p.id == item.provider_id);
     match &item.kind {
         NavItemKind::Provider { expanded } => {
-            let label = view
-                .display_providers
-                .iter()
-                .find(|p| p.id == item.provider_id)
+            let name = display
                 .map(|p| p.name.clone())
                 .unwrap_or_else(|| item.provider_id.clone());
+            // PROV-098: append the credential annotation to the provider
+            // header (TS ProviderSettingsPanel.tsx:594-608). Driven SOLELY
+            // by the display masked_key/source — OAuth status stays its own
+            // child row.
+            let label = format!("{name}{}", provider_annotation(display));
             (
                 RowKind::Provider {
                     expanded: *expanded,
@@ -124,8 +130,42 @@ fn row_kind_and_label(item: &NavItem, view: &ProviderSettingsView) -> (RowKind, 
         }
         NavItemKind::Profile { profile_name } => (RowKind::Profile, profile_name.clone()),
         NavItemKind::AddProfile => (RowKind::AddProfile, "Add Profile".to_string()),
-        NavItemKind::ApiKey => (RowKind::ApiKey, "API Key".to_string()),
+        NavItemKind::ApiKey => {
+            // PROV-098: append the credential annotation to the ApiKey
+            // child row (TS ProviderSettingsPanel.tsx:734-746). Empty
+            // state is "(not set)" here, distinct from the provider row's
+            // "(not configured)".
+            let label = format!("API Key{}", api_key_annotation(display));
+            (RowKind::ApiKey, label)
+        }
         NavItemKind::OAuthLogin { label, .. } => (RowKind::OauthLogin, label.clone()),
         NavItemKind::OAuthStatus { label } => (RowKind::OauthStatus, label.clone()),
+    }
+}
+
+/// PROV-098: credential suffix for a provider header row.
+/// `" ✓ {masked} [{source}]"` when a key is present (` [{source}]` only
+/// when source is Some), else `" (not configured)"`.
+fn provider_annotation(display: Option<&super::nav_item::ProviderDisplayInfo>) -> String {
+    match display.and_then(|p| p.masked_key.as_deref()) {
+        Some(masked) => format!(" ✓ {masked}{}", source_suffix(display)),
+        None => " (not configured)".to_string(),
+    }
+}
+
+/// PROV-098: credential suffix for an ApiKey child row. Same shape as the
+/// provider row but the empty state is `" (not set)"`.
+fn api_key_annotation(display: Option<&super::nav_item::ProviderDisplayInfo>) -> String {
+    match display.and_then(|p| p.masked_key.as_deref()) {
+        Some(masked) => format!(" ✓ {masked}{}", source_suffix(display)),
+        None => " (not set)".to_string(),
+    }
+}
+
+/// `" [{source}]"` when the display info carries a source, else empty.
+fn source_suffix(display: Option<&super::nav_item::ProviderDisplayInfo>) -> String {
+    match display.and_then(|p| p.source.as_deref()) {
+        Some(source) => format!(" [{source}]"),
+        None => String::new(),
     }
 }

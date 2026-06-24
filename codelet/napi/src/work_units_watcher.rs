@@ -54,9 +54,8 @@ pub fn start_work_units_watcher(
     callback: ThreadsafeFunction<StreamChunk>,
 ) -> Result<()> {
     let workspace = Path::new(&project_root).to_path_buf();
-    let watcher = WorkUnitsWatcher::new(&workspace).map_err(|e| {
-        Error::from_reason(format!("create WorkUnitsWatcher: {e}"))
-    })?;
+    let watcher = WorkUnitsWatcher::new(&workspace)
+        .map_err(|e| Error::from_reason(format!("create WorkUnitsWatcher: {e}")))?;
 
     // Subscribe BEFORE we capture the initial snapshot so we don't miss
     // any push that lands between the snapshot read and the subscribe
@@ -65,9 +64,9 @@ pub fn start_work_units_watcher(
     let initial = watcher.snapshot();
 
     {
-        let mut guard = SHIM_STATE.write().map_err(|e| {
-            Error::from_reason(format!("acquire shim-state lock: {e}"))
-        })?;
+        let mut guard = SHIM_STATE
+            .write()
+            .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
         guard.watcher = Some(watcher);
         guard.snapshot = initial.clone();
         guard.is_watching = true;
@@ -114,9 +113,7 @@ pub fn start_work_units_watcher(
                 }
             }
         })
-        .map_err(|e| {
-            Error::from_reason(format!("spawn napi-work-units-watcher thread: {e}"))
-        })?;
+        .map_err(|e| Error::from_reason(format!("spawn napi-work-units-watcher thread: {e}")))?;
 
     debug!("Work units watcher (post-RPC-006 shim) started successfully");
     Ok(())
@@ -125,9 +122,9 @@ pub fn start_work_units_watcher(
 #[napi]
 pub fn stop_work_units_watcher() -> Result<()> {
     debug!("Stopping work units watcher (post-RPC-006 shim)");
-    let mut guard = SHIM_STATE.write().map_err(|e| {
-        Error::from_reason(format!("acquire shim-state lock: {e}"))
-    })?;
+    let mut guard = SHIM_STATE
+        .write()
+        .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
     guard.watcher = None;
     guard.is_watching = false;
     guard.snapshot.clear();
@@ -136,9 +133,9 @@ pub fn stop_work_units_watcher() -> Result<()> {
 
 #[napi]
 pub fn get_work_unit_status(work_unit_id: String) -> Result<Option<String>> {
-    let guard = SHIM_STATE.read().map_err(|e| {
-        Error::from_reason(format!("acquire shim-state lock: {e}"))
-    })?;
+    let guard = SHIM_STATE
+        .read()
+        .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
     Ok(guard
         .snapshot
         .iter()
@@ -148,9 +145,9 @@ pub fn get_work_unit_status(work_unit_id: String) -> Result<Option<String>> {
 
 #[napi]
 pub fn get_work_unit(work_unit_id: String) -> Result<Option<WorkUnitInfo>> {
-    let guard = SHIM_STATE.read().map_err(|e| {
-        Error::from_reason(format!("acquire shim-state lock: {e}"))
-    })?;
+    let guard = SHIM_STATE
+        .read()
+        .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
     Ok(guard
         .snapshot
         .iter()
@@ -160,17 +157,17 @@ pub fn get_work_unit(work_unit_id: String) -> Result<Option<WorkUnitInfo>> {
 
 #[napi]
 pub fn get_all_work_units() -> Result<Vec<WorkUnitInfo>> {
-    let guard = SHIM_STATE.read().map_err(|e| {
-        Error::from_reason(format!("acquire shim-state lock: {e}"))
-    })?;
+    let guard = SHIM_STATE
+        .read()
+        .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
     Ok(guard.snapshot.clone())
 }
 
 #[napi]
 pub fn is_work_units_watcher_active() -> Result<bool> {
-    let guard = SHIM_STATE.read().map_err(|e| {
-        Error::from_reason(format!("acquire shim-state lock: {e}"))
-    })?;
+    let guard = SHIM_STATE
+        .read()
+        .map_err(|e| Error::from_reason(format!("acquire shim-state lock: {e}")))?;
     Ok(guard.is_watching)
 }
 

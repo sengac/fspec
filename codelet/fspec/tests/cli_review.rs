@@ -105,10 +105,16 @@ fn scenario_clap_exposes_review_subcommand_and_prints_bare_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "review --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "review --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step Then stdout contains the substring 'review'
-    assert!(stdout.contains("review"), "help must mention review; got:\n{stdout}");
+    assert!(
+        stdout.contains("review"),
+        "help must mention review; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring 'work-unit-id'
     assert!(
@@ -130,7 +136,10 @@ fn scenario_cli_reviews_an_existing_work_unit_and_prints_the_report() {
     assert_eq!(code, 0, "review must exit 0; got {code}, stderr={stderr}");
 
     // @step Then stdout contains the substring 'REVIEW:'
-    assert!(stdout.contains("REVIEW:"), "stdout must show the review header; got:\n{stdout}");
+    assert!(
+        stdout.contains("REVIEW:"),
+        "stdout must show the review header; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring '## ACDD Compliance'
     assert!(
@@ -139,7 +148,10 @@ fn scenario_cli_reviews_an_existing_work_unit_and_prints_the_report() {
     );
 
     // @step Then stdout contains the substring '## Summary'
-    assert!(stdout.contains("## Summary"), "stdout must show the Summary section; got:\n{stdout}");
+    assert!(
+        stdout.contains("## Summary"),
+        "stdout must show the Summary section; got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -174,7 +186,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     let (code, stdout, stderr) = run_review(ws.path(), &["AUTH-001"]);
     assert_eq!(code, 0, "CLI review must exit 0; stderr={stderr}");

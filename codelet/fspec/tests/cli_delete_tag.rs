@@ -123,10 +123,16 @@ fn cli_deletes_tag_and_prints_multi_line_success_block_when_no_feature_files_ref
         .any(|c| {
             c["tags"]
                 .as_array()
-                .map(|arr| arr.iter().any(|t| t["name"].as_str() == Some("@deprecated")))
+                .map(|arr| {
+                    arr.iter()
+                        .any(|t| t["name"].as_str() == Some("@deprecated"))
+                })
                 .unwrap_or(false)
         });
-    assert!(!any_match, "@deprecated must be removed from all categories");
+    assert!(
+        !any_match,
+        "@deprecated must be removed from all categories"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -178,8 +184,11 @@ fn cli_blocks_deletion_with_error_prefix_and_exit_1_when_tag_referenced_and_no_f
     write_tags(ws.path(), FIXTURE_CRITICAL_PHASE);
 
     // @step And spec/features/auth.feature in the tempdir contains the substring '@critical'
-    write_feature(ws.path(), "spec/features/auth.feature",
-        "@critical\nFeature: Auth\n  Scenario: ok\n    Given x\n");
+    write_feature(
+        ws.path(),
+        "spec/features/auth.feature",
+        "@critical\nFeature: Auth\n  Scenario: ok\n    Given x\n",
+    );
 
     // @step When I run 'fspec delete-tag @critical' in that tempdir
     let (code, stdout, stderr) = run_delete_tag(ws.path(), &["@critical"]);

@@ -55,7 +55,10 @@ fn cli_lists_available_research_tools_with_header() {
     assert_eq!(code, 0, "expected exit 0; stdout={stdout} stderr={stderr}");
 
     // @step And stdout contains "Available Research Tools:"
-    assert!(stdout.contains("Available Research Tools:"), "stdout={stdout}");
+    assert!(
+        stdout.contains("Available Research Tools:"),
+        "stdout={stdout}"
+    );
 
     // @step And stdout contains "ast"
     assert!(stdout.contains("ast"), "stdout={stdout}");

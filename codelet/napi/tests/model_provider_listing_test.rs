@@ -187,8 +187,14 @@ mod model_provider_listing {
         let newer_pos = ids.iter().position(|id| *id == "model-newer");
         let older_pos = ids.iter().position(|id| *id == "model-older");
 
-        assert!(newer_pos.is_some(), "model-newer must be present, got: {ids:?}");
-        assert!(older_pos.is_some(), "model-older must be present, got: {ids:?}");
+        assert!(
+            newer_pos.is_some(),
+            "model-newer must be present, got: {ids:?}"
+        );
+        assert!(
+            older_pos.is_some(),
+            "model-older must be present, got: {ids:?}"
+        );
         assert!(
             newer_pos.unwrap() < older_pos.unwrap(),
             "model-newer (pos {}) must come before model-older (pos {})",
@@ -275,10 +281,7 @@ mod model_provider_listing {
         write_disk_cache(&temp_dir, &response);
 
         // @step When two concurrent callers request the registry while another invalidates after refresh
-        let (r1, r2) = tokio::join!(
-            testing::get_registry(),
-            testing::get_registry(),
-        );
+        let (r1, r2) = tokio::join!(testing::get_registry(), testing::get_registry(),);
 
         // @step Then both callers receive a valid registry without a data race
         let reg1 = r1.expect("First concurrent caller must succeed");

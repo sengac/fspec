@@ -38,6 +38,8 @@ fn openai_display() -> ProviderDisplayInfo {
         profiles: Vec::new(),
         oauth_login_methods: Vec::new(),
         oauth_status_label: None,
+        masked_key: None,
+        source: None,
     }
 }
 
@@ -55,6 +57,8 @@ fn anthropic_display() -> ProviderDisplayInfo {
         profiles: Vec::new(),
         oauth_login_methods: Vec::new(),
         oauth_status_label: None,
+        masked_key: None,
+        source: None,
     }
 }
 

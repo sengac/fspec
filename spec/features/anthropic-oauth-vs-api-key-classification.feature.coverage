@@ -1,0 +1,103 @@
+{
+  "scenarios": [
+    {
+      "name": "Anthropic with an env API key is not classified as OAuth-logged-in",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
+          "lines": "36-71",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anthropic configured without an env API key shows the logout row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
+          "lines": "72-101",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anthropic offers both OAuth login rows and an api-key row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs",
+          "lines": "102-126",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/projection.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/prov_099_anthropic_apikey_projection_test.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/projection.rs"
+    ],
+    "totalLinesCovered": 130
+  }
+}

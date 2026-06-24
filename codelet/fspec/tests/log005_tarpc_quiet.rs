@@ -127,11 +127,8 @@ fn default_env_filter_suppresses_tarpc_info_keeps_warn_and_other_info() {
 #[test]
 fn common_rs_defines_tarpc_quiet_directives_constant() {
     // @step Given the codelet-fspec source tree
-    let common_rs = std::fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/src/common.rs"
-    ))
-    .expect("read codelet/fspec/src/common.rs");
+    let common_rs = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/common.rs"))
+        .expect("read codelet/fspec/src/common.rs");
 
     // @step Then the file declares a TARPC_QUIET_DIRECTIVES constant
     assert!(

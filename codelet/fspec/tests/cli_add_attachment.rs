@@ -142,7 +142,10 @@ fn scenario_add_attachment_help_matches_ts_fixture_byte_for_byte() {
     );
 
     // @step And stdout contains the section header 'ARGUMENTS'
-    assert!(stdout.contains("ARGUMENTS\n"), "help must contain ARGUMENTS");
+    assert!(
+        stdout.contains("ARGUMENTS\n"),
+        "help must contain ARGUMENTS"
+    );
 
     // @step And stdout contains the section header 'OPTIONS'
     assert!(stdout.contains("OPTIONS\n"), "help must contain OPTIONS");
@@ -350,7 +353,11 @@ fn scenario_cli_exits_1_on_duplicate_attachment_with_byte_equality_on_json_file(
     );
 
     // @step And the file spec/attachments/AUTH-001/diagram.png already exists
-    write_file(ws.path(), "spec/attachments/AUTH-001/diagram.png", b"existing");
+    write_file(
+        ws.path(),
+        "spec/attachments/AUTH-001/diagram.png",
+        b"existing",
+    );
 
     // @step And a source file diagram.png exists at the tempdir root
     write_file(ws.path(), "diagram.png", b"new-source");
@@ -369,9 +376,7 @@ fn scenario_cli_exits_1_on_duplicate_attachment_with_byte_equality_on_json_file(
 
     // @step And stderr contains the substring "Error: Attachment 'diagram.png' already exists for work unit 'AUTH-001'"
     assert!(
-        stderr.contains(
-            "Error: Attachment 'diagram.png' already exists for work unit 'AUTH-001'"
-        ),
+        stderr.contains("Error: Attachment 'diagram.png' already exists for work unit 'AUTH-001'"),
         "stderr must contain canonical duplicate error; got:\n{stderr}"
     );
 

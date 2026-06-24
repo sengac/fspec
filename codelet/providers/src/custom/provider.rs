@@ -32,10 +32,7 @@ fn build_config_dynamic(config: &ProviderConfig, model_id: &str, model_alias: &s
     map.insert("name".into(), Dynamic::from(config.name.clone()));
     map.insert("base_url".into(), Dynamic::from(config.base_url.clone()));
     map.insert("model".into(), Dynamic::from(model_id.to_string()));
-    map.insert(
-        "model_alias".into(),
-        Dynamic::from(model_alias.to_string()),
-    );
+    map.insert("model_alias".into(), Dynamic::from(model_alias.to_string()));
     Dynamic::from_map(map)
 }
 

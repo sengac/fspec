@@ -25,6 +25,10 @@ dirs.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 url.workspace = true
+# PROV-097: load <cwd>/.env into the process environment at startup
+# (mirrors codelet/cli/Cargo.toml) so Provider Settings detects env-only
+# providers. dotenvy is already a workspace dependency (codelet/Cargo.toml).
+dotenvy.workspace = true
 codelet-rpc.workspace = true
 codelet-rpc-types.workspace = true
 codelet-rpc-embedded.workspace = true
@@ -67,6 +71,12 @@ nix = { version = "0.29", features = ["signal"] }
 
 [dev-dependencies]
 tempfile.workspace = true
+# PROV-097: scenario 4 inline test queries
+# codelet_providers::custom::management::list_providers_info to prove a
+# .env-only COHERE_API_KEY makes the `cohere` row report configured.
+# codelet-providers is an OPTIONAL runtime dep above (feature-gated); as a
+# dev-dep it is unconditionally available to the crate's test builds.
+codelet-providers.workspace = true
 assert_cmd.workspace = true
 predicates.workspace = true
 tokio-tungstenite.workspace = true

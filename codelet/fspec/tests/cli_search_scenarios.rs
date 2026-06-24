@@ -96,7 +96,10 @@ fn clap_exposes_search_scenarios_as_a_subcommand_and_prints_flag_help() {
     );
 
     // @step And stdout contains the substring '--query'
-    assert!(stdout.contains("--query"), "help must mention --query; got:\n{stdout}");
+    assert!(
+        stdout.contains("--query"),
+        "help must mention --query; got:\n{stdout}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -155,10 +158,12 @@ fn cli_json_prints_the_2_space_json_envelope_to_stdout() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as JSON with searchedFiles, scenarios, format, and searchMode fields
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     for field in ["searchedFiles", "scenarios", "format", "searchMode"] {
-        assert!(parsed.get(field).is_some(), "missing field `{field}` in:\n{stdout}");
+        assert!(
+            parsed.get(field).is_some(),
+            "missing field `{field}` in:\n{stdout}"
+        );
     }
 
     // @step And the JSON.searchMode field equals 'literal'
@@ -180,14 +185,19 @@ fn cli_regex_sets_search_mode_to_regex() {
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
 
     // @step And the JSON.searchMode field equals 'regex'
     assert_eq!(parsed["searchMode"].as_str(), Some("regex"));
 
     // @step And the JSON.scenarios array has 2 elements
-    assert_eq!(parsed["scenarios"].as_array().expect("scenarios array").len(), 2);
+    assert_eq!(
+        parsed["scenarios"]
+            .as_array()
+            .expect("scenarios array")
+            .len(),
+        2
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -290,17 +300,26 @@ fn cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher() {
     assert!(result.success, "dispatcher must succeed; got {result:?}");
     let parsed: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
-    let disp_len = parsed["scenarios"].as_array().expect("scenarios array").len();
+    let disp_len = parsed["scenarios"]
+        .as_array()
+        .expect("scenarios array")
+        .len();
 
     // @step And I run `./codelet/target/release/fspec search-scenarios --query Login --json` against the same workspace
     let (code, stdout, _stderr) = run_ss(ws.path(), &["--query", "Login", "--json"]);
     assert_eq!(code, 0, "CLI must exit 0");
     let cli_parsed: serde_json::Value =
         serde_json::from_str(stdout.trim()).expect("stdout is JSON");
-    let cli_len = cli_parsed["scenarios"].as_array().expect("scenarios array").len();
+    let cli_len = cli_parsed["scenarios"]
+        .as_array()
+        .expect("scenarios array")
+        .len();
 
     // @step Then both invocations produce a JSON envelope with the same scenarios array length
-    assert_eq!(disp_len, cli_len, "dispatcher and CLI scenario counts must match");
+    assert_eq!(
+        disp_len, cli_len,
+        "dispatcher and CLI scenario counts must match"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/search_scenarios.rs contains NO inline filtering or rendering logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/search_scenarios.rs");

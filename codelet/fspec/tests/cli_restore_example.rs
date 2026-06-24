@@ -145,10 +145,7 @@ fn happy_path_restore_via_cli() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.examples[0] has no deletedAt key
     let ex0 = &disk["workUnits"]["AUTH-001"]["examples"][0];
-    assert!(
-        ex0.get("deletedAt").is_none(),
-        "deletedAt absent: {ex0}"
-    );
+    assert!(ex0.get("deletedAt").is_none(), "deletedAt absent: {ex0}");
 }
 
 #[test]

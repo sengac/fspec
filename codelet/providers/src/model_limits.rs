@@ -478,10 +478,7 @@ mod provider_resolver_tests {
     fn openai_resolver_trusts_registry_values() {
         // @step Given the OpenAI provider's resolver declares max_context_window as None
         let resolver = crate::openai::OpenAIProvider::from_api_key_with_options(
-            "test-key",
-            "gpt-4o",
-            None,
-            None,
+            "test-key", "gpt-4o", None, None,
         )
         .expect("Should create provider");
 
@@ -509,10 +506,7 @@ mod provider_resolver_tests {
 
         // @step When the OpenAI resolver is queried with no registry data
         let resolver = crate::openai::OpenAIProvider::from_api_key_with_options(
-            "test-key",
-            "gpt-4o",
-            None,
-            None,
+            "test-key", "gpt-4o", None, None,
         )
         .expect("Should create provider");
 
@@ -532,10 +526,7 @@ mod provider_resolver_tests {
 
         // @step When the OpenAI resolver is queried with no registry data
         let resolver = crate::openai::OpenAIProvider::from_api_key_with_options(
-            "test-key",
-            "gpt-4o",
-            None,
-            None,
+            "test-key", "gpt-4o", None, None,
         )
         .expect("Should create provider");
 
@@ -555,10 +546,7 @@ mod provider_resolver_tests {
 
         // @step When the OpenAI resolver is queried with no registry data
         let resolver = crate::openai::OpenAIProvider::from_api_key_with_options(
-            "test-key",
-            "gpt-4o",
-            None,
-            None,
+            "test-key", "gpt-4o", None, None,
         )
         .expect("Should create provider");
 
@@ -751,10 +739,7 @@ mod integration_all_providers {
         std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
 
         let resolver = crate::openai::OpenAIProvider::from_api_key_with_options(
-            "test-key",
-            "gpt-4o",
-            None,
-            None,
+            "test-key", "gpt-4o", None, None,
         )
         .expect("Should create provider");
 
@@ -813,7 +798,10 @@ mod integration_all_providers {
         // @step Then context_window should be 272000 and max_output_tokens should be 4096
         assert_eq!(ctx, 272_000, "Codex should use 272k default");
         assert_eq!(out, 4_096, "Codex should use 4096 default");
-        assert!(!resolver.should_send_max_output_tokens(), "Codex suppresses max_output_tokens");
+        assert!(
+            !resolver.should_send_max_output_tokens(),
+            "Codex suppresses max_output_tokens"
+        );
     }
 
     // =========================================================================
@@ -882,8 +870,14 @@ mod integration_all_providers {
         let out = resolve_max_output_tokens(None, Some(32_000), &resolver);
 
         // @step Then context_window should be clamped to 200000
-        assert_eq!(ctx, 200_000, "User override 500k must be clamped to Claude max 200k");
-        assert_eq!(out, 8_192, "User override 32k must be clamped to Claude max 8192");
+        assert_eq!(
+            ctx, 200_000,
+            "User override 500k must be clamped to Claude max 200k"
+        );
+        assert_eq!(
+            out, 8_192,
+            "User override 32k must be clamped to Claude max 8192"
+        );
     }
 
     // =========================================================================
@@ -899,57 +893,60 @@ mod integration_all_providers {
 
         // Claude with 1M registry → clamped to 200k
         // @step When context_window() and max_output_tokens() are called with registry values
-        let claude = ProviderManager::for_testing(
-            ProviderType::Claude,
-            Some(1_000_000),
-            Some(128_000),
-        );
+        let claude =
+            ProviderManager::for_testing(ProviderType::Claude, Some(1_000_000), Some(128_000));
         // @step Then each provider returns correctly clamped or pass-through values
-        assert_eq!(claude.context_window(), 200_000, "Claude: 1M clamped to 200k");
-        assert_eq!(claude.max_output_tokens(), 8_192, "Claude: 128k clamped to 8192");
+        assert_eq!(
+            claude.context_window(),
+            200_000,
+            "Claude: 1M clamped to 200k"
+        );
+        assert_eq!(
+            claude.max_output_tokens(),
+            8_192,
+            "Claude: 128k clamped to 8192"
+        );
 
         // OpenAI with registry values → pass-through
-        let openai = ProviderManager::for_testing(
-            ProviderType::OpenAI,
-            Some(128_000),
-            Some(16_384),
+        let openai =
+            ProviderManager::for_testing(ProviderType::OpenAI, Some(128_000), Some(16_384));
+        assert_eq!(
+            openai.context_window(),
+            128_000,
+            "OpenAI: 128k pass-through"
         );
-        assert_eq!(openai.context_window(), 128_000, "OpenAI: 128k pass-through");
-        assert_eq!(openai.max_output_tokens(), 16_384, "OpenAI: 16384 pass-through");
+        assert_eq!(
+            openai.max_output_tokens(),
+            16_384,
+            "OpenAI: 16384 pass-through"
+        );
 
         // Gemini with 1M registry → pass-through
-        let gemini = ProviderManager::for_testing(
-            ProviderType::Gemini,
-            Some(1_000_000),
-            Some(8_192),
+        let gemini =
+            ProviderManager::for_testing(ProviderType::Gemini, Some(1_000_000), Some(8_192));
+        assert_eq!(
+            gemini.context_window(),
+            1_000_000,
+            "Gemini: 1M pass-through"
         );
-        assert_eq!(gemini.context_window(), 1_000_000, "Gemini: 1M pass-through");
-        assert_eq!(gemini.max_output_tokens(), 8_192, "Gemini: 8192 pass-through");
+        assert_eq!(
+            gemini.max_output_tokens(),
+            8_192,
+            "Gemini: 8192 pass-through"
+        );
 
         // Codex no registry → defaults
-        let codex = ProviderManager::for_testing(
-            ProviderType::Codex,
-            None,
-            None,
-        );
+        let codex = ProviderManager::for_testing(ProviderType::Codex, None, None);
         assert_eq!(codex.context_window(), 272_000, "Codex: 272k default");
         assert_eq!(codex.max_output_tokens(), 4_096, "Codex: 4096 default");
 
         // Z.AI no registry → defaults
-        let zai = ProviderManager::for_testing(
-            ProviderType::ZAI,
-            None,
-            None,
-        );
+        let zai = ProviderManager::for_testing(ProviderType::ZAI, None, None);
         assert_eq!(zai.context_window(), 128_000, "Z.AI: 128k default");
         assert_eq!(zai.max_output_tokens(), 8_192, "Z.AI: 8192 default");
 
         // Copilot no registry → defaults
-        let copilot = ProviderManager::for_testing(
-            ProviderType::GitHubCopilot,
-            None,
-            None,
-        );
+        let copilot = ProviderManager::for_testing(ProviderType::GitHubCopilot, None, None);
         assert_eq!(copilot.context_window(), 200_000, "Copilot: 200k default");
         assert_eq!(copilot.max_output_tokens(), 4_096, "Copilot: 4096 default");
     }
@@ -961,11 +958,8 @@ mod integration_all_providers {
     #[test]
     fn sub_agent_propagation_returns_clamped_claude() {
         // @step Given a ProviderManager with Claude and registry context_window of 1000000
-        let mut manager = ProviderManager::for_testing(
-            ProviderType::Claude,
-            Some(1_000_000),
-            Some(128_000),
-        );
+        let mut manager =
+            ProviderManager::for_testing(ProviderType::Claude, Some(1_000_000), Some(128_000));
         // Ensure registry values are set
         manager.registry_context_window = Some(1_000_000);
         manager.registry_max_output_tokens = Some(128_000);
@@ -975,8 +969,16 @@ mod integration_all_providers {
         let raw_out = manager.raw_model_max_output_tokens();
 
         // @step Then the returned value should be 200000 not 1000000
-        assert_eq!(raw_ctx, Some(200_000), "Sub-agent gets clamped 200k, not raw 1M");
-        assert_eq!(raw_out, Some(8_192), "Sub-agent gets clamped 8192, not raw 128k");
+        assert_eq!(
+            raw_ctx,
+            Some(200_000),
+            "Sub-agent gets clamped 200k, not raw 1M"
+        );
+        assert_eq!(
+            raw_out,
+            Some(8_192),
+            "Sub-agent gets clamped 8192, not raw 128k"
+        );
     }
 
     // =========================================================================
@@ -991,7 +993,10 @@ mod integration_all_providers {
 
         // User explicitly sets 0 — no clamping since provider has no max
         let ctx = resolve_context_window(None, Some(0), &resolver);
-        assert_eq!(ctx, 0, "Zero user override passes through unclamped on trusting provider");
+        assert_eq!(
+            ctx, 0,
+            "Zero user override passes through unclamped on trusting provider"
+        );
     }
 
     /// Edge case: User override below provider max → not clamped
@@ -1004,7 +1009,10 @@ mod integration_all_providers {
         .expect("Should create provider");
 
         let ctx = resolve_context_window(None, Some(100_000), &resolver);
-        assert_eq!(ctx, 100_000, "User override 100k is below Claude max 200k, should not clamp");
+        assert_eq!(
+            ctx, 100_000,
+            "User override 100k is below Claude max 200k, should not clamp"
+        );
     }
 
     /// Edge case: Registry and user override both present — user wins
@@ -1024,67 +1032,89 @@ mod integration_all_providers {
     /// Edge case: ProviderManager override_model_limits stores and clamps correctly
     #[test]
     fn provider_manager_override_model_limits_clamps() {
-        let mut manager = ProviderManager::for_testing(
-            ProviderType::Claude,
-            Some(200_000),
-            Some(8_192),
-        );
+        let mut manager =
+            ProviderManager::for_testing(ProviderType::Claude, Some(200_000), Some(8_192));
 
         // Override with values exceeding provider max
         manager.override_model_limits(Some(500_000), Some(64_000));
 
         // Both should be clamped to Claude's hard max
-        assert_eq!(manager.context_window(), 200_000, "Override 500k clamped to 200k");
-        assert_eq!(manager.max_output_tokens(), 8_192, "Override 64k clamped to 8192");
+        assert_eq!(
+            manager.context_window(),
+            200_000,
+            "Override 500k clamped to 200k"
+        );
+        assert_eq!(
+            manager.max_output_tokens(),
+            8_192,
+            "Override 64k clamped to 8192"
+        );
     }
 
     /// Edge case: ProviderManager raw_model_context_window returns None when no data
     #[test]
     fn provider_manager_raw_returns_none_when_no_data() {
-        let manager = ProviderManager::for_testing(
-            ProviderType::OpenAI,
-            None,
-            None,
-        );
+        let manager = ProviderManager::for_testing(ProviderType::OpenAI, None, None);
 
-        assert_eq!(manager.raw_model_context_window(), None, "No data → None for sub-agent");
-        assert_eq!(manager.raw_model_max_output_tokens(), None, "No data → None for sub-agent");
+        assert_eq!(
+            manager.raw_model_context_window(),
+            None,
+            "No data → None for sub-agent"
+        );
+        assert_eq!(
+            manager.raw_model_max_output_tokens(),
+            None,
+            "No data → None for sub-agent"
+        );
     }
 
     /// Copilot with registry values → pass-through (not clamped like Claude)
     #[test]
     fn copilot_with_registry_values_passes_through() {
-        let copilot = ProviderManager::for_testing(
-            ProviderType::GitHubCopilot,
-            Some(128_000),
-            Some(16_384),
+        let copilot =
+            ProviderManager::for_testing(ProviderType::GitHubCopilot, Some(128_000), Some(16_384));
+        assert_eq!(
+            copilot.context_window(),
+            128_000,
+            "Copilot passes through registry 128k"
         );
-        assert_eq!(copilot.context_window(), 128_000, "Copilot passes through registry 128k");
-        assert_eq!(copilot.max_output_tokens(), 16_384, "Copilot passes through registry 16384");
+        assert_eq!(
+            copilot.max_output_tokens(),
+            16_384,
+            "Copilot passes through registry 16384"
+        );
     }
 
     /// Z.AI with registry values → pass-through
     #[test]
     fn zai_with_registry_values_passes_through() {
-        let zai = ProviderManager::for_testing(
-            ProviderType::ZAI,
-            Some(128_000),
-            Some(8_192),
+        let zai = ProviderManager::for_testing(ProviderType::ZAI, Some(128_000), Some(8_192));
+        assert_eq!(
+            zai.context_window(),
+            128_000,
+            "Z.AI passes through registry 128k"
         );
-        assert_eq!(zai.context_window(), 128_000, "Z.AI passes through registry 128k");
-        assert_eq!(zai.max_output_tokens(), 8_192, "Z.AI passes through registry 8192");
+        assert_eq!(
+            zai.max_output_tokens(),
+            8_192,
+            "Z.AI passes through registry 8192"
+        );
     }
 
     /// Codex with registry values → pass-through (no clamping)
     #[test]
     fn codex_with_registry_values_passes_through() {
-        let codex = ProviderManager::for_testing(
-            ProviderType::Codex,
-            Some(300_000),
-            Some(8_192),
+        let codex = ProviderManager::for_testing(ProviderType::Codex, Some(300_000), Some(8_192));
+        assert_eq!(
+            codex.context_window(),
+            300_000,
+            "Codex passes through registry 300k"
         );
-        assert_eq!(codex.context_window(), 300_000, "Codex passes through registry 300k");
-        assert_eq!(codex.max_output_tokens(), 8_192, "Codex passes through registry 8192");
+        assert_eq!(
+            codex.max_output_tokens(),
+            8_192,
+            "Codex passes through registry 8192"
+        );
     }
 
     /// OpenAI o3 with large registry values → pass-through (trusts registry)
@@ -1094,12 +1124,17 @@ mod integration_all_providers {
         std::env::remove_var("OPENAI_CONTEXT_WINDOW");
         std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
 
-        let openai = ProviderManager::for_testing(
-            ProviderType::OpenAI,
-            Some(200_000),
-            Some(100_000),
+        let openai =
+            ProviderManager::for_testing(ProviderType::OpenAI, Some(200_000), Some(100_000));
+        assert_eq!(
+            openai.context_window(),
+            200_000,
+            "OpenAI o3 passes through 200k"
         );
-        assert_eq!(openai.context_window(), 200_000, "OpenAI o3 passes through 200k");
-        assert_eq!(openai.max_output_tokens(), 100_000, "OpenAI o3 passes through 100k");
+        assert_eq!(
+            openai.max_output_tokens(),
+            100_000,
+            "OpenAI o3 passes through 100k"
+        );
     }
 }

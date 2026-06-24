@@ -41,8 +41,7 @@ fn write_spec_file(cwd: &Path, name: &str, raw: &str) {
 }
 
 fn read_value(cwd: &Path, name: &str) -> serde_json::Value {
-    let raw =
-        fs::read_to_string(cwd.join("spec").join(name)).expect("read spec file");
+    let raw = fs::read_to_string(cwd.join("spec").join(name)).expect("read spec file");
     serde_json::from_str(&raw).expect("parse JSON")
 }
 
@@ -106,10 +105,7 @@ fn scenario_clap_exposes_delete_epic_with_arg_and_force_flag() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(
-        code, 0,
-        "delete-epic --help must exit 0; stderr={stderr}"
-    );
+    assert_eq!(code, 0, "delete-epic --help must exit 0; stderr={stderr}");
 
     // @step And stdout describes the delete-epic subcommand
     assert!(
@@ -154,7 +150,9 @@ fn scenario_cli_deletes_existing_epic_and_prints_success_line() {
 
     // @step And stdout contains the line '✓ Epic auth deleted successfully'
     assert!(
-        stdout.lines().any(|l| l == "✓ Epic auth deleted successfully"),
+        stdout
+            .lines()
+            .any(|l| l == "✓ Epic auth deleted successfully"),
         "missing success line; got:\n{stdout}"
     );
 
@@ -181,7 +179,9 @@ fn scenario_cli_accepts_force_flag_without_changing_behaviour() {
 
     // @step And stdout contains the line '✓ Epic auth deleted successfully'
     assert!(
-        stdout.lines().any(|l| l == "✓ Epic auth deleted successfully"),
+        stdout
+            .lines()
+            .any(|l| l == "✓ Epic auth deleted successfully"),
         "missing success line; got:\n{stdout}"
     );
 }
@@ -200,10 +200,7 @@ fn scenario_cli_exits_1_when_epic_does_not_exist() {
     let (code, stdout, stderr) = run_delete_epic(ws.path(), &["missing"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(
-        code, 1,
-        "expected exit 1; stdout={stdout}, stderr={stderr}"
-    );
+    assert_eq!(code, 1, "expected exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains the substring '✗ Failed to delete epic:'
     // Parity with TS `src/commands/delete-epic.ts:106`:
@@ -239,11 +236,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `./codelet/target/release/fspec delete-epic dash` afterwards exits 0
     let (code, stdout, stderr) = run_delete_epic(ws.path(), &["dash"]);
-    assert_eq!(code, 0, "CLI delete must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI delete must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/epics.json contains neither 'auth' nor 'dash' epics
     let data = read_value(ws.path(), "epics.json");
@@ -251,8 +254,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert!(data["epics"].get("dash").is_none(), "dash must be gone");
 
     // @step And the CLI bridge module codelet/fspec/src/delete_epic.rs contains NO inline file-read, mutation, or rendering logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/delete_epic.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/delete_epic.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/delete_epic.rs must exist as the CLI bridge module; got missing: {}",

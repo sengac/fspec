@@ -60,8 +60,7 @@ pub struct CliArgs {
 /// it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Marshal CliArgs → JSON object expected by
     // `fspec_core::commands::list_schedules::run`. Translate the TS
@@ -90,8 +89,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 // The dispatcher path keeps the envelope (its documented
                 // contract); the projection lives here in the bridge so
                 // `fspec_core` retains a single canonical response shape.
-                let parsed: Value = serde_json::from_str(&rendered)
-                    .context("parse list-schedules JSON payload")?;
+                let parsed: Value =
+                    serde_json::from_str(&rendered).context("parse list-schedules JSON payload")?;
                 let schedules = parsed
                     .get("schedules")
                     .cloned()

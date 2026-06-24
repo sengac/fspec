@@ -73,10 +73,7 @@ pub(crate) fn map_rhai_error_to_provider(
             provider,
             format!("script '{fn_name}' type error: expected {expected}, got {actual}"),
         ),
-        _ => ProviderError::api(
-            provider,
-            format!("script '{fn_name}' failed: {error}"),
-        ),
+        _ => ProviderError::api(provider, format!("script '{fn_name}' failed: {error}")),
     }
 }
 

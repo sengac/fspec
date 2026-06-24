@@ -34,9 +34,8 @@ pub struct LoopEntry {
 }
 
 /// Idle-check callback type: given a session UUID, returns whether it is idle.
-pub type IdleCheckFn = Arc<
-    dyn Fn(Uuid) -> Pin<Box<dyn Future<Output = bool> + Send>> + Send + Sync + 'static,
->;
+pub type IdleCheckFn =
+    Arc<dyn Fn(Uuid) -> Pin<Box<dyn Future<Output = bool> + Send>> + Send + Sync + 'static>;
 
 /// Shared inner state for LoopStore.
 ///
@@ -152,9 +151,7 @@ impl LoopStore {
         entry: LoopEntry,
         on_fire: Arc<dyn Fn(String) + Send + Sync + 'static>,
     ) {
-        let idle_check: IdleCheckFn = Arc::new(|_session_id: Uuid| {
-            Box::pin(async { true })
-        });
+        let idle_check: IdleCheckFn = Arc::new(|_session_id: Uuid| Box::pin(async { true }));
         self.register_with_task_and_idle_check(entry, on_fire, idle_check)
             .await;
     }

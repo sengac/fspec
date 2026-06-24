@@ -74,12 +74,16 @@ pub struct ProviderInfo {
     pub models: Vec<ProviderModelInfo>,
     /// API style for facade derivation (custom entries).
     pub api_style: Option<String>,
-    /// RPC-108: Display-safe masked API key for the configured row,
-    /// e.g. `Some("sk-ant-••••••••mnop")`. Populated server-side via
-    /// [`crate::credentials::mask_api_key`] when the provider is an
-    /// api-key entry with an env-sourced credential. `None` for
-    /// unconfigured providers and for OAuth-only providers (the TUI
-    /// view layer substitutes the literal `'OAuth'` string instead).
+    /// RPC-108 / PROV-099: Display-safe masked API key for the
+    /// configured row, e.g. `Some("sk-ant-••••••••mnop")`. Populated
+    /// server-side via [`crate::credentials::mask_api_key`] whenever the
+    /// provider declares a non-empty `env_var` that is actually set —
+    /// independent of [`crate::catalog::AuthType`]. This includes
+    /// anthropic (env_var=ANTHROPIC_API_KEY but auth_type=OAuth), whose
+    /// env api key is masked here. `None` for unconfigured providers and
+    /// for OAuth-only providers that declare an empty `env_var` (codex,
+    /// github-copilot) — the TUI view layer substitutes the literal
+    /// `'OAuth'` string and no OAuth token bytes traverse this surface.
     pub masked_key: Option<String>,
     /// RPC-108: Provenance tag — one of
     /// [`crate::credentials::SOURCE_EXPLICIT`],
@@ -137,24 +141,24 @@ pub fn list_providers_info() -> Result<Vec<ProviderInfo>, ProviderError> {
                         .unwrap_or(false)
             }
         };
-        // RPC-108: derive masked_key + source for api-key entries
-        // whose credential comes from the declared env var. OAuth-only
-        // entries (anthropic, codex, github-copilot) always carry
-        // None for both fields — the TUI view layer renders 'OAuth'
-        // literal and the wire surface never carries OAuth token bytes.
-        let (masked_key, source) = match entry.auth_type {
-            crate::catalog::AuthType::ApiKey
-                if available && !entry.env_var.is_empty() =>
-            {
-                match std::env::var(entry.env_var) {
-                    Ok(raw) if !raw.is_empty() => (
-                        Some(crate::credentials::mask_api_key(&raw)),
-                        Some(crate::credentials::SOURCE_ENV.to_string()),
-                    ),
-                    _ => (None, None),
-                }
+        // PROV-099: derive masked_key + source for ANY provider whose
+        // declared env_var is actually set to a non-empty value,
+        // independent of AuthType. Pre-PROV-099 this matched only
+        // `AuthType::ApiKey`, so anthropic (env_var=ANTHROPIC_API_KEY but
+        // auth_type=OAuth) always fell to (None, None) even when the env
+        // key was present. OAuth-only providers (codex, github-copilot)
+        // declare an empty env_var, so they still carry (None, None) and
+        // no OAuth token bytes ever traverse this surface.
+        let (masked_key, source) = if available && !entry.env_var.is_empty() {
+            match std::env::var(entry.env_var) {
+                Ok(raw) if !raw.is_empty() => (
+                    Some(crate::credentials::mask_api_key(&raw)),
+                    Some(crate::credentials::SOURCE_ENV.to_string()),
+                ),
+                _ => (None, None),
             }
-            _ => (None, None),
+        } else {
+            (None, None)
         };
         list.push(ProviderInfo {
             name: entry.id.to_string(),
@@ -280,8 +284,7 @@ pub fn validate_provider_config(name: &str) -> Result<(), ProviderError> {
 /// and comparing the returned model IDs against the config's models.
 pub async fn test_provider_connection(name: &str) -> Result<ProviderTestResult, ProviderError> {
     let config_path = find_provider_config_path(name)?;
-    let cfg =
-        ProviderConfig::from_file(&config_path).map_err(CustomErrorExt::to_provider_error)?;
+    let cfg = ProviderConfig::from_file(&config_path).map_err(CustomErrorExt::to_provider_error)?;
     let url = format!("{}/models", cfg.base_url.trim_end_matches('/'));
     let response = reqwest::Client::new()
         .get(&url)
@@ -392,9 +395,7 @@ pub fn apply_custom_provider_env_vars(
         crate::custom::ApiStyle::AnthropicMessages => Some("claude"),
         crate::custom::ApiStyle::OpenaiChat => Some("openai"),
     };
-    let effective_facade = facade
-        .or(cfg.facade.as_deref())
-        .or(derived_facade);
+    let effective_facade = facade.or(cfg.facade.as_deref()).or(derived_facade);
     match effective_facade {
         Some("openai") => {
             std::env::set_var("OPENAI_BASE_URL", &cfg.base_url);
@@ -497,7 +498,11 @@ fn effective_api_key_env_var(cfg: &ProviderConfig) -> Option<&str> {
 /// project-local search paths.
 fn find_provider_config_path(name: &str) -> Result<PathBuf, ProviderError> {
     let project_dir = std::env::current_dir()
-        .map(|cwd| cwd.join(".fspec").join("providers").join(format!("{name}.json")))
+        .map(|cwd| {
+            cwd.join(".fspec")
+                .join("providers")
+                .join(format!("{name}.json"))
+        })
         .ok();
     if let Some(ref p) = project_dir {
         if p.is_file() {
@@ -515,7 +520,11 @@ fn find_provider_config_path(name: &str) -> Result<PathBuf, ProviderError> {
                 Some(p)
             }
         })
-        .or_else(|| std::env::var("HOME").ok().map(|h| PathBuf::from(h).join(".fspec")));
+        .or_else(|| {
+            std::env::var("HOME")
+                .ok()
+                .map(|h| PathBuf::from(h).join(".fspec"))
+        });
     if let Some(base) = home {
         let global = base.join("providers").join(format!("{name}.json"));
         if global.is_file() {

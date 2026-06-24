@@ -155,7 +155,10 @@ fn missing_work_unit_exits_1_with_canonical_error_on_stderr() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring "✗ Failed to add example:"
-    assert!(stderr.contains("✗ Failed to add example:"), "stderr: {stderr}");
+    assert!(
+        stderr.contains("✗ Failed to add example:"),
+        "stderr: {stderr}"
+    );
 
     // @step And stderr contains the substring "Work unit 'NOPE-001' does not exist"
     assert!(

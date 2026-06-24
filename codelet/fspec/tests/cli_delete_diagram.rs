@@ -45,8 +45,7 @@ fn write_foundation(cwd: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/foundation.json"))
-        .expect("read foundation.json");
+    let raw = fs::read_to_string(cwd.join("spec/foundation.json")).expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -81,7 +80,10 @@ fn scenario_clap_exposes_delete_diagram_with_positional_args_in_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "delete-diagram --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "delete-diagram --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout describes the delete-diagram subcommand
     assert!(
@@ -113,8 +115,7 @@ fn scenario_cli_removes_diagram_by_title_and_prints_success_block() {
     write_foundation(ws.path(), &foundation_with_diagrams(&["Component Flow"]));
 
     // @step When I run `./codelet/target/release/fspec delete-diagram Architecture "Component Flow"`
-    let (code, stdout, stderr) =
-        run_del_diag(ws.path(), &["Architecture", "Component Flow"]);
+    let (code, stdout, stderr) = run_del_diag(ws.path(), &["Architecture", "Component Flow"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}; stdout={stdout}");
@@ -185,8 +186,7 @@ fn scenario_cli_fails_with_exit_1_when_title_not_found() {
     write_foundation(ws.path(), &foundation_with_diagrams(&["Existing"]));
 
     // @step When I run `./codelet/target/release/fspec delete-diagram Architecture "Missing"`
-    let (code, _stdout, stderr) =
-        run_del_diag(ws.path(), &["Architecture", "Missing"]);
+    let (code, _stdout, stderr) = run_del_diag(ws.path(), &["Architecture", "Missing"]);
 
     // @step Then the command exits with code 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
@@ -221,14 +221,20 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/foundation.json
     assert!(ws.path().join("spec/foundation.json").exists());
 
     // @step And running `./codelet/target/release/fspec delete-diagram Architecture "B"` afterwards exits 0
     let (code, stdout, stderr) = run_del_diag(ws.path(), &["Architecture", "B"]);
-    assert_eq!(code, 0, "CLI delete must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI delete must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json architectureDiagrams is empty
     let data = read_foundation(ws.path());
@@ -280,7 +286,10 @@ fn scenario_delete_diagram_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "delete-diagram --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "delete-diagram --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/delete-diagram.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

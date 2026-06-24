@@ -30,7 +30,10 @@ fn crate_root() -> PathBuf {
 }
 
 fn workspace_root() -> PathBuf {
-    crate_root().parent().expect("rpc-types parent").to_path_buf()
+    crate_root()
+        .parent()
+        .expect("rpc-types parent")
+        .to_path_buf()
 }
 
 fn repo_root() -> PathBuf {
@@ -143,7 +146,8 @@ fn scenario_repro_before_fix_shows_34_unscoped_napi_errors() {
     let needle = "cannot find attribute `napi` in this scope";
     let count = stderr.matches(needle).count();
     assert_eq!(
-        count, 34,
+        count,
+        34,
         "BUG-146 (pre-fix): expected EXACTLY 34 `{needle}` errors, found {count}; stderr tail:\n{}",
         tail(&stderr, 6000),
     );
@@ -387,8 +391,8 @@ fn scenario_fix_replaces_field_level_attrs_and_no_other_changes() {
     // every line that mentions "cfg_attr...napi(js_name" has been
     // removed and every line that contains "serde(rename" has been
     // added — the structural invariants below are the real check.
-    let has_exact_stat = stat_stdout.contains("34 insertions(+)")
-        && stat_stdout.contains("34 deletions(-)");
+    let has_exact_stat =
+        stat_stdout.contains("34 insertions(+)") && stat_stdout.contains("34 deletions(-)");
     if !has_exact_stat {
         eprintln!(
             "BUG-146 NOTE: git diff --stat shows more than 34/34 changes (working tree has \
@@ -441,7 +445,9 @@ fn scenario_fix_replaces_field_level_attrs_and_no_other_changes() {
         serde_rename_count >= 34,
         "BUG-146: lib.rs must contain at least 34 `#[serde(rename = ` lines (got {serde_rename_count})",
     );
-    let leftover_napi_js_name = src.matches("cfg_attr(feature = \"napi\", napi(js_name").count();
+    let leftover_napi_js_name = src
+        .matches("cfg_attr(feature = \"napi\", napi(js_name")
+        .count();
     assert_eq!(
         leftover_napi_js_name, 0,
         "BUG-146: lib.rs must contain ZERO `cfg_attr(feature = \"napi\", napi(js_name` occurrences after the fix; got {leftover_napi_js_name}",

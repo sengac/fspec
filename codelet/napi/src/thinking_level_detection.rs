@@ -64,7 +64,7 @@ static LOW_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
         Regex::new(r"(?i)\bthink\s+about\b").expect("Invalid regex"),
         Regex::new(r"(?i)\bthink\s+through\b").expect("Invalid regex"),
         Regex::new(r"(?i)\bthink\s+carefully\b").expect("Invalid regex"),
-        Regex::new(r"(?i)^think\b").expect("Invalid regex"),      // Starts with "think"
+        Regex::new(r"(?i)^think\b").expect("Invalid regex"), // Starts with "think"
         Regex::new(r"(?i)[:.]\s*think\b").expect("Invalid regex"), // After colon or period
     ]
 });
@@ -72,13 +72,13 @@ static LOW_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
 /// Conversational patterns - DO NOT match these as thinking commands
 static CONVERSATIONAL_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
     vec![
-        Regex::new(r"(?i)\bi\s+think\b").expect("Invalid regex"),           // "I think..."
+        Regex::new(r"(?i)\bi\s+think\b").expect("Invalid regex"), // "I think..."
         Regex::new(r"(?i)\bwhat\s+do\s+you\s+think\b").expect("Invalid regex"), // "what do you think"
-        Regex::new(r"(?i)\bdon'?t\s+think\s+so\b").expect("Invalid regex"),  // "don't think so"
-        Regex::new(r"(?i)\bwas\s+thinking\b").expect("Invalid regex"),       // "was thinking"
-        Regex::new(r"(?i)\bthinking\s+about\b").expect("Invalid regex"),     // "thinking about" (gerund)
-        Regex::new(r"(?i)\bi\s+was\s+thinking\b").expect("Invalid regex"),   // "I was thinking"
-        Regex::new(r"(?i)\bdo\s+you\s+think\b").expect("Invalid regex"),     // "do you think"
+        Regex::new(r"(?i)\bdon'?t\s+think\s+so\b").expect("Invalid regex"),     // "don't think so"
+        Regex::new(r"(?i)\bwas\s+thinking\b").expect("Invalid regex"),          // "was thinking"
+        Regex::new(r"(?i)\bthinking\s+about\b").expect("Invalid regex"), // "thinking about" (gerund)
+        Regex::new(r"(?i)\bi\s+was\s+thinking\b").expect("Invalid regex"), // "I was thinking"
+        Regex::new(r"(?i)\bdo\s+you\s+think\b").expect("Invalid regex"), // "do you think"
     ]
 });
 
@@ -174,7 +174,7 @@ pub fn compute_effective_thinking_level(
     // Return the higher of base and detected levels
     let base_val = base_level as u8;
     let detected_val = detected_level as u8;
-    
+
     if base_val >= detected_val {
         base_level
     } else {
@@ -238,23 +238,35 @@ mod tests {
 
     #[test]
     fn test_disable_keyword_quickly() {
-        assert_eq!(detect_thinking_level("do this quickly"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("do this quickly"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
     fn test_disable_keyword_briefly() {
-        assert_eq!(detect_thinking_level("briefly explain"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("briefly explain"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
     fn test_disable_keyword_nothink() {
-        assert_eq!(detect_thinking_level("nothink just do it"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("nothink just do it"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
     fn test_disable_overrides_high() {
         // "ultrathink" would trigger High, but "quickly" overrides
-        assert_eq!(detect_thinking_level("ultrathink but do it quickly"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("ultrathink but do it quickly"),
+            JsThinkingLevel::Off
+        );
     }
 
     // ========================================================================
@@ -263,17 +275,26 @@ mod tests {
 
     #[test]
     fn test_high_ultrathink() {
-        assert_eq!(detect_thinking_level("ultrathink about this problem"), JsThinkingLevel::High);
+        assert_eq!(
+            detect_thinking_level("ultrathink about this problem"),
+            JsThinkingLevel::High
+        );
     }
 
     #[test]
     fn test_high_think_harder() {
-        assert_eq!(detect_thinking_level("think harder about the solution"), JsThinkingLevel::High);
+        assert_eq!(
+            detect_thinking_level("think harder about the solution"),
+            JsThinkingLevel::High
+        );
     }
 
     #[test]
     fn test_high_think_really_hard() {
-        assert_eq!(detect_thinking_level("think really hard about this"), JsThinkingLevel::High);
+        assert_eq!(
+            detect_thinking_level("think really hard about this"),
+            JsThinkingLevel::High
+        );
     }
 
     // ========================================================================
@@ -282,17 +303,26 @@ mod tests {
 
     #[test]
     fn test_medium_megathink() {
-        assert_eq!(detect_thinking_level("megathink this problem"), JsThinkingLevel::Medium);
+        assert_eq!(
+            detect_thinking_level("megathink this problem"),
+            JsThinkingLevel::Medium
+        );
     }
 
     #[test]
     fn test_medium_think_hard() {
-        assert_eq!(detect_thinking_level("think hard about this"), JsThinkingLevel::Medium);
+        assert_eq!(
+            detect_thinking_level("think hard about this"),
+            JsThinkingLevel::Medium
+        );
     }
 
     #[test]
     fn test_medium_think_deeply() {
-        assert_eq!(detect_thinking_level("think deeply about the design"), JsThinkingLevel::Medium);
+        assert_eq!(
+            detect_thinking_level("think deeply about the design"),
+            JsThinkingLevel::Medium
+        );
     }
 
     // ========================================================================
@@ -301,22 +331,34 @@ mod tests {
 
     #[test]
     fn test_low_think_about() {
-        assert_eq!(detect_thinking_level("think about the architecture"), JsThinkingLevel::Low);
+        assert_eq!(
+            detect_thinking_level("think about the architecture"),
+            JsThinkingLevel::Low
+        );
     }
 
     #[test]
     fn test_low_think_through() {
-        assert_eq!(detect_thinking_level("think through this problem"), JsThinkingLevel::Low);
+        assert_eq!(
+            detect_thinking_level("think through this problem"),
+            JsThinkingLevel::Low
+        );
     }
 
     #[test]
     fn test_low_think_carefully() {
-        assert_eq!(detect_thinking_level("think carefully about edge cases"), JsThinkingLevel::Low);
+        assert_eq!(
+            detect_thinking_level("think carefully about edge cases"),
+            JsThinkingLevel::Low
+        );
     }
 
     #[test]
     fn test_low_starts_with_think() {
-        assert_eq!(detect_thinking_level("think: what should we do?"), JsThinkingLevel::Low);
+        assert_eq!(
+            detect_thinking_level("think: what should we do?"),
+            JsThinkingLevel::Low
+        );
     }
 
     // ========================================================================
@@ -325,22 +367,34 @@ mod tests {
 
     #[test]
     fn test_conversational_i_think() {
-        assert_eq!(detect_thinking_level("I think we should use React"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("I think we should use React"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
     fn test_conversational_what_do_you_think() {
-        assert_eq!(detect_thinking_level("what do you think about this?"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("what do you think about this?"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
     fn test_conversational_dont_think_so() {
-        assert_eq!(detect_thinking_level("I don't think so"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("I don't think so"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
     fn test_conversational_was_thinking() {
-        assert_eq!(detect_thinking_level("I was thinking about lunch"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("I was thinking about lunch"),
+            JsThinkingLevel::Off
+        );
     }
 
     // ========================================================================
@@ -349,7 +403,10 @@ mod tests {
 
     #[test]
     fn test_no_match_returns_off() {
-        assert_eq!(detect_thinking_level("write a function to sort arrays"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("write a function to sort arrays"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
@@ -374,32 +431,23 @@ mod tests {
     #[test]
     fn test_effective_max_of_base_and_detected() {
         // Base is Medium, detected is High → should return High
-        let result = compute_effective_thinking_level(
-            JsThinkingLevel::Medium,
-            JsThinkingLevel::High,
-            false,
-        );
+        let result =
+            compute_effective_thinking_level(JsThinkingLevel::Medium, JsThinkingLevel::High, false);
         assert_eq!(result, JsThinkingLevel::High);
     }
 
     #[test]
     fn test_effective_base_wins_when_higher() {
         // Base is High, detected is Low → should return High (base wins)
-        let result = compute_effective_thinking_level(
-            JsThinkingLevel::High,
-            JsThinkingLevel::Low,
-            false,
-        );
+        let result =
+            compute_effective_thinking_level(JsThinkingLevel::High, JsThinkingLevel::Low, false);
         assert_eq!(result, JsThinkingLevel::High);
     }
 
     #[test]
     fn test_effective_both_off_returns_off() {
-        let result = compute_effective_thinking_level(
-            JsThinkingLevel::Off,
-            JsThinkingLevel::Off,
-            false,
-        );
+        let result =
+            compute_effective_thinking_level(JsThinkingLevel::Off, JsThinkingLevel::Off, false);
         assert_eq!(result, JsThinkingLevel::Off);
     }
 

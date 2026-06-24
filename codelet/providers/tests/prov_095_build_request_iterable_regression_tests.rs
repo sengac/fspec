@@ -244,8 +244,12 @@ fn assert_for_loop_position_matches_production_error() {
 /// loader caches by path so if the tempdir is dropped mid-test any
 /// second invocation that re-reads from disk would fail.
 fn build_provider() -> (tempfile::TempDir, RhaiCustomProvider) {
-    let (tmp, cfg) =
-        config_with_full_script("claude-rhai", "https://api.anthropic.com", "claude-opus-4-7", CLAUDE_RHAI_SCRIPT);
+    let (tmp, cfg) = config_with_full_script(
+        "claude-rhai",
+        "https://api.anthropic.com",
+        "claude-opus-4-7",
+        CLAUDE_RHAI_SCRIPT,
+    );
     let loader = Arc::new(ScriptLoader::with_default_engine());
     let provider = RhaiCustomProvider::new(Arc::new(cfg), loader, "smart".to_string())
         .expect("construct RhaiCustomProvider with embedded claude_rhai.rhai script");
@@ -263,7 +267,9 @@ async fn build_request_or_fail(
 ) -> JsonValue {
     match provider.invoke_build_request(messages, tools, None).await {
         Ok(body) => body,
-        Err(ProviderError::Api { message, .. }) if message.contains("For loop expects iterable") => {
+        Err(ProviderError::Api { message, .. })
+            if message.contains("For loop expects iterable") =>
+        {
             panic!(
                 "PROV-095 REGRESSION ({scenario}): the production Rhai bridge surfaced the \
                  exact error from the screenshot — `{message}`. The `request` map passed to \
@@ -335,7 +341,11 @@ async fn build_request_succeeds_with_single_user_turn() {
     // @step And the resulting body is a valid Anthropic Messages payload with one user message
     assert_valid_anthropic_body(&body, "single_user_turn");
     let msgs = body["messages"].as_array().expect("messages array");
-    assert_eq!(msgs.len(), 1, "single_user_turn: expected exactly 1 message");
+    assert_eq!(
+        msgs.len(),
+        1,
+        "single_user_turn: expected exactly 1 message"
+    );
     assert_eq!(msgs[0]["role"].as_str(), Some("user"));
     assert_eq!(msgs[0]["content"].as_str(), Some("what is 3 + 2?"));
 }
@@ -425,7 +435,11 @@ async fn build_request_succeeds_with_empty_chat_history() {
     assert!(msgs.is_empty(), "empty_history: messages should be empty");
     // @step And body.system is not emitted (no system_parts collected)
     assert!(
-        body.get("system").is_none() || body["system"].as_array().map(Vec::is_empty).unwrap_or(false),
+        body.get("system").is_none()
+            || body["system"]
+                .as_array()
+                .map(Vec::is_empty)
+                .unwrap_or(false),
         "empty_history: body.system should be absent or empty: {body}"
     );
 }

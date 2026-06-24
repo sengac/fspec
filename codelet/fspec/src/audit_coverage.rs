@@ -49,8 +49,7 @@ struct Outcome {
 /// Entry point invoked from `main.rs` for the `audit-coverage` clap
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let payload = json!({ "featureName": args.feature_name });
     let args_json = payload.to_string();

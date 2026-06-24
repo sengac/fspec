@@ -92,8 +92,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
 
     match discover_foundation::run(&args_json, &project_root).await {
         Ok(rendered) => {
-            let envelope: Value = serde_json::from_str(&rendered)
-                .context("decode discover-foundation envelope")?;
+            let envelope: Value =
+                serde_json::from_str(&rendered).context("decode discover-foundation envelope")?;
             Ok(render(&envelope, args.finalize))
         }
         Err(err) => {
@@ -106,7 +106,10 @@ pub async fn run(args: CliArgs) -> Result<u8> {
 
 /// Render the envelope to stdout/stderr and compute the exit code.
 fn render(envelope: &Value, finalize: bool) -> u8 {
-    let valid = envelope.get("valid").and_then(Value::as_bool).unwrap_or(false);
+    let valid = envelope
+        .get("valid")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
 
     // 0. `--force` over an existing draft → stderr warning (parity with the TS
     //    `output.warn` at discover-foundation.ts:669-679, emitted before the
@@ -139,7 +142,11 @@ fn render(envelope: &Value, finalize: bool) -> u8 {
             .and_then(Value::as_str)
             .unwrap_or("spec/foundation.json");
         println!("✓ Generated {final_path}");
-        if envelope.get("mdGenerated").and_then(Value::as_bool).unwrap_or(false) {
+        if envelope
+            .get("mdGenerated")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+        {
             println!("✓ Generated spec/FOUNDATION.md");
         }
         println!("✓ Foundation discovered and validated successfully");

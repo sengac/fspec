@@ -21,8 +21,8 @@ use codelet_providers::claude_auth::{
     get_claude_auth_path, read_claude_auth, write_claude_auth, ClaudeAuthJson,
 };
 use codelet_providers::claude_oauth::{
-    build_authorize_url, calculate_expiry, exchange_authorization_code,
-    parse_authorization_code, refresh_access_token_at, ClaudeTokenResponse, CLAUDE_TOKEN_ENDPOINT,
+    build_authorize_url, calculate_expiry, exchange_authorization_code, parse_authorization_code,
+    refresh_access_token_at, ClaudeTokenResponse, CLAUDE_TOKEN_ENDPOINT,
 };
 use codelet_providers::claude_oauth_server::claude_browser_oauth_login;
 use codelet_providers::oauth_crypto::generate_pkce;
@@ -190,14 +190,10 @@ pub async fn claude_oauth_headless_complete(
     }
 
     // Exchange code for tokens
-    let token_response = exchange_authorization_code(
-        claude_token_endpoint_base(),
-        &code,
-        &state,
-        &pkce_verifier,
-    )
-    .await
-    .map_err(|e| Error::from_reason(format!("Token exchange failed: {e}")))?;
+    let token_response =
+        exchange_authorization_code(claude_token_endpoint_base(), &code, &state, &pkce_verifier)
+            .await
+            .map_err(|e| Error::from_reason(format!("Token exchange failed: {e}")))?;
 
     build_and_persist_tokens(token_response, "Failed to persist tokens").await
 }

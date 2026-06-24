@@ -15,6 +15,9 @@ codelet-rpc.workspace = true
 codelet-rpc-types.workspace = true
 codelet-rpc-embedded.workspace = true
 codelet-rpc-server.workspace = true
+# PROV-114: pure host normalization (copilot::normalize_enterprise_domain) for
+# the github-copilot enterprise-host preamble (view-layer, providers-direct).
+codelet-providers.workspace = true
 
 # Async
 tokio.workspace = true

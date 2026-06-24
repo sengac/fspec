@@ -30,8 +30,8 @@
 
 use async_stream::stream;
 use rig::completion::{
-    CompletionError, CompletionModel, CompletionRequest, CompletionResponse as RigCompletionResponse,
-    GetTokenUsage, Usage,
+    CompletionError, CompletionModel, CompletionRequest,
+    CompletionResponse as RigCompletionResponse, GetTokenUsage, Usage,
 };
 use rig::message::AssistantContent;
 use rig::streaming::{RawStreamingChoice, StreamingCompletionResponse, StreamingResult};

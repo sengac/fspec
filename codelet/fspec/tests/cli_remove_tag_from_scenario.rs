@@ -81,7 +81,10 @@ fn scenario_remove_tag_from_scenario_help_matches_ts_formatcommandhelp_reference
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "remove-tag-from-scenario --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-tag-from-scenario --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-tag-from-scenario.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -98,7 +101,11 @@ fn scenario_remove_tag_from_scenario_help_matches_ts_formatcommandhelp_reference
 fn scenario_cli_successfully_removes_tag_and_prints_success_line() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' tagged @smoke @critical
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_with_tags(&["@smoke", "@critical"]));
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_with_tags(&["@smoke", "@critical"]),
+    );
 
     // @step When I run `fspec remove-tag-from-scenario spec/features/login.feature "Login" @critical` in that tempdir
     let (code, stdout, stderr) = run_rm(
@@ -132,7 +139,11 @@ fn scenario_cli_successfully_removes_tag_and_prints_success_line() {
 fn scenario_cli_variadic_positional_collects_multiple_tags() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' tagged @smoke @critical @wip
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_with_tags(&["@smoke", "@critical", "@wip"]));
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_with_tags(&["@smoke", "@critical", "@wip"]),
+    );
 
     // @step When I run `fspec remove-tag-from-scenario spec/features/login.feature "Login" @critical @wip` in that tempdir
     let (code, stdout, stderr) = run_rm(
@@ -167,7 +178,11 @@ fn scenario_cli_variadic_positional_collects_multiple_tags() {
 fn scenario_cli_idempotent_path_for_non_matching_tags() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' tagged @smoke
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_with_tags(&["@smoke"]));
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_with_tags(&["@smoke"]),
+    );
     let pre = fs::read(ws.path().join("spec/features/login.feature")).unwrap();
 
     // @step When I run `fspec remove-tag-from-scenario spec/features/login.feature "Login" @critical` in that tempdir
@@ -177,7 +192,10 @@ fn scenario_cli_idempotent_path_for_non_matching_tags() {
     );
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "idempotent path must exit 0; stderr={stderr}; stdout={stdout}");
+    assert_eq!(
+        code, 0,
+        "idempotent path must exit 0; stderr={stderr}; stdout={stdout}"
+    );
 
     // @step And stdout contains the substring "No changes made - none of the specified tags found on scenario 'Login'"
     assert!(
@@ -210,7 +228,10 @@ fn scenario_cli_reports_missing_feature_file_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must have Error: prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must have Error: prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'File not found: spec/features/missing.feature'
     assert!(
@@ -227,12 +248,17 @@ fn scenario_cli_reports_missing_feature_file_with_exit_1() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root tempdir with spec/features/login.feature containing a Scenario 'Login' tagged @smoke @critical
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", &scenario_login_with_tags(&["@smoke", "@critical"]));
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        &scenario_login_with_tags(&["@smoke", "@critical"]),
+    );
 
     // @step When I dispatch remove-tag-from-scenario via fspec_core::dispatch::dispatch_command with file='spec/features/login.feature' scenario='Login' tags=['@smoke']
     let req = codelet_fspec_core::DispatchRequest {
         command: "remove-tag-from-scenario".to_string(),
-        args_json: r#"{"file":"spec/features/login.feature","scenario":"Login","tags":["@smoke"]}"#.to_string(),
+        args_json: r#"{"file":"spec/features/login.feature","scenario":"Login","tags":["@smoke"]}"#
+            .to_string(),
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
@@ -245,7 +271,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         ws.path(),
         &["spec/features/login.feature", "Login", "@critical"],
     );
-    assert_eq!(code, 0, "CLI must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/features/login.feature on disk shows the Login scenario with no tag lines immediately above it
     let body = read_feature(ws.path(), "spec/features/login.feature");

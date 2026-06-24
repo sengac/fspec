@@ -25,6 +25,11 @@ impl App {
         // Reset to a clean list-mode view so a previous session's edit
         // state never leaks back in.
         self.navigator.provider_settings = crate::views::ProviderSettingsView::new();
+        // PROV-113: gate the browser login rows to transports that can host the
+        // providers-layer local OAuth HTTP server (embedded only).
+        self.navigator
+            .provider_settings
+            .set_browser_login_enabled(self.backend.supports_browser_oauth());
         self.spawn_list_provider_credentials();
     }
 
@@ -56,26 +61,6 @@ impl App {
             }
         });
         self.pending_tasks.push(handle);
-    }
-
-    /// RPC-054 / RPC-349: fold a `list_provider_credentials` response into
-    /// the view. The raw list still backs the legacy `visible_providers`
-    /// path (delete-focus, `d` keybind), but RPC-349 additionally projects
-    /// it into `ProviderDisplayInfo`s and feeds the rich RPC-103 NavItem
-    /// tree via `set_provider_display_infos` — otherwise `nav_items` stays
-    /// empty and the screen falls back to the legacy flat list (the bug
-    /// this card fixes). `openai_profiles` is empty until a list-profiles
-    /// RPC exists; the trailing "Add Profile" row still renders.
-    pub(crate) fn handle_provider_credentials_loaded(
-        &mut self,
-        list: Vec<codelet_rpc_types::ProviderCredentialInfo>,
-    ) {
-        let display =
-            crate::views::provider_settings::projection::project_display_infos(&list, &[]);
-        self.navigator.provider_settings.set_providers(list);
-        self.navigator
-            .provider_settings
-            .set_provider_display_infos(display);
     }
 
     /// RPC-054: persist the API key via
@@ -287,7 +272,27 @@ impl App {
             Action::ProviderSettingsStatus(s) => {
                 self.handle_provider_settings_status(s.clone());
             }
-            _ => return false,
+            // PROV-112/113: OAuth disconnect + login flows live in their own
+            // sibling module (dispatch_provider_settings_oauth.rs).
+            Action::OAuthDisconnect { .. }
+            | Action::OAuthLoginStart { .. }
+            | Action::OAuthHeadlessReady { .. }
+            | Action::OAuthDeviceReady { .. }
+            | Action::OAuthLoginHeadlessSubmit { .. }
+            | Action::OAuthLoginSucceeded { .. }
+            | Action::OAuthLoginFailed { .. }
+            | Action::OAuthOpenUrl { .. }
+            | Action::OAuthCopyUrl { .. } => {
+                return self.try_dispatch_oauth(action);
+            }
+            // PROV-114: github-copilot device-start (own sibling module).
+            Action::OAuthCopilotDeviceStart { .. } => {
+                return self.try_dispatch_copilot_oauth(action);
+            }
+            // PROV-109: profile write actions (SaveProfile / DeleteProfile /
+            // ConfirmDeleteProfile) live in the sibling module to keep this
+            // file under the 300-LoC ceiling.
+            other => return self.try_dispatch_profile_write(other),
         }
         true
     }

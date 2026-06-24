@@ -302,7 +302,8 @@ pub fn write_daemon_json(
     f.write_all(serde_json::to_string_pretty(&body)?.as_bytes())?;
     f.sync_all()?;
     drop(f);
-    fs::rename(&tmp, path).with_context(|| format!("rename {} -> {}", tmp.display(), path.display()))?;
+    fs::rename(&tmp, path)
+        .with_context(|| format!("rename {} -> {}", tmp.display(), path.display()))?;
     Ok(())
 }
 
@@ -310,9 +311,7 @@ pub fn write_daemon_json(
 /// second precision (e.g. `2026-05-11T12:34:56Z`). Avoids a
 /// chrono dep by going through humantime's RFC3339 formatter.
 fn system_time_iso8601(t: std::time::SystemTime) -> String {
-    let duration = t
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default();
+    let duration = t.duration_since(std::time::UNIX_EPOCH).unwrap_or_default();
     let secs = duration.as_secs() as i64;
     // Minimal RFC 3339 formatter — pure stdlib so no chrono dep.
     let days_from_epoch = secs / 86_400;
@@ -322,9 +321,7 @@ fn system_time_iso8601(t: std::time::SystemTime) -> String {
     let minute = secs_in_day / 60;
     let second = secs_in_day % 60;
     let (year, month, day) = civil_from_days(days_from_epoch);
-    format!(
-        "{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}Z"
-    )
+    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}Z")
 }
 
 /// Howard Hinnant's days_from_civil inverse, in pure stdlib.
@@ -464,8 +461,7 @@ impl ShutdownSignals {
 // writes get lost). Stored in a Once-initialised static.
 fn keep_guard(guard: tracing_appender::non_blocking::WorkerGuard) {
     use std::sync::Mutex;
-    static GUARDS: Mutex<Vec<tracing_appender::non_blocking::WorkerGuard>> =
-        Mutex::new(Vec::new());
+    static GUARDS: Mutex<Vec<tracing_appender::non_blocking::WorkerGuard>> = Mutex::new(Vec::new());
     if let Ok(mut g) = GUARDS.lock() {
         g.push(guard);
     }
@@ -544,10 +540,9 @@ pub fn read_and_verify_daemon_json(path: &Path) -> Result<DaemonHandshake> {
             ));
         }
         Err(e) => {
-            return Err(anyhow::Error::from(e).context(format!(
-                "read daemon.json at {}",
-                path.display()
-            )));
+            return Err(
+                anyhow::Error::from(e).context(format!("read daemon.json at {}", path.display()))
+            );
         }
     };
     let parsed: serde_json::Value = serde_json::from_str(&body).context("parse daemon.json")?;
@@ -559,8 +554,7 @@ pub fn read_and_verify_daemon_json(path: &Path) -> Result<DaemonHandshake> {
     let pid = parsed
         .get("pid")
         .and_then(|p| p.as_u64())
-        .ok_or_else(|| anyhow!("daemon.json missing or invalid `pid` field"))?
-        as u32;
+        .ok_or_else(|| anyhow!("daemon.json missing or invalid `pid` field"))? as u32;
     let started_at = parsed
         .get("started_at")
         .and_then(|s| s.as_str())
@@ -772,7 +766,8 @@ mod tests {
         // @step And a chunk sent through `service.chunks_tx()` is received via `service.chunks_rx()` proving the SessionManager broadcast is live
         let tx = service.chunks_tx();
         let mut rx = service.chunks_rx();
-        let session_id = codelet_rpc_types::SessionId::new("00000000-0000-0000-0000-000000000000".to_string());
+        let session_id =
+            codelet_rpc_types::SessionId::new("00000000-0000-0000-0000-000000000000".to_string());
         let chunk = codelet_rpc_types::StreamChunk::text("hello-rpc-044".to_string());
         tx.send((session_id.clone(), chunk.clone()))
             .expect("send chunk through service.chunks_tx()");

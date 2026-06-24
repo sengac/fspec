@@ -26,8 +26,7 @@ use common::fspec_bin;
 /// Regenerate via:
 ///   `node /Users/rquast/projects/fspec/dist/index.js list-foundation-sections --help \
 ///    > codelet/fspec/tests/fixtures/help/list-foundation-sections.txt`
-const TS_HELP_FIXTURE: &str =
-    include_str!("fixtures/help/list-foundation-sections.txt");
+const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/list-foundation-sections.txt");
 
 #[test]
 fn scenario_list_foundation_sections_help_matches_ts_commander_default() {

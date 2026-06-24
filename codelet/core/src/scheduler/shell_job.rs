@@ -6,8 +6,8 @@
 
 use super::types::ScheduleEntry;
 use anyhow::{anyhow, Result};
-use tracing::info;
 use tokio::process::Command;
+use tracing::info;
 
 /// Result of a shell job execution.
 #[derive(Debug, Clone)]

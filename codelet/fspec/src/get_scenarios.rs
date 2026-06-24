@@ -65,7 +65,10 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 .unwrap_or_else(|| Value::Array(Vec::new()));
 
             if args.format == "json" {
-                println!("{}", serde_json::to_string_pretty(&scen).unwrap_or_default());
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&scen).unwrap_or_default()
+                );
             } else {
                 if let Some(msg) = envelope.get("message").and_then(Value::as_str) {
                     println!("{msg}");

@@ -84,14 +84,17 @@ fn scenario_cli_successfully_updates_step_text_and_prints_success_line() {
 
     // @step And stdout contains the substring '✓ Successfully updated step in scenario 'Valid login' in user-auth.feature'
     assert!(
-        stdout.contains("✓ Successfully updated step in scenario 'Valid login' in user-auth.feature"),
+        stdout
+            .contains("✓ Successfully updated step in scenario 'Valid login' in user-auth.feature"),
         "stdout must contain canonical success line; got:\n{stdout}"
     );
 
     // @step And the file spec/features/user-auth.feature in the tempdir contains the line '    Given I navigate to the login page'
     let after = read_feature(ws.path(), "spec/features/user-auth.feature");
     assert!(
-        after.lines().any(|l| l == "    Given I navigate to the login page"),
+        after
+            .lines()
+            .any(|l| l == "    Given I navigate to the login page"),
         "expected updated step line; got:\n{after}"
     );
 }
@@ -161,7 +164,10 @@ fn scenario_cli_rejects_missing_updates_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'No updates specified. Use --text and/or --keyword'
     assert!(
@@ -196,7 +202,10 @@ fn scenario_cli_surfaces_a_missing_file_error_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Feature file not found:'
     assert!(

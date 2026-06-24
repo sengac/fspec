@@ -94,11 +94,6 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
 
   @list-providers
   @dispatch
-  Scenario: Action::ListProvidersLoaded folds the provider list into the open ModelSelectorDialog
-    Given an App with a ModelSelectorDialog already pushed onto the Compositor against SessionId("s-1") with empty provider list
-    When the App dispatches Action::ListProvidersLoaded(vec![ProviderInfo { key: "openai", display_name: "OpenAI", models: vec![ModelEntry{ id: "gpt-5.1-codex", display_name: "gpt-5.1-codex", context_window: 200_000, supports_reasoning: true, supports_vision: false, is_custom: false }]}])
-    Then the ModelSelectorDialog's provider list has length 1 with key "openai"
-
   @bootstrap
   @session-role-loaded
   Scenario: Action::SessionCreated triggers a backend.get_session_role spawn that fills AgentViewStore.role_by_session

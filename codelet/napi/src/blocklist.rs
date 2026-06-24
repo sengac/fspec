@@ -6,9 +6,8 @@
 //! and command checking.
 
 use codelet_tools::blocklist::{
-    BlocklistAction, BlocklistConfig, BlocklistRule, CheckResult,
-    init_blocklist, load_blocklist_config, project_config_path, system_config_path,
-    check_command_raw,
+    check_command_raw, init_blocklist, load_blocklist_config, project_config_path,
+    system_config_path, BlocklistAction, BlocklistConfig, BlocklistRule, CheckResult,
 };
 use napi::Result;
 use napi_derive::napi;
@@ -150,9 +149,9 @@ pub fn blocklist_load(project_root: Option<String>) -> Result<JsBlocklistConfig>
 pub fn blocklist_save(project_root: String, config: JsBlocklistConfig) -> Result<()> {
     let path = project_config_path(&PathBuf::from(&project_root));
     let rust_config: BlocklistConfig = config.into();
-    rust_config.save_to_file(&path).map_err(|e| {
-        napi::Error::from_reason(format!("Failed to save blocklist config: {}", e))
-    })
+    rust_config
+        .save_to_file(&path)
+        .map_err(|e| napi::Error::from_reason(format!("Failed to save blocklist config: {}", e)))
 }
 
 /// Check a command against the blocklist.
@@ -250,7 +249,10 @@ mod tests {
             reason: "".to_string(),
             guidance: None,
         };
-        assert!(matches!(BlocklistRule::from(block).action, BlocklistAction::Block));
+        assert!(matches!(
+            BlocklistRule::from(block).action,
+            BlocklistAction::Block
+        ));
 
         let allow = JsBlocklistRule {
             id: "2".to_string(),
@@ -259,7 +261,10 @@ mod tests {
             reason: "".to_string(),
             guidance: None,
         };
-        assert!(matches!(BlocklistRule::from(allow).action, BlocklistAction::Allow));
+        assert!(matches!(
+            BlocklistRule::from(allow).action,
+            BlocklistAction::Allow
+        ));
 
         let prompt = JsBlocklistRule {
             id: "3".to_string(),
@@ -268,6 +273,9 @@ mod tests {
             reason: "".to_string(),
             guidance: None,
         };
-        assert!(matches!(BlocklistRule::from(prompt).action, BlocklistAction::Prompt));
+        assert!(matches!(
+            BlocklistRule::from(prompt).action,
+            BlocklistAction::Prompt
+        ));
     }
 }

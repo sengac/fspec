@@ -138,7 +138,10 @@ fn happy_path_soft_delete_via_cli() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.examples[0].deleted=true
     let disk = read_work_units(tmp.path());
-    assert_eq!(disk["workUnits"]["AUTH-001"]["examples"][0]["deleted"], true);
+    assert_eq!(
+        disk["workUnits"]["AUTH-001"]["examples"][0]["deleted"],
+        true
+    );
 }
 
 #[test]
@@ -154,7 +157,10 @@ fn missing_work_unit_exits_1_with_canonical_stderr() {
     assert_eq!(code, 1, "exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring '✗ Failed to remove example:'
-    assert!(stderr.contains("✗ Failed to remove example:"), "stderr: {stderr}");
+    assert!(
+        stderr.contains("✗ Failed to remove example:"),
+        "stderr: {stderr}"
+    );
 
     // @step And stderr contains the substring "Work unit 'NOPE-001' does not exist"
     assert!(

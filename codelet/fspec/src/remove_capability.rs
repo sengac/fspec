@@ -46,10 +46,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
                 .get("fileName")
                 .and_then(|v| v.as_str())
                 .unwrap_or("foundation.json");
-            println!(
-                "✓ Removed capability \"{}\" from {file_name}",
-                args.name
-            );
+            println!("✓ Removed capability \"{}\" from {file_name}", args.name);
             Ok(0)
         }
         Err(err) => {

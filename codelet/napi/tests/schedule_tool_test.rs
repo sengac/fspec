@@ -83,7 +83,13 @@ async fn read_schedules(project_path: &Path) -> serde_json::Value {
 }
 
 /// Helper: create a request for adding an agent schedule
-fn add_agent_request(name: &str, cron: &str, tz: &str, role: &str, prompt: &str) -> ScheduleRequest {
+fn add_agent_request(
+    name: &str,
+    cron: &str,
+    tz: &str,
+    role: &str,
+    prompt: &str,
+) -> ScheduleRequest {
     ScheduleRequest {
         action: "add".to_string(),
         name: Some(name.to_string()),
@@ -193,7 +199,11 @@ async fn test_add_agent_type_schedule() {
     let result = handler(req);
 
     // @step Then the response should have success true and action "add"
-    assert!(result.success, "Expected success, got error: {:?}", result.error);
+    assert!(
+        result.success,
+        "Expected success, got error: {:?}",
+        result.error
+    );
     assert_eq!(result.action.as_deref(), Some("add"));
 
     // @step And the response schedule should have name "nightly-review", cron "0 2 * * *", timezone "Australia/Sydney", and job_type "agent"
@@ -201,7 +211,12 @@ async fn test_add_agent_type_schedule() {
     assert_eq!(schedule["name"], "nightly-review");
     assert_eq!(schedule["cron"], "0 2 * * *");
     assert_eq!(schedule["timezone"], "Australia/Sydney");
-    assert_eq!(schedule["jobType"].as_str().or(schedule["job_type"].as_str()), Some("agent"));
+    assert_eq!(
+        schedule["jobType"]
+            .as_str()
+            .or(schedule["job_type"].as_str()),
+        Some("agent")
+    );
 
     // @step And schedules.json should contain a schedule named "nightly-review"
     let schedules = read_schedules(tmp.path()).await;
@@ -227,13 +242,22 @@ async fn test_add_shell_type_schedule() {
     let result = handler(req);
 
     // @step Then the response should have success true and action "add"
-    assert!(result.success, "Expected success, got error: {:?}", result.error);
+    assert!(
+        result.success,
+        "Expected success, got error: {:?}",
+        result.error
+    );
     assert_eq!(result.action.as_deref(), Some("add"));
 
     // @step And the response schedule should have name "daily-lint" and job_type "shell"
     let schedule = result.schedule.expect("Expected schedule in response");
     assert_eq!(schedule["name"], "daily-lint");
-    assert_eq!(schedule["jobType"].as_str().or(schedule["job_type"].as_str()), Some("shell"));
+    assert_eq!(
+        schedule["jobType"]
+            .as_str()
+            .or(schedule["job_type"].as_str()),
+        Some("shell")
+    );
 
     // @step And schedules.json should contain a schedule named "daily-lint"
     let schedules = read_schedules(tmp.path()).await;
@@ -262,19 +286,36 @@ async fn test_list_all_schedules() {
     let result = handler(list_request());
 
     // @step Then the response should have success true and action "list"
-    assert!(result.success, "Expected success, got error: {:?}", result.error);
+    assert!(
+        result.success,
+        "Expected success, got error: {:?}",
+        result.error
+    );
     assert_eq!(result.action.as_deref(), Some("list"));
 
     // @step And the response should contain 2 schedules with names "nightly-review" and "daily-sync"
-    let schedules = result.schedules.expect("Expected schedules list in response");
-    assert_eq!(schedules.len(), 2, "Expected 2 schedules, got {}", schedules.len());
+    let schedules = result
+        .schedules
+        .expect("Expected schedules list in response");
+    assert_eq!(
+        schedules.len(),
+        2,
+        "Expected 2 schedules, got {}",
+        schedules.len()
+    );
 
     let names: Vec<String> = schedules
         .iter()
         .filter_map(|s| s["name"].as_str().map(String::from))
         .collect();
-    assert!(names.contains(&"nightly-review".to_string()), "Missing nightly-review");
-    assert!(names.contains(&"daily-sync".to_string()), "Missing daily-sync");
+    assert!(
+        names.contains(&"nightly-review".to_string()),
+        "Missing nightly-review"
+    );
+    assert!(
+        names.contains(&"daily-sync".to_string()),
+        "Missing daily-sync"
+    );
 }
 
 // =============================================================================
@@ -294,14 +335,17 @@ async fn test_pause_active_schedule() {
     let result = handler(action_request("pause", "nightly-review"));
 
     // @step Then the response should have success true and action "pause"
-    assert!(result.success, "Expected success, got error: {:?}", result.error);
+    assert!(
+        result.success,
+        "Expected success, got error: {:?}",
+        result.error
+    );
     assert_eq!(result.action.as_deref(), Some("pause"));
 
     // @step And schedules.json should show "nightly-review" with status "paused"
     let schedules = read_schedules(tmp.path()).await;
     assert_eq!(
-        schedules["nightly-review"]["status"],
-        "paused",
+        schedules["nightly-review"]["status"], "paused",
         "Expected status 'paused', got {:?}",
         schedules["nightly-review"]["status"]
     );
@@ -324,14 +368,17 @@ async fn test_resume_paused_schedule() {
     let result = handler(action_request("resume", "nightly-review"));
 
     // @step Then the response should have success true and action "resume"
-    assert!(result.success, "Expected success, got error: {:?}", result.error);
+    assert!(
+        result.success,
+        "Expected success, got error: {:?}",
+        result.error
+    );
     assert_eq!(result.action.as_deref(), Some("resume"));
 
     // @step And schedules.json should show "nightly-review" with status "active"
     let schedules = read_schedules(tmp.path()).await;
     assert_eq!(
-        schedules["nightly-review"]["status"],
-        "active",
+        schedules["nightly-review"]["status"], "active",
         "Expected status 'active', got {:?}",
         schedules["nightly-review"]["status"]
     );
@@ -354,7 +401,11 @@ async fn test_remove_existing_schedule() {
     let result = handler(action_request("remove", "nightly-review"));
 
     // @step Then the response should have success true and action "remove"
-    assert!(result.success, "Expected success, got error: {:?}", result.error);
+    assert!(
+        result.success,
+        "Expected success, got error: {:?}",
+        result.error
+    );
     assert_eq!(result.action.as_deref(), Some("remove"));
 
     // @step And schedules.json should not contain a schedule named "nightly-review"
@@ -475,7 +526,10 @@ async fn test_graceful_error_when_no_handler_registered() {
     let result = execute_schedule_command(session_id, req);
 
     // @step Then the response should have success false
-    assert!(!result.success, "Expected failure when no handler registered");
+    assert!(
+        !result.success,
+        "Expected failure when no handler registered"
+    );
 
     // @step And the error message should contain "No schedule handler registered"
     let err = result.error.expect("Expected error message");

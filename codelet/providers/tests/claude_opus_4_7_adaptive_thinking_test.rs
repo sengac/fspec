@@ -35,7 +35,10 @@ mod tests {
         let result = is_adaptive_thinking_model(model);
 
         // @step Then the result should be true
-        assert!(result, "claude-opus-4-7 should be an adaptive thinking model");
+        assert!(
+            result,
+            "claude-opus-4-7 should be an adaptive thinking model"
+        );
     }
 
     // =========================================================================

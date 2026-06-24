@@ -92,7 +92,7 @@ impl MockBackgroundSession {
         let mut guard = lock.lock().unwrap();
         *guard = Some(response.to_string());
         cvar.notify_one();
-        
+
         // Clear pause state
         *self.pause_state.write().unwrap() = None;
         self.set_status(STATUS_RUNNING);
@@ -127,7 +127,7 @@ impl MockBackgroundSession {
 fn test_get_pause_state_returns_none_when_not_paused() {
     let session = MockBackgroundSession::new();
     session.set_status(STATUS_RUNNING);
-    
+
     let pause_state = session.get_pause_state();
     assert!(pause_state.is_none());
 }
@@ -140,7 +140,7 @@ fn test_get_pause_state_returns_none_when_not_paused() {
 fn test_get_pause_state_returns_state_when_paused() {
     let session = MockBackgroundSession::new();
     session.set_status(STATUS_RUNNING);
-    
+
     // Pause with Continue
     session.set_pause_state(Some(NapiPauseState {
         kind: "continue".to_string(),
@@ -148,10 +148,10 @@ fn test_get_pause_state_returns_state_when_paused() {
         message: "Page loaded at https://example.com".to_string(),
         details: None,
     }));
-    
+
     let pause_state = session.get_pause_state();
     assert!(pause_state.is_some());
-    
+
     let state = pause_state.unwrap();
     assert_eq!(state.kind, "continue");
     assert_eq!(state.tool_name, "WebSearch");
@@ -167,7 +167,7 @@ fn test_get_pause_state_returns_state_when_paused() {
 #[test]
 fn test_pause_resume_clears_state() {
     let session = MockBackgroundSession::new();
-    
+
     // Set up pause
     session.set_pause_state(Some(NapiPauseState {
         kind: "continue".to_string(),
@@ -175,13 +175,13 @@ fn test_pause_resume_clears_state() {
         message: "Page loaded".to_string(),
         details: None,
     }));
-    
+
     assert_eq!(session.get_status(), STATUS_PAUSED);
     assert!(session.get_pause_state().is_some());
-    
+
     // Resume
     session.pause_resume("resume");
-    
+
     assert_eq!(session.get_status(), STATUS_RUNNING);
     assert!(session.get_pause_state().is_none());
 }
@@ -194,7 +194,7 @@ fn test_pause_resume_clears_state() {
 #[test]
 fn test_pause_confirm_approved() {
     let session = MockBackgroundSession::new();
-    
+
     // Set up confirm pause
     session.set_pause_state(Some(NapiPauseState {
         kind: "confirm".to_string(),
@@ -202,12 +202,12 @@ fn test_pause_confirm_approved() {
         message: "Confirm dangerous command".to_string(),
         details: Some("rm -rf /tmp/*".to_string()),
     }));
-    
+
     assert_eq!(session.get_status(), STATUS_PAUSED);
-    
+
     // Approve
     session.pause_confirm(true);
-    
+
     assert_eq!(session.get_status(), STATUS_RUNNING);
     assert!(session.get_pause_state().is_none());
 }
@@ -220,7 +220,7 @@ fn test_pause_confirm_approved() {
 #[test]
 fn test_pause_confirm_denied() {
     let session = MockBackgroundSession::new();
-    
+
     // Set up confirm pause
     session.set_pause_state(Some(NapiPauseState {
         kind: "confirm".to_string(),
@@ -228,10 +228,10 @@ fn test_pause_confirm_denied() {
         message: "Confirm dangerous command".to_string(),
         details: Some("rm -rf /tmp/*".to_string()),
     }));
-    
+
     // Deny
     session.pause_confirm(false);
-    
+
     assert_eq!(session.get_status(), STATUS_RUNNING);
     assert!(session.get_pause_state().is_none());
 }
@@ -245,10 +245,10 @@ fn test_pause_confirm_denied() {
 fn test_pause_handler_blocks_until_resume() {
     use std::thread;
     use std::time::Duration;
-    
+
     let session = Arc::new(MockBackgroundSession::new());
     let session_clone = Arc::clone(&session);
-    
+
     // Spawn thread simulating the pause handler
     let handler_thread = thread::spawn(move || {
         // Set pause state (done by pause handler)
@@ -258,25 +258,25 @@ fn test_pause_handler_blocks_until_resume() {
             message: "Page loaded".to_string(),
             details: None,
         }));
-        
+
         // Block waiting for response
         session_clone.wait_for_pause_response()
     });
-    
+
     // Give handler time to set up and wait
     thread::sleep(Duration::from_millis(50));
-    
+
     // Verify session is paused
     assert_eq!(session.get_status(), STATUS_PAUSED);
     assert!(session.get_pause_state().is_some());
-    
+
     // Simulate TypeScript calling session_pause_resume
     session.pause_resume("resume");
-    
+
     // Verify handler received response
     let response = handler_thread.join().expect("Handler panicked");
     assert_eq!(response, "resume");
-    
+
     // Session should be running again
     assert_eq!(session.get_status(), STATUS_RUNNING);
 }
@@ -290,7 +290,7 @@ fn test_pause_handler_blocks_until_resume() {
 fn test_multiple_sessions_independent_pause() {
     let session_a = MockBackgroundSession::new();
     let session_b = MockBackgroundSession::new();
-    
+
     // Both pause
     session_a.set_pause_state(Some(NapiPauseState {
         kind: "continue".to_string(),
@@ -298,27 +298,30 @@ fn test_multiple_sessions_independent_pause() {
         message: "Page A loaded".to_string(),
         details: None,
     }));
-    
+
     session_b.set_pause_state(Some(NapiPauseState {
         kind: "continue".to_string(),
         tool_name: "WebSearch".to_string(),
         message: "Page B loaded".to_string(),
         details: None,
     }));
-    
+
     assert_eq!(session_a.get_status(), STATUS_PAUSED);
     assert_eq!(session_b.get_status(), STATUS_PAUSED);
-    
+
     // Resume only session A
     session_a.pause_resume("resume");
-    
+
     // Session A is running, session B still paused
     assert_eq!(session_a.get_status(), STATUS_RUNNING);
     assert!(session_a.get_pause_state().is_none());
-    
+
     assert_eq!(session_b.get_status(), STATUS_PAUSED);
     assert!(session_b.get_pause_state().is_some());
-    assert_eq!(session_b.get_pause_state().unwrap().message, "Page B loaded");
+    assert_eq!(
+        session_b.get_pause_state().unwrap().message,
+        "Page B loaded"
+    );
 }
 
 /// @scenario: NapiPauseState serializes correctly for TypeScript
@@ -333,15 +336,15 @@ fn test_napi_pause_state_serialization() {
         message: "Confirm dangerous command".to_string(),
         details: Some("rm -rf /tmp/*".to_string()),
     };
-    
+
     let json = serde_json::to_string(&state).expect("Should serialize");
-    
+
     // Verify JSON structure matches TypeScript PauseInfo interface
     assert!(json.contains(r#""kind":"confirm""#));
     assert!(json.contains(r#""tool_name":"Bash""#));
     assert!(json.contains(r#""message":"Confirm dangerous command""#));
     assert!(json.contains(r#""details":"rm -rf /tmp/*""#));
-    
+
     // Verify it can be deserialized
     let deserialized: NapiPauseState = serde_json::from_str(&json).expect("Should deserialize");
     assert_eq!(deserialized, state);
@@ -359,8 +362,8 @@ fn test_napi_pause_state_null_details() {
         message: "Page loaded".to_string(),
         details: None,
     };
-    
+
     let json = serde_json::to_string(&state).expect("Should serialize");
-    
+
     assert!(json.contains(r#""details":null"#));
 }

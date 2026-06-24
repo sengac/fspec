@@ -82,21 +82,41 @@ async fn test_direct_call_chain() {
 
     // @step When I request ast_call_chain from "func_a" to "func_b"
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "src-main-rs::func_b", None,
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "src-main-rs::func_b",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive a chains array containing one chain of length 1
-    let chains = parsed.get("chains").and_then(|v| v.as_array()).expect("chains array");
+    let chains = parsed
+        .get("chains")
+        .and_then(|v| v.as_array())
+        .expect("chains array");
     assert!(!chains.is_empty(), "Should find at least one chain");
     let first_chain = chains[0].as_object().expect("chain is object");
-    let function_chain = first_chain.get("function_chain").and_then(|v| v.as_array()).expect("function_chain");
+    let function_chain = first_chain
+        .get("function_chain")
+        .and_then(|v| v.as_array())
+        .expect("function_chain");
     // Chain of length 1 means 2 nodes (source + target)
-    assert_eq!(function_chain.len(), 2, "Direct call should have 2 nodes in chain");
+    assert_eq!(
+        function_chain.len(),
+        2,
+        "Direct call should have 2 nodes in chain"
+    );
 
     // @step And the chain should list both functions in order from source to target
-    let first_slug = function_chain[0].get("slug").and_then(|v| v.as_str()).expect("slug");
-    let last_slug = function_chain[1].get("slug").and_then(|v| v.as_str()).expect("slug");
+    let first_slug = function_chain[0]
+        .get("slug")
+        .and_then(|v| v.as_str())
+        .expect("slug");
+    let last_slug = function_chain[1]
+        .get("slug")
+        .and_then(|v| v.as_str())
+        .expect("slug");
     assert_eq!(first_slug, "src-main-rs::func_a");
     assert_eq!(last_slug, "src-main-rs::func_b");
 }
@@ -113,28 +133,42 @@ async fn test_multi_hop_call_chain() {
 
     // @step When I request ast_call_chain from "func_a" to "func_d"
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "src-main-rs::func_d", None,
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "src-main-rs::func_d",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive a chains array containing a chain of length 3
-    let chains = parsed.get("chains").and_then(|v| v.as_array()).expect("chains array");
+    let chains = parsed
+        .get("chains")
+        .and_then(|v| v.as_array())
+        .expect("chains array");
     assert!(!chains.is_empty(), "Should find chain");
     let chain = chains[0].as_object().expect("chain is object");
-    let function_chain = chain.get("function_chain").and_then(|v| v.as_array()).expect("function_chain");
+    let function_chain = chain
+        .get("function_chain")
+        .and_then(|v| v.as_array())
+        .expect("function_chain");
     // 3-hop chain = 4 nodes: A→B→C→D
     assert_eq!(function_chain.len(), 4, "3-hop chain should have 4 nodes");
 
     // @step And the chain should include all intermediate functions in order A, B, C, D
-    let slugs: Vec<&str> = function_chain.iter()
+    let slugs: Vec<&str> = function_chain
+        .iter()
         .map(|n| n.get("slug").and_then(|v| v.as_str()).expect("slug"))
         .collect();
-    assert_eq!(slugs, vec![
-        "src-main-rs::func_a",
-        "src-main-rs::func_b",
-        "src-main-rs::func_c",
-        "src-main-rs::func_d",
-    ]);
+    assert_eq!(
+        slugs,
+        vec![
+            "src-main-rs::func_a",
+            "src-main-rs::func_b",
+            "src-main-rs::func_c",
+            "src-main-rs::func_d",
+        ]
+    );
 }
 
 // ============================================================================
@@ -149,18 +183,31 @@ async fn test_no_path_between_unconnected_functions() {
 
     // @step When I request ast_call_chain from "func_a" to "isolated"
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "src-main-rs::isolated", None,
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "src-main-rs::isolated",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive an empty chains array
-    let chains = parsed.get("chains").and_then(|v| v.as_array()).expect("chains array");
-    assert!(chains.is_empty(), "Should find no chains for unconnected functions");
+    let chains = parsed
+        .get("chains")
+        .and_then(|v| v.as_array())
+        .expect("chains array");
+    assert!(
+        chains.is_empty(),
+        "Should find no chains for unconnected functions"
+    );
 
     // @step And the response should include a message indicating no path was found within the depth limit
     let message = parsed.get("message").and_then(|v| v.as_str());
     assert!(message.is_some(), "Should include a message");
-    assert!(message.unwrap().contains("No call path found"), "Message should indicate no path found");
+    assert!(
+        message.unwrap().contains("No call path found"),
+        "Message should indicate no path found"
+    );
 }
 
 // ============================================================================
@@ -175,14 +222,21 @@ async fn test_nonexistent_source_function() {
 
     // @step When I request ast_call_chain from "nonexistent_function" to "func_b"
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "nonexistent_function", "src-main-rs::func_b", None,
-    ).await;
+        &db,
+        "nonexistent_function",
+        "src-main-rs::func_b",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive an error indicating the source function was not found
     let error = parsed.get("error").and_then(|v| v.as_str());
     assert!(error.is_some(), "Should return error");
-    assert!(error.unwrap().contains("not found"), "Error should mention 'not found'");
+    assert!(
+        error.unwrap().contains("not found"),
+        "Error should mention 'not found'"
+    );
 }
 
 // ============================================================================
@@ -197,14 +251,21 @@ async fn test_nonexistent_target_function() {
 
     // @step When I request ast_call_chain from "func_a" to "nonexistent_function"
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "nonexistent_function", None,
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "nonexistent_function",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive an error indicating the target function was not found
     let error = parsed.get("error").and_then(|v| v.as_str());
     assert!(error.is_some(), "Should return error");
-    assert!(error.unwrap().contains("not found"), "Error should mention 'not found'");
+    assert!(
+        error.unwrap().contains("not found"),
+        "Error should mention 'not found'"
+    );
 }
 
 // ============================================================================
@@ -220,23 +281,43 @@ async fn test_max_depth_limits_discovery() {
 
     // @step When I request ast_call_chain with max_depth 2
     let result_shallow = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "src-main-rs::func_d", Some(2),
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "src-main-rs::func_d",
+        Some(2),
+    )
+    .await;
     let parsed_shallow: Value = serde_json::from_str(&result_shallow).expect("valid JSON");
 
     // @step Then I should receive an empty chains array
-    let chains_shallow = parsed_shallow.get("chains").and_then(|v| v.as_array()).expect("chains array");
-    assert!(chains_shallow.is_empty(), "max_depth=2 should not find 3-hop path");
+    let chains_shallow = parsed_shallow
+        .get("chains")
+        .and_then(|v| v.as_array())
+        .expect("chains array");
+    assert!(
+        chains_shallow.is_empty(),
+        "max_depth=2 should not find 3-hop path"
+    );
 
     // @step When I request ast_call_chain with max_depth 3
     let result_deep = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "src-main-rs::func_d", Some(3),
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "src-main-rs::func_d",
+        Some(3),
+    )
+    .await;
     let parsed_deep: Value = serde_json::from_str(&result_deep).expect("valid JSON");
 
     // @step Then I should receive a chains array containing the 3-hop path
-    let chains_deep = parsed_deep.get("chains").and_then(|v| v.as_array()).expect("chains array");
-    assert!(!chains_deep.is_empty(), "max_depth=3 should find 3-hop path");
+    let chains_deep = parsed_deep
+        .get("chains")
+        .and_then(|v| v.as_array())
+        .expect("chains array");
+    assert!(
+        !chains_deep.is_empty(),
+        "max_depth=3 should find 3-hop path"
+    );
 }
 
 // ============================================================================
@@ -253,16 +334,32 @@ async fn test_multiple_paths_ordered_by_length() {
 
     // @step When I request ast_call_chain between those two functions
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-lib-rs::entry", "src-lib-rs::target", None,
-    ).await;
+        &db,
+        "src-lib-rs::entry",
+        "src-lib-rs::target",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then the chains array should contain the shorter path first
-    let chains = parsed.get("chains").and_then(|v| v.as_array()).expect("chains array");
+    let chains = parsed
+        .get("chains")
+        .and_then(|v| v.as_array())
+        .expect("chains array");
     assert!(chains.len() >= 2, "Should find at least 2 paths");
-    let first_chain_len = chains[0].get("chain_length").and_then(|v| v.as_u64()).expect("chain_length");
-    let second_chain_len = chains[1].get("chain_length").and_then(|v| v.as_u64()).expect("chain_length");
-    assert!(first_chain_len <= second_chain_len, "Shorter path should come first");
+    let first_chain_len = chains[0]
+        .get("chain_length")
+        .and_then(|v| v.as_u64())
+        .expect("chain_length");
+    let second_chain_len = chains[1]
+        .get("chain_length")
+        .and_then(|v| v.as_u64())
+        .expect("chain_length");
+    assert!(
+        first_chain_len <= second_chain_len,
+        "Shorter path should come first"
+    );
 
     // @step And results should be limited to at most 20 chains
     assert!(chains.len() <= 20, "Should not exceed 20 chains");
@@ -280,31 +377,54 @@ async fn test_chain_results_include_function_and_call_details() {
 
     // @step When I request ast_call_chain from "func_a" to "func_b"
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "src-main-rs::func_b", None,
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "src-main-rs::func_b",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
-    let chains = parsed.get("chains").and_then(|v| v.as_array()).expect("chains array");
+    let chains = parsed
+        .get("chains")
+        .and_then(|v| v.as_array())
+        .expect("chains array");
     assert!(!chains.is_empty(), "Should find at least one chain");
     let chain = chains[0].as_object().expect("chain is object");
 
     // @step Then each chain should contain a function_chain array with node metadata for each function
-    let function_chain = chain.get("function_chain").and_then(|v| v.as_array())
+    let function_chain = chain
+        .get("function_chain")
+        .and_then(|v| v.as_array())
         .expect("function_chain array");
     assert_eq!(function_chain.len(), 2, "Direct call: 2 functions");
     // Verify function metadata fields exist
     let first_fn = &function_chain[0];
-    assert!(first_fn.get("slug").is_some(), "function_chain should have slug");
-    assert!(first_fn.get("name").is_some(), "function_chain should have name");
+    assert!(
+        first_fn.get("slug").is_some(),
+        "function_chain should have slug"
+    );
+    assert!(
+        first_fn.get("name").is_some(),
+        "function_chain should have name"
+    );
 
     // @step And each chain should contain a call_details array with edge metadata for each hop
-    let call_details = chain.get("call_details").and_then(|v| v.as_array())
+    let call_details = chain
+        .get("call_details")
+        .and_then(|v| v.as_array())
         .expect("call_details array");
     // 1-hop chain = 1 call detail
-    assert_eq!(call_details.len(), 1, "Direct call: 1 hop = 1 call_details entry");
+    assert_eq!(
+        call_details.len(),
+        1,
+        "Direct call: 1 hop = 1 call_details entry"
+    );
 
     // @step And each chain should include a chain_length integer
-    let chain_length = chain.get("chain_length").and_then(|v| v.as_u64())
+    let chain_length = chain
+        .get("chain_length")
+        .and_then(|v| v.as_u64())
         .expect("chain_length integer");
     assert_eq!(chain_length, 1, "Direct call = chain_length 1");
 }
@@ -321,13 +441,22 @@ async fn test_response_includes_summary() {
 
     // @step When I request ast_call_chain from "func_a" to "func_b"
     let result = ast_call_chain::dispatch_ast_call_chain(
-        &db, "src-main-rs::func_a", "src-main-rs::func_b", None,
-    ).await;
+        &db,
+        "src-main-rs::func_a",
+        "src-main-rs::func_b",
+        None,
+    )
+    .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then the response should include a summary string describing the number of chains found
-    let summary = parsed.get("summary").and_then(|v| v.as_str())
+    let summary = parsed
+        .get("summary")
+        .and_then(|v| v.as_str())
         .expect("summary string");
     assert!(summary.contains("Found"), "Summary should contain 'Found'");
-    assert!(summary.contains("call chain"), "Summary should mention 'call chain'");
+    assert!(
+        summary.contains("call chain"),
+        "Summary should mention 'call chain'"
+    );
 }

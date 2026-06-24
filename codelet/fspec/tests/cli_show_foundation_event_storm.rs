@@ -29,7 +29,9 @@ fn run_sfes(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec show-foundation-event-storm");
+    let output = cmd
+        .output()
+        .expect("spawn fspec show-foundation-event-storm");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -121,7 +123,11 @@ fn rust_port_missing_foundation_json_surfaces_error() {
 
     // @step And the error field contains the substring 'foundation.json'
     assert!(
-        result.error.as_deref().unwrap_or("").contains("foundation.json"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("foundation.json"),
         "error must mention foundation.json; got: {:?}",
         result.error
     );
@@ -232,7 +238,11 @@ fn rust_port_filtering_by_context_returns_bounded_context_plus_linked_items() {
     let arr = parsed["data"].as_array().expect("data is array");
 
     // @step And the data field contains exactly 4 items
-    assert_eq!(arr.len(), 4, "expected 4 items (BC + 3 linked); got {arr:?}");
+    assert_eq!(
+        arr.len(),
+        4,
+        "expected 4 items (BC + 3 linked); got {arr:?}"
+    );
 
     // @step And one returned item has type='bounded_context' and text='Work Management'
     let bc_count = arr
@@ -286,7 +296,10 @@ fn rust_port_combined_context_and_type_filters_compose() {
     write_foundation(ws.path(), foundation_combined_filter_data());
 
     // @step When I dispatch show-foundation-event-storm with context='Work Management' and type='aggregate'
-    let result = dispatch(ws.path(), r#"{"context":"Work Management","type":"aggregate"}"#);
+    let result = dispatch(
+        ws.path(),
+        r#"{"context":"Work Management","type":"aggregate"}"#,
+    );
 
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true; got {result:?}");
@@ -295,7 +308,11 @@ fn rust_port_combined_context_and_type_filters_compose() {
     let arr = parsed["data"].as_array().expect("data is array");
 
     // @step And the data field contains exactly 2 items
-    assert_eq!(arr.len(), 2, "expected 2 aggregates linked to WM; got {arr:?}");
+    assert_eq!(
+        arr.len(),
+        2,
+        "expected 2 aggregates linked to WM; got {arr:?}"
+    );
 
     // @step And every returned item has type='aggregate' and boundedContextId=1
     for item in arr {
@@ -363,7 +380,10 @@ fn cli_clap_exposes_subcommand_with_flag_help() {
     );
 
     // @step And stdout contains the substring '--type'
-    assert!(stdout.contains("--type"), "help must mention --type; got:\n{stdout}");
+    assert!(
+        stdout.contains("--type"),
+        "help must mention --type; got:\n{stdout}"
+    );
 
     // @step And stdout contains the substring '--context'
     assert!(
@@ -389,7 +409,10 @@ fn cli_against_workspace_with_no_foundation_exits_1_with_error() {
     assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'foundation.json'
     assert!(
@@ -415,8 +438,7 @@ fn cli_prints_empty_array_when_no_event_storm() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as a JSON array with 0 elements
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     let arr = parsed.as_array().expect("stdout is JSON array");
     assert_eq!(arr.len(), 0);
 }
@@ -438,8 +460,7 @@ fn cli_prints_all_active_items_when_no_filters() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as a JSON array with 3 elements
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     let arr = parsed.as_array().expect("stdout is JSON array");
     assert_eq!(arr.len(), 3);
 }
@@ -461,8 +482,7 @@ fn cli_type_filter_narrows_to_matching_items() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as a JSON array with 2 elements
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     let arr = parsed.as_array().expect("stdout is JSON array");
     assert_eq!(arr.len(), 2);
 
@@ -489,8 +509,7 @@ fn cli_context_filter_returns_bc_plus_linked_items() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as a JSON array with 4 elements
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     let arr = parsed.as_array().expect("stdout is JSON array");
     assert_eq!(arr.len(), 4);
 }
@@ -512,8 +531,7 @@ fn cli_context_unknown_prints_empty_array() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}");
 
     // @step And stdout parses as a JSON array with 0 elements
-    let parsed: serde_json::Value =
-        serde_json::from_str(stdout.trim()).expect("stdout is JSON");
+    let parsed: serde_json::Value = serde_json::from_str(stdout.trim()).expect("stdout is JSON");
     let arr = parsed.as_array().expect("stdout is JSON array");
     assert_eq!(arr.len(), 0);
 }

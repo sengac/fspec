@@ -98,8 +98,7 @@ struct StructuredOutcome {
 /// propagate it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD (parity with TS `process.cwd()`).
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Marshal CliArgs → JSON object expected by
     // `fspec_core::commands::list_feature_tags::run`. The args struct

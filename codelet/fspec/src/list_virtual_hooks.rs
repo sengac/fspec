@@ -41,8 +41,8 @@ use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use codelet_fspec_core::FspecCoreError;
 use codelet_fspec_core::commands::list_virtual_hooks;
+use codelet_fspec_core::FspecCoreError;
 use serde_json::json;
 
 /// Strongly-typed args mirrored from the TS Commander.js positional surface
@@ -63,8 +63,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     // Resolve project root from CWD. The TS implementation uses
     // `process.cwd()` for the default; we mirror that here so script-driven
     // invocations behave identically.
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Reconstruct the JSON args shape that fspec_core validates with serde.
     // The dispatcher arg key is `workUnitId` (camelCase) — verified by

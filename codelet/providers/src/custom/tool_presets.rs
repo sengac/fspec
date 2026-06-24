@@ -17,12 +17,7 @@ use super::tool_schemas::{
 
 /// Build a default `RhaiToolDef` from `(name, description, maps_to,
 /// parameters)`. Centralised so the per-style constructors stay terse.
-fn td(
-    name: &str,
-    description: &str,
-    maps_to: &str,
-    parameters: serde_json::Value,
-) -> RhaiToolDef {
+fn td(name: &str, description: &str, maps_to: &str, parameters: serde_json::Value) -> RhaiToolDef {
     RhaiToolDef {
         name: name.to_string(),
         description: description.to_string(),
@@ -99,12 +94,7 @@ fn openai_preset() -> Vec<RhaiToolDef> {
 /// Gemini-native preset: lowerCamelCase.
 fn gemini_preset() -> Vec<RhaiToolDef> {
     vec![
-        td(
-            "readFile",
-            "Read a file",
-            "file:read",
-            file_read_schema(),
-        ),
+        td("readFile", "Read a file", "file:read", file_read_schema()),
         td(
             "writeFile",
             "Write a file",
@@ -136,12 +126,7 @@ fn gemini_preset() -> Vec<RhaiToolDef> {
             "search:ast_grep",
             ast_grep_schema(),
         ),
-        td(
-            "listDirectory",
-            "List a directory",
-            "ls",
-            ls_schema(),
-        ),
+        td("listDirectory", "List a directory", "ls", ls_schema()),
         td(
             "googleSearch",
             "Search the web",
@@ -154,30 +139,15 @@ fn gemini_preset() -> Vec<RhaiToolDef> {
 /// Codex-native preset.
 fn codex_preset() -> Vec<RhaiToolDef> {
     vec![
-        td(
-            "read_file",
-            "Read a file",
-            "file:read",
-            file_read_schema(),
-        ),
+        td("read_file", "Read a file", "file:read", file_read_schema()),
         td(
             "write_file",
             "Write a file",
             "file:write",
             file_write_schema(),
         ),
-        td(
-            "edit_file",
-            "Edit a file",
-            "file:edit",
-            file_edit_schema(),
-        ),
-        td(
-            "shell",
-            "Run a shell command",
-            "bash",
-            bash_schema(),
-        ),
+        td("edit_file", "Edit a file", "file:edit", file_edit_schema()),
+        td("shell", "Run a shell command", "bash", bash_schema()),
         td(
             "grep_files",
             "Search file contents",

@@ -28,14 +28,12 @@
 
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CompactionProgress, CompactionResult, CustomModelDefinition,
-    FspecResult,
-    HitlRequest, HitlResponse, IncomingMessageInput,
-    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStatus, MergeStrategy, ModelInfo,
-    PauseState, ProviderInfo,
-    ProviderCredentialInfo, ProviderCredentialInput, RegisteredLoop, ScheduledJob, SessionChangesSummary,
-    SessionId, SessionInfo, SessionModel, SessionState, SessionStatus, SessionTokens,
-    SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
-    TokenRestoreState, WorkUnitContext,
+    FspecResult, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
+    MergeOutcome, MergeStatus, MergeStrategy, ModelInfo, PauseState, ProfileDefinition,
+    ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
+    SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionState, SessionStatus,
+    SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig,
+    ThinkingLevel, TokenRestoreState, WorkUnitContext,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -156,6 +154,18 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         Ok(())
     }
 
+    /// PROV-118: set the in-process DEFAULT model used by `create_session`
+    /// when no per-session model is bound. Mirrors `set_model` in shape but
+    /// targets the manager-level default rather than a live session. Default
+    /// returns silently so handles that have not wired the default-model path
+    /// — including the stub used by tests — compile without per-test wiring.
+    /// The codelet/sessions `SessionManager` overrides this to delegate to
+    /// `SessionManager::set_default_model` (which ignores empty strings,
+    /// preserving the PROV-101 no-fallback policy).
+    fn set_default_model(&self, model: &str) {
+        let _ = model;
+    }
+
     /// RPC-347: add a NEW custom model to a local-server profile. Default
     /// returns `Ok(())` (silent no-op) so handles that have not wired the
     /// custom-model write path — including the stub used by tests — compile
@@ -201,6 +211,32 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         Ok(())
     }
 
+    /// PROV-108: create or update a local-server profile, persisting its
+    /// connection settings to `~/.fspec/fspec-config.json`. Default returns
+    /// `Ok(())` (silent no-op) so handles that have not wired the profile
+    /// write path — including the stub — compile without per-test wiring. The
+    /// codelet/sessions `SessionManager` overrides this to delegate to
+    /// `profile_persistence::save_profile` (preserving `customModels` and all
+    /// sibling keys), returning `Err` for a non-openai provider.
+    fn save_profile(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        definition: &ProfileDefinition,
+    ) -> Result<(), String> {
+        let _ = (provider_id, profile_name, definition);
+        Ok(())
+    }
+
+    /// PROV-108: delete a local-server profile from
+    /// `~/.fspec/fspec-config.json`. Default returns `Ok(())`; the
+    /// codelet/sessions override delegates to
+    /// `profile_persistence::delete_profile` (idempotent no-op when absent).
+    fn delete_profile(&self, provider_id: &str, profile_name: &str) -> Result<(), String> {
+        let _ = (provider_id, profile_name);
+        Ok(())
+    }
+
     /// RPC-022: set the base thinking/reasoning level for a session.
     /// Default returns `Ok(())` (silent no-op). The codelet/napi
     /// override forwards to the existing
@@ -243,11 +279,7 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     /// `None` clears. Default returns `Ok(())` (silent no-op). The
     /// codelet/napi override forwards to the existing
     /// `session_set_role` / `session.clear_role` flow.
-    fn set_role(
-        &self,
-        session_id: &SessionId,
-        role: Option<String>,
-    ) -> Result<(), String> {
+    fn set_role(&self, session_id: &SessionId, role: Option<String>) -> Result<(), String> {
         let _ = (session_id, role);
         Ok(())
     }
@@ -492,11 +524,7 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     }
 
     /// RPC-037: toggle debug capture; returns the resolved path string.
-    fn toggle_debug(
-        &self,
-        session_id: &SessionId,
-        debug_dir: &str,
-    ) -> Result<String, String> {
+    fn toggle_debug(&self, session_id: &SessionId, debug_dir: &str) -> Result<String, String> {
         let _ = (session_id, debug_dir);
         Ok(String::new())
     }
@@ -521,21 +549,13 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     }
 
     /// RPC-037: respond to a two-choice confirm pause.
-    fn pause_confirm(
-        &self,
-        session_id: &SessionId,
-        accept: bool,
-    ) -> Result<(), String> {
+    fn pause_confirm(&self, session_id: &SessionId, accept: bool) -> Result<(), String> {
         let _ = (session_id, accept);
         Ok(())
     }
 
     /// RPC-037: respond to a three-choice (Approve / ApproveSession / Deny) pause.
-    fn pause_triple(
-        &self,
-        session_id: &SessionId,
-        choice: ApprovalChoice,
-    ) -> Result<(), String> {
+    fn pause_triple(&self, session_id: &SessionId, choice: ApprovalChoice) -> Result<(), String> {
         let _ = (session_id, choice);
         Ok(())
     }
@@ -563,20 +583,13 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     }
 
     /// RPC-037: round-trip an `FspecCommandRequest` reply.
-    fn send_fspec_result(
-        &self,
-        session_id: &SessionId,
-        result: FspecResult,
-    ) -> Result<(), String> {
+    fn send_fspec_result(&self, session_id: &SessionId, result: FspecResult) -> Result<(), String> {
         let _ = (session_id, result);
         Ok(())
     }
 
     /// RPC-037: create an isolated (worktree-backed) session.
-    fn create_isolated_session(
-        &self,
-        role: Option<String>,
-    ) -> Result<IsolatedSessionInfo, String> {
+    fn create_isolated_session(&self, role: Option<String>) -> Result<IsolatedSessionInfo, String> {
         let _ = role;
         Err("create_isolated_session not implemented for this handle".to_string())
     }
@@ -652,10 +665,7 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     /// RPC-054: perform a network round-trip to the provider's base URL
     /// and return latency + success metadata. Used by the `t` key on a
     /// focused provider row.
-    fn test_provider_connection(
-        &self,
-        provider_id: &str,
-    ) -> Result<TestConnectionResult, String> {
+    fn test_provider_connection(&self, provider_id: &str) -> Result<TestConnectionResult, String> {
         let _ = provider_id;
         Ok(TestConnectionResult {
             success: true,
@@ -720,10 +730,7 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     }
 
     /// RPC-057: discard a session's worktree changes.
-    fn discard_session_worktree(
-        &self,
-        session_id: &SessionId,
-    ) -> Result<(), String> {
+    fn discard_session_worktree(&self, session_id: &SessionId) -> Result<(), String> {
         let _ = session_id;
         Ok(())
     }
@@ -972,8 +979,7 @@ impl StubSessionManagerHandle {
     pub fn with_capacity(chunks_capacity: usize, logs_capacity: usize) -> Self {
         let (chunks_tx, _) = broadcast::channel(chunks_capacity);
         let (logs_tx, _) = broadcast::channel(logs_capacity);
-        let (status_changes_tx, _) =
-            broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
+        let (status_changes_tx, _) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
         Self {
             chunks_tx,
             logs_tx,
@@ -1084,7 +1090,8 @@ impl StubSessionManagerHandle {
     /// RPC-054: how many times `delete_provider_credentials` has been
     /// called on this stub.
     pub fn delete_provider_credentials_calls(&self) -> u64 {
-        self.delete_provider_credentials_calls.load(Ordering::SeqCst)
+        self.delete_provider_credentials_calls
+            .load(Ordering::SeqCst)
     }
 
     /// RPC-054: how many times `test_provider_connection` has been
@@ -1264,8 +1271,7 @@ impl StubSessionManagerHandle {
     /// RPC-059: seed the boolean returned by `loop_cancel`. Defaults to
     /// `true`; tests that need a "not found" outcome pass `false`.
     pub fn seed_loop_cancel_result(&self, result: bool) {
-        self.loop_cancel_result
-            .store(result, Ordering::SeqCst);
+        self.loop_cancel_result.store(result, Ordering::SeqCst);
     }
 
     /// RPC-059: how many times `loop_add` has been called on this stub.
@@ -1761,9 +1767,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         // Duplicate detection.
         if let Some(existing) = sup2subs.get(supervisor_id) {
             if existing.iter().any(|s| s == subordinate_id) {
-                return Err(
-                    "subordinate already registered under this supervisor".to_string(),
-                );
+                return Err("subordinate already registered under this supervisor".to_string());
             }
         }
         // BFS cycle detection mirroring
@@ -1873,11 +1877,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         }
     }
 
-    fn toggle_debug(
-        &self,
-        session_id: &SessionId,
-        debug_dir: &str,
-    ) -> Result<String, String> {
+    fn toggle_debug(&self, session_id: &SessionId, debug_dir: &str) -> Result<String, String> {
         self.toggle_debug_calls.fetch_add(1, Ordering::SeqCst);
         let current = self.get_debug_enabled(session_id);
         let next = !current;
@@ -1889,7 +1889,8 @@ impl SessionManagerHandle for StubSessionManagerHandle {
     }
 
     fn set_debug_directory(&self, path: PathBuf) -> Result<(), String> {
-        self.set_debug_directory_calls.fetch_add(1, Ordering::SeqCst);
+        self.set_debug_directory_calls
+            .fetch_add(1, Ordering::SeqCst);
         let _ = path;
         Ok(())
     }
@@ -1899,7 +1900,9 @@ impl SessionManagerHandle for StubSessionManagerHandle {
             guard.remove(session_id);
         }
         self.set_status(session_id, SessionStatus::Running);
-        let _ = self.status_changes_tx.send((session_id.clone(), SessionStatus::Running));
+        let _ = self
+            .status_changes_tx
+            .send((session_id.clone(), SessionStatus::Running));
         let _ = self.chunks_tx.send((
             session_id.clone(),
             StreamChunk::session_state_change(SessionState::Running),
@@ -1907,19 +1910,11 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         Ok(())
     }
 
-    fn pause_confirm(
-        &self,
-        session_id: &SessionId,
-        _accept: bool,
-    ) -> Result<(), String> {
+    fn pause_confirm(&self, session_id: &SessionId, _accept: bool) -> Result<(), String> {
         self.pause_resume(session_id)
     }
 
-    fn pause_triple(
-        &self,
-        session_id: &SessionId,
-        _choice: ApprovalChoice,
-    ) -> Result<(), String> {
+    fn pause_triple(&self, session_id: &SessionId, _choice: ApprovalChoice) -> Result<(), String> {
         self.pause_resume(session_id)
     }
 
@@ -1956,10 +1951,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         Ok(())
     }
 
-    fn create_isolated_session(
-        &self,
-        role: Option<String>,
-    ) -> Result<IsolatedSessionInfo, String> {
+    fn create_isolated_session(&self, role: Option<String>) -> Result<IsolatedSessionInfo, String> {
         let seq = self.next_iso_id.fetch_add(1, Ordering::SeqCst);
         let id = SessionId::new(format!("stub-iso-{seq}"));
         let worktree_path = format!("/tmp/stub-wt-{seq}");
@@ -2069,9 +2061,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
             }
             "custom" => {
                 if creds.custom_endpoint.as_deref().unwrap_or("").is_empty() {
-                    return Err(
-                        "custom input requires a non-empty custom_endpoint".to_string(),
-                    );
+                    return Err("custom input requires a non-empty custom_endpoint".to_string());
                 }
             }
             other => return Err(format!("unknown credential kind: {other}")),
@@ -2119,10 +2109,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         Ok(())
     }
 
-    fn test_provider_connection(
-        &self,
-        _provider_id: &str,
-    ) -> Result<TestConnectionResult, String> {
+    fn test_provider_connection(&self, _provider_id: &str) -> Result<TestConnectionResult, String> {
         self.test_provider_connection_calls
             .fetch_add(1, Ordering::SeqCst);
         Ok(TestConnectionResult {
@@ -2185,10 +2172,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         }
     }
 
-    fn discard_session_worktree(
-        &self,
-        _session_id: &SessionId,
-    ) -> Result<(), String> {
+    fn discard_session_worktree(&self, _session_id: &SessionId) -> Result<(), String> {
         self.discard_session_worktree_calls
             .fetch_add(1, Ordering::SeqCst);
         Ok(())

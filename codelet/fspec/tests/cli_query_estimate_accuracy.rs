@@ -157,10 +157,22 @@ fn scenario_cli_text_output_renders_populated_by_story_points_section() {
     write_work_units(
         ws.path(),
         &raw_work_units(&[
-            ("AUTH-001", r#"{"id":"AUTH-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":1}"#),
-            ("AUTH-002", r#"{"id":"AUTH-002","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":2}"#),
-            ("AUTH-003", r#"{"id":"AUTH-003","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":2}"#),
-            ("AUTH-004", r#"{"id":"AUTH-004","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":2}"#),
+            (
+                "AUTH-001",
+                r#"{"id":"AUTH-001","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":1}"#,
+            ),
+            (
+                "AUTH-002",
+                r#"{"id":"AUTH-002","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":1,"iterations":2}"#,
+            ),
+            (
+                "AUTH-003",
+                r#"{"id":"AUTH-003","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":3,"iterations":2}"#,
+            ),
+            (
+                "AUTH-004",
+                r#"{"id":"AUTH-004","title":"t","status":"done","createdAt":"x","updatedAt":"x","estimate":5,"iterations":2}"#,
+            ),
         ]),
     );
 
@@ -238,7 +250,10 @@ fn scenario_cli_format_json_prints_pretty_printed_json() {
     );
 
     // @step And the byStoryPoints entry for '5' has avgIterations=2 and samples=1
-    assert_eq!(parsed["byStoryPoints"]["5"]["avgIterations"].as_f64(), Some(2.0));
+    assert_eq!(
+        parsed["byStoryPoints"]["5"]["avgIterations"].as_f64(),
+        Some(2.0)
+    );
     assert_eq!(parsed["byStoryPoints"]["5"]["samples"].as_u64(), Some(1));
 }
 
@@ -295,7 +310,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_qea() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -337,7 +353,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 
@@ -356,8 +375,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/query_estimate_accuracy.rs contains NO inline aggregation, prefix-grouping, or rendering logic — its only computation is JSON arg marshalling
-    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("src/query_estimate_accuracy.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/query_estimate_accuracy.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/query_estimate_accuracy.rs must exist as the CLI bridge module; got missing: {}",

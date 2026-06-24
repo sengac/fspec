@@ -132,7 +132,9 @@ fn scenario_cli_sets_task_estimate_and_prints_success() {
 
     // @step And stdout contains the line '✓ Work unit TASK-001 estimate set to 3'
     assert!(
-        stdout.lines().any(|l| l == "✓ Work unit TASK-001 estimate set to 3"),
+        stdout
+            .lines()
+            .any(|l| l == "✓ Work unit TASK-001 estimate set to 3"),
         "missing success line; got:\n{stdout}"
     );
 

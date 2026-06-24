@@ -439,17 +439,13 @@ fn legacy_file_enter_with_no_matches_is_ignored() {
         other => panic!("expected Ignored, got {other:?}"),
     }
 }
-use codelet_fspec_tui::components::model_selector_dialog::ModelSelectorDialog;
 use codelet_fspec_tui::components::thinking_level_dialog::ThinkingLevelDialog;
 use codelet_fspec_tui::components::Component;
 use codelet_fspec_tui::views::agent::{
     ResumeSessionView, ResumeSessionViewOutcome, SearchHistoryView, SearchHistoryViewOutcome,
 };
-use codelet_rpc_types::{
-    HistoryMatch, ModelEntry, ProviderInfo, SessionId, SessionInfo, ThinkingLevel,
-};
-use crossterm::event::{Event, KeyEvent, MouseButton};
-use ratatui::buffer::Buffer;
+use codelet_rpc_types::{HistoryMatch, SessionId, SessionInfo, ThinkingLevel};
+use crossterm::event::{Event, MouseButton};
 
 fn fake_session(id: &str) -> SessionInfo {
     SessionInfo {
@@ -480,27 +476,6 @@ fn fake_match(text: &str) -> HistoryMatch {
 
 fn matches(n: usize) -> Vec<HistoryMatch> {
     (0..n).map(|i| fake_match(&format!("m{i}"))).collect()
-}
-
-fn model_entry(id: &str) -> ModelEntry {
-    ModelEntry {
-        id: id.to_string(),
-        display_name: format!("M {id}"),
-        context_window: 200_000,
-        supports_reasoning: false,
-        supports_vision: false,
-        is_custom: false,
-    }
-}
-
-fn provider(key: &str, n: usize) -> ProviderInfo {
-    ProviderInfo {
-        key: key.to_string(),
-        display_name: format!("Provider {key}"),
-        models: (0..n).map(|i| model_entry(&format!("{key}{i}"))).collect(),
-        profile_name: None,
-        is_unreachable: false,
-    }
 }
 
 // ---------------------------------------------------------------------
@@ -601,45 +576,6 @@ fn rpc028_search_end_jumps_to_last_match_and_scrolls() {
     assert!(so <= 24 && 24 < so + visible_rows);
     // @step And the top body row paints the "↑" glyph
     assert!(so > 0);
-}
-
-// ---------------------------------------------------------------------
-// ModelSelectorDialog — PageDown
-// ---------------------------------------------------------------------
-
-#[test]
-fn rpc028_model_selector_pagedown_jumps_by_visible_rows_and_skips_headers() {
-    // @step Given the ModelSelectorDialog is open with 30 rows including provider headers
-    let providers = vec![provider("a", 18), provider("b", 10)];
-    let mut d = ModelSelectorDialog::new(SessionId::new("s0".to_string()), providers);
-    let initial_index = d.selected_index();
-    // @step And visible_rows is 12 and selected_index is on the first selectable row
-    let area = Rect {
-        x: 0,
-        y: 0,
-        width: 80,
-        height: 25,
-    };
-    let mut buf = Buffer::empty(area);
-    d.render(area, &mut buf);
-    let initial_offset = d.scroll_offset();
-    // @step When the user presses PageDown
-    let _ = d.handle_event(&Event::Key(KeyEvent::new(
-        KeyCode::PageDown,
-        KeyModifiers::NONE,
-    )));
-    // @step Then the selected_index advances by visible_rows and lands on a selectable row
-    assert_ne!(
-        d.selected_index(),
-        initial_index,
-        "PageDown advances selection"
-    );
-    // @step And the scroll_offset has advanced so the new selection is visible
-    let mut buf2 = Buffer::empty(area);
-    d.render(area, &mut buf2);
-    assert!(d.scroll_offset() >= initial_offset);
-    // @step And the bottom body row paints the "↓" glyph if more rows lie below
-    // (render path exercised above; assertion is structural via the index advance.)
 }
 
 // ---------------------------------------------------------------------

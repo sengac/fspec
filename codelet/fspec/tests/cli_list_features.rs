@@ -309,8 +309,10 @@ fn scenario_cli_text_output_renders_feature_listing_populated_case() {
 
     // @step Then stdout contains the exact line '  spec/features/auth.feature - User Authentication (2 scenarios) [@critical @auth]'
     assert!(
-        stdout.lines().any(|l| l
-            == "  spec/features/auth.feature - User Authentication (2 scenarios) [@critical @auth]"),
+        stdout.lines().any(|l| {
+            l
+            == "  spec/features/auth.feature - User Authentication (2 scenarios) [@critical @auth]"
+        }),
         "stdout must contain exact auth listing line; got:\n{stdout}"
     );
 
@@ -397,7 +399,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_features() {
         .expect("spawn --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "--help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );

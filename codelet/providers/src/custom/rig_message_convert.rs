@@ -21,10 +21,7 @@ use rig::message::{
 /// Convert a slice of rig messages into our internal `Vec<Message>`,
 /// with an optional `preamble` prepended as a `MessageRole::System`
 /// message (rig stores the system prompt separately on the request).
-pub fn rig_messages_to_internal(
-    preamble: Option<&str>,
-    history: &[RigMessage],
-) -> Vec<Message> {
+pub fn rig_messages_to_internal(preamble: Option<&str>, history: &[RigMessage]) -> Vec<Message> {
     let mut out: Vec<Message> = Vec::new();
     if let Some(text) = preamble {
         if !text.is_empty() {
@@ -52,7 +49,9 @@ where
     for piece in content_iter {
         match piece {
             UserContent::Text(text) => {
-                parts.push(ContentPart::Text { text: text.text.clone() });
+                parts.push(ContentPart::Text {
+                    text: text.text.clone(),
+                });
             }
             UserContent::ToolResult(result) => {
                 // BUG-141: walk the rig tool_result entries IN ORDER and
@@ -73,10 +72,9 @@ where
                             });
                         }
                         ToolResultContent::Image(image) => {
-                            if let Some(source) = image_to_source(
-                                image.data.clone(),
-                                image.media_type.clone(),
-                            ) {
+                            if let Some(source) =
+                                image_to_source(image.data.clone(), image.media_type.clone())
+                            {
                                 tool_parts.push(ToolResultPart::Image { source });
                             }
                         }
@@ -93,26 +91,14 @@ where
                     _ => None,
                 };
                 let part = match single_text {
-                    Some(text) => ContentPart::tool_result_text(
-                        result.id.clone(),
-                        text,
-                        false,
-                    ),
+                    Some(text) => ContentPart::tool_result_text(result.id.clone(), text, false),
                     None if tool_parts.is_empty() => {
                         // Empty conversions (e.g. only an Unknown image
                         // input) collapse to an empty text part so the
                         // ToolResult invariant (parts non-empty) holds.
-                        ContentPart::tool_result_text(
-                            result.id.clone(),
-                            String::new(),
-                            false,
-                        )
+                        ContentPart::tool_result_text(result.id.clone(), String::new(), false)
                     }
-                    None => ContentPart::tool_result_parts(
-                        result.id.clone(),
-                        tool_parts,
-                        false,
-                    ),
+                    None => ContentPart::tool_result_parts(result.id.clone(), tool_parts, false),
                 };
                 parts.push(part);
             }
@@ -144,7 +130,9 @@ where
     for piece in content_iter {
         match piece {
             AssistantContent::Text(text) => {
-                parts.push(ContentPart::Text { text: text.text.clone() });
+                parts.push(ContentPart::Text {
+                    text: text.text.clone(),
+                });
             }
             AssistantContent::ToolCall(call) => {
                 parts.push(ContentPart::ToolUse {

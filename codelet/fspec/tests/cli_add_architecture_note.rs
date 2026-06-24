@@ -41,8 +41,7 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units_value(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/work-units.json"))
-        .expect("read work-units.json");
+    let raw = fs::read_to_string(cwd.join("spec/work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse work-units.json")
 }
 
@@ -130,8 +129,7 @@ fn scenario_cli_appends_architecture_note_and_prints_success_block() {
     seed_one_unit(ws.path());
 
     // @step When I run `./codelet/target/release/fspec add-architecture-note AUTH-001 "Uses bcrypt"`
-    let (code, stdout, stderr) =
-        run_add_arch(ws.path(), &["AUTH-001", "Uses bcrypt"]);
+    let (code, stdout, stderr) = run_add_arch(ws.path(), &["AUTH-001", "Uses bcrypt"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
@@ -170,14 +168,10 @@ fn scenario_cli_rejects_unknown_work_unit_with_exit_1() {
     seed_one_unit(ws.path());
 
     // @step When I run `./codelet/target/release/fspec add-architecture-note MISSING-001 "any note"`
-    let (code, stdout, stderr) =
-        run_add_arch(ws.path(), &["MISSING-001", "any note"]);
+    let (code, stdout, stderr) = run_add_arch(ws.path(), &["MISSING-001", "any note"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(
-        code, 1,
-        "expected exit 1; stdout={stdout}, stderr={stderr}"
-    );
+    assert_eq!(code, 1, "expected exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
     assert!(
@@ -209,15 +203,20 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/work-units.json
     assert!(ws.path().join("spec/work-units.json").exists());
 
     // @step And running `./codelet/target/release/fspec add-architecture-note AUTH-001 "via cli"` afterwards exits 0
-    let (code, stdout, stderr) =
-        run_add_arch(ws.path(), &["AUTH-001", "via cli"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    let (code, stdout, stderr) = run_add_arch(ws.path(), &["AUTH-001", "via cli"]);
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json work unit 'AUTH-001' contains two architectureNotes
     let data = read_work_units_value(ws.path());
@@ -227,8 +226,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert_eq!(notes.len(), 2, "expected two notes, got {notes:?}");
 
     // @step And the CLI bridge module codelet/fspec/src/add_architecture_note.rs contains NO inline note-append, nextNoteId, or system-reminder rendering logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/add_architecture_note.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/add_architecture_note.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/add_architecture_note.rs must exist; got missing: {}",

@@ -110,7 +110,9 @@ async fn test_spawn_agent_session_with_role_and_prompt() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
+                msg.contains("spawn scheduled session")
+                    || msg.contains("provider")
+                    || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -158,7 +160,9 @@ async fn test_spawn_agent_session_prompt_only() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
+                msg.contains("spawn scheduled session")
+                    || msg.contains("provider")
+                    || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -348,7 +352,10 @@ async fn test_agent_job_fails_session_limit() {
     // The session limit scenario is an integration test requirement.
     // Note: result.is_ok() || result.is_err() is always true — reaching this
     // line proves trigger_agent_job did not panic, which is the unit-level check.
-    assert!(result.is_ok() || result.is_err(), "trigger_agent_job should return a Result without panicking");
+    assert!(
+        result.is_ok() || result.is_err(),
+        "trigger_agent_job should return a Result without panicking"
+    );
 
     // @step And schedules.json shows lastRunStatus "error" for "overflow-job"
 }
@@ -392,7 +399,9 @@ async fn test_schedule_metadata_set_on_session() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
+                msg.contains("spawn scheduled session")
+                    || msg.contains("provider")
+                    || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -488,7 +497,9 @@ async fn test_agent_session_natural_completion() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
+                msg.contains("spawn scheduled session")
+                    || msg.contains("provider")
+                    || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -536,7 +547,9 @@ async fn test_default_model_resolved_at_fire_time() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
+                msg.contains("spawn scheduled session")
+                    || msg.contains("provider")
+                    || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );

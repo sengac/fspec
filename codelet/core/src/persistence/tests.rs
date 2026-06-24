@@ -955,9 +955,8 @@ fn test_tool_result_blob_storage_and_rehydration() {
     };
 
     // Process for blob storage
-    let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process_envelope_for_blob_storage should succeed");
+    let (processed, blob_refs) = super::process_envelope_for_blob_storage(&envelope)
+        .expect("process_envelope_for_blob_storage should succeed");
 
     // Verify blob was created
     assert!(!blob_refs.is_empty(), "Should have blob references");
@@ -996,8 +995,8 @@ fn test_tool_result_blob_storage_and_rehydration() {
 
     // Verify rehydration works
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
-        .expect("rehydrate should succeed");
+    let rehydrated =
+        super::rehydrate_envelope_blobs(&processed_json).expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
@@ -1044,8 +1043,7 @@ fn test_image_blob_storage_and_rehydration() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify blob was created
     assert!(
@@ -1072,8 +1070,8 @@ fn test_image_blob_storage_and_rehydration() {
 
     // Verify rehydration restores original data
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
-        .expect("rehydrate should succeed");
+    let rehydrated =
+        super::rehydrate_envelope_blobs(&processed_json).expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
@@ -1125,8 +1123,7 @@ fn test_document_blob_storage_and_rehydration() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify blob was created
     assert!(
@@ -1169,8 +1166,8 @@ fn test_document_blob_storage_and_rehydration() {
 
     // Verify rehydration restores original data
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
-        .expect("rehydrate should succeed");
+    let rehydrated =
+        super::rehydrate_envelope_blobs(&processed_json).expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
@@ -1222,8 +1219,7 @@ fn test_thinking_blob_storage_and_rehydration() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify blob was created
     assert!(
@@ -1255,8 +1251,8 @@ fn test_thinking_blob_storage_and_rehydration() {
 
     // Verify rehydration restores original thinking
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
-        .expect("rehydrate should succeed");
+    let rehydrated =
+        super::rehydrate_envelope_blobs(&processed_json).expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
@@ -1302,8 +1298,7 @@ fn test_small_content_not_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify NO blob was created (content too small)
     assert!(
@@ -1366,8 +1361,7 @@ fn test_url_sources_not_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify NO blob was created (URL sources stay inline)
     assert!(blob_refs.is_empty(), "URL sources should NOT create blobs");
@@ -1449,10 +1443,10 @@ fn test_blob_deduplication_across_envelopes() {
     };
 
     // Process both envelopes
-    let (_, blob_refs1) = super::process_envelope_for_blob_storage(&envelope1)
-        .expect("process should succeed");
-    let (_, blob_refs2) = super::process_envelope_for_blob_storage(&envelope2)
-        .expect("process should succeed");
+    let (_, blob_refs1) =
+        super::process_envelope_for_blob_storage(&envelope1).expect("process should succeed");
+    let (_, blob_refs2) =
+        super::process_envelope_for_blob_storage(&envelope2).expect("process should succeed");
 
     // Verify both have blob refs with SAME hash (deduplication)
     assert!(!blob_refs1.is_empty() && !blob_refs2.is_empty());
@@ -1506,8 +1500,7 @@ fn test_multi_part_message_blob_storage() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify we have 2 blob refs (for the 2 large tool results)
     assert_eq!(blob_refs.len(), 2, "Should have 2 blob references");
@@ -1541,8 +1534,8 @@ fn test_multi_part_message_blob_storage() {
 
     // Verify full rehydration works
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
-        .expect("rehydrate should succeed");
+    let rehydrated =
+        super::rehydrate_envelope_blobs(&processed_json).expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
@@ -1597,8 +1590,7 @@ fn test_exact_10kb_threshold_not_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify NO blob was created (threshold is >10KB, not >=10KB)
     assert!(
@@ -1649,8 +1641,7 @@ fn test_one_byte_over_threshold_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify blob WAS created
     assert!(!blob_refs.is_empty(), "10KB+1 should create blob");
@@ -1703,8 +1694,7 @@ fn test_tool_use_storage_and_retrieval() {
 
     // Process for blob storage (should NOT create blobs for small content)
     let (processed, blob_refs) =
-        super::process_envelope_for_blob_storage(&envelope)
-            .expect("process should succeed");
+        super::process_envelope_for_blob_storage(&envelope).expect("process should succeed");
 
     // Verify NO blob was created (content is small)
     assert!(
@@ -1936,7 +1926,10 @@ fn test_get_session_messages_respects_compaction() {
         uuid::Uuid::nil(),
         "Synthetic message should have nil UUID"
     );
-    assert_eq!(first_msg.role, "user", "Synthetic summary should be 'user' role");
+    assert_eq!(
+        first_msg.role, "user",
+        "Synthetic summary should be 'user' role"
+    );
 
     // @step And the remaining messages should be the post-compaction messages
     assert!(
@@ -1963,17 +1956,25 @@ fn test_get_session_messages_full_ignores_compaction() {
     let session_id = session.id;
 
     // Verify we have 10 messages before compaction
-    assert_eq!(session.messages.len(), 10, "Should have 10 messages initially");
+    assert_eq!(
+        session.messages.len(),
+        10,
+        "Should have 10 messages initially"
+    );
 
     // @step And the session has been compacted at index 8
     set_compaction_state(&mut session, "Summary of 0-7".to_string(), 8).expect("set compaction");
 
     // @step When I retrieve messages using get_session_messages_full
     let reloaded = load_session(session_id).expect("reload");
-    
+
     // Verify reloaded session still has 10 message refs
-    assert_eq!(reloaded.messages.len(), 10, "Reloaded session should have 10 message refs");
-    
+    assert_eq!(
+        reloaded.messages.len(),
+        10,
+        "Reloaded session should have 10 message refs"
+    );
+
     let full_messages = get_session_messages_full(&reloaded).expect("get full messages");
 
     // @step Then I should receive all 10 original messages (no synthetic summary)
@@ -2021,7 +2022,11 @@ fn test_get_session_messages_no_compaction_returns_all() {
     let messages = get_session_messages(&reloaded).expect("get messages");
 
     // @step Then I should receive all 5 messages (no synthetic summary)
-    assert_eq!(messages.len(), 5, "Should return all messages when no compaction");
+    assert_eq!(
+        messages.len(),
+        5,
+        "Should return all messages when no compaction"
+    );
 
     // @step And they should be the original messages
     assert!(messages[0].content.contains("Message 0"));
@@ -2253,17 +2258,15 @@ fn test_compacted_session_envelopes_can_be_parsed_end_to_end() {
     assert_eq!(first_envelope.uuid, uuid::Uuid::nil());
     assert_eq!(first_envelope.provider, "compaction");
     match &first_envelope.message {
-        super::message_envelope::MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                super::message_envelope::UserContent::Text { text } => {
-                    assert!(
-                        text.contains(summary),
-                        "First envelope should contain the compaction summary"
-                    );
-                }
-                _ => panic!("Expected Text content"),
+        super::message_envelope::MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            super::message_envelope::UserContent::Text { text } => {
+                assert!(
+                    text.contains(summary),
+                    "First envelope should contain the compaction summary"
+                );
             }
-        }
+            _ => panic!("Expected Text content"),
+        },
         _ => panic!("Expected User message"),
     }
 
@@ -2379,7 +2382,12 @@ fn rpc049_get_session_message_envelopes_returns_parseable_envelopes() {
     let envelopes = get_session_message_envelopes(session_id).expect("get envelopes");
 
     // @step Then the result is Ok(Vec<String>) with two JSON envelopes
-    assert_eq!(envelopes.len(), 2, "expected 2 envelopes, got {}", envelopes.len());
+    assert_eq!(
+        envelopes.len(),
+        2,
+        "expected 2 envelopes, got {}",
+        envelopes.len()
+    );
 
     // @step And each envelope parses via serde_json::from_str into a serde_json::Value with a 'message' field
     for (idx, envelope_json) in envelopes.iter().enumerate() {

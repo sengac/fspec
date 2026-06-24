@@ -41,12 +41,7 @@ impl codelet_sessions::session_manager::SessionManagerHooks for NapiSessionManag
         let _h = crate::scheduler::spawn_scheduler(project, &rt);
     }
 
-    fn spawn_footer_poller(
-        &self,
-        session_id: String,
-        cwd: String,
-        worktree_path: Option<String>,
-    ) {
+    fn spawn_footer_poller(&self, session_id: String, cwd: String, worktree_path: Option<String>) {
         crate::footer_poller::spawn_footer_poller(session_id, cwd, worktree_path);
     }
 
@@ -57,7 +52,9 @@ impl codelet_sessions::session_manager::SessionManagerHooks for NapiSessionManag
     fn cleanup_session_loops(&self, session_id: uuid::Uuid) {
         if let Ok(rt) = tokio::runtime::Handle::try_current() {
             rt.spawn(async move {
-                crate::scheduler::LoopStore::instance().remove_for_session(session_id).await;
+                crate::scheduler::LoopStore::instance()
+                    .remove_for_session(session_id)
+                    .await;
             });
         }
     }

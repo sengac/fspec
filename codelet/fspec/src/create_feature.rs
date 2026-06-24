@@ -38,8 +38,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the `create-feature` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let body = json!({ "name": args.name });
     let args_json = body.to_string();

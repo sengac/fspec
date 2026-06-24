@@ -14,6 +14,7 @@
 //! into the canonical `Internal*Params` shape, so we only need a
 //! straight-line mapping per variant.
 
+use codelet_common::web_search::WebSearchAction;
 use codelet_tools::facade::{
     InternalBashParams, InternalFileParams, InternalLsParams, InternalSearchParams,
     InternalWebSearchParams,
@@ -23,7 +24,6 @@ use codelet_tools::{
     ls::LsArgs, read::ReadArgs, web_search::WebSearchRequest, write::WriteArgs, AstGrepTool,
     BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool, WriteTool,
 };
-use codelet_common::web_search::WebSearchAction;
 use rig::tool::Tool;
 use serde_json::json;
 use uuid::Uuid;
@@ -80,16 +80,12 @@ async fn execute_file(
                 limit,
                 pdf_mode: None,
             };
-            tool.call(args)
-                .await
-                .map_err(file_err)
+            tool.call(args).await.map_err(file_err)
         }
         InternalFileParams::Write { file_path, content } => {
             let tool = WriteTool::new(session_id);
             let args = WriteArgs { file_path, content };
-            tool.call(args)
-                .await
-                .map_err(file_err)
+            tool.call(args).await.map_err(file_err)
         }
         InternalFileParams::Edit {
             file_path,
@@ -102,9 +98,7 @@ async fn execute_file(
                 old_string,
                 new_string,
             };
-            tool.call(args)
-                .await
-                .map_err(file_err)
+            tool.call(args).await.map_err(file_err)
         }
     }
 }
@@ -190,7 +184,11 @@ async fn execute_web_search(
         InternalWebSearchParams::Search { query } => WebSearchRequest {
             action: WebSearchAction::Search { query: Some(query) },
         },
-        InternalWebSearchParams::OpenPage { url, headless, pause } => WebSearchRequest {
+        InternalWebSearchParams::OpenPage {
+            url,
+            headless,
+            pause,
+        } => WebSearchRequest {
             action: WebSearchAction::OpenPage {
                 url: Some(url),
                 headless,

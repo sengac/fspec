@@ -19,8 +19,8 @@
 
 use codelet_rpc_types::{
     ApprovalChoice, HitlOption, HitlRequest, HitlResponse, IsolatedSessionInfo, PauseKind,
-    PauseResponse, PauseState, SessionId, SessionModel, SessionTokens, StreamChunk,
-    ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext,
+    PauseResponse, PauseState, SessionId, SessionModel, SessionTokens, StreamChunk, ThinkingConfig,
+    ThinkingLevel, TokenRestoreState, WorkUnitContext,
 };
 
 // ---------------------------------------------------------------------------
@@ -85,13 +85,17 @@ fn phase_21_per_session_derived_state_types_have_documented_shape() {
 
     // @step And each of these four structs derives Debug, Clone, Serialize, Deserialize, and is gated for napi via #[cfg_attr(feature = "napi", napi_derive::napi(object))]
     let _dbg = format!("{:?}{:?}{:?}{:?}", tokens, restore, model, wu_ctx);
-    let _cloned = (tokens.clone(), restore.clone(), model.clone(), wu_ctx.clone());
+    let _cloned = (
+        tokens.clone(),
+        restore.clone(),
+        model.clone(),
+        wu_ctx.clone(),
+    );
     let tokens_json =
         serde_json::to_string(&tokens).expect("SessionTokens must implement Serialize");
     let _restore_json =
         serde_json::to_string(&restore).expect("TokenRestoreState must implement Serialize");
-    let _model_json =
-        serde_json::to_string(&model).expect("SessionModel must implement Serialize");
+    let _model_json = serde_json::to_string(&model).expect("SessionModel must implement Serialize");
     let _wu_json =
         serde_json::to_string(&wu_ctx).expect("WorkUnitContext must implement Serialize");
     let tokens_back: SessionTokens =
@@ -119,7 +123,10 @@ fn thinking_config_uses_a_json_encoded_string_for_provider_specific_config() {
     // @step Then ThinkingConfig has exactly three fields: provider_id: String, level: ThinkingLevel, config_json: String
     assert_eq!(cfg.provider_id, "anthropic");
     assert_eq!(cfg.level, ThinkingLevel::High);
-    assert_eq!(cfg.config_json, r#"{"type":"enabled","budget_tokens":8000}"#);
+    assert_eq!(
+        cfg.config_json,
+        r#"{"type":"enabled","budget_tokens":8000}"#
+    );
 
     // @step And ThinkingConfig derives Debug, Clone, Serialize, Deserialize
     let _dbg = format!("{:?}", cfg);
@@ -449,8 +456,9 @@ fn all_new_types_round_trip_through_serde_json() {
 #[test]
 fn both_feature_gates_compile_and_dev_deps_are_isolated() {
     // @step Given the engineer is at the workspace root /Users/rquast/projects/fspec/codelet
-    let cargo_toml = std::fs::read_to_string(env!("CARGO_MANIFEST_DIR").to_string() + "/Cargo.toml")
-        .expect("read codelet/rpc-types/Cargo.toml");
+    let cargo_toml =
+        std::fs::read_to_string(env!("CARGO_MANIFEST_DIR").to_string() + "/Cargo.toml")
+            .expect("read codelet/rpc-types/Cargo.toml");
 
     // @step When the engineer runs `cargo build -p codelet-rpc-types` with default features
     // (compile-time check — if the default build broke, this test would not

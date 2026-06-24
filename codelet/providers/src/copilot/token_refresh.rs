@@ -20,10 +20,7 @@ use tokio::sync::RwLock;
 ///
 /// Pure logic extracted so the refresh-decision tests do not need to spin
 /// up a mock HTTP server — they can feed the response straight in.
-pub(crate) fn apply_exchange_response(
-    auth: &mut CopilotAuthJson,
-    exchange: TokenExchangeResponse,
-) {
+pub(crate) fn apply_exchange_response(auth: &mut CopilotAuthJson, exchange: TokenExchangeResponse) {
     auth.copilot_token = Some(exchange.token);
     auth.copilot_token_expires_at = Some(exchange.expires_at);
     if !exchange.endpoints_api.is_empty() {

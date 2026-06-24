@@ -323,8 +323,8 @@ mod tests {
         assert_eq!(parsed["reasoning"]["effort"].as_str(), Some("medium"));
 
         // Off level — empty config
-        let config = get_thinking_config("codex".to_string(), JsThinkingLevel::Off)
-            .expect("Should succeed");
+        let config =
+            get_thinking_config("codex".to_string(), JsThinkingLevel::Off).expect("Should succeed");
         let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
         assert_eq!(parsed, serde_json::json!({}));
     }
@@ -379,8 +379,8 @@ mod tests {
         );
 
         // Generic "claude" also works (falls back to budgeted)
-        let config =
-            get_thinking_config("claude".to_string(), JsThinkingLevel::High).expect("Should succeed");
+        let config = get_thinking_config("claude".to_string(), JsThinkingLevel::High)
+            .expect("Should succeed");
         let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
         assert_eq!(
             parsed["thinking"]["type"].as_str(),
@@ -391,9 +391,13 @@ mod tests {
 
     #[test]
     fn test_unknown_provider_returns_empty_config() {
-        let config =
-            get_thinking_config("unknown-provider".to_string(), JsThinkingLevel::High).expect("Should succeed");
+        let config = get_thinking_config("unknown-provider".to_string(), JsThinkingLevel::High)
+            .expect("Should succeed");
         let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
-        assert_eq!(parsed, serde_json::json!({}), "Unknown provider should return empty");
+        assert_eq!(
+            parsed,
+            serde_json::json!({}),
+            "Unknown provider should return empty"
+        );
     }
 }

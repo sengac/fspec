@@ -49,9 +49,10 @@ impl LogBuffer {
 
 impl io::Write for LogBuffer {
     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
-        let mut guard = self.0.lock().map_err(|e| {
-            io::Error::other(format!("log buffer poisoned: {e}"))
-        })?;
+        let mut guard = self
+            .0
+            .lock()
+            .map_err(|e| io::Error::other(format!("log buffer poisoned: {e}")))?;
         guard.extend_from_slice(data);
         Ok(data.len())
     }
@@ -369,8 +370,7 @@ fn get_model_limits(config) {
 "#;
 
     // @step When a RhaiCustomProvider is constructed
-    let provider =
-        build_provider("mega-rhai", script, models, "mega").expect("construct provider");
+    let provider = build_provider("mega-rhai", script, models, "mega").expect("construct provider");
 
     // @step Then RhaiCustomProvider.script_compaction_threshold() returns Some(("tokens", 200000))
     assert_eq!(
@@ -415,8 +415,7 @@ fn get_model_limits(config) {
 "#;
 
     // @step When a RhaiCustomProvider is constructed
-    let provider =
-        build_provider("mega-rhai", script, models, "mega").expect("construct provider");
+    let provider = build_provider("mega-rhai", script, models, "mega").expect("construct provider");
 
     // @step Then RhaiCustomProvider.script_compaction_threshold() returns Some(("percentage", 75))
     assert_eq!(
@@ -479,9 +478,7 @@ fn get_model_limits(config) {
 #[test]
 #[serial_test::serial]
 fn napi_bridge_lookup_script_model_limits_roundtrips_all_three_fields() {
-    use codelet_providers::custom::{
-        lookup_script_model_limits, RhaiScriptedLimits,
-    };
+    use codelet_providers::custom::{lookup_script_model_limits, RhaiScriptedLimits};
 
     // Lay out a faux FSPEC_HOME with a sibling providers/ directory and
     // a single provider config that covers all three scripted fields.

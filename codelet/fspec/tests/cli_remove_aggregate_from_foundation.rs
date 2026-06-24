@@ -27,7 +27,9 @@ fn run_remove(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec remove-aggregate-from-foundation");
+    let output = cmd
+        .output()
+        .expect("spawn fspec remove-aggregate-from-foundation");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -45,8 +47,7 @@ fn write_foundation(cwd: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/foundation.json"))
-        .expect("read foundation.json");
+    let raw = fs::read_to_string(cwd.join("spec/foundation.json")).expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -157,7 +158,10 @@ fn scenario_cli_soft_deletes_aggregate_and_prints_success_message() {
 
     // @step And the aggregate 'Order' in eventStorm.items has deleted=true
     let data = read_foundation(ws.path());
-    assert_eq!(find_aggregate(&data, "Order")["deleted"].as_bool(), Some(true));
+    assert_eq!(
+        find_aggregate(&data, "Order")["deleted"].as_bool(),
+        Some(true)
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -180,7 +184,10 @@ fn scenario_cli_rejects_unknown_aggregate_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring "Aggregate 'Ghost' not found in bounded context 'Sales'"
     assert!(
@@ -213,19 +220,31 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/foundation.json
     assert!(ws.path().join("spec/foundation.json").exists());
 
     // @step And running `./codelet/target/release/fspec remove-aggregate-from-foundation Sales Shipment` afterwards exits 0
     let (code, stdout, stderr) = run_remove(ws.path(), &["Sales", "Shipment"]);
-    assert_eq!(code, 0, "CLI remove must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI remove must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And both the 'Order' and 'Shipment' aggregates have deleted=true
     let data = read_foundation(ws.path());
-    assert_eq!(find_aggregate(&data, "Order")["deleted"].as_bool(), Some(true));
-    assert_eq!(find_aggregate(&data, "Shipment")["deleted"].as_bool(), Some(true));
+    assert_eq!(
+        find_aggregate(&data, "Order")["deleted"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(
+        find_aggregate(&data, "Shipment")["deleted"].as_bool(),
+        Some(true)
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/remove_aggregate_from_foundation.rs contains NO inline bounded-context lookup, ensure_foundation_file, or JSON-mutation logic — its only computation is JSON arg marshalling
     let bridge_path =

@@ -120,11 +120,7 @@ public class App {
     }
 }
 "#;
-    write_test_file(
-        project_dir,
-        "src/main/java/com/myapp/App.java",
-        app_source,
-    );
+    write_test_file(project_dir, "src/main/java/com/myapp/App.java", app_source);
 
     // @step And "com/myapp/App.java" contains "import com.myapp.service.UserService;"
     let svc_source = r#"package com.myapp.service;
@@ -143,12 +139,8 @@ public class UserService {
     // known_files = {"src/main/java/com/myapp/App.java", "src/main/java/com/myapp/service/UserService.java"}
 
     // @step When I run the Java AST extractor with the known_files set
-    let entities = extract_java(
-        app_source,
-        "src/main/java/com/myapp/App.java",
-        &known_files,
-    )
-    .expect("Java extraction should succeed");
+    let entities = extract_java(app_source, "src/main/java/com/myapp/App.java", &known_files)
+        .expect("Java extraction should succeed");
 
     // @step Then an Imports edge should exist from "App.java" to "UserService.java"
     let imports = find_edges(&entities, "Imports", Some("App"), Some("UserService"));
@@ -311,8 +303,8 @@ func (c *Command) Find(args []string) {
     let known_files = HashSet::new();
 
     // @step When I run the Go AST extractor
-    let entities = extract_go(go_source, "command.go", &known_files)
-        .expect("Go extraction should succeed");
+    let entities =
+        extract_go(go_source, "command.go", &known_files).expect("Go extraction should succeed");
 
     // @step Then a Calls edge should exist from "Find" to "stripFlags"
     let calls = find_edges(&entities, "Calls", Some("Find"), Some("stripFlags"));
@@ -348,8 +340,8 @@ func Find(cmd *Command) error {
     let known_files = HashSet::new();
 
     // @step When I run the Go AST extractor
-    let entities = extract_go(go_source, "command.go", &known_files)
-        .expect("Go extraction should succeed");
+    let entities =
+        extract_go(go_source, "command.go", &known_files).expect("Go extraction should succeed");
 
     // @step Then a TypeRef edge should exist from "Find" to "Command"
     let typerefs = find_edges(&entities, "TypeRef", Some("Find"), Some("Command"));
@@ -425,8 +417,8 @@ func Helper() {
     let known_files = build_known_files(project_dir);
 
     // @step When I run the Go AST extractor with the known_files set
-    let entities = extract_go(main_source, "main.go", &known_files)
-        .expect("Go extraction should succeed");
+    let entities =
+        extract_go(main_source, "main.go", &known_files).expect("Go extraction should succeed");
 
     // @step Then an Imports edge should exist from "main.go" to the utils package file
     let imports = find_edges(&entities, "Imports", Some("main-go"), Some("utils"));

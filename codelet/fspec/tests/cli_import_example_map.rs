@@ -61,7 +61,8 @@ fn specifying_store(id: &str) -> String {
     )
 }
 
-const IMPORT_FILE: &str = r#"{ "rules": ["r1", "r2"], "examples": ["e1"], "questions": [], "assumptions": [] }"#;
+const IMPORT_FILE: &str =
+    r#"{ "rules": ["r1", "r2"], "examples": ["e1"], "questions": [], "assumptions": [] }"#;
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenarios
@@ -186,7 +187,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws_disp.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then both stores have identical AUTH-001 example map data
     let cli_data: serde_json::Value = serde_json::from_str(

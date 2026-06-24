@@ -56,12 +56,19 @@ const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/add-architecture.txt")
 fn scenario_cli_successfully_adds_architecture_and_prints_success_line() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-architecture spec/features/login.feature "Uses bcrypt for password hashing"' in that tempdir
     let (code, stdout, stderr) = run_add_architecture(
         ws.path(),
-        &["spec/features/login.feature", "Uses bcrypt for password hashing"],
+        &[
+            "spec/features/login.feature",
+            "Uses bcrypt for password hashing",
+        ],
     );
 
     // @step Then the process exits with code 0
@@ -76,7 +83,9 @@ fn scenario_cli_successfully_adds_architecture_and_prints_success_line() {
     // @step And the file spec/features/login.feature in the tempdir contains the line '  Uses bcrypt for password hashing'
     let after = read_feature(ws.path(), "spec/features/login.feature");
     assert!(
-        after.lines().any(|l| l == "  Uses bcrypt for password hashing"),
+        after
+            .lines()
+            .any(|l| l == "  Uses bcrypt for password hashing"),
         "feature file must gain doc-string body; got:\n{after}"
     );
 }
@@ -124,7 +133,11 @@ fn scenario_cli_resolves_bare_feature_name_by_basename() {
 fn scenario_cli_surfaces_empty_text_error() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-architecture spec/features/login.feature ""' in that tempdir
     let (code, _stdout, stderr) =
@@ -134,7 +147,10 @@ fn scenario_cli_surfaces_empty_text_error() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Architecture text cannot be empty'
     assert!(
@@ -160,7 +176,10 @@ fn scenario_cli_surfaces_not_found_error() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Feature file not found: spec/features/missing.feature'
     assert!(
@@ -190,7 +209,10 @@ fn scenario_cli_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "add-architecture --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-architecture --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/add-architecture.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -204,7 +226,11 @@ fn scenario_cli_help_matches_ts_fixture() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-architecture through fspec_core::dispatch::dispatch_command with feature='spec/features/login.feature' and text='Uses bcrypt'
     let req = codelet_fspec_core::DispatchRequest {

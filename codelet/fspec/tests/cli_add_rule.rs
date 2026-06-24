@@ -48,7 +48,15 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
         } else {
@@ -116,7 +124,8 @@ fn scenario_cli_successfully_appends_rule_and_prints_success_line() {
     write_work_units(ws.path(), &seed_unit("AUTH-001", "specifying"));
 
     // @step When I run `fspec add-rule AUTH-001 "Email must be valid format"` in that tempdir
-    let (code, stdout, stderr) = run_add_rule(ws.path(), &["AUTH-001", "Email must be valid format"]);
+    let (code, stdout, stderr) =
+        run_add_rule(ws.path(), &["AUTH-001", "Email must be valid format"]);
 
     // @step Then the exit code is 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
@@ -129,11 +138,16 @@ fn scenario_cli_successfully_appends_rule_and_prints_success_line() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules has length 1
     let v = read_work_units(ws.path());
-    let rules = v["workUnits"]["AUTH-001"]["rules"].as_array().expect("rules array");
+    let rules = v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .expect("rules array");
     assert_eq!(rules.len(), 1);
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].text='Email must be valid format'
-    assert_eq!(rules[0]["text"].as_str(), Some("Email must be valid format"));
+    assert_eq!(
+        rules[0]["text"].as_str(),
+        Some("Email must be valid format")
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -154,7 +168,10 @@ fn scenario_cli_rejects_non_specifying_status_with_exit_1_and_error_prefix() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring '✗ Failed to add rule:'
-    assert!(stderr.contains("✗ Failed to add rule:"), "stderr must contain TS error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("✗ Failed to add rule:"),
+        "stderr must contain TS error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring "Can only add rules during discovery/specification phase. AUTH-001 is in 'backlog' state."
     assert!(
@@ -186,15 +203,23 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-rule AUTH-001 "R2"` afterwards exits 0
     let (code, stdout, stderr) = run_add_rule(ws.path(), &["AUTH-001", "R2"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.rules has length 2
     let v = read_work_units(ws.path());
-    let rules = v["workUnits"]["AUTH-001"]["rules"].as_array().expect("rules array");
+    let rules = v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .expect("rules array");
     assert_eq!(rules.len(), 2);
 
     // @step And the CLI bridge module codelet/fspec/src/add_rule.rs contains NO inline rule construction, status guard, or file-write logic — its only computation is JSON arg marshalling

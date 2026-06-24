@@ -29,8 +29,8 @@ mod fixtures;
 
 use codelet_providers::claude_auth::{read_claude_auth, write_claude_auth, ClaudeAuthJson};
 use codelet_providers::claude_oauth::{
-    build_authorize_url, calculate_expiry, exchange_authorization_code,
-    parse_authorization_code, refresh_access_token_at,
+    build_authorize_url, calculate_expiry, exchange_authorization_code, parse_authorization_code,
+    refresh_access_token_at,
 };
 use codelet_providers::claude_oauth_server::{
     claude_browser_oauth_login_inner, ClaudeOAuthServerConfig,
@@ -115,7 +115,8 @@ async fn test_successful_browser_oauth_login_via_napi() {
     let (_temp_dir, _guard) = setup_fspec_home();
 
     let mock_server = MockServer::start().await;
-    let token_body = build_claude_token_response_json("at_claude_browser", "rt_claude_browser", 3600);
+    let token_body =
+        build_claude_token_response_json("at_claude_browser", "rt_claude_browser", 3600);
 
     Mock::given(method("POST"))
         .and(path("/v1/oauth/token"))
@@ -171,7 +172,10 @@ async fn test_successful_browser_oauth_login_via_napi() {
     // @step And the tokens should contain access_token, refresh_token, and expires
     assert_eq!(napi_tokens.access_token, "at_claude_browser");
     assert_eq!(napi_tokens.refresh_token, "rt_claude_browser");
-    assert!(napi_tokens.expires > 0.0, "expires should be a positive timestamp");
+    assert!(
+        napi_tokens.expires > 0.0,
+        "expires should be a positive timestamp"
+    );
 
     let serialized = serde_json::to_value(&napi_tokens).unwrap();
     assert!(serialized.get("access_token").is_some());
@@ -234,7 +238,9 @@ fn test_headless_login_start_returns_authorize_url_and_pkce_verifier() {
 
     // @step Then the result should contain an authorize_url string pointing to claude.ai
     assert!(
-        napi_result.authorize_url.contains("claude.ai/oauth/authorize"),
+        napi_result
+            .authorize_url
+            .contains("claude.ai/oauth/authorize"),
         "authorize_url should point to claude.ai: {}",
         napi_result.authorize_url
     );
@@ -291,14 +297,10 @@ async fn test_headless_login_complete_exchanges_code_for_tokens() {
     let state = maybe_state.expect("Should have state from code#state format");
     assert_eq!(state, pkce_verifier, "State should match PKCE verifier");
 
-    let token_response = exchange_authorization_code(
-        &mock_server.uri(),
-        &code,
-        &state,
-        &pkce_verifier,
-    )
-    .await
-    .expect("Token exchange should succeed");
+    let token_response =
+        exchange_authorization_code(&mock_server.uri(), &code, &state, &pkce_verifier)
+            .await
+            .expect("Token exchange should succeed");
 
     let expires = calculate_expiry(token_response.expires_in);
     let auth = ClaudeAuthJson {
@@ -306,7 +308,9 @@ async fn test_headless_login_complete_exchanges_code_for_tokens() {
         refresh_token: token_response.refresh_token,
         expires,
     };
-    write_claude_auth(&auth).await.expect("write_claude_auth should succeed");
+    write_claude_auth(&auth)
+        .await
+        .expect("write_claude_auth should succeed");
 
     // @step Then the Promise should resolve with NapiClaudeTokens
     let napi_tokens = NapiClaudeTokens::from(auth);
@@ -314,7 +318,10 @@ async fn test_headless_login_complete_exchanges_code_for_tokens() {
     assert_eq!(napi_tokens.refresh_token, "rt_headless");
 
     // @step And the tokens should be persisted to claude_auth.json
-    assert!(auth_path.exists(), "claude_auth.json should exist after headless complete");
+    assert!(
+        auth_path.exists(),
+        "claude_auth.json should exist after headless complete"
+    );
     let persisted = std::fs::read_to_string(&auth_path).unwrap();
     let persisted_json: serde_json::Value = serde_json::from_str(&persisted).unwrap();
     assert_eq!(persisted_json["access_token"], "at_headless");
@@ -336,15 +343,11 @@ fn test_headless_login_complete_rejects_mismatched_state_as_csrf() {
 
     // @step Then the Promise should reject with an error containing "CSRF" or "state mismatch"
     let state = maybe_state.expect("Should have state");
-    assert_ne!(
-        state, pkce_verifier,
-        "State should NOT match pkce_verifier"
-    );
+    assert_ne!(state, pkce_verifier, "State should NOT match pkce_verifier");
 
     // The NAPI binding would check: if state != pkce_verifier → Error::from_reason
-    let error_msg = format!(
-        "CSRF validation failed — state mismatch. Expected: {pkce_verifier}, Got: {state}"
-    );
+    let error_msg =
+        format!("CSRF validation failed — state mismatch. Expected: {pkce_verifier}, Got: {state}");
     assert!(
         error_msg.contains("CSRF") || error_msg.contains("state mismatch"),
         "Error should mention CSRF or state mismatch: {error_msg}"
@@ -562,7 +565,10 @@ async fn test_clear_tokens_removes_stored_credentials() {
     write_claude_auth(&auth)
         .await
         .expect("Should write claude_auth.json");
-    assert!(auth_path.exists(), "claude_auth.json should exist before clearing");
+    assert!(
+        auth_path.exists(),
+        "claude_auth.json should exist before clearing"
+    );
 
     // @step When TypeScript calls claude_oauth_clear_tokens()
     // The NAPI binding deletes claude_auth.json (async tokio::fs::remove_file)

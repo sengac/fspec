@@ -116,11 +116,14 @@ impl CustomProvider {
         thinking_config: Option<serde_json::Value>,
     ) -> Result<CustomRigAgent, CustomProviderError> {
         let configs = discover_provider_configs()?;
-        let cfg = configs.into_iter().find(|c| c.name == name).ok_or_else(|| {
-            CustomProviderError::RhaiRuntimeError(format!(
-                "custom provider '{name}' not discovered"
-            ))
-        })?;
+        let cfg = configs
+            .into_iter()
+            .find(|c| c.name == name)
+            .ok_or_else(|| {
+                CustomProviderError::RhaiRuntimeError(format!(
+                    "custom provider '{name}' not discovered"
+                ))
+            })?;
         let config_dir = find_config_dir(project_root, name).ok_or_else(|| {
             CustomProviderError::RhaiRuntimeError(format!(
                 "could not locate config directory for '{name}'"

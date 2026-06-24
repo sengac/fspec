@@ -127,7 +127,11 @@ async fn test_python_module_variables_extracted_function_local_excluded() {
         .filter(|v| v.get("language").and_then(|l| l.as_str()) == Some("python"))
         .collect();
 
-    assert_eq!(py_vars.len(), 2, "Should find 2 Python module-level variables");
+    assert_eq!(
+        py_vars.len(),
+        2,
+        "Should find 2 Python module-level variables"
+    );
 
     let max_retries = py_vars
         .iter()
@@ -271,7 +275,8 @@ async fn test_search_variables_by_name_pattern() {
     // (setup has API_KEY, API_URL in TypeScript config)
 
     // @step When ast_search is called with query API and entity_type Variable
-    let result_json = dispatch_ast_search(&db, "API", Some("Variable"), None, None, None, None, None).await;
+    let result_json =
+        dispatch_ast_search(&db, "API", Some("Variable"), None, None, None, None, None).await;
     let result: serde_json::Value = serde_json::from_str(&result_json).expect("valid JSON");
 
     let results = result
@@ -280,7 +285,11 @@ async fn test_search_variables_by_name_pattern() {
         .expect("results array");
 
     // @step Then all variables matching the name pattern are returned
-    assert_eq!(results.len(), 2, "Should find 2 variables with 'API' in name");
+    assert_eq!(
+        results.len(),
+        2,
+        "Should find 2 variables with 'API' in name"
+    );
 
     let names: Vec<&str> = results
         .iter()

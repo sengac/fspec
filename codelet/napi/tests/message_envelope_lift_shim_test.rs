@@ -18,12 +18,12 @@ use uuid::Uuid;
 // The shim is in `codelet/napi/src/persistence/message_envelope.rs` and is
 // validated at compile time by these imports. The fact that BOTH paths
 // below refer to the same type is the assertion.
+use codelet_napi::persistence::AssistantContent as NapiReexportedAssistantContent;
+use codelet_napi::persistence::AssistantMessage as NapiReexportedAssistantMessage;
 use codelet_napi::persistence::MessageEnvelope as NapiReexportedEnvelope;
 use codelet_napi::persistence::MessagePayload as NapiReexportedPayload;
-use codelet_napi::persistence::UserMessage as NapiReexportedUserMessage;
 use codelet_napi::persistence::UserContent as NapiReexportedUserContent;
-use codelet_napi::persistence::AssistantMessage as NapiReexportedAssistantMessage;
-use codelet_napi::persistence::AssistantContent as NapiReexportedAssistantContent;
+use codelet_napi::persistence::UserMessage as NapiReexportedUserMessage;
 
 use codelet_core::persistence::message_envelope::{
     MessageEnvelope as CoreEnvelope, MessagePayload as CorePayload, UserContent as CoreUserContent,
@@ -42,7 +42,9 @@ fn _shim_alignment() {
         provider: "claude".to_string(),
         message: CorePayload::User(CoreUserMessage {
             role: "user".to_string(),
-            content: vec![CoreUserContent::Text { text: String::new() }],
+            content: vec![CoreUserContent::Text {
+                text: String::new(),
+            }],
         }),
         request_id: None,
     };
@@ -54,7 +56,9 @@ fn _shim_alignment() {
         provider: "claude".to_string(),
         message: NapiReexportedPayload::User(NapiReexportedUserMessage {
             role: "user".to_string(),
-            content: vec![NapiReexportedUserContent::Text { text: String::new() }],
+            content: vec![NapiReexportedUserContent::Text {
+                text: String::new(),
+            }],
         }),
         request_id: None,
     };
@@ -154,7 +158,9 @@ fn napi_persistence_tests_continue_to_pass_after_the_lift() {
     assert_eq!(restored.message_type, "user");
     match restored.message {
         MessagePayload::User(user_msg) => match &user_msg.content[0] {
-            UserContent::ToolResult { tool_use_result, .. } => {
+            UserContent::ToolResult {
+                tool_use_result, ..
+            } => {
                 let meta = tool_use_result.as_ref().expect("metadata preserved");
                 assert_eq!(meta.stdout, Some("stdout".to_string()));
             }
@@ -165,7 +171,9 @@ fn napi_persistence_tests_continue_to_pass_after_the_lift() {
 
     // Force a no-op reference to AssistantContent + AssistantMessage so the
     // import is exercised — proves the full envelope surface re-exports.
-    let _ = AssistantContent::Text { text: String::new() };
+    let _ = AssistantContent::Text {
+        text: String::new(),
+    };
     let _ = AssistantMessage {
         role: "assistant".to_string(),
         id: None,

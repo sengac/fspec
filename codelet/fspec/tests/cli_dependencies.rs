@@ -209,7 +209,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the DispatchResult.data equals the stdout produced by running `./codelet/target/release/fspec dependencies AUTH-001`
     let (code, stdout, stderr) = run_deps(ws.path(), &["AUTH-001"]);

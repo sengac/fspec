@@ -83,9 +83,15 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         let project = std::env::current_dir()
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_default();
-        let model = self
-            .get_default_model()
-            .unwrap_or_else(|| "anthropic/claude-opus-4-5".to_string());
+        // PROV-101: NO silent selection fallback. When no default model has
+        // been explicitly set, decline creation (empty SessionId) instead of
+        // substituting "anthropic/claude-opus-4-5".
+        let Some(model) = self.get_default_model() else {
+            tracing::error!(
+                "create_session declined: no default model set (PROV-101: no anthropic fallback)"
+            );
+            return SessionId::new(String::new());
+        };
         let id_string = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current()
                 .block_on(async { SessionManager::create_session(self, &model, &project).await })
@@ -813,9 +819,11 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             .map_err(|e| e.to_string())?
             .to_string_lossy()
             .to_string();
-        let model = self
-            .get_default_model()
-            .unwrap_or_else(|| "anthropic/claude-opus-4-5".to_string());
+        let model = self.get_default_model().ok_or_else(|| {
+            "create_isolated_session declined: no default model set \
+             (PROV-101: no anthropic fallback)"
+                .to_string()
+        })?;
         let name = format!("isolated-{}", &id.to_string()[..8]);
         let info = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
@@ -982,6 +990,12 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         }
     }
 
+    /// PROV-118: delegate to the inherent `SessionManager::set_default_model`,
+    /// which ignores empty strings (PROV-101 no-fallback policy preserved).
+    fn set_default_model(&self, model: &str) {
+        SessionManager::set_default_model(self, model);
+    }
+
     fn set_model(
         &self,
         session_id: &SessionId,
@@ -1096,6 +1110,35 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         model_id: &str,
     ) -> Result<(), String> {
         crate::profile_sections::delete_custom_model(provider_id, profile_name, model_id)
+            .map_err(|e| e.to_string())
+    }
+
+    // PROV-108: profile write surface. Delegates to the `profile_persistence`
+    // read-modify-write (preserving customModels + sibling keys), converting
+    // the transport-portable `ProfileDefinition` via
+    // `conversions::profile_def_from_wire`.
+    fn save_profile(
+        &self,
+        provider_id: &str,
+        profile_name: &str,
+        definition: &codelet_rpc_types::ProfileDefinition,
+    ) -> Result<(), String> {
+        // TS parity (profile-management.ts saveProfile): profiles are only
+        // supported for the OpenAI API provider. The guard predicate and the
+        // user-facing message are single-sourced in `profile_persistence` so
+        // they cannot drift from the NAPI binding.
+        if !crate::profile_persistence::profiles_supported(provider_id) {
+            return Err(crate::profile_persistence::profiles_unsupported_error(
+                provider_id,
+            ));
+        }
+        let def = crate::conversions::profile_def_from_wire(definition);
+        crate::profile_persistence::save_profile(provider_id, profile_name, &def)
+            .map_err(|e| e.to_string())
+    }
+
+    fn delete_profile(&self, provider_id: &str, profile_name: &str) -> Result<(), String> {
+        crate::profile_persistence::delete_profile(provider_id, profile_name)
             .map_err(|e| e.to_string())
     }
 

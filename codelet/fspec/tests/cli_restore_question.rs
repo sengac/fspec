@@ -34,8 +34,7 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/work-units.json"))
-        .expect("read work-units.json");
+    let raw = fs::read_to_string(cwd.join("spec/work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse work-units.json")
 }
 
@@ -82,7 +81,10 @@ fn scenario_clap_exposes_restore_question_with_two_positional_args_in_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "restore-question --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "restore-question --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout describes the restore-question subcommand
     assert!(
@@ -91,10 +93,16 @@ fn scenario_clap_exposes_restore_question_with_two_positional_args_in_help() {
     );
 
     // @step And stdout mentions the `<workUnitId>` argument
-    assert!(stdout.contains("workUnitId"), "help must mention workUnitId; got:\n{stdout}");
+    assert!(
+        stdout.contains("workUnitId"),
+        "help must mention workUnitId; got:\n{stdout}"
+    );
 
     // @step And stdout mentions the `<index>` argument
-    assert!(stdout.contains("index"), "help must mention index; got:\n{stdout}");
+    assert!(
+        stdout.contains("index"),
+        "help must mention index; got:\n{stdout}"
+    );
 
     // @step And stdout does NOT advertise a `--workspace` global flag
     assert!(
@@ -120,7 +128,10 @@ fn scenario_cli_restores_question_and_prints_success_line() {
     let (code, stdout, stderr) = run_restore_question(ws.path(), &["AUTH-001", "0"]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "must exit 0; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stdout contains the line '✓ Restored question: "Q?"'
     assert!(
@@ -146,7 +157,10 @@ fn scenario_cli_prints_idempotent_success_message_when_already_active() {
     let (code, stdout, stderr) = run_restore_question(ws.path(), &["AUTH-001", "0"]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "must exit 0; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stdout contains the line '✓ Restored question: "Q?"'
     assert!(
@@ -178,7 +192,10 @@ fn scenario_cli_rejects_unknown_question_id_with_exit_1_and_error_prefix() {
     let (code, stdout, stderr) = run_restore_question(ws.path(), &["AUTH-001", "5"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring 'Question with ID 5 not found'
     assert!(
@@ -204,10 +221,16 @@ fn scenario_cli_rejects_unknown_work_unit_with_exit_1_and_error_prefix() {
     let (code, stdout, stderr) = run_restore_question(ws.path(), &["AUTH-999", "0"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring 'Work unit'
-    assert!(stderr.contains("Work unit"), "stderr must mention Work unit; got:\n{stderr}");
+    assert!(
+        stderr.contains("Work unit"),
+        "stderr must mention Work unit; got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -248,7 +271,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step And running `./codelet/target/release/fspec restore-question AUTH-001 1` afterwards exits 0
     let (code, stdout, stderr) = run_restore_question(ws.path(), &["AUTH-001", "1"]);
-    assert_eq!(code, 0, "second CLI call must exit 0; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "second CLI call must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows both questions with deleted=false
     let on_disk = read_work_units(ws.path());
@@ -257,7 +283,11 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         .expect("questions array");
     assert_eq!(arr.len(), 2);
     for q in arr {
-        assert_eq!(q["deleted"].as_bool(), Some(false), "all questions active; got {q}");
+        assert_eq!(
+            q["deleted"].as_bool(),
+            Some(false),
+            "all questions active; got {q}"
+        );
     }
 
     // @step And the CLI bridge module codelet/fspec/src/restore_question.rs contains NO inline state mutation or file-write logic — its only computation is JSON arg marshalling

@@ -23,7 +23,6 @@ pub mod exit_confirmation_dialog;
 pub mod hello;
 pub mod help_dialog;
 pub mod hitl_dialog;
-pub mod model_selector_dialog;
 pub mod model_selector_dialog_rows;
 pub mod notification_dialog;
 pub mod pause_dialog;
@@ -122,6 +121,13 @@ pub enum Action {
     /// RPC-009: bootstrap's `create_session(None)` returned a session id;
     /// the AgentReplView records it as its active session.
     SessionCreated(codelet_rpc_types::SessionId),
+    /// PROV-101: `create_session` returned an EMPTY `SessionId` because no
+    /// default model was set (decline). The TUI must NOT append an empty-id
+    /// session — every caller maps the empty id to THIS action via
+    /// `app::session_creation::post_create_session_action`, and App::dispatch
+    /// surfaces it as a Priority::Critical ErrorDialog so the decline is
+    /// explicit instead of being silently swallowed.
+    SessionCreationDeclined,
     /// RPC-009: a streaming chunk arrived for the (session_id, chunk)
     /// pair. The chunks_rx subscriber filters by the AgentReplView's
     /// active session id BEFORE emitting this variant.
@@ -369,27 +375,23 @@ pub enum Action {
     /// so the resume view repaints without the deleted session.
     ConfirmDeleteSession(codelet_rpc_types::SessionId),
     /// RPC-022: emitted by the slash command popup (on Enter over the
-    /// Model row) AND by `parse_slash_command("/model")`.
-    /// App::dispatch pushes a fresh ModelSelectorDialog onto the
-    /// Compositor at Priority::Foreground AND spawns
-    /// `backend.list_providers()` whose result returns via
-    /// `Action::ListProvidersLoaded`.
-    OpenModelDialog,
-    /// RPC-022: emitted by the slash command popup (on Enter over the
     /// Thinking row) AND by `parse_slash_command("/thinking")`.
     /// App::dispatch pushes a fresh ThinkingLevelDialog onto the
     /// Compositor at Priority::Foreground seeded with the cached
     /// thinking level for the focused session.
     OpenThinkingDialog,
     /// RPC-022: a spawned `backend.list_providers()` task resolved.
-    /// App::dispatch folds the result into the open
-    /// ModelSelectorDialog. No-op when no dialog is open.
+    /// App::dispatch folds the result into the open ModelSelector
+    /// mode-view. No-op when the view is not active.
     ListProvidersLoaded(Vec<codelet_rpc_types::ProviderInfo>),
-    /// RPC-022: emitted by ModelSelectorDialog on Enter over a model
-    /// row. App::dispatch spawns `backend.set_session_model(...)` then
+    /// RPC-022: emitted by the ModelSelector mode-view on Enter over a
+    /// model row. App::dispatch spawns `backend.set_session_model(...)` then
     /// re-runs `backend.get_model_info(...)` to refresh the
     /// SessionHeader chrome via `Action::ModelInfoLoaded`.
-    ModelSelected(codelet_rpc_types::SessionId, String, String),
+    /// PROV-117: the session id is `Option` — TS parity, the Enter handler
+    /// has no session guard and always emits a selection; the backend write
+    /// is skipped (and the selector still closes) when there is no session.
+    ModelSelected(Option<codelet_rpc_types::SessionId>, String, String),
     /// RPC-022: emitted by ThinkingLevelDialog on Enter over a level
     /// row. App::dispatch spawns `backend.set_thinking_level(...)`
     /// then re-runs `backend.get_thinking_level(...)` to refresh the
@@ -615,8 +617,8 @@ pub enum Action {
     /// by the `/model` slash command AND by ProviderSettings Tab
     /// (SwitchToModels). App::dispatch flips the Navigator's ViewMode to
     /// ModelSelector AND spawns `backend.list_providers()` (folded back
-    /// via `Action::ListProvidersLoaded`). Replaces the retired
-    /// `Action::OpenModelDialog` Compositor-modal path.
+    /// via `Action::ListProvidersLoaded`). This is the only model-picker
+    /// entry point (no Compositor modal exists).
     OpenModelSelectorView,
     /// RPC-337: emitted by the ModelSelector mode-view on Esc.
     /// App::dispatch returns the Navigator to the Agent view. A
@@ -704,6 +706,116 @@ pub enum Action {
     /// don't fit one of the typed *Loaded / *Complete variants
     /// (e.g. error messages from save / delete spawns).
     ProviderSettingsStatus(String),
+
+    /// PROV-109: emitted by the profile create/edit form on submit.
+    /// App::dispatch spawns `backend.save_profile(provider_id,
+    /// profile_name, definition)` followed by a `list_provider_credentials`
+    /// refresh so the openai profile slice repaints with the new state.
+    SaveProfile {
+        provider_id: String,
+        profile_name: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    },
+    /// PROV-109: raw delete request for a local-server profile. App::dispatch
+    /// spawns `backend.delete_profile(..)` + a list refresh. The view-layer is
+    /// responsible for opening the confirm dialog before this fires.
+    DeleteProfile {
+        provider_id: String,
+        profile_name: String,
+    },
+    /// PROV-109: emitted AFTER the user accepts the delete ConfirmDialog
+    /// primary button. Routes through the SAME delete handler as
+    /// `DeleteProfile` so the destructive backend call never fires without
+    /// explicit confirmation (mirrors `ConfirmDeleteProviderCredentials`).
+    ConfirmDeleteProfile {
+        provider_id: String,
+        profile_name: String,
+    },
+    /// PROV-116: emitted from the SUCCESS branch of a profile delete (just
+    /// before the reload) to record the parent provider the reload should
+    /// re-focus. A failed delete never emits it, so the cursor never jumps.
+    ProfileDeleteNavigate {
+        provider_id: String,
+    },
+
+    /// PROV-112: emitted by the ProviderSettingsView's DisconnectOAuth
+    /// confirm dialog when the user presses `y`/`Y`. App::dispatch spawns
+    /// `backend.oauth_clear_tokens(provider_id)` (per-provider routing lives
+    /// in the backend) followed by a `list_provider_credentials` refresh so
+    /// the disconnected provider's `oauth-status` (Logout) row disappears.
+    /// Backend clear errors are swallowed (status without leaking the RPC
+    /// name); the clear is idempotent.
+    OAuthDisconnect {
+        provider_id: String,
+    },
+
+    // ========================================================================
+    // PROV-113: OAuth login actions (browser / headless / device). The view
+    // emits `OAuthLoginStart` on Enter over a login row; App::dispatch routes
+    // by (provider, method) to the backend browser/headless/device calls. The
+    // intermediate `OAuthHeadlessReady` / `OAuthDeviceReady` results set the
+    // code-entry / device-waiting modes; `OAuthLoginSucceeded` /
+    // `OAuthLoginFailed` fold the terminal outcome (dropped when their
+    // generation no longer matches the view's, i.e. the flow was cancelled).
+    // ========================================================================
+    /// PROV-113: start an OAuth login for `provider_id` using `method`. Carries
+    /// the view's current generation so a stale result can be dropped.
+    OAuthLoginStart {
+        provider_id: String,
+        method: crate::views::provider_settings::nav_item::OAuthMethod,
+        generation: u64,
+    },
+    /// PROV-113: anthropic headless start resolved — set the code-entry mode.
+    OAuthHeadlessReady {
+        provider_id: String,
+        authorize_url: String,
+        pkce_verifier: String,
+        generation: u64,
+    },
+    /// PROV-113: codex device start resolved — set device-waiting + poll.
+    OAuthDeviceReady {
+        provider_id: String,
+        user_code: String,
+        verification_url: String,
+        device_auth_id: String,
+        interval: u64,
+        generation: u64,
+    },
+    /// PROV-113: submit the pasted headless code (anthropic).
+    OAuthLoginHeadlessSubmit {
+        provider_id: String,
+        code: String,
+        pkce_verifier: String,
+        generation: u64,
+    },
+    /// PROV-113: a login completed successfully.
+    OAuthLoginSucceeded {
+        provider_id: String,
+        generation: u64,
+    },
+    /// PROV-113: a login failed (message is UI-safe — no RPC/method name).
+    OAuthLoginFailed {
+        provider_id: String,
+        error: String,
+        generation: u64,
+    },
+    /// PROV-113: open the authorize URL in the user's browser (best-effort).
+    OAuthOpenUrl {
+        url: String,
+    },
+    /// PROV-113: copy the authorize URL to the clipboard (best-effort).
+    OAuthCopyUrl {
+        url: String,
+    },
+    /// PROV-114: begin the github-copilot device flow. `enterprise_host` is
+    /// `None` for GitHub.com or `Some(normalized_host)` for GitHub Enterprise.
+    /// Carries the view's current generation so a stale result can be dropped.
+    /// App::dispatch spawns `backend.oauth_copilot_device_start(enterprise_host)`
+    /// then reuses the PROV-113 `OAuthDeviceReady` → `oauth_device_poll` path.
+    OAuthCopilotDeviceStart {
+        enterprise_host: Option<String>,
+        generation: u64,
+    },
 
     // ========================================================================
     // RPC-056: Blocklist view actions. The `/blocklist` slash command

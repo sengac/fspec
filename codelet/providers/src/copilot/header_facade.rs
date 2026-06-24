@@ -28,8 +28,7 @@ const HEADER_OPENAI_INTENT: HeaderName = HeaderName::from_static("openai-intent"
 
 /// Header name: `copilot-vision-request` (Copilot-specific — set only when
 /// the outgoing body contains image parts).
-const HEADER_COPILOT_VISION_REQUEST: HeaderName =
-    HeaderName::from_static("copilot-vision-request");
+const HEADER_COPILOT_VISION_REQUEST: HeaderName = HeaderName::from_static("copilot-vision-request");
 
 /// Static header value: `conversation-edits`.
 const OPENAI_INTENT_VALUE: HeaderValue = HeaderValue::from_static("conversation-edits");
@@ -74,10 +73,7 @@ impl CopilotHeaderFacade {
     /// the request is text-only — `Copilot-Vision-Request` is omitted in that
     /// case).
     #[must_use]
-    pub fn build_headers(
-        classification: &RequestClassification,
-        access_token: &str,
-    ) -> HeaderMap {
+    pub fn build_headers(classification: &RequestClassification, access_token: &str) -> HeaderMap {
         let mut headers = HeaderMap::new();
 
         // x-initiator: "agent" or "user"

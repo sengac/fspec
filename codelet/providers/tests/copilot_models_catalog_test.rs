@@ -46,9 +46,7 @@ fn find_model<'a>(
 /// Read the reasoning_variants Vec from a ModelInfo.options entry.
 /// Convention: options["reasoning_variants"] is a JSON array of strings, copied
 /// verbatim from capabilities.supports.reasoning_effort.
-fn reasoning_variants_for(
-    model: &codelet_providers::models::ModelInfo,
-) -> Vec<String> {
+fn reasoning_variants_for(model: &codelet_providers::models::ModelInfo) -> Vec<String> {
     model
         .options
         .get("reasoning_variants")
@@ -299,8 +297,7 @@ async fn scenario_release_date_derived_purely_from_version_field() {
         .expect("fetch_models should succeed");
 
     // @step Then the catalog model "whatever-model" has release_date "2025-09-15"
-    let model =
-        find_model(&catalog, "whatever-model").expect("whatever-model present in catalog");
+    let model = find_model(&catalog, "whatever-model").expect("whatever-model present in catalog");
     assert_eq!(
         model.release_date.as_deref(),
         Some("2025-09-15"),
@@ -632,5 +629,4 @@ async fn scenario_store_false_is_enforced_for_every_copilot_request() {
     let mut empty: HashMap<String, serde_json::Value> = HashMap::new();
     apply_store_false(&mut empty);
     assert_eq!(empty.get("store"), Some(&serde_json::Value::Bool(false)));
-
 }

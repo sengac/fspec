@@ -56,7 +56,11 @@ const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/add-background.txt");
 fn scenario_cli_successfully_adds_background_and_prints_success_line() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-background spec/features/login.feature "As a user\nI want to log in\nSo that I access my account"' in that tempdir
     let (code, stdout, stderr) = run_add_background(
@@ -101,7 +105,10 @@ fn scenario_cli_resolves_bare_feature_name_by_basename() {
     // @step When I run 'fspec add-background dashboard "As a user\nI want a dashboard\nSo that I see overview"' in that tempdir
     let (code, stdout, stderr) = run_add_background(
         ws.path(),
-        &["dashboard", "As a user\nI want a dashboard\nSo that I see overview"],
+        &[
+            "dashboard",
+            "As a user\nI want a dashboard\nSo that I see overview",
+        ],
     );
 
     // @step Then the process exits with code 0
@@ -129,16 +136,24 @@ fn scenario_cli_resolves_bare_feature_name_by_basename() {
 fn scenario_cli_surfaces_empty_text_error() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-background spec/features/login.feature ""' in that tempdir
-    let (code, _stdout, stderr) = run_add_background(ws.path(), &["spec/features/login.feature", ""]);
+    let (code, _stdout, stderr) =
+        run_add_background(ws.path(), &["spec/features/login.feature", ""]);
 
     // @step Then the process exits with code 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Background text cannot be empty'
     assert!(
@@ -164,7 +179,10 @@ fn scenario_cli_surfaces_not_found_error() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Feature file not found: spec/features/missing.feature'
     assert!(
@@ -194,7 +212,10 @@ fn scenario_cli_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "add-background --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-background --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/add-background.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -208,7 +229,11 @@ fn scenario_cli_help_matches_ts_fixture() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-background through fspec_core::dispatch::dispatch_command with feature='spec/features/login.feature' and text='As a user'
     let req = codelet_fspec_core::DispatchRequest {

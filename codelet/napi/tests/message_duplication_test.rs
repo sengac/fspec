@@ -71,7 +71,7 @@ async fn test_mpsc_channel_single_delivery() {
 async fn test_select_biased_no_duplication() {
     let (user_tx, mut user_rx) = mpsc::channel::<TestPromptInput>(16);
     let (supervisor_tx, mut supervisor_rx) = mpsc::channel::<TestSupervisorInput>(16);
-    
+
     let user_receive_count = Arc::new(AtomicUsize::new(0));
     let watcher_receive_count = Arc::new(AtomicUsize::new(0));
     let user_count_clone = user_receive_count.clone();
@@ -82,7 +82,7 @@ async fn test_select_biased_no_duplication() {
         loop {
             let input = tokio::select! {
                 biased;
-                
+
                 result = user_rx.recv() => {
                     match result {
                         Some(input) => {
@@ -92,7 +92,7 @@ async fn test_select_biased_no_duplication() {
                         None => break, // Channel closed
                     }
                 }
-                
+
                 result = supervisor_rx.recv() => {
                     match result {
                         Some(input) => {
@@ -171,7 +171,7 @@ async fn test_mutex_receiver_in_select_no_duplication() {
 
             let input = tokio::select! {
                 biased;
-                
+
                 result = user_rx.recv() => {
                     match result {
                         Some(_input) => {
@@ -184,7 +184,7 @@ async fn test_mutex_receiver_in_select_no_duplication() {
                         }
                     }
                 }
-                
+
                 result = watcher_guard.recv() => {
                     match result {
                         Some(_input) => {
@@ -266,13 +266,13 @@ async fn test_rapid_sends_no_duplication() {
     let _ = timeout(Duration::from_secs(1), receiver).await;
 
     let messages = received_messages.lock().await;
-    
+
     assert_eq!(
         receive_count.load(Ordering::SeqCst),
         3,
         "Should receive exactly 3 messages"
     );
-    
+
     // Verify no duplicates
     assert_eq!(messages.len(), 3);
     assert!(messages.contains(&"Message 1".to_string()));
@@ -288,34 +288,38 @@ fn test_rig_request_builder_concatenation_causes_duplication() {
     // 1. stream_loop.rs pushes user message to session.messages
     // 2. session.messages is passed as history to rig
     // 3. rig's build() concatenates history with prompt
-    
+
     // Initial state: previous messages
     let previous_messages = vec!["Previous 1".to_string(), "Previous 2".to_string()];
-    
+
     // Step 1: stream_loop.rs pushes the user message (the bug)
     let user_prompt = "Hello".to_string();
     let mut session_messages = previous_messages.clone();
     session_messages.push(user_prompt.clone()); // <-- This is the bug!
-    
+
     // Step 2: session_messages is cloned and passed to rig as history
     let history_for_rig = session_messages.clone();
-    
+
     // Step 3: rig's build() concatenates history with prompt
     // (simulating request.rs line 731)
     let final_chat_history: Vec<String> = [history_for_rig, vec![user_prompt.clone()]].concat();
-    
+
     // VERIFY THE BUG: prompt appears twice
     let prompt_count = final_chat_history.iter().filter(|m| *m == "Hello").count();
-    
+
     // This test DOCUMENTS the bug - it should fail after the fix
     assert_eq!(
         prompt_count, 2,
         "BUG: User prompt appears {} times in final request (expected 2 showing duplication)",
         prompt_count
     );
-    
+
     // The final history has 4 messages: Previous 1, Previous 2, Hello, Hello
-    assert_eq!(final_chat_history.len(), 4, "Should have 4 messages (2 previous + 2 duplicates)");
+    assert_eq!(
+        final_chat_history.len(),
+        4,
+        "Should have 4 messages (2 previous + 2 duplicates)"
+    );
 }
 
 /// Test 6: Show the correct behavior after fix
@@ -324,24 +328,28 @@ fn test_rig_request_builder_concatenation_causes_duplication() {
 fn test_correct_behavior_after_fix() {
     // Initial state: previous messages (NOT including current prompt)
     let previous_messages = vec!["Previous 1".to_string(), "Previous 2".to_string()];
-    
+
     // The user prompt
     let user_prompt = "Hello".to_string();
-    
+
     // CORRECT: Do NOT push user message to session.messages before calling rig
     let history_for_rig = previous_messages.clone();
-    
+
     // rig's build() concatenates history with prompt
     let final_chat_history: Vec<String> = [history_for_rig, vec![user_prompt.clone()]].concat();
-    
+
     // VERIFY: prompt appears exactly once
     let prompt_count = final_chat_history.iter().filter(|m| *m == "Hello").count();
-    
+
     assert_eq!(
         prompt_count, 1,
         "User prompt should appear exactly ONCE in final request"
     );
-    
+
     // The final history has 3 messages: Previous 1, Previous 2, Hello
-    assert_eq!(final_chat_history.len(), 3, "Should have 3 messages (2 previous + 1 prompt)");
+    assert_eq!(
+        final_chat_history.len(),
+        3,
+        "Should have 3 messages (2 previous + 1 prompt)"
+    );
 }

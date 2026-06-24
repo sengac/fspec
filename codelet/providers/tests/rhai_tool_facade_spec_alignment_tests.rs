@@ -52,9 +52,8 @@ fn sample_def() -> RhaiToolDef {
 fn build_adapter(def: RhaiToolDef) -> (tempfile::TempDir, RhaiToolFacadeAdapter) {
     let (tmp, cfg) = facade_config_with_script("my-llm", NO_TOOL_FNS_SCRIPT, ToolStyle::Claude);
     let loader = make_loader();
-    let adapter =
-        RhaiToolFacadeAdapter::new(Arc::new(def), Arc::new(cfg), Arc::clone(&loader))
-            .expect("build adapter");
+    let adapter = RhaiToolFacadeAdapter::new(Arc::new(def), Arc::new(cfg), Arc::clone(&loader))
+        .expect("build adapter");
     // Return TempDir so the caller controls its lifetime; the adapter
     // stores `Arc` handles and does not re-read the script file, but
     // keeping TempDir alive avoids surprising teardown ordering.
@@ -238,8 +237,8 @@ fn is_positive_rig_tool_claim(text: &str) -> bool {
 #[test]
 fn prov_066_feature_file_no_longer_references_rig_tool_semantics() {
     // @step Given the custom-provider-rhai-scriptable-tool-facades feature file has been reconciled
-    let path = repo_root()
-        .join("spec/features/custom-provider-rhai-scriptable-tool-facades.feature");
+    let path =
+        repo_root().join("spec/features/custom-provider-rhai-scriptable-tool-facades.feature");
     let contents = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("read feature file {}: {e}", path.display()));
 
@@ -311,10 +310,9 @@ fn repo_root() -> std::path::PathBuf {
 
 fn read_work_units_json() -> serde_json::Value {
     let path = repo_root().join("spec/work-units.json");
-    let body = std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
-    serde_json::from_str(&body)
-        .unwrap_or_else(|e| panic!("parse work-units.json: {e}"))
+    let body =
+        std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
+    serde_json::from_str(&body).unwrap_or_else(|e| panic!("parse work-units.json: {e}"))
 }
 
 /// Locate a work unit object by ID inside work-units.json.
@@ -323,10 +321,7 @@ fn read_work_units_json() -> serde_json::Value {
 /// ID, but that has changed historically — this helper walks both
 /// common shapes (object map or array of `{id, ...}`) so the test
 /// stays robust.
-fn find_work_unit<'a>(
-    json: &'a serde_json::Value,
-    id: &str,
-) -> Option<&'a serde_json::Value> {
+fn find_work_unit<'a>(json: &'a serde_json::Value, id: &str) -> Option<&'a serde_json::Value> {
     if let Some(map) = json.get("workUnits").and_then(|v| v.as_object()) {
         if let Some(unit) = map.get(id) {
             return Some(unit);
@@ -416,11 +411,7 @@ fn lookup_item_text_by_stable_id(
 /// Collect the `text` fields of every non-deleted entry in the named
 /// array field on a work unit. Used when assertions need to scan all
 /// live rules/architecture notes rather than indexing by stable id.
-fn collect_active_item_texts(
-    json: &serde_json::Value,
-    id: &str,
-    field: &str,
-) -> Vec<String> {
+fn collect_active_item_texts(json: &serde_json::Value, id: &str, field: &str) -> Vec<String> {
     let Some(unit) = find_work_unit(json, id) else {
         return Vec::new();
     };

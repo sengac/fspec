@@ -93,7 +93,10 @@ async fn test_hierarchy_parents_children_interfaces() {
     let result: Value = serde_json::from_str(&result_json).expect("parse JSON");
 
     // Verify no error
-    assert!(result.get("error").is_none(), "Expected no error, got: {result_json}");
+    assert!(
+        result.get("error").is_none(),
+        "Expected no error, got: {result_json}"
+    );
 
     // @step Then I should receive the parent classes via Extends edges
     let parents = result["parents"].as_array().expect("parents array");
@@ -144,7 +147,10 @@ async fn test_multi_level_hierarchy() {
     )
     .await;
     let result: Value = serde_json::from_str(&result_json).expect("parse JSON");
-    assert!(result.get("error").is_none(), "Expected no error, got: {result_json}");
+    assert!(
+        result.get("error").is_none(),
+        "Expected no error, got: {result_json}"
+    );
 
     // @step Then I should receive grandparent classes in the parents array
     // Dog → Animal is direct parent at depth 1
@@ -174,15 +180,13 @@ async fn test_standalone_type_no_inheritance() {
     // (Formatter class with no extends/implements edges)
 
     // @step When I request ast_hierarchy for that class
-    let result_json = ast_hierarchy::dispatch_ast_hierarchy(
-        &db,
-        "src-util-py::Formatter",
-        None,
-        None,
-    )
-    .await;
+    let result_json =
+        ast_hierarchy::dispatch_ast_hierarchy(&db, "src-util-py::Formatter", None, None).await;
     let result: Value = serde_json::from_str(&result_json).expect("parse JSON");
-    assert!(result.get("error").is_none(), "Expected no error, got: {result_json}");
+    assert!(
+        result.get("error").is_none(),
+        "Expected no error, got: {result_json}"
+    );
 
     // @step Then I should receive the type itself with its methods
     assert_eq!(result["type"]["name"], "Formatter");
@@ -194,11 +198,17 @@ async fn test_standalone_type_no_inheritance() {
 
     // @step And the parents array should be empty
     let parents = result["parents"].as_array().expect("parents array");
-    assert!(parents.is_empty(), "Parents should be empty for standalone type");
+    assert!(
+        parents.is_empty(),
+        "Parents should be empty for standalone type"
+    );
 
     // @step And the children array should be empty
     let children = result["children"].as_array().expect("children array");
-    assert!(children.is_empty(), "Children should be empty for standalone type");
+    assert!(
+        children.is_empty(),
+        "Children should be empty for standalone type"
+    );
 }
 
 // ============================================================================
@@ -213,13 +223,8 @@ async fn test_nonexistent_type_returns_error() {
     // (any indexed graph — we use standalone_db)
 
     // @step When I request ast_hierarchy for a non-existent type slug
-    let result_json = ast_hierarchy::dispatch_ast_hierarchy(
-        &db,
-        "nonexistent::FakeType",
-        None,
-        None,
-    )
-    .await;
+    let result_json =
+        ast_hierarchy::dispatch_ast_hierarchy(&db, "nonexistent::FakeType", None, None).await;
     let result: Value = serde_json::from_str(&result_json).expect("parse JSON");
 
     // @step Then I should receive an error indicating the type was not found

@@ -142,7 +142,12 @@ impl StreamingTokenDisplay {
         prev_cache_creation: u64,
         throttle_interval: Duration,
     ) -> Self {
-        let mut display = Self::new(prev_input, prev_output, prev_cache_read, prev_cache_creation);
+        let mut display = Self::new(
+            prev_input,
+            prev_output,
+            prev_cache_read,
+            prev_cache_creation,
+        );
         display.throttle = DisplayThrottle::new(throttle_interval);
         display
     }
@@ -304,7 +309,12 @@ impl StreamingTokenDisplay {
 mod tests {
     use super::*;
 
-    fn make_usage(input: u64, output: u64, cache_read: Option<u64>, cache_creation: Option<u64>) -> Usage {
+    fn make_usage(
+        input: u64,
+        output: u64,
+        cache_read: Option<u64>,
+        cache_creation: Option<u64>,
+    ) -> Usage {
         Usage {
             input_tokens: input,
             output_tokens: output,
@@ -413,7 +423,9 @@ mod tests {
         let mut display = StreamingTokenDisplay::new(0, 0, 0, 0);
 
         // OpenAI-style: no Usage events during streaming
-        display.output.record_chunk("Lots of text here for estimation");
+        display
+            .output
+            .record_chunk("Lots of text here for estimation");
 
         // FinalResponse arrives
         let usage = make_usage(5000, 200, Some(1000), Some(500));

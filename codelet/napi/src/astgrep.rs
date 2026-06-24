@@ -235,11 +235,7 @@ pub async fn ast_grep_search(
 }
 
 /// Search a single file for pattern matches
-async fn search_file(
-    path: &Path,
-    pattern: &str,
-    lang: LanguageChoice,
-) -> Vec<AstGrepMatchResult> {
+async fn search_file(path: &Path, pattern: &str, lang: LanguageChoice) -> Vec<AstGrepMatchResult> {
     let source = match tokio::fs::read_to_string(path).await {
         Ok(content) => content,
         Err(_) => return Vec::new(),

@@ -45,8 +45,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `add-tag-to-feature` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     // Marshal clap args → JSON object expected by the core. Both the
     // dispatcher and the CLI feed the SAME serde shape, so any future
@@ -65,8 +64,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             // systemReminder?, systemReminders? }. The CLI surface mirrors
             // the TS `output.log('✓ ' + result.message)` line and, when
             // present, the consolidated reminder block.
-            let parsed: Value = serde_json::from_str(&data_json)
-                .context("parse core response as JSON")?;
+            let parsed: Value =
+                serde_json::from_str(&data_json).context("parse core response as JSON")?;
             if let Some(msg) = parsed.get("message").and_then(|v| v.as_str()) {
                 println!("✓ {msg}");
             }

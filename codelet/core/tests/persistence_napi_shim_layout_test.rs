@@ -43,8 +43,7 @@ fn core_persistence_dir() -> PathBuf {
 }
 
 fn read_to_string_at(path: &std::path::Path) -> String {
-    fs::read_to_string(path)
-        .unwrap_or_else(|e| panic!("read {path:?} failed: {e}"))
+    fs::read_to_string(path).unwrap_or_else(|e| panic!("read {path:?} failed: {e}"))
 }
 
 // ============================================================================
@@ -70,8 +69,10 @@ fn test_napi_persistence_directory_contains_only_mod_and_napi_bindings() {
         .collect();
 
     // @step Then the result contains exactly two filenames, "mod.rs" and "napi_bindings.rs", and nothing else
-    let expected: HashSet<String> =
-        ["mod.rs", "napi_bindings.rs"].iter().map(std::string::ToString::to_string).collect();
+    let expected: HashSet<String> = ["mod.rs", "napi_bindings.rs"]
+        .iter()
+        .map(std::string::ToString::to_string)
+        .collect();
     assert_eq!(
         actual, expected,
         "codelet/napi/src/persistence/ must contain ONLY mod.rs + napi_bindings.rs after RPC-035 (found {actual:?})"
@@ -474,8 +475,7 @@ fn test_index_dts_remains_byte_identical_to_pre_card_snapshot() {
     let token_usage_idx = index_dts_contents
         .find("export interface NapiTokenUsage")
         .expect("NapiTokenUsage interface declaration must be present in index.d.ts");
-    let token_usage_window =
-        &index_dts_contents[token_usage_idx..token_usage_idx + 800];
+    let token_usage_window = &index_dts_contents[token_usage_idx..token_usage_idx + 800];
     let order = [
         "currentContextTokens",
         "cumulativeBilledInput",
@@ -541,8 +541,7 @@ fn test_napi_bridge_integration_tests_remain_in_codelet_napi_with_rewritten_setu
     // @step When `cargo test -p codelet-napi --test session_persistence_test` is run
     // @step And `cargo test -p codelet-napi --test subordinate_session_persistence_test` is run
     // @step Then 23 tests pass in session_persistence_test
-    let session_tests =
-        read_to_string_at(&napi_tests.join("session_persistence_test.rs"));
+    let session_tests = read_to_string_at(&napi_tests.join("session_persistence_test.rs"));
     let session_test_count = session_tests
         .lines()
         .filter(|line| line.trim_start().starts_with("#[test]"))
@@ -553,8 +552,7 @@ fn test_napi_bridge_integration_tests_remain_in_codelet_napi_with_rewritten_setu
     );
 
     // @step And 4 tests pass in subordinate_session_persistence_test
-    let sub_tests =
-        read_to_string_at(&napi_tests.join("subordinate_session_persistence_test.rs"));
+    let sub_tests = read_to_string_at(&napi_tests.join("subordinate_session_persistence_test.rs"));
     let sub_test_count = sub_tests
         .lines()
         .filter(|line| line.trim_start().starts_with("#[test]"))

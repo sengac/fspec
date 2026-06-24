@@ -42,11 +42,10 @@ use tokio::sync::mpsc;
 
 // RPC-039 / RPC-040: BackgroundSession + companion types live in the
 // NAPI-free `codelet-sessions` crate. We import them directly here.
-use codelet_sessions::background_session::{
-    BackgroundSession, BridgeImageData, IncomingMessage, PromptInput,
-    format_incoming_message,
-};
 use codelet_rpc_types::SessionStatus;
+use codelet_sessions::background_session::{
+    format_incoming_message, BackgroundSession, BridgeImageData, IncomingMessage, PromptInput,
+};
 
 // RPC-043: persistence helpers live in `crate::persist`.
 use crate::persist::{
@@ -82,19 +81,23 @@ macro_rules! run_with_provider {
                     $session.id,
                     stringify!($getter)
                 );
-                
+
                 // MCP-001: Gather MCP tool wrappers for this turn.
                 // Connected MCP server tools appear as mcp__<server>__<tool>.
                 // Uses try_read (non-blocking) — if lock is held, tools appear next turn.
                 let mcp_wrappers = codelet_tools::gather_mcp_tool_wrappers($session.id);
-                
+
                 // BUG-120: Read session role and pass as preamble so it becomes
                 // part of the system prompt. All providers handle preamble via
                 // SystemPromptFacade — the role text is prepended to fspec guidance.
                 let role_preamble = $session.get_role();
                 // TOOL-012: Pass session.id as first parameter so tools store it at construction
-                let agent = provider.create_rig_agent($session.id, role_preamble.as_deref(), $thinking.clone());
-                
+                let agent = provider.create_rig_agent(
+                    $session.id,
+                    role_preamble.as_deref(),
+                    $thinking.clone(),
+                );
+
                 // MCP-001: Add dynamic MCP tools to the built agent.
                 // Uses ToolServerHandle.add_tool() to register wrappers post-build.
                 if !mcp_wrappers.is_empty() {
@@ -109,14 +112,14 @@ macro_rules! run_with_provider {
                         }
                     }
                 }
-                
+
                 // MCP-002: Store the ToolServerHandle in per-session MCP state so
                 // ConnectMcpTool can register newly discovered tools mid-turn.
                 codelet_tools::set_mcp_tool_server_handle(
                     $session.id,
                     agent.tool_server_handle.clone(),
                 );
-                
+
                 let agent = codelet_core::RigAgent::with_default_depth(agent);
                 // BRIDGE-007: Use run_agent_stream_with_images for multimodal support
                 codelet_cli::interactive::run_agent_stream_with_images(
@@ -139,7 +142,6 @@ macro_rules! run_with_provider {
     };
 }
 
-
 /// PROV-057 Layer 3 — Pure predicate that returns `true` for every
 /// provider name handled by an explicit arm in the
 /// [`run_with_provider!`] match inside [`agent_loop`].
@@ -158,7 +160,6 @@ pub(crate) fn agent_loop_dispatch_supports_provider(provider_name: &str) -> bool
         "claude" | "openai" | "gemini" | "zai" | "codex" | "github-copilot" | "copilot"
     )
 }
-
 
 /// Input with optional images for multimodal support (BRIDGE-007)
 struct InputWithImages {
@@ -214,10 +215,12 @@ pub(crate) async fn agent_loop(
             }
         }
     }
-    
+
     loop {
         // CMPCT-020: Check for compaction watchdog retry input before waiting for user input
-        let input_to_process: Option<InputWithImages> = if let Some(retry_text) = compaction_retry_input.take() {
+        let input_to_process: Option<InputWithImages> = if let Some(retry_text) =
+            compaction_retry_input.take()
+        {
             tracing::info!("[AGENT-LOOP] Compaction watchdog: retrying with escalation input");
             Some(InputWithImages {
                 text: retry_text,
@@ -225,144 +228,150 @@ pub(crate) async fn agent_loop(
                 images: None,
             })
         } else {
+            // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
+            // Lock the supervisor_input_rx to use in select
+            let mut supervisor_rx = session.incoming_message_rx.lock().await;
 
-        // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
-        // Lock the supervisor_input_rx to use in select
-        let mut supervisor_rx = session.incoming_message_rx.lock().await;
-        
-        // Use biased to prefer user input over supervisor/MCP input
-        // BRIDGE-007: Changed to InputWithImages to support multimodal content
-        let input_to_process_inner: Option<InputWithImages> = tokio::select! {
-            biased;
-            
-            // User input takes priority
-            result = input_rx.recv() => {
-                match result {
-                    Some(prompt_input) => Some(InputWithImages {
-                        text: prompt_input.input,
-                        thinking_config: prompt_input.thinking_config,
-                        images: None, // Regular user input doesn't have images (yet)
-                    }),
-                    None => {
-                        // Channel closed, exit loop
-                        drop(supervisor_rx);
-                        // HOOK-013: Fire session_end hooks before exiting
-                        if let Some(ref hooks) = session.lifecycle_hooks {
-                            let ctx = session.hook_context();
-                            let _outcome = run_session_end(hooks, &ctx, "exit").await;
-                        }
-                        break;
-                    }
-                }
-            }
-            
-            // WATCH-019: Supervisor injection input
-            result = supervisor_rx.recv() => {
-                match result {
-                    Some(supervisor_input) => {
-                        // FIX-6: Decrement pending counter when message is consumed
-                        session.incoming_message_pending.fetch_sub(1, Ordering::Release);
-                        tracing::debug!("agent_loop received supervisor input from {}: {}", supervisor_input.role_name, supervisor_input.message.chars().take(50).collect::<String>());
-                        // Format supervisor input as a user message with structured prefix
-                        let formatted = format_incoming_message(&supervisor_input);
-                        
-                        // BRIDGE-007: Emit the supervisor input chunk with images if present
-                        if let Some(ref images) = supervisor_input.images {
-                            let supervisor_images: Vec<crate::types::IncomingMessageImage> = images.iter()
-                                .map(|img| crate::types::IncomingMessageImage {
-                                    data: img.data.clone(),
-                                    media_type: img.media_type.clone(),
-                                })
-                                .collect();
-                            session.handle_output(StreamChunk::incoming_message_with_images(formatted.clone(), supervisor_images));
-                        } else {
-                            session.handle_output(StreamChunk::incoming_message(formatted.clone()));
-                        }
-                        
-                        // BRIDGE-007: Pass images to LLM as multimodal input
-                        Some(InputWithImages {
-                            text: formatted,
-                            thinking_config: None,
-                            images: supervisor_input.images,
-                        })
-                    }
-                    None => {
-                        // Supervisor channel closed, continue with user input only
-                        None
-                    }
-                }
-            }
-            
-            // MCP-001: Server-initiated MCP messages (notifications, sampling requests)
-            // MCP-001-FIX: Only poll when channel is open to prevent busy-loop spin
-            result = mcp_injection_rx.recv(), if mcp_channel_open => {
-                match result {
-                    Some(McpInjection::Notification(text)) => {
-                        tracing::info!("[MCP] agent_loop received notification: {}", text.chars().take(80).collect::<String>());
-                        // Emit as supervisor input chunk so the UI shows it
-                        session.handle_output(StreamChunk::incoming_message(text.clone()));
-                        // Process as LLM input so the agent can react to the notification
-                        Some(InputWithImages {
-                            text,
-                            thinking_config: None,
-                            images: None,
-                        })
-                    }
-                    Some(McpInjection::SamplingRequest { params, response_tx }) => {
-                        tracing::info!(
-                            "[MCP] agent_loop received sampling/createMessage request ({} messages, maxTokens={})",
-                            params.messages.len(),
-                            params.max_tokens,
-                        );
-                        // Format sampling messages as a prompt for the LLM.
-                        // The agent processes the prompt normally, and we capture its
-                        // response text from the output handler to send back via response_tx.
-                        //
-                        // For V1: We cannot easily capture the full response text from
-                        // run_agent_stream because it streams through BackgroundOutput.
-                        // Instead, we return an error to the MCP server. The server will
-                        // receive a structured error and can retry or fall back.
-                        //
-                        // TODO(MCP-001 V2): To support sampling properly:
-                        //   1. Run a dedicated LLM call with the sampling messages
-                        //   2. Capture the full response text
-                        //   3. Send CreateMessageResult through response_tx
-                        let _ = response_tx.send(Err(
-                            "sampling/createMessage not yet supported — V2 feature".to_string(),
-                        ));
-                        tracing::debug!("[MCP] sampling/createMessage rejected (V2 feature)");
-                        None // Don't process as agent input
-                    }
-                    None => {
-                        // MCP-001-FIX: Channel closed (sender dropped by cleanup_mcp_session).
-                        // Disable this select! branch to prevent busy-loop. The closed receiver
-                        // would return None immediately on every poll, causing the select! to
-                        // resolve instantly and spin the CPU.
-                        tracing::info!("[MCP] injection channel closed for session {}", session.id);
-                        mcp_channel_open = false;
-                        None
-                    }
-                }
-            }
-        };
-        
-        // Drop the lock before processing to avoid holding it during agent execution
-        drop(supervisor_rx);
-        
-        input_to_process_inner
+            // Use biased to prefer user input over supervisor/MCP input
+            // BRIDGE-007: Changed to InputWithImages to support multimodal content
+            let input_to_process_inner: Option<InputWithImages> = tokio::select! {
+                biased;
 
+                // User input takes priority
+                result = input_rx.recv() => {
+                    match result {
+                        Some(prompt_input) => Some(InputWithImages {
+                            text: prompt_input.input,
+                            thinking_config: prompt_input.thinking_config,
+                            images: None, // Regular user input doesn't have images (yet)
+                        }),
+                        None => {
+                            // Channel closed, exit loop
+                            drop(supervisor_rx);
+                            // HOOK-013: Fire session_end hooks before exiting
+                            if let Some(ref hooks) = session.lifecycle_hooks {
+                                let ctx = session.hook_context();
+                                let _outcome = run_session_end(hooks, &ctx, "exit").await;
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // WATCH-019: Supervisor injection input
+                result = supervisor_rx.recv() => {
+                    match result {
+                        Some(supervisor_input) => {
+                            // FIX-6: Decrement pending counter when message is consumed
+                            session.incoming_message_pending.fetch_sub(1, Ordering::Release);
+                            tracing::debug!("agent_loop received supervisor input from {}: {}", supervisor_input.role_name, supervisor_input.message.chars().take(50).collect::<String>());
+                            // Format supervisor input as a user message with structured prefix
+                            let formatted = format_incoming_message(&supervisor_input);
+
+                            // BRIDGE-007: Emit the supervisor input chunk with images if present
+                            if let Some(ref images) = supervisor_input.images {
+                                let supervisor_images: Vec<crate::types::IncomingMessageImage> = images.iter()
+                                    .map(|img| crate::types::IncomingMessageImage {
+                                        data: img.data.clone(),
+                                        media_type: img.media_type.clone(),
+                                    })
+                                    .collect();
+                                session.handle_output(StreamChunk::incoming_message_with_images(formatted.clone(), supervisor_images));
+                            } else {
+                                session.handle_output(StreamChunk::incoming_message(formatted.clone()));
+                            }
+
+                            // BRIDGE-007: Pass images to LLM as multimodal input
+                            Some(InputWithImages {
+                                text: formatted,
+                                thinking_config: None,
+                                images: supervisor_input.images,
+                            })
+                        }
+                        None => {
+                            // Supervisor channel closed, continue with user input only
+                            None
+                        }
+                    }
+                }
+
+                // MCP-001: Server-initiated MCP messages (notifications, sampling requests)
+                // MCP-001-FIX: Only poll when channel is open to prevent busy-loop spin
+                result = mcp_injection_rx.recv(), if mcp_channel_open => {
+                    match result {
+                        Some(McpInjection::Notification(text)) => {
+                            tracing::info!("[MCP] agent_loop received notification: {}", text.chars().take(80).collect::<String>());
+                            // Emit as supervisor input chunk so the UI shows it
+                            session.handle_output(StreamChunk::incoming_message(text.clone()));
+                            // Process as LLM input so the agent can react to the notification
+                            Some(InputWithImages {
+                                text,
+                                thinking_config: None,
+                                images: None,
+                            })
+                        }
+                        Some(McpInjection::SamplingRequest { params, response_tx }) => {
+                            tracing::info!(
+                                "[MCP] agent_loop received sampling/createMessage request ({} messages, maxTokens={})",
+                                params.messages.len(),
+                                params.max_tokens,
+                            );
+                            // Format sampling messages as a prompt for the LLM.
+                            // The agent processes the prompt normally, and we capture its
+                            // response text from the output handler to send back via response_tx.
+                            //
+                            // For V1: We cannot easily capture the full response text from
+                            // run_agent_stream because it streams through BackgroundOutput.
+                            // Instead, we return an error to the MCP server. The server will
+                            // receive a structured error and can retry or fall back.
+                            //
+                            // TODO(MCP-001 V2): To support sampling properly:
+                            //   1. Run a dedicated LLM call with the sampling messages
+                            //   2. Capture the full response text
+                            //   3. Send CreateMessageResult through response_tx
+                            let _ = response_tx.send(Err(
+                                "sampling/createMessage not yet supported — V2 feature".to_string(),
+                            ));
+                            tracing::debug!("[MCP] sampling/createMessage rejected (V2 feature)");
+                            None // Don't process as agent input
+                        }
+                        None => {
+                            // MCP-001-FIX: Channel closed (sender dropped by cleanup_mcp_session).
+                            // Disable this select! branch to prevent busy-loop. The closed receiver
+                            // would return None immediately on every poll, causing the select! to
+                            // resolve instantly and spin the CPU.
+                            tracing::info!("[MCP] injection channel closed for session {}", session.id);
+                            mcp_channel_open = false;
+                            None
+                        }
+                    }
+                }
+            };
+
+            // Drop the lock before processing to avoid holding it during agent execution
+            drop(supervisor_rx);
+
+            input_to_process_inner
         }; // end CMPCT-020 if/else
-        
+
         // If we got input to process, run the agent
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
         if let Some(input_with_images) = input_to_process {
             let input = &input_with_images.text;
 
-            tracing::debug!("Session {} processing input: {}", session.id, input.chars().take(50).collect::<String>());
-            
+            tracing::debug!(
+                "Session {} processing input: {}",
+                session.id,
+                input.chars().take(50).collect::<String>()
+            );
+
             // BRIDGE-007: Log if images are present
             if let Some(ref images) = input_with_images.images {
-                tracing::debug!("Session {} has {} image(s) attached", session.id, images.len());
+                tracing::debug!(
+                    "Session {} has {} image(s) attached",
+                    session.id,
+                    images.len()
+                );
             }
 
             // HOOK-013: Run user_prompt_submit hooks (can block the prompt)
@@ -372,12 +381,16 @@ pub(crate) async fn agent_loop(
                     let outcome = run_user_prompt(hooks, &ctx, input).await;
                     // Surface hook warnings/errors
                     for msg in &outcome.messages {
-                        if msg.level == HookMessageLevel::Warning || msg.level == HookMessageLevel::Error {
+                        if msg.level == HookMessageLevel::Warning
+                            || msg.level == HookMessageLevel::Error
+                        {
                             tracing::warn!("[HOOK-013] user_prompt_submit hook: {}", msg.content);
                         }
                     }
                     if !outcome.allow_prompt {
-                        let reason = outcome.block_reason.unwrap_or_else(|| "Blocked by hook".to_string());
+                        let reason = outcome
+                            .block_reason
+                            .unwrap_or_else(|| "Blocked by hook".to_string());
                         tracing::warn!("[HOOK-013] Prompt blocked: {}", reason);
                         session.handle_output(StreamChunk::user_notification(
                             format!("Prompt blocked: {}", reason),
@@ -403,7 +416,11 @@ pub(crate) async fn agent_loop(
             // REFAC-007: Persist user message to Rust persistence layer
             // This replaces TypeScript's persistenceStoreMessageEnvelope call
             if let Err(e) = persist_user_message(&session.id, input) {
-                tracing::error!("Failed to persist user message for session {}: {}", session.id, e);
+                tracing::error!(
+                    "Failed to persist user message for session {}: {}",
+                    session.id,
+                    e
+                );
                 // Continue processing even if persistence fails - don't block agent execution
             }
 
@@ -416,52 +433,54 @@ pub(crate) async fn agent_loop(
             // PROV-005: We need both provider AND model to correctly determine thinking config.
             // Adaptive thinking models (claude-opus-4-6, claude-sonnet-4-6) need the model name,
             // not just the provider name, to trigger adaptive thinking in get_thinking_config().
-            let (current_provider, current_model, thinking_model_key) = {
-                let inner = session.inner.lock().await;
-                // MODEL-004: Check facade_override first — if set, dispatch to that
-                // provider instead of the current_provider. This allows custom models
-                // to route API calls through a different provider backend.
-                let provider = inner.provider_manager()
-                    .facade_override()
-                    .map(|s| s.to_string())
-                    .unwrap_or_else(|| inner.current_provider_name().to_string());
-                let model = inner.current_model_id().map(|s| s.to_string());
+            let (current_provider, current_model, thinking_model_key) =
+                {
+                    let inner = session.inner.lock().await;
+                    // MODEL-004: Check facade_override first — if set, dispatch to that
+                    // provider instead of the current_provider. This allows custom models
+                    // to route API calls through a different provider backend.
+                    let provider = inner
+                        .provider_manager()
+                        .facade_override()
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| inner.current_provider_name().to_string());
+                    let model = inner.current_model_id().map(|s| s.to_string());
 
-                // PROV-100: Compute a parallel "thinking model key" that
-                // resolves a custom provider's model alias (e.g.
-                // `"opus-4.7"`, the HashMap key in `ProviderConfig.models`)
-                // to its upstream model identifier (e.g.
-                // `"claude-opus-4-7"`, the `ModelDef.id` field).
-                // `is_adaptive_thinking_model` and
-                // `get_thinking_config` key on the upstream id, so
-                // without this the custom provider never sees a
-                // non-empty thinking config and Opus 4.7 can't enter
-                // adaptive thinking. We intentionally keep
-                // `current_model` as the raw alias because the
-                // CustomProvider dispatch further down uses it as the
-                // `model_alias` argument and would fail the config
-                // lookup if we substituted the resolved id.
-                let real_provider_name = inner.current_provider_name().to_string();
-                let thinking_key = if matches!(
-                    inner.provider_manager().current_provider_type(),
-                    codelet_providers::ProviderType::Custom(_)
-                ) {
-                    model.as_deref().and_then(|alias| {
-                        codelet_providers::custom::resolve_custom_model_id(
-                            &real_provider_name,
-                            alias,
-                        )
-                    })
-                } else {
-                    None
-                };
+                    // PROV-100: Compute a parallel "thinking model key" that
+                    // resolves a custom provider's model alias (e.g.
+                    // `"opus-4.7"`, the HashMap key in `ProviderConfig.models`)
+                    // to its upstream model identifier (e.g.
+                    // `"claude-opus-4-7"`, the `ModelDef.id` field).
+                    // `is_adaptive_thinking_model` and
+                    // `get_thinking_config` key on the upstream id, so
+                    // without this the custom provider never sees a
+                    // non-empty thinking config and Opus 4.7 can't enter
+                    // adaptive thinking. We intentionally keep
+                    // `current_model` as the raw alias because the
+                    // CustomProvider dispatch further down uses it as the
+                    // `model_alias` argument and would fail the config
+                    // lookup if we substituted the resolved id.
+                    let real_provider_name = inner.current_provider_name().to_string();
+                    let thinking_key = if matches!(
+                        inner.provider_manager().current_provider_type(),
+                        codelet_providers::ProviderType::Custom(_)
+                    ) {
+                        model.as_deref().and_then(|alias| {
+                            codelet_providers::custom::resolve_custom_model_id(
+                                &real_provider_name,
+                                alias,
+                            )
+                        })
+                    } else {
+                        None
+                    };
 
-                tracing::debug!(
+                    tracing::debug!(
                     "[AGENT-LOOP] current_provider={}, current_model={:?}, thinking_model_key={:?}",
                     provider, model, thinking_key
                 );
-                (provider, model, thinking_key)
-            };
+                    (provider, model, thinking_key)
+                };
 
             // BRIDGE-006: Unified thinking level detection
             // Single source of truth - same logic for TUI, Bridge, and Supervisor input.
@@ -474,11 +493,11 @@ pub(crate) async fn agent_loop(
             // 2. Otherwise, if TypeScript passed an explicit thinking_config, use it (backwards compat)
             // 3. Otherwise, detect from message text + session base level
             let thinking_config_value: Option<serde_json::Value> = {
-                use crate::thinking_level_detection::{
-                    detect_thinking_level, has_disable_keywords,
-                    compute_effective_thinking_level, thinking_level_from_u8,
-                };
                 use crate::thinking_config::{get_thinking_config, JsThinkingLevel};
+                use crate::thinking_level_detection::{
+                    compute_effective_thinking_level, detect_thinking_level, has_disable_keywords,
+                    thinking_level_from_u8,
+                };
                 use codelet_tools::facade::is_adaptive_thinking_model;
 
                 // PROV-100: Prefer the resolved "thinking model key"
@@ -489,9 +508,7 @@ pub(crate) async fn agent_loop(
                 // `thinking_model_key` is None and we fall back to
                 // `current_model` verbatim, so no behaviour changes for
                 // claude/openai/gemini/zai/codex/copilot.
-                let routing_model = thinking_model_key
-                    .as_deref()
-                    .or(current_model.as_deref());
+                let routing_model = thinking_model_key.as_deref().or(current_model.as_deref());
 
                 // PROV-005 FIX: For adaptive thinking models, ALWAYS use model-aware config
                 // regardless of what TypeScript passed. This prevents the bug where TypeScript
@@ -514,7 +531,8 @@ pub(crate) async fn agent_loop(
                     let detected_level = detect_thinking_level(input);
                     let force_off = has_disable_keywords(input);
                     let base_level = thinking_level_from_u8(session.get_base_thinking_level());
-                    let effective_level = compute_effective_thinking_level(base_level, detected_level, force_off);
+                    let effective_level =
+                        compute_effective_thinking_level(base_level, detected_level, force_off);
                     tracing::debug!(
                         "[AGENT-LOOP] adaptive path: base={:?}, detected={:?}, force_off={}, effective={:?}",
                         base_level, detected_level, force_off, effective_level
@@ -536,7 +554,10 @@ pub(crate) async fn agent_loop(
                                 serde_json::from_str(&config_str).ok()
                             }
                             Err(e) => {
-                                tracing::warn!("Failed to get thinking config for adaptive model: {}", e);
+                                tracing::warn!(
+                                    "Failed to get thinking config for adaptive model: {}",
+                                    e
+                                );
                                 None
                             }
                         }
@@ -549,7 +570,8 @@ pub(crate) async fn agent_loop(
                     let detected_level = detect_thinking_level(input);
                     let force_off = has_disable_keywords(input);
                     let base_level = thinking_level_from_u8(session.get_base_thinking_level());
-                    let effective_level = compute_effective_thinking_level(base_level, detected_level, force_off);
+                    let effective_level =
+                        compute_effective_thinking_level(base_level, detected_level, force_off);
 
                     if effective_level == JsThinkingLevel::Off {
                         None
@@ -575,10 +597,11 @@ pub(crate) async fn agent_loop(
 
             // Re-acquire lock for the rest of processing
             let mut inner_session = session.inner.lock().await;
-            
+
             // REFAC-007: Create output handler with provider for message persistence
             let session_for_output = session.clone();
-            let output = BackgroundOutput::with_provider(session_for_output, current_provider.clone());
+            let output =
+                BackgroundOutput::with_provider(session_for_output, current_provider.clone());
 
             let session_for_pause = session.clone();
             let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
@@ -590,11 +613,11 @@ pub(crate) async fn agent_loop(
                 };
                 session_for_pause.set_pause_state(Some(state));
                 session_for_pause.set_status(SessionStatus::Paused);
-                
+
                 let response = session_for_pause.wait_for_pause_response();
-                
+
                 session_for_pause.set_status(SessionStatus::Running);
-                
+
                 response
             });
 
@@ -603,46 +626,50 @@ pub(crate) async fn agent_loop(
             // CODE-009: Set fspec handler for TypeScript command execution
             // Similar to pause handler - blocks until TypeScript executes and responds
             let session_for_fspec = session.clone();
-            let fspec_handler: codelet_tools::FspecHandler = std::sync::Arc::new(move |request: codelet_tools::FspecHandlerRequest| {
-                // RPC-041: Check the napi-side TSFN registration via the
-                // helper that consults CHUNK_FANOUT_TSFN. The user-visible
-                // error string is preserved verbatim for back-compat.
-                if !is_global_chunk_callback_registered() {
-                    return codelet_tools::FspecHandlerResult {
+            let fspec_handler: codelet_tools::FspecHandler = std::sync::Arc::new(
+                move |request: codelet_tools::FspecHandlerRequest| {
+                    // RPC-041: Check the napi-side TSFN registration via the
+                    // helper that consults CHUNK_FANOUT_TSFN. The user-visible
+                    // error string is preserved verbatim for back-compat.
+                    if !is_global_chunk_callback_registered() {
+                        return codelet_tools::FspecHandlerResult {
                         success: false,
                         data: String::new(),
                         error: Some("Global chunk callback not registered - cannot execute fspec command".to_string()),
                         system_reminder: None,
                     };
-                }
-                
-                // Generate a unique tool call ID for correlation
-                let tool_call_id = uuid::Uuid::new_v4().to_string();
-                
-                // Emit FspecCommandRequest chunk for TypeScript to process
-                let fspec_request = crate::types::FspecRequest {
-                    command: request.command.clone(),
-                    args_json: request.args_json.clone(),
-                    project_root: request.project_root.clone(),
-                    tool_call_id: tool_call_id.clone(),
-                };
-                
-                session_for_fspec.handle_output(StreamChunk::fspec_command_request(fspec_request));
-                
-                // Block until TypeScript executes and calls sessionSendFspecResult
-                let fspec_result = session_for_fspec.wait_for_fspec_response();
-                
-                // Emit FspecCommandResult chunk for UI display
-                session_for_fspec.handle_output(StreamChunk::fspec_command_result(fspec_result.clone()));
-                
-                // Convert NAPI FspecResult to tools FspecHandlerResult
-                codelet_tools::FspecHandlerResult {
-                    success: fspec_result.success,
-                    data: fspec_result.data,
-                    error: fspec_result.error,
-                    system_reminder: fspec_result.system_reminder,
-                }
-            });
+                    }
+
+                    // Generate a unique tool call ID for correlation
+                    let tool_call_id = uuid::Uuid::new_v4().to_string();
+
+                    // Emit FspecCommandRequest chunk for TypeScript to process
+                    let fspec_request = crate::types::FspecRequest {
+                        command: request.command.clone(),
+                        args_json: request.args_json.clone(),
+                        project_root: request.project_root.clone(),
+                        tool_call_id: tool_call_id.clone(),
+                    };
+
+                    session_for_fspec
+                        .handle_output(StreamChunk::fspec_command_request(fspec_request));
+
+                    // Block until TypeScript executes and calls sessionSendFspecResult
+                    let fspec_result = session_for_fspec.wait_for_fspec_response();
+
+                    // Emit FspecCommandResult chunk for UI display
+                    session_for_fspec
+                        .handle_output(StreamChunk::fspec_command_result(fspec_result.clone()));
+
+                    // Convert NAPI FspecResult to tools FspecHandlerResult
+                    codelet_tools::FspecHandlerResult {
+                        success: fspec_result.success,
+                        data: fspec_result.data,
+                        error: fspec_result.error,
+                        system_reminder: fspec_result.system_reminder,
+                    }
+                },
+            );
 
             // REFAC-008-FIX: Use per-session handler storage to prevent race conditions
             // when multiple sessions run concurrently.
@@ -651,8 +678,8 @@ pub(crate) async fn agent_loop(
             // BUG-117: Register HITL handler for request_user_input tool
             // Follows the PAUSE pattern: store request state, set status Paused, block, clear on response
             let session_for_hitl = session.clone();
-            let hitl_handler: codelet_tools::request_user_input::HitlHandler =
-                std::sync::Arc::new(move |_session_id, request: codelet_tools::request_user_input::HitlRequest| {
+            let hitl_handler: codelet_tools::request_user_input::HitlHandler = std::sync::Arc::new(
+                move |_session_id, request: codelet_tools::request_user_input::HitlRequest| {
                     // Store HITL request in session state for TypeScript to poll
                     session_for_hitl.set_hitl_request(Some(request));
 
@@ -667,7 +694,8 @@ pub(crate) async fn agent_loop(
                     session_for_hitl.set_status(SessionStatus::Running);
 
                     Ok(response)
-                });
+                },
+            );
             codelet_tools::set_hitl_handler(session.id, Some(hitl_handler));
 
             // AMGR-001: Register SessionSearch handler for this session
@@ -705,11 +733,7 @@ pub(crate) async fn agent_loop(
             // session so subordinate agents inherit per-model limits.
             // BUG-132: Extracted into register_agent_manager_handler() so it can be
             // called again after model changes.
-            register_agent_manager_handler(
-                session.id,
-                &inner_session,
-                session.project.clone(),
-            );
+            register_agent_manager_handler(session.id, &inner_session, session.project.clone());
 
             // AMGR-015: Register async handler for await_idle action
             {
@@ -722,17 +746,20 @@ pub(crate) async fn agent_loop(
             {
                 let context_window = inner_session.provider_manager().context_window() as u64;
                 let session_for_inject = session.clone();
-                let on_injected: crate::inject_summary_handler::OnInjectedCallback = Arc::new(move |injected_tokens: u32| {
-                    let original_tokens = session_for_inject.pre_compaction_tokens.load(Ordering::Acquire);
-                    session_for_inject.set_compaction_progress(None);
-                    // Emit Running BEFORE CompactionComplete via extracted helper
-                    // (ordering is tested in inject_summary_handler tests)
-                    crate::inject_summary_handler::emit_post_injection_events(
-                        &|chunk| session_for_inject.handle_output(chunk),
-                        original_tokens,
-                        injected_tokens,
-                    );
-                });
+                let on_injected: crate::inject_summary_handler::OnInjectedCallback =
+                    Arc::new(move |injected_tokens: u32| {
+                        let original_tokens = session_for_inject
+                            .pre_compaction_tokens
+                            .load(Ordering::Acquire);
+                        session_for_inject.set_compaction_progress(None);
+                        // Emit Running BEFORE CompactionComplete via extracted helper
+                        // (ordering is tested in inject_summary_handler tests)
+                        crate::inject_summary_handler::emit_post_injection_events(
+                            &|chunk| session_for_inject.handle_output(chunk),
+                            original_tokens,
+                            injected_tokens,
+                        );
+                    });
                 let inject_handler = crate::inject_summary_handler::create_handler(
                     session.pending_dag_content.clone(),
                     context_window,
@@ -744,9 +771,8 @@ pub(crate) async fn agent_loop(
 
             // SCHED-009: Register schedule handler for AI-callable Schedule tool
             {
-                let schedule_handler = crate::schedule_handler::create_handler(
-                    session.project.clone(),
-                );
+                let schedule_handler =
+                    crate::schedule_handler::create_handler(session.project.clone());
                 codelet_tools::set_schedule_handler(session.id, Some(schedule_handler));
             }
 
@@ -756,153 +782,170 @@ pub(crate) async fn agent_loop(
             let session_for_bridge = session.clone();
             let session_id_for_bridge = session.id;
             let runtime_handle = tokio::runtime::Handle::current();
-            
+
             // Create the broadcast receiver factory that converts StreamChunk to JSON
             // This is the Adapter Pattern - adapts StreamChunk broadcast to JSON broadcast
             let supervisor_broadcast_sender = session_for_bridge.supervisor_broadcast.clone();
-            let broadcast_rx_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || {
-                // Subscribe to the supervisor broadcast
-                let mut stream_rx = supervisor_broadcast_sender.subscribe();
-                
-                // Create a new JSON broadcast channel for this bridge connection
-                let (json_tx, json_rx) = tokio::sync::broadcast::channel::<serde_json::Value>(256);
-                
-                // Spawn an adapter task that converts StreamChunk to JSON
-                let json_tx_clone = json_tx.clone();
-                tokio::spawn(async move {
-                    loop {
-                        match stream_rx.recv().await {
-                            Ok(chunk) => {
-                                // Convert StreamChunk to JSON using stream_chunk_to_json_value()
-                                let json_value = crate::types::stream_chunk_to_json_value(&chunk);
-                                // Send to the JSON broadcast channel
-                                // Ignore send errors (no receivers)
-                                let _ = json_tx_clone.send(json_value);
-                            }
-                            Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
-                                tracing::warn!("Bridge adapter lagged {} messages", n);
-                                // Continue receiving
-                            }
-                            Err(tokio::sync::broadcast::error::RecvError::Closed) => {
-                                tracing::debug!("Bridge adapter: source broadcast closed");
-                                break;
+            let broadcast_rx_factory: codelet_tools::BroadcastReceiverFactory =
+                Arc::new(move || {
+                    // Subscribe to the supervisor broadcast
+                    let mut stream_rx = supervisor_broadcast_sender.subscribe();
+
+                    // Create a new JSON broadcast channel for this bridge connection
+                    let (json_tx, json_rx) =
+                        tokio::sync::broadcast::channel::<serde_json::Value>(256);
+
+                    // Spawn an adapter task that converts StreamChunk to JSON
+                    let json_tx_clone = json_tx.clone();
+                    tokio::spawn(async move {
+                        loop {
+                            match stream_rx.recv().await {
+                                Ok(chunk) => {
+                                    // Convert StreamChunk to JSON using stream_chunk_to_json_value()
+                                    let json_value =
+                                        crate::types::stream_chunk_to_json_value(&chunk);
+                                    // Send to the JSON broadcast channel
+                                    // Ignore send errors (no receivers)
+                                    let _ = json_tx_clone.send(json_value);
+                                }
+                                Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
+                                    tracing::warn!("Bridge adapter lagged {} messages", n);
+                                    // Continue receiving
+                                }
+                                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                                    tracing::debug!("Bridge adapter: source broadcast closed");
+                                    break;
+                                }
                             }
                         }
-                    }
+                    });
+
+                    json_rx
                 });
-                
-                json_rx
-            });
-            
+
             // Create input injector that sends messages to the session's supervisor input channel
             // BRIDGE-007: Updated to accept InjectedInput with optional images
             // FIX-6b: Use receive_incoming_message() instead of raw sender to centralize
             // counter logic (incoming_message_pending AtomicUsize)
             let session_for_injector = session_for_bridge.clone();
-            let input_injector: codelet_tools::InputInjector = Arc::new(move |input: codelet_tools::InjectedInput| {
-                // Convert InjectedInput images to BridgeImageData
-                let bridge_images = input.images.map(|imgs| {
-                    imgs.into_iter()
-                        .map(|img| BridgeImageData {
-                            data: img.data,
-                            media_type: img.media_type,
-                        })
-                        .collect()
+            let input_injector: codelet_tools::InputInjector =
+                Arc::new(move |input: codelet_tools::InjectedInput| {
+                    // Convert InjectedInput images to BridgeImageData
+                    let bridge_images = input.images.map(|imgs| {
+                        imgs.into_iter()
+                            .map(|img| BridgeImageData {
+                                data: img.data,
+                                media_type: img.media_type,
+                            })
+                            .collect()
+                    });
+
+                    // Create a IncomingMessage message for injection from bridge
+                    // Note: For bridge, we allow empty message if images are present
+                    let supervisor_input = if input.message.is_empty() && bridge_images.is_some() {
+                        IncomingMessage {
+                            source_session_id: "bridge".to_string(),
+                            role_name: "bridge".to_string(),
+                            message: String::new(),
+                            images: bridge_images,
+                        }
+                    } else {
+                        IncomingMessage {
+                            source_session_id: "bridge".to_string(),
+                            role_name: "bridge".to_string(),
+                            message: input.message.clone(),
+                            images: bridge_images,
+                        }
+                    };
+
+                    // FIX-6b: Route through receive_incoming_message() to track pending count
+                    match session_for_injector.receive_incoming_message(supervisor_input) {
+                        Ok(()) => {
+                            tracing::debug!(
+                                "Bridge input injected successfully: {}",
+                                input.message.chars().take(50).collect::<String>()
+                            );
+                        }
+                        Err(e) => {
+                            tracing::warn!("Failed to inject bridge input: {}", e);
+                        }
+                    }
                 });
-                
-                // Create a IncomingMessage message for injection from bridge
-                // Note: For bridge, we allow empty message if images are present
-                let supervisor_input = if input.message.is_empty() && bridge_images.is_some() {
-                    IncomingMessage {
-                        source_session_id: "bridge".to_string(),
-                        role_name: "bridge".to_string(),
-                        message: String::new(),
-                        images: bridge_images,
-                    }
-                } else {
-                    IncomingMessage {
-                        source_session_id: "bridge".to_string(),
-                        role_name: "bridge".to_string(),
-                        message: input.message.clone(),
-                        images: bridge_images,
-                    }
-                };
-                
-                // FIX-6b: Route through receive_incoming_message() to track pending count
-                match session_for_injector.receive_incoming_message(supervisor_input) {
-                    Ok(()) => {
-                        tracing::debug!("Bridge input injected successfully: {}", input.message.chars().take(50).collect::<String>());
-                    }
-                    Err(e) => {
-                        tracing::warn!("Failed to inject bridge input: {}", e);
-                    }
-                }
-            });
-            
+
             // BRIDGE-008: Create control handler for interrupt/clear actions
             // BRIDGE-014: Also handles pause_response actions
             let session_for_control = session.clone();
-            let control_handler: codelet_tools::ControlHandler = Arc::new(move |action: &str, response: Option<&str>| {
-                match action {
-                    "interrupt" => {
-                        tracing::info!("Bridge control: interrupting session");
-                        session_for_control.interrupt();
-                    }
-                    "clear" => {
-                        tracing::info!("Bridge control: clearing session");
-                        // TUI-065: Use block_in_place because this closure is called from async context
-                        // (handle_inbound_message is async). blocking_lock() panics if called directly
-                        // from within a tokio runtime without this wrapper.
-                        tokio::task::block_in_place(|| {
-                            // DRY: Use the shared clear_history method
-                            session_for_control.clear_history();
-                        });
-                    }
-                    "pause_response" => {
-                        // BRIDGE-014: Handle pause response from Telegram
-                        if let Some(resp) = response {
-                            tracing::info!("Bridge control: pause_response = {}", resp);
-                            let pause_resp = match resp {
-                                "allow_once" => PauseResponse::AllowOnce,
-                                "allow_session" => PauseResponse::AllowSession,
-                                "deny" => PauseResponse::Denied,
-                                _ => {
-                                    tracing::warn!("Unknown pause response: {}, defaulting to deny", resp);
-                                    PauseResponse::Denied
-                                }
-                            };
-                            session_for_control.send_pause_response(pause_resp);
-                        } else {
-                            tracing::warn!("pause_response action received without response value");
+            let control_handler: codelet_tools::ControlHandler =
+                Arc::new(move |action: &str, response: Option<&str>| {
+                    match action {
+                        "interrupt" => {
+                            tracing::info!("Bridge control: interrupting session");
+                            session_for_control.interrupt();
+                        }
+                        "clear" => {
+                            tracing::info!("Bridge control: clearing session");
+                            // TUI-065: Use block_in_place because this closure is called from async context
+                            // (handle_inbound_message is async). blocking_lock() panics if called directly
+                            // from within a tokio runtime without this wrapper.
+                            tokio::task::block_in_place(|| {
+                                // DRY: Use the shared clear_history method
+                                session_for_control.clear_history();
+                            });
+                        }
+                        "pause_response" => {
+                            // BRIDGE-014: Handle pause response from Telegram
+                            if let Some(resp) = response {
+                                tracing::info!("Bridge control: pause_response = {}", resp);
+                                let pause_resp = match resp {
+                                    "allow_once" => PauseResponse::AllowOnce,
+                                    "allow_session" => PauseResponse::AllowSession,
+                                    "deny" => PauseResponse::Denied,
+                                    _ => {
+                                        tracing::warn!(
+                                            "Unknown pause response: {}, defaulting to deny",
+                                            resp
+                                        );
+                                        PauseResponse::Denied
+                                    }
+                                };
+                                session_for_control.send_pause_response(pause_resp);
+                            } else {
+                                tracing::warn!(
+                                    "pause_response action received without response value"
+                                );
+                            }
+                        }
+                        _ => {
+                            tracing::warn!("Bridge control: unknown action '{}'", action);
                         }
                     }
-                    _ => {
-                        tracing::warn!("Bridge control: unknown action '{}'", action);
-                    }
-                }
-            });
-            
+                });
+
             // Set the session context for bridge relay tasks
             // BRIDGE-017: Create command emitter for fspec command execution via bridge
             let session_for_command = session.clone();
-            let command_emitter: codelet_tools::CommandEmitter = Arc::new(move |command, args_json, project_root, tool_call_id| {
-                // RPC-041: gate via the napi-side TSFN registration helper.
-                if !is_global_chunk_callback_registered() {
-                    tracing::warn!("Cannot emit FspecCommandRequest - no global chunk callback");
-                    return;
-                }
-                
-                let fspec_request = crate::types::FspecRequest {
-                    command,
-                    args_json,
-                    project_root,
-                    tool_call_id,
-                };
-                
-                // Fire-and-forget: emit into the session's broadcast channel
-                session_for_command.handle_output(StreamChunk::fspec_command_request(fspec_request));
-            });
-            
+            let command_emitter: codelet_tools::CommandEmitter =
+                Arc::new(move |command, args_json, project_root, tool_call_id| {
+                    // RPC-041: gate via the napi-side TSFN registration helper.
+                    if !is_global_chunk_callback_registered() {
+                        tracing::warn!(
+                            "Cannot emit FspecCommandRequest - no global chunk callback"
+                        );
+                        return;
+                    }
+
+                    let fspec_request = crate::types::FspecRequest {
+                        command,
+                        args_json,
+                        project_root,
+                        tool_call_id,
+                    };
+
+                    // Fire-and-forget: emit into the session's broadcast channel
+                    session_for_command
+                        .handle_output(StreamChunk::fspec_command_request(fspec_request));
+                });
+
             codelet_tools::set_bridge_session_context(
                 session_id_for_bridge,
                 broadcast_rx_factory,
@@ -910,37 +953,44 @@ pub(crate) async fn agent_loop(
                 Some(control_handler),
                 Some(command_emitter),
             );
-            
+
             // Set the bridge handler that calls handle_bridge_action
-            let bridge_handler: codelet_tools::BridgeHandler = Arc::new(move |request: codelet_tools::BridgeRequest| {
-                // Use block_in_place to run async code from sync context
-                // This is safe because we're in a multi-threaded tokio runtime
-                tokio::task::block_in_place(|| {
-                    runtime_handle.block_on(async {
-                        match codelet_tools::handle_bridge_action(request.session_id, request.action).await {
-                            Ok(result) => result,
-                            Err(e) => codelet_tools::BridgeResult {
-                                success: false,
-                                message: format!("Bridge action failed: {}", e),
-                                connections: None,
-                            },
-                        }
+            let bridge_handler: codelet_tools::BridgeHandler =
+                Arc::new(move |request: codelet_tools::BridgeRequest| {
+                    // Use block_in_place to run async code from sync context
+                    // This is safe because we're in a multi-threaded tokio runtime
+                    tokio::task::block_in_place(|| {
+                        runtime_handle.block_on(async {
+                            match codelet_tools::handle_bridge_action(
+                                request.session_id,
+                                request.action,
+                            )
+                            .await
+                            {
+                                Ok(result) => result,
+                                Err(e) => codelet_tools::BridgeResult {
+                                    success: false,
+                                    message: format!("Bridge action failed: {}", e),
+                                    connections: None,
+                                },
+                            }
+                        })
                     })
-                })
-            });
-            
+                });
+
             codelet_tools::set_bridge_handler(session.id, Some(bridge_handler));
-            
+
             // BRIDGE-007: Convert BridgeImageData to BridgeImage for run_agent_stream_with_images
-            let bridge_images: Option<Vec<codelet_cli::interactive::BridgeImage>> = input_with_images.images.map(|imgs| {
-                imgs.into_iter()
-                    .map(|img| codelet_cli::interactive::BridgeImage {
-                        data: img.data,
-                        media_type: img.media_type,
-                    })
-                    .collect()
-            });
-            
+            let bridge_images: Option<Vec<codelet_cli::interactive::BridgeImage>> =
+                input_with_images.images.map(|imgs| {
+                    imgs.into_iter()
+                        .map(|img| codelet_cli::interactive::BridgeImage {
+                            data: img.data,
+                            media_type: img.media_type,
+                        })
+                        .collect()
+                });
+
             // AMGR-016: Drop guard ensures set_status(Idle) executes even if the stream
             // loop panics (Rule [7]). The guard is armed when status is set to Running and
             // disarmed when the normal cleanup code runs. If a panic occurs, Drop fires
@@ -969,7 +1019,15 @@ pub(crate) async fn agent_loop(
             };
 
             let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, input, bridge_images.clone(), session, &output, thinking_config_value),
+                "claude" => run_with_provider!(
+                    &mut inner_session,
+                    get_claude,
+                    input,
+                    bridge_images.clone(),
+                    session,
+                    &output,
+                    thinking_config_value
+                ),
                 "openai" => {
                     // PROV-051: get_openai requires session_id for cache optimization headers
                     match inner_session.provider_manager_mut().get_openai(session.id) {
@@ -980,7 +1038,11 @@ pub(crate) async fn agent_loop(
                             );
                             let mcp_wrappers = codelet_tools::gather_mcp_tool_wrappers(session.id);
                             let role_preamble = session.get_role();
-                            let agent = provider.create_rig_agent(session.id, role_preamble.as_deref(), thinking_config_value.clone());
+                            let agent = provider.create_rig_agent(
+                                session.id,
+                                role_preamble.as_deref(),
+                                thinking_config_value.clone(),
+                            );
                             if !mcp_wrappers.is_empty() {
                                 tracing::info!(
                                     "[MCP] Adding {} MCP tool wrappers to agent for session {}",
@@ -988,7 +1050,8 @@ pub(crate) async fn agent_loop(
                                     session.id,
                                 );
                                 for wrapper in mcp_wrappers {
-                                    if let Err(e) = agent.tool_server_handle.add_tool(wrapper).await {
+                                    if let Err(e) = agent.tool_server_handle.add_tool(wrapper).await
+                                    {
                                         tracing::warn!("[MCP] Failed to add MCP tool: {}", e);
                                     }
                                 }
@@ -1015,10 +1078,34 @@ pub(crate) async fn agent_loop(
                             Err(anyhow::anyhow!("Failed to get provider: {}", e))
                         }
                     }
-                },
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, input, bridge_images.clone(), session, &output, thinking_config_value),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, input, bridge_images, session, &output, thinking_config_value),
-                "codex" => run_with_provider!(&mut inner_session, get_codex, input, bridge_images.clone(), session, &output, thinking_config_value),
+                }
+                "gemini" => run_with_provider!(
+                    &mut inner_session,
+                    get_gemini,
+                    input,
+                    bridge_images.clone(),
+                    session,
+                    &output,
+                    thinking_config_value
+                ),
+                "zai" => run_with_provider!(
+                    &mut inner_session,
+                    get_zai,
+                    input,
+                    bridge_images,
+                    session,
+                    &output,
+                    thinking_config_value
+                ),
+                "codex" => run_with_provider!(
+                    &mut inner_session,
+                    get_codex,
+                    input,
+                    bridge_images.clone(),
+                    session,
+                    &output,
+                    thinking_config_value
+                ),
                 // PROV-057 Layer 3 — Dispatch arm for GitHub Copilot.
                 //
                 // Now that Layer 2 has landed
@@ -1123,7 +1210,7 @@ pub(crate) async fn agent_loop(
                     }
                 }
             };
-            
+
             persist_pending_annotations(&session.id, &mut inner_session);
 
             // Apply pending DAG content from inject_summary (deferred because handler can't lock session.inner)
@@ -1165,11 +1252,13 @@ pub(crate) async fn agent_loop(
                                         &learnings_provider,
                                         learnings_model.as_deref(),
                                         &dag_text,
-                                    ).await;
+                                    )
+                                    .await;
                                     crate::graph::extract_learnings_from_dag(
                                         &dag_text,
                                         llm_response.as_deref(),
-                                    ).await;
+                                    )
+                                    .await;
                                 });
                             }
                             Err(e) => {
@@ -1192,7 +1281,8 @@ pub(crate) async fn agent_loop(
             // Check if compaction was in progress but agent failed to call inject_summary.
             // The flag is still true if inject_summary was never called during the stream.
             let was_compacting = session.compaction_in_progress.load(Ordering::Acquire);
-            let has_pending_dag = session.pending_dag_content
+            let has_pending_dag = session
+                .pending_dag_content
                 .lock()
                 .map(|guard| guard.is_some())
                 .unwrap_or(false);
@@ -1208,7 +1298,9 @@ pub(crate) async fn agent_loop(
 
                 if compaction_watchdog_attempts == 1 {
                     // Level 2: Inject escalation message and retry
-                    tracing::warn!("[AGENT-LOOP] Compaction watchdog: Level 2 — injecting escalation message");
+                    tracing::warn!(
+                        "[AGENT-LOOP] Compaction watchdog: Level 2 — injecting escalation message"
+                    );
                     inner_session.messages.push(rig::message::Message::User {
                         content: rig::OneOrMany::one(rig::message::UserContent::text(
                             codelet_cli::compaction_dag::COMPACTION_ESCALATION_MESSAGE,
@@ -1222,7 +1314,9 @@ pub(crate) async fn agent_loop(
                     // Skip the safety net below and go back to loop top
                 } else {
                     // Level 3: Force-inject fallback DAG
-                    tracing::warn!("[AGENT-LOOP] Compaction watchdog: Level 3 — force-injecting fallback DAG");
+                    tracing::warn!(
+                        "[AGENT-LOOP] Compaction watchdog: Level 3 — force-injecting fallback DAG"
+                    );
 
                     // Extract any partial dag-nodes from recent messages
                     let partial_nodes = codelet_cli::compaction_dag::extract_partial_dag_nodes(
@@ -1275,7 +1369,7 @@ Use SessionSearch to recover context.
             // CMPCT-020: Skip if watchdog retry is pending (we need the flag to stay true)
             if compaction_retry_input.is_none() {
                 let was_compacting = session.compaction_in_progress.swap(false, Ordering::SeqCst);
-                
+
                 if was_compacting {
                     session.set_compaction_progress(None);
                     if session.get_status() != SessionStatus::Idle {
@@ -1329,9 +1423,8 @@ Use SessionSearch to recover context.
     }
 }
 
-
 /// Output handler for background sessions that implements StreamOutput
-/// 
+///
 /// REFAC-007: This now accumulates assistant content blocks during streaming
 /// and persists the complete assistant message on Done.
 struct BackgroundOutput {
@@ -1353,29 +1446,38 @@ impl BackgroundOutput {
             last_tool_call: std::sync::Mutex::new(None),
         }
     }
-    
+
     /// REFAC-007: Add an assistant content block
     fn add_assistant_content(&self, content: AssistantContent) {
-        let mut guard = self.assistant_content.lock()
+        let mut guard = self
+            .assistant_content
+            .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         guard.push(content);
     }
-    
+
     /// REFAC-007: Take all accumulated content (clears the buffer)
     fn take_assistant_content(&self) -> Vec<AssistantContent> {
-        let mut guard = self.assistant_content.lock()
+        let mut guard = self
+            .assistant_content
+            .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         std::mem::take(&mut *guard)
     }
-    
+
     /// PROV-039: Persist the accumulated assistant message with optional stop_reason
     fn persist_assistant_message_with_stop_reason(&self, stop_reason: Option<String>) {
         let content = self.take_assistant_content();
         if content.is_empty() {
             return;
         }
-        
-        if let Err(e) = persist_assistant_message_internal(&self.session.id, &self.provider, content, stop_reason) {
+
+        if let Err(e) = persist_assistant_message_internal(
+            &self.session.id,
+            &self.provider,
+            content,
+            stop_reason,
+        ) {
             tracing::error!("REFAC-007: Failed to persist assistant message: {}", e);
         }
     }
@@ -1388,11 +1490,11 @@ impl BackgroundOutput {
 
 impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
     fn emit(&self, event: codelet_cli::interactive::StreamEvent) {
-        use codelet_cli::interactive::StreamEvent;
         use crate::types::{
-            ContextFillInfo, SessionState, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo,
-            ToolResultInfo,
+            ContextFillInfo, SessionState, StreamChunk, TokenTracker, ToolCallInfo,
+            ToolProgressInfo, ToolResultInfo,
         };
+        use codelet_cli::interactive::StreamEvent;
 
         let chunk = match event {
             StreamEvent::Text(ref text) => {
@@ -1402,7 +1504,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             }
             StreamEvent::Thinking(ref thinking) => {
                 // REFAC-007: Accumulate thinking for later persistence
-                self.add_assistant_content(AssistantContent::Thinking { 
+                self.add_assistant_content(AssistantContent::Thinking {
                     thinking: thinking.clone(),
                     signature: None,
                 });
@@ -1434,14 +1536,11 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 // This ensures correct message order: user → assistant(text+tool_use) → tool_result → assistant(final)
                 // Without this, the assistant message with tool_use would be combined with the final response.
                 self.persist_assistant_message();
-                
+
                 // REFAC-007: Persist tool result immediately
-                if let Err(e) = persist_tool_result_internal(
-                    &self.session.id,
-                    &tr.id,
-                    &tr.content,
-                    tr.is_error,
-                ) {
+                if let Err(e) =
+                    persist_tool_result_internal(&self.session.id, &tr.id, &tr.content, tr.is_error)
+                {
                     tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
                 }
 
@@ -1449,25 +1548,34 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 if let Some(ref hooks) = self.session.lifecycle_hooks {
                     if !hooks.post_tool_use.is_empty() {
                         // Get the tool name from the last_tool_call cache (set during ToolCall event)
-                        let tool_name_for_hook = self.last_tool_call.lock()
+                        let tool_name_for_hook = self
+                            .last_tool_call
+                            .lock()
                             .ok()
                             .and_then(|guard| guard.as_ref().map(|(name, _)| name.clone()));
-                        
+
                         if let Some(tool_name) = tool_name_for_hook {
                             let hooks_clone = hooks.clone();
                             let ctx = self.session.hook_context();
-                            let tool_input = self.last_tool_call.lock()
+                            let tool_input = self
+                                .last_tool_call
+                                .lock()
                                 .ok()
                                 .and_then(|guard| guard.as_ref().map(|(_, input)| input.clone()))
                                 .unwrap_or(serde_json::Value::Null);
                             let tool_response = tr.content.clone();
                             let session_for_hook = self.session.clone();
-                            
+
                             // Spawn async task for post_tool_use hooks
                             tokio::spawn(async move {
                                 let outcome = run_post_tool(
-                                    &hooks_clone, &ctx, &tool_name, &tool_input, &tool_response,
-                                ).await;
+                                    &hooks_clone,
+                                    &ctx,
+                                    &tool_name,
+                                    &tool_input,
+                                    &tool_response,
+                                )
+                                .await;
                                 // Inject additional context as notifications
                                 for context_text in &outcome.additional_context {
                                     session_for_hook.handle_output(StreamChunk::user_notification(
@@ -1476,8 +1584,13 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                                     ));
                                 }
                                 for msg in &outcome.messages {
-                                    if msg.level == HookMessageLevel::Warning || msg.level == HookMessageLevel::Error {
-                                        tracing::warn!("[HOOK-013] post_tool_use hook: {}", msg.content);
+                                    if msg.level == HookMessageLevel::Warning
+                                        || msg.level == HookMessageLevel::Error
+                                    {
+                                        tracing::warn!(
+                                            "[HOOK-013] post_tool_use hook: {}",
+                                            msg.content
+                                        );
                                     }
                                 }
                             });
@@ -1503,10 +1616,13 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 is_stderr: tp.is_stderr,
             }),
             // NAPI-010: StreamEvent::Status messages are user-visible notifications
-            StreamEvent::Status(status) => StreamChunk::user_notification(status, NotificationSeverity::Info),
+            StreamEvent::Status(status) => {
+                StreamChunk::user_notification(status, NotificationSeverity::Info)
+            }
             StreamEvent::Tokens(info) => {
                 // Update cached tokens for sync access
-                self.session.update_tokens(info.input_tokens as u32, info.output_tokens as u32);
+                self.session
+                    .update_tokens(info.input_tokens as u32, info.output_tokens as u32);
                 if let Some(r) = info.reasoning_tokens {
                     self.session.update_reasoning_tokens(r as u32);
                 }
@@ -1540,7 +1656,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             StreamEvent::Done(stop_reason) => {
                 // PROV-039: Persist accumulated assistant message with real stop_reason from provider
                 self.persist_assistant_message_with_stop_reason(stop_reason);
-                
+
                 // REFAC-007 Rule [31]: Persist token state on Done chunk
                 let (input_tokens, output_tokens, _reasoning_tokens) = self.session.get_tokens();
                 if let Err(e) = persist_token_state(&self.session.id, input_tokens, output_tokens) {
@@ -1548,7 +1664,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 }
 
                 // (Old KGRAPH entity pipeline flush was here — removed in KGRAPH-024 dual-graph migration)
-                
+
                 // Do NOT set Idle when compaction or pending DAG is active.
                 if crate::inject_summary_handler::should_idle_on_done(
                     &self.session.compaction_in_progress,
@@ -1567,7 +1683,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             StreamEvent::CompactionStarted => {
                 self.session.set_status(SessionStatus::Compacting);
                 let current = self.session.cached_input_tokens.load(Ordering::Acquire);
-                self.session.pre_compaction_tokens.store(current, Ordering::Release);
+                self.session
+                    .pre_compaction_tokens
+                    .store(current, Ordering::Release);
                 StreamChunk::session_state_change(SessionState::Compacting)
             }
             StreamEvent::CompactionProgress(progress) => {
@@ -1584,8 +1702,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 // directly by agent_loop via handle_output, not through StreamOutput.
                 self.session.set_status(SessionStatus::Idle);
                 self.session.set_compaction_progress(None); // Clear progress on completion
-                // Emit state change first
-                self.session.handle_output(StreamChunk::session_state_change(SessionState::Idle));
+                                                            // Emit state change first
+                self.session
+                    .handle_output(StreamChunk::session_state_change(SessionState::Idle));
                 // UX-002: Send STRUCTURED CompactionComplete - no string parsing needed!
                 StreamChunk::compaction_complete(crate::types::CompactionResult {
                     original_tokens: info.original_tokens,
@@ -1598,8 +1717,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             StreamEvent::CompactionFailed { reason } => {
                 self.session.set_status(SessionStatus::Idle);
                 self.session.set_compaction_progress(None); // Clear progress on failure
-                // Emit state change first, then notification
-                self.session.handle_output(StreamChunk::session_state_change(SessionState::Idle));
+                                                            // Emit state change first, then notification
+                self.session
+                    .handle_output(StreamChunk::session_state_change(SessionState::Idle));
                 StreamChunk::user_notification(
                     format!("Compaction failed: {reason}"),
                     NotificationSeverity::Warning,
@@ -1614,7 +1734,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
         self.session.handle_output(chunk);
     }
 
-    fn progress_emitter(&self) -> Option<std::sync::Arc<dyn codelet_cli::interactive::StreamOutput>> {
+    fn progress_emitter(
+        &self,
+    ) -> Option<std::sync::Arc<dyn codelet_cli::interactive::StreamOutput>> {
         Some(std::sync::Arc::new(BackgroundProgressEmitter {
             session: self.session.clone(),
         }))
@@ -1640,8 +1762,6 @@ impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter {
         }
     }
 }
-
-
 
 #[cfg(test)]
 mod agent_loop_dispatch_tests {
@@ -1749,15 +1869,16 @@ mod agent_loop_dispatch_tests {
         // The cast to a fn pointer would over-constrain the generic
         // CompletionModel parameter, so we use a closure that captures the
         // method instead.
-        let _create_rig_agent_ref = |provider: &CopilotProvider,
-                                     session_id: uuid::Uuid,
-                                     preamble: Option<&str>,
-                                     thinking: Option<serde_json::Value>| {
-            // Returning the agent value here is what proves the signature.
-            // The closure is never called, so the agent itself is never
-            // built — but the typechecker still has to validate this body.
-            provider.create_rig_agent(session_id, preamble, thinking)
-        };
+        let _create_rig_agent_ref =
+            |provider: &CopilotProvider,
+             session_id: uuid::Uuid,
+             preamble: Option<&str>,
+             thinking: Option<serde_json::Value>| {
+                // Returning the agent value here is what proves the signature.
+                // The closure is never called, so the agent itself is never
+                // built — but the typechecker still has to validate this body.
+                provider.create_rig_agent(session_id, preamble, thinking)
+            };
 
         // Reaching this assertion means the closure above typechecked,
         // which means `CopilotProvider::create_rig_agent` exists with the

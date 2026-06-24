@@ -284,6 +284,9 @@ pub struct MockBackend {
     get_session_role_calls: AtomicUsize,
     set_session_role_calls: AtomicUsize,
     last_set_session_model: Mutex<Option<(SessionId, String, String)>>,
+    /// PROV-118: per-call counter + capture for `set_default_model`.
+    set_default_model_calls: AtomicUsize,
+    last_set_default_model: Mutex<Option<String>>,
     last_set_thinking_level: Mutex<Option<(SessionId, ThinkingLevel)>>,
     last_get_session_role: Mutex<Option<SessionId>>,
     last_set_session_role: Mutex<Option<(SessionId, Option<String>)>>,
@@ -468,6 +471,70 @@ pub struct MockBackend {
     /// RPC-054: when `Some`, `refresh_models_cache` returns
     /// `Err(anyhow!(message))`.
     refresh_models_cache_error: Mutex<Option<String>>,
+    // ── PROV-109 profile write surface ───────────────────────────────
+    /// PROV-109: per-call counters for the profile write surface.
+    save_profile_calls: AtomicUsize,
+    delete_profile_calls: AtomicUsize,
+    /// PROV-109: capture of the last `(provider_id, profile_name, definition)`
+    /// tuple passed to `save_profile`.
+    last_save_profile: Mutex<Option<(String, String, codelet_rpc_types::ProfileDefinition)>>,
+    /// PROV-109: capture of the last `(provider_id, profile_name)` pair passed
+    /// to `delete_profile`.
+    last_delete_profile: Mutex<Option<(String, String)>>,
+    /// PROV-109: when `Some`, `save_profile` returns `Err(anyhow!(message))`.
+    save_profile_error: Mutex<Option<String>>,
+    /// PROV-109: when `Some`, `delete_profile` returns `Err(anyhow!(message))`.
+    delete_profile_error: Mutex<Option<String>>,
+    /// PROV-112: per-call counter for `oauth_clear_tokens`.
+    oauth_clear_tokens_calls: AtomicUsize,
+    /// PROV-112: capture of every `provider_id` passed to `oauth_clear_tokens`,
+    /// in call order (so per-provider routing can be asserted).
+    oauth_clear_tokens_providers: Mutex<Vec<String>>,
+    /// PROV-112: when `Some`, `oauth_clear_tokens` returns `Err(anyhow!(msg))`.
+    oauth_clear_tokens_error: Mutex<Option<String>>,
+    /// PROV-112: per-call counter for `oauth_get_tokens`.
+    oauth_get_tokens_calls: AtomicUsize,
+    /// PROV-112: seeded `provider_id → has_tokens` answers for
+    /// `oauth_get_tokens` (defaults to `false` when unset).
+    oauth_get_tokens_results: Mutex<HashMap<String, bool>>,
+    // ── PROV-113 OAuth login surface ─────────────────────────────────
+    /// PROV-113: per-call counter + provider capture for `oauth_browser_login`.
+    oauth_browser_login_calls: AtomicUsize,
+    oauth_browser_login_providers: Mutex<Vec<String>>,
+    /// PROV-113: when `Some`, `oauth_browser_login` returns `Err(anyhow!(msg))`.
+    oauth_browser_login_error: Mutex<Option<String>>,
+    /// PROV-113: per-call counter for `oauth_headless_start`.
+    oauth_headless_start_calls: AtomicUsize,
+    /// PROV-113: scripted `(authorize_url, pkce_verifier)` for
+    /// `oauth_headless_start`.
+    oauth_headless_start_result: Mutex<(String, String)>,
+    /// PROV-113: per-call counter + `(provider, code, verifier)` capture for
+    /// `oauth_headless_complete`.
+    oauth_headless_complete_calls: AtomicUsize,
+    oauth_headless_complete_args: Mutex<Vec<(String, String, String)>>,
+    oauth_headless_complete_error: Mutex<Option<String>>,
+    /// PROV-113: per-call counter + provider capture for `oauth_device_start`.
+    oauth_device_start_calls: AtomicUsize,
+    oauth_device_start_providers: Mutex<Vec<String>>,
+    /// PROV-113: scripted `(user_code, verification_url, device_auth_id,
+    /// interval)` for `oauth_device_start`.
+    oauth_device_start_result: Mutex<(String, String, String, u64)>,
+    oauth_device_start_error: Mutex<Option<String>>,
+    /// PROV-113: per-call counter for `oauth_device_poll`.
+    oauth_device_poll_calls: AtomicUsize,
+    oauth_device_poll_error: Mutex<Option<String>>,
+    /// PROV-114: per-call counter for `oauth_copilot_device_start`.
+    oauth_copilot_device_start_calls: AtomicUsize,
+    /// PROV-114: capture of every `enterprise_host` passed to
+    /// `oauth_copilot_device_start`, in call order (asserts the normalized
+    /// host is forwarded; `None` for GitHub.com).
+    oauth_copilot_device_start_hosts: Mutex<Vec<Option<String>>>,
+    /// PROV-114: scripted `(user_code, verification_url, device_auth_id,
+    /// interval)` returned by `oauth_copilot_device_start`.
+    oauth_copilot_device_start_result: Mutex<(String, String, String, u64)>,
+    /// PROV-114: when `Some`, `oauth_copilot_device_start` returns
+    /// `Err(anyhow!(msg))`.
+    oauth_copilot_device_start_error: Mutex<Option<String>>,
     // ── RPC-055 debug-capture surface ────────────────────────────────
     /// RPC-055: per-call counter for `toggle_debug`.
     toggle_debug_calls: AtomicUsize,
@@ -624,6 +691,8 @@ impl Default for MockBackend {
             get_session_role_calls: AtomicUsize::new(0),
             set_session_role_calls: AtomicUsize::new(0),
             last_set_session_model: Mutex::new(None),
+            set_default_model_calls: AtomicUsize::new(0),
+            last_set_default_model: Mutex::new(None),
             last_set_thinking_level: Mutex::new(None),
             last_get_session_role: Mutex::new(None),
             last_set_session_role: Mutex::new(None),
@@ -703,6 +772,50 @@ impl Default for MockBackend {
             delete_provider_credentials_error: Mutex::new(None),
             test_provider_connection_error: Mutex::new(None),
             refresh_models_cache_error: Mutex::new(None),
+            // ── PROV-109 ─────────────────────────────────────────────
+            save_profile_calls: AtomicUsize::new(0),
+            delete_profile_calls: AtomicUsize::new(0),
+            last_save_profile: Mutex::new(None),
+            last_delete_profile: Mutex::new(None),
+            save_profile_error: Mutex::new(None),
+            delete_profile_error: Mutex::new(None),
+            oauth_clear_tokens_calls: AtomicUsize::new(0),
+            oauth_clear_tokens_providers: Mutex::new(Vec::new()),
+            oauth_clear_tokens_error: Mutex::new(None),
+            oauth_get_tokens_calls: AtomicUsize::new(0),
+            oauth_get_tokens_results: Mutex::new(HashMap::new()),
+            // ── PROV-113 ─────────────────────────────────────────────
+            oauth_browser_login_calls: AtomicUsize::new(0),
+            oauth_browser_login_providers: Mutex::new(Vec::new()),
+            oauth_browser_login_error: Mutex::new(None),
+            oauth_headless_start_calls: AtomicUsize::new(0),
+            oauth_headless_start_result: Mutex::new((
+                "https://claude.ai/oauth/authorize?code=1".to_string(),
+                "v".repeat(43),
+            )),
+            oauth_headless_complete_calls: AtomicUsize::new(0),
+            oauth_headless_complete_args: Mutex::new(Vec::new()),
+            oauth_headless_complete_error: Mutex::new(None),
+            oauth_device_start_calls: AtomicUsize::new(0),
+            oauth_device_start_providers: Mutex::new(Vec::new()),
+            oauth_device_start_result: Mutex::new((
+                "ABCD-1234".to_string(),
+                "https://verify.example/device".to_string(),
+                "device-auth-1".to_string(),
+                5,
+            )),
+            oauth_device_start_error: Mutex::new(None),
+            oauth_device_poll_calls: AtomicUsize::new(0),
+            oauth_device_poll_error: Mutex::new(None),
+            oauth_copilot_device_start_calls: AtomicUsize::new(0),
+            oauth_copilot_device_start_hosts: Mutex::new(Vec::new()),
+            oauth_copilot_device_start_result: Mutex::new((
+                "COPILOT-CODE".to_string(),
+                "https://github.com/login/device".to_string(),
+                "copilot-device-1".to_string(),
+                1,
+            )),
+            oauth_copilot_device_start_error: Mutex::new(None),
             // ── RPC-055 ──────────────────────────────────────────────
             toggle_debug_calls: AtomicUsize::new(0),
             last_toggle_debug: Mutex::new(None),
@@ -1015,6 +1128,19 @@ impl MockBackend {
     /// passed to `set_session_model`.
     pub fn last_set_session_model(&self) -> Option<(SessionId, String, String)> {
         self.last_set_session_model
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// PROV-118: how many times `set_default_model` was awaited.
+    pub fn set_default_model_calls(&self) -> usize {
+        self.set_default_model_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-118: the last model string passed to `set_default_model`.
+    pub fn last_set_default_model(&self) -> Option<String> {
+        self.last_set_default_model
             .lock()
             .expect("MockBackend mutex")
             .clone()
@@ -1455,6 +1581,202 @@ impl MockBackend {
             .list_provider_credentials_error
             .lock()
             .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// PROV-109: force the next `save_profile` call to fail.
+    pub fn set_save_profile_error(&self, message: String) {
+        *self.save_profile_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// PROV-109: force the next `delete_profile` call to fail.
+    pub fn set_delete_profile_error(&self, message: String) {
+        *self.delete_profile_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// PROV-112: force `oauth_clear_tokens` to fail with `message`.
+    pub fn set_oauth_clear_tokens_error(&self, message: String) {
+        *self
+            .oauth_clear_tokens_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// PROV-112: per-call counter for `oauth_clear_tokens`.
+    pub fn oauth_clear_tokens_calls(&self) -> usize {
+        self.oauth_clear_tokens_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-112: every `provider_id` passed to `oauth_clear_tokens`, in order.
+    pub fn oauth_clear_tokens_providers(&self) -> Vec<String> {
+        self.oauth_clear_tokens_providers
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// PROV-112: per-call counter for `oauth_get_tokens`.
+    pub fn oauth_get_tokens_calls(&self) -> usize {
+        self.oauth_get_tokens_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-112: seed the `has_tokens` answer for a provider's
+    /// `oauth_get_tokens`.
+    pub fn seed_oauth_get_tokens(&self, provider_id: &str, has_tokens: bool) {
+        self.oauth_get_tokens_results
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(provider_id.to_string(), has_tokens);
+    }
+
+    /// PROV-113: force `oauth_browser_login` to fail with `message`.
+    pub fn set_oauth_browser_login_error(&self, message: String) {
+        *self
+            .oauth_browser_login_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// PROV-113: per-call counter for `oauth_browser_login`.
+    pub fn oauth_browser_login_calls(&self) -> usize {
+        self.oauth_browser_login_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-113: every `provider_id` passed to `oauth_browser_login`, in order.
+    pub fn oauth_browser_login_providers(&self) -> Vec<String> {
+        self.oauth_browser_login_providers
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// PROV-113: script the `(authorize_url, pkce_verifier)` returned by
+    /// `oauth_headless_start`.
+    pub fn seed_oauth_headless_start(&self, authorize_url: &str, pkce_verifier: &str) {
+        *self
+            .oauth_headless_start_result
+            .lock()
+            .expect("MockBackend mutex") = (authorize_url.to_string(), pkce_verifier.to_string());
+    }
+
+    /// PROV-113: per-call counter for `oauth_headless_start`.
+    pub fn oauth_headless_start_calls(&self) -> usize {
+        self.oauth_headless_start_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-113: per-call counter for `oauth_headless_complete`.
+    pub fn oauth_headless_complete_calls(&self) -> usize {
+        self.oauth_headless_complete_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-113: every `(provider, code, verifier)` passed to
+    /// `oauth_headless_complete`, in call order.
+    pub fn oauth_headless_complete_args(&self) -> Vec<(String, String, String)> {
+        self.oauth_headless_complete_args
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// PROV-113: script the `(user_code, verification_url, device_auth_id,
+    /// interval)` returned by `oauth_device_start`.
+    pub fn seed_oauth_device_start(
+        &self,
+        user_code: &str,
+        verification_url: &str,
+        device_auth_id: &str,
+        interval: u64,
+    ) {
+        *self
+            .oauth_device_start_result
+            .lock()
+            .expect("MockBackend mutex") = (
+            user_code.to_string(),
+            verification_url.to_string(),
+            device_auth_id.to_string(),
+            interval,
+        );
+    }
+
+    /// PROV-113: per-call counter for `oauth_device_start`.
+    pub fn oauth_device_start_calls(&self) -> usize {
+        self.oauth_device_start_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-113: per-call counter for `oauth_device_poll`.
+    pub fn oauth_device_poll_calls(&self) -> usize {
+        self.oauth_device_poll_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-114: script the `(user_code, verification_url, device_auth_id,
+    /// interval)` returned by `oauth_copilot_device_start`.
+    pub fn seed_oauth_copilot_device_start(
+        &self,
+        user_code: &str,
+        verification_url: &str,
+        device_auth_id: &str,
+        interval: u64,
+    ) {
+        *self
+            .oauth_copilot_device_start_result
+            .lock()
+            .expect("MockBackend mutex") = (
+            user_code.to_string(),
+            verification_url.to_string(),
+            device_auth_id.to_string(),
+            interval,
+        );
+    }
+
+    /// PROV-114: force `oauth_copilot_device_start` to fail with `message`.
+    pub fn set_oauth_copilot_device_start_error(&self, message: String) {
+        *self
+            .oauth_copilot_device_start_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// PROV-114: per-call counter for `oauth_copilot_device_start`.
+    pub fn oauth_copilot_device_start_calls(&self) -> usize {
+        self.oauth_copilot_device_start_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-114: every `enterprise_host` passed to
+    /// `oauth_copilot_device_start`, in call order.
+    pub fn oauth_copilot_device_start_hosts(&self) -> Vec<Option<String>> {
+        self.oauth_copilot_device_start_hosts
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// PROV-109: per-call counter for `save_profile`.
+    pub fn save_profile_calls(&self) -> usize {
+        self.save_profile_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-109: per-call counter for `delete_profile`.
+    pub fn delete_profile_calls(&self) -> usize {
+        self.delete_profile_calls.load(Ordering::SeqCst)
+    }
+
+    /// PROV-109: capture of the last `(provider_id, profile_name, definition)`
+    /// tuple passed to `save_profile`.
+    pub fn last_save_profile(
+        &self,
+    ) -> Option<(String, String, codelet_rpc_types::ProfileDefinition)> {
+        self.last_save_profile
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// PROV-109: capture of the last `(provider_id, profile_name)` pair passed
+    /// to `delete_profile`.
+    pub fn last_delete_profile(&self) -> Option<(String, String)> {
+        self.last_delete_profile
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
     }
 
     /// RPC-054: per-call counter for `list_provider_credentials`.
@@ -2064,6 +2386,15 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
+    async fn set_default_model(&self, model: String) -> Result<()> {
+        self.set_default_model_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_default_model
+            .lock()
+            .expect("MockBackend mutex") = Some(model);
+        Ok(())
+    }
+
     async fn set_thinking_level(&self, session_id: SessionId, level: ThinkingLevel) -> Result<()> {
         self.set_thinking_level_calls.fetch_add(1, Ordering::SeqCst);
         *self
@@ -2472,6 +2803,215 @@ impl FspecBackend for MockBackend {
             row.model_count = 0;
         }
         Ok(())
+    }
+
+    async fn save_profile(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    ) -> Result<()> {
+        self.save_profile_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_save_profile.lock().expect("MockBackend mutex") =
+            Some((provider_id, profile_name, definition));
+        if let Some(msg) = self
+            .save_profile_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn delete_profile(&self, provider_id: String, profile_name: String) -> Result<()> {
+        self.delete_profile_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_delete_profile.lock().expect("MockBackend mutex") =
+            Some((provider_id, profile_name));
+        if let Some(msg) = self
+            .delete_profile_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn oauth_clear_tokens(&self, provider_id: String) -> Result<()> {
+        self.oauth_clear_tokens_calls.fetch_add(1, Ordering::SeqCst);
+        self.oauth_clear_tokens_providers
+            .lock()
+            .expect("MockBackend mutex")
+            .push(provider_id.clone());
+        if let Some(msg) = self
+            .oauth_clear_tokens_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        // Mirror the real clear: the provider's OAuth tokens go away, so a
+        // follow-up `list_provider_credentials` reflects it as unconfigured
+        // (projection then drops the oauth-status / Logout row). Idempotent.
+        let mut store = self.provider_credentials.lock().expect("MockBackend mutex");
+        if let Some(row) = store.iter_mut().find(|p| p.provider_id == provider_id) {
+            row.configured = false;
+            row.masked_key = None;
+            row.source = None;
+        }
+        Ok(())
+    }
+
+    async fn oauth_get_tokens(&self, provider_id: String) -> Result<bool> {
+        self.oauth_get_tokens_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(self
+            .oauth_get_tokens_results
+            .lock()
+            .expect("MockBackend mutex")
+            .get(&provider_id)
+            .copied()
+            .unwrap_or(false))
+    }
+
+    async fn oauth_browser_login(&self, provider_id: String) -> Result<()> {
+        self.oauth_browser_login_calls
+            .fetch_add(1, Ordering::SeqCst);
+        self.oauth_browser_login_providers
+            .lock()
+            .expect("MockBackend mutex")
+            .push(provider_id);
+        if let Some(msg) = self
+            .oauth_browser_login_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn oauth_headless_start(
+        &self,
+        _provider_id: String,
+    ) -> Result<codelet_rpc_types::OAuthHeadlessStart> {
+        self.oauth_headless_start_calls
+            .fetch_add(1, Ordering::SeqCst);
+        let (authorize_url, pkce_verifier) = self
+            .oauth_headless_start_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone();
+        Ok(codelet_rpc_types::OAuthHeadlessStart {
+            authorize_url,
+            pkce_verifier,
+        })
+    }
+
+    async fn oauth_headless_complete(
+        &self,
+        provider_id: String,
+        code_with_state: String,
+        pkce_verifier: String,
+    ) -> Result<()> {
+        self.oauth_headless_complete_calls
+            .fetch_add(1, Ordering::SeqCst);
+        self.oauth_headless_complete_args
+            .lock()
+            .expect("MockBackend mutex")
+            .push((provider_id, code_with_state, pkce_verifier));
+        if let Some(msg) = self
+            .oauth_headless_complete_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn oauth_device_start(
+        &self,
+        provider_id: String,
+    ) -> Result<codelet_rpc_types::OAuthDeviceStart> {
+        self.oauth_device_start_calls.fetch_add(1, Ordering::SeqCst);
+        self.oauth_device_start_providers
+            .lock()
+            .expect("MockBackend mutex")
+            .push(provider_id);
+        if let Some(msg) = self
+            .oauth_device_start_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let (user_code, verification_url, device_auth_id, interval) = self
+            .oauth_device_start_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone();
+        Ok(codelet_rpc_types::OAuthDeviceStart {
+            user_code,
+            verification_url,
+            device_auth_id,
+            interval,
+        })
+    }
+
+    async fn oauth_device_poll(
+        &self,
+        _provider_id: String,
+        _device_auth_id: String,
+        _interval: u64,
+    ) -> Result<()> {
+        self.oauth_device_poll_calls.fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .oauth_device_poll_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn oauth_copilot_device_start(
+        &self,
+        enterprise_host: Option<String>,
+    ) -> Result<codelet_rpc_types::OAuthDeviceStart> {
+        self.oauth_copilot_device_start_calls
+            .fetch_add(1, Ordering::SeqCst);
+        self.oauth_copilot_device_start_hosts
+            .lock()
+            .expect("MockBackend mutex")
+            .push(enterprise_host);
+        if let Some(msg) = self
+            .oauth_copilot_device_start_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let (user_code, verification_url, device_auth_id, interval) = self
+            .oauth_copilot_device_start_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone();
+        Ok(codelet_rpc_types::OAuthDeviceStart {
+            user_code,
+            verification_url,
+            device_auth_id,
+            interval,
+        })
     }
 
     async fn test_provider_connection(&self, provider_id: String) -> Result<TestConnectionResult> {

@@ -139,13 +139,10 @@ impl<P: DeviceCodeProvider> DeviceCodeFlow<P> {
             .slow_down_increment_override_ms
             .unwrap_or(SLOW_DOWN_INCREMENT_MS);
 
-        let result = tokio::time::timeout(
-            std::time::Duration::from_millis(config.timeout_ms),
-            async {
+        let result =
+            tokio::time::timeout(std::time::Duration::from_millis(config.timeout_ms), async {
                 loop {
-                    let form_body = self
-                        .provider
-                        .token_poll_form_body(&device_code.device_code);
+                    let form_body = self.provider.token_poll_form_body(&device_code.device_code);
 
                     let response = client
                         .post(&url)
@@ -183,9 +180,8 @@ impl<P: DeviceCodeProvider> DeviceCodeFlow<P> {
                         }
                     }
                 }
-            },
-        )
-        .await;
+            })
+            .await;
 
         match result {
             Ok(inner) => inner,

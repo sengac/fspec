@@ -58,10 +58,7 @@ pub fn build_navigation_list(
 /// - If at a session, returns first supervisor or next session
 /// - If at a supervisor, returns next sibling or next session
 /// - If at the end, returns CreateDialog
-pub fn get_next_target(
-    nav_list: &[Uuid],
-    active_session: Option<Uuid>,
-) -> NavigationTarget {
+pub fn get_next_target(nav_list: &[Uuid], active_session: Option<Uuid>) -> NavigationTarget {
     if nav_list.is_empty() {
         return NavigationTarget::CreateDialog;
     }
@@ -100,10 +97,7 @@ pub fn get_next_target(
 /// - If at first session, returns Board
 /// - If at a supervisor, returns prev sibling or subordinate session
 /// - Otherwise returns previous item in list
-pub fn get_prev_target(
-    nav_list: &[Uuid],
-    active_session: Option<Uuid>,
-) -> NavigationTarget {
+pub fn get_prev_target(nav_list: &[Uuid], active_session: Option<Uuid>) -> NavigationTarget {
     match active_session {
         None => {
             // No active session (BoardView) - no previous

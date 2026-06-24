@@ -15,7 +15,9 @@ use common::fspec_bin;
 fn run_remove_rule(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
     let mut cmd = Command::new(fspec_bin());
     cmd.arg("remove-rule");
-    for a in extra_args { cmd.arg(a); }
+    for a in extra_args {
+        cmd.arg(a);
+    }
     cmd.current_dir(cwd);
     let output = cmd.output().expect("spawn fspec remove-rule");
     let code = output.status.code().unwrap_or(-1);
@@ -38,19 +40,38 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_with_rules(id: &str, status: &str, rules: serde_json::Value) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog","specifying","testing","implementing","validating","done","blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
-        } else { vec![] };
+        } else {
+            vec![]
+        };
         states.insert((*st).to_string(), serde_json::Value::Array(arr));
     }
     let mut wu = serde_json::Map::new();
     wu.insert("id".into(), serde_json::Value::String(id.to_string()));
     wu.insert("title".into(), serde_json::Value::String("title".into()));
     wu.insert("type".into(), serde_json::Value::String("story".into()));
-    wu.insert("status".into(), serde_json::Value::String(status.to_string()));
-    wu.insert("createdAt".into(), serde_json::Value::String("2026-06-01T00:00:00.000Z".into()));
-    wu.insert("updatedAt".into(), serde_json::Value::String("2026-06-01T00:00:00.000Z".into()));
+    wu.insert(
+        "status".into(),
+        serde_json::Value::String(status.to_string()),
+    );
+    wu.insert(
+        "createdAt".into(),
+        serde_json::Value::String("2026-06-01T00:00:00.000Z".into()),
+    );
+    wu.insert(
+        "updatedAt".into(),
+        serde_json::Value::String("2026-06-01T00:00:00.000Z".into()),
+    );
     if !matches!(rules, serde_json::Value::Null) {
         wu.insert("rules".into(), rules);
     }
@@ -58,7 +79,8 @@ fn seed_with_rules(id: &str, status: &str, rules: serde_json::Value) -> String {
         "version": "0.7.1",
         "workUnits": { id: serde_json::Value::Object(wu) },
         "states": serde_json::Value::Object(states),
-    })).unwrap()
+    }))
+    .unwrap()
 }
 
 const TS_HELP_FIXTURE_RR: &str = include_str!("fixtures/help/remove-rule.txt");
@@ -68,9 +90,12 @@ fn scenario_remove_rule_help_matches_ts_formatcommandhelp_reference() {
     // @step Given the fspec Rust binary is built and on PATH
     // @step When I run `fspec remove-rule --help`
     let output = Command::new(fspec_bin())
-        .arg("remove-rule").arg("--help")
-        .env_remove("CLICOLOR_FORCE").env("NO_COLOR", "1")
-        .output().expect("spawn remove-rule --help");
+        .arg("remove-rule")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn remove-rule --help");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -101,7 +126,10 @@ fn scenario_cli_soft_deletes_rule_and_prints_canonical_success_line() {
     );
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].deleted=true
     let v = read_work_units(ws.path());
-    assert_eq!(v["workUnits"]["AUTH-001"]["rules"][0]["deleted"].as_bool(), Some(true));
+    assert_eq!(
+        v["workUnits"]["AUTH-001"]["rules"][0]["deleted"].as_bool(),
+        Some(true)
+    );
 }
 
 #[test]
@@ -115,10 +143,15 @@ fn scenario_cli_rejects_unknown_rule_id_with_exit_1_and_error_prefix() {
     // @step Then the exit code is 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
     // @step And stderr contains the substring '✗ Failed to remove rule:'
-    assert!(stderr.contains("✗ Failed to remove rule:"), "stderr must contain TS error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("✗ Failed to remove rule:"),
+        "stderr must contain TS error prefix; got:\n{stderr}"
+    );
     // @step And stderr contains the substring 'Rule with ID 99 not found'
-    assert!(stderr.contains("Rule with ID 99 not found"),
-        "stderr must contain canonical message; got:\n{stderr}");
+    assert!(
+        stderr.contains("Rule with ID 99 not found"),
+        "stderr must contain canonical message; got:\n{stderr}"
+    );
 }
 
 #[test]
@@ -132,10 +165,15 @@ fn scenario_cli_matches_ts_nan_behaviour_when_index_is_non_numeric() {
     // @step Then the exit code is 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
     // @step And stderr contains the substring '✗ Failed to remove rule:'
-    assert!(stderr.contains("✗ Failed to remove rule:"), "stderr must contain TS error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("✗ Failed to remove rule:"),
+        "stderr must contain TS error prefix; got:\n{stderr}"
+    );
     // @step And stderr contains the substring 'Rule with ID NaN not found'
-    assert!(stderr.contains("Rule with ID NaN not found"),
-        "stderr must mirror TS `parseInt('abc') → NaN` path; got:\n{stderr}");
+    assert!(
+        stderr.contains("Rule with ID NaN not found"),
+        "stderr must mirror TS `parseInt('abc') → NaN` path; got:\n{stderr}"
+    );
 }
 
 #[test]
@@ -155,18 +193,30 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     };
     let result = codelet_fspec_core::dispatch_command(req);
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     // @step And running `fspec remove-rule AUTH-001 1` afterwards exits 0
     let (code, stdout, stderr) = run_remove_rule(ws.path(), &["AUTH-001", "1"]);
-    assert_eq!(code, 0, "CLI remove must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI remove must succeed; stdout={stdout}, stderr={stderr}"
+    );
     // @step And spec/work-units.json on disk shows AUTH-001.rules[0].deleted=true and AUTH-001.rules[1].deleted=true
     let v = read_work_units(ws.path());
-    let rules = v["workUnits"]["AUTH-001"]["rules"].as_array().expect("rules");
+    let rules = v["workUnits"]["AUTH-001"]["rules"]
+        .as_array()
+        .expect("rules");
     assert_eq!(rules[0]["deleted"].as_bool(), Some(true));
     assert_eq!(rules[1]["deleted"].as_bool(), Some(true));
     // @step And the CLI bridge module codelet/fspec/src/remove_rule.rs contains NO inline soft-delete or file-write logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/remove_rule.rs");
-    assert!(bridge_path.exists(), "bridge must exist: {}", bridge_path.display());
+    assert!(
+        bridge_path.exists(),
+        "bridge must exist: {}",
+        bridge_path.display()
+    );
     let bridge_src = fs::read_to_string(&bridge_path).expect("bridge readable");
     for forbidden in [
         "ensure_work_units_file",
@@ -176,7 +226,9 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         "already deleted",
         "deletedAt",
     ] {
-        assert!(!bridge_src.contains(forbidden),
-            "bridge must NOT embed `{forbidden}`; got:\n{bridge_src}");
+        assert!(
+            !bridge_src.contains(forbidden),
+            "bridge must NOT embed `{forbidden}`; got:\n{bridge_src}"
+        );
     }
 }

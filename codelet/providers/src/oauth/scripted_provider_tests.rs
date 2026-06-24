@@ -78,13 +78,23 @@ async fn scripted_provider_build_authorization_request() {
     assert!(url.starts_with("https://auth.example.com/authorize"));
     assert!(url.contains("client_id=test-client-id"));
 
-    let verifier = result.get("pkce_verifier").unwrap().clone().into_string().unwrap();
+    let verifier = result
+        .get("pkce_verifier")
+        .unwrap()
+        .clone()
+        .into_string()
+        .unwrap();
     assert!(!verifier.is_empty());
 
     let state = result.get("state").unwrap().clone().into_string().unwrap();
     assert!(!state.is_empty());
 
-    let challenge = result.get("challenge").unwrap().clone().into_string().unwrap();
+    let challenge = result
+        .get("challenge")
+        .unwrap()
+        .clone()
+        .into_string()
+        .unwrap();
     assert!(!challenge.is_empty());
 }
 
@@ -93,12 +103,25 @@ async fn scripted_provider_exchange_code() {
     let provider = ScriptedOAuthProvider::from_script(TEST_SCRIPT, test_config()).unwrap();
 
     // @step And exchange_code, refresh_token, poll_for_token, and needs_refresh each execute correctly via spawn_blocking
-    let result = provider.exchange_code("auth_code_123", "verifier_456").await.unwrap();
+    let result = provider
+        .exchange_code("auth_code_123", "verifier_456")
+        .await
+        .unwrap();
 
-    let at = result.get("access_token").unwrap().clone().into_string().unwrap();
+    let at = result
+        .get("access_token")
+        .unwrap()
+        .clone()
+        .into_string()
+        .unwrap();
     assert_eq!(at, "at_auth_code_123");
 
-    let rt = result.get("refresh_token").unwrap().clone().into_string().unwrap();
+    let rt = result
+        .get("refresh_token")
+        .unwrap()
+        .clone()
+        .into_string()
+        .unwrap();
     assert_eq!(rt, "rt_auth_code_123");
 }
 
@@ -113,7 +136,12 @@ async fn scripted_provider_refresh_token() {
     // @step And exchange_code, refresh_token, poll_for_token, and needs_refresh each execute correctly via spawn_blocking
     let result = provider.refresh_token(tokens).await.unwrap();
 
-    let at = result.get("access_token").unwrap().clone().into_string().unwrap();
+    let at = result
+        .get("access_token")
+        .unwrap()
+        .clone()
+        .into_string()
+        .unwrap();
     assert_eq!(at, "refreshed_old_at");
 }
 
@@ -130,7 +158,12 @@ async fn scripted_provider_poll_for_token() {
     let status = result.get("status").unwrap().clone().into_string().unwrap();
     assert_eq!(status, "success");
 
-    let at = result.get("access_token").unwrap().clone().into_string().unwrap();
+    let at = result
+        .get("access_token")
+        .unwrap()
+        .clone()
+        .into_string()
+        .unwrap();
     assert_eq!(at, "device_at");
 }
 

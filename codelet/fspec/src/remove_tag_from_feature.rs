@@ -44,8 +44,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `remove-tag-from-feature` clap
 /// subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let body = json!({
         "file": args.file,
@@ -58,8 +57,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             // Core returns a JSON envelope: { success, valid, message }.
             // The CLI mirrors the TS `output.log('✓ ' + result.message)`
             // line — no reminder branch (this command emits none).
-            let parsed: Value = serde_json::from_str(&data_json)
-                .context("parse core response as JSON")?;
+            let parsed: Value =
+                serde_json::from_str(&data_json).context("parse core response as JSON")?;
             if let Some(msg) = parsed.get("message").and_then(|v| v.as_str()) {
                 println!("✓ {msg}");
             }

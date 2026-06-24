@@ -34,8 +34,7 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/work-units.json"))
-        .expect("read work-units.json");
+    let raw = fs::read_to_string(cwd.join("spec/work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse work-units.json")
 }
 
@@ -135,8 +134,7 @@ fn scenario_cli_adds_question_and_prints_success_line() {
     write_work_units(ws.path(), &minimal_work_units("AUTH-001", "specifying"));
 
     // @step When I run `./codelet/target/release/fspec add-question AUTH-001 "Should we add OAuth?"`
-    let (code, stdout, stderr) =
-        run_add_question(ws.path(), &["AUTH-001", "Should we add OAuth?"]);
+    let (code, stdout, stderr) = run_add_question(ws.path(), &["AUTH-001", "Should we add OAuth?"]);
 
     // @step Then the command exits 0
     assert_eq!(
@@ -165,7 +163,10 @@ fn scenario_cli_rejects_unknown_work_unit_with_exit_1_and_error_prefix() {
     let (code, stdout, stderr) = run_add_question(ws.path(), &["AUTH-999", "Q?"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring '✗ Failed to add question:'
     assert!(
@@ -194,7 +195,10 @@ fn scenario_cli_rejects_wrong_status_with_exit_1_and_error_prefix() {
     let (code, stdout, stderr) = run_add_question(ws.path(), &["AUTH-001", "Q?"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring '✗ Failed to add question:'
     assert!(

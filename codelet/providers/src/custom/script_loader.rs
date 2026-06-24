@@ -96,11 +96,10 @@ impl ScriptLoader {
                 path: script_path.to_path_buf(),
                 source,
             })?;
-        let metadata =
-            std::fs::metadata(&canonical).map_err(|source| CustomProviderError::Io {
-                path: canonical.clone(),
-                source,
-            })?;
+        let metadata = std::fs::metadata(&canonical).map_err(|source| CustomProviderError::Io {
+            path: canonical.clone(),
+            source,
+        })?;
         let mtime = metadata
             .modified()
             .map_err(|source| CustomProviderError::Io {
@@ -164,10 +163,7 @@ impl ScriptLoader {
     /// Verify the compiled script defines every function in
     /// [`REQUIRED_FUNCTIONS`]. Returns the first missing function as a
     /// [`CustomProviderError::MissingFunction`].
-    pub fn validate_required_functions(
-        &self,
-        ast: &AST,
-    ) -> Result<(), CustomProviderError> {
+    pub fn validate_required_functions(&self, ast: &AST) -> Result<(), CustomProviderError> {
         let defined: std::collections::HashSet<&str> =
             ast.iter_functions().map(|meta| meta.name).collect();
 
@@ -190,11 +186,7 @@ impl ScriptLoader {
 
 impl std::fmt::Debug for ScriptLoader {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let cache_len = self
-            .cache
-            .lock()
-            .map(|c| c.len())
-            .unwrap_or_default();
+        let cache_len = self.cache.lock().map(|c| c.len()).unwrap_or_default();
         f.debug_struct("ScriptLoader")
             .field("cache_entries", &cache_len)
             .finish_non_exhaustive()

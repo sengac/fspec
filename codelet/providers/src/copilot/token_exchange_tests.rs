@@ -32,10 +32,7 @@ fn build_token_exchange_url_uses_enterprise_api_v3_path() {
 #[test]
 fn empty_github_oauth_token_is_rejected_before_http() {
     // Smoke test: tokio runtime unnecessary because the guard is sync.
-    let fut = exchange_github_token_for_copilot_token_at(
-        "https://ignored.example.com/",
-        "",
-    );
+    let fut = exchange_github_token_for_copilot_token_at("https://ignored.example.com/", "");
     let rt = tokio::runtime::Runtime::new().unwrap();
     let res = rt.block_on(fut);
     assert!(res.is_err());

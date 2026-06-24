@@ -139,9 +139,7 @@ fn scenario_cli_happy_path_prints_flat_declaration_tag_list() {
     );
 
     // @step And the line '  @critical' appears BEFORE the line '  @auth' in stdout
-    let critical = stdout
-        .find("  @critical")
-        .expect("@critical line present");
+    let critical = stdout.find("  @critical").expect("@critical line present");
     let auth = stdout.find("  @auth").expect("@auth line present");
     assert!(
         critical < auth,
@@ -222,8 +220,7 @@ fn scenario_cli_show_categories_flag_emits_categorized_pairs() {
 #[test]
 fn scenario_cli_bridge_module_embeds_no_duplicated_business_logic() {
     // @step Given the CLI bridge module codelet/fspec/src/list_feature_tags.rs is the only shell-facing entry point for list-feature-tags
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_feature_tags.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_feature_tags.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/list_feature_tags.rs must exist as the CLI bridge module; got missing: {}",
@@ -367,8 +364,11 @@ fn scenario_cli_invalid_gherkin_routes_error_to_stderr_with_exit_1() {
     let ws = tempfile::tempdir().expect("tempdir");
     let features_dir = ws.path().join("spec/features");
     std::fs::create_dir_all(&features_dir).expect("mkdir features");
-    std::fs::write(features_dir.join("broken.feature"), "Not a feature at all\n")
-        .expect("write broken.feature");
+    std::fs::write(
+        features_dir.join("broken.feature"),
+        "Not a feature at all\n",
+    )
+    .expect("write broken.feature");
 
     // @step When I run `./codelet/target/release/list_feature_tags_bin spec/features/broken.feature` from that directory
     let output = Command::new(fspec_bin())

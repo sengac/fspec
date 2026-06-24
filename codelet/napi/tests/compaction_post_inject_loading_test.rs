@@ -105,7 +105,9 @@ fn test_on_injected_callback_emits_running_before_compaction_complete() {
         "compaction_in_progress should be cleared by inject_summary"
     );
     assert!(
-        !emitted.iter().any(|e| e.contains("Idle") || e.contains("Done")),
+        !emitted
+            .iter()
+            .any(|e| e.contains("Idle") || e.contains("Done")),
         "on_injected must NOT emit Idle or Done. Emissions: {:?}",
         *emitted
     );
@@ -125,8 +127,7 @@ fn test_emit_post_injection_events_metrics() {
 
     // @step When emit_post_injection_events is called with known token counts
     codelet_napi::inject_summary_handler::emit_post_injection_events(
-        &record,
-        40_000, // original
+        &record, 40_000, // original
         10_000, // compacted
     );
 
@@ -139,7 +140,10 @@ fn test_emit_post_injection_events_metrics() {
         codelet_napi::StreamChunk::SessionStateChange { state } => {
             assert_eq!(*state, codelet_napi::SessionState::Running);
         }
-        other => panic!("First emission must be SessionStateChange(Running), got: {:?}", other),
+        other => panic!(
+            "First emission must be SessionStateChange(Running), got: {:?}",
+            other
+        ),
     }
 
     // Second must be CompactionComplete with correct token counts and ratio
@@ -153,7 +157,10 @@ fn test_emit_post_injection_events_metrics() {
                 compaction_result.compression_ratio
             );
         }
-        other => panic!("Second emission must be CompactionComplete, got: {:?}", other),
+        other => panic!(
+            "Second emission must be CompactionComplete, got: {:?}",
+            other
+        ),
     }
 }
 
@@ -207,10 +214,10 @@ fn test_done_handler_keeps_running_when_pending_dag_exists() {
 fn test_done_handler_idle_guard_truth_table() {
     let cases: Vec<(bool, bool, bool)> = vec![
         // (compaction_in_progress, has_pending_dag, should_set_idle)
-        (true, true, false),   // Both active — never idle
-        (true, false, false),  // Compaction still active — never idle
-        (false, true, false),  // DAG pending — DON'T idle
-        (false, false, true),  // Both cleared — safe to idle
+        (true, true, false),  // Both active — never idle
+        (true, false, false), // Compaction still active — never idle
+        (false, true, false), // DAG pending — DON'T idle
+        (false, false, true), // Both cleared — safe to idle
     ];
 
     for (compaction_active, has_dag, expected_idle) in cases {
@@ -222,10 +229,8 @@ fn test_done_handler_idle_guard_truth_table() {
         });
 
         // Call the real shared guard function
-        let should_idle = codelet_napi::inject_summary_handler::should_idle_on_done(
-            &compaction,
-            &dag,
-        );
+        let should_idle =
+            codelet_napi::inject_summary_handler::should_idle_on_done(&compaction, &dag);
 
         assert_eq!(
             should_idle, expected_idle,
@@ -271,10 +276,8 @@ fn test_agent_loop_cleanup_clears_compaction_flag_on_error() {
 
     // @step And the session status must be set to Idle since no DAG is pending
     // Use the real shared guard function to verify post-cleanup state
-    let should_idle = codelet_napi::inject_summary_handler::should_idle_on_done(
-        &compaction_flag,
-        &pending_dag,
-    );
+    let should_idle =
+        codelet_napi::inject_summary_handler::should_idle_on_done(&compaction_flag, &pending_dag);
     assert!(
         should_idle,
         "Agent loop should set Idle when no DAG is pending after error"

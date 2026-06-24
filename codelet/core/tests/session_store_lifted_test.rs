@@ -213,7 +213,8 @@ fn compaction_round_trip_returns_summary_plus_post_boundary() {
     for (offset, msg) in compacted.iter().skip(1).enumerate() {
         let expected = format!("turn-{}", offset + 5);
         assert_eq!(
-            msg.content, expected,
+            msg.content,
+            expected,
             "post-boundary message {offset} should be turn-{}",
             offset + 5
         );

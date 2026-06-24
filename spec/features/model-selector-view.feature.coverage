@@ -185,7 +185,7 @@
       ]
     },
     {
-      "name": "Selecting a model with no active session is a no-op",
+      "name": "Selecting a model with no active session still emits the selection",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/src/views/model_selector/mod.rs",

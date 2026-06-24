@@ -38,8 +38,7 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units_value(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/work-units.json"))
-        .expect("read work-units.json");
+    let raw = fs::read_to_string(cwd.join("spec/work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse work-units.json")
 }
 
@@ -208,14 +207,10 @@ fn scenario_cli_rejects_unknown_work_unit_with_exit_1() {
     );
 
     // @step When I run `./codelet/target/release/fspec remove-architecture-note MISSING-001 0`
-    let (code, stdout, stderr) =
-        run_remove_arch(ws.path(), &["MISSING-001", "0"]);
+    let (code, stdout, stderr) = run_remove_arch(ws.path(), &["MISSING-001", "0"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(
-        code, 1,
-        "expected exit 1; stdout={stdout}, stderr={stderr}"
-    );
+    assert_eq!(code, 1, "expected exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
     assert!(
@@ -251,14 +246,16 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/work-units.json
     assert!(ws.path().join("spec/work-units.json").exists());
 
     // @step And the CLI bridge module codelet/fspec/src/remove_architecture_note.rs contains NO inline soft-delete, ID-lookup, or file-write logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/remove_architecture_note.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/remove_architecture_note.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/remove_architecture_note.rs must exist; got missing: {}",

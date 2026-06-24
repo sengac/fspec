@@ -22,9 +22,8 @@ use base64::Engine;
 pub fn build_test_jwt(account_id: &str) -> String {
     let header = base64::engine::general_purpose::URL_SAFE_NO_PAD
         .encode(r#"{"typ":"JWT","alg":"none"}"#.as_bytes());
-    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
-        format!(r#"{{"chatgpt_account_id":"{account_id}"}}"#).as_bytes(),
-    );
+    let payload = base64::engine::general_purpose::URL_SAFE_NO_PAD
+        .encode(format!(r#"{{"chatgpt_account_id":"{account_id}"}}"#).as_bytes());
     format!("{header}.{payload}.stub_signature")
 }
 

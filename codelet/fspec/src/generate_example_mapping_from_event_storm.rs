@@ -45,8 +45,7 @@ pub struct CliArgs {
 
 /// Entry point invoked from `main.rs` for the clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let args_json = json!({ "workUnitId": args.work_unit_id }).to_string();
 

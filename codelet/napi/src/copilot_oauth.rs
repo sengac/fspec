@@ -26,7 +26,9 @@ use codelet_providers::copilot::auth::{
     delete_copilot_auth, read_copilot_auth, write_copilot_auth, CopilotAuthJson,
     COPILOT_TOKEN_NEVER_EXPIRES,
 };
-use codelet_providers::copilot::oauth_device_code::{normalize_enterprise_domain, request_device_code};
+use codelet_providers::copilot::oauth_device_code::{
+    normalize_enterprise_domain, request_device_code,
+};
 use codelet_providers::copilot::oauth_polling::poll_device_token;
 use codelet_providers::copilot::oauth_types::{
     CopilotPollConfig, CopilotPollResult, COPILOT_DEFAULT_HOST,
@@ -153,13 +155,12 @@ pub async fn copilot_oauth_device_login_poll(
     host_url: String,
     enterprise_host: Option<String>,
 ) -> Result<NapiCopilotCredential> {
-    let device_code_response =
-        codelet_providers::copilot::oauth_types::CopilotDeviceCodeResponse {
-            device_code,
-            user_code: String::new(),       // not needed for polling
-            verification_uri: String::new(), // not needed for polling
-            interval: interval as u64,
-        };
+    let device_code_response = codelet_providers::copilot::oauth_types::CopilotDeviceCodeResponse {
+        device_code,
+        user_code: String::new(),        // not needed for polling
+        verification_uri: String::new(), // not needed for polling
+        interval: interval as u64,
+    };
 
     let poll_config = CopilotPollConfig {
         host_url: &host_url,

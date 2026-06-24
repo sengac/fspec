@@ -17,9 +17,7 @@ use codelet_tools::request_user_input::HitlQuestion;
 use super::error::CustomProviderError;
 
 fn fail(category: &str, source: impl std::fmt::Display) -> CustomProviderError {
-    CustomProviderError::RhaiRuntimeError(format!(
-        "default {category} mapping failed: {source}"
-    ))
+    CustomProviderError::RhaiRuntimeError(format!("default {category} mapping failed: {source}"))
 }
 
 fn parse<T: for<'de> Deserialize<'de>>(
@@ -119,5 +117,7 @@ pub(super) fn hitl(params: &Value) -> Result<InternalHitlParams, CustomProviderE
         questions: Vec<HitlQuestion>,
     }
     let s: Shape = parse("hitl", params)?;
-    Ok(InternalHitlParams::Request { questions: s.questions })
+    Ok(InternalHitlParams::Request {
+        questions: s.questions,
+    })
 }

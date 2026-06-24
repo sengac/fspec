@@ -41,6 +41,8 @@ fn openai_with_profiles(profiles: &[&str]) -> ProviderDisplayInfo {
         profiles: profiles.iter().map(ToString::to_string).collect(),
         oauth_login_methods: Vec::new(),
         oauth_status_label: None,
+        masked_key: None,
+        source: None,
     }
 }
 
@@ -58,6 +60,8 @@ fn anthropic_oauth() -> ProviderDisplayInfo {
         profiles: Vec::new(),
         oauth_login_methods: vec![(OAuthMethod::Browser, "Sign in with browser".to_string())],
         oauth_status_label: Some("Logout from OAuth [Anthropic]".to_string()),
+        masked_key: None,
+        source: None,
     }
 }
 
@@ -195,6 +199,11 @@ fn add_profile_row_yields_enter_create_hint() {
 fn oauth_login_row_yields_enter_start_login_hint() {
     // @step Given the ProviderSettingsView has an OAuthLogin nav-item selected
     let mut view = view_with(anthropic_oauth(), &["anthropic"]);
+    // PROV-113: the `anthropic_oauth()` fixture declares only a Browser login
+    // method, and browser rows are now gated out of the nav tree unless the
+    // transport supports the local OAuth server. Enable it so an OAuthLogin
+    // row exists to focus (the hint is identical for browser/headless rows).
+    view.set_browser_login_enabled(true);
     let login_idx =
         view.nav_items
             .iter()

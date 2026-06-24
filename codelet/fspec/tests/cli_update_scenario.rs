@@ -83,7 +83,9 @@ fn scenario_cli_successfully_renames_a_scenario_and_prints_success_line() {
     // @step And the file spec/features/user-auth.feature in the tempdir contains the line '  Scenario: Login with email and password'
     let after = read_feature(ws.path(), "spec/features/user-auth.feature");
     assert!(
-        after.lines().any(|l| l == "  Scenario: Login with email and password"),
+        after
+            .lines()
+            .any(|l| l == "  Scenario: Login with email and password"),
         "expected renamed header line; got:\n{after}"
     );
 }
@@ -99,16 +101,17 @@ fn scenario_cli_surfaces_a_missing_file_error_with_exit_1() {
     assert!(!ws.path().join("spec/features/missing.feature").exists());
 
     // @step When I run 'fspec update-scenario spec/features/missing.feature "A" "B"' in that tempdir
-    let (code, _stdout, stderr) = run_update_scenario(
-        ws.path(),
-        &["spec/features/missing.feature", "A", "B"],
-    );
+    let (code, _stdout, stderr) =
+        run_update_scenario(ws.path(), &["spec/features/missing.feature", "A", "B"]);
 
     // @step Then the process exits with code 1
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Feature file not found:'
     assert!(
@@ -137,7 +140,10 @@ fn scenario_cli_surfaces_a_not_found_scenario_error_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Scenario 'Nonexistent' not found in feature file'
     assert!(
@@ -167,7 +173,10 @@ fn scenario_cli_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "update-scenario --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "update-scenario --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/update-scenario.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

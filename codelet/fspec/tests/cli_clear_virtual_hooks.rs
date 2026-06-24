@@ -60,18 +60,27 @@ fn test_hook() -> serde_json::Value {
     })
 }
 
-fn work_units_with_virtual_hooks(
-    id: &str,
-    hooks: Option<&[serde_json::Value]>,
-) -> String {
+fn work_units_with_virtual_hooks(id: &str, hooks: Option<&[serde_json::Value]>) -> String {
     let mut wu = serde_json::Map::new();
     wu.insert("id".to_string(), serde_json::json!(id));
-    wu.insert("title".to_string(), serde_json::json!(format!("title for {id}")));
+    wu.insert(
+        "title".to_string(),
+        serde_json::json!(format!("title for {id}")),
+    );
     wu.insert("status".to_string(), serde_json::json!("backlog"));
-    wu.insert("createdAt".to_string(), serde_json::json!("2026-06-01T00:00:00.000Z"));
-    wu.insert("updatedAt".to_string(), serde_json::json!("2026-06-01T00:00:00.000Z"));
+    wu.insert(
+        "createdAt".to_string(),
+        serde_json::json!("2026-06-01T00:00:00.000Z"),
+    );
+    wu.insert(
+        "updatedAt".to_string(),
+        serde_json::json!("2026-06-01T00:00:00.000Z"),
+    );
     if let Some(h) = hooks {
-        wu.insert("virtualHooks".to_string(), serde_json::Value::Array(h.to_vec()));
+        wu.insert(
+            "virtualHooks".to_string(),
+            serde_json::Value::Array(h.to_vec()),
+        );
     }
     let mut wus = serde_json::Map::new();
     wus.insert(id.to_string(), serde_json::Value::Object(wu));
@@ -124,10 +133,7 @@ fn scenario_cli_prints_success_message_when_clearing_hooks() {
 fn scenario_cli_succeeds_with_cleared_count_zero_when_unit_has_no_hooks() {
     // @step Given a project root whose spec/work-units.json contains AUTH-001 with no virtualHooks field
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_virtual_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_virtual_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec clear-virtual-hooks AUTH-001` in that project root
     let (code, stdout, stderr) = run_clear_virtual_hooks(ws.path(), &["AUTH-001"]);
@@ -153,10 +159,7 @@ fn scenario_cli_succeeds_with_cleared_count_zero_when_unit_has_no_hooks() {
 fn scenario_cli_exits_1_when_work_unit_does_not_exist() {
     // @step Given a project root whose spec/work-units.json contains AUTH-001 with no virtualHooks
     let ws = tempfile::tempdir().expect("tempdir");
-    write_work_units(
-        ws.path(),
-        &work_units_with_virtual_hooks("AUTH-001", None),
-    );
+    write_work_units(ws.path(), &work_units_with_virtual_hooks("AUTH-001", None));
 
     // @step When I run `./codelet/target/release/fspec clear-virtual-hooks AUTH-999` in that project root
     let (code, stdout, stderr) = run_clear_virtual_hooks(ws.path(), &["AUTH-999"]);
@@ -211,8 +214,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     );
 
     // @step And the CLI bridge module codelet/fspec/src/clear_virtual_hooks.rs contains NO inline rendering, file IO, or work-unit-lookup logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/clear_virtual_hooks.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/clear_virtual_hooks.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/clear_virtual_hooks.rs must exist as the CLI bridge module; got missing: {}",
@@ -258,7 +260,10 @@ fn scenario_clear_virtual_hooks_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "clear-virtual-hooks --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "clear-virtual-hooks --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/clear-virtual-hooks.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_CVH);

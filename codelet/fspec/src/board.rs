@@ -49,8 +49,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `board` clap subcommand.
 /// Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let format = args.format.as_deref().unwrap_or("text").to_string();
     let limit = args.limit.unwrap_or(25);

@@ -272,14 +272,20 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the dispatcher writes spec/epics.json
     assert!(ws.path().join("spec/epics.json").exists());
 
     // @step And running `./codelet/target/release/fspec create-epic dash Dashboard` afterwards exits 0
     let (code, stdout, stderr) = run_create_epic(ws.path(), &["dash", "Dashboard"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/epics.json now contains both 'auth' and 'dash' epics
     let data = read_epics_value(ws.path());
@@ -287,8 +293,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert!(data["epics"].get("dash").is_some(), "dash must be present");
 
     // @step And the CLI bridge module codelet/fspec/src/create_epic.rs contains NO inline epic-id validation, duplicate-check, or file-write logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/create_epic.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/create_epic.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/create_epic.rs must exist as the CLI bridge module; got missing: {}",

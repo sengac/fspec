@@ -44,8 +44,15 @@ fn write_work_units(project_root: &Path, raw: &str) {
 
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"]
-    {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
         } else {
@@ -93,7 +100,10 @@ fn scenario_discover_event_storm_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "discover-event-storm --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "discover-event-storm --help must exit 0; stderr={stderr}"
+    );
 
     // @step Then stdout is byte-for-byte identical to the captured TS fixture at codelet/fspec/tests/fixtures/help/discover-event-storm.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_DES);
@@ -153,7 +163,10 @@ fn scenario_cli_empty_workspace_exits_1_missing_file() {
     // @step Then stderr contains the substring 'Error:'
     // TS uses `output.error('✗ ...')` (not an `Error:` prefix); the binary
     // emits a bare `✗`-prefixed line. Assert byte-parity with the TS CLI.
-    assert!(stderr.contains("✗"), "stderr must contain the ✗ prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("✗"),
+        "stderr must contain the ✗ prefix; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'spec/work-units.json not found. Run fspec init first.'
     assert!(

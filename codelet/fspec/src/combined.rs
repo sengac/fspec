@@ -38,18 +38,13 @@ pub async fn run(workspace: Option<PathBuf>) -> Result<()> {
     let shutdown: Pin<Box<dyn std::future::Future<Output = Result<ShutdownReason>> + Send>> =
         Box::pin(common::build_shutdown_future());
 
-    let (addr, _stats, join) =
-        bind_and_serve("127.0.0.1:0", Arc::clone(&service)).await?;
+    let (addr, _stats, join) = bind_and_serve("127.0.0.1:0", Arc::clone(&service)).await?;
 
     let djson = common::daemon_json_path()?;
     let started_at = SystemTime::now();
-    if let Err(e) = common::write_daemon_json(
-        &djson,
-        addr.port(),
-        process::id(),
-        &workspace,
-        started_at,
-    ) {
+    if let Err(e) =
+        common::write_daemon_json(&djson, addr.port(), process::id(), &workspace, started_at)
+    {
         tracing::warn!(error = %e, "failed to write daemon.json (continuing)");
     }
 

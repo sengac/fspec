@@ -146,12 +146,7 @@ pub struct RhaiStreamProcessor {
 impl RhaiStreamProcessor {
     /// Construct a new processor. Arguments are shared `Arc`s so the
     /// processor is cheap to clone into spawn_blocking closures.
-    pub fn new(
-        engine: Arc<Engine>,
-        ast: Arc<AST>,
-        provider: String,
-        config: Dynamic,
-    ) -> Self {
+    pub fn new(engine: Arc<Engine>, ast: Arc<AST>, provider: String, config: Dynamic) -> Self {
         Self {
             engine,
             ast,
@@ -205,10 +200,7 @@ impl RhaiStreamProcessor {
     /// Process a single SSE `data` payload. Runs the Rhai script on the
     /// tokio blocking pool and converts the result into zero or more
     /// [`StreamChunk`] items.
-    pub async fn process_event(
-        &mut self,
-        data: &str,
-    ) -> Result<Vec<StreamChunk>, ProviderError> {
+    pub async fn process_event(&mut self, data: &str) -> Result<Vec<StreamChunk>, ProviderError> {
         tracing::warn!(
             provider = %self.provider,
             terminated = self.terminated,
@@ -225,24 +217,18 @@ impl RhaiStreamProcessor {
         let config = self.config.clone();
         let data_owned = data.to_string();
 
-        let result = tokio::task::spawn_blocking(
-            move || -> Result<Dynamic, ProviderError> {
-                let mut scope = Scope::new();
-                engine
-                    .call_fn::<Dynamic>(
-                        &mut scope,
-                        &ast,
-                        "parse_stream_chunk",
-                        (config, data_owned),
-                    )
-                    .map_err(|e| {
-                        map_rhai_error_to_provider(&provider, "parse_stream_chunk", &e)
-                    })
-            },
-        )
+        let result = tokio::task::spawn_blocking(move || -> Result<Dynamic, ProviderError> {
+            let mut scope = Scope::new();
+            engine
+                .call_fn::<Dynamic>(&mut scope, &ast, "parse_stream_chunk", (config, data_owned))
+                .map_err(|e| map_rhai_error_to_provider(&provider, "parse_stream_chunk", &e))
+        })
         .await
         .map_err(|e| {
-            ProviderError::api(self.provider.clone(), format!("spawn_blocking join failed: {e}"))
+            ProviderError::api(
+                self.provider.clone(),
+                format!("spawn_blocking join failed: {e}"),
+            )
         })?;
 
         let dynamic = match result {
@@ -299,10 +285,7 @@ impl RhaiStreamProcessor {
         self.pending_stop = Some(reason);
     }
 
-    pub(super) fn tool_call_entry(
-        &mut self,
-        id: &str,
-    ) -> &mut ToolCallAccumulator {
+    pub(super) fn tool_call_entry(&mut self, id: &str) -> &mut ToolCallAccumulator {
         if !self.tool_calls.contains_key(id) {
             self.tool_call_order.push(id.to_string());
             self.tool_calls.insert(
@@ -320,13 +303,13 @@ impl RhaiStreamProcessor {
 
     pub(super) fn flush_single(&mut self, key: &str) -> Option<StreamChunk> {
         self.tool_call_order.retain(|k| k != key);
-        self.tool_calls.remove(key).map(|acc| {
-            StreamChunk::ToolCallComplete {
+        self.tool_calls
+            .remove(key)
+            .map(|acc| StreamChunk::ToolCallComplete {
                 id: acc.id,
                 name: acc.name,
                 input: parse_arguments_json(&acc.arguments_json),
-            }
-        })
+            })
     }
 }
 

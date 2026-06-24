@@ -27,8 +27,7 @@ struct StructuredOutcome {
 
 /// Entry point for the `show-feature` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut base: Map<String, Value> = Map::new();
     base.insert("feature".to_string(), Value::String(args.feature.clone()));
@@ -46,8 +45,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
     let json_args_str = json!(json_args).to_string();
     let json_payload = show_feature::run(&json_args_str, &project_root).await?;
 
-    let outcome: StructuredOutcome = serde_json::from_str(&json_payload)
-        .context("parse show-feature JSON payload")?;
+    let outcome: StructuredOutcome =
+        serde_json::from_str(&json_payload).context("parse show-feature JSON payload")?;
 
     if !outcome.success {
         let msg = outcome

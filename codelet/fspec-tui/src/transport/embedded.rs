@@ -21,10 +21,11 @@ use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
     CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
     IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
-    ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
-    RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId, SessionInfo, SessionModel,
-    SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult,
-    ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProviderCredentialInfo,
+    ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
+    SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
+    StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,
+    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::broadcast;
@@ -208,6 +209,14 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    /// PROV-118: set the in-process default model — one-line delegate.
+    async fn set_default_model(&self, model: String) -> Result<()> {
+        self.client
+            .set_default_model(context::current(), model)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     // RPC-347: custom-model write surface — one-line delegates.
     async fn add_custom_model(
         &self,
@@ -248,6 +257,26 @@ impl FspecBackend for EmbeddedFspecBackend {
     ) -> Result<()> {
         self.client
             .delete_custom_model(context::current(), provider_id, profile_name, model_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // PROV-109: profile write surface — one-line delegates.
+    async fn save_profile(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    ) -> Result<()> {
+        self.client
+            .save_profile(context::current(), provider_id, profile_name, definition)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_profile(&self, provider_id: String, profile_name: String) -> Result<()> {
+        self.client
+            .delete_profile(context::current(), provider_id, profile_name)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
@@ -633,6 +662,87 @@ impl FspecBackend for EmbeddedFspecBackend {
     async fn refresh_models_cache(&self, provider_id: String) -> Result<Vec<ModelEntry>> {
         self.client
             .refresh_models_cache(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn oauth_clear_tokens(&self, provider_id: String) -> Result<()> {
+        // PROV-112: napi-direct via the providers-backed RPC method.
+        self.client
+            .oauth_clear_tokens(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn oauth_get_tokens(&self, provider_id: String) -> Result<bool> {
+        self.client
+            .oauth_get_tokens(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    fn supports_browser_oauth(&self) -> bool {
+        // PROV-113: the providers-layer local HTTP server runs in-process on
+        // the embedded transport, so the browser login rows are available.
+        true
+    }
+
+    async fn oauth_browser_login(&self, provider_id: String) -> Result<()> {
+        self.client
+            .oauth_browser_login(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn oauth_headless_start(&self, provider_id: String) -> Result<OAuthHeadlessStart> {
+        self.client
+            .oauth_headless_start(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn oauth_headless_complete(
+        &self,
+        provider_id: String,
+        code_with_state: String,
+        pkce_verifier: String,
+    ) -> Result<()> {
+        self.client
+            .oauth_headless_complete(
+                context::current(),
+                provider_id,
+                code_with_state,
+                pkce_verifier,
+            )
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn oauth_device_start(&self, provider_id: String) -> Result<OAuthDeviceStart> {
+        self.client
+            .oauth_device_start(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn oauth_device_poll(
+        &self,
+        provider_id: String,
+        device_auth_id: String,
+        interval: u64,
+    ) -> Result<()> {
+        self.client
+            .oauth_device_poll(context::current(), provider_id, device_auth_id, interval)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn oauth_copilot_device_start(
+        &self,
+        enterprise_host: Option<String>,
+    ) -> Result<OAuthDeviceStart> {
+        self.client
+            .oauth_copilot_device_start(context::current(), enterprise_host)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }

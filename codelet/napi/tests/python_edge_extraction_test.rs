@@ -46,7 +46,12 @@ class BaseCommand:
         .expect("Python extraction should succeed");
 
     // @step Then an Imports edge should be emitted from the source file to `click/core.py`
-    let imports = find_edges(&entities, "Imports", Some("cli-app-py"), Some("click-core-py"));
+    let imports = find_edges(
+        &entities,
+        "Imports",
+        Some("cli-app-py"),
+        Some("click-core-py"),
+    );
     assert!(
         !imports.is_empty(),
         "Should have Imports edge to click/core.py. All Imports: {:?}",

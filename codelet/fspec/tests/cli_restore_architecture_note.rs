@@ -38,8 +38,7 @@ fn write_work_units(cwd: &Path, raw: &str) {
 }
 
 fn read_work_units_value(cwd: &Path) -> serde_json::Value {
-    let raw = fs::read_to_string(cwd.join("spec/work-units.json"))
-        .expect("read work-units.json");
+    let raw = fs::read_to_string(cwd.join("spec/work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("parse work-units.json")
 }
 
@@ -93,15 +92,22 @@ fn scenario_clap_exposes_restore_architecture_note_with_two_positional_args_in_h
 
     // @step And stdout describes the restore-architecture-note subcommand
     assert!(
-        stdout.contains("restore-architecture-note") || stdout.contains("RESTORE-ARCHITECTURE-NOTE"),
+        stdout.contains("restore-architecture-note")
+            || stdout.contains("RESTORE-ARCHITECTURE-NOTE"),
         "help must describe restore-architecture-note; got:\n{stdout}"
     );
 
     // @step And stdout mentions the `<workUnitId>` argument
-    assert!(stdout.contains("workUnitId"), "help must mention workUnitId; got:\n{stdout}");
+    assert!(
+        stdout.contains("workUnitId"),
+        "help must mention workUnitId; got:\n{stdout}"
+    );
 
     // @step And stdout mentions the `<index>` argument
-    assert!(stdout.contains("index"), "help must mention index; got:\n{stdout}");
+    assert!(
+        stdout.contains("index"),
+        "help must mention index; got:\n{stdout}"
+    );
 
     // @step And stdout does NOT advertise a `--workspace` global flag
     assert!(
@@ -127,7 +133,10 @@ fn scenario_cli_restores_architecture_note_and_prints_success_line() {
     let (code, stdout, stderr) = run_restore_arch(ws.path(), &["AUTH-001", "0"]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "must exit 0; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stdout contains the line '✓ Architecture note restored successfully'
     assert!(
@@ -153,7 +162,10 @@ fn scenario_cli_prints_idempotent_message_when_already_active() {
     let (code, stdout, stderr) = run_restore_arch(ws.path(), &["AUTH-001", "0"]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "must exit 0; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stdout contains the line '✓ Architecture note restored successfully'
     assert!(
@@ -185,7 +197,10 @@ fn scenario_cli_rejects_unknown_note_id_with_exit_1_and_error_prefix() {
     let (code, stdout, stderr) = run_restore_arch(ws.path(), &["AUTH-001", "5"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring 'Architecture note with ID 5 not found'
     assert!(
@@ -211,10 +226,16 @@ fn scenario_cli_rejects_unknown_work_unit_with_exit_1_and_error_prefix() {
     let (code, stdout, stderr) = run_restore_arch(ws.path(), &["AUTH-999", "0"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And stderr contains the substring 'Work unit'
-    assert!(stderr.contains("Work unit"), "stderr must mention Work unit; got:\n{stderr}");
+    assert!(
+        stderr.contains("Work unit"),
+        "stderr must mention Work unit; got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -255,7 +276,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 
     // @step And running `./codelet/target/release/fspec restore-architecture-note AUTH-001 1` afterwards exits 0
     let (code, stdout, stderr) = run_restore_arch(ws.path(), &["AUTH-001", "1"]);
-    assert_eq!(code, 0, "second CLI call must exit 0; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "second CLI call must exit 0; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows both architectureNotes with deleted=false
     let on_disk = read_work_units_value(ws.path());
@@ -264,7 +288,11 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         .expect("notes array");
     assert_eq!(arr.len(), 2);
     for n in arr {
-        assert_eq!(n["deleted"].as_bool(), Some(false), "all notes active; got {n}");
+        assert_eq!(
+            n["deleted"].as_bool(),
+            Some(false),
+            "all notes active; got {n}"
+        );
     }
 
     // @step And the CLI bridge module codelet/fspec/src/restore_architecture_note.rs contains NO inline state mutation or file-write logic — its only computation is JSON arg marshalling

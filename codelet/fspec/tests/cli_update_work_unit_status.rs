@@ -235,8 +235,10 @@ fn scenario_cli_honours_skip_temporal_validation() {
     assert_ne!(code, 0, "expected non-zero exit due to temporal violation");
 
     // @step When I run `fspec update-work-unit-status AUTH-001 testing --skip-temporal-validation`
-    let (code2, stdout2, stderr2) =
-        run_uwus(ws.path(), &["AUTH-001", "testing", "--skip-temporal-validation"]);
+    let (code2, stdout2, stderr2) = run_uwus(
+        ws.path(),
+        &["AUTH-001", "testing", "--skip-temporal-validation"],
+    );
 
     // @step Then the command exits with code 0
     assert_eq!(
@@ -271,8 +273,10 @@ fn scenario_cli_surfaces_blocking_hook_failure_on_stderr() {
     // (configured above via the virtualHooks array)
 
     // @step When I run `fspec update-work-unit-status AUTH-001 testing`
-    let (code, _stdout, stderr) =
-        run_uwus(ws.path(), &["AUTH-001", "testing", "--skip-temporal-validation"]);
+    let (code, _stdout, stderr) = run_uwus(
+        ws.path(),
+        &["AUTH-001", "testing", "--skip-temporal-validation"],
+    );
 
     // @step Then the command exits with a non-zero code
     assert_ne!(code, 0, "expected non-zero exit on blocking hook failure");

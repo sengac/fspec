@@ -44,12 +44,11 @@ struct Outcome {
 /// clap subcommand. Returns the process exit code so `main` can propagate it
 /// verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(_args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let payload = validate_foundation_schema::run("{}", &project_root).await?;
-    let outcome: Outcome = serde_json::from_str(&payload)
-        .context("parse validate-foundation-schema JSON payload")?;
+    let outcome: Outcome =
+        serde_json::from_str(&payload).context("parse validate-foundation-schema JSON payload")?;
 
     if outcome.success {
         if let Some(out) = outcome.output.as_deref() {

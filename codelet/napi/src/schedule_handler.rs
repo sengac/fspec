@@ -172,9 +172,7 @@ fn validate_add_request(request: &ScheduleRequest) -> Option<ScheduleResult> {
         "shell" => {
             let has_cmd = request.command.as_ref().is_some_and(|c| !c.is_empty());
             if !has_cmd {
-                return Some(ScheduleResult::error(
-                    "Shell jobs require a command field",
-                ));
+                return Some(ScheduleResult::error("Shell jobs require a command field"));
             }
         }
         other => {

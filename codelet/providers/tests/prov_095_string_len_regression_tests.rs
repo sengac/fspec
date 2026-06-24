@@ -167,11 +167,7 @@ fn sandboxed_engine_exposes_len_on_strings() {
     //       (this is the exact shape `invoke_map_error` passes in — the
     //        HTTP body is wrapped with `Dynamic::from(body.to_string())`
     //        in `RhaiCustomProvider::invoke_map_error`)
-    let result = run_call_len(
-        &engine,
-        script,
-        Dynamic::from("hello".to_string()),
-    );
+    let result = run_call_len(&engine, script, Dynamic::from("hello".to_string()));
 
     // @step Then the engine does NOT raise
     //       `script missing required function 'len (&str | ImmutableString | String)'`
@@ -179,7 +175,9 @@ fn sandboxed_engine_exposes_len_on_strings() {
     match result {
         Ok(len) => assert_eq!(len, 5, "String.len() should return 5 for \"hello\""),
         Err(msg) => {
-            if msg.contains("Function not found: len") || msg.contains("missing required function 'len") {
+            if msg.contains("Function not found: len")
+                || msg.contains("missing required function 'len")
+            {
                 panic!(
                     "PROV-095 STRING REGRESSION: the sandboxed engine no longer exposes \
                      `.len()` on strings — this is the exact failure shown in the \
@@ -330,9 +328,9 @@ async fn invoke_map_error_handles_non_empty_body_without_string_len_regression()
                  engine is no longer exposing `.len()` on strings."
             );
         }
-        other => panic!(
-            "unexpected ProviderError from invoke_map_error with a 401 body: {other:?}"
-        ),
+        other => {
+            panic!("unexpected ProviderError from invoke_map_error with a 401 body: {other:?}")
+        }
     }
 }
 
@@ -370,8 +368,8 @@ async fn invoke_map_error_handles_empty_body_without_string_len_regression() {
                 "expected `HTTP 500…` message from map_error, got {message:?}"
             );
         }
-        other => panic!(
-            "unexpected ProviderError from invoke_map_error with empty body: {other:?}"
-        ),
+        other => {
+            panic!("unexpected ProviderError from invoke_map_error with empty body: {other:?}")
+        }
     }
 }

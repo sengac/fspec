@@ -27,13 +27,8 @@ impl RhaiCustomProvider {
         tools: &[ToolDefinition],
         thinking_config: Option<serde_json::Value>,
     ) -> Result<serde_json::Value, ProviderError> {
-        self.invoke_request_builder(
-            "build_stream_request",
-            messages,
-            tools,
-            thinking_config,
-        )
-        .await
+        self.invoke_request_builder("build_stream_request", messages, tools, thinking_config)
+            .await
     }
 
     /// Start a streaming completion. Returns a pinned `Stream` whose
@@ -62,10 +57,8 @@ impl RhaiCustomProvider {
         &self,
         messages: &[Message],
         tools: &[ToolDefinition],
-    ) -> Result<
-        Pin<Box<dyn Stream<Item = Result<StreamChunk, ProviderError>> + Send>>,
-        ProviderError,
-    > {
+    ) -> Result<Pin<Box<dyn Stream<Item = Result<StreamChunk, ProviderError>> + Send>>, ProviderError>
+    {
         let url = self.invoke_build_url().await?;
         let headers = self.invoke_build_headers().await?;
         let body = self

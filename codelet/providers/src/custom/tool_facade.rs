@@ -68,7 +68,11 @@ impl RhaiToolFacadeAdapter {
         config: Arc<ProviderConfig>,
         loader: Arc<ScriptLoader>,
     ) -> Result<Self, CustomProviderError> {
-        Ok(Self { def, config, loader })
+        Ok(Self {
+            def,
+            config,
+            loader,
+        })
     }
 
     /// Name surfaced to the LLM provider — sourced from the

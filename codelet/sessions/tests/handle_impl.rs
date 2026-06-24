@@ -62,8 +62,7 @@ async fn scenario_session_manager_satisfies_trait_object() {
     let manager = SessionManager::new();
 
     // @step And I cast it via "Arc::new(manager) as Arc<dyn codelet_core::SessionManagerHandle>"
-    let handle: Arc<dyn SessionManagerHandle> =
-        Arc::new(manager) as Arc<dyn SessionManagerHandle>;
+    let handle: Arc<dyn SessionManagerHandle> = Arc::new(manager) as Arc<dyn SessionManagerHandle>;
 
     // @step Then the cast compiles without error
     // (Reaching this line proves the cast compiled.)
@@ -142,10 +141,7 @@ async fn scenario_unknown_session_id_returns_safe_defaults() {
     assert!(!handle.get_debug_enabled(&sid));
 
     // @step And "clear_history", "compact_session", "toggle_debug", "pause_resume", "pause_confirm", "pause_triple", "send_hitl_response", "send_fspec_result", "destroy_session", "restore_session_messages", "restore_session_token_state", "set_work_unit_context", "set_thinking_level", "set_thinking_level_default", "set_role", "set_model" all return "Err(...)" containing the substring "Session not found"
-    fn assert_session_not_found<T: std::fmt::Debug>(
-        method: &str,
-        res: Result<T, String>,
-    ) {
+    fn assert_session_not_found<T: std::fmt::Debug>(method: &str, res: Result<T, String>) {
         match res {
             Ok(value) => panic!("{method}: expected Err, got Ok({value:?})"),
             Err(msg) => assert!(
@@ -228,10 +224,7 @@ async fn scenario_unknown_session_id_returns_safe_defaults() {
         "set_thinking_level_default",
         handle.set_thinking_level_default(&sid, ThinkingLevel::Off),
     );
-    assert_session_not_found(
-        "set_role",
-        handle.set_role(&sid, Some("reviewer".into())),
-    );
+    assert_session_not_found("set_role", handle.set_role(&sid, Some("reviewer".into())));
     assert_session_not_found(
         "set_model",
         handle.set_model(&sid, "anthropic", "claude-opus-4-5"),
@@ -560,9 +553,7 @@ fn scenario_impl_block_exists_with_every_override() {
     // @step And the impl block contains a "fn create_isolated_session(" override
     // @step And the impl block contains a "fn destroy_session(" override
     // @step And the impl block contains a "fn set_thinking_level_default(" override
-    let impl_start = src
-        .find(impl_marker)
-        .expect("impl block start found above");
+    let impl_start = src.find(impl_marker).expect("impl block start found above");
     let after_impl = &src[impl_start..];
     for method in TRAIT_METHODS {
         let needle = format!("fn {method}(");
@@ -694,10 +685,7 @@ fn scenario_build_and_dependency_rule_invariants() {
     // at `codelet-sessions` to enforce the "ZERO codelet-napi" invariant
     // (the same approach `skeleton_invariants.rs` uses).
     let metadata = Command::new("cargo")
-        .args([
-            "metadata",
-            "--manifest-path",
-        ])
+        .args(["metadata", "--manifest-path"])
         .arg(ws.join("Cargo.toml"))
         .args(["--format-version", "1"])
         .current_dir(&ws)

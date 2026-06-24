@@ -1,4 +1,10 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::assertions_on_constants, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::assertions_on_constants,
+    clippy::needless_collect
+)]
 //! Feature: spec/features/supervisor-infrastructure-removal.feature
 //!
 //! This test file validates the acceptance criteria for removing old supervisor
@@ -47,7 +53,10 @@ mod supervisor_removal_verification {
 
             // @step Then the build should succeed with zero errors
             // If this test compiles and runs, the build succeeded
-            assert!(true, "Codebase compiles successfully after supervisor removal");
+            assert!(
+                true,
+                "Codebase compiles successfully after supervisor removal"
+            );
         }
     }
 
@@ -99,7 +108,10 @@ mod supervisor_removal_verification {
 
             // @step Then no matches should be found in production code
             // Verified by grep returning zero results for all supervisor types
-            assert!(true, "No supervisor infrastructure references remain in Rust source");
+            assert!(
+                true,
+                "No supervisor infrastructure references remain in Rust source"
+            );
         }
     }
 
@@ -166,7 +178,10 @@ mod supervisor_removal_verification {
                 .get(&supervisor_id)
                 .map(|subs| subs.contains(&subordinate_id))
                 .unwrap_or(false);
-            assert!(is_owner, "Supervisor should own the subordinate for close permission checks");
+            assert!(
+                is_owner,
+                "Supervisor should own the subordinate for close permission checks"
+            );
         }
     }
 
@@ -213,7 +228,10 @@ mod supervisor_removal_verification {
 
             // @step And auto_inject and breakpoint_config fields no longer exist
             // Verified by the fact we're using Option<String>, not SupervisorRole struct
-            assert!(true, "Role is a plain string without auto_inject or breakpoint_config");
+            assert!(
+                true,
+                "Role is a plain string without auto_inject or breakpoint_config"
+            );
         }
     }
 
@@ -241,7 +259,10 @@ mod supervisor_removal_verification {
 
             // @step And supervisor_inject function should not be exported
             // NAPI function removed
-            assert!(true, "NAPI type declarations updated after supervisor removal");
+            assert!(
+                true,
+                "NAPI type declarations updated after supervisor removal"
+            );
         }
     }
 }

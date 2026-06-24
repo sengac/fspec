@@ -112,7 +112,10 @@ fn scenario_generate_tags_md_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "generate-tags-md --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "generate-tags-md --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/generate-tags-md.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -192,7 +195,10 @@ fn scenario_cli_reports_missing_tags_json_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error: prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error: prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'tags.json not found: spec/tags.json'
     assert!(
@@ -226,11 +232,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec generate-tags-md` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &[]);
-    assert_eq!(code, 0, "CLI must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/generate_tags_md.rs contains NO inline markdown rendering, schema validation, or file-write logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/generate_tags_md.rs");

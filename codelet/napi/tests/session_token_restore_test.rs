@@ -38,7 +38,8 @@ fn test_token_tracker_field_restoration() {
         cache_creation_input_tokens: Some(1000),
         cumulative_billed_input: 10000,
         cumulative_billed_output: 8000,
-            reasoning_tokens: 0,    };
+        reasoning_tokens: 0,
+    };
 
     // @step Then the token state is restored to the session
     assert_eq!(tracker.input_tokens, 5000);
@@ -67,7 +68,8 @@ fn test_effective_tokens_after_restoration() {
         cache_creation_input_tokens: Some(1000),
         cumulative_billed_input: 0,
         cumulative_billed_output: 0,
-            reasoning_tokens: 0,    };
+        reasoning_tokens: 0,
+    };
 
     // @step When I calculate effective tokens
     let effective = tracker.effective_tokens();
@@ -95,7 +97,8 @@ fn test_token_restoration_with_zero_cache() {
         cache_creation_input_tokens: Some(0),
         cumulative_billed_input: 3000,
         cumulative_billed_output: 2000,
-            reasoning_tokens: 0,    };
+        reasoning_tokens: 0,
+    };
 
     // @step Then the cache fields are set to Some(0)
     assert_eq!(tracker.cache_read_input_tokens, Some(0));
@@ -122,7 +125,8 @@ fn test_token_tracker_value_preservation() {
         cache_creation_input_tokens: Some(2500),
         cumulative_billed_input: 30000,
         cumulative_billed_output: 25000,
-            reasoning_tokens: 0,    };
+        reasoning_tokens: 0,
+    };
 
     // @step When the session's token tracker is accessed
     let total = tracker.total_tokens();
@@ -159,7 +163,8 @@ fn test_large_token_value_conversion() {
         cache_creation_input_tokens: None,
         cumulative_billed_input: large_value,
         cumulative_billed_output: large_value,
-            reasoning_tokens: 0,    };
+        reasoning_tokens: 0,
+    };
 
     // @step Then the values are correctly converted to u64
     assert_eq!(tracker.input_tokens, (u32::MAX - 1000) as u64);

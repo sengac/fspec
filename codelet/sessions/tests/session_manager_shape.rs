@@ -39,23 +39,36 @@ fn read(path: &Path) -> String {
 /// Path to the moved SessionManager file
 /// (`codelet/sessions/src/session_manager.rs`).
 fn moved_sm_path() -> PathBuf {
-    workspace_root().join("sessions").join("src").join("session_manager.rs")
+    workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("session_manager.rs")
 }
 
 /// Path to the moved ChainOfCommand file
 /// (`codelet/sessions/src/chain_of_command.rs`).
 fn moved_coc_path() -> PathBuf {
-    workspace_root().join("sessions").join("src").join("chain_of_command.rs")
+    workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("chain_of_command.rs")
 }
 
 /// Path to the lifted navigation module.
 fn moved_nav_path() -> PathBuf {
-    workspace_root().join("sessions").join("src").join("navigation.rs")
+    workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("navigation.rs")
 }
 
 /// Path to the lifted credentials mod.rs.
 fn moved_creds_mod_path() -> PathBuf {
-    workspace_root().join("sessions").join("src").join("credentials").join("mod.rs")
+    workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("credentials")
+        .join("mod.rs")
 }
 
 /// Read and concatenate every napi sibling module that historically lived
@@ -112,6 +125,19 @@ fn strip_line_comments(src: &str) -> String {
     out
 }
 
+/// Whitespace-insensitive substring check: removes ALL whitespace from both
+/// haystack and needle before matching. This keeps structural assertions
+/// robust to rustfmt line-wrapping (a `.method()` call moved onto its own
+/// line, or a multi-parameter signature split across several lines) WITHOUT
+/// weakening the guarantee — the required tokens must still appear in the
+/// required order, just irrespective of intervening whitespace.
+fn contains_ws_insensitive(haystack: &str, needle: &str) -> bool {
+    fn strip_ws(s: &str) -> String {
+        s.chars().filter(|c| !c.is_whitespace()).collect()
+    }
+    strip_ws(haystack).contains(&strip_ws(needle))
+}
+
 // Compile-time proof that the moved type paths resolve from the new home.
 #[allow(unused_imports)]
 use codelet_sessions::chain_of_command::ChainOfCommand;
@@ -119,7 +145,7 @@ use codelet_sessions::chain_of_command::ChainOfCommand;
 use codelet_sessions::credentials::resolve_and_set_env_var;
 #[allow(unused_imports)]
 use codelet_sessions::navigation::{
-    NavigationTarget, build_navigation_list, get_next_target, get_prev_target,
+    build_navigation_list, get_next_target, get_prev_target, NavigationTarget,
 };
 #[allow(unused_imports)]
 use codelet_sessions::session_manager::{
@@ -133,7 +159,8 @@ use codelet_sessions::session_manager::{
 // =============================================================================
 
 #[test]
-fn scenario_codelet_sessions_builds_standalone_with_session_manager_chain_of_command_navigation_credentials_and_the_hooks_trait_at_their_new_home() {
+fn scenario_codelet_sessions_builds_standalone_with_session_manager_chain_of_command_navigation_credentials_and_the_hooks_trait_at_their_new_home(
+) {
     // @step Given the SessionManager and ChainOfCommand structs have been moved into codelet/sessions/src/
     let sm = read(&moved_sm_path());
     assert!(
@@ -156,7 +183,9 @@ fn scenario_codelet_sessions_builds_standalone_with_session_manager_chain_of_com
     // @step And the NAPI-free portion of crate::credentials has been lifted to codelet/sessions/src/credentials/
     let creds = read(&moved_creds_mod_path());
     assert!(
-        creds.contains("pub mod resolver") || creds.contains("pub use") || creds.contains("resolve_and_set_env_var"),
+        creds.contains("pub mod resolver")
+            || creds.contains("pub use")
+            || creds.contains("resolve_and_set_env_var"),
         "codelet/sessions/src/credentials/mod.rs must re-export the lifted submodules"
     );
 
@@ -201,7 +230,8 @@ fn scenario_codelet_sessions_builds_standalone_with_session_manager_chain_of_com
 // =============================================================================
 
 #[test]
-fn scenario_codelet_napi_still_builds_against_the_re_exported_session_manager_and_chain_of_command() {
+fn scenario_codelet_napi_still_builds_against_the_re_exported_session_manager_and_chain_of_command()
+{
     // @step Given codelet/napi/src/session_manager.rs now `pub use`s SessionManager and ChainOfCommand from codelet-sessions
     let napi = read_napi_shell();
     assert!(
@@ -297,7 +327,8 @@ fn scenario_the_moved_session_manager_rs_and_chain_of_command_rs_have_no_napi_re
 // =============================================================================
 
 #[test]
-fn scenario_the_moved_session_manager_rs_has_no_crate_references_to_napi_private_modules_or_free_functions() {
+fn scenario_the_moved_session_manager_rs_has_no_crate_references_to_napi_private_modules_or_free_functions(
+) {
     // @step Given the SessionManager code has been moved into codelet/sessions/src/session_manager.rs
     let sm = read(&moved_sm_path());
     assert!(sm.contains("pub struct SessionManager"));
@@ -420,17 +451,20 @@ fn scenario_the_moved_session_manager_rs_has_no_crate_references_to_napi_private
 
     // @step And every former spawn_footer_poller/stop_footer_poller call resolves to `self.hooks.spawn_footer_poller(...)` / `self.hooks.stop_footer_poller(...)`
     assert!(
-        code.contains("self.hooks.spawn_footer_poller") || code.contains("self.hooks().spawn_footer_poller"),
+        contains_ws_insensitive(&code, "self.hooks.spawn_footer_poller")
+            || contains_ws_insensitive(&code, "self.hooks().spawn_footer_poller"),
         "the moved file must route footer poller spawning via `self.hooks(.|()).spawn_footer_poller(...)`"
     );
     assert!(
-        code.contains("self.hooks.stop_footer_poller") || code.contains("self.hooks().stop_footer_poller"),
+        contains_ws_insensitive(&code, "self.hooks.stop_footer_poller")
+            || contains_ws_insensitive(&code, "self.hooks().stop_footer_poller"),
         "the moved file must route footer poller stop via `self.hooks(.|()).stop_footer_poller(...)`"
     );
 
     // @step And every former `tokio::spawn(async move { agent_loop(...).await })` call resolves to `self.hooks.spawn_agent_loop(...)`
     assert!(
-        code.contains("self.hooks.spawn_agent_loop") || code.contains("self.hooks().spawn_agent_loop"),
+        contains_ws_insensitive(&code, "self.hooks.spawn_agent_loop")
+            || contains_ws_insensitive(&code, "self.hooks().spawn_agent_loop"),
         "the moved file must route agent_loop spawning via `self.hooks(.|()).spawn_agent_loop(...)`"
     );
 }
@@ -441,21 +475,43 @@ fn scenario_the_moved_session_manager_rs_has_no_crate_references_to_napi_private
 // =============================================================================
 
 #[test]
-fn scenario_create_session_with_id_is_rewritten_to_a_non_napi_result_type_and_routes_side_effects_through_the_hooks() {
+fn scenario_create_session_with_id_is_rewritten_to_a_non_napi_result_type_and_routes_side_effects_through_the_hooks(
+) {
     // @step Given the SessionManager code has been moved into codelet/sessions/src/session_manager.rs
     let sm = read(&moved_sm_path());
 
     // @step When I inspect the `create_session_with_id` method signature and body in the moved file
-    let sig_marker = "pub async fn create_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<(), String>";
+    //
+    // fmt-robustness: rustfmt wraps this multi-parameter signature across
+    // several lines. Rather than string-matching a pre-fmt single-line layout,
+    // locate the declaration and assert each required component is present in
+    // the whitespace-normalized signature span (up to the body-opening brace).
+    let decl = "pub async fn create_session_with_id";
+    let body_start = sm
+        .find(decl)
+        .expect("create_session_with_id declaration must exist");
+    let sig_span_end = sm[body_start..]
+        .find('{')
+        .map(|i| body_start + i)
+        .expect("create_session_with_id signature must have a body brace");
+    let signature = &sm[body_start..sig_span_end];
 
     // @step Then the signature is `pub async fn create_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<(), String>`
-    assert!(
-        sm.contains(sig_marker),
-        "moved file must declare create_session_with_id with signature `{sig_marker}`"
-    );
+    for component in [
+        "&self",
+        "id: &str",
+        "model: &str",
+        "project: &str",
+        "name: &str",
+        "-> Result<(), String>",
+    ] {
+        assert!(
+            contains_ws_insensitive(signature, component),
+            "create_session_with_id signature must contain `{component}`. Got signature:\n{signature}"
+        );
+    }
 
     // Locate body to scope the rest of the assertions.
-    let body_start = sm.find(sig_marker).expect("create_session_with_id sig must exist");
     let after_sig = &sm[body_start..];
     let next_fn = after_sig[1..]
         .find("\n    pub async fn ")
@@ -492,8 +548,8 @@ fn scenario_create_session_with_id_is_rewritten_to_a_non_napi_result_type_and_ro
     // object from the ArcSwap guard — both forms satisfy rule 6's
     // intent (route through the hooks indirection).
     assert!(
-        body_code.contains("self.hooks.spawn_agent_loop")
-            || body_code.contains("self.hooks().spawn_agent_loop"),
+        contains_ws_insensitive(&body_code, "self.hooks.spawn_agent_loop")
+            || contains_ws_insensitive(&body_code, "self.hooks().spawn_agent_loop"),
         "create_session_with_id body must spawn agent loop via `self.hooks(.|()).spawn_agent_loop(...)`"
     );
 
@@ -522,7 +578,8 @@ fn scenario_create_session_with_id_is_rewritten_to_a_non_napi_result_type_and_ro
 // =============================================================================
 
 #[test]
-fn scenario_create_isolated_session_with_id_returns_the_wire_type_isolated_session_info_and_the_napi_wrapper_converts_to_isolated_session_result() {
+fn scenario_create_isolated_session_with_id_returns_the_wire_type_isolated_session_info_and_the_napi_wrapper_converts_to_isolated_session_result(
+) {
     // @step Given the SessionManager code has been moved into codelet/sessions/src/session_manager.rs
     let sm = read(&moved_sm_path());
 
@@ -531,13 +588,39 @@ fn scenario_create_isolated_session_with_id_returns_the_wire_type_isolated_sessi
 
     // @step When I inspect the `create_isolated_session_with_id` method signature in the moved file
     // Accept either fully-qualified or shortened (via `use codelet_rpc_types::IsolatedSessionInfo`) forms.
-    let qualified = "pub async fn create_isolated_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<codelet_rpc_types::IsolatedSessionInfo, String>";
-    let short = "pub async fn create_isolated_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<IsolatedSessionInfo, String>";
+    //
+    // fmt-robustness: rustfmt wraps this multi-parameter signature across
+    // several lines, so assert components in the whitespace-normalized span
+    // instead of matching a pre-fmt single-line layout.
+    let iso_decl = "pub async fn create_isolated_session_with_id";
+    let iso_start = sm
+        .find(iso_decl)
+        .expect("create_isolated_session_with_id declaration must exist");
+    let iso_sig_end = sm[iso_start..]
+        .find('{')
+        .map(|i| iso_start + i)
+        .expect("create_isolated_session_with_id signature must have a body brace");
+    let iso_sig = &sm[iso_start..iso_sig_end];
 
     // @step Then the signature is `pub async fn create_isolated_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<codelet_rpc_types::IsolatedSessionInfo, String>`
+    for component in [
+        "&self",
+        "id: &str",
+        "model: &str",
+        "project: &str",
+        "name: &str",
+    ] {
+        assert!(
+            contains_ws_insensitive(iso_sig, component),
+            "create_isolated_session_with_id signature must contain `{component}`. Got:\n{iso_sig}"
+        );
+    }
     assert!(
-        sm.contains(qualified) || sm.contains(short),
-        "moved create_isolated_session_with_id must return Result<IsolatedSessionInfo, String>"
+        contains_ws_insensitive(
+            iso_sig,
+            "-> Result<codelet_rpc_types::IsolatedSessionInfo, String>"
+        ) || contains_ws_insensitive(iso_sig, "-> Result<IsolatedSessionInfo, String>"),
+        "create_isolated_session_with_id must return Result<IsolatedSessionInfo, String>. Got:\n{iso_sig}"
     );
 
     let napi = read_napi_shell();
@@ -553,8 +636,9 @@ fn scenario_create_isolated_session_with_id_returns_the_wire_type_isolated_sessi
 
     // @step And NAPI provides `impl From<codelet_rpc_types::IsolatedSessionInfo> for IsolatedSessionResult`
     assert!(
-        napi.contains("impl From<codelet_rpc_types::IsolatedSessionInfo> for IsolatedSessionResult")
-            || napi.contains("impl From<IsolatedSessionInfo> for IsolatedSessionResult"),
+        napi.contains(
+            "impl From<codelet_rpc_types::IsolatedSessionInfo> for IsolatedSessionResult"
+        ) || napi.contains("impl From<IsolatedSessionInfo> for IsolatedSessionResult"),
         "NAPI must provide `impl From<IsolatedSessionInfo> for IsolatedSessionResult`"
     );
 
@@ -622,7 +706,10 @@ fn scenario_session_manager_gains_four_new_fields_beyond_the_original_five() {
     );
 
     // @step And a new field `logs_tx: broadcast::Sender<LogRecord>` exists and is initialized in `new()`
-    assert!(fields_block.contains("logs_tx:"), "SessionManager must have a `logs_tx` field");
+    assert!(
+        fields_block.contains("logs_tx:"),
+        "SessionManager must have a `logs_tx` field"
+    );
 
     // @step And a new field `status_changes_tx: broadcast::Sender<(SessionId, SessionStatus)>` exists and is initialized in `new()`
     assert!(
@@ -631,14 +718,21 @@ fn scenario_session_manager_gains_four_new_fields_beyond_the_original_five() {
     );
 
     // @step And a new field `hooks: ArcSwap<Arc<dyn SessionManagerHooks>>` exists and defaults to `ArcSwap::from_pointee(Arc::new(NoopSessionManagerHooks::default()))`
-    assert!(fields_block.contains("hooks:"), "SessionManager must have a `hooks` field");
+    assert!(
+        fields_block.contains("hooks:"),
+        "SessionManager must have a `hooks` field"
+    );
     assert!(
         fields_block.contains("ArcSwap"),
         "the hooks field type must use ArcSwap"
     );
 
     // @step And accessor methods `chunks_tx(&self)`, `logs_tx(&self)`, `status_changes_tx(&self)` exist returning a `&broadcast::Sender<...>` so subscribers can call `.subscribe()`
-    for accessor in ["pub fn chunks_tx(", "pub fn logs_tx(", "pub fn status_changes_tx("] {
+    for accessor in [
+        "pub fn chunks_tx(",
+        "pub fn logs_tx(",
+        "pub fn status_changes_tx(",
+    ] {
         assert!(
             sm.contains(accessor),
             "SessionManager must expose accessor `{accessor}...`"
@@ -652,7 +746,10 @@ fn scenario_session_manager_gains_four_new_fields_beyond_the_original_five() {
     let _ = sm_instance.status_changes_tx().subscribe();
 
     // @step And BackgroundSession::handle_output is NOT yet rewired to use these fields (that rewiring is explicitly deferred to RPC-041)
-    let bg_path = workspace_root().join("sessions").join("src").join("background_session.rs");
+    let bg_path = workspace_root()
+        .join("sessions")
+        .join("src")
+        .join("background_session.rs");
     let bg = read(&bg_path);
     // RPC-039 added `chunks_tx: Option<broadcast::Sender<...>>` but left it None.
     // The handle_output body must NOT yet wire SessionManager.chunks_tx() into the per-session field.
@@ -694,7 +791,10 @@ fn scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi() {
 
     // @step Then the resulting JSON contains zero packages with name `codelet-napi`
     let resolve = meta.get("resolve").expect("metadata.resolve exists");
-    let nodes = resolve.get("nodes").and_then(|n| n.as_array()).expect("nodes array");
+    let nodes = resolve
+        .get("nodes")
+        .and_then(|n| n.as_array())
+        .expect("nodes array");
     // Find the codelet-sessions package id from the packages list.
     let packages = meta
         .get("packages")
@@ -737,7 +837,12 @@ fn scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi() {
     // Re-run the existing invariant test programmatically: the assertion
     // above is the same logic. Presence of the existing test file is a
     // secondary check.
-    let inv = read(&workspace_root().join("sessions").join("tests").join("skeleton_invariants.rs"));
+    let inv = read(
+        &workspace_root()
+            .join("sessions")
+            .join("tests")
+            .join("skeleton_invariants.rs"),
+    );
     assert!(
         inv.contains("scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi"),
         "the original dependency-rule scenario must still be present"
@@ -750,7 +855,8 @@ fn scenario_codelet_sessions_has_no_transitive_dependency_on_codelet_napi() {
 // =============================================================================
 
 #[test]
-fn scenario_pre_existing_chain_of_command_unit_tests_in_codelet_napi_still_pass_via_the_re_export() {
+fn scenario_pre_existing_chain_of_command_unit_tests_in_codelet_napi_still_pass_via_the_re_export()
+{
     // @step Given the ChainOfCommand code has been moved into codelet/sessions/src/chain_of_command.rs
     let coc = read(&moved_coc_path());
     assert!(coc.contains("pub struct ChainOfCommand"));
@@ -820,7 +926,8 @@ fn scenario_pre_existing_chain_of_command_unit_tests_in_codelet_napi_still_pass_
 // =============================================================================
 
 #[test]
-fn scenario_codelet_sessions_tests_assert_session_manager_is_reachable_from_its_new_home_and_the_hooks_design_is_sound() {
+fn scenario_codelet_sessions_tests_assert_session_manager_is_reachable_from_its_new_home_and_the_hooks_design_is_sound(
+) {
     // @step Given the SessionManager code has been moved into codelet/sessions/src/session_manager.rs
     let sm = read(&moved_sm_path());
     assert!(sm.contains("pub struct SessionManager"));
@@ -989,8 +1096,15 @@ fn scenario_the_napi_side_installs_its_hooks_at_startup_so_existing_ts_behaviour
     let napi = read_napi_shell();
     // The impl may live in session_manager.rs or in a sibling session_hooks.rs;
     // accept either location.
-    let hooks_path = workspace_root().join("napi").join("src").join("session_hooks.rs");
-    let hooks_src = if hooks_path.exists() { read(&hooks_path) } else { String::new() };
+    let hooks_path = workspace_root()
+        .join("napi")
+        .join("src")
+        .join("session_hooks.rs");
+    let hooks_src = if hooks_path.exists() {
+        read(&hooks_path)
+    } else {
+        String::new()
+    };
     let combined = format!("{napi}\n{hooks_src}");
     assert!(
         combined.contains("pub struct NapiSessionManagerHooks"),
@@ -1276,10 +1390,18 @@ fn scenario_session_set_global_chunk_callback_subscribes_to_chunks_tx_and_fans_i
             "session_set_global_chunk_callback must still call `{fragment}`. Got body:\n{fn_body_code}"
         );
     }
-    let p1 = fn_body_code.find("init_block_notification_callbacks()").unwrap();
-    let p2 = fn_body_code.find("install_napi_session_manager_hooks()").unwrap();
-    let p3 = fn_body_code.find("init_bridge_metadata_providers()").unwrap();
-    let p4 = fn_body_code.find("init_bridge_session_and_terminal_creators()").unwrap();
+    let p1 = fn_body_code
+        .find("init_block_notification_callbacks()")
+        .unwrap();
+    let p2 = fn_body_code
+        .find("install_napi_session_manager_hooks()")
+        .unwrap();
+    let p3 = fn_body_code
+        .find("init_bridge_metadata_providers()")
+        .unwrap();
+    let p4 = fn_body_code
+        .find("init_bridge_session_and_terminal_creators()")
+        .unwrap();
     assert!(
         p1 < p2 && p2 < p3 && p3 < p4,
         "the four init helpers must be called in order"
@@ -1319,7 +1441,7 @@ fn scenario_napi_emit_helpers_route_through_session_manager_chunks_tx() {
         .take(2000)
         .collect();
     assert!(
-        emit_block_window.contains(".chunks_tx().send("),
+        contains_ws_insensitive(&emit_block_window, ".chunks_tx().send("),
         "RPC-041: emit_block_notification_to_tui must emit via SessionManager::instance().chunks_tx().send(...). Got window:\n{emit_block_window}"
     );
 
@@ -1333,13 +1455,9 @@ fn scenario_napi_emit_helpers_route_through_session_manager_chunks_tx() {
     let footer_entry = napi_code
         .find("fn spawn_footer_poller(")
         .expect("spawn_footer_poller must exist");
-    let footer_window: String = napi_code
-        .chars()
-        .skip(footer_entry)
-        .take(6000)
-        .collect();
+    let footer_window: String = napi_code.chars().skip(footer_entry).take(6000).collect();
     assert!(
-        footer_window.contains(".chunks_tx().send("),
+        contains_ws_insensitive(&footer_window, ".chunks_tx().send("),
         "RPC-041: spawn_footer_poller must emit via SessionManager::instance().chunks_tx().send(...)"
     );
     assert!(
@@ -1366,7 +1484,9 @@ fn scenario_fspec_handler_and_command_emitter_use_helper_gate() {
         napi_code.contains("is_global_chunk_callback_registered"),
         "RPC-041: codelet/napi/src/session_manager.rs must define and call is_global_chunk_callback_registered"
     );
-    let helper_call_count = napi_code.matches("is_global_chunk_callback_registered(").count();
+    let helper_call_count = napi_code
+        .matches("is_global_chunk_callback_registered(")
+        .count();
     assert!(
         helper_call_count >= 2,
         "RPC-041: is_global_chunk_callback_registered() must be called from at least two sites (definition + 2 call sites). Got {helper_call_count} occurrences"
@@ -1440,7 +1560,6 @@ fn scenario_multiple_subscribers_observe_every_chunk_in_arrival_order() {
     assert_eq!(r2b.0, sid);
 }
 
-
 // =============================================================================
 // RPC-041 Scenario: codelet-sessions and codelet-napi continue to build with
 // TS surface byte-stable.
@@ -1469,10 +1588,7 @@ fn scenario_codelet_sessions_and_codelet_napi_continue_to_build_with_ts_surface_
         let dts_path = workspace_root().join("napi").join("index.d.ts");
         if dts_path.exists() {
             let dts = read(&dts_path);
-            for symbol in [
-                "sessionSetGlobalChunkCallback",
-                "GlobalChunkCallbackArgs",
-            ] {
+            for symbol in ["sessionSetGlobalChunkCallback", "GlobalChunkCallbackArgs"] {
                 assert!(
                     dts.contains(symbol),
                     "RPC-041: index.d.ts must still export `{symbol}`"
@@ -1522,7 +1638,13 @@ fn scenario_codelet_sessions_and_codelet_napi_continue_to_build_with_ts_surface_
 
     // @step When I run `cargo build -p codelet-napi --release` to regenerate codelet/napi/index.d.ts
     let out3 = Command::new(env!("CARGO"))
-        .args(["build", "-p", "codelet-napi", "--release", "--manifest-path"])
+        .args([
+            "build",
+            "-p",
+            "codelet-napi",
+            "--release",
+            "--manifest-path",
+        ])
         .arg(workspace_root().join("Cargo.toml"))
         .output()
         .expect("cargo build --release must run");
@@ -1532,7 +1654,10 @@ fn scenario_codelet_sessions_and_codelet_napi_continue_to_build_with_ts_surface_
     let dts_path = workspace_root().join("napi").join("index.d.ts");
     let dts = read(&dts_path);
     for symbol in ["sessionSetGlobalChunkCallback", "GlobalChunkCallbackArgs"] {
-        assert!(dts.contains(symbol), "index.d.ts must still export `{symbol}`");
+        assert!(
+            dts.contains(symbol),
+            "index.d.ts must still export `{symbol}`"
+        );
     }
 
     // @step And the `sessionSetGlobalChunkCallback` signature and the `GlobalChunkCallbackArgs { session_id: string; chunk: StreamChunk }` field order are preserved byte-for-byte
@@ -1554,14 +1679,18 @@ fn scenario_codelet_sessions_and_codelet_napi_continue_to_build_with_ts_surface_
 #[test]
 fn scenario_all_codelet_sessions_shape_tests_continue_to_pass_with_inverted_assertions() {
     // @step Given the existing shape-test files `codelet/sessions/tests/background_session_shape.rs` and `codelet/sessions/tests/session_manager_shape.rs` carry RPC-039/RPC-040 invariants
-    let bg_shape = read(&workspace_root()
-        .join("sessions")
-        .join("tests")
-        .join("background_session_shape.rs"));
-    let sm_shape = read(&workspace_root()
-        .join("sessions")
-        .join("tests")
-        .join("session_manager_shape.rs"));
+    let bg_shape = read(
+        &workspace_root()
+            .join("sessions")
+            .join("tests")
+            .join("background_session_shape.rs"),
+    );
+    let sm_shape = read(
+        &workspace_root()
+            .join("sessions")
+            .join("tests")
+            .join("session_manager_shape.rs"),
+    );
 
     // @step When I run `cargo test -p codelet-sessions --tests`
     // (Runtime invocation gated behind RPC_041_FULL_TESTS=1 to avoid cargo-in-cargo recursion;
@@ -1572,10 +1701,7 @@ fn scenario_all_codelet_sessions_shape_tests_continue_to_pass_with_inverted_asse
         .join("sessions")
         .join("tests")
         .join("skeleton_invariants.rs");
-    assert!(
-        skeleton_path.exists(),
-        "skeleton_invariants.rs must exist"
-    );
+    assert!(skeleton_path.exists(), "skeleton_invariants.rs must exist");
 
     // @step And the previously-named scenario `scenario_handle_output_uses_the_new_chunks_tx_broadcast_and_no_longer_touches_global_chunk_callback` is updated to assert the mandatory chunks_tx send AND that the napi shell file no longer contains the literal token `GLOBAL_CHUNK_CALLBACK`
     assert!(

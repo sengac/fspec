@@ -48,7 +48,12 @@ fn define_tools_produces_custom_tool_definitions() {
     let tools = resolve_tools(&mut cfg, &loader).expect("resolve succeeds");
 
     // @step Then the resolved list contains a RhaiToolDef with name "read_file" and maps_to "file:read"
-    assert_eq!(tools.len(), 1, "expected exactly one tool, got {}", tools.len());
+    assert_eq!(
+        tools.len(),
+        1,
+        "expected exactly one tool, got {}",
+        tools.len()
+    );
     assert_eq!(tools[0].name, "read_file");
     assert_eq!(tools[0].maps_to, "file:read");
 }
@@ -127,26 +132,25 @@ fn default_tool_style_claude_generates_pascal_case_tool_names() {
 fn map_tool_params_renames_parameter_names() {
     // @step Given a Rhai script whose map_tool_params renames the incoming
     //       "filepath" to "file_path" for file:read
-    let (_tmp, mut cfg) = facade_config_with_script(
-        "my-llm",
-        DEFINE_TOOLS_AND_RENAMING_MAP,
-        ToolStyle::Claude,
-    );
+    let (_tmp, mut cfg) =
+        facade_config_with_script("my-llm", DEFINE_TOOLS_AND_RENAMING_MAP, ToolStyle::Claude);
     let loader = make_loader();
     let tools = resolve_tools(&mut cfg, &loader).expect("resolve succeeds");
     let def = tools
         .iter()
         .find(|t| t.maps_to == "file:read")
         .expect("file:read tool");
-    let adapter =
-        RhaiToolFacadeAdapter::new(Arc::new(def.clone()), Arc::new(cfg.clone()), Arc::clone(&loader))
-            .expect("build adapter");
+    let adapter = RhaiToolFacadeAdapter::new(
+        Arc::new(def.clone()),
+        Arc::new(cfg.clone()),
+        Arc::clone(&loader),
+    )
+    .expect("build adapter");
 
     // @step When the adapter maps tool params {"filepath": "a.txt"}
     let raw = serde_json::json!({ "filepath": "a.txt" });
     let mapped = apply_map_tool_params(&adapter, raw).expect("map_tool_params runs");
-    let internal =
-        default_to_internal_file(&def.maps_to, &mapped).expect("internal file params");
+    let internal = default_to_internal_file(&def.maps_to, &mapped).expect("internal file params");
 
     // @step Then the resulting InternalFileParams::Read has file_path equal to "a.txt"
     match internal {
@@ -171,15 +175,17 @@ fn map_tool_params_returning_unit_uses_default_mapping() {
         .iter()
         .find(|t| t.maps_to == "file:read")
         .expect("file:read tool");
-    let adapter =
-        RhaiToolFacadeAdapter::new(Arc::new(def.clone()), Arc::new(cfg.clone()), Arc::clone(&loader))
-            .expect("build adapter");
+    let adapter = RhaiToolFacadeAdapter::new(
+        Arc::new(def.clone()),
+        Arc::new(cfg.clone()),
+        Arc::clone(&loader),
+    )
+    .expect("build adapter");
 
     // @step When the adapter maps tool params {"file_path":"a.txt"} for file:read
     let raw = serde_json::json!({ "file_path": "a.txt" });
     let mapped = apply_map_tool_params(&adapter, raw).expect("map_tool_params runs");
-    let internal =
-        default_to_internal_file(&def.maps_to, &mapped).expect("internal file params");
+    let internal = default_to_internal_file(&def.maps_to, &mapped).expect("internal file params");
 
     // @step Then the resulting InternalFileParams::Read has file_path equal to "a.txt"
     //       via default field-by-field deserialization
@@ -206,10 +212,21 @@ fn partial_tool_list_hides_unlisted_categories() {
     let tools = resolve_tools(&mut cfg, &loader).expect("resolve succeeds");
 
     // @step Then the list contains exactly two RhaiToolDef entries and no others
-    assert_eq!(tools.len(), 2, "expected exactly two tools, got {}", tools.len());
+    assert_eq!(
+        tools.len(),
+        2,
+        "expected exactly two tools, got {}",
+        tools.len()
+    );
     let names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
-    assert!(names.contains(&"read_file"), "expected read_file in {names:?}");
-    assert!(names.contains(&"run_bash"), "expected run_bash in {names:?}");
+    assert!(
+        names.contains(&"read_file"),
+        "expected read_file in {names:?}"
+    );
+    assert!(
+        names.contains(&"run_bash"),
+        "expected run_bash in {names:?}"
+    );
 }
 
 // =========================================================================
@@ -283,14 +300,12 @@ fn adapter_exposes_rhai_provided_name_and_definition() {
         parameters: parameters.clone(),
         maps_to: "file:read".to_string(),
     };
-    let (_tmp, cfg) =
-        facade_config_with_script("my-llm", NO_TOOL_FNS_SCRIPT, ToolStyle::Claude);
+    let (_tmp, cfg) = facade_config_with_script("my-llm", NO_TOOL_FNS_SCRIPT, ToolStyle::Claude);
     let loader = make_loader();
 
     // @step When I build a RhaiToolFacadeAdapter for that tool
-    let adapter =
-        RhaiToolFacadeAdapter::new(Arc::new(def), Arc::new(cfg), Arc::clone(&loader))
-            .expect("build adapter");
+    let adapter = RhaiToolFacadeAdapter::new(Arc::new(def), Arc::new(cfg), Arc::clone(&loader))
+        .expect("build adapter");
 
     // @step Then adapter.name() returns "my_read" and adapter.parameters_schema() returns the JSON schema
     //       that matches the supplied parameters

@@ -24,7 +24,6 @@ async fn create_test_learnings_db() -> (GraphDatabase, tempfile::TempDir) {
     (db, dir)
 }
 
-
 /// Scenario: Inject relevant decisions into session context at session start
 #[tokio::test]
 async fn test_inject_relevant_decisions_into_session_context() {
@@ -88,17 +87,17 @@ async fn test_surface_failed_explorations_as_warnings() {
     db.load_jsonl(&jsonl).await.expect("load exploration");
 
     // @step When the context injection function is called with query "knowledge-graph"
-    let context = codelet_napi::graph::learnings_context::build_learnings_context_from_db(
-        &db,
-        "indexing",
-    )
-    .await;
+    let context =
+        codelet_napi::graph::learnings_context::build_learnings_context_from_db(&db, "indexing")
+            .await;
 
     // @step Then the returned context should contain a warnings section
     assert!(context.is_some(), "context should not be None");
     let context_str = context.unwrap();
     assert!(
-        context_str.contains("Warning") || context_str.contains("⚠") || context_str.contains("Failed"),
+        context_str.contains("Warning")
+            || context_str.contains("⚠")
+            || context_str.contains("Failed"),
         "context should have warnings section: {context_str}"
     );
 
@@ -126,7 +125,10 @@ async fn test_graceful_fallback_when_graph_not_initialized() {
         codelet_napi::graph::learnings_context::build_learnings_context("any-domain").await;
 
     // @step Then the function should return None
-    assert!(context.is_none(), "context should be None when graph not initialized");
+    assert!(
+        context.is_none(),
+        "context should be None when graph not initialized"
+    );
 
     // @step And no error should be raised
     // (If we got here without panic, no error was raised)
@@ -268,14 +270,14 @@ async fn test_subordinate_receives_learnings_from_supervisor() {
     let query = "authentication";
 
     // @step When a subordinate session is spawned for the "authentication" domain
-    let context = codelet_napi::graph::learnings_context::build_learnings_context_from_db(
-        &db,
-        query,
-    )
-    .await;
+    let context =
+        codelet_napi::graph::learnings_context::build_learnings_context_from_db(&db, query).await;
 
     // @step Then the subordinate context should include the learning "bcrypt-hashing"
-    assert!(context.is_some(), "subordinate should receive learnings context");
+    assert!(
+        context.is_some(),
+        "subordinate should receive learnings context"
+    );
     let context_str = context.unwrap();
     assert!(
         context_str.contains("bcrypt") || context_str.contains("password hashing"),

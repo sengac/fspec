@@ -103,8 +103,14 @@ fn scenario_clap_exposes_list_schedules_with_json_flag_only() {
     );
 
     // @step And stdout does NOT advertise the substrings '--status', '--prefix', '--epic', '--format', '--category', or '--workspace'
-    for forbidden in ["--status", "--prefix", "--epic", "--format", "--category", "--workspace"]
-    {
+    for forbidden in [
+        "--status",
+        "--prefix",
+        "--epic",
+        "--format",
+        "--category",
+        "--workspace",
+    ] {
         assert!(
             !stdout.contains(forbidden),
             "list-schedules --help must NOT advertise {forbidden}; got:\n{stdout}"
@@ -233,7 +239,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_schedules() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -269,7 +276,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
@@ -293,8 +303,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         "CLI --json output must be a bare JSON array; got: {cli_data}"
     );
     assert_eq!(
-        &cli_data,
-        &dispatcher_data["schedules"],
+        &cli_data, &dispatcher_data["schedules"],
         "CLI --json bare array must equal dispatcher envelope's `schedules` projection"
     );
 
@@ -393,7 +402,10 @@ fn scenario_list_schedules_help_matches_ts_formatcommandhelp_reference() {
     );
 
     // @step And stdout contains the section header 'NOTES' listing exactly 5 notes
-    assert!(stdout.contains("NOTES\n"), "help must contain NOTES section");
+    assert!(
+        stdout.contains("NOTES\n"),
+        "help must contain NOTES section"
+    );
     let note_count = stdout
         .lines()
         .skip_while(|l| *l != "NOTES")

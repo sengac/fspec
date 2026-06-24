@@ -96,14 +96,16 @@ fn scenario_cli_renames_a_tag_and_prints_success_summary() {
     write_feature(ws.path(), "spec/features/b.feature", &tagged("@wip", "B"));
 
     // @step When I run `fspec retag --from @wip --to @in-progress` in that tempdir
-    let (code, stdout, stderr) =
-        run_cmd(ws.path(), &["--from", "@wip", "--to", "@in-progress"]);
+    let (code, stdout, stderr) = run_cmd(ws.path(), &["--from", "@wip", "--to", "@in-progress"]);
 
     // @step Then the exit code is 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
     // @step And stdout contains the substring '✓'
-    assert!(stdout.contains('✓'), "stdout must contain check mark; got:\n{stdout}");
+    assert!(
+        stdout.contains('✓'),
+        "stdout must contain check mark; got:\n{stdout}"
+    );
 
     // @step And stdout contains the substring 'Modified files:'
     assert!(
@@ -173,7 +175,10 @@ fn scenario_cli_reports_not_found_tag_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error: prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error: prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Tag @missing not found in any feature files'
     assert!(
@@ -207,11 +212,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec retag --from @done --to @wip` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["--from", "@done", "--to", "@wip"]);
-    assert_eq!(code, 0, "CLI retag must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI retag must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/retag.rs contains NO inline glob, regex replace, Gherkin re-parse, or file-write logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/retag.rs");

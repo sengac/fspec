@@ -56,8 +56,13 @@ impl App {
                         let _ = action_tx.send(Action::WorkUnitsLoaded(units));
                     }
                     if let Ok(session) = backend.create_session(None).await {
-                        let _ = active_session_tx.send(Some(session.clone()));
-                        let _ = action_tx.send(Action::SessionCreated(session));
+                        // PROV-101 FIX 1: an empty id is a decline — surface it
+                        // explicitly and never seed it as the active session.
+                        crate::app::session_creation::route_bootstrap_create_session(
+                            session,
+                            &active_session_tx,
+                            &action_tx,
+                        );
                     }
                 });
             }
@@ -91,8 +96,13 @@ impl App {
                     let active_session_tx = self.active_session_tx.clone();
                     let handle = tokio::spawn(async move {
                         if let Ok(session) = backend.create_session(None).await {
-                            let _ = active_session_tx.send(Some(session.clone()));
-                            let _ = action_tx.send(Action::SessionCreated(session));
+                            // PROV-101 FIX 1: empty id == decline; surface it
+                            // explicitly, never seed an empty active session.
+                            crate::app::session_creation::route_bootstrap_create_session(
+                                session,
+                                &active_session_tx,
+                                &action_tx,
+                            );
                         }
                     });
                     self.pending_tasks.push(handle);
@@ -112,23 +122,12 @@ impl App {
                     .attach_session(work_unit_id, session.clone());
             }
             Action::SessionCreated(session) => {
-                self.agent_view_store
-                    .append_session(crate::store::SessionContext::new(session.clone()));
-                let _ = self.active_session_tx.send(Some(session.clone()));
-                if let Some(id) = self
-                    .agent_view_store
-                    .current_work_unit_id()
-                    .map(std::string::ToString::to_string)
-                {
-                    let _ = self
-                        .action_tx
-                        .send(Action::AttachSession(id.clone(), session.clone()));
-                    // RPC-050: late-binding attach for the lazy-session path.
-                    let _ = self.action_tx.send(Action::AttachWorkUnitToSession(id));
-                }
-                self.refresh_session_chrome(session.clone());
-                self.spawn_hydrate_pending_input(session.clone()); // RPC-052
-                self.spawn_load_supervisors(session.clone()); // RPC-061
+                self.handle_session_created(session.clone());
+            }
+            Action::SessionCreationDeclined => {
+                // PROV-101 FIX 1: create_session declined (no default model).
+                // Surface it explicitly instead of swallowing an empty id.
+                self.handle_session_creation_declined();
             }
             Action::FocusPrevColumn => self.board_store.focus_prev_column(),
             Action::FocusNextColumn => self.board_store.focus_next_column(),

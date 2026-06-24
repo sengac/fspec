@@ -44,7 +44,11 @@ class UserService {
     fun execute() {}
 }
 "#;
-    write_test_file(project_dir, "com/myapp/service/UserService.kt", target_source);
+    write_test_file(
+        project_dir,
+        "com/myapp/service/UserService.kt",
+        target_source,
+    );
 
     let known_files = build_known_files(project_dir);
 
@@ -53,7 +57,12 @@ class UserService {
         .expect("Kotlin extraction should succeed");
 
     // @step Then an Imports edge should be emitted from the source file to the target file
-    let imports = find_edges(&entities, "Imports", Some("Controller"), Some("UserService"));
+    let imports = find_edges(
+        &entities,
+        "Imports",
+        Some("Controller"),
+        Some("UserService"),
+    );
     assert!(
         !imports.is_empty(),
         "Should have Imports edge to UserService.kt. All Imports: {:?}",

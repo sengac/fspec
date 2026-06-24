@@ -20,34 +20,6 @@ Feature: RPC-027 — ModelSelectorDialog and ConfirmDialog migration
   # ============================================================
   # Section E — ModelSelectorDialog
   # ============================================================
-  Scenario: ModelSelectorDialog renders with the cyan accent and "Select Model" inner title
-    Given a ModelSelectorDialog seeded with a non-empty provider list
-    When I render it onto an 80x24 TestBackend buffer
-    Then the border cells use foreground color Color::Cyan
-    And the body's first non-padding row contains the text "Select Model"
-    And the title cells have foreground color Color::Cyan with BOLD modifier
-
-  Scenario: ModelSelectorDialog applies the inverse highlight only to selectable rows
-    Given a ModelSelectorDialog seeded with two providers each having two models
-    When I render it onto an 80x24 TestBackend buffer with selected_index pointing at a model row
-    Then the selected model row has background Color::Cyan and foreground Color::Black
-    And the provider header rows render with the default background and no highlight
-    And the selected row begins with the two-character marker "▸ "
-    And the other model rows begin with the two-character marker "  "
-
-  Scenario: ModelSelectorDialog renders capability badges with the DIM modifier
-    Given a ModelSelectorDialog row whose model has reasoning, vision, and a 200k context
-    When I render it onto an 80x24 TestBackend buffer
-    Then the badge segment "[R] [V] [200k]" appears after the model name
-    And every cell of the badge segment carries Modifier::DIM (for unselected rows)
-
-  Scenario: ModelSelectorDialog footer includes the "Custom models" notice and navigation hints
-    Given a ModelSelectorDialog seeded with a non-empty provider list
-    When I render it onto an 80x24 TestBackend buffer
-    Then the footer contains the line "↑↓ Navigate │ Enter Select │ Esc Close"
-    And the footer contains the line "Custom models: not yet supported"
-    And every footer cell carries Modifier::DIM
-
   # ============================================================
   # Section F — ConfirmDialog
   # ============================================================

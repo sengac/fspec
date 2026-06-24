@@ -289,10 +289,7 @@ async fn map_http_401_to_auth_error() {
     let server = MockServer::start().await;
     Mock::given(method("POST"))
         .and(path("/v1/chat/completions"))
-        .respond_with(
-            ResponseTemplate::new(401)
-                .set_body_string("{\"error\":\"unauthorized\"}"),
-        )
+        .respond_with(ResponseTemplate::new(401).set_body_string("{\"error\":\"unauthorized\"}"))
         .mount(&server)
         .await;
 
@@ -393,9 +390,7 @@ async fn surface_rhai_runtime_errors_as_provider_errors() {
     let server = MockServer::start().await;
     Mock::given(method("POST"))
         .and(path("/v1/chat/completions"))
-        .respond_with(
-            ResponseTemplate::new(200).set_body_string("{\"choices\":[]}"),
-        )
+        .respond_with(ResponseTemplate::new(200).set_body_string("{\"choices\":[]}"))
         .mount(&server)
         .await;
 

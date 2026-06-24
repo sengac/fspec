@@ -59,22 +59,22 @@
 // @step Then every file is under 300 lines
 
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod callback_server_tests;
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod cred_module_tests;
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod credential_store_tests;
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod device_flow_tests;
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod file_size_tests;
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod http_middleware_tests;
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod regression_tests;
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod rhai_engine_tests;
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod rhai_modules_tests;
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod scripted_provider_tests;
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod http_middleware_tests;
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod device_flow_tests;
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod callback_server_tests;
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod regression_tests;
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod file_size_tests;
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-mod cred_module_tests;

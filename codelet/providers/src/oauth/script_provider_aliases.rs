@@ -117,9 +117,6 @@ pub async fn auth_needs_refresh_or_legacy(
 }
 
 /// PROV-087: Call `auth_refresh` with fallback to `refresh_token`.
-pub async fn auth_refresh_or_legacy(
-    provider: &ScriptedOAuthProvider,
-    tokens: Map,
-) -> Result<Map> {
+pub async fn auth_refresh_or_legacy(provider: &ScriptedOAuthProvider, tokens: Map) -> Result<Map> {
     provider.auth_refresh(tokens).await
 }

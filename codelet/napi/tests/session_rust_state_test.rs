@@ -187,7 +187,11 @@ fn test_various_model_string_formats() {
         ("anthropic", "claude-opus-4", "anthropic/claude-opus-4"),
         ("openai", "gpt-4o", "openai/gpt-4o"),
         ("google", "gemini-2.5-pro", "google/gemini-2.5-pro"),
-        ("openrouter", "meta-llama/llama-3.1-405b", "openrouter/meta-llama/llama-3.1-405b"),
+        (
+            "openrouter",
+            "meta-llama/llama-3.1-405b",
+            "openrouter/meta-llama/llama-3.1-405b",
+        ),
     ];
 
     // @step When model strings are constructed
@@ -195,8 +199,11 @@ fn test_various_model_string_formats() {
         let model_string = format!("{}/{}", provider_id, model_id);
 
         // @step Then all formats are correct
-        assert_eq!(model_string, expected,
-            "Failed for provider={}, model={}", provider_id, model_id);
+        assert_eq!(
+            model_string, expected,
+            "Failed for provider={}, model={}",
+            provider_id, model_id
+        );
     }
 }
 
@@ -399,8 +406,8 @@ fn test_debug_state_getter_setter() {
 ///
 /// Scenario: Status changes to Running immediately when input is sent
 ///
-/// This tests the fix for a race condition where TypeScript called 
-/// sessionGetStatus() immediately after sessionSendInput() but the 
+/// This tests the fix for a race condition where TypeScript called
+/// sessionGetStatus() immediately after sessionSendInput() but the
 /// agent_loop hadn't yet processed the channel message to set Running.
 ///
 /// @step Given a simulated send_input implementation with status and channel
@@ -427,11 +434,11 @@ fn test_send_input_sets_status_before_channel_send() {
     // This mirrors the fix: set status BEFORE sending to channel
     {
         let status = Arc::clone(&status);
-        
+
         // CRITICAL: Set status to Running BEFORE sending to channel
         // This is the fix - ensures status is Running when TS calls getStatus()
         status.store(RUNNING, Ordering::Release);
-        
+
         // Then send to channel (the receiver hasn't processed yet)
         input_tx.send("test input".to_string()).unwrap();
     }
@@ -439,8 +446,11 @@ fn test_send_input_sets_status_before_channel_send() {
     // @step Then status is Running BEFORE the channel receive completes
     // This simulates TypeScript calling sessionGetStatus() immediately after sessionSendInput()
     // The receiver (agent_loop) hasn't processed the message yet
-    assert_eq!(status.load(Ordering::Acquire), RUNNING,
-        "Status must be Running immediately after send_input, before agent_loop processes");
+    assert_eq!(
+        status.load(Ordering::Acquire),
+        RUNNING,
+        "Status must be Running immediately after send_input, before agent_loop processes"
+    );
 
     // Verify the message is still waiting in the channel (not yet processed)
     let received = input_rx.try_recv().unwrap();
@@ -465,7 +475,7 @@ fn test_send_input_reverts_status_on_failure() {
     // @step Given a session with a closed channel (simulating send failure)
     let status = Arc::new(AtomicU8::new(IDLE));
     let (input_tx, input_rx) = mpsc::channel::<String>();
-    
+
     // Drop the receiver to cause send failure
     drop(input_rx);
 
@@ -473,10 +483,10 @@ fn test_send_input_reverts_status_on_failure() {
     {
         // Set status to Running before send (as the fix does)
         status.store(RUNNING, Ordering::Release);
-        
+
         // Try to send - this will fail because receiver is dropped
         let send_result = input_tx.send("test input".to_string());
-        
+
         if send_result.is_err() {
             // @step Then status is reverted to Idle on failure
             status.store(IDLE, Ordering::Release);
@@ -484,8 +494,11 @@ fn test_send_input_reverts_status_on_failure() {
     }
 
     // Verify status was reverted
-    assert_eq!(status.load(Ordering::Acquire), IDLE,
-        "Status must revert to Idle when channel send fails");
+    assert_eq!(
+        status.load(Ordering::Acquire),
+        IDLE,
+        "Status must revert to Idle when channel send fails"
+    );
 }
 
 /// Test status transitions follow correct sequence

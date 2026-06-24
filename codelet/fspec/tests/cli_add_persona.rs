@@ -107,7 +107,12 @@ fn scenario_cli_appends_persona_and_prints_success_block() {
     // @step When I run `fspec add-persona "QA Engineer" "Tests features" --goal "Catch regressions"` in that tempdir
     let (code, stdout, stderr) = run_add_persona(
         ws.path(),
-        &["QA Engineer", "Tests features", "--goal", "Catch regressions"],
+        &[
+            "QA Engineer",
+            "Tests features",
+            "--goal",
+            "Catch regressions",
+        ],
     );
 
     // @step Then the exit code is 0
@@ -120,7 +125,10 @@ fn scenario_cli_appends_persona_and_prints_success_block() {
     );
 
     // @step And stdout contains the substring '  Name: QA Engineer'
-    assert!(stdout.contains("  Name: QA Engineer"), "missing Name; got:\n{stdout}");
+    assert!(
+        stdout.contains("  Name: QA Engineer"),
+        "missing Name; got:\n{stdout}"
+    );
 
     // @step And stdout contains the substring '  Description: Tests features'
     assert!(
@@ -189,7 +197,10 @@ fn scenario_cli_no_goal_flag_prints_empty_goals_line() {
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}; stdout={stdout}");
 
     // @step And stdout contains the substring '  Goals: '
-    assert!(stdout.contains("  Goals: "), "missing Goals line; got:\n{stdout}");
+    assert!(
+        stdout.contains("  Goals: "),
+        "missing Goals line; got:\n{stdout}"
+    );
 
     // @step And spec/foundation.json on disk shows the last persona has goals=[]
     let f = read_json(ws.path(), "foundation.json");
@@ -215,7 +226,12 @@ fn scenario_cli_reports_placeholder_removal() {
     // @step When I run `fspec add-persona "Developer" "Builds features" --goal "Ship quality code"` in that tempdir
     let (code, stdout, stderr) = run_add_persona(
         ws.path(),
-        &["Developer", "Builds features", "--goal", "Ship quality code"],
+        &[
+            "Developer",
+            "Builds features",
+            "--goal",
+            "Ship quality code",
+        ],
     );
 
     // @step Then the exit code is 0
@@ -303,11 +319,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-persona "Cli User" "From cli"` afterwards exits 0
     let (code, stdout, stderr) = run_add_persona(ws.path(), &["Cli User", "From cli"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows personas has length 3
     let f = read_json(ws.path(), "foundation.json");

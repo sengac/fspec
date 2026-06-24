@@ -12,12 +12,12 @@
 
 use codelet_core::persistence::{
     append_message, append_message_with_metadata, blob_exists, cherry_pick,
-    cleanup_orphaned_messages, clear_compaction_state, create_session, create_session_with_provider,
-    delete_session, fork_session, get_blob, get_message, get_session_messages,
-    get_session_messages_full, history, list_sessions, load_session, merge_messages,
-    process_envelope_for_blob_storage, rehydrate_envelope_blobs, rename_session, reset_stores_for_tests,
-    resume_last_session, set_compaction_state, set_session_tokens, store_blob,
-    update_session_tokens, AssistantContent, CompactionState, ForkPoint, HistoryEntry,
+    cleanup_orphaned_messages, clear_compaction_state, create_session,
+    create_session_with_provider, delete_session, fork_session, get_blob, get_message,
+    get_session_messages, get_session_messages_full, history, list_sessions, load_session,
+    merge_messages, process_envelope_for_blob_storage, rehydrate_envelope_blobs, rename_session,
+    reset_stores_for_tests, resume_last_session, set_compaction_state, set_session_tokens,
+    store_blob, update_session_tokens, AssistantContent, CompactionState, ForkPoint, HistoryEntry,
     MergeRecord, MessageEnvelope, MessagePayload, SessionManifest, StoredMessage, TokenUsage,
     UserContent,
 };
@@ -643,8 +643,9 @@ pub fn persistence_store_message_envelope(
     let envelope_json_str = serde_json::to_string(&processed_envelope)
         .map_err(|e| Error::from_reason(format!("Failed to serialize envelope: {}", e)))?;
     let mut metadata_map: HashMap<String, serde_json::Value> =
-        serde_json::from_str(&envelope_json_str)
-            .map_err(|e| Error::from_reason(format!("Failed to deserialize envelope metadata: {}", e)))?;
+        serde_json::from_str(&envelope_json_str).map_err(|e| {
+            Error::from_reason(format!("Failed to deserialize envelope metadata: {}", e))
+        })?;
 
     // Add the actual token count (calculated from original content before blob processing)
     // This will be used by store_with_metadata to set the correct token_count
@@ -692,7 +693,8 @@ pub fn persistence_get_message_envelope(id: String) -> Result<Option<String>> {
             let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
 
             // Rehydrate blob references to restore original content
-            let rehydrated = rehydrate_envelope_blobs(&envelope_json).map_err(Error::from_reason)?;
+            let rehydrated =
+                rehydrate_envelope_blobs(&envelope_json).map_err(Error::from_reason)?;
             Ok(Some(rehydrated))
         }
         None => Ok(None),

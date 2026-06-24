@@ -63,7 +63,7 @@ impl CredentialStore {
     /// Load credentials from disk
     fn load_from_disk(&mut self) -> Result<(), String> {
         DISK_READ_COUNT.fetch_add(1, Ordering::SeqCst);
-        
+
         if !self.credentials_file.exists() {
             self.cache = CredentialsFile::default();
             return Ok(());
@@ -87,7 +87,8 @@ impl CredentialStore {
     pub fn get_api_key(&mut self, provider_id: &str) -> Result<Option<String>, String> {
         // Check for file changes before returning cached value
         self.reload_if_changed()?;
-        Ok(self.cache
+        Ok(self
+            .cache
             .providers
             .get(provider_id)
             .map(|c| c.api_key.clone()))

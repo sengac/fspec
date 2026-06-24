@@ -1,0 +1,59 @@
+{
+  "scenarios": [
+    {
+      "name": "Setting the default model unblocks session creation",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov118_no_session_default_model.rs",
+          "lines": "50-90",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/prov118_no_session_default_model.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 68
+  }
+}

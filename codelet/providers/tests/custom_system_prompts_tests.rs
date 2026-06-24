@@ -101,7 +101,10 @@ fn default_transform_preamble_prepends_fspec_guidance() {
     // @step Then the result equals FSPEC_WORKFLOW_GUIDANCE concatenated with
     //       two newlines and "user text"
     let expected = prepend_fspec_guidance("user text");
-    assert_eq!(result, expected, "default transform_preamble should match prepend_fspec_guidance");
+    assert_eq!(
+        result, expected,
+        "default transform_preamble should match prepend_fspec_guidance"
+    );
     assert!(
         result.starts_with(FSPEC_WORKFLOW_GUIDANCE),
         "result should start with FSPEC_WORKFLOW_GUIDANCE"
@@ -175,7 +178,10 @@ fn default_format_for_api_returns_plain_json_string() {
         text.starts_with(FSPEC_WORKFLOW_GUIDANCE),
         "text should start with FSPEC_WORKFLOW_GUIDANCE"
     );
-    assert!(text.ends_with("body"), "text should end with the preamble body");
+    assert!(
+        text.ends_with("body"),
+        "text should end with the preamble body"
+    );
 }
 
 // =========================================================================
@@ -267,7 +273,10 @@ fn format_system_prompt_string_produces_plain_json_string() {
     let value = facade.format_for_api("body");
 
     // @step Then the result is a JSON String equal to "abc"
-    assert!(value.is_string(), "result should be a JSON String, got {value:?}");
+    assert!(
+        value.is_string(),
+        "result should be a JSON String, got {value:?}"
+    );
     assert_eq!(value.as_str(), Some("abc"));
 }
 

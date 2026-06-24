@@ -129,11 +129,15 @@ async fn test_schedule_triggers_when_last_run_older_than_cron_time() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the scheduler evaluates the schedule
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then the schedule should trigger
     assert!(
-        results.iter().any(|r| r.name == "hourly-job" && r.triggered),
+        results
+            .iter()
+            .any(|r| r.name == "hourly-job" && r.triggered),
         "Schedule with last_run 1 hour ago should trigger"
     );
 }
@@ -164,7 +168,8 @@ async fn test_schedule_does_not_trigger_when_recently_run() {
             .and_hms_opt(now.format("%H").to_string().parse().unwrap(), 0, 30)
             .unwrap()
     };
-    let last_run_str = DateTime::<Utc>::from_naive_utc_and_offset(after_last_trigger, Utc).to_rfc3339();
+    let last_run_str =
+        DateTime::<Utc>::from_naive_utc_and_offset(after_last_trigger, Utc).to_rfc3339();
 
     // @step And the schedule's last_run_at is after the most recent cron trigger
     let schedules = json!({
@@ -177,12 +182,16 @@ async fn test_schedule_does_not_trigger_when_recently_run() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the scheduler evaluates the schedule
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then the schedule should not trigger
     // A schedule that ran after the most recent cron trigger should not re-trigger
     assert!(
-        results.iter().all(|r| r.name != "hourly-job" || !r.triggered),
+        results
+            .iter()
+            .all(|r| r.name != "hourly-job" || !r.triggered),
         "Schedule with last_run after most recent cron trigger should not trigger"
     );
 }
@@ -205,7 +214,9 @@ async fn test_schedule_with_no_last_run_triggers_immediately() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the scheduler evaluates the schedule
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then the schedule should trigger
     assert!(
@@ -236,11 +247,15 @@ async fn test_paused_schedule_is_skipped() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the scheduler evaluates the schedule
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then the schedule should not trigger
     assert!(
-        results.iter().all(|r| r.name != "paused-job" || !r.triggered),
+        results
+            .iter()
+            .all(|r| r.name != "paused-job" || !r.triggered),
         "Paused schedule should not trigger"
     );
 }
@@ -266,7 +281,9 @@ async fn test_schedule_respects_configured_timezone() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When evaluating if the schedule should trigger
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then the cron expression should be evaluated in America/New_York time
     // @step And not in UTC time
@@ -274,7 +291,8 @@ async fn test_schedule_respects_configured_timezone() {
     let tz_result = results.iter().find(|r| r.name == "tz-job");
     assert!(tz_result.is_some(), "Timezone job should be evaluated");
     assert_eq!(
-        tz_result.unwrap().evaluated_timezone, "America/New_York",
+        tz_result.unwrap().evaluated_timezone,
+        "America/New_York",
         "Should evaluate in the configured timezone"
     );
 }
@@ -355,7 +373,9 @@ async fn test_job_completion_updates_last_run_timestamp() {
     let state = codelet_napi::scheduler::SchedulerState::new();
     let hooks: codelet_napi::scheduler::Hooks =
         std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks);
-    codelet_napi::scheduler::evaluate_and_run(project_path, &state, hooks).await.unwrap();
+    codelet_napi::scheduler::evaluate_and_run(project_path, &state, hooks)
+        .await
+        .unwrap();
     let after = Utc::now();
 
     // @step Then last_run_at should be updated to the current time
@@ -364,7 +384,10 @@ async fn test_job_completion_updates_last_run_timestamp() {
         .as_str()
         .expect("last_run_at should be set");
     let last_run_dt: DateTime<Utc> = last_run.parse().expect("parse timestamp");
-    assert!(last_run_dt >= before && last_run_dt <= after, "Timestamp should be recent");
+    assert!(
+        last_run_dt >= before && last_run_dt <= after,
+        "Timestamp should be recent"
+    );
 
     // @step And last_run_status should be set to "success"
     assert_eq!(
@@ -390,7 +413,9 @@ async fn test_new_schedule_picked_up_without_restart() {
     let project_path = tmp.path().to_str().unwrap();
 
     // First evaluation — no schedules
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
     assert!(results.is_empty(), "No schedules initially");
 
     // @step And spec/schedules.json contains no schedules
@@ -411,7 +436,9 @@ async fn test_new_schedule_picked_up_without_restart() {
     .unwrap();
 
     // @step And the scheduler tick runs
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then the new schedule should be evaluated
     assert!(
@@ -437,13 +464,16 @@ async fn test_agent_job_type_delegates_to_agent_execution() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the schedule triggers
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then trigger_agent_job should be called with the schedule config
     let agent_result = results.iter().find(|r| r.name == "agent-job");
     assert!(agent_result.is_some(), "Agent job should be evaluated");
     assert_eq!(
-        agent_result.unwrap().job_type, "agent",
+        agent_result.unwrap().job_type,
+        "agent",
         "Should delegate to agent execution"
     );
 }
@@ -465,13 +495,16 @@ async fn test_shell_job_type_delegates_to_shell_execution() {
     let project_path = tmp.path().to_str().unwrap();
 
     // @step When the schedule triggers
-    let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
+    let results = codelet_napi::scheduler::evaluate_schedules(project_path)
+        .await
+        .unwrap();
 
     // @step Then trigger_shell_job should be called with the schedule config
     let shell_result = results.iter().find(|r| r.name == "shell-job");
     assert!(shell_result.is_some(), "Shell job should be evaluated");
     assert_eq!(
-        shell_result.unwrap().job_type, "shell",
+        shell_result.unwrap().job_type,
+        "shell",
         "Should delegate to shell execution"
     );
 }

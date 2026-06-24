@@ -107,8 +107,7 @@ fn dispatch_web_search_search_maps_to_internal_web_search_params_search() {
     let params = json!({ "query": "rust" });
 
     // @step When I call default_to_internal with maps_to "web_search:search"
-    let dispatched =
-        default_to_internal("web_search:search", &params).expect("dispatch succeeds");
+    let dispatched = default_to_internal("web_search:search", &params).expect("dispatch succeeds");
 
     // @step Then the result is an InternalWebSearchParams::Search whose query is "rust"
     match dispatched {

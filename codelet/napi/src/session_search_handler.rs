@@ -10,13 +10,13 @@
 //! Grep tool — per Rule [6].
 
 use chrono::{DateTime, Duration, Utc};
+use codelet_tools::session_search::reassembly::{format_sections_plain, reassemble_content};
+use codelet_tools::session_search::types::{SessionSearchAction, SessionSearchResult};
 use codelet_tools::session_search::{
     ContextTurn, SearchMatch, SearchMatchGroup, SessionMessage, SessionSearchHandler,
     SessionSummary, DEFAULT_RECENT_COUNT, DEFAULT_SEARCH_LIMIT, MESSAGE_TRUNCATION_LIMIT,
     USER_MESSAGE_PREVIEW_LEN,
 };
-use codelet_tools::session_search::reassembly::{format_sections_plain, reassemble_content};
-use codelet_tools::session_search::types::{SessionSearchAction, SessionSearchResult};
 use grep_matcher::Matcher;
 use grep_regex::RegexMatcherBuilder;
 use std::path::{Path, PathBuf};
@@ -42,9 +42,7 @@ pub fn create_handler(
     Arc::new(move |action: SessionSearchAction, session_id: Uuid| {
         let is_trimming = compaction_trimming.load(Ordering::Relaxed);
         match action {
-            SessionSearchAction::Recent { count } => {
-                handle_recent(&project_path, count)
-            }
+            SessionSearchAction::Recent { count } => handle_recent(&project_path, count),
             SessionSearchAction::Search {
                 query,
                 context_turns,
@@ -76,7 +74,15 @@ pub fn create_handler(
                 max_turns,
                 start_turn,
                 end_turn,
-            } => handle_show(session_id, show_id.as_deref(), user_only, max_turns, start_turn, end_turn, is_trimming),
+            } => handle_show(
+                session_id,
+                show_id.as_deref(),
+                user_only,
+                max_turns,
+                start_turn,
+                end_turn,
+                is_trimming,
+            ),
         }
     })
 }
@@ -123,7 +129,9 @@ fn handle_recent(project_path: &Path, count: Option<usize>) -> SessionSearchResu
         })
         .collect();
 
-    SessionSearchResult::Recent { sessions: summaries }
+    SessionSearchResult::Recent {
+        sessions: summaries,
+    }
 }
 
 // ============================================================================
@@ -431,10 +439,7 @@ fn get_user_message_previews(
         Err(_) => return (None, None),
     };
 
-    let user_messages: Vec<&StoredMessage> = messages
-        .iter()
-        .filter(|m| m.role == "user")
-        .collect();
+    let user_messages: Vec<&StoredMessage> = messages.iter().filter(|m| m.role == "user").collect();
 
     let first = user_messages.first().map(|m| {
         let content = resolve_message_content(m);
@@ -457,15 +462,11 @@ fn get_user_message_previews(
 ///
 /// Uses the ripgrep engine (grep-regex) consistent with all regex matching in
 /// this module — Rule [6].
-fn extract_work_unit_id(
-    session: &crate::persistence::SessionManifest,
-) -> Option<String> {
+fn extract_work_unit_id(session: &crate::persistence::SessionManifest) -> Option<String> {
     // Work unit IDs follow the pattern: PREFIX-NNN (e.g., AMGR-001, AUTH-003)
     // Ripgrep returns byte offsets — safe here since [A-Z]+-\d+ only matches ASCII,
     // so start/end are always valid char boundaries.
-    let matcher = RegexMatcherBuilder::new()
-        .build(r"[A-Z]+-\d+")
-        .ok()?;
+    let matcher = RegexMatcherBuilder::new().build(r"[A-Z]+-\d+").ok()?;
     let (start, end) = ripgrep_find(&matcher, &session.name)?;
     Some(session.name[start..end].to_string())
 }
@@ -546,7 +547,10 @@ fn format_annotation_summary(annotations_val: &serde_json::Value) -> Option<Stri
                 }
             } else if let Some(inner) = obj.get("FileModification") {
                 let path = inner.get("path").and_then(|p| p.as_str()).unwrap_or("?");
-                let op = inner.get("operation").and_then(|o| o.as_str()).unwrap_or("?");
+                let op = inner
+                    .get("operation")
+                    .and_then(|o| o.as_str())
+                    .unwrap_or("?");
                 Some(format!("FileModification({path} → {op})"))
             } else if let Some(inner) = obj.get("ErrorResolution") {
                 let tool = inner
@@ -762,7 +766,11 @@ impl ConditionalTrimmer {
 #[cfg(test)]
 pub fn apply_conditional_trimming(
     compaction_active: bool,
-    messages: &[(String, String, std::collections::HashMap<String, serde_json::Value>)],
+    messages: &[(
+        String,
+        String,
+        std::collections::HashMap<String, serde_json::Value>,
+    )],
 ) -> Vec<String> {
     let mut trimmer = ConditionalTrimmer::new(compaction_active);
     messages
@@ -774,10 +782,7 @@ pub fn apply_conditional_trimming(
 /// Find the first match in content using the ripgrep matcher.
 ///
 /// Returns (start, end) byte offsets or None.
-pub fn ripgrep_find(
-    matcher: &grep_regex::RegexMatcher,
-    content: &str,
-) -> Option<(usize, usize)> {
+pub fn ripgrep_find(matcher: &grep_regex::RegexMatcher, content: &str) -> Option<(usize, usize)> {
     matcher
         .find(content.as_bytes())
         .ok()
@@ -1043,15 +1048,16 @@ mod tests {
         // @step And the session contains a user tool result message with 500 lines of Read output
         let content = generate_lines(500);
         let tool_id = "toolu_read_001";
-        let assistant_meta = make_assistant_tool_use_metadata(
-            "Read",
-            tool_id,
-            json!({"file_path": "src/main.rs"}),
-        );
+        let assistant_meta =
+            make_assistant_tool_use_metadata("Read", tool_id, json!({"file_path": "src/main.rs"}));
         let user_meta = make_user_tool_result_metadata(tool_id, false);
 
         let messages = vec![
-            ("assistant".to_string(), "[tool_use: Read]".to_string(), assistant_meta),
+            (
+                "assistant".to_string(),
+                "[tool_use: Read]".to_string(),
+                assistant_meta,
+            ),
             ("user".to_string(), content.clone(), user_meta),
         ];
 
@@ -1060,8 +1066,14 @@ mod tests {
 
         // @step Then the result includes the full 500-line content with no trimming applied
         assert_eq!(results.len(), 2);
-        assert_eq!(results[1], content, "Content should be unchanged when flag is false");
-        assert!(results[1].lines().count() == 500, "All 500 lines should be present");
+        assert_eq!(
+            results[1], content,
+            "Content should be unchanged when flag is false"
+        );
+        assert!(
+            results[1].lines().count() == 500,
+            "All 500 lines should be present"
+        );
     }
 
     // Scenario: Flag is true — SessionSearch show returns trimmed Read tool results
@@ -1073,15 +1085,16 @@ mod tests {
         // @step And the session contains a user tool result message with 500 lines of Read output for "src/main.rs"
         let content = generate_lines(500);
         let tool_id = "toolu_read_002";
-        let assistant_meta = make_assistant_tool_use_metadata(
-            "Read",
-            tool_id,
-            json!({"file_path": "src/main.rs"}),
-        );
+        let assistant_meta =
+            make_assistant_tool_use_metadata("Read", tool_id, json!({"file_path": "src/main.rs"}));
         let user_meta = make_user_tool_result_metadata(tool_id, false);
 
         let messages = vec![
-            ("assistant".to_string(), "[tool_use: Read]".to_string(), assistant_meta),
+            (
+                "assistant".to_string(),
+                "[tool_use: Read]".to_string(),
+                assistant_meta,
+            ),
             ("user".to_string(), content.clone(), user_meta),
         ];
 
@@ -1091,10 +1104,26 @@ mod tests {
         // @step Then the result shows a compact reference like "[file: src/main.rs, 500 lines, {tok} tok — use Read to retrieve]"
         assert_eq!(results.len(), 2);
         let trimmed = &results[1];
-        assert!(trimmed.starts_with("[file: src/main.rs,"), "Should be a compact file reference, got: {}", trimmed);
-        assert!(trimmed.contains("500 lines"), "Should mention 500 lines, got: {}", trimmed);
-        assert!(trimmed.contains("tok —"), "Should contain token count, got: {}", trimmed);
-        assert!(trimmed.contains("use Read to retrieve"), "Should hint at Read tool, got: {}", trimmed);
+        assert!(
+            trimmed.starts_with("[file: src/main.rs,"),
+            "Should be a compact file reference, got: {}",
+            trimmed
+        );
+        assert!(
+            trimmed.contains("500 lines"),
+            "Should mention 500 lines, got: {}",
+            trimmed
+        );
+        assert!(
+            trimmed.contains("tok —"),
+            "Should contain token count, got: {}",
+            trimmed
+        );
+        assert!(
+            trimmed.contains("use Read to retrieve"),
+            "Should hint at Read tool, got: {}",
+            trimmed
+        );
         assert_ne!(*trimmed, content, "Content should be trimmed, not original");
     }
 
@@ -1108,16 +1137,17 @@ mod tests {
         let user_content = "please fix the login bug".to_string();
         let user_meta = make_plain_user_metadata();
 
-        let messages = vec![
-            ("user".to_string(), user_content.clone(), user_meta),
-        ];
+        let messages = vec![("user".to_string(), user_content.clone(), user_meta)];
 
         // @step When the agent calls SessionSearch with action "search" and query "login"
         let results = apply_conditional_trimming(compaction_active, &messages);
 
         // @step Then the matched content includes "please fix the login bug" unchanged
         assert_eq!(results.len(), 1);
-        assert_eq!(results[0], user_content, "Plain user messages should pass through unchanged");
+        assert_eq!(
+            results[0], user_content,
+            "Plain user messages should pass through unchanged"
+        );
     }
 
     // Scenario: Flag is true — SessionSearch show preserves assistant reasoning text
@@ -1130,16 +1160,17 @@ mod tests {
         let reasoning = "I need to analyze the error in the login handler. The stack trace suggests a null pointer in the auth middleware.".to_string();
         let assistant_meta = make_plain_assistant_metadata();
 
-        let messages = vec![
-            ("assistant".to_string(), reasoning.clone(), assistant_meta),
-        ];
+        let messages = vec![("assistant".to_string(), reasoning.clone(), assistant_meta)];
 
         // @step When the agent calls SessionSearch with action "show"
         let results = apply_conditional_trimming(compaction_active, &messages);
 
         // @step Then the assistant reasoning text is returned unchanged
         assert_eq!(results.len(), 1);
-        assert_eq!(results[0], reasoning, "Assistant reasoning should pass through unchanged");
+        assert_eq!(
+            results[0], reasoning,
+            "Assistant reasoning should pass through unchanged"
+        );
     }
 
     // Scenario: Trimmer processes messages in order for tool_use_id correlation
@@ -1168,7 +1199,11 @@ mod tests {
         let plain_meta = make_plain_user_metadata();
 
         let messages = vec![
-            ("assistant".to_string(), "[tool_use: Write src/auth.rs]".to_string(), assistant_meta),
+            (
+                "assistant".to_string(),
+                "[tool_use: Write src/auth.rs]".to_string(),
+                assistant_meta,
+            ),
             ("user".to_string(), write_result.clone(), tool_result_meta),
             ("user".to_string(), plain_content.clone(), plain_meta),
         ];
@@ -1191,7 +1226,10 @@ mod tests {
         );
 
         // @step And the plain user message passes through unchanged
-        assert_eq!(results[2], plain_content, "Plain user message should pass through unchanged");
+        assert_eq!(
+            results[2], plain_content,
+            "Plain user message should pass through unchanged"
+        );
     }
 
     // Scenario: Trimming is applied after blob resolution
@@ -1218,7 +1256,11 @@ mod tests {
         let user_meta = make_user_tool_result_metadata(tool_id, false);
 
         let messages = vec![
-            ("assistant".to_string(), "[tool_use: Read]".to_string(), assistant_meta),
+            (
+                "assistant".to_string(),
+                "[tool_use: Read]".to_string(),
+                assistant_meta,
+            ),
             ("user".to_string(), resolved_content.clone(), user_meta),
         ];
 
@@ -1228,13 +1270,19 @@ mod tests {
         // @step Then the blob is resolved before trimming is applied
         // @step And the trimmed output reflects the resolved content, not the raw blob reference
         let trimmed = &results[1];
-        assert!(!trimmed.starts_with("blob:sha256:"), "Should not contain raw blob reference");
+        assert!(
+            !trimmed.starts_with("blob:sha256:"),
+            "Should not contain raw blob reference"
+        );
         assert!(
             trimmed.contains("[file:") || trimmed.contains("lines"),
             "Trimmed output should reflect resolved file content, got: {}",
             trimmed
         );
-        assert_ne!(*trimmed, resolved_content, "Should be trimmed, not raw resolved content");
+        assert_ne!(
+            *trimmed, resolved_content,
+            "Should be trimmed, not raw resolved content"
+        );
     }
 
     // Scenario: BackgroundSession defaults compaction_in_progress to false
@@ -1253,11 +1301,12 @@ mod tests {
         // @step And all SessionSearch calls return untrimmed content
         let content = generate_lines(200);
         let user_meta = make_plain_user_metadata();
-        let messages = vec![
-            ("user".to_string(), content.clone(), user_meta),
-        ];
+        let messages = vec![("user".to_string(), content.clone(), user_meta)];
         let results = apply_conditional_trimming(compaction_active, &messages);
-        assert_eq!(results[0], content, "Default flag=false should return untrimmed content");
+        assert_eq!(
+            results[0], content,
+            "Default flag=false should return untrimmed content"
+        );
     }
 
     // Scenario: create_handler accepts compaction_in_progress parameter
@@ -1274,11 +1323,17 @@ mod tests {
         // The handler is an Arc<dyn Fn(...)> — its existence proves both params were captured.
         // We can't invoke it without persistence stores, but we can verify the flag
         // is shared: mutations via the original are visible to the handler's captured clone.
-        assert!(!compaction_flag.load(Ordering::Relaxed), "Flag should default to false");
+        assert!(
+            !compaction_flag.load(Ordering::Relaxed),
+            "Flag should default to false"
+        );
 
         // @step And the handler uses the flag to conditionally apply trimming
         compaction_flag.store(true, Ordering::Relaxed);
-        assert!(compaction_flag.load(Ordering::Relaxed), "Flag should be settable to true");
+        assert!(
+            compaction_flag.load(Ordering::Relaxed),
+            "Flag should be settable to true"
+        );
 
         // Verify handler was constructed (type-checks the 2-parameter signature)
         let _: &SessionSearchHandler = &handler;
@@ -1293,17 +1348,17 @@ mod tests {
         // @step When the agent loop registers the SessionSearch handler
         // Simulate the registration: clone the Arc and pass to create_handler,
         // just like session_manager.rs does with session.compaction_in_progress.clone().
-        let handler = create_handler(
-            PathBuf::from("/tmp/test-project"),
-            compaction_flag.clone(),
-        );
+        let handler = create_handler(PathBuf::from("/tmp/test-project"), compaction_flag.clone());
 
         // @step Then session.compaction_in_progress.clone() is passed to create_handler()
         // The handler now holds a clone of the same Arc<AtomicBool>.
         // Verify shared state: flipping the original is visible to the handler's clone.
         assert!(!compaction_flag.load(Ordering::Relaxed));
         compaction_flag.store(true, Ordering::Relaxed);
-        assert!(compaction_flag.load(Ordering::Relaxed), "Cloned flag should share state");
+        assert!(
+            compaction_flag.load(Ordering::Relaxed),
+            "Cloned flag should share state"
+        );
 
         // @step And the handler is set via set_session_search_handler()
         // In production: codelet_tools::set_session_search_handler(session.id, Some(handler));
@@ -1327,7 +1382,8 @@ mod tests {
     #[test]
     fn test_show_action_deserializes_with_turn_range() {
         use codelet_tools::session_search::types::{SessionSearchAction, SessionSearchArgs};
-        let json = r#"{"action_type": "show", "session_id": "current", "start_turn": 10, "end_turn": 20}"#;
+        let json =
+            r#"{"action_type": "show", "session_id": "current", "start_turn": 10, "end_turn": 20}"#;
         let args: SessionSearchArgs = serde_json::from_str(json).unwrap();
         match args.action {
             SessionSearchAction::Show {
@@ -1491,7 +1547,9 @@ mod tests {
     #[test]
     fn test_turn_range_then_user_only() {
         // Simulate alternating user/assistant messages (even=user, odd=assistant)
-        let roles: Vec<&str> = (0..50).map(|i| if i % 2 == 0 { "user" } else { "assistant" }).collect();
+        let roles: Vec<&str> = (0..50)
+            .map(|i| if i % 2 == 0 { "user" } else { "assistant" })
+            .collect();
 
         // First apply turn range
         let indices: Vec<usize> = (0..50).collect();
@@ -1499,7 +1557,8 @@ mod tests {
         assert_eq!(in_range.len(), 11);
 
         // Then apply user_only
-        let user_only: Vec<usize> = in_range.into_iter()
+        let user_only: Vec<usize> = in_range
+            .into_iter()
             .filter(|&i| roles[i] == "user")
             .collect();
         // Turns 10, 12, 14, 16, 18, 20 are user (even)
@@ -1592,15 +1651,23 @@ mod tests {
         let props = params.get("properties").unwrap();
 
         // Check start_turn exists
-        let start_turn = props.get("start_turn").expect("start_turn missing from schema");
+        let start_turn = props
+            .get("start_turn")
+            .expect("start_turn missing from schema");
         assert!(start_turn.get("type").is_some());
         let desc = start_turn.get("description").unwrap().as_str().unwrap();
-        assert!(desc.contains("turn"), "start_turn description should mention turn");
+        assert!(
+            desc.contains("turn"),
+            "start_turn description should mention turn"
+        );
 
         // Check end_turn exists
         let end_turn = props.get("end_turn").expect("end_turn missing from schema");
         assert!(end_turn.get("type").is_some());
         let desc = end_turn.get("description").unwrap().as_str().unwrap();
-        assert!(desc.contains("turn"), "end_turn description should mention turn");
+        assert!(
+            desc.contains("turn"),
+            "end_turn description should mention turn"
+        );
     }
 }

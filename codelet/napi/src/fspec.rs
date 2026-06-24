@@ -20,24 +20,24 @@
 use napi::bindgen_prelude::*;
 
 /// Call fspec command via JS-controlled invocation pattern
-/// 
+///
 /// CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
 /// Following rust-controlled.md pattern: JS explicitly passes the callback function
 /// to Rust, which calls it immediately and returns the result.
-/// 
+///
 /// ## TypeScript signature
-/// 
+///
 /// ```typescript
 /// function callFspecCommand(
-///   command: string, 
-///   argsJson: string, 
-///   projectRoot: string, 
+///   command: string,
+///   argsJson: string,
+///   projectRoot: string,
 ///   callback: (cmd: string, args: string, root: string) => string
 /// ): string
 /// ```
-/// 
+///
 /// ## Example
-/// 
+///
 /// ```typescript
 /// const result = callFspecCommand(
 ///   'list-work-units',
@@ -49,15 +49,15 @@ use napi::bindgen_prelude::*;
 ///   }
 /// );
 /// ```
-/// 
+///
 /// ## NAPI-RS Note
-/// 
+///
 /// For multiple callback arguments, we use `FnArgs<(...)>` wrapper and call with `.into()`
 /// to properly destructure the tuple into separate JavaScript function parameters.
 #[napi(js_name = "callFspecCommand")]
 pub fn call_fspec_command(
     command: String,
-    args_json: String, 
+    args_json: String,
     project_root: String,
     callback: Function<FnArgs<(String, String, String)>, String>,
 ) -> Result<String> {

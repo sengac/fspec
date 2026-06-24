@@ -64,10 +64,10 @@ async fn test_find_top_n_most_complex_functions() {
     // @step When I request ast_complexity with limit 10
     let result_str = ast_complexity::dispatch_ast_complexity(
         &db,
-        None,       // no specific function — top-N mode
-        Some(10),   // limit
-        None,       // no min_threshold
-        None,       // no path filter
+        None,     // no specific function — top-N mode
+        Some(10), // limit
+        None,     // no min_threshold
+        None,     // no path filter
     )
     .await;
     let result: Value = serde_json::from_str(&result_str).expect("valid JSON");
@@ -105,7 +105,7 @@ async fn test_find_top_n_with_limit() {
     let result_str = ast_complexity::dispatch_ast_complexity(
         &db,
         None,
-        Some(3),    // only top 3
+        Some(3), // only top 3
         None,
         None,
     )
@@ -131,7 +131,7 @@ async fn test_find_top_n_with_threshold() {
         &db,
         None,
         Some(20),
-        Some(5),    // only complexity >= 5
+        Some(5), // only complexity >= 5
         None,
     )
     .await;
@@ -250,27 +250,31 @@ export function simpleReturn(): string {
 "#;
 
     // @step When I run ast_index on the codebase
-    let entities = ast_ts_extractor::extract_typescript(
-        source,
-        "src/server.ts",
-        &HashSet::new(),
-    )
-    .expect("extraction");
+    let entities = ast_ts_extractor::extract_typescript(source, "src/server.ts", &HashSet::new())
+        .expect("extraction");
 
     // @step Then the Function nodes in the graph should have cyclomaticComplexity values
     let function_nodes: Vec<_> = entities
         .iter()
         .filter(|e| matches!(e, codelet_napi::graph::graph_entities::GraphEntity::Node { node_type, .. } if node_type == "Function"))
         .collect();
-    assert!(function_nodes.len() >= 2, "Should extract at least 2 functions");
+    assert!(
+        function_nodes.len() >= 2,
+        "Should extract at least 2 functions"
+    );
 
     // Find the complexity values
     let mut found_complex = false;
     let mut found_simple = false;
     for entity in &function_nodes {
         if let codelet_napi::graph::graph_entities::GraphEntity::Node { properties, .. } = entity {
-            let name = properties.get("name").and_then(|v| v.as_str()).unwrap_or("");
-            let complexity = properties.get("cyclomaticComplexity").and_then(|v| v.as_i64());
+            let name = properties
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
+            let complexity = properties
+                .get("cyclomaticComplexity")
+                .and_then(|v| v.as_i64());
             if name == "handleRequest" {
                 // @step And functions with decision points should have complexity greater than 1
                 assert!(complexity.is_some(), "handleRequest should have complexity");
@@ -350,7 +354,10 @@ def process(data):
 "#;
     // 1 base + if + for + if + and + elif + while = 7
     let result = complexity::calculate(source, "python");
-    assert_eq!(result, 7, "Python: 1 + if + for + (if + and) + elif + while");
+    assert_eq!(
+        result, 7,
+        "Python: 1 + if + for + (if + and) + elif + while"
+    );
 }
 
 #[test]
@@ -376,7 +383,10 @@ fn dispatch(action: Action) -> Result<()> {
 "#;
     // 1 base + if + for + 3 match arms (=>) + while + if + && = 9
     let result = complexity::calculate(source, "rust");
-    assert_eq!(result, 9, "Rust: 1 + if + for + 3 match arms + while + if + &&");
+    assert_eq!(
+        result, 9,
+        "Rust: 1 + if + for + 3 match arms + while + if + &&"
+    );
 }
 
 #[test]
@@ -462,7 +472,7 @@ async fn test_find_top_n_with_path_filter() {
         None,
         Some(20),
         None,
-        Some("src/handler"),   // path glob filter
+        Some("src/handler"), // path glob filter
     )
     .await;
     let result: Value = serde_json::from_str(&result_str).expect("valid JSON");

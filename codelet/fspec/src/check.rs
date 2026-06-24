@@ -39,16 +39,14 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `check` clap subcommand.
 /// Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let payload = json!({ "verbose": args.verbose });
     let args_json = payload.to_string();
 
     match check::run(&args_json, &project_root).await {
         Ok(envelope) => {
-            let v: Value =
-                serde_json::from_str(&envelope).context("parse check JSON payload")?;
+            let v: Value = serde_json::from_str(&envelope).context("parse check JSON payload")?;
             let success = v.get("success").and_then(Value::as_bool).unwrap_or(false);
             print!("{}", render(&v));
             Ok(if success { 0 } else { 1 })

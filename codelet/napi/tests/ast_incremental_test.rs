@@ -12,8 +12,8 @@ use codelet_napi::graph::ast_pipeline::helpers::{
     build_contains_edge, build_file_node, build_function_node,
 };
 use codelet_napi::graph::ast_pipeline::incremental::{
-    collect_file_mtimes, filter_reusable_entities, partition_changed_files,
-    read_stored_mtimes, stamp_file_mtimes,
+    collect_file_mtimes, filter_reusable_entities, partition_changed_files, read_stored_mtimes,
+    stamp_file_mtimes,
 };
 use codelet_napi::graph::database::GraphDatabase;
 use codelet_napi::graph::graph_entities::GraphEntity;
@@ -63,8 +63,20 @@ fn build_test_entities(
         // Add a function per file
         let fn_name = format!("func_{}", file_slug.replace('-', "_"));
         entities.push(build_function_node(
-            file_slug, &fn_name, false, true, 1, 1, 3, 1,
-            "data", "function body", "", "", "typescript", false,
+            file_slug,
+            &fn_name,
+            false,
+            true,
+            1,
+            1,
+            3,
+            1,
+            "data",
+            "function body",
+            "",
+            "",
+            "typescript",
+            false,
         ));
         entities.push(build_contains_edge(
             file_slug,
@@ -100,7 +112,13 @@ async fn test_full_index_stores_mtime_on_file_nodes() {
     let mut entities = Vec::new();
     for (rel_path, mtime_ms) in &mtimes {
         let file_slug = codelet_napi::graph::ast_pipeline::helpers::slugify_path(rel_path);
-        entities.push(build_file_node(rel_path, &file_slug, "typescript", 3, false));
+        entities.push(build_file_node(
+            rel_path,
+            &file_slug,
+            "typescript",
+            3,
+            false,
+        ));
         let _ = mtime_ms; // mtime stamped by stamp_file_mtimes below
     }
 
@@ -113,7 +131,9 @@ async fn test_full_index_stores_mtime_on_file_nodes() {
     let stored = read_stored_mtimes(&db).expect("read stored mtimes");
     assert_eq!(stored.len(), 3, "should have 3 files with mtimes stored");
     for (rel_path, original_mtime) in &mtimes {
-        let stored_mtime = stored.get(rel_path).unwrap_or_else(|| panic!("mtime for {rel_path}"));
+        let stored_mtime = stored
+            .get(rel_path)
+            .unwrap_or_else(|| panic!("mtime for {rel_path}"));
         assert_eq!(
             stored_mtime, original_mtime,
             "stored mtime should match filesystem mtime for {rel_path}"
@@ -217,7 +237,9 @@ async fn test_incremental_extracts_only_modified_files() {
     let reused_file_slugs: Vec<&str> = reused
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, slug, .. } if node_type == "File" => Some(slug.as_str()),
+            GraphEntity::Node {
+                node_type, slug, ..
+            } if node_type == "File" => Some(slug.as_str()),
             _ => None,
         })
         .collect();
@@ -231,14 +253,16 @@ async fn test_incremental_extracts_only_modified_files() {
     let reused_fn_slugs: Vec<&str> = reused
         .iter()
         .filter_map(|e| match e {
-            GraphEntity::Node { node_type, slug, .. } if node_type == "Function" => {
-                Some(slug.as_str())
-            }
+            GraphEntity::Node {
+                node_type, slug, ..
+            } if node_type == "Function" => Some(slug.as_str()),
             _ => None,
         })
         .collect();
     assert!(
-        !reused_fn_slugs.iter().any(|s| s.starts_with("src-main-ts::")),
+        !reused_fn_slugs
+            .iter()
+            .any(|s| s.starts_with("src-main-ts::")),
         "no main.ts functions in reused set"
     );
 }
@@ -268,11 +292,8 @@ async fn test_incremental_removes_deleted_file_entities() {
 
     // @step And one source file has been deleted from the filesystem
     std::fs::remove_file(temp_dir.path().join("src/helper.ts")).expect("delete helper.ts");
-    let remaining_files: Vec<std::path::PathBuf> = files
-        .iter()
-        .filter(|f| f.exists())
-        .cloned()
-        .collect();
+    let remaining_files: Vec<std::path::PathBuf> =
+        files.iter().filter(|f| f.exists()).cloned().collect();
 
     // @step When I run an incremental ast_index on the project
     let current_mtimes = collect_file_mtimes(&remaining_files, temp_dir.path());
@@ -304,7 +325,10 @@ async fn test_incremental_removes_deleted_file_entities() {
 
     // @step And the deleted file's Function and Type nodes are no longer in the graph
     let fn_count = stats["nodes"]["Function"].as_u64().unwrap_or(0);
-    assert_eq!(fn_count, 2, "only 2 functions remaining (helper.ts function removed)");
+    assert_eq!(
+        fn_count, 2,
+        "only 2 functions remaining (helper.ts function removed)"
+    );
 }
 
 // ============================================================================
@@ -355,8 +379,20 @@ async fn test_incremental_adds_new_file_entities() {
     let mut fresh = vec![
         build_file_node("src/extra.ts", &new_slug, "typescript", 3, false),
         build_function_node(
-            &new_slug, "extraFunc", false, true, 0, 1, 3, 1,
-            "", "function body", "", "", "typescript", false,
+            &new_slug,
+            "extraFunc",
+            false,
+            true,
+            0,
+            1,
+            3,
+            1,
+            "",
+            "function body",
+            "",
+            "",
+            "typescript",
+            false,
         ),
         build_contains_edge(&new_slug, &format!("{new_slug}::extraFunc"), "Contains"),
     ];
@@ -416,16 +452,12 @@ async fn test_incremental_falls_back_on_empty_graph() {
     let (changed, new_files, deleted) = partition_changed_files(&current_mtimes, &stored_mtimes);
 
     // When stored is empty, ALL files appear as "new"
-    let needs_full = stored_mtimes.is_empty()
-        || (changed.len() + new_files.len()) * 2 > current_mtimes.len();
+    let needs_full =
+        stored_mtimes.is_empty() || (changed.len() + new_files.len()) * 2 > current_mtimes.len();
 
     // @step Then a full extraction is performed for all source files
     assert!(needs_full, "should fall back to full extraction");
-    assert_eq!(
-        new_files.len(),
-        3,
-        "all 3 files are new (no prior index)"
-    );
+    assert_eq!(new_files.len(), 3, "all 3 files are new (no prior index)");
     assert!(changed.is_empty(), "no 'changed' files, all are 'new'");
     assert!(deleted.is_empty(), "no deleted files");
 
@@ -440,5 +472,9 @@ async fn test_incremental_falls_back_on_empty_graph() {
     db.load_entities_overwrite(&entities).await.expect("load");
 
     let stored_after = read_stored_mtimes(&db).expect("read stored after");
-    assert_eq!(stored_after.len(), 3, "all 3 files have mtimes after full index");
+    assert_eq!(
+        stored_after.len(),
+        3,
+        "all 3 files have mtimes after full index"
+    );
 }

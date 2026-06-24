@@ -117,7 +117,10 @@ fn scenario_cli_creates_a_checkpoint_and_exits_0() {
     );
 
     // @step And stdout contains "Captured"
-    assert!(stdout.contains("Captured"), "missing Captured; got:\n{stdout}");
+    assert!(
+        stdout.contains("Captured"),
+        "missing Captured; got:\n{stdout}"
+    );
 }
 
 #[test]

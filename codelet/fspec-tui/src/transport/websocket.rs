@@ -405,6 +405,18 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    /// PROV-118: set the in-process default model — same read().await +
+    /// Disconnected guard pattern as the rest of the WebSocket backend.
+    async fn set_default_model(&self, model: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_default_model(context::current(), model)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     // RPC-347: custom-model write surface — same read().await + Disconnected
     // guard pattern as the rest of the WebSocket backend.
     async fn add_custom_model(
@@ -455,6 +467,32 @@ impl FspecBackend for WebSocketFspecBackend {
         client
             .client()
             .delete_custom_model(context::current(), provider_id, profile_name, model_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // PROV-109: profile write surface — guarded delegates.
+    async fn save_profile(
+        &self,
+        provider_id: String,
+        profile_name: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .save_profile(context::current(), provider_id, profile_name, definition)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_profile(&self, provider_id: String, profile_name: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .delete_profile(context::current(), provider_id, profile_name)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }

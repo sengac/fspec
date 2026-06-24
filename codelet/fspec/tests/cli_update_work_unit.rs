@@ -86,7 +86,10 @@ fn scenario_clap_exposes_update_work_unit_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "update-work-unit --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "update-work-unit --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout describes the update-work-unit subcommand
     assert!(
@@ -139,15 +142,16 @@ fn scenario_cli_updates_title_and_prints_success() {
     write_work_units(ws.path(), &one_unit("AUTH-001", "Login"));
 
     // @step When I run `./codelet/target/release/fspec update-work-unit AUTH-001 --title New`
-    let (code, stdout, stderr) =
-        run_update_work_unit(ws.path(), &["AUTH-001", "--title", "New"]);
+    let (code, stdout, stderr) = run_update_work_unit(ws.path(), &["AUTH-001", "--title", "New"]);
 
     // @step Then the command exits 0
     assert_eq!(code, 0, "expected exit 0; stderr={stderr}");
 
     // @step And stdout contains the line '✓ Work unit AUTH-001 updated successfully'
     assert!(
-        stdout.lines().any(|l| l == "✓ Work unit AUTH-001 updated successfully"),
+        stdout
+            .lines()
+            .any(|l| l == "✓ Work unit AUTH-001 updated successfully"),
         "missing success line; got:\n{stdout}"
     );
 
@@ -167,8 +171,7 @@ fn scenario_cli_reports_missing_work_unit_on_stderr() {
     assert!(!ws.path().join("spec").exists());
 
     // @step When I run `./codelet/target/release/fspec update-work-unit MISSING-999 --title X`
-    let (code, stdout, stderr) =
-        run_update_work_unit(ws.path(), &["MISSING-999", "--title", "X"]);
+    let (code, stdout, stderr) = run_update_work_unit(ws.path(), &["MISSING-999", "--title", "X"]);
 
     // @step Then the command exits 1
     assert_eq!(code, 1, "expected exit 1; stdout={stdout}, stderr={stderr}");

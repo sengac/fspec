@@ -202,7 +202,10 @@ fn scenario_cli_text_output_renders_category_counts() {
     );
 
     // @step Then stdout contains the substring 'Tag Usage Statistics'
-    assert!(stdout.contains("Tag Usage Statistics"), "missing header; got:\n{stdout}");
+    assert!(
+        stdout.contains("Tag Usage Statistics"),
+        "missing header; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring 'Total feature files: 2'
     assert!(
@@ -277,7 +280,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_tag_stats() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -334,7 +338,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 

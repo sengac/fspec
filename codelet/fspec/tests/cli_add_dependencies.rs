@@ -41,8 +41,17 @@ fn seed_work_units(cwd: &Path, units: &[(&str, &str)]) {
     let spec = cwd.join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
     let mut wus = serde_json::Map::new();
-    let mut state_map: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    let mut state_map: std::collections::HashMap<&str, Vec<String>> =
+        std::collections::HashMap::new();
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         state_map.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -51,16 +60,35 @@ fn seed_work_units(cwd: &Path, units: &[(&str, &str)]) {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".into()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".into()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".into()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
         state_map.get_mut(*status).unwrap().push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
-            Value::Array(state_map[st].iter().map(|s| Value::String(s.clone())).collect()),
+            Value::Array(
+                state_map[st]
+                    .iter()
+                    .map(|s| Value::String(s.clone()))
+                    .collect(),
+            ),
         );
     }
     let v = json!({
@@ -98,7 +126,10 @@ fn help_output_matches_captured_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "fspec add-dependencies --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "fspec add-dependencies --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-dependencies.txt
     assert!(
@@ -124,7 +155,14 @@ fn multi_flag_invocation_marshalls_all_arrays() {
     // @step When I run `fspec add-dependencies AUTH-001 --blocks AUTH-002 AUTH-003 --depends-on FOO-001`
     let (code, stdout, stderr) = run_cmd(
         tmp.path(),
-        &["AUTH-001", "--blocks", "AUTH-002", "AUTH-003", "--depends-on", "FOO-001"],
+        &[
+            "AUTH-001",
+            "--blocks",
+            "AUTH-002",
+            "AUTH-003",
+            "--depends-on",
+            "FOO-001",
+        ],
     );
 
     // @step Then the exit code is 0
@@ -139,13 +177,21 @@ fn multi_flag_invocation_marshalls_all_arrays() {
     let disk = read_work_units(tmp.path());
 
     // @step And spec/work-units.json on disk shows AUTH-001.blocks=['AUTH-002', 'AUTH-003']
-    assert_eq!(disk["workUnits"]["AUTH-001"]["blocks"], json!(["AUTH-002", "AUTH-003"]));
+    assert_eq!(
+        disk["workUnits"]["AUTH-001"]["blocks"],
+        json!(["AUTH-002", "AUTH-003"])
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.dependsOn=['FOO-001']
-    assert_eq!(disk["workUnits"]["AUTH-001"]["dependsOn"], json!(["FOO-001"]));
+    assert_eq!(
+        disk["workUnits"]["AUTH-001"]["dependsOn"],
+        json!(["FOO-001"])
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-002.blockedBy contains 'AUTH-001' and AUTH-002.status='blocked'
-    let bb = disk["workUnits"]["AUTH-002"]["blockedBy"].as_array().unwrap();
+    let bb = disk["workUnits"]["AUTH-002"]["blockedBy"]
+        .as_array()
+        .unwrap();
     assert!(bb.iter().any(|v| v == "AUTH-001"));
     assert_eq!(disk["workUnits"]["AUTH-002"]["status"], "blocked");
 }
@@ -182,7 +228,10 @@ fn self_dependency_exits_1_with_canonical_message() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Cannot create self-dependency'
-    assert!(stderr.contains("Cannot create self-dependency"), "stderr: {stderr}");
+    assert!(
+        stderr.contains("Cannot create self-dependency"),
+        "stderr: {stderr}"
+    );
 }
 
 #[test]

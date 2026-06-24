@@ -58,7 +58,12 @@ fn scenario_cli_adds_a_step_and_prints_success_line() {
     // @step When I run 'fspec add-step spec/features/login.feature "Login" given "I am on the login page"' in that tempdir
     let (code, stdout, stderr) = run_add_step(
         ws.path(),
-        &["spec/features/login.feature", "Login", "given", "I am on the login page"],
+        &[
+            "spec/features/login.feature",
+            "Login",
+            "given",
+            "I am on the login page",
+        ],
     );
 
     // @step Then the process exits with code 0
@@ -98,7 +103,10 @@ fn scenario_cli_rejects_an_invalid_step_type_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Invalid step type: "maybe"'
     assert!(
@@ -127,7 +135,10 @@ fn scenario_cli_rejects_an_unknown_scenario_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Scenario not found: "Nope"'
     assert!(
@@ -193,7 +204,8 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         bridge_path.exists(),
         "codelet/fspec/src/add_step.rs must exist as the CLI bridge module"
     );
-    let bridge_src = strip_comments(&fs::read_to_string(&bridge_path).expect("bridge module readable"));
+    let bridge_src =
+        strip_comments(&fs::read_to_string(&bridge_path).expect("bridge module readable"));
     for forbidden in [
         "parse_feature_lenient",
         "Feature::parse",

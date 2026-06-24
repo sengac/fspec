@@ -89,8 +89,7 @@ fn legacy_positional_format_args(src: &str) -> Vec<String> {
     stripped
         .lines()
         .filter(|line| {
-            (line.contains("format!(") || line.contains("anyhow!("))
-                && line.contains("{}")
+            (line.contains("format!(") || line.contains("anyhow!(")) && line.contains("{}")
         })
         .map(|line| line.trim().to_string())
         .collect()

@@ -166,13 +166,15 @@ const COLUMN_ORDER: [&str; 7] = [
 pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>> {
     let path = workspace.join("spec").join("work-units.json");
     if !path.exists() {
-        debug!("work-units.json does not exist at {}; returning empty snapshot", path.display());
+        debug!(
+            "work-units.json does not exist at {}; returning empty snapshot",
+            path.display()
+        );
         return Ok(Vec::new());
     }
-    let content = fs::read_to_string(&path)
-        .with_context(|| format!("read {}", path.display()))?;
-    let file: WorkUnitsFile = serde_json::from_str(&content)
-        .with_context(|| format!("parse {}", path.display()))?;
+    let content = fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
+    let file: WorkUnitsFile =
+        serde_json::from_str(&content).with_context(|| format!("parse {}", path.display()))?;
 
     let mut records = file.work_units;
     let mut ordered: Vec<WorkUnitInfo> = Vec::with_capacity(records.len());
@@ -192,8 +194,7 @@ pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>> {
     // didn't appear in any `states` array, or workspaces with no
     // `states` field at all) is appended sorted by id so the
     // cross-transport parity tests still get deterministic output.
-    let mut leftover: Vec<WorkUnitInfo> =
-        records.into_values().map(WorkUnitInfo::from).collect();
+    let mut leftover: Vec<WorkUnitInfo> = records.into_values().map(WorkUnitInfo::from).collect();
     leftover.sort_by(|a, b| a.id.cmp(&b.id));
     ordered.extend(leftover);
     Ok(ordered)
@@ -247,7 +248,10 @@ impl WorkUnitsWatcher {
         let cb_path = work_units_path;
         let mut debouncer = new_debouncer(
             Duration::from_millis(100),
-            move |res: std::result::Result<Vec<notify_debouncer_mini::DebouncedEvent>, notify::Error>| {
+            move |res: std::result::Result<
+                Vec<notify_debouncer_mini::DebouncedEvent>,
+                notify::Error,
+            >| {
                 let events = match res {
                     Ok(events) => events,
                     Err(e) => {
@@ -259,8 +263,10 @@ impl WorkUnitsWatcher {
                 // proper-lockfile creates `.lock` dirs in spec/ that
                 // would otherwise feedback-loop.
                 let relevant = events.iter().any(|e| {
-                    matches!(e.kind, DebouncedEventKind::Any | DebouncedEventKind::AnyContinuous)
-                        && e.path.file_name().is_some_and(|n| n == "work-units.json")
+                    matches!(
+                        e.kind,
+                        DebouncedEventKind::Any | DebouncedEventKind::AnyContinuous
+                    ) && e.path.file_name().is_some_and(|n| n == "work-units.json")
                 });
                 if !relevant {
                     return;
@@ -381,7 +387,13 @@ mod tests {
         // Column order: backlog first (in its file order), then done.
         assert_eq!(
             ids,
-            vec!["BOARD-002", "BOARD-003", "BOARD-001", "DONE-002", "DONE-001"]
+            vec![
+                "BOARD-002",
+                "BOARD-003",
+                "BOARD-001",
+                "DONE-002",
+                "DONE-001"
+            ]
         );
     }
 

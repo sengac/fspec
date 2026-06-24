@@ -41,8 +41,7 @@ pub struct CliArgs {}
 /// subcommand. Returns the process exit code so `main` can propagate it.
 pub async fn run(args: CliArgs) -> Result<u8> {
     let _ = args;
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let args_json = json!({}).to_string();
 
@@ -54,8 +53,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         }
     };
 
-    let value: Value =
-        serde_json::from_str(&json_text).context("parse core response as JSON")?;
+    let value: Value = serde_json::from_str(&json_text).context("parse core response as JSON")?;
 
     let valid = value.get("valid").and_then(Value::as_bool).unwrap_or(false);
     if valid {

@@ -14,9 +14,7 @@ use std::sync::{Mutex, MutexGuard, OnceLock};
 
 use rhai::Dynamic;
 
-use crate::oauth::building_blocks::{
-    fspec_home, register_all_modules_for_provider,
-};
+use crate::oauth::building_blocks::{fspec_home, register_all_modules_for_provider};
 use crate::oauth::engine::{build_default_engine, build_provider_engine};
 
 /// RAII guard serialising all tests that mutate `FSPEC_HOME`.
@@ -65,14 +63,16 @@ fn cred_write_persists_map_with_secure_permissions() {
 
     // @step When a script calls cred::write("acme", #{access_token: "abc", refresh_token: "def"})
     let _ = engine
-        .eval::<Dynamic>(
-            r#"cred::write("acme", #{access_token: "abc", refresh_token: "def"})"#,
-        )
+        .eval::<Dynamic>(r#"cred::write("acme", #{access_token: "abc", refresh_token: "def"})"#)
         .expect("cred::write should succeed");
 
     // @step Then the file acme.json is created under FSPEC_HOME with 0600 permissions on Unix
     let path: PathBuf = fspec_home().join("acme.json");
-    assert!(path.exists(), "acme.json should exist at {}", path.display());
+    assert!(
+        path.exists(),
+        "acme.json should exist at {}",
+        path.display()
+    );
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -235,7 +235,10 @@ fn cred_path_returns_absolute_path_without_side_effects() {
     );
 
     // @step And no file is created on disk
-    assert!(!PathBuf::from(&path).exists(), "cred::path must not create files");
+    assert!(
+        !PathBuf::from(&path).exists(),
+        "cred::path must not create files"
+    );
 }
 
 // =====================================================================
@@ -258,7 +261,10 @@ fn cred_delete_is_idempotent_when_missing() {
     let result = engine.eval::<Dynamic>(r#"cred::delete("acme")"#);
 
     // @step Then the call succeeds without error
-    assert!(result.is_ok(), "cred::delete should be idempotent: {result:?}");
+    assert!(
+        result.is_ok(),
+        "cred::delete should be idempotent: {result:?}"
+    );
 }
 
 // =====================================================================

@@ -6,54 +6,47 @@
 //! UX onto the Rust ratatui frontend. Mirrors the canonical
 //! RPC-026 `ResumeSessionView` pattern: `Clear.render` first, then a
 //! 4-constraint vertical Layout for title / separator / body / footer.
-//! Destructive `d` opens a `ConfirmDialog` overlay BEFORE any backend
-//! round-trip fires (`Action::ConfirmDeleteProviderCredentials`).
+//! Destructive `d` opens a `ConfirmDialog`; PROV-100 wires OpenAI profiles.
 
-use codelet_rpc_types::ProviderCredentialInfo;
+use codelet_rpc_types::{ProfileDefinition, ProviderCredentialInfo};
 use crossterm::event::{KeyEvent, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::components::scroll_viewport::ensure_visible;
 use crate::components::Action;
-use crate::views::agent::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
+use crate::views::agent::confirm_dialog::ConfirmDialog;
 use crate::views::agent::slash_commands::SlashCommandAction;
 
+mod body_render;
 mod detail;
 pub mod footer_hints;
 pub mod icons;
 mod list;
+mod list_actions;
 mod list_nav_render;
+mod mode;
 pub mod nav_item;
 mod nav_tree_ops;
+mod oauth_confirm;
+mod oauth_copilot;
+mod oauth_login;
+mod oauth_login_render;
+pub mod profile_form;
+mod profile_form_render;
+pub mod profiles_config;
 pub mod projection;
 pub mod row_render;
 mod status_text;
 mod test_result;
 
+pub use mode::{DetailSub, ProviderSettingsMode};
 pub use nav_item::{NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo};
 pub use status_text::DetailStatus;
 pub use test_result::{ProviderTestResult, ProviderTestStatus};
 
 pub const DELETE_PROVIDER_CREDS_DIALOG_ID: &str = "delete-provider-creds";
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub enum ProviderSettingsMode {
-    #[default]
-    List,
-    Detail {
-        provider_id: String,
-        sub: DetailSub,
-    },
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DetailSub {
-    Summary { last_status: Option<DetailStatus> },
-    EditApiKey { draft: String },
-    OAuthNotice,
-}
 
 #[derive(Debug, Clone)]
 pub enum ProviderSettingsEvent {
@@ -84,6 +77,30 @@ pub struct ProviderSettingsView {
     pub status: String,
     /// RPC-158: inline test-result decoration (see `test_result.rs`).
     pub test_result: Option<ProviderTestResult>,
+    /// PROV-111: full per-profile ProfileConfig keyed by profile name; the
+    /// EditProfile form prefills from this (see `profile_config_for`).
+    pub profile_configs: HashMap<String, ProfileDefinition>,
+    /// PROV-111: a pending per-profile delete-confirm target; when set the
+    /// `delete_confirm` Primary arm emits `ConfirmDeleteProfile`.
+    pub(crate) pending_profile_delete: Option<(String, String)>,
+    /// PROV-112: when set, the next `ProviderCredentialsLoaded` reload moves
+    /// the cursor back onto this provider's row (TS `navigateToProviderRef`).
+    /// Set by the OAuth disconnect dispatch so the Logout row vanishing
+    /// doesn't strand the cursor.
+    pub(crate) pending_navigate_provider: Option<String>,
+    /// PROV-113: whether the browser OAuth login rows are available (the
+    /// providers-layer local HTTP server only runs on the embedded transport).
+    /// Wired from `backend.supports_browser_oauth()`; gates the Browser login
+    /// rows out of the nav tree when `false` (headless/device rows remain).
+    pub(crate) browser_login_enabled: bool,
+    /// PROV-113: monotonically-increasing generation that invalidates an
+    /// in-flight login. Esc during a waiting/entry mode bumps this; a
+    /// success/error result whose generation no longer matches is dropped.
+    pub(crate) oauth_generation: u64,
+    /// PROV-113: the last login (provider, method) so the OAuthError screen
+    /// can retry it on Enter.
+    pub(crate) oauth_last_provider: Option<String>,
+    pub(crate) oauth_last_method: Option<OAuthMethod>,
     visible_rows: usize,
 }
 
@@ -102,6 +119,13 @@ impl ProviderSettingsView {
             delete_confirm: None,
             status: String::new(),
             test_result: None,
+            profile_configs: HashMap::new(),
+            pending_profile_delete: None,
+            pending_navigate_provider: None,
+            browser_login_enabled: false,
+            oauth_generation: 0,
+            oauth_last_provider: None,
+            oauth_last_method: None,
             visible_rows: 18,
         }
     }
@@ -122,6 +146,20 @@ impl ProviderSettingsView {
         self.status = status.into();
     }
 
+    /// PROV-113: enable/disable the browser OAuth login rows (wired from
+    /// `backend.supports_browser_oauth()`). Rebuilds the nav tree so the
+    /// browser rows appear/disappear immediately.
+    pub fn set_browser_login_enabled(&mut self, enabled: bool) {
+        self.browser_login_enabled = enabled;
+        self.rebuild_nav_items();
+    }
+
+    /// PROV-113: current login generation (bumped on Esc-cancel). A
+    /// success/error result whose generation differs is dropped as stale.
+    pub fn oauth_generation(&self) -> u64 {
+        self.oauth_generation
+    }
+
     pub fn set_visible_rows(&mut self, rows: usize) {
         self.visible_rows = rows.max(1);
     }
@@ -140,78 +178,14 @@ impl ProviderSettingsView {
     }
 
     pub fn footer_hint(&self) -> String {
-        // RPC-106: Footer hint is context-sensitive on the currently-
-        // focused NavItem kind in List mode, matching the TS
-        // `getFooterHints(itemType)` dispatch. Detail-mode hints keep
-        // their dedicated strings but adopt the bullet (`·`) + lowercase-
-        // colon style for visual consistency. Summary hint will be
-        // dropped wholesale by RPC-162 along with Detail::Summary itself.
-        match &self.mode {
-            ProviderSettingsMode::List => {
-                footer_hints::footer_hint_for(footer_hints::focused_row_kind(self))
-            }
-            ProviderSettingsMode::Detail { sub, .. } => match sub {
-                DetailSub::Summary { .. } => {
-                    // RPC-154 — drop `t: test ·` (TS binds no `t` for
-                    // the test-connection action). Hint now matches
-                    // the actually-bound Summary keys.
-                    "r: refresh models · Esc: back".to_string()
-                }
-                DetailSub::EditApiKey { .. } => "Enter: save · Esc: cancel".to_string(),
-                DetailSub::OAuthNotice => "Esc: back".to_string(),
-            },
-        }
-    }
-
-    pub fn visible_provider_ids(&self) -> Vec<String> {
-        self.visible_providers()
-            .iter()
-            .map(|p| p.provider_id.clone())
-            .collect()
-    }
-
-    pub(crate) fn visible_providers(&self) -> Vec<&ProviderCredentialInfo> {
-        if self.filter.is_empty() {
-            return self.providers.iter().collect();
-        }
-        let lower = self.filter.to_lowercase();
-        self.providers
-            .iter()
-            .filter(|p| {
-                p.provider_id.to_lowercase().contains(&lower)
-                    || p.display_name.to_lowercase().contains(&lower)
-            })
-            .collect()
+        // RPC-106 / PROV-110: full mode-sensitive dispatch lives in
+        // footer_hints.rs to keep this module under the 300-LoC budget.
+        footer_hints::compute_footer_hint(self)
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) -> ProviderSettingsEvent {
-        if let Some(dialog) = self.delete_confirm.as_mut() {
-            match dialog.handle_key(key.code, key.modifiers) {
-                ConfirmDialogOutcome::Primary => {
-                    let pid = match &self.mode {
-                        ProviderSettingsMode::List => {
-                            self.focused_provider().map(|p| p.provider_id.clone())
-                        }
-                        ProviderSettingsMode::Detail { provider_id, .. } => {
-                            Some(provider_id.clone())
-                        }
-                    };
-                    self.delete_confirm = None;
-                    if let Some(id) = pid {
-                        return ProviderSettingsEvent::Emit(
-                            Action::ConfirmDeleteProviderCredentials(id),
-                        );
-                    }
-                    return ProviderSettingsEvent::Consumed;
-                }
-                ConfirmDialogOutcome::Secondary | ConfirmDialogOutcome::Cancel => {
-                    self.delete_confirm = None;
-                    return ProviderSettingsEvent::Consumed;
-                }
-                ConfirmDialogOutcome::Continued | ConfirmDialogOutcome::Ignored => {
-                    return ProviderSettingsEvent::Consumed;
-                }
-            }
+        if self.delete_confirm.is_some() {
+            return self.handle_delete_confirm_key(key);
         }
         if key
             .modifiers
@@ -224,12 +198,37 @@ impl ProviderSettingsView {
             ProviderSettingsMode::Detail { provider_id, sub } => {
                 detail::handle_detail_key(self, key, provider_id, sub)
             }
+            ProviderSettingsMode::CreateProfile { provider_id, form } => {
+                profile_form::handle_form_key(self, key, provider_id, form, None)
+            }
+            ProviderSettingsMode::EditProfile {
+                provider_id,
+                profile_name,
+                form,
+            } => profile_form::handle_form_key(self, key, provider_id, form, Some(profile_name)),
+            ProviderSettingsMode::DisconnectOAuth { provider_id } => {
+                oauth_confirm::handle_disconnect_oauth_key(self, key, provider_id)
+            }
+            mode @ (ProviderSettingsMode::OAuthBrowserWaiting { .. }
+            | ProviderSettingsMode::OAuthDeviceWaiting { .. }
+            | ProviderSettingsMode::OAuthHeadlessCodeEntry { .. }
+            | ProviderSettingsMode::OAuthSuccess { .. }
+            | ProviderSettingsMode::OAuthError { .. }) => {
+                oauth_login::handle_oauth_login_key(self, key, mode)
+            }
+            // PROV-114: the github-copilot deployment-type / enterprise-host
+            // preamble modes route to their own sibling handler.
+            mode @ (ProviderSettingsMode::OAuthDeploymentTypeSelect { .. }
+            | ProviderSettingsMode::OAuthEnterpriseUrlEntry { .. }) => {
+                oauth_copilot::handle_copilot_preamble_key(self, key, mode)
+            }
         }
     }
 
     pub fn reset_to_list(&mut self) {
         self.mode = ProviderSettingsMode::List;
         self.delete_confirm = None;
+        self.pending_profile_delete = None;
         self.status.clear();
         self.filter.clear();
         self.filter_mode = false;
@@ -239,7 +238,7 @@ impl ProviderSettingsView {
     }
 
     pub(crate) fn adjust_scroll(&mut self) {
-        let total = self.visible_providers().len();
+        let total = self.nav_len();
         ensure_visible(
             &mut self.scroll_offset,
             self.selected_index,
@@ -249,7 +248,7 @@ impl ProviderSettingsView {
     }
 
     pub(crate) fn move_clamped(&mut self, delta: i32) {
-        let total = self.visible_providers().len();
+        let total = self.nav_len();
         if total == 0 {
             return;
         }
@@ -276,13 +275,7 @@ impl ProviderSettingsView {
             "items",
             &footer,
             |body_area, buf| {
-                self.visible_rows = body_area.height as usize;
-                match &self.mode {
-                    ProviderSettingsMode::List => list::render_list(self, body_area, buf),
-                    ProviderSettingsMode::Detail { provider_id, sub } => {
-                        detail::render_detail(self, body_area, buf, provider_id, sub);
-                    }
-                }
+                body_render::render_mode_body(self, body_area, buf);
             },
             overlay.as_ref(),
         );

@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing Enter on a collapsed provider header expands the section",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
+          "lines": "31-50",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Enter again on an expanded provider header collapses the section",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
+          "lines": "53-81",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Enter on a selectable model row selects the model and closes the view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs",
+          "lines": "84-109",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/dispatch.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/model_selector/tests_enter_expand.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/model_selector/dispatch.rs"
+    ],
+    "totalLinesCovered": 259
+  }
+}

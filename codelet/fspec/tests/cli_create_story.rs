@@ -42,7 +42,8 @@ fn spec_dir(cwd: &Path) -> std::path::PathBuf {
 
 fn write_foundation(cwd: &Path) {
     let spec = spec_dir(cwd);
-    fs::write(spec.join("foundation.json"), r#"{"version":"2.0.0"}"#).expect("write foundation.json");
+    fs::write(spec.join("foundation.json"), r#"{"version":"2.0.0"}"#)
+        .expect("write foundation.json");
 }
 
 fn write_prefixes(cwd: &Path, prefixes: &[&str]) {
@@ -55,8 +56,11 @@ fn write_prefixes(cwd: &Path, prefixes: &[&str]) {
         );
     }
     let data = serde_json::json!({"prefixes": serde_json::Value::Object(obj)});
-    fs::write(spec.join("prefixes.json"), serde_json::to_string_pretty(&data).unwrap())
-        .expect("write prefixes.json");
+    fs::write(
+        spec.join("prefixes.json"),
+        serde_json::to_string_pretty(&data).unwrap(),
+    )
+    .expect("write prefixes.json");
 }
 
 fn write_epics(cwd: &Path, epics: &[&str]) {
@@ -69,8 +73,11 @@ fn write_epics(cwd: &Path, epics: &[&str]) {
         );
     }
     let data = serde_json::json!({"epics": serde_json::Value::Object(obj)});
-    fs::write(spec.join("epics.json"), serde_json::to_string_pretty(&data).unwrap())
-        .expect("write epics.json");
+    fs::write(
+        spec.join("epics.json"),
+        serde_json::to_string_pretty(&data).unwrap(),
+    )
+    .expect("write epics.json");
 }
 
 fn read_work_units(cwd: &Path) -> serde_json::Value {
@@ -142,13 +149,22 @@ fn scenario_clap_exposes_create_story_with_args_and_flags() {
     assert!(stdout.contains("title"), "got:\n{stdout}");
 
     // @step And stdout advertises the `--description` flag (or its `-d` short form)
-    assert!(stdout.contains("--description") || stdout.contains("-d"), "got:\n{stdout}");
+    assert!(
+        stdout.contains("--description") || stdout.contains("-d"),
+        "got:\n{stdout}"
+    );
 
     // @step And stdout advertises the `--epic` flag (or its `-e` short form)
-    assert!(stdout.contains("--epic") || stdout.contains("-e"), "got:\n{stdout}");
+    assert!(
+        stdout.contains("--epic") || stdout.contains("-e"),
+        "got:\n{stdout}"
+    );
 
     // @step And stdout advertises the `--parent` flag (or its `-p` short form)
-    assert!(stdout.contains("--parent") || stdout.contains("-p"), "got:\n{stdout}");
+    assert!(
+        stdout.contains("--parent") || stdout.contains("-p"),
+        "got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -210,11 +226,16 @@ fn scenario_cli_creates_story_with_epic_flag() {
     );
 
     // @step And stdout contains the line '  Epic: auth'
-    assert!(stdout.lines().any(|l| l == "  Epic: auth"), "got:\n{stdout}");
+    assert!(
+        stdout.lines().any(|l| l == "  Epic: auth"),
+        "got:\n{stdout}"
+    );
 
     // @step And spec/epics.json on disk shows epic 'auth' workUnits contains 'AUTH-001'
     let e = read_epics(ws.path());
-    let work_units = e["epics"]["auth"]["workUnits"].as_array().expect("workUnits array");
+    let work_units = e["epics"]["auth"]["workUnits"]
+        .as_array()
+        .expect("workUnits array");
     assert!(work_units.iter().any(|x| x.as_str() == Some("AUTH-001")));
 }
 
@@ -239,7 +260,10 @@ fn scenario_cli_rejects_unregistered_prefix_with_exit_1() {
     assert!(stderr.contains("Error:"), "got:\n{stderr}");
 
     // @step And stderr contains the substring "Prefix 'NOPE' is not registered"
-    assert!(stderr.contains("Prefix 'NOPE' is not registered"), "got:\n{stderr}");
+    assert!(
+        stderr.contains("Prefix 'NOPE' is not registered"),
+        "got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -259,7 +283,10 @@ fn scenario_cli_rejects_missing_foundation_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains the substring 'Project foundation not found'
-    assert!(stderr.contains("Project foundation not found"), "got:\n{stderr}");
+    assert!(
+        stderr.contains("Project foundation not found"),
+        "got:\n{stderr}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -282,16 +309,28 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `./codelet/target/release/fspec create-story AUTH "Second"` afterwards exits 0
     let (code, stdout, stderr) = run_create_story(ws.path(), &["AUTH", "Second"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk contains both 'AUTH-001' and 'AUTH-002'
     let v = read_work_units(ws.path());
-    assert!(v["workUnits"].get("AUTH-001").is_some(), "AUTH-001 must exist");
-    assert!(v["workUnits"].get("AUTH-002").is_some(), "AUTH-002 must exist");
+    assert!(
+        v["workUnits"].get("AUTH-001").is_some(),
+        "AUTH-001 must exist"
+    );
+    assert!(
+        v["workUnits"].get("AUTH-002").is_some(),
+        "AUTH-002 must exist"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/create_story.rs contains NO inline foundation check, prefix validation, id generation, or file-write logic — its only computation is JSON arg marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/create_story.rs");

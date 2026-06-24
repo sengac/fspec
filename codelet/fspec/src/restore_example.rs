@@ -77,10 +77,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         Err(err) => {
             // Mirror TS `output.error('✗ Failed to restore example:', error.message)`
             // at src/commands/restore-example.ts:107.
-            eprintln!(
-                "✗ Failed to restore example: {}",
-                render_core_error(&err)
-            );
+            eprintln!("✗ Failed to restore example: {}", render_core_error(&err));
             Ok(1)
         }
     }

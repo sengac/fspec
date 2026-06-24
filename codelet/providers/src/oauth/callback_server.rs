@@ -194,9 +194,7 @@ impl<H: CodeExchangeHandler> OAuthCallbackServer<H> {
 
                 match handler.extract_code_and_state(&params) {
                     Ok((code, received_state)) => {
-                        if let Err(e) =
-                            handler.validate_state(&expected_state, &received_state)
-                        {
+                        if let Err(e) = handler.validate_state(&expected_state, &received_state) {
                             {
                                 let mut guard = state.lock().await;
                                 if let Some(tx) = guard.take() {

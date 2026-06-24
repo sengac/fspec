@@ -58,6 +58,15 @@ pub struct ProviderDisplayInfo {
     pub profiles: Vec<String>,
     pub oauth_login_methods: Vec<(OAuthMethod, String)>,
     pub oauth_status_label: Option<String>,
+    /// PROV-098: display-layer masked API key shown inline on the
+    /// provider + ApiKey rows. For env api-key providers this is the
+    /// backend `ProviderCredentialInfo::masked_key`; for OAuth-logged-in
+    /// providers the projection synthesizes `Some("OAuth")` (TS parity).
+    pub masked_key: Option<String>,
+    /// PROV-098: provenance tag rendered as ` [{source}]`. For env api
+    /// keys this is the backend source (`env`/`file`/`dotenv`); for
+    /// OAuth-logged-in providers it is the oauth label (e.g. `Claude`).
+    pub source: Option<String>,
 }
 
 /// Pure builder: walk `providers` in canonical registry order, apply

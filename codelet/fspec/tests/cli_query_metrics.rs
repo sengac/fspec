@@ -160,8 +160,10 @@ fn scenario_cli_json_output_matches_dispatcher_output() {
     write_work_units(ws.path(), &raw);
 
     // @step When I run `./codelet/target/release/fspec query-metrics --work-unit-id AUTH-001 --format json` against that workspace
-    let (code, stdout, stderr) =
-        run_query_metrics(ws.path(), &["--work-unit-id", "AUTH-001", "--format", "json"]);
+    let (code, stdout, stderr) = run_query_metrics(
+        ws.path(),
+        &["--work-unit-id", "AUTH-001", "--format", "json"],
+    );
 
     // @step Then the command exits 0
     assert_eq!(
@@ -182,7 +184,10 @@ fn scenario_cli_json_output_matches_dispatcher_output() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     assert_eq!(
         stdout,
         format!("{}\n", result.data),
@@ -255,7 +260,10 @@ fn scenario_cli_text_output_for_aggregate_renders_project_metrics_block() {
     );
 
     // @step Then stdout contains the substring 'By Type:'
-    assert!(stdout.contains("By Type:"), "missing 'By Type:'; got:\n{stdout}");
+    assert!(
+        stdout.contains("By Type:"),
+        "missing 'By Type:'; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the exact line '  story: 2 work units'
     assert!(

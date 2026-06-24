@@ -48,7 +48,15 @@ fn read_work_units(project_root: &Path) -> serde_json::Value {
 
 fn seed_unit(id: &str, status: &str) -> String {
     let mut states = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         let arr: Vec<serde_json::Value> = if *st == status {
             vec![serde_json::Value::String(id.to_string())]
         } else {
@@ -96,7 +104,10 @@ fn scenario_add_bounded_context_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "add-bounded-context --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "add-bounded-context --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/add-bounded-context.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -129,7 +140,9 @@ fn scenario_cli_successfully_appends_bounded_context() {
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 1
     let v = read_work_units(ws.path());
-    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"].as_array().expect("items array");
+    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"]
+        .as_array()
+        .expect("items array");
     assert_eq!(items.len(), 1);
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items[0].text='Order Management'
@@ -152,7 +165,14 @@ fn scenario_cli_forwards_description_and_bounded_context_flags() {
     // @step When I run `fspec add-bounded-context AUTH-001 "Inventory" --description "Manages stock" --bounded-context "Logistics"` in that tempdir
     let (code, _stdout, stderr) = run_cmd(
         ws.path(),
-        &["AUTH-001", "Inventory", "--description", "Manages stock", "--bounded-context", "Logistics"],
+        &[
+            "AUTH-001",
+            "Inventory",
+            "--description",
+            "Manages stock",
+            "--bounded-context",
+            "Logistics",
+        ],
     );
 
     // @step Then the exit code is 0
@@ -220,15 +240,23 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-bounded-context AUTH-001 "C2"` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["AUTH-001", "C2"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/work-units.json on disk shows AUTH-001.eventStorm.items has length 2
     let v = read_work_units(ws.path());
-    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"].as_array().expect("items array");
+    let items = v["workUnits"]["AUTH-001"]["eventStorm"]["items"]
+        .as_array()
+        .expect("items array");
     assert_eq!(items.len(), 2);
 
     // @step And the CLI bridge module codelet/fspec/src/add_bounded_context.rs contains NO inline item construction, status guard, or file-write logic — its only computation is JSON arg marshalling

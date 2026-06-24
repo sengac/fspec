@@ -3,8 +3,7 @@
 //! Shared fixtures for persistence tests. Compiled only for tests.
 
 use crate::persistence::{
-    append_message_with_metadata, create_session, set_compaction_state,
-    SessionManifest,
+    append_message_with_metadata, create_session, set_compaction_state, SessionManifest,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -16,7 +15,9 @@ lazy_static::lazy_static! {
 }
 
 pub fn setup_test_env() -> (std::sync::MutexGuard<'static, ()>, TempDir) {
-    let guard = TEST_MUTEX.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let guard = TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
     // RPC-035: the previous shim that wrapped persistence resets has been
     // removed. Reproduce the same four-step reset sequence here directly

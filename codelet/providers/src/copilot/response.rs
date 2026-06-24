@@ -23,16 +23,15 @@ pub(super) fn rig_response_to_completion(
         .raw_response
         .choices
         .first()
-        .map_or(StopReason::EndTurn, |choice| match choice
-            .finish_reason
-            .as_str()
-        {
-            "tool_calls" | "function_call" => StopReason::ToolUse,
-            "length" => StopReason::MaxTokens,
-            "stop" | "end_turn" | "" => StopReason::EndTurn,
-            other => {
-                warn!(finish_reason = %other, "Unknown finish_reason from Copilot API");
-                StopReason::EndTurn
+        .map_or(StopReason::EndTurn, |choice| {
+            match choice.finish_reason.as_str() {
+                "tool_calls" | "function_call" => StopReason::ToolUse,
+                "length" => StopReason::MaxTokens,
+                "stop" | "end_turn" | "" => StopReason::EndTurn,
+                other => {
+                    warn!(finish_reason = %other, "Unknown finish_reason from Copilot API");
+                    StopReason::EndTurn
+                }
             }
         });
 

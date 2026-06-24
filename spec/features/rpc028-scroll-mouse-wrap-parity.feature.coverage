@@ -139,29 +139,6 @@
       ]
     },
     {
-      "name": "ModelSelectorDialog PageDown jumps by visible_rows and skips non-selectable headers",
-      "testMappings": [
-        {
-          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
-          "lines": "578-599",
-          "implMappings": [
-            {
-              "file": "codelet/fspec-tui/src/components/model_selector_dialog.rs",
-              "lines": [
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "ResumeSessionView Home jumps to the first session and scrolls to the top",
       "testMappings": [
         {
@@ -598,8 +575,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 14,
-    "coveredScenarios": 14,
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-tui/tests/rpc028_popup_scroll.rs"

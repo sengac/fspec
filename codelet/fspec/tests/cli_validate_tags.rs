@@ -114,7 +114,11 @@ fn scenario_cli_single_valid_file_no_flags_exits_0_no_output() {
     write_tags(ws.path(), &["@comp"], &["@grp"]);
 
     // @step Given a single feature file carries only registered tags
-    write_feature(ws.path(), "spec/features/valid.feature", &valid_feature("Valid"));
+    write_feature(
+        ws.path(),
+        "spec/features/valid.feature",
+        &valid_feature("Valid"),
+    );
 
     // @step When I run `./codelet/target/release/fspec validate-tags spec/features/valid.feature`
     let (code, stdout, stderr) = run_validate_tags(ws.path(), &["spec/features/valid.feature"]);
@@ -148,10 +152,7 @@ fn scenario_cli_unregistered_tag_exits_1_prints_violation_block() {
     assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step Then stdout contains the substring 'has tag violations:'
-    assert!(
-        stdout.contains("has tag violations:"),
-        "got:\n{stdout}"
-    );
+    assert!(stdout.contains("has tag violations:"), "got:\n{stdout}");
 
     // @step Then stdout contains the substring 'Unregistered tag: @made-up'
     assert!(
@@ -171,7 +172,11 @@ fn scenario_cli_verbose_prints_passing_line_per_valid_file() {
     write_tags(ws.path(), &["@comp"], &["@grp"]);
 
     // @step Given a single feature file carries only registered tags
-    write_feature(ws.path(), "spec/features/valid.feature", &valid_feature("Valid"));
+    write_feature(
+        ws.path(),
+        "spec/features/valid.feature",
+        &valid_feature("Valid"),
+    );
 
     // @step When I run `./codelet/target/release/fspec validate-tags spec/features/valid.feature --verbose`
     let (code, stdout, stderr) =
@@ -196,7 +201,11 @@ fn scenario_cli_summary_prints_only_summary_count_lines() {
     // @step Given two feature files where one has an unregistered tag
     let ws = tempfile::tempdir().expect("tempdir");
     write_tags(ws.path(), &["@comp"], &["@grp"]);
-    write_feature(ws.path(), "spec/features/good.feature", &valid_feature("Good"));
+    write_feature(
+        ws.path(),
+        "spec/features/good.feature",
+        &valid_feature("Good"),
+    );
     write_feature(
         ws.path(),
         "spec/features/bad.feature",
@@ -247,7 +256,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 
     // @step Then both paths agree the file is invalid

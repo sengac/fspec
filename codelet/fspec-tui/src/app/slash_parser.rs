@@ -21,7 +21,7 @@ use super::schedule_parser::{parse_schedule_command, ScheduleSubcommand};
 /// this enum BEFORE forwarding plain text to `backend.send_input`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SlashCommandParse {
-    /// `/model` — open the ModelSelectorDialog.
+    /// `/model` — open the full-screen ModelSelector mode-view.
     OpenModelDialog,
     /// `/thinking` (bare) — open the ThinkingLevelDialog.
     OpenThinkingDialog,

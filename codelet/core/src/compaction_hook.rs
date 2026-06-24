@@ -515,7 +515,7 @@ mod tests {
             // Last known total: only 110 tokens
             compaction_needed: false,
         }));
-        
+
         // Set a low threshold that the estimated payload will exceed
         let threshold = 500;
         let hook = CompactionHook::new(Arc::clone(&state), threshold);
@@ -524,17 +524,15 @@ mod tests {
         // This simulates the bug scenario: tool result added but not yet sent to API
         // 10,000 chars ≈ 2,500 tokens with cl100k_base
         let large_content = "x".repeat(10_000);
-        let history = vec![
-            Message::User {
-                content: OneOrMany::one(UserContent::ToolResult(ToolResult {
-                    id: "call_1".to_string(),
-                    call_id: None,
-                    content: OneOrMany::one(ToolResultContent::Text(Text {
-                        text: large_content,
-                    })),
+        let history = vec![Message::User {
+            content: OneOrMany::one(UserContent::ToolResult(ToolResult {
+                id: "call_1".to_string(),
+                call_id: None,
+                content: OneOrMany::one(ToolResultContent::Text(Text {
+                    text: large_content,
                 })),
-            },
-        ];
+            })),
+        }];
 
         let prompt = Message::User {
             content: OneOrMany::one(UserContent::Text(Text {

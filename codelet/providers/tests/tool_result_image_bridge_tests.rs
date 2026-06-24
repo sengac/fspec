@@ -20,7 +20,9 @@ mod helpers;
 
 use std::sync::Arc;
 
-use codelet_common::{ContentPart, ImageSource, Message, MessageContent, MessageRole, ToolResultPart};
+use codelet_common::{
+    ContentPart, ImageSource, Message, MessageContent, MessageRole, ToolResultPart,
+};
 use codelet_providers::custom::request_bridge::messages_to_rhai;
 use codelet_providers::custom::rig_message_convert::rig_messages_to_internal;
 use codelet_providers::custom::{RhaiCustomProvider, ScriptLoader};
@@ -336,7 +338,10 @@ async fn claude_rhai_build_request_emits_mixed_text_and_image_blocks() {
     let block = &content[0];
 
     // @step Then body.messages[0].content[0].type equals "tool_result"
-    assert_eq!(block.get("type").and_then(|v| v.as_str()), Some("tool_result"));
+    assert_eq!(
+        block.get("type").and_then(|v| v.as_str()),
+        Some("tool_result")
+    );
 
     // @step And body.messages[0].content[0].tool_use_id equals "tu_y"
     assert_eq!(
@@ -443,7 +448,9 @@ fn convert_tool_result_with_single_base64_image_becomes_structured_part() {
     let part = extract_tool_result(&out[0]);
 
     match part {
-        ContentPart::ToolResult { tool_use_id, parts, .. } => {
+        ContentPart::ToolResult {
+            tool_use_id, parts, ..
+        } => {
             // @step And that ContentPart::ToolResult has tool_use_id "call_img"
             assert_eq!(tool_use_id, "call_img");
 

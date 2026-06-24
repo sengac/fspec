@@ -94,7 +94,10 @@ fn scenario_remove_hook_help_matches_ts_formatcommandhelp_reference() {
     );
 
     // @step Then stdout contains the section header "ARGUMENTS"
-    assert!(stdout.contains("ARGUMENTS\n"), "help must contain ARGUMENTS section");
+    assert!(
+        stdout.contains("ARGUMENTS\n"),
+        "help must contain ARGUMENTS section"
+    );
 
     // @step Then stdout contains the section header "OPTIONS" followed by "  No options available"
     assert!(
@@ -103,13 +106,22 @@ fn scenario_remove_hook_help_matches_ts_formatcommandhelp_reference() {
     );
 
     // @step Then stdout does NOT contain the substring '--command'
-    assert!(!stdout.contains("--command"), "help must NOT advertise --command");
+    assert!(
+        !stdout.contains("--command"),
+        "help must NOT advertise --command"
+    );
 
     // @step Then stdout does NOT contain the substring '--blocking'
-    assert!(!stdout.contains("--blocking"), "help must NOT advertise --blocking");
+    assert!(
+        !stdout.contains("--blocking"),
+        "help must NOT advertise --blocking"
+    );
 
     // @step Then stdout does NOT contain the substring '--timeout'
-    assert!(!stdout.contains("--timeout"), "help must NOT advertise --timeout");
+    assert!(
+        !stdout.contains("--timeout"),
+        "help must NOT advertise --timeout"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -162,7 +174,10 @@ fn scenario_cli_exits_nonzero_when_config_is_missing() {
     let (code, _stdout, stderr) = run_remove_hook(tmp.path(), &["pre-implementing", "lint"]);
 
     // @step Then the command exits 1
-    assert_eq!(code, 1, "expected exit 1 on missing config; stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "expected exit 1 on missing config; stderr={stderr}"
+    );
 
     // @step Then stderr starts with 'Error:'
     assert!(
@@ -201,7 +216,10 @@ fn scenario_cli_exits_nonzero_when_config_is_invalid_json() {
 
     // @step Then the raw bytes of spec/fspec-hooks.json are unchanged
     let raw = read_hooks_raw(tmp.path());
-    assert_eq!(raw, "{ not json", "config file must be unchanged on parse error");
+    assert_eq!(
+        raw, "{ not json",
+        "config file must be unchanged on parse error"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────

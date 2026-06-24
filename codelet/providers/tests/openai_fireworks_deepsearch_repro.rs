@@ -4,7 +4,11 @@
 //! Previously reported as: `API Error: Streaming error: RequestError: Failed to get tool definitions`
 //!
 
-#![allow(clippy::panic, clippy::doc_overindented_list_items, clippy::needless_borrows_for_generic_args)]
+#![allow(
+    clippy::panic,
+    clippy::doc_overindented_list_items,
+    clippy::needless_borrows_for_generic_args
+)]
 //! These tests connect to the REAL Fireworks API using an inline API key fixture
 //! and progressively break down the DeepSearch code path to localize where the
 //! failure happens. The original agent (qwen) hit this in the TUI when calling
@@ -57,8 +61,7 @@ fn fireworks_api_key() -> String {
     // Fixture-first: use the `fireworks` profile key from fspec-config.json.
     // Override via FIREWORKS_API_KEY only (NOT OPENAI_API_KEY — which in this
     // shell currently points at a localhost vLLM dummy key).
-    std::env::var("FIREWORKS_API_KEY")
-        .unwrap_or_else(|_| "fw_UVPY68joXb6wmAs4csPabr".to_string())
+    std::env::var("FIREWORKS_API_KEY").unwrap_or_else(|_| "fw_UVPY68joXb6wmAs4csPabr".to_string())
 }
 
 fn fireworks_base_url_raw() -> String {
@@ -105,7 +108,10 @@ async fn layer1_raw_http_fireworks_responds_to_chat_completions() {
 
     println!("[layer1] POST {url}");
     println!("[layer1] status = {status}");
-    println!("[layer1] body (first 400): {}", text.chars().take(400).collect::<String>());
+    println!(
+        "[layer1] body (first 400): {}",
+        text.chars().take(400).collect::<String>()
+    );
 
     assert!(
         status.is_success(),
@@ -130,7 +136,10 @@ async fn layer2_rig_client_completion_against_fireworks() {
     let provider = OpenAIProvider::from_api_key_with_options(
         &fireworks_api_key(),
         &fireworks_model(),
-        Some(&format!("{}/v1", fireworks_base_url_raw().trim_end_matches('/'))),
+        Some(&format!(
+            "{}/v1",
+            fireworks_base_url_raw().trim_end_matches('/')
+        )),
         None,
     )
     .expect("OpenAIProvider constructs");
@@ -202,7 +211,6 @@ impl Tool for AddTool {
     }
 }
 
-
 /// Seven no-op tools that mimic (by name only) the tool set DeepSearch builds
 /// for its sub-agent: Read, Grep, AstGrep, Glob, Ls, Bash, SessionSearch.
 /// The bodies are stubs — we are reproducing *tool-definition* serialization
@@ -228,13 +236,20 @@ fn stub_definition(name: &str, description: &str) -> ToolDefinition {
     }
 }
 
-#[derive(Default)] struct StubRead;
-#[derive(Default)] struct StubGrep;
-#[derive(Default)] struct StubAstGrep;
-#[derive(Default)] struct StubGlob;
-#[derive(Default)] struct StubLs;
-#[derive(Default)] struct StubBash;
-#[derive(Default)] struct StubSessionSearch;
+#[derive(Default)]
+struct StubRead;
+#[derive(Default)]
+struct StubGrep;
+#[derive(Default)]
+struct StubAstGrep;
+#[derive(Default)]
+struct StubGlob;
+#[derive(Default)]
+struct StubLs;
+#[derive(Default)]
+struct StubBash;
+#[derive(Default)]
+struct StubSessionSearch;
 
 macro_rules! impl_stub_tool {
     ($t:ty, $name:literal, $descr:literal) => {
@@ -253,12 +268,12 @@ macro_rules! impl_stub_tool {
     };
 }
 
-impl_stub_tool!(StubRead,          "Read",          "Read a file from disk");
-impl_stub_tool!(StubGrep,          "Grep",          "Search file contents with ripgrep");
-impl_stub_tool!(StubAstGrep,       "AstGrep",       "AST-based code search");
-impl_stub_tool!(StubGlob,          "Glob",          "Filename pattern matching");
-impl_stub_tool!(StubLs,            "Ls",            "List directory contents");
-impl_stub_tool!(StubBash,          "Bash",          "Execute a bash command");
+impl_stub_tool!(StubRead, "Read", "Read a file from disk");
+impl_stub_tool!(StubGrep, "Grep", "Search file contents with ripgrep");
+impl_stub_tool!(StubAstGrep, "AstGrep", "AST-based code search");
+impl_stub_tool!(StubGlob, "Glob", "Filename pattern matching");
+impl_stub_tool!(StubLs, "Ls", "List directory contents");
+impl_stub_tool!(StubBash, "Bash", "Execute a bash command");
 impl_stub_tool!(StubSessionSearch, "SessionSearch", "Search session history");
 
 // =============================================================================
@@ -274,7 +289,10 @@ async fn layer3_provider_bare_agent_no_tools() {
     let provider = OpenAIProvider::from_api_key_with_options(
         &fireworks_api_key(),
         &fireworks_model(),
-        Some(&format!("{}/v1", fireworks_base_url_raw().trim_end_matches('/'))),
+        Some(&format!(
+            "{}/v1",
+            fireworks_base_url_raw().trim_end_matches('/')
+        )),
         None,
     )
     .expect("OpenAIProvider constructs");
@@ -302,7 +320,10 @@ async fn layer4_provider_agent_one_tool_forced_call() {
     let provider = OpenAIProvider::from_api_key_with_options(
         &fireworks_api_key(),
         &fireworks_model(),
-        Some(&format!("{}/v1", fireworks_base_url_raw().trim_end_matches('/'))),
+        Some(&format!(
+            "{}/v1",
+            fireworks_base_url_raw().trim_end_matches('/')
+        )),
         None,
     )
     .expect("OpenAIProvider constructs");
@@ -357,7 +378,10 @@ async fn layer5_provider_agent_seven_tools_forced_call() {
     let provider = OpenAIProvider::from_api_key_with_options(
         &fireworks_api_key(),
         &fireworks_model(),
-        Some(&format!("{}/v1", fireworks_base_url_raw().trim_end_matches('/'))),
+        Some(&format!(
+            "{}/v1",
+            fireworks_base_url_raw().trim_end_matches('/')
+        )),
         None,
     )
     .expect("OpenAIProvider constructs");
@@ -428,7 +452,10 @@ async fn layer6_provider_agent_streaming_seven_tools_multi_turn() {
     let provider = OpenAIProvider::from_api_key_with_options(
         &fireworks_api_key(),
         &fireworks_model(),
-        Some(&format!("{}/v1", fireworks_base_url_raw().trim_end_matches('/'))),
+        Some(&format!(
+            "{}/v1",
+            fireworks_base_url_raw().trim_end_matches('/')
+        )),
         None,
     )
     .expect("OpenAIProvider constructs");
@@ -520,25 +547,22 @@ async fn layer6_provider_agent_streaming_seven_tools_multi_turn() {
 
 #[test]
 fn layer7_outbound_conversion_drops_reasoning_instead_of_panicking() {
-    use rig::OneOrMany;
     use rig::message::AssistantContent;
     use rig::providers::openai::completion::Message as OpenAiWireMessage;
+    use rig::OneOrMany;
 
     // Build an assistant content block that looks like what Qwen returned on
     // turn 1 (reasoning text + a text answer). This is structurally what ends
     // up in chat_history.
     let items = OneOrMany::many(vec![
-        AssistantContent::reasoning(
-            "Here's a thinking process: the user asked to add 2 and 2.",
-        ),
+        AssistantContent::reasoning("Here's a thinking process: the user asked to add 2 and 2."),
         AssistantContent::text("The answer is 4."),
     ])
     .expect("two items");
 
     // This is the exact call rig makes on turn 2 before sending the next
     // request. Previously panicked; now returns cleanly.
-    let converted: Vec<OpenAiWireMessage> =
-        items.try_into().expect("conversion should not panic");
+    let converted: Vec<OpenAiWireMessage> = items.try_into().expect("conversion should not panic");
 
     assert_eq!(converted.len(), 1, "one assistant message");
     match &converted[0] {
@@ -552,10 +576,7 @@ fn layer7_outbound_conversion_drops_reasoning_instead_of_panicking() {
                 reasoning.is_none(),
                 "outbound reasoning field must be None (never sent over wire)"
             );
-            assert!(
-                tool_calls.is_empty(),
-                "no tool calls in this fixture"
-            );
+            assert!(tool_calls.is_empty(), "no tool calls in this fixture");
             // The visible text content should be preserved; the reasoning
             // block should have been silently dropped.
             let joined = content

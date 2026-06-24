@@ -1,0 +1,185 @@
+{
+  "scenarios": [
+    {
+      "name": "A key present only in .env becomes visible to env detection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/startup_env.rs",
+          "lines": "113-134",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/startup_env.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A shell-exported variable takes precedence over .env",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/startup_env.rs",
+          "lines": "136-160",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/startup_env.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing .env file is not an error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/startup_env.rs",
+          "lines": "162-187",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/startup_env.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A provider with a key only in .env is reported as configured",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/startup_env.rs",
+          "lines": "189-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/startup_env.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The fspec startup seam calls dotenvy in startup_env and main.rs invokes it before clap parse",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/startup_env.rs",
+          "lines": "228-270",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/startup_env.rs",
+              "lines": [
+                26,
+                27,
+                28
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec/src/startup_env.rs",
+          "lines": "228-270",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/main.rs",
+              "lines": [
+                2346
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The fspec crate declares the dotenvy dependency",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/startup_env.rs",
+          "lines": "272-297",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/Cargo.toml",
+              "lines": [
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/src/startup_env.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/startup_env.rs",
+      "codelet/fspec/src/main.rs",
+      "codelet/fspec/Cargo.toml"
+    ],
+    "totalLinesCovered": 279
+  }
+}

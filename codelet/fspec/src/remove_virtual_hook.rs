@@ -44,14 +44,16 @@ struct CoreResultEnvelope {
 
 /// Entry point invoked from `main.rs` for the `remove-virtual-hook` clap subcommand.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let work_unit_id = args.work_unit_id.clone();
     let hook_name = args.hook_name.clone();
 
     let mut body = Map::new();
-    body.insert("workUnitId".to_string(), Value::String(work_unit_id.clone()));
+    body.insert(
+        "workUnitId".to_string(),
+        Value::String(work_unit_id.clone()),
+    );
     body.insert("hookName".to_string(), Value::String(hook_name.clone()));
     let args_json = json!(body).to_string();
 

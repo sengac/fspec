@@ -53,7 +53,11 @@ const TS_HELP_FIXTURE_AS: &str = include_str!("fixtures/help/add-scenario.txt");
 fn scenario_cli_adds_a_scenario_and_prints_success_line() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-scenario spec/features/login.feature "Login with invalid password"' in that tempdir
     let (code, stdout, stderr) = run_add_scenario(
@@ -73,7 +77,9 @@ fn scenario_cli_adds_a_scenario_and_prints_success_line() {
     // @step And the file spec/features/login.feature in the tempdir contains the line '  Scenario: Login with invalid password'
     let after = fs::read_to_string(ws.path().join("spec/features/login.feature")).expect("read");
     assert!(
-        after.lines().any(|l| l == "  Scenario: Login with invalid password"),
+        after
+            .lines()
+            .any(|l| l == "  Scenario: Login with invalid password"),
         "missing scenario line:\n{after}"
     );
 }
@@ -86,7 +92,11 @@ fn scenario_cli_adds_a_scenario_and_prints_success_line() {
 fn scenario_cli_prints_a_warning_when_scenario_name_already_exists() {
     // @step Given a tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I run 'fspec add-scenario spec/features/login.feature "A"' in that tempdir
     let (code, stdout, stderr) = run_add_scenario(ws.path(), &["spec/features/login.feature", "A"]);
@@ -125,7 +135,10 @@ fn scenario_cli_fails_with_exit_1_for_a_missing_file() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring 'Feature file not found:'
     assert!(
@@ -169,7 +182,11 @@ fn scenario_cli_help_matches_ts_formatcommandhelp_reference() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: A\n    Given x\n'
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-scenario through fspec_core::dispatch::dispatch_command with feature='spec/features/login.feature' and scenario='From dispatcher'
     let req = codelet_fspec_core::DispatchRequest {
@@ -191,7 +208,8 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         bridge_path.exists(),
         "codelet/fspec/src/add_scenario.rs must exist as the CLI bridge module"
     );
-    let bridge_src = strip_comments(&fs::read_to_string(&bridge_path).expect("bridge module readable"));
+    let bridge_src =
+        strip_comments(&fs::read_to_string(&bridge_path).expect("bridge module readable"));
     for forbidden in [
         "parse_feature_lenient",
         "Feature::parse",

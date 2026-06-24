@@ -11,11 +11,11 @@
 //! for pending DAG content and applies the session state changes.
 
 use std::collections::BTreeMap;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 use codelet_common::token_estimator::count_tokens;
-use codelet_core::compaction::{FileOp, StructuralAnnotation, wrap_dag_content};
+use codelet_core::compaction::{wrap_dag_content, FileOp, StructuralAnnotation};
 use codelet_tools::inject_summary::{InjectSummaryHandler, InjectSummaryResult};
 use uuid::Uuid;
 
@@ -294,10 +294,9 @@ pub fn apply_pending_dag(
             }
         });
 
-        if let Some(files_block) = build_dag_files_block(
-            &all_annotations,
-            existing_dag_files_str.as_deref(),
-        ) {
+        if let Some(files_block) =
+            build_dag_files_block(&all_annotations, existing_dag_files_str.as_deref())
+        {
             // Insert the dag-files block before the closing </system-reminder> tag
             if let Some(close_pos) = wrapped.rfind("</system-reminder>") {
                 wrapped.insert_str(close_pos, &format!("\n\n{}\n", files_block));
@@ -344,7 +343,10 @@ mod tests {
     fn test_inject_summary_clears_compaction_flag() {
         // @step Given a session with compaction_in_progress flag set to true
         let compaction_flag = Arc::new(AtomicBool::new(true));
-        assert!(compaction_flag.load(Ordering::Relaxed), "Flag should start as true");
+        assert!(
+            compaction_flag.load(Ordering::Relaxed),
+            "Flag should start as true"
+        );
 
         let pending_dag = Arc::new(std::sync::Mutex::new(None));
         let context_window: u64 = 200_000;
@@ -357,7 +359,8 @@ mod tests {
         );
 
         let session_id = Uuid::new_v4();
-        let dag_content = "# D2: Architecture\n- JWT auth\n# D1: Current Arc\n- Implementing login".to_string();
+        let dag_content =
+            "# D2: Architecture\n- JWT auth\n# D1: Current Arc\n- Implementing login".to_string();
 
         // @step When the agent calls inject_summary with DAG content
         let result = handler(session_id, dag_content);
@@ -381,12 +384,7 @@ mod tests {
         let compaction_flag = Arc::new(AtomicBool::new(true));
         let pending_dag = Arc::new(std::sync::Mutex::new(None));
 
-        let handler = create_handler(
-            pending_dag.clone(),
-            200_000,
-            compaction_flag.clone(),
-            None,
-        );
+        let handler = create_handler(pending_dag.clone(), 200_000, compaction_flag.clone(), None);
 
         let dag = "# D2: Durable\n- Using bcrypt\n# D1: Arc\n- Building login".to_string();
         let result = handler(Uuid::new_v4(), dag);
@@ -403,26 +401,24 @@ mod tests {
     #[test]
     fn test_inject_summary_returns_token_counts() {
         let pending_dag = Arc::new(std::sync::Mutex::new(None));
-        let handler = create_handler(
-            pending_dag,
-            200_000,
-            Arc::new(AtomicBool::new(true)),
-            None,
-        );
+        let handler = create_handler(pending_dag, 200_000, Arc::new(AtomicBool::new(true)), None);
 
         let result = handler(Uuid::new_v4(), "# Summary".to_string());
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.injected_tokens > 0, "Should report injected tokens");
-        assert!(result.remaining_budget > 0, "Should report remaining budget");
+        assert!(
+            result.remaining_budget > 0,
+            "Should report remaining budget"
+        );
     }
 
     // Scenario: apply_pending_dag with no pending content is a no-op
     #[test]
     fn test_apply_pending_dag_no_content() {
         let pending_dag = Arc::new(std::sync::Mutex::new(None));
-        let provider_manager = codelet_providers::ProviderManager::new()
-            .expect("Need at least one API key for tests");
+        let provider_manager =
+            codelet_providers::ProviderManager::new().expect("Need at least one API key for tests");
         let mut session = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
         let applied = apply_pending_dag(&mut session, &pending_dag);
@@ -438,11 +434,17 @@ mod tests {
 
         let instruction = COMPACTION_INSTRUCTION_FRESH;
         assert!(!instruction.is_empty(), "Instruction should not be empty");
-        assert!(instruction.contains("SessionSearch"), "Must mention SessionSearch");
+        assert!(
+            instruction.contains("SessionSearch"),
+            "Must mention SessionSearch"
+        );
         assert!(instruction.contains("D0"), "Must mention D0");
         assert!(instruction.contains("D1"), "Must mention D1");
         assert!(instruction.contains("D2"), "Must mention D2");
-        assert!(instruction.contains("inject_summary"), "Must tell agent to call inject_summary");
+        assert!(
+            instruction.contains("inject_summary"),
+            "Must tell agent to call inject_summary"
+        );
     }
 
     // Feature: spec/features/structured-dag-node-format.feature
@@ -537,12 +539,21 @@ mod tests {
         assert!(result.is_ok());
 
         // @step Then the on_injected callback should have been called
-        assert!(callback_called.load(Ordering::SeqCst), "on_injected callback should fire");
+        assert!(
+            callback_called.load(Ordering::SeqCst),
+            "on_injected callback should fire"
+        );
 
         // @step And the injected token count should be greater than 0
-        assert!(callback_tokens.load(Ordering::SeqCst) > 0, "injected tokens should be > 0");
+        assert!(
+            callback_tokens.load(Ordering::SeqCst) > 0,
+            "injected tokens should be > 0"
+        );
 
         // @step And compaction_in_progress should already be false
-        assert!(!compaction_flag.load(Ordering::Relaxed), "flag should be cleared before callback");
+        assert!(
+            !compaction_flag.load(Ordering::Relaxed),
+            "flag should be cleared before callback"
+        );
     }
 }

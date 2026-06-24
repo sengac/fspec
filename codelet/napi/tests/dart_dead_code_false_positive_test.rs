@@ -71,28 +71,43 @@ void unusedFunction() {
 
     // Verify test file is marked as test
     let test_file = entities.iter().find(|e| {
-        if let GraphEntity::Node { node_type, properties, .. } = e {
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
             node_type == "File"
-                && properties.get("path").and_then(|v| v.as_str()).is_some_and(|p| p.contains("board_test"))
+                && properties
+                    .get("path")
+                    .and_then(|v| v.as_str())
+                    .is_some_and(|p| p.contains("board_test"))
         } else {
             false
         }
     });
     assert!(test_file.is_some(), "Should find test file");
     if let Some(GraphEntity::Node { properties, .. }) = test_file {
-        assert_eq!(properties.get("isTest").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(
+            properties.get("isTest").and_then(|v| v.as_bool()),
+            Some(true)
+        );
     }
 
     let db_path = temp_dir.path().join("test-dart-fp.nano");
     let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)
         .await
         .expect("DB init should succeed");
-    db.load_entities(&entities).await.expect("load should succeed");
+    db.load_entities(&entities)
+        .await
+        .expect("load should succeed");
 
     // @step When I run ast_dead_code detection on the indexed project
     let dead_code_result = dispatch_ast_dead_code(&db, None, None, None).await;
     let parsed: serde_json::Value = serde_json::from_str(&dead_code_result).expect("parse result");
-    let uncalled = parsed["results"]["Function"]["items"].as_array().expect("should be array");
+    let uncalled = parsed["results"]["Function"]["items"]
+        .as_array()
+        .expect("should be array");
 
     let uncalled_names: Vec<&str> = uncalled
         .iter()
@@ -172,29 +187,41 @@ void unusedRegularFunction() {
     let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)
         .await
         .expect("DB init should succeed");
-    db.load_entities(&entities).await.expect("load should succeed");
+    db.load_entities(&entities)
+        .await
+        .expect("load should succeed");
 
     // @step When I run ast_dead_code detection on the indexed project
     let dead_code_result = dispatch_ast_dead_code(&db, None, None, None).await;
     let parsed: serde_json::Value = serde_json::from_str(&dead_code_result).expect("parse result");
 
     // Check uncalled functions
-    let uncalled = parsed["results"]["Function"]["items"].as_array().expect("should be array");
+    let uncalled = parsed["results"]["Function"]["items"]
+        .as_array()
+        .expect("should be array");
     let uncalled_slugs: Vec<&str> = uncalled
         .iter()
         .filter_map(|f| f.get("slug").and_then(|v| v.as_str()))
         .collect();
 
     // Check unreferenced types
-    let unreferenced = parsed["results"]["Type"]["items"].as_array().expect("should be array");
+    let unreferenced = parsed["results"]["Type"]["items"]
+        .as_array()
+        .expect("should be array");
     let unreferenced_slugs: Vec<&str> = unreferenced
         .iter()
         .filter_map(|t| t.get("slug").and_then(|v| v.as_str()))
         .collect();
 
     // @step Then no entities from ".g.dart" files should appear in dead code results
-    let g_dart_uncalled: Vec<&&str> = uncalled_slugs.iter().filter(|s| s.contains("-g-dart")).collect();
-    let g_dart_unreferenced: Vec<&&str> = unreferenced_slugs.iter().filter(|s| s.contains("-g-dart")).collect();
+    let g_dart_uncalled: Vec<&&str> = uncalled_slugs
+        .iter()
+        .filter(|s| s.contains("-g-dart"))
+        .collect();
+    let g_dart_unreferenced: Vec<&&str> = unreferenced_slugs
+        .iter()
+        .filter(|s| s.contains("-g-dart"))
+        .collect();
     assert!(
         g_dart_uncalled.is_empty(),
         "No uncalled functions from .g.dart should appear. Got: {:?}",
@@ -207,8 +234,14 @@ void unusedRegularFunction() {
     );
 
     // @step And no entities from ".freezed.dart" files should appear in dead code results
-    let freezed_uncalled: Vec<&&str> = uncalled_slugs.iter().filter(|s| s.contains("-freezed-dart")).collect();
-    let freezed_unreferenced: Vec<&&str> = unreferenced_slugs.iter().filter(|s| s.contains("-freezed-dart")).collect();
+    let freezed_uncalled: Vec<&&str> = uncalled_slugs
+        .iter()
+        .filter(|s| s.contains("-freezed-dart"))
+        .collect();
+    let freezed_unreferenced: Vec<&&str> = unreferenced_slugs
+        .iter()
+        .filter(|s| s.contains("-freezed-dart"))
+        .collect();
     assert!(
         freezed_uncalled.is_empty(),
         "No uncalled functions from .freezed.dart should appear. Got: {:?}",
@@ -227,7 +260,9 @@ void unusedRegularFunction() {
         .collect();
     // unusedRegularFunction should still be in regular results
     assert!(
-        regular_uncalled.iter().any(|s| s.contains("unusedRegularFunction")),
+        regular_uncalled
+            .iter()
+            .any(|s| s.contains("unusedRegularFunction")),
         "Genuinely dead regular function should appear. Uncalled slugs: {:?}",
         uncalled_slugs
     );
@@ -242,7 +277,10 @@ async fn test_exclude_flutter_platform_dirs_from_dead_code() {
     let project_dir = temp_dir.path();
 
     // @step Given a Flutter project with platform directories "ios/", "android/", "macos/", "linux/", and "windows/"
-    write_test_file(project_dir, "ios/Runner/AppDelegate.swift", r#"
+    write_test_file(
+        project_dir,
+        "ios/Runner/AppDelegate.swift",
+        r#"
 import UIKit
 import Flutter
 @UIApplicationMain
@@ -251,30 +289,47 @@ import Flutter
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
-"#);
-    write_test_file(project_dir, "android/app/src/main/kotlin/MainActivity.kt", r#"
+"#,
+    );
+    write_test_file(
+        project_dir,
+        "android/app/src/main/kotlin/MainActivity.kt",
+        r#"
 package com.example.app
 import io.flutter.embedding.android.FlutterActivity
 class MainActivity: FlutterActivity()
-"#);
-    write_test_file(project_dir, "macos/Runner/AppDelegate.swift", r#"
+"#,
+    );
+    write_test_file(
+        project_dir,
+        "macos/Runner/AppDelegate.swift",
+        r#"
 import Cocoa
 import FlutterMacOS
 @main
 class AppDelegate: FlutterAppDelegate {}
-"#);
-    write_test_file(project_dir, "linux/main.cc", r#"
+"#,
+    );
+    write_test_file(
+        project_dir,
+        "linux/main.cc",
+        r#"
 #include "my_application.h"
 int main(int argc, char** argv) { return 0; }
-"#);
+"#,
+    );
 
     // @step And the project has a pubspec.yaml with a "flutter" dependency
-    write_test_file(project_dir, "pubspec.yaml", r#"
+    write_test_file(
+        project_dir,
+        "pubspec.yaml",
+        r#"
 name: my_flutter_app
 dependencies:
   flutter:
     sdk: flutter
-"#);
+"#,
+    );
 
     let lib_source = r#"
 void main() {
@@ -305,12 +360,16 @@ void orphanFunction() {
     let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)
         .await
         .expect("DB init should succeed");
-    db.load_entities(&entities).await.expect("load should succeed");
+    db.load_entities(&entities)
+        .await
+        .expect("load should succeed");
 
     // @step When I run ast_dead_code detection on the indexed project
     let dead_code_result = dispatch_ast_dead_code(&db, Some("File"), None, None).await;
     let parsed: serde_json::Value = serde_json::from_str(&dead_code_result).expect("parse result");
-    let orphans = parsed["results"]["File"]["items"].as_array().expect("should be array");
+    let orphans = parsed["results"]["File"]["items"]
+        .as_array()
+        .expect("should be array");
 
     let orphan_paths: Vec<&str> = orphans
         .iter()
@@ -318,10 +377,16 @@ void orphanFunction() {
         .collect();
 
     // @step Then no files from platform directories should appear in the orphan files results
-    let platform_orphans: Vec<&&str> = orphan_paths.iter().filter(|p| {
-        p.starts_with("ios/") || p.starts_with("android/") || p.starts_with("macos/")
-            || p.starts_with("linux/") || p.starts_with("windows/")
-    }).collect();
+    let platform_orphans: Vec<&&str> = orphan_paths
+        .iter()
+        .filter(|p| {
+            p.starts_with("ios/")
+                || p.starts_with("android/")
+                || p.starts_with("macos/")
+                || p.starts_with("linux/")
+                || p.starts_with("windows/")
+        })
+        .collect();
     assert!(
         platform_orphans.is_empty(),
         "Platform directory files should NOT appear in orphan results for Flutter projects. Got: {:?}",
@@ -336,14 +401,22 @@ void orphanFunction() {
     );
 
     // @step And non-platform orphan files should still be detected
-    let non_platform_orphans: Vec<&&str> = orphan_paths.iter().filter(|p| {
-        !p.starts_with("ios/") && !p.starts_with("android/") && !p.starts_with("macos/")
-            && !p.starts_with("linux/") && !p.starts_with("windows/")
-    }).collect();
+    let non_platform_orphans: Vec<&&str> = orphan_paths
+        .iter()
+        .filter(|p| {
+            !p.starts_with("ios/")
+                && !p.starts_with("android/")
+                && !p.starts_with("macos/")
+                && !p.starts_with("linux/")
+                && !p.starts_with("windows/")
+        })
+        .collect();
 
     // lib/orphan.dart should be detected as orphan (it's not imported by anyone)
     assert!(
-        non_platform_orphans.iter().any(|p| p.contains("orphan.dart")),
+        non_platform_orphans
+            .iter()
+            .any(|p| p.contains("orphan.dart")),
         "Non-platform orphan files should still be detected. Got: {:?}",
         orphan_paths
     );
@@ -384,12 +457,16 @@ void utilFunction() {
     let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)
         .await
         .expect("DB init should succeed");
-    db.load_entities(&entities).await.expect("load should succeed");
+    db.load_entities(&entities)
+        .await
+        .expect("load should succeed");
 
     // @step When I run ast_dead_code detection on the indexed project
     let dead_code_result = dispatch_ast_dead_code(&db, Some("File"), None, None).await;
     let parsed: serde_json::Value = serde_json::from_str(&dead_code_result).expect("parse result");
-    let orphans = parsed["results"]["File"]["items"].as_array().expect("should be array");
+    let orphans = parsed["results"]["File"]["items"]
+        .as_array()
+        .expect("should be array");
 
     let orphan_paths: Vec<&str> = orphans
         .iter()
@@ -449,10 +526,21 @@ void useUser(User u) {
     let type_nodes: Vec<(&str, &str)> = entities
         .iter()
         .filter_map(|e| {
-            if let GraphEntity::Node { node_type, properties, .. } = e {
+            if let GraphEntity::Node {
+                node_type,
+                properties,
+                ..
+            } = e
+            {
                 if node_type == "Type" {
-                    let name = properties.get("name").and_then(|v| v.as_str()).unwrap_or("");
-                    let kind = properties.get("typeKind").and_then(|v| v.as_str()).unwrap_or("");
+                    let name = properties
+                        .get("name")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
+                    let kind = properties
+                        .get("typeKind")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
                     return Some((name, kind));
                 }
             }
@@ -462,9 +550,10 @@ void useUser(User u) {
 
     // @step When I run ast_dead_code detection on the indexed project
     // Extensions should be extracted but filtered from dead code
-    let extension_types: Vec<_> = type_nodes.iter().filter(|(name, _)| {
-        *name == "StringExt" || *name == "UserPatterns"
-    }).collect();
+    let extension_types: Vec<_> = type_nodes
+        .iter()
+        .filter(|(name, _)| *name == "StringExt" || *name == "UserPatterns")
+        .collect();
     assert!(
         !extension_types.is_empty(),
         "Extension declarations should be extracted as Type nodes. Got: {:?}",
@@ -475,12 +564,14 @@ void useUser(User u) {
     // After fix: extensions should have a distinct typeKind (e.g., "extension") and be
     // filtered in dispatch, OR they should produce TypeRef edges to their target type
     // Currently they're extracted with typeKind="class", making them indistinguishable
-    let _extension_type_names: Vec<&str> = type_nodes.iter()
+    let _extension_type_names: Vec<&str> = type_nodes
+        .iter()
         .filter(|(name, _)| *name == "StringExt" || *name == "UserPatterns")
         .map(|(name, _)| *name)
         .collect();
     // Verify that extensions have a distinct typeKind — not "class"
-    let extension_kinds: Vec<&str> = type_nodes.iter()
+    let extension_kinds: Vec<&str> = type_nodes
+        .iter()
         .filter(|(name, _)| *name == "StringExt" || *name == "UserPatterns")
         .map(|(_, kind)| *kind)
         .collect();
@@ -546,7 +637,12 @@ class BoardFixtures {
         .expect("extraction should succeed");
 
     // @step Then a Calls edge should exist from the calling function to "connectedInstance"
-    let calls_to_connected = find_edges(&test_entities, "Calls", Some("testBoard"), Some("connectedInstance"));
+    let calls_to_connected = find_edges(
+        &test_entities,
+        "Calls",
+        Some("testBoard"),
+        Some("connectedInstance"),
+    );
     assert!(
         !calls_to_connected.is_empty(),
         "Qualified static call BoardFixtures.connectedInstance() should produce a Calls edge. Got 0 Calls edges. All edges: {:?}",
@@ -629,13 +725,22 @@ class _MyScreenState extends State<MyScreen> {
     // @step When I run ast_dead_code detection on the indexed project
     // Check that _MyScreenState is extracted
     let state_type = entities.iter().find(|e| {
-        if let GraphEntity::Node { node_type, properties, .. } = e {
-            node_type == "Type" && properties.get("name").and_then(|v| v.as_str()) == Some("_MyScreenState")
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
+            node_type == "Type"
+                && properties.get("name").and_then(|v| v.as_str()) == Some("_MyScreenState")
         } else {
             false
         }
     });
-    assert!(state_type.is_some(), "Should extract _MyScreenState as a Type");
+    assert!(
+        state_type.is_some(),
+        "Should extract _MyScreenState as a Type"
+    );
 
     // Check for TypeRef from createState to _MyScreenState
     // The function body `=> _MyScreenState()` should produce a TypeRef or Call
@@ -682,7 +787,11 @@ class WebSocketFixtures {
   }
 }
 "#;
-    write_test_file(project_dir, "test/fixtures/websocket_fixtures.dart", fixtures_source);
+    write_test_file(
+        project_dir,
+        "test/fixtures/websocket_fixtures.dart",
+        fixtures_source,
+    );
 
     // @step And a genuinely unused type "FakeWebSocketChannel" in the same fixtures file
     let fake_channel_source = r#"
@@ -694,7 +803,11 @@ class UsedFixture {
   static String helper() => 'used';
 }
 "#;
-    write_test_file(project_dir, "test/fixtures/fake_channel.dart", fake_channel_source);
+    write_test_file(
+        project_dir,
+        "test/fixtures/fake_channel.dart",
+        fake_channel_source,
+    );
 
     // A file that uses some fixtures but NOT pongMessage or FakeWebSocketChannel
     let test_source = r#"
@@ -716,7 +829,9 @@ void main() {
     let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)
         .await
         .expect("DB init should succeed");
-    db.load_entities(&entities).await.expect("load should succeed");
+    db.load_entities(&entities)
+        .await
+        .expect("load should succeed");
 
     // @step When I run ast_dead_code detection on the indexed project
     // Use raw queries for the "genuinely dead" test — dispatch filters would exclude
@@ -727,14 +842,20 @@ void main() {
     // For this test, we verify via raw query + manual filter to prove the items exist.
     let db = db.with_query_source(AST_QUERIES);
 
-    let result = db.query("uncalled_functions", None).await.expect("query should succeed");
+    let result = db
+        .query("uncalled_functions", None)
+        .await
+        .expect("query should succeed");
     let uncalled = result.as_array().expect("should be array");
     let uncalled_names: Vec<&str> = uncalled
         .iter()
         .filter_map(|f| f.get("name").and_then(|v| v.as_str()))
         .collect();
 
-    let result = db.query("unreferenced_types", None).await.expect("query should succeed");
+    let result = db
+        .query("unreferenced_types", None)
+        .await
+        .expect("query should succeed");
     let unreferenced = result.as_array().expect("should be array");
     let unreferenced_names: Vec<&str> = unreferenced
         .iter()

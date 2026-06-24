@@ -56,12 +56,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             // `message` and emit `✓ <message>` — parity with TS
             // `output.log(`✓ ${result.message}`)`. Idempotent paths
             // also flow through here.
-            let v: Value = serde_json::from_str(&data_json)
-                .context("parse core JSON response")?;
-            let message = v
-                .get("message")
-                .and_then(|m| m.as_str())
-                .unwrap_or("");
+            let v: Value = serde_json::from_str(&data_json).context("parse core JSON response")?;
+            let message = v.get("message").and_then(|m| m.as_str()).unwrap_or("");
             println!("✓ {message}");
             Ok(0)
         }

@@ -18,10 +18,10 @@
 
 use chrono::{Duration, Utc};
 use codelet_napi::scheduler::loop_store::{LoopEntry, LoopStore};
-use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::Arc;
 use std::future::Future;
 use std::pin::Pin;
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 use uuid::Uuid;
 
 /// Callback type for when a loop fires its prompt.
@@ -29,9 +29,8 @@ type OnFireFn = Arc<dyn Fn(String) + Send + Sync + 'static>;
 
 /// Callback type for checking if a session is idle.
 /// Returns a pinned future that resolves to bool.
-type IdleCheckFn = Arc<
-    dyn Fn(Uuid) -> Pin<Box<dyn Future<Output = bool> + Send>> + Send + Sync + 'static,
->;
+type IdleCheckFn =
+    Arc<dyn Fn(Uuid) -> Pin<Box<dyn Future<Output = bool> + Send>> + Send + Sync + 'static>;
 
 /// Helper: create a LoopEntry with sensible defaults for testing.
 fn make_entry(id: &str, session: Uuid, interval_sec: u32) -> LoopEntry {
@@ -141,10 +140,7 @@ async fn test_minimum_interval_is_1_second() {
     let bad_entry = make_entry("sub-second", session_id, 0);
     let noop: OnFireFn = Arc::new(|_prompt: String| {});
     let result: Result<(), String> = store.try_register_with_task(bad_entry, noop).await;
-    assert!(
-        result.is_err(),
-        "Interval of 0 seconds should be rejected"
-    );
+    assert!(result.is_err(), "Interval of 0 seconds should be rejected");
 
     store.cancel("min-interval").await;
 }

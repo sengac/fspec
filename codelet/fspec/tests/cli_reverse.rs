@@ -149,7 +149,11 @@ fn scenario_cli_reset_deletes_the_session_and_prints_session_reset() {
 
     // @step Given a temp working directory marked as a project root with an active reverse session file
     let ws = Workspace::new();
-    ws.write_session(&executing_session(2, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        2,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
     assert!(ws.session_file().exists());
 
     // @step When I run `fspec reverse --reset` from that directory
@@ -198,7 +202,10 @@ fn scenario_cli_complete_with_no_session_exits_1() {
     let (code, stdout, _stderr) = run_reverse(ws.path(), &["--complete"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "reverse --complete with no session must exit 1; stdout={stdout}");
+    assert_eq!(
+        code, 1,
+        "reverse --complete with no session must exit 1; stdout={stdout}"
+    );
 
     // @step Then stdout contains the substring "No active reverse session to complete"
     assert!(
@@ -221,7 +228,10 @@ fn scenario_cli_initial_analysis_prints_gap_analysis_guidance_and_exits_0() {
     let (code, stdout, stderr) = run_reverse(ws.path(), &[]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "reverse must exit 0 on initial analysis; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "reverse must exit 0 on initial analysis; stderr={stderr}"
+    );
 
     // @step Then stdout contains the substring "Gap analysis complete."
     assert!(
@@ -242,13 +252,20 @@ fn scenario_cli_existing_session_detected_prints_suggestions_and_exits_1() {
 
     // @step Given a temp working directory marked as a project root with a parseable executing reverse session file
     let ws = Workspace::new();
-    ws.write_session(&executing_session(2, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        2,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
 
     // @step When I run `fspec reverse` from that directory
     let (code, stdout, _stderr) = run_reverse(ws.path(), &[]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "existing-session detection must exit 1; stdout={stdout}");
+    assert_eq!(
+        code, 1,
+        "existing-session detection must exit 1; stdout={stdout}"
+    );
 
     // @step Then stdout contains the substring "Existing reverse session detected"
     assert!(
@@ -285,7 +302,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_reverse() {
     // @step Then the command exits 0
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );

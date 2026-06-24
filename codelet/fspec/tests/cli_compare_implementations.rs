@@ -135,7 +135,12 @@ fn scenario_cli_show_coverage_includes_deduplicated_coverage_file_paths() {
     // @step Given a temp workspace contains spec/work-units.json with one work unit tagged @cli and one .feature.coverage file referencing one test file and one impl file
     let ws = tempfile::tempdir().expect("tempdir");
     write_work_units(ws.path(), &[("CLI-001", &["@cli"])]);
-    write_coverage(ws.path(), "a.feature.coverage", "test/a.test.ts", "src/a.ts");
+    write_coverage(
+        ws.path(),
+        "a.feature.coverage",
+        "test/a.test.ts",
+        "src/a.ts",
+    );
 
     // @step When I run `./codelet/target/release/fspec compare-implementations --tag @cli --show-coverage --json` from that workspace
     let (code, stdout, stderr) =
@@ -203,8 +208,7 @@ fn scenario_cli_delegates_to_the_same_fspec_core_function_used_by_the_dispatcher
     // @step Then both front doors produce the same JSON envelope
     let disp_data: Value =
         serde_json::from_str(&disp_result.data).expect("dispatcher data must be JSON");
-    let cli_data: Value =
-        serde_json::from_str(cli_stdout.trim()).expect("CLI stdout must be JSON");
+    let cli_data: Value = serde_json::from_str(cli_stdout.trim()).expect("CLI stdout must be JSON");
     assert_eq!(
         disp_data, cli_data,
         "dispatcher and CLI envelopes must match;\ndisp={disp_data}\ncli={cli_data}"
@@ -233,7 +237,10 @@ fn scenario_compare_implementations_help_is_byte_for_byte_identical() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "compare-implementations --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "compare-implementations --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/compare-implementations.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

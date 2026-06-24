@@ -83,7 +83,13 @@ pub(super) fn load_index(index_path: &Path) -> Option<(HashMap<Uuid, IndexEntry>
         let uuid = Uuid::from_bytes(buf[0..16].try_into().ok()?);
         let byte_offset = u64::from_le_bytes(buf[16..24].try_into().ok()?);
         let byte_length = u32::from_le_bytes(buf[24..28].try_into().ok()?);
-        entries.insert(uuid, IndexEntry { byte_offset, byte_length });
+        entries.insert(
+            uuid,
+            IndexEntry {
+                byte_offset,
+                byte_length,
+            },
+        );
     }
 
     Some((entries, data_file_size))
@@ -113,8 +119,8 @@ pub(super) fn save_index(
     }
 
     let temp_path = index_path.with_extension("idx.tmp");
-    let mut file = File::create(&temp_path)
-        .map_err(|e| format!("Failed to create index temp file: {e}"))?;
+    let mut file =
+        File::create(&temp_path).map_err(|e| format!("Failed to create index temp file: {e}"))?;
 
     // Header
     file.write_all(INDEX_MAGIC)
@@ -155,12 +161,14 @@ pub(super) fn scan_jsonl_range(
 ) -> Result<(HashMap<Uuid, IndexEntry>, u64), String> {
     let file = File::open(data_path)
         .map_err(|e| format!("Failed to open messages file for scanning: {e}"))?;
-    let file_len = file.metadata()
+    let file_len = file
+        .metadata()
         .map_err(|e| format!("Failed to get file metadata: {e}"))?
         .len();
 
     let mut reader = BufReader::new(file);
-    reader.seek(SeekFrom::Start(start_offset))
+    reader
+        .seek(SeekFrom::Start(start_offset))
         .map_err(|e| format!("Failed to seek in messages file: {e}"))?;
 
     let mut entries = HashMap::new();
@@ -169,7 +177,8 @@ pub(super) fn scan_jsonl_range(
     let mut line_buf = String::new();
     loop {
         line_buf.clear();
-        let bytes_read = reader.read_line(&mut line_buf)
+        let bytes_read = reader
+            .read_line(&mut line_buf)
             .map_err(|e| format!("Failed to read line from messages file: {e}"))?;
         if bytes_read == 0 {
             break;
@@ -183,10 +192,13 @@ pub(super) fn scan_jsonl_range(
         // Extract just the UUID without full deserialization for speed.
         // Fall back to full parse if the fast path fails.
         if let Some(uuid) = extract_uuid_fast(trimmed) {
-            entries.insert(uuid, IndexEntry {
-                byte_offset: current_offset,
-                byte_length: bytes_read as u32,
-            });
+            entries.insert(
+                uuid,
+                IndexEntry {
+                    byte_offset: current_offset,
+                    byte_length: bytes_read as u32,
+                },
+            );
         } else {
             warn!("Skipping unparseable line at offset {current_offset}");
         }
@@ -224,8 +236,8 @@ pub(super) fn read_message_at(
     data_path: &Path,
     entry: &IndexEntry,
 ) -> Result<StoredMessage, String> {
-    let mut file = File::open(data_path)
-        .map_err(|e| format!("Failed to open messages file: {e}"))?;
+    let mut file =
+        File::open(data_path).map_err(|e| format!("Failed to open messages file: {e}"))?;
     file.seek(SeekFrom::Start(entry.byte_offset))
         .map_err(|e| format!("Failed to seek to message: {e}"))?;
 
@@ -233,8 +245,7 @@ pub(super) fn read_message_at(
     file.read_exact(&mut buf)
         .map_err(|e| format!("Failed to read message bytes: {e}"))?;
 
-    serde_json::from_slice(&buf)
-        .map_err(|e| format!("Failed to deserialize message: {e}"))
+    serde_json::from_slice(&buf).map_err(|e| format!("Failed to deserialize message: {e}"))
 }
 
 #[cfg(test)]
@@ -312,7 +323,10 @@ mod tests {
         let uuid = Uuid::new_v4();
         index.insert(
             uuid,
-            IndexEntry { byte_offset: 0, byte_length: 42 },
+            IndexEntry {
+                byte_offset: 0,
+                byte_length: 42,
+            },
         );
         save_index(&index_path, &index, 42).expect("initial save");
         assert!(index_path.exists());

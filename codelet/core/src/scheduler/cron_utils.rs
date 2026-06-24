@@ -34,12 +34,10 @@ pub fn find_previous_trigger(
 
 /// Parse a cron expression, returning an error string on failure.
 pub fn parse_cron(expr: &str, context: &str) -> Result<Cron, String> {
-    Cron::new(expr)
-        .parse()
-        .map_err(|e| {
-            error!("Invalid cron '{expr}' for {context}: {e}");
-            format!("Invalid cron: {e}")
-        })
+    Cron::new(expr).parse().map_err(|e| {
+        error!("Invalid cron '{expr}' for {context}: {e}");
+        format!("Invalid cron: {e}")
+    })
 }
 
 /// Parse an IANA timezone string, returning an error string on failure.

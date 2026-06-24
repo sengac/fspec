@@ -47,10 +47,8 @@ fn cli_successfully_registers_new_tag_and_prints_success_block() {
     assert!(!ws.path().join("spec/tags.json").exists());
 
     // @step When I run 'fspec register-tag @ws "Technical Tags" "WebSocket features"' in that tempdir
-    let (code, stdout, stderr) = run_register_tag(
-        ws.path(),
-        &["@ws", "Technical Tags", "WebSocket features"],
-    );
+    let (code, stdout, stderr) =
+        run_register_tag(ws.path(), &["@ws", "Technical Tags", "WebSocket features"]);
 
     // @step Then the process exits with code 0
     assert_eq!(
@@ -93,10 +91,8 @@ fn cli_rejects_invalid_tag_format_with_error_prefix_and_exit_1() {
     let ws = tempfile::tempdir().expect("tempdir");
 
     // @step When I run 'fspec register-tag InvalidTag "Technical Tags" "desc"' in that tempdir
-    let (code, stdout, stderr) = run_register_tag(
-        ws.path(),
-        &["InvalidTag", "Technical Tags", "desc"],
-    );
+    let (code, stdout, stderr) =
+        run_register_tag(ws.path(), &["InvalidTag", "Technical Tags", "desc"]);
 
     // @step Then the process exits with code 1
     assert_eq!(
@@ -127,10 +123,8 @@ fn cli_reports_lowercase_conversion_note() {
     let ws = tempfile::tempdir().expect("tempdir");
 
     // @step When I run 'fspec register-tag @API-Integration "Technical Tags" "API"' in that tempdir
-    let (code, stdout, stderr) = run_register_tag(
-        ws.path(),
-        &["@API-Integration", "Technical Tags", "API"],
-    );
+    let (code, stdout, stderr) =
+        run_register_tag(ws.path(), &["@API-Integration", "Technical Tags", "API"]);
 
     // @step Then the process exits with code 0
     assert_eq!(
@@ -148,8 +142,7 @@ fn cli_reports_lowercase_conversion_note() {
 
     // @step And stdout contains the substring 'Note: Tag converted to lowercase: @API-Integration → @api-integration'
     assert!(
-        stdout
-            .contains("Note: Tag converted to lowercase: @API-Integration → @api-integration"),
+        stdout.contains("Note: Tag converted to lowercase: @API-Integration → @api-integration"),
         "stdout must contain lowercase-conversion note; got:\n{stdout}"
     );
 }
@@ -178,10 +171,7 @@ fn cli_help_output_matches_captured_typescript_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(
-        code, 0,
-        "register-tag --help must exit 0; stderr={stderr}"
-    );
+    assert_eq!(code, 0, "register-tag --help must exit 0; stderr={stderr}");
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/register-tag.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_RT);

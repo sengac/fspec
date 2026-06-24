@@ -7,13 +7,13 @@
 //!
 //! MODEL-001: Integrates with ModelCache and ModelRegistry for dynamic model selection
 
+use super::copilot::{CopilotDeploymentType, CopilotProvider};
 use super::credentials::ProviderCredentials;
 use super::models::{ModelCache, ModelInfo, ModelRegistry};
 use super::{
     claude, codex, copilot, gemini, openai, zai, ClaudeProvider, CodexProvider, GeminiProvider,
     OpenAIProvider, ProviderError, ZAIProvider,
 };
-use super::copilot::{CopilotDeploymentType, CopilotProvider};
 use crate::model_limits::{resolve_context_window, resolve_max_output_tokens, ModelLimitsResolver};
 use std::str::FromStr;
 
@@ -270,9 +270,12 @@ impl std::fmt::Debug for ProviderManager {
 }
 
 impl ProviderManager {
-    /// Create new ProviderManager with automatic provider selection
+    /// Create new ProviderManager, resolving the provider only when the choice
+    /// is unambiguous.
     ///
-    /// Priority order: Claude API > Claude OAuth > Gemini > Codex > OpenAI
+    /// PROV-101: there is no priority-chain default. With a single credentialed
+    /// provider that provider is used; with several, this errors rather than
+    /// silently picking Claude (callers must select explicitly).
     pub fn new() -> Result<Self, ProviderError> {
         let credentials = ProviderCredentials::detect();
 
@@ -284,7 +287,8 @@ impl ProviderManager {
             ));
         }
 
-        let current_provider = Self::detect_default_provider(&credentials)?;
+        let current_provider =
+            crate::provider_resolution::resolve_unambiguous_provider(&credentials)?;
 
         Ok(Self {
             credentials,
@@ -402,7 +406,14 @@ impl ProviderManager {
             ));
         }
 
-        let current_provider = Self::detect_default_provider(&credentials)?;
+        // PROV-101: a registry-backed manager makes NO provider selection at
+        // construction — every caller of `with_model_support()` immediately
+        // applies an EXPLICIT model via `select_model` / `set_model_direct`,
+        // which overwrites `current_provider`. We therefore must NOT run the
+        // (now-removed) priority-chain default here, and must NOT error on an
+        // ambiguous credential set: the explicit model that follows IS the
+        // selection. A neutral deferred placeholder is used until then.
+        let current_provider = Self::deferred_placeholder_provider(&credentials);
 
         // Initialize model cache and registry
         let cache = ModelCache::new()?;
@@ -714,34 +725,29 @@ impl ProviderManager {
         }
     }
 
-    /// Detect default provider based on priority
-    fn detect_default_provider(
-        credentials: &ProviderCredentials,
-    ) -> Result<ProviderType, ProviderError> {
-        // Priority: Claude > Gemini > ZAI > Codex > GitHubCopilot > OpenAI
+    /// PROV-101: A neutral placeholder `current_provider` for a registry-backed
+    /// manager built via [`Self::with_model_support`]. It is ALWAYS overwritten
+    /// by the explicit `select_model` / `set_model_direct` call that every
+    /// caller makes next, so it is not a selection — just a value to hold the
+    /// non-`Option` field until the explicit model arrives. Uses the first
+    /// credentialed provider purely so accidental early reads stay credentialed;
+    /// it never *chooses* among providers via a priority chain.
+    fn deferred_placeholder_provider(credentials: &ProviderCredentials) -> ProviderType {
         if credentials.has_claude() {
-            return Ok(ProviderType::Claude);
+            ProviderType::Claude
+        } else if credentials.has_openai() {
+            ProviderType::OpenAI
+        } else if credentials.has_gemini() {
+            ProviderType::Gemini
+        } else if credentials.has_zai() {
+            ProviderType::ZAI
+        } else if credentials.has_codex() {
+            ProviderType::Codex
+        } else if credentials.has_github_copilot() {
+            ProviderType::GitHubCopilot
+        } else {
+            ProviderType::OpenAI
         }
-        if credentials.has_gemini() {
-            return Ok(ProviderType::Gemini);
-        }
-        if credentials.has_zai() {
-            return Ok(ProviderType::ZAI);
-        }
-        if credentials.has_codex() {
-            return Ok(ProviderType::Codex);
-        }
-        if credentials.has_github_copilot() {
-            return Ok(ProviderType::GitHubCopilot);
-        }
-        if credentials.has_openai() {
-            return Ok(ProviderType::OpenAI);
-        }
-
-        Err(ProviderError::auth(
-            "manager",
-            "No provider credentials available",
-        ))
     }
 
     /// Get current provider name
@@ -756,15 +762,16 @@ impl ProviderManager {
         &self.current_provider
     }
 
-    /// PROV-067: Test-only shim around the private
-    /// [`Self::detect_default_provider`] helper, so integration tests
-    /// can verify custom providers never auto-select even when they're
-    /// the only credentialed provider.
+    /// PROV-067 / PROV-101: Test-only shim around the private
+    /// [`crate::provider_resolution::resolve_unambiguous_provider`] helper, so integration tests
+    /// can verify custom providers never auto-select even when they're the
+    /// only credentialed provider, and that an ambiguous multi-provider state
+    /// errors instead of silently picking Claude.
     #[doc(hidden)]
     pub fn detect_default_provider_for_test(
         credentials: &ProviderCredentials,
     ) -> Result<ProviderType, ProviderError> {
-        Self::detect_default_provider(credentials)
+        crate::provider_resolution::resolve_unambiguous_provider(credentials)
     }
 
     /// Get Claude provider (if selected)
@@ -1161,7 +1168,9 @@ impl ProviderManager {
     /// CTX-007: Get the compaction threshold override (type, value).
     /// Returns None if no user-configured override exists.
     pub fn compaction_threshold_override(&self) -> Option<(&str, u64)> {
-        self.compaction_threshold_override.as_ref().map(|(t, v)| (t.as_str(), *v))
+        self.compaction_threshold_override
+            .as_ref()
+            .map(|(t, v)| (t.as_str(), *v))
     }
 
     /// CTX-007: Set the compaction threshold override.
@@ -1417,10 +1426,8 @@ mod tests {
         );
 
         // @step And copilot_auth.json has just been written by the OAuth login flow
-        let auth = CopilotAuthJson::from_github_oauth_token(
-            "gho_prov_057_fresh_login".to_string(),
-            None,
-        );
+        let auth =
+            CopilotAuthJson::from_github_oauth_token("gho_prov_057_fresh_login".to_string(), None);
         write_copilot_auth(&auth)
             .await
             .expect("write_copilot_auth should succeed in temp HOME");
@@ -1708,7 +1715,11 @@ mod tests {
         // @step When I call select_model("openai/o3")
         let result = manager.select_model("openai/o3");
         std::env::remove_var("OPENAI_API_KEY");
-        assert!(result.is_ok(), "select_model should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "select_model should succeed: {:?}",
+            result.err()
+        );
 
         // @step Then model_context_window should be 200000
         assert_eq!(manager.registry_context_window, Some(200_000));
@@ -1738,8 +1749,12 @@ mod tests {
             None,
         );
         // Write synchronously using the same approach as FspecHomeGuard tests
-        let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
-        rt.block_on(write_copilot_auth(&auth)).expect("write_copilot_auth should succeed");
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        rt.block_on(write_copilot_auth(&auth))
+            .expect("write_copilot_auth should succeed");
 
         let mut manager = test_manager_with_registry_and_credentials();
 
@@ -1748,7 +1763,11 @@ mod tests {
 
         // @step When I call select_model("github-copilot/gemini-2.5-pro")
         let result = manager.select_model("github-copilot/gemini-2.5-pro");
-        assert!(result.is_ok(), "select_model should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "select_model should succeed: {:?}",
+            result.err()
+        );
 
         // @step Then context_window() should return 1000000
         assert_eq!(manager.context_window(), 1_000_000);
@@ -1771,7 +1790,11 @@ mod tests {
         // @step When I call select_model("anthropic/claude-sonnet-4")
         let result = manager.select_model("anthropic/claude-sonnet-4");
         std::env::remove_var("ANTHROPIC_API_KEY");
-        assert!(result.is_ok(), "select_model should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "select_model should succeed: {:?}",
+            result.err()
+        );
 
         // @step Then model_context_window should be 200000
         assert_eq!(manager.registry_context_window, Some(200_000));
@@ -1882,13 +1905,8 @@ mod tests {
         let mut manager = test_manager(ProviderType::OpenAI);
 
         // @step When sessionSetModelProfile is called with context_window=32000 and max_output_tokens=4096
-        let result = manager.set_model_direct(
-            "openai",
-            "my-local-model",
-            Some(32_000),
-            Some(4_096),
-            None,
-        );
+        let result =
+            manager.set_model_direct("openai", "my-local-model", Some(32_000), Some(4_096), None);
         assert!(result.is_ok());
 
         // @step Then set_model_direct stores model_context_window=32000 and model_max_output_tokens=4096
@@ -1912,13 +1930,8 @@ mod tests {
         let mut manager = test_manager(ProviderType::OpenAI);
 
         // @step When sessionSetModelProfile is called with context_window=272000 and max_output_tokens=4096
-        let result = manager.set_model_direct(
-            "openai",
-            "codex-model",
-            Some(272_000),
-            Some(4_096),
-            None,
-        );
+        let result =
+            manager.set_model_direct("openai", "codex-model", Some(272_000), Some(4_096), None);
         assert!(result.is_ok());
 
         // @step Then set_model_direct stores model_context_window=272000 and model_max_output_tokens=4096
@@ -1939,13 +1952,7 @@ mod tests {
         let mut manager = test_manager(ProviderType::OpenAI);
 
         // @step When set_model_direct is called without context params
-        let result = manager.set_model_direct(
-            "openai",
-            "my-local-model",
-            None,
-            None,
-            None,
-        );
+        let result = manager.set_model_direct("openai", "my-local-model", None, None, None);
         assert!(result.is_ok());
 
         // @step Then model_context_window should remain None
@@ -1962,11 +1969,8 @@ mod tests {
     #[test]
     fn test_for_testing_with_custom_context() {
         // @step Given I create a test ProviderManager via for_testing(OpenAI, context_window=200000, max_output_tokens=100000)
-        let manager = ProviderManager::for_testing(
-            ProviderType::OpenAI,
-            Some(200_000),
-            Some(100_000),
-        );
+        let manager =
+            ProviderManager::for_testing(ProviderType::OpenAI, Some(200_000), Some(100_000));
 
         // @step Then context_window() should return 200000
         assert_eq!(manager.context_window(), 200_000);
@@ -1992,7 +1996,11 @@ mod tests {
         );
         std::env::remove_var("ANTHROPIC_API_KEY");
 
-        assert!(result.is_ok(), "with_provider_and_model should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "with_provider_and_model should succeed: {:?}",
+            result.err()
+        );
         let manager = result.unwrap();
 
         // @step Then context_window() should return 200000
@@ -2011,12 +2019,8 @@ mod tests {
     fn test_with_provider_and_model_without_context_falls_back() {
         // @step Given I create a ProviderManager via with_provider_and_model("claude", "claude-sonnet-4") with no context params
         std::env::set_var("ANTHROPIC_API_KEY", "test-key-for-provider-manager");
-        let result = ProviderManager::with_provider_and_model(
-            "claude",
-            Some("claude-sonnet-4"),
-            None,
-            None,
-        );
+        let result =
+            ProviderManager::with_provider_and_model("claude", Some("claude-sonnet-4"), None, None);
         std::env::remove_var("ANTHROPIC_API_KEY");
 
         assert!(result.is_ok());
@@ -2109,7 +2113,10 @@ mod tests {
         assert_eq!(usable, 168_000);
 
         // @step And compaction triggers when effective tokens exceed 168000
-        assert!(168_001 > usable, "tokens exceeding threshold should trigger compaction");
+        assert!(
+            168_001 > usable,
+            "tokens exceeding threshold should trigger compaction"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -2133,7 +2140,10 @@ mod tests {
         assert_eq!(usable, 27_904);
 
         // @step And compaction triggers when effective tokens exceed 27904
-        assert!(27_905 > usable, "tokens exceeding threshold should trigger compaction");
+        assert!(
+            27_905 > usable,
+            "tokens exceeding threshold should trigger compaction"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -2178,13 +2188,8 @@ mod tests {
         // (Simulated: direct call to set_model_direct with context params)
 
         // @step When selectModel is called
-        let result = manager.set_model_direct(
-            "openai",
-            "local-model",
-            Some(32_000),
-            Some(4_096),
-            None,
-        );
+        let result =
+            manager.set_model_direct("openai", "local-model", Some(32_000), Some(4_096), None);
         assert!(result.is_ok());
 
         // @step Then sessionSetModelProfile is called with context_window=32000 and max_output_tokens=4096
@@ -2222,13 +2227,7 @@ mod tests {
         let mut manager = test_manager(ProviderType::OpenAI);
 
         // @step When set_model_direct is called with facade_override=None
-        let result = manager.set_model_direct(
-            "openai",
-            "my-local-model",
-            None,
-            None,
-            None,
-        );
+        let result = manager.set_model_direct("openai", "my-local-model", None, None, None);
         assert!(result.is_ok());
 
         // @step Then facade_override() should return None
@@ -2524,7 +2523,10 @@ mod tests {
         );
 
         // @step And selected_model_id returns "llama-3.1-70b"
-        assert_eq!(manager.selected_model_id().as_deref(), Some("llama-3.1-70b"));
+        assert_eq!(
+            manager.selected_model_id().as_deref(),
+            Some("llama-3.1-70b")
+        );
     }
 
     /// Scenario: selected_model_id preserves slashes inside the model id
@@ -2697,7 +2699,13 @@ mod tests {
 
         // @step When legacy set_model_direct(5 args) is called
         manager
-            .set_model_direct("openai", "accounts/fireworks/models/kimi-k2p6", None, None, None)
+            .set_model_direct(
+                "openai",
+                "accounts/fireworks/models/kimi-k2p6",
+                None,
+                None,
+                None,
+            )
             .expect("legacy set_model_direct should succeed");
 
         // @step Then the composite has no profile segment (profile name defaults to None)
@@ -2718,7 +2726,11 @@ mod tests {
         // @step When select_model is called with "anthropic/claude-sonnet-4"
         let result = manager.select_model("anthropic/claude-sonnet-4");
         std::env::remove_var("ANTHROPIC_API_KEY");
-        assert!(result.is_ok(), "select_model should succeed: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "select_model should succeed: {:?}",
+            result.err()
+        );
 
         // @step Then selected_model_string() returns a composite without a colon before the first slash
         let composite = manager.selected_model_string().expect("composite");
@@ -2755,9 +2767,7 @@ mod tests {
             .expect("set_model_direct_with_profile should succeed");
 
         // @step When AgentManager captures selected_model_string() and passes it to create_session_with_id
-        let captured = manager
-            .selected_model_string()
-            .expect("captured composite");
+        let captured = manager.selected_model_string().expect("captured composite");
 
         // @step Then the subordinate path detects profile format by finding ':' before '/'
         let colon_idx = captured.find(':');
@@ -2774,8 +2784,7 @@ mod tests {
 
         // @step And set_model_direct is used for the subordinate instead of select_model
         // Simulate create_session_with_id parsing:
-        let is_profile_model = captured.contains(':')
-            && captured.find(':') < captured.find('/');
+        let is_profile_model = captured.contains(':') && captured.find(':') < captured.find('/');
         assert!(
             is_profile_model,
             "captured composite must be classified as profile model by \

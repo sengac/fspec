@@ -53,9 +53,7 @@ impl SystemPromptFacade for CopilotResponsesSystemPromptFacade {
 /// - [`CopilotEndpoint::Responses`] →
 ///   [`CopilotResponsesSystemPromptFacade`] (`provider == "copilot-responses"`)
 #[must_use]
-pub fn system_prompt_facade_for_endpoint(
-    endpoint: CopilotEndpoint,
-) -> BoxedSystemPromptFacade {
+pub fn system_prompt_facade_for_endpoint(endpoint: CopilotEndpoint) -> BoxedSystemPromptFacade {
     match endpoint {
         CopilotEndpoint::ChatCompletions => Box::new(OpenAISystemPromptFacade),
         CopilotEndpoint::Responses => Box::new(CopilotResponsesSystemPromptFacade),

@@ -44,7 +44,12 @@ fn write_file(cwd: &Path, rel: &str, body: &str) {
 
 /// Coverage file body with a single fully-covered scenario whose test+impl
 /// files exist at the given relative paths.
-fn coverage_one_full(test_file: &str, test_lines: &str, impl_file: &str, impl_lines: &str) -> String {
+fn coverage_one_full(
+    test_file: &str,
+    test_lines: &str,
+    impl_file: &str,
+    impl_lines: &str,
+) -> String {
     format!(
         r#"{{
   "scenarios": [
@@ -189,13 +194,17 @@ fn scenario_cli_per_feature_markdown_for_fully_covered() {
 
     // @step And stdout contains the line '# Coverage Report: auth.feature'
     assert!(
-        stdout.lines().any(|l| l == "# Coverage Report: auth.feature"),
+        stdout
+            .lines()
+            .any(|l| l == "# Coverage Report: auth.feature"),
         "stdout must contain coverage report title; got:\n{stdout}"
     );
 
     // @step And stdout contains the line '**Coverage**: 100% (1/1 scenarios)'
     assert!(
-        stdout.lines().any(|l| l == "**Coverage**: 100% (1/1 scenarios)"),
+        stdout
+            .lines()
+            .any(|l| l == "**Coverage**: 100% (1/1 scenarios)"),
         "stdout must contain coverage percent line; got:\n{stdout}"
     );
 
@@ -256,7 +265,11 @@ fn scenario_cli_project_wide_aggregates() {
     write_file(ws.path(), "src/a.ts", "// impl\n");
     let a_body = coverage_one_full("tests/a.test.ts", "1-10", "src/a.ts", "1-5");
     write_file(ws.path(), "spec/features/a.feature.coverage", &a_body);
-    write_file(ws.path(), "spec/features/b.feature.coverage", &coverage_one_uncovered());
+    write_file(
+        ws.path(),
+        "spec/features/b.feature.coverage",
+        &coverage_one_uncovered(),
+    );
 
     // @step When I run `./codelet/target/release/fspec show-coverage` from that workspace
     let (code, stdout, stderr) = run_show_coverage(ws.path(), &[]);
@@ -364,7 +377,9 @@ fn scenario_cli_trailing_feature_extension_tolerated() {
 
     // @step And stdout contains the line '# Coverage Report: login.feature'
     assert!(
-        stdout.lines().any(|l| l == "# Coverage Report: login.feature"),
+        stdout
+            .lines()
+            .any(|l| l == "# Coverage Report: login.feature"),
         "stdout must contain coverage report title; got:\n{stdout}"
     );
 }
@@ -453,7 +468,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And I run `./codelet/target/release/fspec show-coverage auth --format json` against the same workspace
     let (code, stdout, stderr) = run_show_coverage(ws.path(), &["auth", "--format", "json"]);

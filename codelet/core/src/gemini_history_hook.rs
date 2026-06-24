@@ -103,8 +103,7 @@ impl GeminiHistoryHook {
                                 "Adding synthetic thought signature to tool call: {}",
                                 tool_call.function.name
                             );
-                            tool_call.signature =
-                                Some(SYNTHETIC_THOUGHT_SIGNATURE.to_string());
+                            tool_call.signature = Some(SYNTHETIC_THOUGHT_SIGNATURE.to_string());
                         }
                         // Only process first tool call per model turn
                         break;
@@ -352,7 +351,9 @@ mod tests {
         assert!(GeminiHistoryHook::is_preview_model(
             "gemini-2.5-flash-preview-04-17"
         ));
-        assert!(GeminiHistoryHook::is_preview_model("gemini-2.5-pro-exp-03-25"));
+        assert!(GeminiHistoryHook::is_preview_model(
+            "gemini-2.5-pro-exp-03-25"
+        ));
         assert!(!GeminiHistoryHook::is_preview_model("gemini-2.0-flash"));
     }
 

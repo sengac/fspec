@@ -63,10 +63,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         obj.insert("feature".to_string(), Value::String(feature.clone()));
     }
     if args.ignore_possible_duplicates {
-        obj.insert(
-            "ignorePossibleDuplicates".to_string(),
-            Value::Bool(true),
-        );
+        obj.insert("ignorePossibleDuplicates".to_string(), Value::Bool(true));
     }
     let args_json = json!(obj).to_string();
 

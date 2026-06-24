@@ -48,8 +48,8 @@ fn write_foundation(project_root: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(project_root: &Path) -> serde_json::Value {
-    let raw =
-        fs::read_to_string(project_root.join("spec/foundation.json")).expect("read foundation.json");
+    let raw = fs::read_to_string(project_root.join("spec/foundation.json"))
+        .expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -232,11 +232,17 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec add-domain-event-to-foundation "Work Management" "E2"` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["Work Management", "E2"]);
-    assert_eq!(code, 0, "CLI add must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI add must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows eventStorm.items contains both event items 'E1' and 'E2'
     let v = read_foundation(ws.path());

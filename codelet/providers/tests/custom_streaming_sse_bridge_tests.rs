@@ -19,8 +19,8 @@ use codelet_providers::custom::stream::StreamChunk;
 use codelet_providers::{ProviderError, StopReason};
 use futures::StreamExt;
 use helpers::{
-    build_streaming_provider, process_events, streaming_config_with_script,
-    FAIL_IF_CALLED_SCRIPT, OPENAI_TEXT_DELTA_SCRIPT,
+    build_streaming_provider, process_events, streaming_config_with_script, FAIL_IF_CALLED_SCRIPT,
+    OPENAI_TEXT_DELTA_SCRIPT,
 };
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -60,7 +60,8 @@ async fn emit_text_delta_chunks_in_order_for_consecutive_content_deltas() {
             r#"{"choices":[{"delta":{"content":"Hel"}}]}"#,
             r#"{"choices":[{"delta":{"content":"lo"}}]}"#,
         ],
-    ).await;
+    )
+    .await;
 
     // @step Then the bridge yields TextDelta("Hel") followed by TextDelta("lo")
     assert_eq!(results.len(), 2, "expected two chunks in order");
@@ -204,7 +205,8 @@ fn parse_stream_chunk(config, data) {
     let (_tmp, results) = process_events(
         script,
         &[r#"{"choices":[{"delta":{},"finish_reason":"stop"}]}"#],
-    ).await;
+    )
+    .await;
 
     // @step Then the bridge yields StreamChunk::StopReason(EndTurn)
     let stops: Vec<_> = results
@@ -250,7 +252,8 @@ fn parse_stream_chunk(config, data) {
     let (_tmp, results) = process_events(
         script,
         &[r#"{"choices":[{"delta":{},"finish_reason":"tool_calls"}]}"#],
-    ).await;
+    )
+    .await;
 
     // @step Then the bridge yields StreamChunk::StopReason(ToolUse)
     let stops: Vec<_> = results
@@ -312,10 +315,8 @@ fn parse_stream_chunk(config, data) {
 
     // @step When the SSE stream emits any event the script throws on
     // Feed TWO events; after the first throw the second must NOT be processed.
-    let (_tmp, results) = process_events(
-        script,
-        &[r#"{"event":"first"}"#, r#"{"event":"second"}"#],
-    ).await;
+    let (_tmp, results) =
+        process_events(script, &[r#"{"event":"first"}"#, r#"{"event":"second"}"#]).await;
 
     // @step Then the bridge yields a single Err(ProviderError::Api) and then terminates
     assert_eq!(
@@ -383,9 +384,7 @@ fn parse_stream_chunk(config, data) {{
 
     // @step When RhaiCustomProvider starts a streaming completion
     let messages = vec![Message::user("hi")];
-    let mut stream = provider
-        .complete_with_tools_streaming(&messages, &[])
-        .await;
+    let mut stream = provider.complete_with_tools_streaming(&messages, &[]).await;
 
     // @step Then the stream yields one Err(ProviderError::Auth) and no TextDelta chunks
     let mut got_auth = false;
@@ -406,7 +405,10 @@ fn parse_stream_chunk(config, data) {{
         }
     }
     assert!(got_auth, "expected an Authentication error to be yielded");
-    assert_eq!(text_count, 0, "no TextDelta chunks should appear before auth error");
+    assert_eq!(
+        text_count, 0,
+        "no TextDelta chunks should appear before auth error"
+    );
 }
 
 // =========================================================================
@@ -515,9 +517,7 @@ fn parse_stream_chunk(config, data) {{
 
     // @step When RhaiCustomProvider performs a streaming completion
     let messages = vec![Message::user("hi")];
-    let mut stream = provider
-        .complete_with_tools_streaming(&messages, &[])
-        .await;
+    let mut stream = provider.complete_with_tools_streaming(&messages, &[]).await;
 
     let mut collected: Vec<StreamChunk> = Vec::new();
     while let Some(item) = stream.next().await {

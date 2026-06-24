@@ -8,11 +8,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use codelet_providers::custom::stream::{RhaiStreamProcessor, StreamChunk};
 use codelet_providers::custom::{
     ApiStyle, AuthConfig, ModelDef, ProviderConfig, RhaiCustomProvider, ScriptLoader, ToolStyle,
 };
 use codelet_providers::error::ProviderError;
-use codelet_providers::custom::stream::{RhaiStreamProcessor, StreamChunk};
 use tempfile::TempDir;
 
 /// Write a `.rhai` script body to `dir/filename` and return the path.
@@ -87,7 +87,9 @@ pub fn build_processor(script_body: &str) -> (TempDir, RhaiStreamProcessor) {
     let script_path = write_script(tmp.path(), "p.rhai", script_body);
     let loader = Arc::new(ScriptLoader::with_default_engine());
     let ast = loader.load(&script_path).expect("load script");
-    loader.validate_required_functions(&ast).expect("required fns");
+    loader
+        .validate_required_functions(&ast)
+        .expect("required fns");
     let engine = loader.engine_arc();
     let processor = RhaiStreamProcessor::new(
         engine,

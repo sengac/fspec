@@ -40,7 +40,11 @@ impl ChainOfCommand {
     }
 
     /// Register a supervisor for a subordinate session
-    pub fn add_supervisor(&self, subordinate_id: Uuid, supervisor_id: Uuid) -> std::result::Result<(), String> {
+    pub fn add_supervisor(
+        &self,
+        subordinate_id: Uuid,
+        supervisor_id: Uuid,
+    ) -> std::result::Result<(), String> {
         let mut sup2subs = self
             .supervisor_to_subordinates
             .write()
@@ -72,13 +76,19 @@ impl ChainOfCommand {
             }
         }
 
-        sup2subs.entry(supervisor_id).or_default().push(subordinate_id);
+        sup2subs
+            .entry(supervisor_id)
+            .or_default()
+            .push(subordinate_id);
 
         let mut sub2sup = self
             .subordinate_to_supervisors
             .write()
             .expect("subordinate_to_supervisors lock poisoned");
-        sub2sup.entry(subordinate_id).or_default().push(supervisor_id);
+        sub2sup
+            .entry(subordinate_id)
+            .or_default()
+            .push(supervisor_id);
 
         Ok(())
     }
@@ -124,7 +134,9 @@ impl ChainOfCommand {
             .supervisor_to_subordinates
             .read()
             .expect("supervisor_to_subordinates lock poisoned");
-        sup2subs.get(&supervisor_id).and_then(|v| v.first().copied())
+        sup2subs
+            .get(&supervisor_id)
+            .and_then(|v| v.first().copied())
     }
 
     /// Get all subordinates for a supervisor session (FIX-7)

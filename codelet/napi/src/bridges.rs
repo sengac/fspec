@@ -48,11 +48,11 @@ use uuid::Uuid;
 #[cfg(test)]
 use codelet_sessions::background_session::SUPERVISOR_BROADCAST_CAPACITY;
 #[cfg(test)]
+use std::sync::atomic::Ordering;
+#[cfg(test)]
 use std::sync::atomic::{AtomicBool, AtomicU64};
 #[cfg(test)]
 use std::sync::RwLock;
-#[cfg(test)]
-use std::sync::atomic::Ordering;
 #[cfg(test)]
 use tokio::sync::broadcast;
 
@@ -73,32 +73,37 @@ pub(crate) fn register_deep_search_handler(
 ) {
     // BUG-132/MODEL-004: Check facade_override first — if set, dispatch to that
     // provider instead of current_provider. This mirrors the agent_loop pattern.
-    let deep_search_provider = inner_session.provider_manager()
+    let deep_search_provider = inner_session
+        .provider_manager()
         .facade_override()
         .map(|s| s.to_string())
         .unwrap_or_else(|| inner_session.current_provider_name().to_string());
     let deep_search_model = inner_session.current_model_id().map(|s| s.to_string());
     let deep_search_context_window = inner_session.provider_manager().raw_model_context_window();
-    let deep_search_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
-    let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(move |query, scope, max_depth, max_recursion_depth| {
-        let path = project_path.clone();
-        let provider = deep_search_provider.clone();
-        let model = deep_search_model.clone();
-        Box::pin(async move {
-            crate::deep_search_handler::execute_deep_search(
-                &path,
-                &query,
-                scope.as_deref(),
-                max_depth,
-                &provider,
-                model.as_deref(),
-                0, // RLM-002: Parent session starts at depth 0
-                max_recursion_depth,
-                deep_search_context_window,
-                deep_search_max_output,
-            ).await
-        })
-    });
+    let deep_search_max_output = inner_session
+        .provider_manager()
+        .raw_model_max_output_tokens();
+    let deep_search_handler: codelet_tools::DeepSearchHandler =
+        std::sync::Arc::new(move |query, scope, max_depth, max_recursion_depth| {
+            let path = project_path.clone();
+            let provider = deep_search_provider.clone();
+            let model = deep_search_model.clone();
+            Box::pin(async move {
+                crate::deep_search_handler::execute_deep_search(
+                    &path,
+                    &query,
+                    scope.as_deref(),
+                    max_depth,
+                    &provider,
+                    model.as_deref(),
+                    0, // RLM-002: Parent session starts at depth 0
+                    max_recursion_depth,
+                    deep_search_context_window,
+                    deep_search_max_output,
+                )
+                .await
+            })
+        });
     codelet_tools::set_deep_search_handler(session_id, Some(deep_search_handler));
 }
 
@@ -119,7 +124,9 @@ pub(crate) fn register_agent_manager_handler(
     // that themselves contain slashes round-trip cleanly.
     let full_model_string = inner_session.provider_manager().selected_model_string();
     let spawner_context_window = inner_session.provider_manager().raw_model_context_window();
-    let spawner_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
+    let spawner_max_output = inner_session
+        .provider_manager()
+        .raw_model_max_output_tokens();
     let agent_manager_handler = crate::agent_manager_handler::create_handler(
         project,
         full_model_string,
@@ -139,7 +146,8 @@ pub(crate) fn register_agent_manager_handler(
 pub(crate) fn extract_deep_search_handler_values(
     pm: &codelet_providers::ProviderManager,
 ) -> (String, Option<String>, Option<usize>, Option<usize>) {
-    let provider = pm.facade_override()
+    let provider = pm
+        .facade_override()
         .map(|s| s.to_string())
         .unwrap_or_else(|| pm.current_provider_name().to_string());
     let model = pm.selected_model_id();
@@ -166,16 +174,15 @@ pub(crate) fn extract_agent_manager_handler_values(
 // BLOCK-006: Block Notification Callbacks
 // ============================================================================
 
-
 /// Initialize the block notification callbacks for the tools crate.
 /// This is called once when the global chunk callback is set.
 pub(crate) fn init_block_notification_callbacks() {
     // Register the block notification callback
     set_block_notification_callback(emit_block_notification_to_tui);
-    
+
     // Register the work unit stage callback
     set_get_work_unit_stage_callback(get_session_work_unit_stage);
-    
+
     // GIT-020: Register the effective_cwd callback
     set_get_effective_cwd_callback(get_session_effective_cwd);
 }
@@ -191,7 +198,8 @@ pub(crate) fn init_bridge_metadata_providers() {
         sm.list_sessions()
             .into_iter()
             .map(|info| {
-                let wu_ctx = sm.get_session(&info.id)
+                let wu_ctx = sm
+                    .get_session(&info.id)
                     .ok()
                     .and_then(|s| s.get_work_unit_context());
                 serde_json::json!({
@@ -240,16 +248,14 @@ pub(crate) fn init_bridge_session_and_terminal_creators() {
         let model = sm
             .get_default_model()
             .or_else(|| {
-                sm.list_sessions()
-                    .into_iter()
-                    .find_map(|info| match (info.provider_id, info.model_id) {
+                sm.list_sessions().into_iter().find_map(|info| {
+                    match (info.provider_id, info.model_id) {
                         (Some(p), Some(m)) => Some(format!("{p}/{m}")),
                         _ => None,
-                    })
+                    }
+                })
             })
-            .ok_or_else(|| {
-                "No default model available for session creation".to_string()
-            })?;
+            .ok_or_else(|| "No default model available for session creation".to_string())?;
 
         let project = std::env::current_dir()
             .map(|p| p.to_string_lossy().to_string())
@@ -280,7 +286,11 @@ pub(crate) fn init_bridge_session_and_terminal_creators() {
 /// `SessionManager::instance().chunks_tx().send(...)` — the napi-side
 /// fan-out task subscribed by `session_set_global_chunk_callback`
 /// delivers it to the TS callback exactly as before.
-pub(crate) fn emit_block_notification_to_tui(session_id_str: String, action: String, reason: String) {
+pub(crate) fn emit_block_notification_to_tui(
+    session_id_str: String,
+    action: String,
+    reason: String,
+) {
     // Format the notification message: "AI was blocked from {action} - {reason}"
     let message = format!("AI was blocked from {} - {}", action, reason);
 
@@ -289,10 +299,9 @@ pub(crate) fn emit_block_notification_to_tui(session_id_str: String, action: Str
 
     // RPC-041: emit via the manager-owned chunks_tx broadcast (was
     // previously dispatched through the deleted chunk-callback OnceCell static).
-    let _ = SessionManager::instance().chunks_tx().send((
-        codelet_rpc_types::SessionId::from(session_id_str),
-        chunk,
-    ));
+    let _ = SessionManager::instance()
+        .chunks_tx()
+        .send((codelet_rpc_types::SessionId::from(session_id_str), chunk));
 }
 
 /// Callback function that retrieves the current work unit stage for a session.
@@ -300,7 +309,7 @@ pub(crate) fn emit_block_notification_to_tui(session_id_str: String, action: Str
 fn get_session_work_unit_stage(session_id_str: String) -> Option<String> {
     // Try to get the session from the SessionManager
     let manager = SessionManager::instance();
-    
+
     // Get the session by ID (handles UUID parsing internally)
     if let Ok(session) = manager.get_session(&session_id_str) {
         // Get the work unit context from the session
@@ -309,7 +318,7 @@ fn get_session_work_unit_stage(session_id_str: String) -> Option<String> {
             return ctx.status;
         }
     }
-    
+
     None
 }
 
@@ -328,10 +337,12 @@ fn get_session_work_unit_stage(session_id_str: String) -> Option<String> {
 ///
 /// GIT-020 FIX: The isolation should ONLY block the original project directory,
 /// NOT all paths outside the worktree. Paths like /tmp, /etc are ALLOWED.
-fn get_session_effective_cwd(session_id_str: String) -> Option<codelet_tools::facade::IsolationContext> {
+fn get_session_effective_cwd(
+    session_id_str: String,
+) -> Option<codelet_tools::facade::IsolationContext> {
     // Try to get the session from the SessionManager
     let manager = SessionManager::instance();
-    
+
     // Get the session by ID (handles UUID parsing internally)
     if let Ok(session) = manager.get_session(&session_id_str) {
         // CRITICAL: Only return Some(...) for isolated sessions.
@@ -347,7 +358,7 @@ fn get_session_effective_cwd(session_id_str: String) -> Option<codelet_tools::fa
             });
         }
     }
-    
+
     None
 }
 
@@ -379,7 +390,7 @@ mod supervisor_broadcast_tests {
 
         // @step When handle_output is called with a TextDelta chunk
         let chunk = StreamChunk::text("test content".to_string());
-        
+
         // Simulate handle_output behavior:
         // 1. Buffer the chunk
         {
@@ -550,7 +561,10 @@ mod supervisor_broadcast_tests {
         }
 
         // @step And the subordinate session should continue operating normally
-        assert!(send_result.is_ok(), "send should succeed with remaining receiver");
+        assert!(
+            send_result.is_ok(),
+            "send should succeed with remaining receiver"
+        );
     }
 
     /// Scenario: Late subscriber starts receiving from current position
@@ -606,13 +620,12 @@ mod supervisor_broadcast_tests {
     fn test_background_session_has_broadcast_field() {
         // Verify the constant is defined correctly
         assert_eq!(SUPERVISOR_BROADCAST_CAPACITY, 256);
-        
+
         // Note: Full BackgroundSession integration tested via handle_output() which
         // requires codelet_cli::session::Session. The unit tests above validate the
         // broadcast channel mechanics work correctly in isolation.
     }
 }
-
 
 /// Feature: spec/features/remove-is-attached-gating-from-rust-chunk-forwarding.feature
 ///
@@ -640,29 +653,31 @@ mod is_attached_gating_tests {
     fn test_supervisor_broadcast_always_sends_regardless_of_is_attached() {
         // @step Given a session is active with the global chunk callback registered
         let (tx, mut rx) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
-        let is_attached = AtomicBool::new(false);  // Simulating detached state
-        
+        let is_attached = AtomicBool::new(false); // Simulating detached state
+
         // @step And a Telegram bridge is connected to the session
         // Bridge subscribes via supervisor_broadcast (rx is our subscriber)
-        
+
         // @step When the bridge sends input to the session
         // Simulating handle_output behavior for supervisor_broadcast path
         let chunk = StreamChunk::text("LLM response from bridge input".to_string());
-        
+
         // supervisor_broadcast.send() has NO is_attached check (this is correct)
         let _ = tx.send(chunk.clone());
-        
+
         // @step Then the TUI should display the bridge input in the conversation
         // @step And the TUI should display the LLM response chunks in the conversation
         // The bridge/supervisor receives the chunk because supervisor_broadcast is NOT gated
-        let received = rx.try_recv().expect("bridge should receive chunk regardless of is_attached");
+        let received = rx
+            .try_recv()
+            .expect("bridge should receive chunk regardless of is_attached");
         match received {
             StreamChunk::Text { text, .. } => {
                 assert_eq!(text, "LLM response from bridge input");
             }
             _ => panic!("Expected Text variant"),
         }
-        
+
         // Verify is_attached is still false - proving the chunk was sent without gating
         assert!(!is_attached.load(Ordering::Acquire));
     }
@@ -680,25 +695,29 @@ mod is_attached_gating_tests {
         // @step Given a session is active with the global chunk callback registered
         let callback_count = Arc::new(AtomicUsize::new(0));
         let callback_count_clone = callback_count.clone();
-        let is_attached = AtomicBool::new(true);  // TUI is attached
-        
+        let is_attached = AtomicBool::new(true); // TUI is attached
+
         // Simulate the callback behavior (counting calls instead of real NAPI callback)
         let simulate_callback_call = move || {
             callback_count_clone.fetch_add(1, Ordering::SeqCst);
         };
-        
+
         // @step When the user types input directly in the TUI
         // Simulating handle_output behavior for attached_callback path
         let _chunk = StreamChunk::text("LLM response from keyboard input".to_string());
-        
+
         // Current code: only calls callback if is_attached is true
         if is_attached.load(Ordering::Acquire) {
             // In real code: cb.call(Ok(chunk), ThreadsafeFunctionCallMode::NonBlocking)
             simulate_callback_call();
         }
-        
+
         // @step Then the TUI should display the LLM response chunks in the conversation
-        assert_eq!(callback_count.load(Ordering::SeqCst), 1, "callback should be called when is_attached is true");
+        assert_eq!(
+            callback_count.load(Ordering::SeqCst),
+            1,
+            "callback should be called when is_attached is true"
+        );
     }
 
     /// This test demonstrates the BUG: when is_attached is false (e.g., after detach),
@@ -711,25 +730,28 @@ mod is_attached_gating_tests {
         // Setup: callback exists but is_attached is false (e.g., bridge input scenario)
         let callback_count = Arc::new(AtomicUsize::new(0));
         let callback_count_clone = callback_count.clone();
-        let _is_attached = AtomicBool::new(false);  // Detached state - but should NOT matter anymore
-        let callback_exists = true;  // Callback IS registered
-        
+        let _is_attached = AtomicBool::new(false); // Detached state - but should NOT matter anymore
+        let callback_exists = true; // Callback IS registered
+
         let simulate_callback_call = move || {
             callback_count_clone.fetch_add(1, Ordering::SeqCst);
         };
-        
+
         // Simulating FIXED handle_output behavior (no is_attached check)
         let _chunk = StreamChunk::text("LLM response".to_string());
-        
+
         // FIXED code: just check if callback exists, don't gate on is_attached
         // This mirrors the actual fix in handle_output()
         if callback_exists {
             simulate_callback_call();
         }
-        
+
         // After BRIDGE-012 fix: callback should be called because it exists
-        assert_eq!(callback_count.load(Ordering::SeqCst), 1, 
-            "BRIDGE-012 fix: callback should be called when it exists, regardless of is_attached");
+        assert_eq!(
+            callback_count.load(Ordering::SeqCst),
+            1,
+            "BRIDGE-012 fix: callback should be called when it exists, regardless of is_attached"
+        );
     }
 
     /// This test verifies the FIXED behavior matches the actual handle_output() implementation.
@@ -739,24 +761,27 @@ mod is_attached_gating_tests {
         // Setup: callback exists but is_attached is false
         let callback_count = Arc::new(AtomicUsize::new(0));
         let callback_count_clone = callback_count.clone();
-        let _is_attached = AtomicBool::new(false);  // Detached state - but should NOT matter
-        let callback_exists = true;  // Callback IS registered
-        
+        let _is_attached = AtomicBool::new(false); // Detached state - but should NOT matter
+        let callback_exists = true; // Callback IS registered
+
         let simulate_callback_call = move || {
             callback_count_clone.fetch_add(1, Ordering::SeqCst);
         };
-        
+
         // Simulating FIXED handle_output behavior (no is_attached check)
         let _chunk = StreamChunk::text("LLM response".to_string());
-        
+
         // FIXED code: just check if callback exists, don't gate on is_attached
         if callback_exists {
             simulate_callback_call();
         }
-        
+
         // After fix: callback should be called because it exists
-        assert_eq!(callback_count.load(Ordering::SeqCst), 1, 
-            "After fix: callback should be called when it exists, regardless of is_attached");
+        assert_eq!(
+            callback_count.load(Ordering::SeqCst),
+            1,
+            "After fix: callback should be called when it exists, regardless of is_attached"
+        );
     }
 }
 
@@ -782,28 +807,31 @@ mod global_chunk_callback_tests {
     fn test_global_callback_registration() {
         // @step Given no global chunk callback is registered
         // This test simulates the global callback pattern
-        
+
         let callback_invoked = Arc::new(AtomicUsize::new(0));
         let callback_clone = callback_invoked.clone();
-        
+
         // @step When TypeScript calls sessionSetGlobalChunkCallback with a callback function
         // Simulating the global callback being registered
         let global_callback = move |_session_id: &str, _chunk: &StreamChunk| {
             callback_clone.fetch_add(1, Ordering::SeqCst);
         };
-        
+
         // @step Then Rust should store the callback in a global static
         // (simulated - in actual impl this would be OnceCell or lazy_static)
         let callback_exists = true;
         assert!(callback_exists, "Global callback should be stored");
-        
+
         // @step And subsequent chunk emissions should use this callback
         let session_id = "test-session-123";
         let chunk = StreamChunk::text("Test chunk".to_string());
         global_callback(session_id, &chunk);
-        
-        assert_eq!(callback_invoked.load(Ordering::SeqCst), 1, 
-            "Global callback should be invoked for chunk emission");
+
+        assert_eq!(
+            callback_invoked.load(Ordering::SeqCst),
+            1,
+            "Global callback should be invoked for chunk emission"
+        );
     }
 
     /// Scenario: Emit chunk with session_id through global callback
@@ -818,10 +846,10 @@ mod global_chunk_callback_tests {
         // @step Given a global chunk callback is registered
         let received_session_id = Arc::new(std::sync::Mutex::new(String::new()));
         let received_chunk_type = Arc::new(std::sync::Mutex::new(String::new()));
-        
+
         let session_id_clone = received_session_id.clone();
         let chunk_type_clone = received_chunk_type.clone();
-        
+
         let global_callback = move |session_id: &str, chunk: &StreamChunk| {
             *session_id_clone.lock().unwrap() = session_id.to_string();
             *chunk_type_clone.lock().unwrap() = match chunk {
@@ -830,17 +858,17 @@ mod global_chunk_callback_tests {
                 _ => "Other".to_string(),
             };
         };
-        
+
         // @step And a session exists with id "session-abc"
         let session_id = "session-abc";
-        
+
         // @step When the session emits a Text chunk via handle_output
         let chunk = StreamChunk::text("Hello from session".to_string());
         global_callback(session_id, &chunk);
-        
+
         // @step Then the global callback should be invoked with session_id "session-abc"
         assert_eq!(*received_session_id.lock().unwrap(), "session-abc");
-        
+
         // @step And the global callback should receive the Text chunk
         assert_eq!(*received_chunk_type.lock().unwrap(), "Text");
     }
@@ -857,33 +885,36 @@ mod global_chunk_callback_tests {
     #[test]
     fn test_multiple_sessions_same_callback() {
         // @step Given a global chunk callback is registered
-        let received_calls: Arc<std::sync::Mutex<Vec<(String, String)>>> = 
+        let received_calls: Arc<std::sync::Mutex<Vec<(String, String)>>> =
             Arc::new(std::sync::Mutex::new(Vec::new()));
-        
+
         let calls_clone = received_calls.clone();
         let global_callback = move |session_id: &str, chunk: &StreamChunk| {
             let chunk_text = match chunk {
                 StreamChunk::Text { text, .. } => text.clone(),
                 _ => "unknown".to_string(),
             };
-            calls_clone.lock().unwrap().push((session_id.to_string(), chunk_text));
+            calls_clone
+                .lock()
+                .unwrap()
+                .push((session_id.to_string(), chunk_text));
         };
-        
+
         // @step And session "session-a" exists
         // @step And session "session-b" exists
-        
+
         // @step When session "session-a" emits a chunk
         let chunk_a = StreamChunk::text("From session A".to_string());
         global_callback("session-a", &chunk_a);
-        
+
         // @step And session "session-b" emits a chunk
         let chunk_b = StreamChunk::text("From session B".to_string());
         global_callback("session-b", &chunk_b);
-        
+
         // @step Then both chunks should go through the same global callback
         let calls = received_calls.lock().unwrap();
         assert_eq!(calls.len(), 2, "Both chunks should go through the callback");
-        
+
         // @step And each chunk should have its respective session_id
         assert_eq!(calls[0].0, "session-a");
         assert_eq!(calls[0].1, "From session A");
@@ -914,7 +945,7 @@ mod global_chunk_callback_tests {
         //
         // Verification is done through AST grep showing these don't exist.
         // This test passes to document the expected state after implementation.
-        
+
         // TODO: After BRIDGE-012 implementation, this test should verify
         // that BackgroundSession has NO is_attached/attached_callback fields.
         // For now, it documents the expected behavior.
@@ -991,15 +1022,16 @@ mod correlation_id_tests {
         let chunk = StreamChunk::text("I noticed an issue".to_string());
 
         // @step When it is tagged with observed correlation IDs
-        let tagged_chunk = chunk.with_observed_correlation_ids(vec![
-            "p-0".to_string(),
-            "p-1".to_string(),
-        ]);
+        let tagged_chunk =
+            chunk.with_observed_correlation_ids(vec!["p-0".to_string(), "p-1".to_string()]);
 
         // @step Then the chunk has observed_correlation_ids set
         // NAPI-010: Check using pattern matching on the enum variant
         match tagged_chunk {
-            StreamChunk::Text { observed_correlation_ids, .. } => {
+            StreamChunk::Text {
+                observed_correlation_ids,
+                ..
+            } => {
                 assert!(observed_correlation_ids.is_some());
                 let ids = observed_correlation_ids.unwrap();
                 assert_eq!(ids, vec!["p-0", "p-1"]);
@@ -1007,5 +1039,4 @@ mod correlation_id_tests {
             _ => panic!("Expected Text variant"),
         }
     }
-
 }

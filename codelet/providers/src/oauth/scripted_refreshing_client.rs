@@ -17,13 +17,10 @@
 use anyhow::Result;
 
 use super::custom_oauth::{
-    read_stored_tokens, resolve_login_implementation, write_stored_tokens,
-    LoginImplementation,
+    read_stored_tokens, resolve_login_implementation, write_stored_tokens, LoginImplementation,
 };
 use super::script_provider::ScriptedOAuthProvider;
-use super::script_provider_aliases::{
-    auth_needs_refresh_or_legacy, auth_refresh_or_legacy,
-};
+use super::script_provider_aliases::{auth_needs_refresh_or_legacy, auth_refresh_or_legacy};
 
 /// Which refresh implementation the dispatcher should activate.
 ///

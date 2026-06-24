@@ -64,8 +64,7 @@ pub struct CliArgs {
 /// clap subcommand. Returns the process exit code so `main` can
 /// propagate it verbatim via `std::process::ExitCode::from(...)`.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let args_json = json!({
         "file": args.file,

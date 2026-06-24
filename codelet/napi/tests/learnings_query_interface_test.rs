@@ -72,7 +72,10 @@ async fn test_learnings_search_by_text() {
         first.get("slug").and_then(|v| v.as_str()),
         Some("learn-nanograph-edge-types")
     );
-    assert!(first.get("category").is_some(), "Result should have category");
+    assert!(
+        first.get("category").is_some(),
+        "Result should have category"
+    );
     assert!(
         first.get("confidence").is_some(),
         "Result should have confidence"
@@ -90,12 +93,9 @@ async fn test_learnings_decisions_filtered_by_domain_and_status() {
     let db = setup_test_learnings_db(temp_dir.path()).await;
 
     // @step When I query decisions with domain "architecture" and status "active"
-    let result = learnings_dispatch::dispatch_learnings_decisions(
-        &db,
-        Some("architecture"),
-        Some("active"),
-    )
-    .await;
+    let result =
+        learnings_dispatch::dispatch_learnings_decisions(&db, Some("architecture"), Some("active"))
+            .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive only active architectural decisions with their rationale and alternatives
@@ -194,13 +194,8 @@ async fn test_learnings_related_by_topic() {
     let db = setup_test_learnings_db(temp_dir.path()).await;
 
     // @step When I search for learnings related to topic "error handling"
-    let result = learnings_dispatch::dispatch_learnings_related(
-        &db,
-        "error handling",
-        None,
-        None,
-    )
-    .await;
+    let result =
+        learnings_dispatch::dispatch_learnings_related(&db, "error handling", None, None).await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 
     // @step Then I should receive related Learning nodes sorted by relevance with strength and relation type

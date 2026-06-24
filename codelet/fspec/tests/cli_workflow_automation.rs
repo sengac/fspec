@@ -31,7 +31,11 @@ fn workspace_with_status(status: &str) -> TempDir {
     let dir = tempfile::tempdir().expect("create workspace tempdir");
     let spec = dir.path().join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
-    let testing = if status == "testing" { "[\"AUTH-001\"]" } else { "[]" };
+    let testing = if status == "testing" {
+        "[\"AUTH-001\"]"
+    } else {
+        "[]"
+    };
     let implementing = if status == "implementing" {
         "[\"AUTH-001\"]"
     } else {
@@ -75,8 +79,8 @@ fn run_workflow_automation(cwd: &Path, extra_args: &[&str]) -> (i32, String, Str
 }
 
 fn read_stored(cwd: &Path) -> Value {
-    let raw = fs::read_to_string(cwd.join("spec").join("work-units.json"))
-        .expect("read work-units.json");
+    let raw =
+        fs::read_to_string(cwd.join("spec").join("work-units.json")).expect("read work-units.json");
     serde_json::from_str(&raw).expect("stored work-units.json is valid JSON")
 }
 
@@ -90,13 +94,11 @@ fn scenario_shell_record_iteration_increments_counter_and_exits_0() {
     let ws = workspace_with_status("implementing");
 
     // @step When I run `fspec workflow-automation record-iteration AUTH-001` from that directory
-    let (code, stdout, stderr) = run_workflow_automation(ws.path(), &["record-iteration", "AUTH-001"]);
+    let (code, stdout, stderr) =
+        run_workflow_automation(ws.path(), &["record-iteration", "AUTH-001"]);
 
     // @step Then the command exits with code 0
-    assert_eq!(
-        code, 0,
-        "must exit 0; stdout={stdout}, stderr={stderr}"
-    );
+    assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
 
     // @step And the persisted AUTH-001 has metrics.iterations equal to 1
     let stored = read_stored(ws.path());
@@ -129,10 +131,7 @@ fn scenario_shell_auto_advance_advances_testing_unit_and_exits_0() {
     );
 
     // @step Then the command exits with code 0
-    assert_eq!(
-        code, 0,
-        "must exit 0; stdout={stdout}, stderr={stderr}"
-    );
+    assert_eq!(code, 0, "must exit 0; stdout={stdout}, stderr={stderr}");
 
     // @step And the persisted AUTH-001 status is 'implementing'
     let stored = read_stored(ws.path());
@@ -156,10 +155,7 @@ fn scenario_shell_missing_work_unit_exits_1_with_error() {
         run_workflow_automation(ws.path(), &["record-iteration", "MISSING-001"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(
-        code, 1,
-        "must exit 1; stdout={stdout}, stderr={stderr}"
-    );
+    assert_eq!(code, 1, "must exit 1; stdout={stdout}, stderr={stderr}");
 
     // @step And stderr contains "Work unit 'MISSING-001' does not exist"
     assert!(

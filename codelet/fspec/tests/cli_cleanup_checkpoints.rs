@@ -110,7 +110,10 @@ fn scenario_clap_exposes_cleanup_checkpoints_with_required_keep_last() {
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "cleanup-checkpoints --help must exit 0; got {code}");
+    assert_eq!(
+        code, 0,
+        "cleanup-checkpoints --help must exit 0; got {code}"
+    );
 
     // @step And stdout describes the cleanup-checkpoints subcommand
     assert!(
@@ -224,8 +227,16 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert!(result.success, "dispatcher must succeed; got {result:?}");
     let data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
-    assert!(data["deletedCount"].is_number(), "missing deletedCount; got {}", result.data);
-    assert!(data["preservedCount"].is_number(), "missing preservedCount; got {}", result.data);
+    assert!(
+        data["deletedCount"].is_number(),
+        "missing deletedCount; got {}",
+        result.data
+    );
+    assert!(
+        data["preservedCount"].is_number(),
+        "missing preservedCount; got {}",
+        result.data
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/cleanup_checkpoints.rs contains NO inline list, sort, delete, or rendering logic — its only computation is arg parsing and JSON marshalling
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/cleanup_checkpoints.rs");
@@ -265,14 +276,20 @@ fn scenario_cleanup_checkpoints_help_is_byte_for_byte_identical_to_ts() {
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "cleanup-checkpoints --help must exit 0; got {code}");
+    assert_eq!(
+        code, 0,
+        "cleanup-checkpoints --help must exit 0; got {code}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/cleanup-checkpoints.txt
     let fixture_path =
         Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/help/cleanup-checkpoints.txt");
     let fixture = fs::read_to_string(&fixture_path)
         .unwrap_or_else(|e| panic!("read help fixture {}: {e}", fixture_path.display()));
-    assert_eq!(stdout, fixture, "cleanup-checkpoints --help must match TS fixture");
+    assert_eq!(
+        stdout, fixture,
+        "cleanup-checkpoints --help must match TS fixture"
+    );
 
     // @step And stdout starts with a blank line followed by "CLEANUP-CHECKPOINTS"
     assert!(

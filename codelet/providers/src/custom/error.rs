@@ -61,9 +61,7 @@ pub enum CustomProviderError {
     },
 
     /// Provider name did not match the allowed identifier pattern.
-    #[error(
-        "provider name '{name}' in {path} is invalid; allowed pattern ^[a-z][a-z0-9-]*$"
-    )]
+    #[error("provider name '{name}' in {path} is invalid; allowed pattern ^[a-z][a-z0-9-]*$")]
     InvalidName {
         /// Offending provider name.
         name: String,
@@ -83,9 +81,7 @@ pub enum CustomProviderError {
 
     /// `defaults.model` referenced a model alias that is not present in the
     /// `models` map.
-    #[error(
-        "default model '{model}' not found in models map for provider '{provider}' at {path}"
-    )]
+    #[error("default model '{model}' not found in models map for provider '{provider}' at {path}")]
     MissingDefaultModel {
         /// Name of the provider.
         provider: String,

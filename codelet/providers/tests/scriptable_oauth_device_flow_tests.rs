@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::await_holding_lock
+)]
 //! Feature: spec/features/scriptable-oauth-napi-bridges-device-flow-auto-refresh-middleware.feature
 //!
 //! PROV-088: device-code flow + auto-refresh middleware for scripted
@@ -25,12 +30,8 @@ use std::sync::{Mutex, MutexGuard, OnceLock};
 use codelet_providers::oauth::custom_oauth::{
     custom_oauth_store_path, read_stored_tokens, write_stored_tokens,
 };
-use codelet_providers::oauth::custom_oauth_device::{
-    persist_on_success, ScriptedDeviceFlow,
-};
-use codelet_providers::oauth::script_provider::{
-    ScriptProviderConfig, ScriptedOAuthProvider,
-};
+use codelet_providers::oauth::custom_oauth_device::{persist_on_success, ScriptedDeviceFlow};
+use codelet_providers::oauth::script_provider::{ScriptProviderConfig, ScriptedOAuthProvider};
 use codelet_providers::oauth::scripted_refreshing_client::{
     resolve_refresh_middleware, RefreshMiddleware, ScriptedRefreshingClient,
 };
@@ -134,8 +135,8 @@ async fn user_runs_device_code_login_and_receives_user_code() {
     let _lock = env_lock();
     // @step Given a Rhai script shadowing provider "my-device" defines auth_start that returns user_code "ABCD-1234" and verification_uri "https://example.com/device"
     let (_dir, _env) = with_temp_fspec_home();
-    let provider = ScriptedOAuthProvider::from_script(DEVICE_SCRIPT, cfg("my-device"))
-        .expect("load script");
+    let provider =
+        ScriptedOAuthProvider::from_script(DEVICE_SCRIPT, cfg("my-device")).expect("load script");
     let flow = ScriptedDeviceFlow::new(&provider);
 
     // @step When custom_oauth_device_start("my-device") is invoked
@@ -166,8 +167,8 @@ async fn polling_yields_tokens_after_authorisation() {
     let _lock = env_lock();
     let (_dir, _env) = with_temp_fspec_home();
     // @step Given a device-code session for provider "my-device" is active with device_code "DC-1"
-    let provider = ScriptedOAuthProvider::from_script(DEVICE_SCRIPT, cfg("my-device"))
-        .expect("load");
+    let provider =
+        ScriptedOAuthProvider::from_script(DEVICE_SCRIPT, cfg("my-device")).expect("load");
     let flow = ScriptedDeviceFlow::new(&provider);
     let mut device_data = Map::new();
     device_data.insert("device_code".into(), Dynamic::from("DC-1".to_string()));
@@ -205,8 +206,8 @@ async fn denied_polling_does_not_persist_tokens() {
     let _lock = env_lock();
     let (_dir, _env) = with_temp_fspec_home();
     // @step Given a device-code session for provider "my-device" is active and no tokens are stored yet
-    let provider = ScriptedOAuthProvider::from_script(DENIED_SCRIPT, cfg("my-device"))
-        .expect("load");
+    let provider =
+        ScriptedOAuthProvider::from_script(DENIED_SCRIPT, cfg("my-device")).expect("load");
     let flow = ScriptedDeviceFlow::new(&provider);
     let path = custom_oauth_store_path("my-device");
     assert!(!path.exists());
@@ -229,8 +230,8 @@ async fn middleware_auto_refreshes_expired_tokens() {
     let _lock = env_lock();
     let (_dir, _env) = with_temp_fspec_home();
     // @step Given a RhaiCustomProvider is active for "my-device" whose stored tokens are expired
-    let provider = ScriptedOAuthProvider::from_script(DEVICE_SCRIPT, cfg("my-device"))
-        .expect("load");
+    let provider =
+        ScriptedOAuthProvider::from_script(DEVICE_SCRIPT, cfg("my-device")).expect("load");
     let mut expired = Map::new();
     expired.insert("access_token".into(), Dynamic::from("AT1".to_string()));
     expired.insert("refresh_token".into(), Dynamic::from("RT1".to_string()));
@@ -239,10 +240,7 @@ async fn middleware_auto_refreshes_expired_tokens() {
 
     // @step When the ScriptedRefreshingClient is asked to ensure fresh credentials before an outbound request
     let client = ScriptedRefreshingClient::new(&provider, "my-device");
-    let refreshed = client
-        .ensure_fresh_if_needed()
-        .await
-        .expect("ensure_fresh");
+    let refreshed = client.ensure_fresh_if_needed().await.expect("ensure_fresh");
 
     // @step Then the script's auth_needs_refresh returns true, auth_refresh is invoked, and the refreshed tokens replace the stored credentials before the request is sent
     assert!(refreshed, "tokens should have been refreshed");
@@ -277,8 +275,7 @@ fn builtin_refresh_untouched_when_no_shadow() {
     // Sanity: a fresh script that claims no-refresh returns false without
     // touching the stored tokens, proving the middleware is inert for
     // built-ins even if it were accidentally invoked.
-    let provider = ScriptedOAuthProvider::from_script(FRESH_SCRIPT, cfg("codex"))
-        .expect("load");
+    let provider = ScriptedOAuthProvider::from_script(FRESH_SCRIPT, cfg("codex")).expect("load");
     let client = ScriptedRefreshingClient::new(&provider, "codex");
     let refreshed = tokio::runtime::Builder::new_current_thread()
         .enable_all()

@@ -123,9 +123,7 @@ fn scenario_cli_missing_positionals_exits_2() {
 
     // @step Then stderr names the missing required argument
     assert!(
-        stderr.contains("FILE")
-            || stderr.contains("file")
-            || stderr.contains("required"),
+        stderr.contains("FILE") || stderr.contains("file") || stderr.contains("required"),
         "stderr must name the missing required argument; got:\n{stderr}"
     );
 }
@@ -183,7 +181,8 @@ fn scenario_cli_prints_tag_list_and_exits_0() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root whose spec/features/user-login.feature has a Scenario 'Login with valid credentials' tagged '@smoke'
     let ws = tempfile::tempdir().expect("tempdir");
-    let body = "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
+    let body =
+        "Feature: User Login\n\n  @smoke\n  Scenario: Login with valid credentials\n    Given x\n";
     write_feature(ws.path(), "spec/features/user-login.feature", body);
 
     // @step When I dispatch list-scenario-tags through fspec_core::dispatch::dispatch_command with file='spec/features/user-login.feature', scenario='Login with valid credentials', and format='json'
@@ -209,8 +208,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert_eq!(arr[0].as_str(), Some("@smoke"));
 
     // @step Then the CLI bridge module codelet/fspec/src/list_scenario_tags.rs contains NO inline Gherkin parsing, tag accumulation, or category lookup logic — its only computation is JSON arg marshalling
-    let bridge_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_scenario_tags.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_scenario_tags.rs");
     assert!(
         bridge_path.exists(),
         "codelet/fspec/src/list_scenario_tags.rs must exist as the CLI bridge module; got missing: {}",

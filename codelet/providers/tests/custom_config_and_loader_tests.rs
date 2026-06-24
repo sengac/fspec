@@ -243,8 +243,7 @@ fn project_local_config_overrides_global_config_with_same_name() {
     let configs = discover_provider_configs().expect("discover ok");
 
     // @step Then the returned list contains exactly one config for "my-llm" and it matches the project-local JSON
-    let matching: Vec<&ProviderConfig> =
-        configs.iter().filter(|c| c.name == "my-llm").collect();
+    let matching: Vec<&ProviderConfig> = configs.iter().filter(|c| c.name == "my-llm").collect();
     assert_eq!(matching.len(), 1, "expected exactly one my-llm config");
     assert_eq!(matching[0].display_name, "Local My LLM");
     assert_eq!(matching[0].base_url, "https://local.example.com");

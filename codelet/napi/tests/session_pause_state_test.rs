@@ -218,10 +218,7 @@ fn test_resuming_session_is_isolated() {
     // @step And session B remains "paused" with its pause state intact
     assert_eq!(session_b.get_status(), STATUS_PAUSED);
     assert!(session_b.get_pause_state().is_some());
-    assert_eq!(
-        session_b.get_pause_state().unwrap().message,
-        "Page B"
-    );
+    assert_eq!(session_b.get_pause_state().unwrap().message, "Page B");
 }
 
 /// Test concurrent access to session pause state is safe

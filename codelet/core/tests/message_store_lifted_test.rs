@@ -80,7 +80,9 @@ fn message_store_round_trips_via_jsonl_and_idx_from_core() {
         .expect("store_with_metadata must succeed");
 
     // Grab a snapshot of the original for later comparison.
-    let original = store.get(id).expect("just-stored message must be retrievable");
+    let original = store
+        .get(id)
+        .expect("just-stored message must be retrievable");
 
     // @step And the MessageStore is dropped
     drop(store);
@@ -93,7 +95,11 @@ fn message_store_round_trips_via_jsonl_and_idx_from_core() {
     // being 0 proves we did NOT eagerly deserialize every message (BUG-122
     // Layer 2 invariant — the lazy_init_tests in codelet-napi cover the
     // happy path for very large files; this test covers the basic shape).
-    assert_eq!(reopened.index_len(), 1, "reopened index must contain 1 entry");
+    assert_eq!(
+        reopened.index_len(),
+        1,
+        "reopened index must contain 1 entry"
+    );
     assert_eq!(
         reopened.cache_len(),
         0,
@@ -101,7 +107,9 @@ fn message_store_round_trips_via_jsonl_and_idx_from_core() {
     );
 
     // @step And MessageStore::get(id) on the second store returns a StoredMessage whose role, content, content_hash, and token_count equal the originally stored values
-    let restored = reopened.get(id).expect("get must hit the index and read from disk");
+    let restored = reopened
+        .get(id)
+        .expect("get must hit the index and read from disk");
     assert_eq!(restored.id, original.id);
     assert_eq!(restored.role, "user");
     assert_eq!(restored.content, "hello world");

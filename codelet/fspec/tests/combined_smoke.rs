@@ -21,7 +21,10 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
-use common::{codelet_root, fspec_bin, fspec_crate_root, make_workspace, scan_for_port_equals, strip_comments, ChildGuard};
+use common::{
+    codelet_root, fspec_bin, fspec_crate_root, make_workspace, scan_for_port_equals,
+    strip_comments, ChildGuard,
+};
 use url::Url;
 
 /// Spawn a real OS thread that drains a `ChildStdout` into a buffer.
@@ -36,7 +39,10 @@ fn drain_into_buffer(stdout: std::process::ChildStdout) -> Arc<Mutex<Vec<u8>>> {
         loop {
             match s.read(&mut chunk) {
                 Ok(0) => break,
-                Ok(n) => buf_clone.lock().expect("mutex").extend_from_slice(&chunk[..n]),
+                Ok(n) => buf_clone
+                    .lock()
+                    .expect("mutex")
+                    .extend_from_slice(&chunk[..n]),
                 Err(_) => break,
             }
         }
@@ -296,10 +302,7 @@ async fn scenario_combined_shutdown_aborts_ws_join_handle_before_removing_daemon
     );
 }
 
-async fn wait_for_close<T>(
-    rx: &mut tokio::sync::broadcast::Receiver<T>,
-    deadline: Duration,
-) -> bool
+async fn wait_for_close<T>(rx: &mut tokio::sync::broadcast::Receiver<T>, deadline: Duration) -> bool
 where
     T: Clone,
 {
@@ -319,8 +322,7 @@ where
 fn scenario_combined_uses_tokio_runtime_handle_current_for_embedded_backend() {
     // @step Given the file `codelet/fspec/src/combined.rs` exists
     let combined_rs = fspec_crate_root().join("src").join("combined.rs");
-    let body = std::fs::read_to_string(&combined_rs)
-        .expect("read codelet/fspec/src/combined.rs");
+    let body = std::fs::read_to_string(&combined_rs).expect("read codelet/fspec/src/combined.rs");
 
     // @step Then it contains the literal call `tokio::runtime::Handle::current()`
     assert!(
@@ -353,8 +355,7 @@ fn scenario_combined_uses_tokio_runtime_handle_current_for_embedded_backend() {
 fn scenario_combined_bootstraps_with_build_service_constructed_exactly_once() {
     // @step Given the file `codelet/fspec/src/combined.rs` exists
     let combined_rs = fspec_crate_root().join("src").join("combined.rs");
-    let body = std::fs::read_to_string(&combined_rs)
-        .expect("read codelet/fspec/src/combined.rs");
+    let body = std::fs::read_to_string(&combined_rs).expect("read codelet/fspec/src/combined.rs");
 
     // @step Then it calls `common::build_service(` exactly once
     let calls = body.matches("build_service(").count();
@@ -375,10 +376,8 @@ fn scenario_combined_and_daemon_share_the_same_bind_and_serve_function() {
     // @step And the file `codelet/fspec/src/daemon.rs` exists
     let combined_rs = fspec_crate_root().join("src").join("combined.rs");
     let daemon_rs = fspec_crate_root().join("src").join("daemon.rs");
-    let combined = std::fs::read_to_string(&combined_rs)
-        .expect("read combined.rs");
-    let daemon = std::fs::read_to_string(&daemon_rs)
-        .expect("read daemon.rs");
+    let combined = std::fs::read_to_string(&combined_rs).expect("read combined.rs");
+    let daemon = std::fs::read_to_string(&daemon_rs).expect("read daemon.rs");
 
     // @step Then `combined.rs` contains exactly one call to `bind_and_serve(`
     assert_eq!(
@@ -419,8 +418,8 @@ fn scenario_combined_and_daemon_share_the_same_bind_and_serve_function() {
         .join("rpc-server")
         .join("src")
         .join("server.rs");
-    let bind_body = std::fs::read_to_string(&bind_and_serve_path)
-        .expect("read rpc-server/server.rs");
+    let bind_body =
+        std::fs::read_to_string(&bind_and_serve_path).expect("read rpc-server/server.rs");
     assert!(
         bind_body.contains("pub async fn bind_and_serve("),
         "codelet/rpc-server/src/server.rs must still expose pub async fn bind_and_serve(...)"
@@ -479,14 +478,18 @@ async fn scenario_combined_writes_daemon_json_on_bootstrap_and_removes_it_on_cle
     }
 
     // @step And `port` equals the listening port observed on STDERR
-    let port_in_json = obj["port"].as_u64().expect("daemon.json.port must be a number");
+    let port_in_json = obj["port"]
+        .as_u64()
+        .expect("daemon.json.port must be a number");
     assert_eq!(
         port_in_json as u16, port,
         "daemon.json.port must match the PORT= banner on stderr"
     );
 
     // @step And `pid` equals the child process's pid
-    let pid_in_json = obj["pid"].as_u64().expect("daemon.json.pid must be a number");
+    let pid_in_json = obj["pid"]
+        .as_u64()
+        .expect("daemon.json.pid must be a number");
     assert_eq!(
         pid_in_json as u32, pid,
         "daemon.json.pid must match the child process pid"

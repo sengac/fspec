@@ -21,7 +21,6 @@
 #![cfg(not(feature = "noop"))]
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-
 // Compile-time proof that `session_bindings::*` is reachable from the
 // new home (re-exported via `pub use session_bindings::*;` in lib.rs).
 // Until RPC-043 implementation lands, the wrappers are re-exported from
@@ -323,12 +322,7 @@ fn step_session_get_work_unit_context_for_unknown_id() {
 
 #[test]
 fn step_session_set_work_unit_context_for_unknown_id() {
-    let result = session_set_work_unit_context(
-        UNKNOWN.to_string(),
-        None,
-        None,
-        None,
-    );
+    let result = session_set_work_unit_context(UNKNOWN.to_string(), None, None, None);
     let _ = result;
 }
 

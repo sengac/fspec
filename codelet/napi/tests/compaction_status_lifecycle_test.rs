@@ -34,7 +34,12 @@ impl EventCapture {
     }
 
     fn count(&self, name: &str) -> usize {
-        self.events.lock().unwrap().iter().filter(|e| e.as_str() == name).count()
+        self.events
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|e| e.as_str() == name)
+            .count()
     }
 }
 
@@ -170,13 +175,32 @@ fn test_post_loop_compaction_event_sequence() {
     // @step And the session status should transition to Idle
     // Verify correct sequence: Started before Complete, no premature Complete
     let events = capture.event_names();
-    let started_idx = events.iter().position(|e| e == "CompactionStarted").unwrap();
-    let complete_idx = events.iter().position(|e| e == "CompactionComplete").unwrap();
-    let continuing_idx = events.iter().position(|e| e == "CompactionContinuing").unwrap();
+    let started_idx = events
+        .iter()
+        .position(|e| e == "CompactionStarted")
+        .unwrap();
+    let complete_idx = events
+        .iter()
+        .position(|e| e == "CompactionComplete")
+        .unwrap();
+    let continuing_idx = events
+        .iter()
+        .position(|e| e == "CompactionContinuing")
+        .unwrap();
 
-    assert!(started_idx < continuing_idx, "Started must come before Continuing");
-    assert!(continuing_idx < complete_idx, "Continuing must come before Complete");
-    assert_eq!(capture.count("CompactionComplete"), 1, "Exactly one CompactionComplete");
+    assert!(
+        started_idx < continuing_idx,
+        "Started must come before Continuing"
+    );
+    assert!(
+        continuing_idx < complete_idx,
+        "Continuing must come before Complete"
+    );
+    assert_eq!(
+        capture.count("CompactionComplete"),
+        1,
+        "Exactly one CompactionComplete"
+    );
 }
 
 // Scenario: Normal response without compaction does not emit CompactionComplete from agent_loop
@@ -194,7 +218,10 @@ fn test_no_dag_pending_no_compaction_complete() {
 
     // @step And the agent_loop calls apply_pending_dag which returns false
     let dag_applied = pending_dag.lock().unwrap().is_some();
-    assert!(!dag_applied, "No pending DAG means apply_pending_dag returns false");
+    assert!(
+        !dag_applied,
+        "No pending DAG means apply_pending_dag returns false"
+    );
 
     // @step And no CompactionComplete event should be emitted from the agent_loop
     if dag_applied {

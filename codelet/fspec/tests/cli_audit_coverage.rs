@@ -73,7 +73,10 @@ fn scenario_clap_exposes_audit_coverage_with_byte_parity_help() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "audit-coverage --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "audit-coverage --help must exit 0; stderr={stderr}"
+    );
 
     // @step Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/audit-coverage.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -111,7 +114,10 @@ fn scenario_cli_reports_all_files_present_and_exits_0() {
     assert_eq!(code, 0, "must exit 0; stderr={stderr}, stdout={stdout}");
 
     // @step Then stdout contains the substring '✅ All files found (3/3)'
-    assert!(stdout.contains("✅ All files found (3/3)"), "stdout={stdout}");
+    assert!(
+        stdout.contains("✅ All files found (3/3)"),
+        "stdout={stdout}"
+    );
 
     // @step Then stdout contains the substring 'All mappings valid'
     assert!(stdout.contains("All mappings valid"), "stdout={stdout}");
@@ -142,7 +148,10 @@ fn scenario_cli_reports_missing_test_file_and_exits_1() {
     assert_eq!(code, 1, "must exit 1; stderr={stderr}, stdout={stdout}");
 
     // @step Then stdout contains the substring '❌ Test file not found:'
-    assert!(stdout.contains("❌ Test file not found:"), "stdout={stdout}");
+    assert!(
+        stdout.contains("❌ Test file not found:"),
+        "stdout={stdout}"
+    );
 
     // @step Then stdout contains the substring 'Recommendation: Remove this mapping or restore the deleted file'
     assert!(
@@ -167,7 +176,10 @@ fn scenario_cli_reports_missing_coverage_file_and_exits_1() {
     assert_eq!(code, 1, "must exit 1; stderr={stderr}, stdout={stdout}");
 
     // @step Then stdout contains the substring '✗ Coverage file not found:'
-    assert!(stdout.contains("✗ Coverage file not found:"), "stdout={stdout}");
+    assert!(
+        stdout.contains("✗ Coverage file not found:"),
+        "stdout={stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -199,7 +211,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 

@@ -105,8 +105,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
   @new-modules
   Scenario: New modal dialog modules and dispatch helper exist
     Given the codelet/fspec-tui crate after RPC-022 lands
-    Then the file codelet/fspec-tui/src/components/model_selector_dialog.rs exists
-    And the file codelet/fspec-tui/src/components/thinking_level_dialog.rs exists
+    Then the file codelet/fspec-tui/src/components/thinking_level_dialog.rs exists
     And the file codelet/fspec-tui/src/views/agent/role_banner.rs exists
     And the file codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs exists
 
@@ -114,8 +113,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
   Scenario: New RPC-022 modules stay under 300 lines
     Given the new files introduced by RPC-022
     When a test counts the line-count of every .rs file
-    Then codelet/fspec-tui/src/components/model_selector_dialog.rs has fewer than 300 lines
-    And codelet/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
+    Then codelet/fspec-tui/src/components/thinking_level_dialog.rs has fewer than 300 lines
     And codelet/fspec-tui/src/views/agent/role_banner.rs has fewer than 300 lines
     And codelet/fspec-tui/src/app/dispatch_model_thinking_dialogs.rs has fewer than 300 lines
 
@@ -133,7 +131,6 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
     And the file contains the substring "SetSessionRole"
     And the file contains the substring "SessionRoleLoaded"
     And the file contains the substring "ListProvidersLoaded"
-    And the file contains the substring "OpenModelDialog"
     And the file contains the substring "OpenThinkingDialog"
 
   @ts-untouched
@@ -147,7 +144,7 @@ Feature: RPC-022 source-shape regression for the modal dialogs port + shared typ
 
   @architecture-invariants
   Scenario: New view + component files do not directly import codelet_core / napi / tarpc / tokio_tungstenite
-    Given the new RPC-022 files (model_selector_dialog.rs, thinking_level_dialog.rs, role_banner.rs)
+    Given the new RPC-022 files (thinking_level_dialog.rs, role_banner.rs)
     When a test scans each *.rs file
     Then no file imports `codelet_core::` or `codelet_napi::` or `tarpc::` or `tokio_tungstenite::`
     And no file constructs `tokio::runtime::Builder` or `Runtime::new()`

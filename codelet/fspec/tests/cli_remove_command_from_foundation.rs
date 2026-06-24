@@ -27,7 +27,9 @@ fn run_cmd(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec remove-command-from-foundation");
+    let output = cmd
+        .output()
+        .expect("spawn fspec remove-command-from-foundation");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -45,8 +47,8 @@ fn write_foundation(project_root: &Path, value: &serde_json::Value) {
 }
 
 fn read_foundation(project_root: &Path) -> serde_json::Value {
-    let raw =
-        fs::read_to_string(project_root.join("spec/foundation.json")).expect("read foundation.json");
+    let raw = fs::read_to_string(project_root.join("spec/foundation.json"))
+        .expect("read foundation.json");
     serde_json::from_str(&raw).expect("parse foundation.json")
 }
 
@@ -116,7 +118,10 @@ fn scenario_remove_command_from_foundation_help_matches_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "remove-command-from-foundation --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "remove-command-from-foundation --help must exit 0; stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/remove-command-from-foundation.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);
@@ -133,7 +138,10 @@ fn scenario_cli_successfully_soft_deletes_command() {
     write_foundation(
         ws.path(),
         &foundation_with_items(
-            vec![bounded_context(0, "Work Management"), command_item(1, "CreateWorkUnit", 0)],
+            vec![
+                bounded_context(0, "Work Management"),
+                command_item(1, "CreateWorkUnit", 0),
+            ],
             2,
         ),
     );
@@ -146,14 +154,19 @@ fn scenario_cli_successfully_soft_deletes_command() {
 
     // @step And stdout contains the substring '✓ Removed command "CreateWorkUnit" from "Work Management" bounded context'
     assert!(
-        stdout
-            .contains("✓ Removed command \"CreateWorkUnit\" from \"Work Management\" bounded context"),
+        stdout.contains(
+            "✓ Removed command \"CreateWorkUnit\" from \"Work Management\" bounded context"
+        ),
         "stdout must contain canonical success line; got:\n{stdout}"
     );
 
     // @step And spec/foundation.json on disk shows the CreateWorkUnit command item deleted=true
     let v = read_foundation(ws.path());
-    assert_eq!(command_deleted(&v, "CreateWorkUnit"), Some(true), "command must be soft-deleted");
+    assert_eq!(
+        command_deleted(&v, "CreateWorkUnit"),
+        Some(true),
+        "command must be soft-deleted"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -167,7 +180,10 @@ fn scenario_cli_rejects_missing_command_with_exit_1() {
     write_foundation(
         ws.path(),
         &foundation_with_items(
-            vec![bounded_context(0, "Work Management"), command_item(1, "CreateWorkUnit", 0)],
+            vec![
+                bounded_context(0, "Work Management"),
+                command_item(1, "CreateWorkUnit", 0),
+            ],
             2,
         ),
     );
@@ -180,7 +196,10 @@ fn scenario_cli_rejects_missing_command_with_exit_1() {
     assert_eq!(code, 1, "expected exit 1; stderr={stderr}");
 
     // @step And stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain Error: prefix; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain Error: prefix; got:\n{stderr}"
+    );
 
     // @step And stderr contains the substring "Command 'Ghost' not found in bounded context 'Work Management'"
     assert!(
@@ -222,16 +241,30 @@ fn scenario_cli_delegates_to_same_fspec_core_function() {
     let result = codelet_fspec_core::dispatch_command(req);
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step And running `fspec remove-command-from-foundation "Work Management" "C2"` afterwards exits 0
     let (code, stdout, stderr) = run_cmd(ws.path(), &["Work Management", "C2"]);
-    assert_eq!(code, 0, "CLI remove must succeed; stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "CLI remove must succeed; stdout={stdout}, stderr={stderr}"
+    );
 
     // @step And spec/foundation.json on disk shows both command items C1 and C2 with deleted=true
     let v = read_foundation(ws.path());
-    assert_eq!(command_deleted(&v, "C1"), Some(true), "C1 must be soft-deleted");
-    assert_eq!(command_deleted(&v, "C2"), Some(true), "C2 must be soft-deleted");
+    assert_eq!(
+        command_deleted(&v, "C1"),
+        Some(true),
+        "C1 must be soft-deleted"
+    );
+    assert_eq!(
+        command_deleted(&v, "C2"),
+        Some(true),
+        "C2 must be soft-deleted"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/remove_command_from_foundation.rs contains NO inline context lookup, command match, or file-write logic — its only computation is JSON arg marshalling
     let bridge_path =

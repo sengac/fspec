@@ -29,9 +29,7 @@ use helpers::{minimal_cfg, write_valid_script, CwdGuard, EnvGuard};
 /// `$HOME/.fspec/providers/<slug>.json`. Returns the TempDir roots and
 /// the env guards that must be kept alive for the lifetime of the test.
 #[allow(clippy::type_complexity)]
-fn install_shadowing_config(
-    slug: &str,
-) -> (TempDir, TempDir, EnvGuard, EnvGuard, CwdGuard) {
+fn install_shadowing_config(slug: &str) -> (TempDir, TempDir, EnvGuard, EnvGuard, CwdGuard) {
     let home_tmp = TempDir::new().expect("home tempdir");
     let project_tmp = TempDir::new().expect("project tempdir");
 
@@ -94,10 +92,7 @@ fn load_a_custom_provider_config_named_codex_without_nameconflict() {
     // @step Given a valid JSON provider config with name "codex" and a valid .rhai script on disk
     let tmp = TempDir::new().expect("tempdir");
     let script_path = write_valid_script(tmp.path(), "p.rhai");
-    let cfg = minimal_cfg(
-        "codex",
-        &script_path.file_name().unwrap().to_string_lossy(),
-    );
+    let cfg = minimal_cfg("codex", &script_path.file_name().unwrap().to_string_lossy());
     let cfg_path = tmp.path().join("codex.json");
     fs::write(&cfg_path, serde_json::to_string(&cfg).unwrap()).unwrap();
 
@@ -161,7 +156,11 @@ fn escape_hatch_env_var_disables_shadowing_and_restores_hardcoded_builtin() {
     let result = ProviderType::from_str("claude").expect("claude resolves");
 
     // @step Then the result is ProviderType::Claude
-    assert_eq!(result, ProviderType::Claude, "escape hatch should bypass shadowing");
+    assert_eq!(
+        result,
+        ProviderType::Claude,
+        "escape hatch should bypass shadowing"
+    );
 }
 
 // =========================================================================

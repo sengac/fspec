@@ -16,9 +16,8 @@ use serial_test::serial;
 use tempfile::TempDir;
 
 use codelet_providers::custom::{
-    discover_provider_configs, init_provider_template, list_providers_info,
-    show_provider_info, test_provider_connection, validate_provider_config,
-    CustomProvider, ProviderConfig,
+    discover_provider_configs, init_provider_template, list_providers_info, show_provider_info,
+    test_provider_connection, validate_provider_config, CustomProvider, ProviderConfig,
 };
 use codelet_providers::{ProviderCredentials, ProviderManager, ProviderType};
 
@@ -173,7 +172,10 @@ fn initialize_custom_provider_definition_from_openai_compatible_template() {
     // @step Given I have a project root with no .fspec/providers/ directory
     let fx = DiscoveryFixture::new();
     let providers_dir = fx.project_root().join(".fspec").join("providers");
-    assert!(!providers_dir.exists(), "precondition: providers dir absent");
+    assert!(
+        !providers_dir.exists(),
+        "precondition: providers dir absent"
+    );
 
     // @step When I run 'codelet providers init my-llm --template openai-compatible'
     let written = init_provider_template(fx.project_root(), "my-llm", "openai-compatible")
@@ -432,11 +434,8 @@ fn agent_loop_dispatches_custom_provider_via_facade_override_to_existing_match_a
     let _baseurl_guard = EnvGuard::remove("OPENAI_BASE_URL");
     let _apikey_guard = EnvGuard::remove("OPENAI_API_KEY");
     let _model_guard = EnvGuard::remove("OPENAI_MODEL");
-    let mut manager = ProviderManager::for_testing(
-        ProviderType::Custom("my-llm".to_string()),
-        None,
-        None,
-    );
+    let mut manager =
+        ProviderManager::for_testing(ProviderType::Custom("my-llm".to_string()), None, None);
     manager.set_facade_override(Some("openai".to_string()));
 
     // @step And OPENAI_BASE_URL has been applied from the custom provider via apply_custom_provider_env_vars
@@ -517,11 +516,7 @@ fn custom_provider_is_unavailable_when_required_env_var_is_unset() {
 fn project_local_custom_provider_definition_overrides_user_global() {
     // @step Given a user-global definition at ~/.fspec/providers/my-llm.json with baseUrl=http://global/v1
     let fx = DiscoveryFixture::new();
-    let global_dir = fx
-        ._home_tmp
-        .path()
-        .join(".fspec")
-        .join("providers");
+    let global_dir = fx._home_tmp.path().join(".fspec").join("providers");
     fs::create_dir_all(&global_dir).unwrap();
     fs::write(
         global_dir.join("my-llm.json"),
@@ -621,7 +616,10 @@ fn format_system_prompt(config, preamble, fspec_guidance) { preamble }
     // The agent should advertise RhaiSystemPromptFacade-provided prefix
     // (None in this script) and RhaiToolFacadeAdapter as the tool facade.
     assert_eq!(agent.provider_name(), "rhai-llm");
-    assert!(agent.uses_rhai_system_prompt_facade(), "must use RhaiSystemPromptFacade");
+    assert!(
+        agent.uses_rhai_system_prompt_facade(),
+        "must use RhaiSystemPromptFacade"
+    );
     assert!(
         agent.uses_rhai_tool_facade_adapter(),
         "must wire RhaiToolFacadeAdapter"
@@ -654,12 +652,11 @@ fn from_str_resolves_registered_custom_provider_slug_to_provider_type_custom() {
     );
 
     // @step And ProviderType::from_str("nonexistent") returns a config error
-    let err = ProviderType::from_str("nonexistent-provider-xyz")
-        .expect_err("nonexistent should error");
+    let err =
+        ProviderType::from_str("nonexistent-provider-xyz").expect_err("nonexistent should error");
     let msg = err.to_string();
     assert!(
-        msg.to_lowercase().contains("unknown")
-            || msg.to_lowercase().contains("configuration"),
+        msg.to_lowercase().contains("unknown") || msg.to_lowercase().contains("configuration"),
         "error should indicate unknown/config error, got: {msg}"
     );
 }
@@ -694,11 +691,11 @@ fn detect_default_provider_never_auto_selects_a_custom_provider() {
     // @step Then the result is an auth error with message 'No provider credentials available'
     let err = result.expect_err("detect should fail when only custom is available");
     assert!(
-        err.to_string().contains("No provider credentials available"),
+        err.to_string()
+            .contains("No provider credentials available"),
         "error should mention 'No provider credentials available', got: {err}"
     );
 }
-
 
 // =========================================================================
 // PROV-095: derive_facade_for_custom returns None for Rhai-scripted providers
@@ -754,9 +751,7 @@ fn map_error(err) { #{} }
     .unwrap();
 
     // When deriving the facade for the Rhai-scripted provider
-    let derived = codelet_providers::custom::derive_facade_for_custom(
-        "claude-rhai-fixture",
-    );
+    let derived = codelet_providers::custom::derive_facade_for_custom("claude-rhai-fixture");
 
     // Then it returns None (so dispatch falls through to the Rhai-native
     // custom-provider arm instead of short-circuiting to get_claude())
@@ -808,9 +803,7 @@ fn map_error(err) { #{} }
     )
     .unwrap();
 
-    let derived = codelet_providers::custom::derive_facade_for_custom(
-        "openai-rhai-fixture",
-    );
+    let derived = codelet_providers::custom::derive_facade_for_custom("openai-rhai-fixture");
 
     assert_eq!(
         derived, None,
@@ -857,9 +850,7 @@ fn map_error(err) { #{} }
     )
     .unwrap();
 
-    let derived = codelet_providers::custom::derive_facade_for_custom(
-        "hybrid-fixture",
-    );
+    let derived = codelet_providers::custom::derive_facade_for_custom("hybrid-fixture");
 
     assert_eq!(
         derived.as_deref(),
@@ -886,9 +877,7 @@ fn prov_095_no_script_no_facade_still_derives_from_api_style() {
     // per ProviderConfig defaults, so assert against whatever the default
     // produces rather than hard-coding — the contract is "derive from
     // api_style when no script".
-    let derived = codelet_providers::custom::derive_facade_for_custom(
-        "plain-openai-facade",
-    );
+    let derived = codelet_providers::custom::derive_facade_for_custom("plain-openai-facade");
     assert!(
         derived.is_some(),
         "When no script AND no explicit facade, a facade MUST still be \

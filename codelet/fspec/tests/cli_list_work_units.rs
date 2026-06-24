@@ -140,7 +140,11 @@ fn scenario_standalone_fspec_binary_exposes_list_work_units_as_a_clap_subcommand
         "fspec list-work-units --help must exit 0; got exit {code}, stderr={stderr}"
     );
     // clap routes `--help` output to stdout by default.
-    let help = if stdout.is_empty() { stderr.to_string() } else { stdout.to_string() };
+    let help = if stdout.is_empty() {
+        stderr.to_string()
+    } else {
+        stdout.to_string()
+    };
     for flag in ["--status", "--prefix", "--epic"] {
         assert!(
             help.contains(flag),
@@ -219,8 +223,7 @@ fn scenario_cli_emits_two_space_indented_json_for_format_json() {
     }
   }
 }"#;
-    fs::write(ws.path().join("spec/work-units.json"), two_unit)
-        .expect("rewrite two-unit fixture");
+    fs::write(ws.path().join("spec/work-units.json"), two_unit).expect("rewrite two-unit fixture");
 
     // @step When I run `./codelet/target/release/fspec list-work-units --format=json`
     let (code, stdout, stderr) = run_list_work_units(ws.path(), &["--format=json"]);
@@ -230,8 +233,7 @@ fn scenario_cli_emits_two_space_indented_json_for_format_json() {
         code, 0,
         "fspec list-work-units --format=json must exit 0; got exit {code}, stderr={stderr}"
     );
-    let parsed: Value =
-        serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
+    let parsed: Value = serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
     let arr = parsed
         .get("workUnits")
         .and_then(Value::as_array)
@@ -274,8 +276,7 @@ fn scenario_cli_status_filter_matches_dispatcher_behavior() {
         run_list_work_units(ws.path(), &["--status=backlog", "--format=json"]);
 
     // @step Then stdout contains a JSON workUnits array of length 2 with AUTH-001 and DASH-001 in that order
-    let parsed: Value =
-        serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
+    let parsed: Value = serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
     let arr = parsed
         .get("workUnits")
         .and_then(Value::as_array)
@@ -340,7 +341,8 @@ fn scenario_default_combined_tui_mode_is_preserved_when_no_subcommand() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -400,16 +402,14 @@ fn scenario_cli_tolerates_unknown_work_unit_type_values() {
     let ws = workspace_with_work_units_json(store);
 
     // @step When I run `./codelet/target/release/fspec list-work-units --type=story --format=json`
-    let (code, stdout, stderr) =
-        run_list_work_units(ws.path(), &["--type=story", "--format=json"]);
+    let (code, stdout, stderr) = run_list_work_units(ws.path(), &["--type=story", "--format=json"]);
 
     // @step Then the command exits 0 and stdout contains a JSON workUnits array of length 1 with AUTH-001
     assert_eq!(
         code, 0,
         "fspec list-work-units --type=story must exit 0 against a file containing a `feature`-typed unit; got exit {code}, stdout={stdout}, stderr={stderr}"
     );
-    let parsed: Value =
-        serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
+    let parsed: Value = serde_json::from_str(stdout.trim()).expect("stdout must be parseable JSON");
     let arr = parsed
         .get("workUnits")
         .and_then(Value::as_array)
@@ -492,7 +492,10 @@ fn scenario_list_work_units_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "list-work-units --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "list-work-units --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-work-units.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_LWU);

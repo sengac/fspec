@@ -77,7 +77,11 @@ fn scenario_clap_exposes_get_scenarios_with_help() {
 fn scenario_cli_format_json_prints_a_json_array_of_scenario_objects() {
     // @step Given a temp workspace contains spec/features/login.feature tagged '@auth' with two scenarios
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", LOGIN_AUTH_TWO_SCENARIOS);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        LOGIN_AUTH_TWO_SCENARIOS,
+    );
 
     // @step When I run `./codelet/target/release/fspec get-scenarios --tag @auth --format json` from that workspace
     let (code, stdout, stderr) = run_get(ws.path(), &["--tag", "@auth", "--format", "json"]);
@@ -106,7 +110,11 @@ fn scenario_cli_format_json_prints_a_json_array_of_scenario_objects() {
 fn scenario_cli_default_text_output_prints_count_message_and_groups_by_feature() {
     // @step Given a temp workspace contains spec/features/login.feature tagged '@auth' with two scenarios
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", LOGIN_AUTH_TWO_SCENARIOS);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        LOGIN_AUTH_TWO_SCENARIOS,
+    );
 
     // @step When I run `./codelet/target/release/fspec get-scenarios --tag @auth` from that workspace
     let (code, stdout, stderr) = run_get(ws.path(), &["--tag", "@auth"]);
@@ -124,7 +132,10 @@ fn scenario_cli_default_text_output_prints_count_message_and_groups_by_feature()
     );
 
     // @step Then stdout contains the substring 'spec/features/login.feature'
-    assert!(stdout.contains("spec/features/login.feature"), "got:\n{stdout}");
+    assert!(
+        stdout.contains("spec/features/login.feature"),
+        "got:\n{stdout}"
+    );
 }
 
 #[test]
@@ -143,7 +154,10 @@ fn scenario_cli_against_workspace_with_no_spec_features_exits_1() {
     );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring 'spec/features directory not found'
     assert!(
@@ -156,7 +170,11 @@ fn scenario_cli_against_workspace_with_no_spec_features_exits_1() {
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a temp workspace contains spec/features/login.feature tagged '@auth' with two scenarios
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/login.feature", LOGIN_AUTH_TWO_SCENARIOS);
+    write_feature(
+        ws.path(),
+        "spec/features/login.feature",
+        LOGIN_AUTH_TWO_SCENARIOS,
+    );
 
     // @step When I dispatch get-scenarios through fspec_core::dispatch::dispatch_command with tags=['@auth'] and format='json'
     let req = codelet_fspec_core::DispatchRequest {
@@ -165,7 +183,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     // @step Then the DispatchResult succeeds and its data is a JSON array matching the CLI's --format json stdout
     let (code, stdout, stderr) = run_get(ws.path(), &["--tag", "@auth", "--format", "json"]);

@@ -34,8 +34,7 @@ fn write_daemon_json(path: &std::path::Path, port: u16, pid: u32) {
         "started_at": "2026-05-11T00:00:00Z",
         "version": "0.0.0-test",
     });
-    fs::write(path, serde_json::to_string_pretty(&body).unwrap())
-        .expect("write daemon.json");
+    fs::write(path, serde_json::to_string_pretty(&body).unwrap()).expect("write daemon.json");
 }
 
 // ─────────────────────────────────────────────────────────────────────────

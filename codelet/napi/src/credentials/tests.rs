@@ -325,10 +325,14 @@ mod credential_tests {
         // Initialize with old key
         setup_credentials_file(&data_dir, "anthropic", old_key);
         init_credential_store_with_dir(&data_dir).unwrap();
-        
+
         // Verify old key is resolved
         let initial = resolve_credential("anthropic", None, Some(&data_dir)).unwrap();
-        assert_eq!(initial, Some(old_key.to_string()), "Should initially resolve old key");
+        assert_eq!(
+            initial,
+            Some(old_key.to_string()),
+            "Should initially resolve old key"
+        );
 
         // @step Given TypeScript saves a new API key to the credentials file
         // Wait for file mtime to change - some file systems have coarse granularity
@@ -339,7 +343,7 @@ mod credential_tests {
         // The store's get_api_key method calls reload_if_changed internally
         // This tests the automatic reload on access behavior
         let result = resolve_credential("anthropic", None, Some(&data_dir)).unwrap();
-        
+
         // @step Then the new key should be returned
         assert_eq!(
             result,
@@ -367,10 +371,14 @@ mod credential_tests {
         init_credential_store_with_dir(&data_dir).unwrap();
 
         // @step When sessionManagerCreateWithId is called without an api_key parameter
-        let resolved = resolve_credential_for_session("anthropic/claude-sonnet-4-20250514", &data_dir);
+        let resolved =
+            resolve_credential_for_session("anthropic/claude-sonnet-4-20250514", &data_dir);
 
         // @step Then Rust should resolve the credential internally
-        assert!(resolved.is_ok(), "Rust should resolve credential internally");
+        assert!(
+            resolved.is_ok(),
+            "Rust should resolve credential internally"
+        );
 
         // @step And the session should be created with the resolved API key
         assert_eq!(

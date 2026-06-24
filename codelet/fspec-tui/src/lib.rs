@@ -48,7 +48,6 @@ pub use components::dialog_theme::Accent;
 pub use components::hello::HelloComponent;
 pub use components::help_dialog::HelpDialog;
 pub use components::hitl_dialog::{HitlDialog, HITL_DIALOG_ID};
-pub use components::model_selector_dialog::{ModelSelectorDialog, MODEL_SELECTOR_DIALOG_ID};
 pub use components::pause_dialog::{PauseDialog, PAUSE_DIALOG_ID};
 pub use components::role_dialog::{RoleDialog, ROLE_DIALOG_ID};
 pub use components::thinking_level_dialog::{ThinkingLevelDialog, THINKING_LEVEL_DIALOG_ID};

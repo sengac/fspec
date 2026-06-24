@@ -125,7 +125,10 @@ fn scenario_cli_errors_and_exits_1_when_schedule_missing() {
     let (code, _stdout, stderr) = run_resume_schedule(ws.path(), &["ghost"]);
 
     // @step Then the command exits 1
-    assert_eq!(code, 1, "fspec resume-schedule must exit 1 on error; got {code}");
+    assert_eq!(
+        code, 1,
+        "fspec resume-schedule must exit 1 on error; got {code}"
+    );
 
     // @step And stderr contains "Schedule 'ghost' does not exist"
     assert!(
@@ -207,8 +210,14 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Given a project root whose spec/schedules.json contains a paused schedule named 'nightly-review'
     let ws_dispatch = tempfile::tempdir().expect("tempdir dispatch");
     let ws_cli = tempfile::tempdir().expect("tempdir cli");
-    write_schedules(ws_dispatch.path(), &one_shell_schedule("nightly-review", "paused"));
-    write_schedules(ws_cli.path(), &one_shell_schedule("nightly-review", "paused"));
+    write_schedules(
+        ws_dispatch.path(),
+        &one_shell_schedule("nightly-review", "paused"),
+    );
+    write_schedules(
+        ws_cli.path(),
+        &one_shell_schedule("nightly-review", "paused"),
+    );
 
     // @step When I dispatch resume-schedule through fspec_core::dispatch::dispatch_command with name='nightly-review' AND I separately invoke `fspec resume-schedule nightly-review` against an identical project root
     let req = codelet_fspec_core::DispatchRequest {
@@ -217,7 +226,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws_dispatch.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
 
     let (code, _stdout, stderr) = run_resume_schedule(ws_cli.path(), &["nightly-review"]);
     assert_eq!(code, 0, "CLI path must exit 0; stderr={stderr}");

@@ -46,8 +46,7 @@ pub struct CliArgs {
 /// Entry point invoked from `main.rs` for the `update-step` clap
 /// subcommand. Returns the process exit code.
 pub async fn run(args: CliArgs) -> Result<u8> {
-    let project_root: PathBuf =
-        env::current_dir().context("resolve current working directory")?;
+    let project_root: PathBuf = env::current_dir().context("resolve current working directory")?;
 
     let mut obj = Map::new();
     obj.insert("feature".to_string(), Value::String(args.feature.clone()));
@@ -66,8 +65,7 @@ pub async fn run(args: CliArgs) -> Result<u8> {
 
     match update_step::run(&args_json, &project_root).await {
         Ok(data_json) => {
-            let v: Value =
-                serde_json::from_str(&data_json).context("parse core JSON response")?;
+            let v: Value = serde_json::from_str(&data_json).context("parse core JSON response")?;
             if v.get("success").and_then(Value::as_bool) == Some(false) {
                 let err = v.get("error").and_then(Value::as_str).unwrap_or("");
                 eprintln!("Error: {err}");

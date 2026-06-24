@@ -65,7 +65,11 @@ const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/delete-scenarios.txt")
 fn scenario_cli_dry_run_previews_deletions_without_removing_scenarios() {
     // @step Given a tempdir with one feature containing two @spike scenarios
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/demo.feature", &two_spike_one_plain());
+    write_feature(
+        ws.path(),
+        "spec/features/demo.feature",
+        &two_spike_one_plain(),
+    );
 
     // @step When I run 'fspec delete-scenarios --tag @spike --dry-run' in that tempdir
     let (code, stdout, stderr) = run_delete_scenarios(ws.path(), &["--tag", "@spike", "--dry-run"]);
@@ -99,7 +103,11 @@ fn scenario_cli_dry_run_previews_deletions_without_removing_scenarios() {
 fn scenario_cli_deletes_matching_scenarios_and_prints_the_success_message() {
     // @step Given a tempdir with one feature containing two @spike scenarios and one untagged scenario
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/demo.feature", &two_spike_one_plain());
+    write_feature(
+        ws.path(),
+        "spec/features/demo.feature",
+        &two_spike_one_plain(),
+    );
 
     // @step When I run 'fspec delete-scenarios --tag @spike' in that tempdir
     let (code, stdout, stderr) = run_delete_scenarios(ws.path(), &["--tag", "@spike"]);
@@ -127,7 +135,11 @@ fn scenario_cli_deletes_matching_scenarios_and_prints_the_success_message() {
 fn scenario_cli_with_no_tag_exits_1_with_stderr_error_prefix() {
     // @step Given a tempdir with a feature tagged @spike
     let ws = tempfile::tempdir().expect("tempdir");
-    write_feature(ws.path(), "spec/features/demo.feature", &two_spike_one_plain());
+    write_feature(
+        ws.path(),
+        "spec/features/demo.feature",
+        &two_spike_one_plain(),
+    );
 
     // @step When I run 'fspec delete-scenarios' in that tempdir
     let (code, _stdout, stderr) = run_delete_scenarios(ws.path(), &[]);
@@ -199,7 +211,10 @@ fn scenario_cli_help_output_matches_the_captured_bare_commander_fixture_byte_for
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the process exits with code 0
-    assert_eq!(code, 0, "delete-scenarios --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "delete-scenarios --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout matches the captured fixture at codelet/fspec/tests/fixtures/help/delete-scenarios.txt
     assert_eq!(stdout, TS_HELP_FIXTURE);

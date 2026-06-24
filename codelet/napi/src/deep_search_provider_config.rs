@@ -57,10 +57,7 @@ pub(crate) fn select_copilot_facade(_model_name: &str) -> BoxedSystemPromptFacad
     Box::new(OpenAISystemPromptFacade)
 }
 
-fn copilot_request_config(
-    model_name: &str,
-    system_prompt: &str,
-) -> DeepSearchRequestConfig {
+fn copilot_request_config(model_name: &str, system_prompt: &str) -> DeepSearchRequestConfig {
     let facade = select_copilot_facade(model_name);
     DeepSearchRequestConfig {
         preamble: facade.transform_preamble(system_prompt),
@@ -142,15 +139,19 @@ fn zai_request_config(system_prompt: &str) -> DeepSearchRequestConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::{SUB_AGENT_MAX_TOKENS, request_config_for_provider};
+    use super::{request_config_for_provider, SUB_AGENT_MAX_TOKENS};
 
     #[test]
     fn codex_request_config_sets_required_responses_api_fields() {
-        let config = request_config_for_provider("codex", "gpt-5.1-codex", "deep search prompt", false)
-            .expect("codex config should build");
+        let config =
+            request_config_for_provider("codex", "gpt-5.1-codex", "deep search prompt", false)
+                .expect("codex config should build");
 
         assert_eq!(config.max_tokens, None);
-        assert_eq!(config.additional_params.as_ref().expect("params")["store"], false);
+        assert_eq!(
+            config.additional_params.as_ref().expect("params")["store"],
+            false
+        );
         assert_eq!(
             config.additional_params.as_ref().expect("params")["include"][0],
             "reasoning.encrypted_content"
@@ -163,8 +164,13 @@ mod tests {
 
     #[test]
     fn gemini_request_config_uses_model_aware_prompt_and_generation_defaults() {
-        let config = request_config_for_provider("gemini", "gemini-3-pro-preview", "deep search prompt", false)
-            .expect("gemini config should build");
+        let config = request_config_for_provider(
+            "gemini",
+            "gemini-3-pro-preview",
+            "deep search prompt",
+            false,
+        )
+        .expect("gemini config should build");
 
         assert_eq!(config.max_tokens, Some(SUB_AGENT_MAX_TOKENS));
         assert!(config.preamble.contains("interactive CLI agent"));
@@ -178,7 +184,8 @@ mod tests {
             0.95
         );
         assert_eq!(
-            config.additional_params.as_ref().expect("params")["generationConfig"]["thinkingConfig"]["thinkingLevel"],
+            config.additional_params.as_ref().expect("params")["generationConfig"]
+                ["thinkingConfig"]["thinkingLevel"],
             "high"
         );
     }
@@ -219,7 +226,10 @@ mod tests {
         assert!(config.preamble.contains("You are Claude Code"));
         let params = config.additional_params.as_ref().expect("params");
         assert!(params["system"].is_array());
-        assert!(params["system"][0]["text"].as_str().expect("prefix").contains("Claude Code"));
+        assert!(params["system"][0]["text"]
+            .as_str()
+            .expect("prefix")
+            .contains("Claude Code"));
     }
 
     // =========================================================================
@@ -239,13 +249,9 @@ mod tests {
         // @step Given a session is configured with provider "github-copilot"
         // @step When a DeepSearch sub-agent is spawned
         // @step Then request_config_for_provider("github-copilot", model, prompt, false) returns Ok
-        let config = request_config_for_provider(
-            "github-copilot",
-            "gpt-4o",
-            "deep search prompt",
-            false,
-        )
-        .expect("github-copilot config should build");
+        let config =
+            request_config_for_provider("github-copilot", "gpt-4o", "deep search prompt", false)
+                .expect("github-copilot config should build");
 
         // @step And the returned config preamble is built using select_copilot_facade
         // The preamble must match exactly what select_copilot_facade applied to

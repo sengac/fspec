@@ -61,12 +61,9 @@ impl ScriptedOAuthProvider {
         let engine = build_default_engine();
         let script_content = std::fs::read_to_string(script_path)
             .map_err(|e| anyhow!("Failed to read script {}: {e}", script_path.display()))?;
-        let ast = engine.compile(&script_content).map_err(|e| {
-            anyhow!(
-                "Failed to compile script {}: {e}",
-                script_path.display()
-            )
-        })?;
+        let ast = engine
+            .compile(&script_content)
+            .map_err(|e| anyhow!("Failed to compile script {}: {e}", script_path.display()))?;
         Ok(Self {
             engine: Arc::new(engine),
             ast,
@@ -128,7 +125,11 @@ impl ScriptedOAuthProvider {
             self.engine.clone(),
             self.ast.clone(),
             "exchange_code",
-            (self.config_map(), code.to_string(), pkce_verifier.to_string()),
+            (
+                self.config_map(),
+                code.to_string(),
+                pkce_verifier.to_string(),
+            ),
         )
         .await
     }

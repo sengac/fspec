@@ -273,7 +273,10 @@ fn scenario_restore_checkpoint_help_is_byte_for_byte_identical_to_ts() {
         Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/help/restore-checkpoint.txt");
     let fixture = fs::read_to_string(&fixture_path)
         .unwrap_or_else(|e| panic!("read help fixture {}: {e}", fixture_path.display()));
-    assert_eq!(stdout, fixture, "restore-checkpoint --help must match TS fixture");
+    assert_eq!(
+        stdout, fixture,
+        "restore-checkpoint --help must match TS fixture"
+    );
 
     // @step And stdout starts with a blank line followed by "RESTORE-CHECKPOINT"
     assert!(

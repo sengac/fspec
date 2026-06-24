@@ -23,10 +23,11 @@ pub mod gemini;
 mod manager;
 pub mod model_limits;
 pub mod models;
+pub mod oauth;
 pub mod oauth_crypto;
 pub mod oauth_http_utils;
-pub mod oauth;
 pub mod openai;
+pub mod provider_resolution;
 pub mod zai;
 
 /// RPC-007: Test-only deterministic stub provider for cross-transport

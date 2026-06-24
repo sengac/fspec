@@ -23,19 +23,19 @@
 //! and `LogRecord` events. Both transports observe the SAME senders so
 //! NAPI is one listener, not the only listener.
 
+use arc_swap::ArcSwap;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
-    CustomModelDefinition,
-    FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
-    IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
+    CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
+    IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
+    ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
     SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
     SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
     TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
-use arc_swap::ArcSwap;
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicU64, Ordering},
@@ -47,6 +47,9 @@ use tokio::sync::broadcast;
 use tokio::sync::Mutex as AsyncMutex;
 
 mod log_layer;
+mod oauth_copilot;
+mod oauth_disconnect;
+mod oauth_login;
 pub use log_layer::{register_log_layer, BroadcastLogLayer};
 
 /// The fspec RPC service surface.
@@ -144,7 +147,8 @@ pub trait FspecService {
     /// supplied `session`, newest-first. Delegates to
     /// `codelet_core::persistence::history::get` with the workspace cwd
     /// as the project filter.
-    async fn persistence_get_history(session: SessionId, limit: u32) -> Result<Vec<String>, String>;
+    async fn persistence_get_history(session: SessionId, limit: u32)
+        -> Result<Vec<String>, String>;
 
     /// RPC-025: case-insensitive substring search across history
     /// entries, scoped to the workspace cwd. Returns transport-portable
@@ -179,6 +183,12 @@ pub trait FspecService {
         model_id: String,
     ) -> Result<(), String>;
 
+    /// PROV-118: set the in-process DEFAULT model used by `create_session`
+    /// when no per-session model is bound. Delegates through the optional
+    /// `SessionManagerHandle::set_default_model`. Without an attached handle
+    /// returns `Ok(())` (silent no-op, idempotent like `set_session_model`).
+    async fn set_default_model(model: String) -> Result<(), String>;
+
     /// RPC-347: add a NEW custom model to a local-server profile. Delegates
     /// through `SessionManagerHandle::add_custom_model` (which calls
     /// `profile_sections::save_custom_model(.., None)`). Without an attached
@@ -210,14 +220,26 @@ pub trait FspecService {
         model_id: String,
     ) -> Result<(), String>;
 
+    /// PROV-108: create or update a local-server profile. Delegates through
+    /// `SessionManagerHandle::save_profile` (read-modify-write preserving
+    /// customModels + sibling keys). Without an attached handle returns
+    /// `Ok(())` (silent no-op, idempotent like `set_session_model`).
+    async fn save_profile(
+        provider_id: String,
+        profile_name: String,
+        definition: ProfileDefinition,
+    ) -> Result<(), String>;
+
+    /// PROV-108: delete a local-server profile. Delegates through
+    /// `SessionManagerHandle::delete_profile`; without a handle returns
+    /// `Ok(())`.
+    async fn delete_profile(provider_id: String, profile_name: String) -> Result<(), String>;
+
     /// RPC-022: set the per-session thinking/reasoning level.
     /// Delegates through `SessionManagerHandle::set_thinking_level`.
     /// Returns `Err(String)` on handle error; without an attached
     /// handle returns `Ok(())`.
-    async fn set_thinking_level(
-        session_id: SessionId,
-        level: ThinkingLevel,
-    ) -> Result<(), String>;
+    async fn set_thinking_level(session_id: SessionId, level: ThinkingLevel) -> Result<(), String>;
 
     /// RPC-022: read the session's current role overlay text.
     /// Delegates through `SessionManagerHandle::get_role`. Without an
@@ -228,10 +250,7 @@ pub trait FspecService {
     /// `None` clears. Delegates through
     /// `SessionManagerHandle::set_role`. Without an attached handle
     /// returns `Ok(())` (silent no-op).
-    async fn set_session_role(
-        session_id: SessionId,
-        role: Option<String>,
-    ) -> Result<(), String>;
+    async fn set_session_role(session_id: SessionId, role: Option<String>) -> Result<(), String>;
 
     // ========================================================================
     // RPC-037: Widened tarpc surface for AgentView parity. Each method below
@@ -347,7 +366,6 @@ pub trait FspecService {
         message: IncomingMessageInput,
     ) -> Result<(), String>;
 
-
     /// RPC-037: debug-capture toggle reader.
     async fn get_debug_enabled(session_id: SessionId) -> bool;
 
@@ -355,10 +373,7 @@ pub trait FspecService {
     async fn set_debug_enabled(session_id: SessionId, enabled: bool);
 
     /// RPC-037: toggle debug capture; returns the resolved path string.
-    async fn toggle_debug(
-        session_id: SessionId,
-        debug_dir: String,
-    ) -> Result<String, String>;
+    async fn toggle_debug(session_id: SessionId, debug_dir: String) -> Result<String, String>;
 
     /// RPC-055: set the global debug-capture directory used by the
     /// pre-session toggle path. Mirrors the NAPI
@@ -372,10 +387,7 @@ pub trait FspecService {
     async fn pause_confirm(session_id: SessionId, accept: bool) -> Result<(), String>;
 
     /// RPC-037: respond to a three-choice approval pause.
-    async fn pause_triple(
-        session_id: SessionId,
-        choice: ApprovalChoice,
-    ) -> Result<(), String>;
+    async fn pause_triple(session_id: SessionId, choice: ApprovalChoice) -> Result<(), String>;
 
     /// RPC-037: send a Human-In-The-Loop response.
     async fn send_hitl_response(
@@ -390,15 +402,10 @@ pub trait FspecService {
     async fn get_hitl_request(session_id: SessionId) -> Option<HitlRequest>;
 
     /// RPC-037: round-trip an FspecCommandRequest reply.
-    async fn send_fspec_result(
-        session_id: SessionId,
-        result: FspecResult,
-    ) -> Result<(), String>;
+    async fn send_fspec_result(session_id: SessionId, result: FspecResult) -> Result<(), String>;
 
     /// RPC-037: create an isolated (worktree-backed) session.
-    async fn create_isolated_session(
-        role: Option<String>,
-    ) -> Result<IsolatedSessionInfo, String>;
+    async fn create_isolated_session(role: Option<String>) -> Result<IsolatedSessionInfo, String>;
 
     /// RPC-037: per-user default thinking level (closes the pre-RPC-037
     /// gap on the tarpc surface).
@@ -434,13 +441,56 @@ pub trait FspecService {
 
     /// RPC-054: perform a network round-trip to the provider's base
     /// URL and return latency + success metadata.
-    async fn test_provider_connection(
-        provider_id: String,
-    ) -> Result<TestConnectionResult, String>;
+    async fn test_provider_connection(provider_id: String) -> Result<TestConnectionResult, String>;
 
     /// RPC-054: refresh the provider's cached model list and return
     /// the fresh `ModelEntry` list.
     async fn refresh_models_cache(provider_id: String) -> Result<Vec<ModelEntry>, String>;
+
+    /// PROV-112: clear the OAuth tokens for `provider_id` (disconnect/logout).
+    /// Dispatches by provider to the providers-direct clear primitives
+    /// (anthropic→delete claude_auth.json, github-copilot→delete copilot
+    /// credential, codex/fallback→strip the tokens field preserving
+    /// OPENAI_API_KEY). Idempotent.
+    async fn oauth_clear_tokens(provider_id: String) -> Result<(), String>;
+
+    /// PROV-112: whether `provider_id` currently has OAuth tokens persisted.
+    /// Drives the post-disconnect nav reload (the `oauth-status` row is shown
+    /// only while this is `true`).
+    async fn oauth_get_tokens(provider_id: String) -> Result<bool, String>;
+
+    /// PROV-113: run the browser OAuth login for `provider_id` to completion
+    /// (providers-layer local-server flow; tokens persisted on success).
+    async fn oauth_browser_login(provider_id: String) -> Result<(), String>;
+
+    /// PROV-113: phase 1 of the anthropic headless flow — generate PKCE +
+    /// authorize URL (no network).
+    async fn oauth_headless_start(provider_id: String) -> Result<OAuthHeadlessStart, String>;
+
+    /// PROV-113: phase 2 of the anthropic headless flow — validate the pasted
+    /// `code#state`, exchange for tokens, persist.
+    async fn oauth_headless_complete(
+        provider_id: String,
+        code_with_state: String,
+        pkce_verifier: String,
+    ) -> Result<(), String>;
+
+    /// PROV-113: phase 1 of the codex device flow — request a device code.
+    async fn oauth_device_start(provider_id: String) -> Result<OAuthDeviceStart, String>;
+
+    /// PROV-113: phase 2 of the codex device flow — poll until authorized,
+    /// then exchange + persist.
+    async fn oauth_device_poll(
+        provider_id: String,
+        device_auth_id: String,
+        interval: u64,
+    ) -> Result<(), String>;
+
+    /// PROV-114: phase 1 of the github-copilot device flow — request a device
+    /// code against github.com (`None`) or a normalized enterprise host.
+    async fn oauth_copilot_device_start(
+        enterprise_host: Option<String>,
+    ) -> Result<OAuthDeviceStart, String>;
 
     /// RPC-056: list every blocklist rule with its `source` provenance
     /// ("system" | "project"). Drives the left pane of
@@ -849,8 +899,7 @@ impl FspecService for FspecServiceImpl {
         // tests), return the zero default to preserve backward
         // compatibility.
         match self.inner.cwd() {
-            Some(cwd) => codelet_git::ghost_commit::count_checkpoints(cwd)
-                .unwrap_or_default(),
+            Some(cwd) => codelet_git::ghost_commit::count_checkpoints(cwd).unwrap_or_default(),
             None => CheckpointCounts::default(),
         }
     }
@@ -873,11 +922,7 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn move_work_unit_down(
-        self,
-        _ctx: Context,
-        id: String,
-    ) -> Result<(), String> {
+    async fn move_work_unit_down(self, _ctx: Context, id: String) -> Result<(), String> {
         match self.inner.cwd() {
             Some(cwd) => codelet_core::work_units_write::move_work_unit(
                 cwd,
@@ -1004,13 +1049,12 @@ impl FspecService for FspecServiceImpl {
         // timestamp so non-Rust consumers don't need chrono.
         let project = self.inner.cwd().cloned();
         let proj_ref = project.as_deref();
-        codelet_core::persistence::history::search(&query, proj_ref)
-            .map(|entries| {
-                entries
-                    .iter()
-                    .map(codelet_core::persistence::HistoryEntry::to_history_match)
-                    .collect()
-            })
+        codelet_core::persistence::history::search(&query, proj_ref).map(|entries| {
+            entries
+                .iter()
+                .map(codelet_core::persistence::HistoryEntry::to_history_match)
+                .collect()
+        })
     }
 
     async fn persistence_delete_session(
@@ -1057,6 +1101,15 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
+    /// PROV-118: delegate the in-process default-model write through the
+    /// optional SessionManagerHandle; no-handle path is a silent no-op.
+    async fn set_default_model(self, _ctx: Context, model: String) -> Result<(), String> {
+        if let Some(handle) = self.inner.session_manager() {
+            handle.set_default_model(&model);
+        }
+        Ok(())
+    }
+
     // RPC-347: custom-model write surface. Each delegates through the optional
     // SessionManagerHandle; the no-handle path returns `Ok(())` (silent no-op,
     // matching set_session_model).
@@ -1101,6 +1154,31 @@ impl FspecService for FspecServiceImpl {
     ) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.delete_custom_model(&provider_id, &profile_name, &model_id),
+            None => Ok(()),
+        }
+    }
+
+    async fn save_profile(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        profile_name: String,
+        definition: ProfileDefinition,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.save_profile(&provider_id, &profile_name, &definition),
+            None => Ok(()),
+        }
+    }
+
+    async fn delete_profile(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        profile_name: String,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.delete_profile(&provider_id, &profile_name),
             None => Ok(()),
         }
     }
@@ -1206,11 +1284,7 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn clear_history(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-    ) -> Result<(), String> {
+    async fn clear_history(self, _ctx: Context, session_id: SessionId) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.clear_history(&session_id),
             None => Ok(()),
@@ -1258,11 +1332,7 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn resume_session(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-    ) -> Result<(), String> {
+    async fn resume_session(self, _ctx: Context, session_id: SessionId) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.resume_session(&session_id),
             None => Ok(()),
@@ -1299,12 +1369,7 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn set_pending_input(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-        text: Option<String>,
-    ) {
+    async fn set_pending_input(self, _ctx: Context, session_id: SessionId, text: Option<String>) {
         if let Some(handle) = self.inner.session_manager() {
             handle.set_pending_input(&session_id, text);
         }
@@ -1369,22 +1434,14 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn get_subordinate(
-        self,
-        _ctx: Context,
-        supervisor_id: SessionId,
-    ) -> Option<SessionId> {
+    async fn get_subordinate(self, _ctx: Context, supervisor_id: SessionId) -> Option<SessionId> {
         match self.inner.session_manager() {
             Some(handle) => handle.get_subordinate(&supervisor_id),
             None => None,
         }
     }
 
-    async fn get_subordinates(
-        self,
-        _ctx: Context,
-        supervisor_id: SessionId,
-    ) -> Vec<SessionId> {
+    async fn get_subordinates(self, _ctx: Context, supervisor_id: SessionId) -> Vec<SessionId> {
         match self.inner.session_manager() {
             Some(handle) => handle.get_subordinates(&supervisor_id),
             None => Vec::new(),
@@ -1428,22 +1485,14 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn set_debug_directory(
-        self,
-        _ctx: Context,
-        path: String,
-    ) -> Result<(), String> {
+    async fn set_debug_directory(self, _ctx: Context, path: String) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.set_debug_directory(std::path::PathBuf::from(path)),
             None => Ok(()),
         }
     }
 
-    async fn pause_resume(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-    ) -> Result<(), String> {
+    async fn pause_resume(self, _ctx: Context, session_id: SessionId) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.pause_resume(&session_id),
             None => Ok(()),
@@ -1486,22 +1535,14 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn get_pause_state(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-    ) -> Option<PauseState> {
+    async fn get_pause_state(self, _ctx: Context, session_id: SessionId) -> Option<PauseState> {
         match self.inner.session_manager() {
             Some(handle) => handle.get_pause_state(&session_id),
             None => None,
         }
     }
 
-    async fn get_hitl_request(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-    ) -> Option<HitlRequest> {
+    async fn get_hitl_request(self, _ctx: Context, session_id: SessionId) -> Option<HitlRequest> {
         match self.inner.session_manager() {
             Some(handle) => handle.get_hitl_request(&session_id),
             None => None,
@@ -1543,11 +1584,7 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn destroy_session(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-    ) -> Result<(), String> {
+    async fn destroy_session(self, _ctx: Context, session_id: SessionId) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.destroy_session(&session_id),
             None => Ok(()),
@@ -1558,10 +1595,7 @@ impl FspecService for FspecServiceImpl {
     // RPC-054: Provider credentials surface forwarders.
     // ========================================================================
 
-    async fn list_provider_credentials(
-        self,
-        _ctx: Context,
-    ) -> Vec<ProviderCredentialInfo> {
+    async fn list_provider_credentials(self, _ctx: Context) -> Vec<ProviderCredentialInfo> {
         match self.inner.session_manager() {
             Some(handle) => handle.list_provider_credentials(),
             None => Vec::new(),
@@ -1628,6 +1662,64 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
+    async fn oauth_clear_tokens(self, _ctx: Context, provider_id: String) -> Result<(), String> {
+        // PROV-112: providers-direct clear (NOT via session_manager) so the
+        // disconnect works regardless of whether a session manager is attached.
+        crate::oauth_disconnect::clear_oauth_tokens(&provider_id).await
+    }
+
+    async fn oauth_get_tokens(self, _ctx: Context, provider_id: String) -> Result<bool, String> {
+        crate::oauth_disconnect::has_oauth_tokens(&provider_id).await
+    }
+
+    async fn oauth_browser_login(self, _ctx: Context, provider_id: String) -> Result<(), String> {
+        crate::oauth_login::browser_login(&provider_id).await
+    }
+
+    async fn oauth_headless_start(
+        self,
+        _ctx: Context,
+        provider_id: String,
+    ) -> Result<OAuthHeadlessStart, String> {
+        crate::oauth_login::headless_start(&provider_id)
+    }
+
+    async fn oauth_headless_complete(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        code_with_state: String,
+        pkce_verifier: String,
+    ) -> Result<(), String> {
+        crate::oauth_login::headless_complete(&provider_id, &code_with_state, &pkce_verifier).await
+    }
+
+    async fn oauth_device_start(
+        self,
+        _ctx: Context,
+        provider_id: String,
+    ) -> Result<OAuthDeviceStart, String> {
+        crate::oauth_login::device_start(&provider_id).await
+    }
+
+    async fn oauth_device_poll(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        device_auth_id: String,
+        interval: u64,
+    ) -> Result<(), String> {
+        crate::oauth_login::device_poll(&provider_id, device_auth_id, interval).await
+    }
+
+    async fn oauth_copilot_device_start(
+        self,
+        _ctx: Context,
+        enterprise_host: Option<String>,
+    ) -> Result<OAuthDeviceStart, String> {
+        crate::oauth_copilot::device_start(enterprise_host).await
+    }
+
     async fn blocklist_list(self, _ctx: Context) -> Vec<BlocklistRuleInfo> {
         match self.inner.session_manager() {
             Some(handle) => handle.blocklist_list(),
@@ -1658,20 +1750,14 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn prune_orphaned_worktrees(
-        self,
-        _ctx: Context,
-    ) -> Result<Vec<String>, String> {
+    async fn prune_orphaned_worktrees(self, _ctx: Context) -> Result<Vec<String>, String> {
         match self.inner.session_manager() {
             Some(handle) => handle.prune_orphaned_worktrees(),
             None => Ok(Vec::new()),
         }
     }
 
-    async fn list_session_worktrees(
-        self,
-        _ctx: Context,
-    ) -> Vec<SessionWorktreeInfo> {
+    async fn list_session_worktrees(self, _ctx: Context) -> Vec<SessionWorktreeInfo> {
         match self.inner.session_manager() {
             Some(handle) => handle.list_session_worktrees(),
             None => Vec::new(),
@@ -1693,11 +1779,7 @@ impl FspecService for FspecServiceImpl {
     // RPC-058 — /schedule wiring.
     // ─────────────────────────────────────────────────────────────────
 
-    async fn schedule_add(
-        self,
-        _ctx: Context,
-        job: ScheduledJob,
-    ) -> Result<ScheduledJob, String> {
+    async fn schedule_add(self, _ctx: Context, job: ScheduledJob) -> Result<ScheduledJob, String> {
         match self.inner.session_manager() {
             Some(handle) => handle.schedule_add(job),
             None => Ok(ScheduledJob::default()),
@@ -1711,22 +1793,14 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn schedule_pause(
-        self,
-        _ctx: Context,
-        name: String,
-    ) -> Result<ScheduledJob, String> {
+    async fn schedule_pause(self, _ctx: Context, name: String) -> Result<ScheduledJob, String> {
         match self.inner.session_manager() {
             Some(handle) => handle.schedule_pause(&name),
             None => Ok(ScheduledJob::default()),
         }
     }
 
-    async fn schedule_resume(
-        self,
-        _ctx: Context,
-        name: String,
-    ) -> Result<ScheduledJob, String> {
+    async fn schedule_resume(self, _ctx: Context, name: String) -> Result<ScheduledJob, String> {
         match self.inner.session_manager() {
             Some(handle) => handle.schedule_resume(&name),
             None => Ok(ScheduledJob::default()),
@@ -1764,11 +1838,7 @@ impl FspecService for FspecServiceImpl {
         }
     }
 
-    async fn loop_list(
-        self,
-        _ctx: Context,
-        session_id: SessionId,
-    ) -> Vec<RegisteredLoop> {
+    async fn loop_list(self, _ctx: Context, session_id: SessionId) -> Vec<RegisteredLoop> {
         match self.inner.session_manager() {
             Some(handle) => handle.loop_list(&session_id),
             None => Vec::new(),
@@ -1790,7 +1860,7 @@ pub fn test_fixture() -> Vec<WorkUnitInfo> {
             estimate: Some(5),
             epic: Some("authentication".to_string()),
             attachments: Vec::new(),
-        last_state_change_at: None,
+            last_state_change_at: None,
         },
         WorkUnitInfo {
             id: "AUTH-002".to_string(),
@@ -1801,7 +1871,7 @@ pub fn test_fixture() -> Vec<WorkUnitInfo> {
             estimate: Some(3),
             epic: Some("authentication".to_string()),
             attachments: Vec::new(),
-        last_state_change_at: None,
+            last_state_change_at: None,
         },
     ]
 }

@@ -41,8 +41,17 @@ fn seed_work_units(cwd: &Path, units: &[(&str, &str)]) {
     let spec = cwd.join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
     let mut wus = serde_json::Map::new();
-    let mut state_map: std::collections::HashMap<&str, Vec<String>> = std::collections::HashMap::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    let mut state_map: std::collections::HashMap<&str, Vec<String>> =
+        std::collections::HashMap::new();
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         state_map.insert(*st, Vec::new());
     }
     for (id, status) in units {
@@ -51,16 +60,35 @@ fn seed_work_units(cwd: &Path, units: &[(&str, &str)]) {
         obj.insert("title".into(), Value::String(format!("title {id}")));
         obj.insert("type".into(), Value::String("story".into()));
         obj.insert("status".into(), Value::String((*status).to_string()));
-        obj.insert("createdAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
-        obj.insert("updatedAt".into(), Value::String("2026-06-01T00:00:00.000Z".into()));
+        obj.insert(
+            "createdAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".into()),
+        );
+        obj.insert(
+            "updatedAt".into(),
+            Value::String("2026-06-01T00:00:00.000Z".into()),
+        );
         wus.insert((*id).to_string(), Value::Object(obj));
         state_map.get_mut(*status).unwrap().push((*id).to_string());
     }
     let mut states_obj = serde_json::Map::new();
-    for st in &["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"] {
+    for st in &[
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ] {
         states_obj.insert(
             (*st).to_string(),
-            Value::Array(state_map[st].iter().map(|s| Value::String(s.clone())).collect()),
+            Value::Array(
+                state_map[st]
+                    .iter()
+                    .map(|s| Value::String(s.clone()))
+                    .collect(),
+            ),
         );
     }
     let v = json!({
@@ -79,7 +107,10 @@ fn set_field(cwd: &Path, id: &str, field: &str, values: &[&str]) {
     let path = cwd.join("spec").join("work-units.json");
     let raw = fs::read_to_string(&path).expect("read work-units.json");
     let mut v: Value = serde_json::from_str(&raw).expect("parse");
-    let arr: Vec<Value> = values.iter().map(|s| Value::String((*s).to_string())).collect();
+    let arr: Vec<Value> = values
+        .iter()
+        .map(|s| Value::String((*s).to_string()))
+        .collect();
     v["workUnits"][id][field] = Value::Array(arr);
     fs::write(&path, serde_json::to_string_pretty(&v).unwrap()).expect("write");
 }
@@ -107,7 +138,10 @@ fn help_output_matches_captured_ts_fixture() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the exit code is 0
-    assert_eq!(code, 0, "fspec clear-dependencies --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "fspec clear-dependencies --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step And the stdout matches the canonical help fixture at codelet/fspec/tests/fixtures/help/clear-dependencies.txt
     assert!(

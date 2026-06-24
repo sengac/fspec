@@ -18,9 +18,8 @@ mod fixtures;
 
 use codelet_providers::copilot::{
     base_url_for, delete_copilot_auth, get_copilot_auth_path, models,
-    select_copilot_behavior_facade, write_copilot_auth, CopilotAuthJson,
-    CopilotDeploymentType, CopilotEndpoint, CopilotEndpointFacade, CopilotHeaderFacade,
-    CopilotRequestClassifier,
+    select_copilot_behavior_facade, write_copilot_auth, CopilotAuthJson, CopilotDeploymentType,
+    CopilotEndpoint, CopilotEndpointFacade, CopilotHeaderFacade, CopilotRequestClassifier,
 };
 use codelet_providers::{ProviderCredentials, ProviderManager, ProviderType};
 use fixtures::setup_fspec_home;
@@ -144,8 +143,7 @@ async fn test_gpt_4o_copilot_routes_to_chat_completions_via_manager() {
     // @step And the request should include a "User-Agent: codelet/<version>" header
     // @step And the request should include an "Openai-Intent: conversation-edits" header
     // @step And the request should include an "x-initiator: user" header
-    let classification =
-        codelet_providers::copilot::RequestClassification::default();
+    let classification = codelet_providers::copilot::RequestClassification::default();
     let headers = CopilotHeaderFacade::build_headers(&classification, "ghu_fake_test_token");
 
     let auth = headers.get(AUTHORIZATION).expect("Authorization required");
@@ -384,7 +382,11 @@ async fn test_model_picker_fetches_live_catalog_via_manager() {
         .expect("fetch_models should succeed against mock /models");
 
     // @step And the catalog should contain only models with "model_picker_enabled: true"
-    assert_eq!(fetched.len(), 1, "picker-disabled entry must be filtered out");
+    assert_eq!(
+        fetched.len(),
+        1,
+        "picker-disabled entry must be filtered out"
+    );
     assert_eq!(fetched[0].id, "model-a");
 
     // @step And the catalog should be exactly what the endpoint returned, with no merging or static fallback
@@ -514,13 +516,9 @@ async fn provider_manager_get_github_copilot_rejects_wrong_current_provider() {
     // Force a Copilot credential to be detected but then construct the
     // manager with a different provider (fake Claude via env var).
     std::env::set_var("ANTHROPIC_API_KEY", "fake-key-for-manager-test");
-    let manager = ProviderManager::with_provider_and_model(
-        "claude",
-        Some("claude-sonnet-4.5"),
-        None,
-        None,
-    )
-    .expect("manager should accept claude with ANTHROPIC_API_KEY set");
+    let manager =
+        ProviderManager::with_provider_and_model("claude", Some("claude-sonnet-4.5"), None, None)
+            .expect("manager should accept claude with ANTHROPIC_API_KEY set");
     std::env::remove_var("ANTHROPIC_API_KEY");
 
     let result = manager.get_github_copilot();

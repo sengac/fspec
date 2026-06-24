@@ -84,8 +84,8 @@ pub async fn run(args: CliArgs) -> Result<u8> {
 
     match report_bug_to_github::run(&args_json, &project_root).await {
         Ok(rendered) => {
-            let envelope: Value = serde_json::from_str(&rendered)
-                .context("decode report-bug-to-github envelope")?;
+            let envelope: Value =
+                serde_json::from_str(&rendered).context("decode report-bug-to-github envelope")?;
             print_result(&envelope);
             Ok(0)
         }

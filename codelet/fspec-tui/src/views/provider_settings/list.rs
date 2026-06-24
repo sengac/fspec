@@ -18,7 +18,6 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
 use crate::views::agent::confirm_dialog::ConfirmDialog;
-use crate::views::provider_settings::nav_item::NavItemKind;
 
 use super::{DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 
@@ -84,39 +83,20 @@ pub(super) fn handle_list_key(
             ProviderSettingsEvent::Consumed
         }
         KeyCode::Enter => {
-            // RPC-103: when the flat NavItem tree is populated, route
-            // Enter via the focused NavItemKind. Provider rows toggle
-            // expansion (Rule 3 — selected_index untouched); ApiKey
-            // rows transition straight to EditApiKey (Rule 4 — no
-            // intermediate Summary sub-view). Other NavItemKinds fall
-            // through to the legacy provider-row Enter path below.
+            // PROV-102: when the flat NavItem tree is populated, dispatch
+            // SOLELY on the focused NavItem's kind + its own provider_id
+            // (see list_actions::enter_on_nav_item). This removes the
+            // index-space mismatch where a child row fell through to the
+            // legacy visible_providers()[selected_index] path and opened a
+            // DIFFERENT provider's Detail.
             if let Some(item) = view.focused_nav_item() {
                 let provider_id = item.provider_id.clone();
-                match &item.kind {
-                    NavItemKind::Provider { .. } => {
-                        view.toggle_expansion(&provider_id);
-                        return ProviderSettingsEvent::Consumed;
-                    }
-                    NavItemKind::ApiKey => {
-                        view.mode = ProviderSettingsMode::Detail {
-                            provider_id,
-                            sub: DetailSub::EditApiKey {
-                                draft: String::new(),
-                            },
-                        };
-                        view.status.clear();
-                        return ProviderSettingsEvent::Consumed;
-                    }
-                    // Other variants (Profile, AddProfile, OAuthLogin,
-                    // OAuthStatus) land in follow-up cards. For now,
-                    // they fall through to the legacy provider-row
-                    // dispatch below.
-                    _ => {}
-                }
+                let kind = item.kind.clone();
+                return super::list_actions::enter_on_nav_item(view, provider_id, kind);
             }
-            // Legacy fallback — drive the old visible_providers list
-            // when no NavItem is focused (e.g. callers using the
-            // pre-RPC-103 `set_providers(...)` API only).
+            // Legacy fallback — only reachable when nav_items is empty
+            // (pre-RPC-103 callers using `set_providers(...)` alone), where
+            // selected_index correctly indexes visible_providers().
             let visible = view.visible_providers();
             let Some(focused) = visible.get(view.selected_index) else {
                 return ProviderSettingsEvent::Consumed;
@@ -135,6 +115,13 @@ pub(super) fn handle_list_key(
             ProviderSettingsEvent::Consumed
         }
         KeyCode::Char('d') | KeyCode::Char('D') => {
+            // PROV-102: dispatch `d` by the focused NavItem identity when the
+            // flat tree is populated, so the delete confirm targets the
+            // row's own provider (never a mismatched visible_providers index).
+            if view.focused_nav_item().is_some() {
+                return super::list_actions::delete_on_nav_item(view);
+            }
+            // Legacy fallback — nav_items empty (set_providers-only callers).
             let visible = view.visible_providers();
             let Some(focused) = visible.get(view.selected_index) else {
                 return ProviderSettingsEvent::Consumed;

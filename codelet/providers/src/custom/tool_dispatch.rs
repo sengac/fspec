@@ -106,9 +106,7 @@ fn unknown(offender: &str) -> CustomProviderError {
 }
 
 fn fail(category: &str, source: impl std::fmt::Display) -> CustomProviderError {
-    CustomProviderError::RhaiRuntimeError(format!(
-        "default {category} mapping failed: {source}"
-    ))
+    CustomProviderError::RhaiRuntimeError(format!("default {category} mapping failed: {source}"))
 }
 
 fn parse<T: for<'de> Deserialize<'de>>(

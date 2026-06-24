@@ -1105,6 +1105,36 @@
         "RPC-333",
         "RPC-334"
       ]
+    },
+    "provider-settings-parity": {
+      "id": "provider-settings-parity",
+      "title": "Provider Settings Parity (Rust TUI vs TypeScript)",
+      "createdAt": "2026-06-21T02:19:21.627Z",
+      "description": "Restore parity between the Rust TUI Provider Settings screen and the original TypeScript implementation: .env loading, env-var credential detection + masking + source tags, anthropic api-key handling, and custom OpenAI profiles from ~/.fspec/fspec-config.json.",
+      "workUnits": [
+        "PROV-097",
+        "PROV-098",
+        "PROV-099",
+        "PROV-100",
+        "PROV-101",
+        "PROV-102",
+        "PROV-103",
+        "PROV-104",
+        "PROV-105",
+        "PROV-106",
+        "PROV-107",
+        "PROV-108",
+        "PROV-109",
+        "PROV-110",
+        "PROV-111",
+        "PROV-112",
+        "PROV-113",
+        "PROV-114",
+        "PROV-115",
+        "PROV-116",
+        "PROV-117",
+        "PROV-118"
+      ]
     }
   }
 }

@@ -74,9 +74,8 @@ pub fn build_cred_module(provider_name: String) -> RhaiModule {
                 if !p.exists() {
                     return Ok(Dynamic::UNIT);
                 }
-                let content = std::fs::read_to_string(&p).map_err(|e| {
-                    rt_err(format!("cred::read failed: {e}"))
-                })?;
+                let content = std::fs::read_to_string(&p)
+                    .map_err(|e| rt_err(format!("cred::read failed: {e}")))?;
                 let value: serde_json::Value = serde_json::from_str(&content)
                     .map_err(|e| rt_err(format!("cred::read JSON parse failed: {e}")))?;
                 Ok(json_value_to_dynamic(&value))

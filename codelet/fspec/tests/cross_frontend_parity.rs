@@ -48,7 +48,10 @@ mod common;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use common::{codelet_root, fspec_crate_root, make_workspace, project_root, spawn_fspec_daemon, strip_comments};
+use common::{
+    codelet_root, fspec_crate_root, make_workspace, project_root, spawn_fspec_daemon,
+    strip_comments,
+};
 
 // ---------------------------------------------------------------------
 // Scenario: fspec daemon boots over a tempworkspace with no work-units
@@ -273,8 +276,10 @@ fn scenario_normalise_chunk_stream_substitutes_volatile_fields() {
 
     // @step And every `tool_call_id` field becomes the literal string "<tc>"
     assert!(
-        lines.iter().any(|line| line.contains("\"toolCallId\":\"<tc>\"")
-            || line.contains("\"tool_call_id\":\"<tc>\"")),
+        lines
+            .iter()
+            .any(|line| line.contains("\"toolCallId\":\"<tc>\"")
+                || line.contains("\"tool_call_id\":\"<tc>\"")),
         "tool_call_id must be normalised to <tc>"
     );
 
@@ -317,10 +322,8 @@ mod normalise {
     fn rfc3339_re() -> &'static regex::Regex {
         static CELL: OnceLock<regex::Regex> = OnceLock::new();
         CELL.get_or_init(|| {
-            regex::Regex::new(
-                r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$",
-            )
-            .expect("rfc-3339 regex must compile")
+            regex::Regex::new(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$")
+                .expect("rfc-3339 regex must compile")
         })
     }
 
@@ -452,7 +455,10 @@ async fn scenario_scripted_run_matches_golden() {
         wait_for_idle(&mut status_rx, &session_id, Duration::from_secs(10)).await;
 
         // step 6: interrupt
-        backend.interrupt(session_id.clone()).await.expect("interrupt");
+        backend
+            .interrupt(session_id.clone())
+            .await
+            .expect("interrupt");
 
         // Drain captured chunks for this session
         let mut captured: Vec<(SessionId, StreamChunk)> = Vec::new();
@@ -478,7 +484,8 @@ async fn scenario_scripted_run_matches_golden() {
         }
         let expected = std::fs::read_to_string(&golden_path).expect("read golden");
         assert_eq!(
-            actual, expected,
+            actual,
+            expected,
             "normalised chunk stream must match golden at {}",
             golden_path.display()
         );
@@ -492,7 +499,10 @@ async fn scenario_scripted_run_matches_golden() {
 /// Drain status_changes_rx until the target session reaches Idle.
 #[allow(dead_code)]
 async fn wait_for_idle(
-    rx: &mut tokio::sync::broadcast::Receiver<(codelet_rpc_types::SessionId, codelet_rpc_types::SessionStatus)>,
+    rx: &mut tokio::sync::broadcast::Receiver<(
+        codelet_rpc_types::SessionId,
+        codelet_rpc_types::SessionStatus,
+    )>,
     target: &codelet_rpc_types::SessionId,
     timeout_dur: Duration,
 ) {
@@ -667,8 +677,8 @@ fn scenario_runtime_budget_is_enforced() {
 async fn scenario_deny_network_egress_still_yields_canned_chunks() {
     use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
     use codelet_rpc_types::StreamChunk;
-    use std::process::{Command, Stdio};
     use std::io::BufRead;
+    use std::process::{Command, Stdio};
     use url::Url;
 
     // @step Given the test launches the daemon with HTTP_PROXY=http://127.0.0.1:1 and HTTPS_PROXY=http://127.0.0.1:1
@@ -723,7 +733,10 @@ async fn scenario_deny_network_egress_still_yields_canned_chunks() {
             _ => continue,
         }
     }
-    assert!(got_text && got_done, "stub must emit Text+Done despite dead proxy");
+    assert!(
+        got_text && got_done,
+        "stub must emit Text+Done despite dead proxy"
+    );
 
     // @step And no reqwest::Client or eventsource-stream code path fires during the run
     // (Structurally guaranteed: the StubProvider LlmProvider impl and
@@ -768,7 +781,9 @@ fn scenario_tests_readme_documents_regeneration() {
     );
 
     // @step And that section references the follow-up RPC card that will record a TS-side golden
-    let pos = body.find("## Future: TS-recorded reference fixture").unwrap();
+    let pos = body
+        .find("## Future: TS-recorded reference fixture")
+        .unwrap();
     let tail = &body[pos..];
     assert!(
         tail.contains("RPC-"),
@@ -790,8 +805,7 @@ fn scenario_agent_loop_dispatch_supports_stub_arm() {
     // codelet-agent-loop per Cargo.toml line 105-109.)
 
     // @step When agent_loop_dispatch_supports_provider("stub") is called
-    let supports_stub =
-        codelet_agent_loop::agent_loop_dispatch_supports_provider("stub");
+    let supports_stub = codelet_agent_loop::agent_loop_dispatch_supports_provider("stub");
 
     // @step Then it returns true
     assert!(
@@ -819,4 +833,3 @@ fn scenario_agent_loop_dispatch_supports_stub_arm() {
         );
     }
 }
-

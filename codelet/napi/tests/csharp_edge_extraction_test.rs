@@ -33,7 +33,11 @@ public class Controller {
     write_test_file(project_dir, "Controllers/Controller.cs", cs_source);
 
     // @step And the target file `MyApp/Services.cs` exists in the project
-    write_test_file(project_dir, "MyApp/Services.cs", "public class UserService {}\n");
+    write_test_file(
+        project_dir,
+        "MyApp/Services.cs",
+        "public class UserService {}\n",
+    );
 
     let known_files = build_known_files(project_dir);
 

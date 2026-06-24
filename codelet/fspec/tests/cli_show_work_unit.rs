@@ -38,7 +38,15 @@ fn run_show_work_unit(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) 
 fn write_minimal_work_unit(cwd: &Path, id: &str, title: &str, status: &str) {
     let spec = cwd.join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
-    let all_states = ["backlog", "specifying", "testing", "implementing", "validating", "done", "blocked"];
+    let all_states = [
+        "backlog",
+        "specifying",
+        "testing",
+        "implementing",
+        "validating",
+        "done",
+        "blocked",
+    ];
     let mut state_pairs = Vec::new();
     for st in &all_states {
         if *st == status {
@@ -78,11 +86,16 @@ fn scenario_clap_exposes_show_work_unit_with_positional_and_format_option() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "show-work-unit --help must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "show-work-unit --help must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step Then stdout contains help describing the show-work-unit subcommand
     assert!(
-        stdout.contains("show-work-unit") || stdout.to_lowercase().contains("work unit") || stdout.to_lowercase().contains("workunit"),
+        stdout.contains("show-work-unit")
+            || stdout.to_lowercase().contains("work unit")
+            || stdout.to_lowercase().contains("workunit"),
         "help must describe the show-work-unit subcommand; got:\n{stdout}"
     );
 
@@ -96,10 +109,16 @@ fn scenario_clap_exposes_show_work_unit_with_positional_and_format_option() {
     );
 
     // @step Then stdout does NOT contain the substring '--status'
-    assert!(!stdout.contains("--status"), "must NOT advertise --status; got:\n{stdout}");
+    assert!(
+        !stdout.contains("--status"),
+        "must NOT advertise --status; got:\n{stdout}"
+    );
 
     // @step Then stdout does NOT contain the substring '--workspace'
-    assert!(!stdout.contains("--workspace"), "must NOT advertise --workspace; got:\n{stdout}");
+    assert!(
+        !stdout.contains("--workspace"),
+        "must NOT advertise --workspace; got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -118,19 +137,34 @@ fn scenario_cli_prints_text_format_dump_when_work_unit_exists() {
     let (code, stdout, stderr) = run_show_work_unit(ws.path(), &["AUTH-001"]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "show-work-unit must exit 0 for existing unit; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "show-work-unit must exit 0 for existing unit; got {code}, stderr={stderr}"
+    );
 
     // @step Then stdout contains the substring 'AUTH-001'
-    assert!(stdout.contains("AUTH-001"), "stdout must contain 'AUTH-001'; got:\n{stdout}");
+    assert!(
+        stdout.contains("AUTH-001"),
+        "stdout must contain 'AUTH-001'; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring 'Type: story'
-    assert!(stdout.contains("Type: story"), "stdout must contain 'Type: story'; got:\n{stdout}");
+    assert!(
+        stdout.contains("Type: story"),
+        "stdout must contain 'Type: story'; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring 'Status: backlog'
-    assert!(stdout.contains("Status: backlog"), "stdout must contain 'Status: backlog'; got:\n{stdout}");
+    assert!(
+        stdout.contains("Status: backlog"),
+        "stdout must contain 'Status: backlog'; got:\n{stdout}"
+    );
 
     // @step Then stdout contains the substring 'Login'
-    assert!(stdout.contains("Login"), "stdout must contain 'Login'; got:\n{stdout}");
+    assert!(
+        stdout.contains("Login"),
+        "stdout must contain 'Login'; got:\n{stdout}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -149,7 +183,10 @@ fn scenario_cli_prints_json_payload_when_format_json() {
     let (code, stdout, stderr) = run_show_work_unit(ws.path(), &["AUTH-001", "--format", "json"]);
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "show-work-unit --format json must exit 0; got {code}, stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "show-work-unit --format json must exit 0; got {code}, stderr={stderr}"
+    );
 
     // @step Then stdout parses as JSON with id='AUTH-001', title='Login', type='story', status='backlog'
     let parsed: serde_json::Value = serde_json::from_str(stdout.trim())
@@ -184,10 +221,16 @@ fn scenario_cli_unknown_work_unit_exits_1_with_canonical_stderr() {
     let (code, stdout, stderr) = run_show_work_unit(ws.path(), &["UNKNOWN-999"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "show-work-unit must exit 1 for unknown unit; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "show-work-unit must exit 1 for unknown unit; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then stderr contains the substring "Work unit 'UNKNOWN-999' does not exist"
     assert!(
@@ -210,10 +253,16 @@ fn scenario_cli_no_auto_create_when_work_units_json_absent() {
     let (code, stdout, stderr) = run_show_work_unit(ws.path(), &["AUTH-001"]);
 
     // @step Then the command exits with code 1
-    assert_eq!(code, 1, "must exit 1 when work-units.json absent; got {code}, stdout={stdout}, stderr={stderr}");
+    assert_eq!(
+        code, 1,
+        "must exit 1 when work-units.json absent; got {code}, stdout={stdout}, stderr={stderr}"
+    );
 
     // @step Then stderr contains the substring 'Error:'
-    assert!(stderr.contains("Error:"), "stderr must contain 'Error:'; got:\n{stderr}");
+    assert!(
+        stderr.contains("Error:"),
+        "stderr must contain 'Error:'; got:\n{stderr}"
+    );
 
     // @step Then spec/work-units.json was NOT created in the directory
     assert!(
@@ -237,7 +286,8 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_show_work_unit() {
         .expect("spawn fspec --help");
     let code = output.status.code().unwrap_or(-1);
     assert_eq!(
-        code, 0,
+        code,
+        0,
         "fspec --help must exit 0; got {code}, stderr={}",
         String::from_utf8_lossy(&output.stderr)
     );
@@ -283,7 +333,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         project_root: ws.path().to_path_buf(),
     };
     let result = codelet_fspec_core::dispatch_command(req);
-    assert!(result.success, "dispatcher path must succeed; got {result:?}");
+    assert!(
+        result.success,
+        "dispatcher path must succeed; got {result:?}"
+    );
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
 
@@ -294,7 +347,10 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     // @step Then the CLI text output `fspec show-work-unit AUTH-001` against the same on-disk state shows the substring 'AUTH-001' and the line 'Status: backlog'
     let (code, stdout, _stderr) = run_show_work_unit(ws.path(), &["AUTH-001"]);
     assert_eq!(code, 0);
-    assert!(stdout.contains("AUTH-001"), "CLI text must contain AUTH-001; got:\n{stdout}");
+    assert!(
+        stdout.contains("AUTH-001"),
+        "CLI text must contain AUTH-001; got:\n{stdout}"
+    );
     assert!(
         stdout.lines().any(|l| l.contains("Status: backlog")),
         "CLI text must contain 'Status: backlog' line; got:\n{stdout}"
@@ -350,7 +406,10 @@ fn scenario_show_work_unit_help_matches_ts_formatcommandhelp_reference() {
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
 
     // @step Then the command exits 0
-    assert_eq!(code, 0, "show-work-unit --help must exit 0; stderr={stderr}");
+    assert_eq!(
+        code, 0,
+        "show-work-unit --help must exit 0; stderr={stderr}"
+    );
 
     // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/show-work-unit.txt
     assert_eq!(stdout, TS_HELP_FIXTURE_SWU);
