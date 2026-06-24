@@ -182,7 +182,10 @@ impl SessionManager {
             chain_of_command: crate::chain_of_command::ChainOfCommand::new(),
             active_session_id: RwLock::new(None),
             scheduler_handle: RwLock::new(None),
-            default_model: RwLock::new(None),
+            // PROV-119: pre-populate the default model from disk so a fresh
+            // process starts with the user's last selection (an uninitialized
+            // data dir / missing file loads as None — graceful degradation).
+            default_model: RwLock::new(crate::default_model_persistence::load_default_model()),
             chunks_tx,
             logs_tx,
             status_changes_tx,
@@ -217,12 +220,24 @@ impl SessionManager {
     }
 
     /// SCHED-004: Set the default model for scheduled session spawning.
+    /// PROV-119: also persists the non-empty choice to disk
+    /// (`<data_dir>/default-model.json`) so it survives a process restart. The
+    /// write is best-effort: a failure is logged and never propagates, so
+    /// session creation is never blocked by a persistence error.
     pub fn set_default_model(&self, model: &str) {
         if !model.is_empty() {
             *self
                 .default_model
                 .write()
                 .expect("default_model lock poisoned") = Some(model.to_string());
+            // PROV-119: persist across restarts; best-effort and non-fatal.
+            if let Err(e) = crate::default_model_persistence::save_default_model(model) {
+                tracing::warn!(
+                    error = %e,
+                    model,
+                    "set_default_model: failed to persist default model (non-fatal)"
+                );
+            }
         }
     }
 

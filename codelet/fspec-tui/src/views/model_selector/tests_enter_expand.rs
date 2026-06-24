@@ -22,7 +22,10 @@ fn collapsed_view_on_header() -> (ModelSelectorView, String) {
     // selected_index defaults to 0; rows[0] is the first (non-selectable)
     // provider header. Capture its provider_key for the assertions.
     let row = &v.rows[v.selected_index()];
-    assert!(!row.selectable, "cursor must rest on a non-selectable header");
+    assert!(
+        !row.selectable,
+        "cursor must rest on a non-selectable header"
+    );
     let provider_key = row.provider_key.clone();
     (v, provider_key)
 }
@@ -57,7 +60,10 @@ fn enter_on_expanded_header_collapses_section() {
     // Expand it first (Right), then re-focus the header so the cursor rests
     // on the now-expanded section's header.
     v.handle_key(key(KeyCode::Right));
-    assert!(v.is_expanded(&provider_key), "precondition: section expanded");
+    assert!(
+        v.is_expanded(&provider_key),
+        "precondition: section expanded"
+    );
     // toggle_expansion re-anchors the cursor on the toggled provider's header.
     let row = &v.rows[v.selected_index()];
     assert!(

@@ -48,8 +48,12 @@ impl App {
     /// marker is updated. With NO session the choice is persisted as the
     /// in-process DEFAULT model via `set_default_model` (TS parity: the
     /// session guard gates ONLY the live-session write; the default write is
-    /// unconditional), breaking the no-default-model deadlock so the next
-    /// `create_session` succeeds.
+    /// unconditional), breaking the no-default-model deadlock. MODEL-006: once
+    /// the default is committed (the spawned task's `Ok` branch) we re-attempt
+    /// `create_session` and route the result through
+    /// `route_bootstrap_create_session` so a real id seeds the active session
+    /// and an empty id surfaces the explicit decline dialog — never a silent
+    /// no-op.
     pub(crate) fn handle_model_selected(
         &mut self,
         session_id: Option<SessionId>,
@@ -71,36 +75,7 @@ impl App {
         // gates ONLY the live-session write; the default/store write happens
         // unconditionally. Empty strings are ignored downstream (PROV-101).
         let Some(session_id) = session_id else {
-            tracing::info!(
-                target: "model_select",
-                provider_id = %provider_id,
-                model_id = %model_id,
-                "[MODEL-SELECT] handle_model_selected: session_id is None -> setting DEFAULT model (PROV-118)"
-            );
-            if tokio::runtime::Handle::try_current().is_err() {
-                tracing::warn!(
-                    target: "model_select",
-                    "[MODEL-SELECT] handle_model_selected (None): no tokio runtime -> skipping set_default_model"
-                );
-                return;
-            }
-            let backend = self.backend.clone();
-            let model_string = format!("{provider_id}/{model_id}");
-            let handle = tokio::spawn(async move {
-                match backend.set_default_model(model_string.clone()).await {
-                    Ok(()) => tracing::info!(
-                        target: "model_select",
-                        model = %model_string,
-                        "[MODEL-SELECT] backend.set_default_model OK"
-                    ),
-                    Err(e) => tracing::error!(
-                        target: "model_select",
-                        error = %e,
-                        "[MODEL-SELECT] backend.set_default_model FAILED"
-                    ),
-                }
-            });
-            self.pending_tasks.push(handle);
+            self.handle_model_selected_no_session(provider_id, model_id);
             return;
         };
         // RPC-337: remember the chosen model id so the ModelSelector's
@@ -143,6 +118,46 @@ impl App {
             // come from RPC-018's get_model_info path.
             if let Ok(info) = backend.get_model_info(sid_for_refresh.clone()).await {
                 let _ = action_tx.send(Action::ModelInfoLoaded(sid_for_refresh, info));
+            }
+        });
+        self.pending_tasks.push(handle);
+    }
+
+    /// MODEL-006: the `session_id == None` branch of `handle_model_selected`.
+    /// Persists the choice as the in-process DEFAULT model
+    /// (`set_default_model`) — required because the next `create_session` is
+    /// otherwise declined (PROV-101: no silent anthropic fallback). Then, once
+    /// the default is committed (the spawned task's `Ok` branch), re-attempts
+    /// `create_session` and routes via `route_bootstrap_create_session`: a real
+    /// id seeds the active session (`SessionCreated`); an empty id surfaces the
+    /// decline dialog (`SessionCreationDeclined`) and is NEVER seeded. No
+    /// tokio runtime (`try_current().is_err()`) → the write/retry is skipped.
+    fn handle_model_selected_no_session(&mut self, provider_id: String, model_id: String) {
+        if tokio::runtime::Handle::try_current().is_err() {
+            tracing::warn!(target: "model_select", "[MODEL-SELECT] no runtime -> skip default+retry");
+            return;
+        }
+        let backend = self.backend.clone();
+        let action_tx = self.action_tx.clone();
+        let active_session_tx = self.active_session_tx.clone();
+        let model_string = format!("{provider_id}/{model_id}");
+        let handle = tokio::spawn(async move {
+            if let Err(e) = backend.set_default_model(model_string.clone()).await {
+                tracing::error!(target: "model_select", error = %e, "[MODEL-SELECT] set_default_model FAILED");
+                return;
+            }
+            tracing::info!(target: "model_select", model = %model_string, "[MODEL-SELECT] set_default_model OK");
+            // MODEL-006: the default was meant to UNBLOCK session creation;
+            // retry it now that the default is committed and route the result.
+            match backend.create_session(None).await {
+                Ok(session) => crate::app::session_creation::route_bootstrap_create_session(
+                    session,
+                    &active_session_tx,
+                    &action_tx,
+                ),
+                Err(e) => {
+                    tracing::error!(target: "model_select", error = %e, "[MODEL-SELECT] retried create_session FAILED")
+                }
             }
         });
         self.pending_tasks.push(handle);

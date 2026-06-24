@@ -18,6 +18,9 @@ codelet-rpc-server.workspace = true
 # PROV-114: pure host normalization (copilot::normalize_enterprise_domain) for
 # the github-copilot enterprise-host preamble (view-layer, providers-direct).
 codelet-providers.workspace = true
+# PROV-120: App::bootstrap restores the TS-parity first-available startup model
+# via resolve_startup_model + load_persisted_model_string.
+codelet-sessions.workspace = true
 
 # Async
 tokio.workspace = true

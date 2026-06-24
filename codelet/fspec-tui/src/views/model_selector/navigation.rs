@@ -37,12 +37,10 @@ impl ModelSelectorView {
             self.adjust_scroll();
             return;
         }
-        if let Some(next) =
-            crate::components::model_selector_dialog_rows::move_down_clamped(
-                &self.rows,
-                self.selected_index,
-            )
-        {
+        if let Some(next) = crate::components::model_selector_dialog_rows::move_down_clamped(
+            &self.rows,
+            self.selected_index,
+        ) {
             self.selected_index = next;
             self.adjust_scroll();
         }

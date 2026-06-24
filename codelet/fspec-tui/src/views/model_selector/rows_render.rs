@@ -163,8 +163,7 @@ fn render_row(
         };
         spans.push(Span::styled(format!(" {token}"), style));
     }
-    if current_model_id.is_some_and(|c| super::super::model_id::model_ids_match(c, &row.model_id))
-    {
+    if current_model_id.is_some_and(|c| super::super::model_id::model_ids_match(c, &row.model_id)) {
         let style = if is_selected {
             base
         } else {

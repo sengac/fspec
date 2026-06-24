@@ -1,0 +1,148 @@
+{
+  "scenarios": [
+    {
+      "name": "Persisted model is restored from fspec-config.json tui.lastUsedModel",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov120_startup_model_persistence.rs",
+          "lines": "23-45",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy default-model.json is read for continuity when fspec-config.json has no tui.lastUsedModel",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov120_startup_model_persistence.rs",
+          "lines": "48-70",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/last_used_model_persistence.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/prov120_startup_model_persistence.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/last_used_model_persistence.rs"
+    ],
+    "totalLinesCovered": 146
+  }
+}

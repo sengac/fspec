@@ -46,10 +46,11 @@ impl ModelSelectorView {
         // contains the current model (if any).
         self.expanded = HashSet::new();
         if let Some(current) = self.current_model_id.as_deref() {
-            if let Some(p) = providers
-                .iter()
-                .find(|p| p.models.iter().any(|m| model_id::model_ids_match(&m.id, current)))
-            {
+            if let Some(p) = providers.iter().find(|p| {
+                p.models
+                    .iter()
+                    .any(|m| model_id::model_ids_match(&m.id, current))
+            }) {
                 self.expanded.insert(p.key.clone());
             }
         }

@@ -90,10 +90,7 @@ fn cursor_seeds_on_dated_row_when_current_is_normalized() {
     v.set_current_model(Some("claude-sonnet-4".to_string()));
 
     // @step When the selector loads a provider whose only model carries a -YYYYMMDD date suffix
-    v.set_providers(vec![provider(
-        "anthropic",
-        &["claude-sonnet-4-20250514"],
-    )]);
+    v.set_providers(vec![provider("anthropic", &["claude-sonnet-4-20250514"])]);
 
     // @step Then the dated row is recognised as the current model and the cursor seeds on it
     assert!(

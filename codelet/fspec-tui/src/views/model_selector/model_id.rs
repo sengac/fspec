@@ -64,7 +64,10 @@ mod tests {
         // 4-digit tail (not a date) is preserved.
         assert_eq!(extract_model_id_for_registry("gpt-4o"), "gpt-4o");
         // 7 digits — wrong length.
-        assert_eq!(extract_model_id_for_registry("model-1234567"), "model-1234567");
+        assert_eq!(
+            extract_model_id_for_registry("model-1234567"),
+            "model-1234567"
+        );
         // 9 digits — wrong length.
         assert_eq!(
             extract_model_id_for_registry("model-123456789"),

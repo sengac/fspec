@@ -17,12 +17,16 @@ pub mod chain_of_command;
 pub mod cloud_models;
 pub mod conversions;
 pub mod credentials;
+pub mod default_model_persistence;
 pub mod handle_impl;
+pub mod last_used_model_persistence;
 pub mod model_resolution;
 pub mod navigation;
 pub mod profile_persistence;
 pub mod profile_sections;
 pub mod session_manager;
+pub mod startup_model_resolution;
+pub mod startup_model_utils;
 
 // Convenient re-exports so downstream crates can write
 // `use codelet_sessions::SessionManagerHooks;` instead of the longer
