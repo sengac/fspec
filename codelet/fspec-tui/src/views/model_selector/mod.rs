@@ -23,6 +23,7 @@ mod model_id;
 mod navigation;
 mod render;
 mod rows;
+mod selection_style;
 mod state;
 
 #[cfg(test)]

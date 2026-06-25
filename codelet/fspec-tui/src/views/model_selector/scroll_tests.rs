@@ -78,12 +78,13 @@ fn render_lines(v: &mut ModelSelectorView, w: u16, h: u16) -> Vec<String> {
     lines
 }
 
-/// Indices of rendered lines carrying the selected-row marker `▸`.
+/// Indices of rendered lines carrying the selected-row marker `> `
+/// (RPC-351: solid cyan band + `> ` arrow replaced the old `▸`).
 fn marker_lines(lines: &[String]) -> Vec<usize> {
     lines
         .iter()
         .enumerate()
-        .filter(|(_, l)| l.contains('▸'))
+        .filter(|(_, l)| l.contains("> "))
         .map(|(i, _)| i)
         .collect()
 }
@@ -108,7 +109,7 @@ fn assert_selected_painted(lines: &[String], sel_id: &str) -> usize {
     );
     let mi = markers[0];
     assert!(
-        lines[mi].contains(&format!("▸ {sel_id} ")),
+        lines[mi].contains(&format!("> {sel_id} ")),
         "selected id {sel_id} painted on marker line: {}",
         lines[mi]
     );

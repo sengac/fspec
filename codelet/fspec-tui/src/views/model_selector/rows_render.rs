@@ -9,6 +9,7 @@
 //! projection + badge helpers remain in `rows.rs`.
 
 use super::super::header::render_header_row;
+use super::super::selection_style::{base_style, fill_row, token_style, NOSEL, SEL};
 use super::{badge_token_style, EMPTY_PLACEHOLDER, LEGEND, LOADING_PLACEHOLDER};
 use crate::components::model_selector_dialog_rows::ModelSelectorRow;
 use ratatui::buffer::Buffer;
@@ -129,7 +130,9 @@ pub(crate) fn render_body(
 }
 
 /// Paint one row: marker + label + coloured badges + optional green
-/// `(current)` marker. Selected rows use the REVERSED highlight.
+/// `(current)` marker. Selected rows paint a solid cyan band (fg=Black)
+/// filled to the full row width, with a `> ` arrow; every inline token
+/// flips to black (RPC-351).
 fn render_row(
     area: Rect,
     buf: &mut Buffer,
@@ -143,32 +146,29 @@ fn render_row(
         render_header_row(area, buf, row, is_selected);
         return;
     }
-    let base = if is_selected {
-        Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
-    } else {
-        Style::default()
-    };
-    let marker = if is_selected { "▸ " } else { "  " };
+    let base = base_style(is_selected);
+    // RPC-351: pre-fill the full row width with the band so the cyan
+    // highlight runs edge-to-edge (mirrors provider_settings/row_render.rs).
+    if is_selected {
+        fill_row(area, buf, base);
+    }
+    // Model rows use the deeper indent + `> ` arrow (TS `  > ` / `    `).
+    let marker = if is_selected { SEL } else { NOSEL };
     let mut spans: Vec<Span<'static>> = vec![
-        Span::styled(format!(" {marker}"), base),
+        Span::styled(format!("  {marker}"), base),
         Span::styled(row.label.clone(), base),
     ];
-    // Badges — coloured per token (DIM is dropped on the selected row so
-    // the colour is legible against the inverse highlight).
+    // Badges — flip to black on the selected band; otherwise coloured + DIM.
     for token in row.badges.split_whitespace() {
         let style = if is_selected {
-            base
+            token_style(true, Color::Black)
         } else {
             badge_token_style(token).add_modifier(Modifier::DIM)
         };
         spans.push(Span::styled(format!(" {token}"), style));
     }
     if current_model_id.is_some_and(|c| super::super::model_id::model_ids_match(c, &row.model_id)) {
-        let style = if is_selected {
-            base
-        } else {
-            Style::default().fg(Color::Green)
-        };
+        let style = token_style(is_selected, Color::Green);
         spans.push(Span::styled(" (current)".to_string(), style));
     }
     Paragraph::new(Line::from(spans)).render(area, buf);

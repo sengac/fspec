@@ -176,3 +176,7 @@ mod rows_tests;
 #[cfg(test)]
 #[path = "rows_tests_profile.rs"]
 mod rows_tests_profile;
+
+#[cfg(test)]
+#[path = "rows_tests_selection_style.rs"]
+mod rows_tests_selection_style;
