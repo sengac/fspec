@@ -12,10 +12,10 @@ use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for C# functions/methods.
@@ -31,9 +31,7 @@ const CSHARP_TYPE_KINDS: &[(&str, &str)] = &[
 ];
 
 /// C# system namespace prefixes that should NOT produce Imports edges.
-const CSHARP_EXTERNAL_PREFIXES: &[&str] = &[
-    "System", "Microsoft", "Newtonsoft", "NUnit", "Xunit",
-];
+const CSHARP_EXTERNAL_PREFIXES: &[&str] = &["System", "Microsoft", "Newtonsoft", "NUnit", "Xunit"];
 
 /// Extract entities from C# source code.
 ///
@@ -48,9 +46,8 @@ pub fn extract_csharp(
     let mut entities = Vec::new();
 
     let line_count = source.lines().count() as i32;
-    let is_test = rel_path.contains("Test")
-        || rel_path.contains("test")
-        || rel_path.contains("Tests/");
+    let is_test =
+        rel_path.contains("Test") || rel_path.contains("test") || rel_path.contains("Tests/");
 
     entities.push(helpers::build_file_node(
         rel_path, &file_slug, "csharp", line_count, is_test,
@@ -62,9 +59,23 @@ pub fn extract_csharp(
     let type_names = extract_types(&root, &file_slug, lang, &mut entities);
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
-    extract_calls(source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        lang,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
     extract_type_refs(
-        source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities,
+        source,
+        &file_slug,
+        lang,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
     );
 
     // Extract class-level variables
@@ -104,9 +115,14 @@ fn extract_methods(
             let cc = complexity::calculate(&matched_text, "csharp");
             let meta = metadata::extract_function_meta(&matched_text, "csharp");
             entities.push(helpers::build_function_node(
-                file_slug, &name, is_async, is_public, param_count,
-                start_pos.line() as i32 + 1, end_pos.line() as i32 + 1,
-            cc,
+                file_slug,
+                &name,
+                is_async,
+                is_public,
+                param_count,
+                start_pos.line() as i32 + 1,
+                end_pos.line() as i32 + 1,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -114,7 +130,9 @@ fn extract_methods(
                 "csharp",
                 meta.truncated,
             ));
-            entities.push(helpers::build_contains_edge(file_slug, &fn_slug, "Contains"));
+            entities.push(helpers::build_contains_edge(
+                file_slug, &fn_slug, "Contains",
+            ));
         }
     }
     seen_names
@@ -138,7 +156,13 @@ fn extract_types(
         for node in root.root().find_all(matcher.clone()) {
             let matched_text = node.text();
             let keyword = match *type_kind {
-                "class" => if matched_text.contains("record ") { "record " } else { "class " },
+                "class" => {
+                    if matched_text.contains("record ") {
+                        "record "
+                    } else {
+                        "class "
+                    }
+                }
                 "interface" => "interface ",
                 "struct_kind" => "struct ",
                 "enum_kind" => "enum ",
@@ -154,8 +178,24 @@ fn extract_types(
             let type_start = node.start_pos();
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "csharp");
-            entities.push(helpers::build_type_node(file_slug, &name, type_kind, is_public, type_start.line() as i32 + 1, type_end.line() as i32 + 1, &type_meta.source, &type_meta.docstring, &type_meta.decorators, "csharp", type_meta.truncated));
-            entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
+            entities.push(helpers::build_type_node(
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "csharp",
+                type_meta.truncated,
+            ));
+            entities.push(helpers::build_contains_edge(
+                file_slug,
+                &type_slug,
+                "ContainsType",
+            ));
         }
     }
     seen_names
@@ -191,7 +231,10 @@ fn extract_imports(
         }
 
         // Skip system/external namespaces
-        if CSHARP_EXTERNAL_PREFIXES.iter().any(|p| ns_path.starts_with(p)) {
+        if CSHARP_EXTERNAL_PREFIXES
+            .iter()
+            .any(|p| ns_path.starts_with(p))
+        {
             continue;
         }
 
@@ -227,15 +270,23 @@ fn extract_calls(
         for node in root.root().find_all(matcher.clone()) {
             let fn_text = node.text();
             let fn_name = extract_csharp_method_name(&fn_text);
-            if fn_name.is_empty() { continue; }
+            if fn_name.is_empty() {
+                continue;
+            }
             let caller_slug = format!("{file_slug}::{fn_name}");
             if let Some(body_start) = fn_text.find('{') {
                 let body = &fn_text[body_start..];
                 let mut callee_names = HashSet::new();
                 edge_helpers::extract_call_names_from_body(body, &mut callee_names);
                 edge_helpers::resolve_calls(
-                    &caller_slug, file_slug, &callee_names, &fn_name,
-                    local_functions, local_types, import_map, entities,
+                    &caller_slug,
+                    file_slug,
+                    &callee_names,
+                    &fn_name,
+                    local_functions,
+                    local_types,
+                    import_map,
+                    entities,
                 );
             }
         }
@@ -261,13 +312,20 @@ fn extract_type_refs(
         for node in root.root().find_all(matcher.clone()) {
             let fn_text = node.text();
             let fn_name = extract_csharp_method_name(&fn_text);
-            if fn_name.is_empty() || !function_names.contains(&fn_name) { continue; }
+            if fn_name.is_empty() || !function_names.contains(&fn_name) {
+                continue;
+            }
             let fn_slug = format!("{file_slug}::{fn_name}");
             let signature = fn_text.split('{').next().unwrap_or(&fn_text);
             let mut type_names = HashSet::new();
             extract_csharp_type_annotations(signature, &mut type_names);
             edge_helpers::resolve_type_refs(
-                &fn_slug, file_slug, &type_names, local_types, import_map, entities,
+                &fn_slug,
+                file_slug,
+                &type_names,
+                local_types,
+                import_map,
+                entities,
             );
         }
     }
@@ -276,14 +334,49 @@ fn extract_type_refs(
 /// Extract type names from C# method signatures (same pattern as Java).
 fn extract_csharp_type_annotations(signature: &str, out: &mut HashSet<String>) {
     let builtins: HashSet<&str> = [
-        "void", "int", "long", "short", "byte", "float", "double",
-        "bool", "char", "string", "object", "decimal", "dynamic",
-        "var", "String", "Int32", "Int64", "Boolean", "Object",
-        "Task", "Action", "Func", "IEnumerable", "IList", "IDictionary",
-        "List", "Dictionary", "HashSet", "IDisposable",
-        "public", "private", "protected", "internal", "static",
-        "async", "override", "virtual", "abstract", "sealed", "new",
-    ].into_iter().collect();
+        "void",
+        "int",
+        "long",
+        "short",
+        "byte",
+        "float",
+        "double",
+        "bool",
+        "char",
+        "string",
+        "object",
+        "decimal",
+        "dynamic",
+        "var",
+        "String",
+        "Int32",
+        "Int64",
+        "Boolean",
+        "Object",
+        "Task",
+        "Action",
+        "Func",
+        "IEnumerable",
+        "IList",
+        "IDictionary",
+        "List",
+        "Dictionary",
+        "HashSet",
+        "IDisposable",
+        "public",
+        "private",
+        "protected",
+        "internal",
+        "static",
+        "async",
+        "override",
+        "virtual",
+        "abstract",
+        "sealed",
+        "new",
+    ]
+    .into_iter()
+    .collect();
 
     // Return type: word before method name
     if let Some(paren_pos) = signature.find('(') {
@@ -291,7 +384,10 @@ fn extract_csharp_type_annotations(signature: &str, out: &mut HashSet<String>) {
         let words: Vec<&str> = before.split_whitespace().collect();
         if words.len() >= 2 {
             let return_type = words[words.len() - 2];
-            let name: String = return_type.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+            let name: String = return_type
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
             if !name.is_empty() && !builtins.contains(name.as_str()) {
                 out.insert(name);
             }
@@ -306,7 +402,10 @@ fn extract_csharp_type_annotations(signature: &str, out: &mut HashSet<String>) {
             let words: Vec<&str> = param.split_whitespace().collect();
             if words.len() >= 2 {
                 let type_word = words[words.len() - 2];
-                let name: String = type_word.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+                let name: String = type_word
+                    .chars()
+                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                    .collect();
                 if !name.is_empty() && !builtins.contains(name.as_str()) {
                     out.insert(name);
                 }
@@ -321,7 +420,10 @@ fn extract_csharp_method_name(text: &str) -> String {
         let before = text[..paren_pos].trim();
         if let Some(last_space) = before.rfind(' ') {
             let name = &before[last_space + 1..];
-            return name.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();
+            return name
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
         }
     }
     String::new()

@@ -197,11 +197,10 @@ async fn find_methods_in_file(db: &GraphDatabase, type_slug: &str) -> Vec<Value>
         .query_with_source(AST_QUERIES, "type_container", Some(&params))
         .await
     {
-        Ok(Value::Array(items)) => {
-            items.first()
-                .and_then(|f| f.get("slug").and_then(|v| v.as_str()))
-                .map(|s| s.to_string())
-        }
+        Ok(Value::Array(items)) => items
+            .first()
+            .and_then(|f| f.get("slug").and_then(|v| v.as_str()))
+            .map(|s| s.to_string()),
         _ => None,
     };
 

@@ -12,10 +12,10 @@ use std::collections::{HashMap, HashSet};
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Scala function declarations.
@@ -39,24 +39,71 @@ const SCALA_TYPE_PATTERNS: &[(&str, &str)] = &[
 
 /// Scala standard library / Java package prefixes that should NOT produce Imports edges.
 const SCALA_EXTERNAL_PREFIXES: &[&str] = &[
-    "scala.", "java.", "javax.", "akka.", "org.apache", "org.scalatest",
-    "org.specs2", "play.", "cats.", "zio.",
+    "scala.",
+    "java.",
+    "javax.",
+    "akka.",
+    "org.apache",
+    "org.scalatest",
+    "org.specs2",
+    "play.",
+    "cats.",
+    "zio.",
 ];
 
 /// Scala built-in types to filter from TypeRef edges.
 const SCALA_BUILTIN_TYPES: &[&str] = &[
-    "Int", "Long", "Short", "Byte", "Float", "Double", "Boolean", "Char",
-    "String", "Unit", "Any", "AnyRef", "AnyVal", "Nothing", "Null",
-    "Option", "Some", "None", "List", "Map", "Set", "Seq", "Vector",
-    "Array", "Tuple", "Either", "Left", "Right", "Future", "Try",
-    "Success", "Failure", "Iterable", "Iterator", "Comparable",
-    "Throwable", "Exception", "Void", "Object", "BigInt", "BigDecimal",
+    "Int",
+    "Long",
+    "Short",
+    "Byte",
+    "Float",
+    "Double",
+    "Boolean",
+    "Char",
+    "String",
+    "Unit",
+    "Any",
+    "AnyRef",
+    "AnyVal",
+    "Nothing",
+    "Null",
+    "Option",
+    "Some",
+    "None",
+    "List",
+    "Map",
+    "Set",
+    "Seq",
+    "Vector",
+    "Array",
+    "Tuple",
+    "Either",
+    "Left",
+    "Right",
+    "Future",
+    "Try",
+    "Success",
+    "Failure",
+    "Iterable",
+    "Iterator",
+    "Comparable",
+    "Throwable",
+    "Exception",
+    "Void",
+    "Object",
+    "BigInt",
+    "BigDecimal",
 ];
 
 /// Extract entities from Scala source code.
 ///
 /// Extracts File, Function, and Type nodes, plus Imports, Calls, and TypeRef edges.
-pub fn extract_scala(source: &str, rel_path: &str, known_files: &HashSet<String>) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_scala(
+    source: &str,
+    rel_path: &str,
+    known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::Scala;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
@@ -83,11 +130,23 @@ pub fn extract_scala(source: &str, rel_path: &str, known_files: &HashSet<String>
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
-    extract_calls(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract TypeRef edges from function signatures
     extract_type_refs(
-        source, &file_slug, &function_names, &type_names, &import_map, &mut entities,
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
     );
 
     // Extract top-level and class-level variables
@@ -115,8 +174,8 @@ fn extract_functions(
 
             let start_pos = node.start_pos();
             let end_pos = node.end_pos();
-            let is_public = !matched_text.starts_with("private ")
-                && !matched_text.starts_with("protected ");
+            let is_public =
+                !matched_text.starts_with("private ") && !matched_text.starts_with("protected ");
             let param_count = helpers::count_params(&matched_text);
 
             let fn_slug = format!("{file_slug}::{name}");
@@ -130,7 +189,7 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -140,9 +199,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -176,18 +233,25 @@ fn extract_types(
                 continue;
             }
 
-            let is_public = !matched_text.starts_with("private ")
-                && !matched_text.starts_with("protected ");
+            let is_public =
+                !matched_text.starts_with("private ") && !matched_text.starts_with("protected ");
 
             let type_slug = format!("{file_slug}::{name}");
             let type_start = node.start_pos();
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "scala");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "scala", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "scala",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -222,10 +286,7 @@ fn extract_imports(
             continue;
         }
 
-        let import_path = trimmed
-            .strip_prefix("import ")
-            .unwrap_or("")
-            .trim();
+        let import_path = trimmed.strip_prefix("import ").unwrap_or("").trim();
 
         if import_path.is_empty() {
             continue;
@@ -237,7 +298,10 @@ fn extract_imports(
         }
 
         // Skip external/standard library imports
-        if SCALA_EXTERNAL_PREFIXES.iter().any(|p| import_path.starts_with(p)) {
+        if SCALA_EXTERNAL_PREFIXES
+            .iter()
+            .any(|p| import_path.starts_with(p))
+        {
             continue;
         }
 

@@ -14,10 +14,10 @@ use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for Go functions and methods.
@@ -64,10 +64,24 @@ pub fn extract_go(
     add_same_package_edges(source, rel_path, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges
-    extract_calls(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract TypeRef edges from function/method signatures
-    extract_type_refs(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+    extract_type_refs(
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract module-level variables
     variables::extract_variables(source, &file_slug, rel_path, "go", &mut entities);
@@ -117,7 +131,7 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -127,9 +141,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -188,10 +200,17 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "go");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "go", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "go",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -217,16 +236,14 @@ fn add_same_package_edges(
     entities: &mut Vec<GraphEntity>,
 ) {
     // Extract package name from first `package X` line
-    let pkg_name = source
-        .lines()
-        .find_map(|line| {
-            let trimmed = line.trim();
-            if trimmed.starts_with("package ") {
-                Some(trimmed.strip_prefix("package ")?.trim().to_string())
-            } else {
-                None
-            }
-        });
+    let pkg_name = source.lines().find_map(|line| {
+        let trimmed = line.trim();
+        if trimmed.starts_with("package ") {
+            Some(trimmed.strip_prefix("package ")?.trim().to_string())
+        } else {
+            None
+        }
+    });
 
     let pkg_name = match pkg_name {
         Some(n) => n,
@@ -259,13 +276,7 @@ fn add_same_package_edges(
         if other_dir == dir {
             // Same directory → same package (we trust the convention)
             // Note: the reverse edge is created when the other file is extracted
-            edge_helpers::build_import_edge(
-                file_slug,
-                &pkg_name,
-                known_file,
-                false,
-                entities,
-            );
+            edge_helpers::build_import_edge(file_slug, &pkg_name, known_file, false, entities);
         }
     }
 }
@@ -302,8 +313,8 @@ fn extract_imports(
         }
 
         // Determine if this is a local import
-        let is_local = import_path.starts_with('.')
-            || is_go_local_import(&import_path, known_files);
+        let is_local =
+            import_path.starts_with('.') || is_go_local_import(&import_path, known_files);
 
         if is_local {
             // Resolve local import path
@@ -329,13 +340,7 @@ fn extract_imports(
                 (target_slug, true, pkg_name.to_string()),
             );
 
-            edge_helpers::build_import_edge(
-                file_slug,
-                &import_path,
-                &resolved,
-                false,
-                entities,
-            );
+            edge_helpers::build_import_edge(file_slug, &import_path, &resolved, false, entities);
         }
     }
     import_map
@@ -348,17 +353,15 @@ fn is_go_local_import(import_path: &str, _known_files: &HashSet<String>) -> bool
     // External packages typically have domain: github.com/..., golang.org/...
     // Stdlib packages are single words: fmt, os, strings, etc.
     // Local packages start with ./ or ../ or are relative without dots
-    !import_path.contains('.')
-        && !is_go_stdlib_package(import_path)
+    !import_path.contains('.') && !is_go_stdlib_package(import_path)
 }
 
 /// Check if an import path is a Go standard library package.
 fn is_go_stdlib_package(path: &str) -> bool {
     const GO_STDLIB: &[&str] = &[
-        "fmt", "os", "io", "net", "http", "strings", "bytes", "bufio",
-        "encoding", "crypto", "sync", "context", "errors", "flag",
-        "log", "math", "path", "reflect", "regexp", "runtime", "sort",
-        "strconv", "testing", "time", "unicode",
+        "fmt", "os", "io", "net", "http", "strings", "bytes", "bufio", "encoding", "crypto",
+        "sync", "context", "errors", "flag", "log", "math", "path", "reflect", "regexp", "runtime",
+        "sort", "strconv", "testing", "time", "unicode",
     ];
     let first_segment = path.split('/').next().unwrap_or(path);
     GO_STDLIB.contains(&first_segment)
@@ -442,10 +445,27 @@ fn extract_type_refs(
     let root = lang.ast_grep(source);
 
     let go_builtins: HashSet<&str> = [
-        "string", "int", "int8", "int16", "int32", "int64",
-        "uint", "uint8", "uint16", "uint32", "uint64", "uintptr",
-        "float32", "float64", "complex64", "complex128",
-        "bool", "byte", "rune", "error", "any",
+        "string",
+        "int",
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+        "uint",
+        "uint8",
+        "uint16",
+        "uint32",
+        "uint64",
+        "uintptr",
+        "float32",
+        "float64",
+        "complex64",
+        "complex128",
+        "bool",
+        "byte",
+        "rune",
+        "error",
+        "any",
     ]
     .into_iter()
     .collect();

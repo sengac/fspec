@@ -72,20 +72,13 @@ pub fn read_stored_mtimes(db: &GraphDatabase) -> Result<HashMap<String, i64>, St
                 // lastModified is stored as ISO 8601 string by nanograph
                 if let Some(last_modified) = properties.get("lastModified") {
                     if let Some(mtime_str) = last_modified.as_str() {
-                        if let Ok(dt) =
-                            chrono::NaiveDateTime::parse_from_str(mtime_str, "%Y-%m-%dT%H:%M:%S%.3fZ")
-                        {
-                            mtimes.insert(
-                                path.to_string(),
-                                dt.and_utc().timestamp_millis(),
-                            );
-                        } else if let Ok(dt) =
-                            chrono::DateTime::parse_from_rfc3339(mtime_str)
-                        {
-                            mtimes.insert(
-                                path.to_string(),
-                                dt.timestamp_millis(),
-                            );
+                        if let Ok(dt) = chrono::NaiveDateTime::parse_from_str(
+                            mtime_str,
+                            "%Y-%m-%dT%H:%M:%S%.3fZ",
+                        ) {
+                            mtimes.insert(path.to_string(), dt.and_utc().timestamp_millis());
+                        } else if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(mtime_str) {
+                            mtimes.insert(path.to_string(), dt.timestamp_millis());
                         }
                     } else if let Some(mtime_num) = last_modified.as_i64() {
                         mtimes.insert(path.to_string(), mtime_num);
@@ -198,10 +191,7 @@ fn is_owned_by_changed_file(slug: &str, changed_file_slugs: &HashSet<String>) ->
 /// Post-processes extracted entities: finds File nodes and sets their
 /// `lastModified` property from the provided mtime map.
 /// This avoids changing all 14 language extractor signatures.
-pub fn stamp_file_mtimes(
-    entities: &mut [GraphEntity],
-    mtimes: &HashMap<String, i64>,
-) {
+pub fn stamp_file_mtimes(entities: &mut [GraphEntity], mtimes: &HashMap<String, i64>) {
     for entity in entities.iter_mut() {
         if let GraphEntity::Node {
             node_type,

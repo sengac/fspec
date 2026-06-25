@@ -105,7 +105,9 @@ const CSHARP_CONFIG: ComplexityConfig = ComplexityConfig {
 };
 
 const RUBY_CONFIG: ComplexityConfig = ComplexityConfig {
-    keywords: &["if", "unless", "case", "when", "while", "until", "for", "rescue"],
+    keywords: &[
+        "if", "unless", "case", "when", "while", "until", "for", "rescue",
+    ],
     operators: &["&&", "||"],
     comment_style: CommentStyle::HashBlock,
     count_match_arms: false,
@@ -351,8 +353,7 @@ fn count_keyword_occurrences(text: &str, keyword: &str) -> i32 {
             // Check word boundary before
             let before_ok = i == 0 || !is_word_char(text_bytes[i - 1]);
             // Check word boundary after
-            let after_ok =
-                i + kw_len >= text_len || !is_word_char(text_bytes[i + kw_len]);
+            let after_ok = i + kw_len >= text_len || !is_word_char(text_bytes[i + kw_len]);
             if before_ok && after_ok {
                 count += 1;
                 i += kw_len;

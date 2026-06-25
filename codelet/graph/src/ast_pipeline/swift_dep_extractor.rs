@@ -39,9 +39,7 @@ pub fn extract_swift_dependencies(project_root: &Path) -> Result<Vec<GraphEntity
                     .next()
                     .unwrap_or(&url);
                 let version = extract_swift_package_version(trimmed);
-                entities.push(helpers::build_dependency_node(
-                    name, &version, false, "spm",
-                ));
+                entities.push(helpers::build_dependency_node(name, &version, false, "spm"));
                 entities.push(helpers::build_depends_on_edge(&file_slug, name));
             }
         }

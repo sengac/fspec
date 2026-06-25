@@ -44,10 +44,7 @@ pub async fn build_learnings_context(query: &str) -> Option<String> {
 ///
 /// Separated from `build_learnings_context` for testability — tests can pass
 /// a temporary database directly without needing the global registry.
-pub async fn build_learnings_context_from_db(
-    db: &GraphDatabase,
-    query: &str,
-) -> Option<String> {
+pub async fn build_learnings_context_from_db(db: &GraphDatabase, query: &str) -> Option<String> {
     let query_lower = query.to_lowercase();
 
     let decisions = collect_relevant_decisions(db, &query_lower).await;
@@ -127,11 +124,7 @@ async fn collect_relevant_learnings(db: &GraphDatabase, query: &str) -> Vec<Valu
 ///
 /// Output is capped at `MAX_CONTEXT_CHARS` to avoid consuming too much
 /// of the LLM context window.
-fn format_context(
-    decisions: &[Value],
-    warnings: &[Value],
-    learnings: &[Value],
-) -> String {
+fn format_context(decisions: &[Value], warnings: &[Value], learnings: &[Value]) -> String {
     let mut output = String::with_capacity(MAX_CONTEXT_CHARS);
 
     output.push_str("# Learnings Context\n\n");
@@ -182,7 +175,10 @@ fn format_context(
 
 /// Append a formatted failed exploration to the output.
 fn append_exploration(output: &mut String, item: &Value) {
-    let title = item.get("title").and_then(|v| v.as_str()).unwrap_or("Unknown");
+    let title = item
+        .get("title")
+        .and_then(|v| v.as_str())
+        .unwrap_or("Unknown");
     let slug = item.get("slug").and_then(|v| v.as_str()).unwrap_or("");
     let strategy = item.get("strategy").and_then(|v| v.as_str()).unwrap_or("");
     let constraint = item
@@ -199,13 +195,16 @@ fn append_exploration(output: &mut String, item: &Value) {
 
 /// Append a formatted decision to the output.
 fn append_decision(output: &mut String, item: &Value) {
-    let title = item.get("title").and_then(|v| v.as_str()).unwrap_or("Unknown");
-    let slug = item.get("slug").and_then(|v| v.as_str()).unwrap_or("");
-    let status = item.get("status").and_then(|v| v.as_str()).unwrap_or("active");
-    let rationale = item
-        .get("rationale")
+    let title = item
+        .get("title")
         .and_then(|v| v.as_str())
-        .unwrap_or("");
+        .unwrap_or("Unknown");
+    let slug = item.get("slug").and_then(|v| v.as_str()).unwrap_or("");
+    let status = item
+        .get("status")
+        .and_then(|v| v.as_str())
+        .unwrap_or("active");
+    let rationale = item.get("rationale").and_then(|v| v.as_str()).unwrap_or("");
 
     output.push_str(&format!("- **{title}** (`{slug}`, {status})\n"));
     if !rationale.is_empty() {
@@ -215,8 +214,14 @@ fn append_decision(output: &mut String, item: &Value) {
 
 /// Append a formatted learning to the output.
 fn append_learning(output: &mut String, item: &Value) {
-    let title = item.get("title").and_then(|v| v.as_str()).unwrap_or("Unknown");
-    let category = item.get("category").and_then(|v| v.as_str()).unwrap_or("general");
+    let title = item
+        .get("title")
+        .and_then(|v| v.as_str())
+        .unwrap_or("Unknown");
+    let category = item
+        .get("category")
+        .and_then(|v| v.as_str())
+        .unwrap_or("general");
     let content = item.get("content").and_then(|v| v.as_str()).unwrap_or("");
 
     output.push_str(&format!("- **{title}** [{category}]\n"));

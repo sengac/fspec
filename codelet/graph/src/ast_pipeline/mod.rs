@@ -43,38 +43,38 @@ pub mod ast_swift_extractor;
 pub mod ast_ts_extractor;
 pub mod cargo_dep_extractor;
 pub mod complexity;
-pub mod metadata;
-pub mod variables;
 pub mod composer_dep_extractor;
 pub mod csproj_dep_extractor;
+pub(crate) mod edge_helpers;
 pub mod gemfile_dep_extractor;
 pub mod gomod_dep_extractor;
+pub mod helpers;
+pub mod incremental;
 pub mod java_dep_extractor;
+pub mod metadata;
 pub mod npm_dep_extractor;
 pub mod pip_dep_extractor;
 pub mod pubspec_dep_extractor;
 pub mod sbt_dep_extractor;
 pub mod swift_dep_extractor;
-pub mod helpers;
-pub(crate) mod edge_helpers;
-pub mod incremental;
+pub mod variables;
 
 /// Supported source file extensions for AST extraction.
 const SUPPORTED_EXTENSIONS: &[&str] = &[
     "ts", "tsx", "js", "jsx", "mjs", "mts", // TypeScript/JavaScript
-    "rs",                                     // Rust
-    "py", "pyi",                              // Python
-    "go",                                     // Go
-    "java",                                   // Java
-    "c", "h",                                 // C (h files may be C or C++)
-    "cpp", "cc", "cxx", "hpp",                // C++
-    "cs",                                     // C#
-    "rb", "gemspec",                          // Ruby
-    "kt", "kts",                              // Kotlin
-    "swift",                                  // Swift
-    "scala", "sc",                            // Scala
-    "php",                                    // PHP
-    "dart",                                   // Dart
+    "rs",  // Rust
+    "py", "pyi",  // Python
+    "go",   // Go
+    "java", // Java
+    "c", "h", // C (h files may be C or C++)
+    "cpp", "cc", "cxx", "hpp", // C++
+    "cs",  // C#
+    "rb", "gemspec", // Ruby
+    "kt", "kts",   // Kotlin
+    "swift", // Swift
+    "scala", "sc",   // Scala
+    "php",  // PHP
+    "dart", // Dart
 ];
 
 /// Directories to always skip even without .gitignore.
@@ -113,10 +113,7 @@ pub fn extract_file(
     project_root: &Path,
     known_files: &HashSet<String>,
 ) -> Result<Vec<GraphEntity>, String> {
-    let ext = file_path
-        .extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("");
+    let ext = file_path.extension().and_then(|e| e.to_str()).unwrap_or("");
 
     let rel_path = file_path
         .strip_prefix(project_root)
@@ -135,7 +132,9 @@ pub fn extract_file(
             ast_ts_extractor::extract_typescript(&source, &rel_path, &known_files_clone)
         }
         "rs" => ast_rust_extractor::extract_rust(&source, &rel_path, &known_files_clone),
-        "py" | "pyi" => ast_python_extractor::extract_python(&source, &rel_path, &known_files_clone),
+        "py" | "pyi" => {
+            ast_python_extractor::extract_python(&source, &rel_path, &known_files_clone)
+        }
         "go" => ast_go_extractor::extract_go(&source, &rel_path, &known_files_clone),
         "java" => ast_java_extractor::extract_java(&source, &rel_path, &known_files_clone),
         "c" => ast_c_extractor::extract_c(&source, &rel_path, &known_files_clone),
@@ -147,12 +146,20 @@ pub fn extract_file(
                 ast_c_extractor::extract_c(&source, &rel_path, &known_files_clone)
             }
         }
-        "cpp" | "cc" | "cxx" | "hpp" => ast_cpp_extractor::extract_cpp(&source, &rel_path, &known_files_clone),
+        "cpp" | "cc" | "cxx" | "hpp" => {
+            ast_cpp_extractor::extract_cpp(&source, &rel_path, &known_files_clone)
+        }
         "cs" => ast_csharp_extractor::extract_csharp(&source, &rel_path, &known_files_clone),
-        "rb" | "gemspec" => ast_ruby_extractor::extract_ruby(&source, &rel_path, &known_files_clone),
-        "kt" | "kts" => ast_kotlin_extractor::extract_kotlin(&source, &rel_path, &known_files_clone),
+        "rb" | "gemspec" => {
+            ast_ruby_extractor::extract_ruby(&source, &rel_path, &known_files_clone)
+        }
+        "kt" | "kts" => {
+            ast_kotlin_extractor::extract_kotlin(&source, &rel_path, &known_files_clone)
+        }
         "swift" => ast_swift_extractor::extract_swift(&source, &rel_path, &known_files_clone),
-        "scala" | "sc" => ast_scala_extractor::extract_scala(&source, &rel_path, &known_files_clone),
+        "scala" | "sc" => {
+            ast_scala_extractor::extract_scala(&source, &rel_path, &known_files_clone)
+        }
         "php" => ast_php_extractor::extract_php(&source, &rel_path, &known_files_clone),
         "dart" => ast_dart_extractor::extract_dart(&source, &rel_path, &known_files_clone),
         _ => Ok(vec![]), // Unsupported language — skip
@@ -237,7 +244,10 @@ pub fn walk_source_files(project_root: &Path, respect_gitignore: bool) -> Vec<st
 ///
 /// When `respect_gitignore` is false, `.gitignore` rules are skipped so
 /// external repos under gitignored directories can be indexed.
-pub fn walk_and_extract(project_root: &Path, respect_gitignore: bool) -> Result<Vec<GraphEntity>, String> {
+pub fn walk_and_extract(
+    project_root: &Path,
+    respect_gitignore: bool,
+) -> Result<Vec<GraphEntity>, String> {
     // Phase 1: Collect all source file paths for import resolution context
     let source_files = walk_source_files(project_root, respect_gitignore);
 

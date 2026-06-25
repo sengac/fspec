@@ -14,8 +14,8 @@ pub fn extract_sbt_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>,
         return Ok(vec![]);
     }
 
-    let content = std::fs::read_to_string(&sbt_path)
-        .map_err(|e| format!("Failed to read build.sbt: {e}"))?;
+    let content =
+        std::fs::read_to_string(&sbt_path).map_err(|e| format!("Failed to read build.sbt: {e}"))?;
 
     let rel_path = "build.sbt";
     let file_slug = helpers::slugify_path(rel_path);

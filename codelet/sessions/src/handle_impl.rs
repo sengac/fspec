@@ -1053,6 +1053,20 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             resolved.max_output_tokens,
             compaction_threshold,
         );
+
+        // PROV-123: keep the global default in sync so a NEW session created in
+        // this same process inherits the just-selected model (TS-parity with
+        // modelSelectionService "keeps store in sync for new sessions").
+        // `set_default_model` updates the in-memory `default_model` RwLock that
+        // `create_session` / `create_isolated_session` read AND persists
+        // `default-model.json` + `tui.lastUsedModel` (PROV-119/122), so it
+        // SUPERSEDES the standalone PROV-122 `save_persisted_model_string` call.
+        // `model` is the composite `provider_id/model_id` — for profile
+        // selections `provider_id` is the profile-qualified key (e.g.
+        // `openai:qwen`), so the stored default round-trips to a form a new
+        // session resolves identically. Empty/whitespace is ignored inside
+        // `set_default_model` (PROV-101 invariant preserved).
+        SessionManager::set_default_model(self, &model);
         Ok(())
     }
 

@@ -13,10 +13,10 @@ use std::collections::{HashMap, HashSet};
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Rust function declarations.
@@ -80,7 +80,14 @@ pub fn extract_rust(
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
-    extract_calls(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract TypeRef edges from function signatures
     extract_type_refs(
@@ -120,9 +127,7 @@ fn extract_functions(
             let end_pos = node.end_pos();
             let is_async = matched_text.contains("async fn ");
             let is_public = *is_public_from_pattern
-                || node
-                    .parent()
-                    .is_some_and(|p| p.text().starts_with("pub "));
+                || node.parent().is_some_and(|p| p.text().starts_with("pub "));
             let param_count = helpers::count_params_rust(&matched_text);
             let cc = complexity::calculate(&matched_text, "rust");
             let meta = metadata::extract_function_meta(&matched_text, "rust");
@@ -146,9 +151,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -175,19 +178,24 @@ fn extract_types(
             }
 
             let is_public = *is_public_from_pattern
-                || node
-                    .parent()
-                    .is_some_and(|p| p.text().starts_with("pub "));
+                || node.parent().is_some_and(|p| p.text().starts_with("pub "));
 
             let type_slug = format!("{file_slug}::{name}");
             let type_start = node.start_pos();
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "rust");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "rust", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "rust",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -271,13 +279,7 @@ fn extract_imports(
                 (target_slug.clone(), true, local_name.clone()),
             );
 
-            edge_helpers::build_import_edge(
-                file_slug,
-                import_part,
-                &resolved,
-                false,
-                entities,
-            );
+            edge_helpers::build_import_edge(file_slug, import_part, &resolved, false, entities);
         }
     }
     import_map
@@ -405,10 +407,9 @@ fn extract_type_refs(
 /// Filters out primitives and standard library types.
 fn extract_rust_type_annotations(signature: &str, out: &mut HashSet<String>) {
     let rust_builtins: HashSet<&str> = [
-        "str", "String", "bool", "i8", "i16", "i32", "i64", "i128",
-        "u8", "u16", "u32", "u64", "u128", "f32", "f64", "usize", "isize",
-        "char", "Self", "self", "Option", "Result", "Vec", "Box", "Arc",
-        "Rc", "HashMap", "HashSet", "BTreeMap", "BTreeSet", "Cow",
+        "str", "String", "bool", "i8", "i16", "i32", "i64", "i128", "u8", "u16", "u32", "u64",
+        "u128", "f32", "f64", "usize", "isize", "char", "Self", "self", "Option", "Result", "Vec",
+        "Box", "Arc", "Rc", "HashMap", "HashSet", "BTreeMap", "BTreeSet", "Cow",
     ]
     .into_iter()
     .collect();

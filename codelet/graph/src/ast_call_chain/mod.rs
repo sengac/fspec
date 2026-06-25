@@ -112,14 +112,15 @@ pub async fn build_adjacency_list(
             let entries: Vec<AdjEntry> = callees
                 .iter()
                 .filter_map(|c| {
-                    let callee_slug = c.get("slug")
-                        .and_then(|v| v.as_str())
-                        .map(String::from)?;
+                    let callee_slug = c.get("slug").and_then(|v| v.as_str()).map(String::from)?;
                     let edge_info = CallEdgeInfo {
                         call_count: c.get("callCount").and_then(|v| v.as_i64()),
                         is_conditional: c.get("isConditional").and_then(|v| v.as_bool()),
                     };
-                    Some(AdjEntry { callee_slug, edge_info })
+                    Some(AdjEntry {
+                        callee_slug,
+                        edge_info,
+                    })
                 })
                 .collect();
             if !entries.is_empty() {
@@ -165,9 +166,7 @@ fn build_structured_chains(
                     let to = &pair[1];
                     let edge = adj
                         .get(from)
-                        .and_then(|entries| {
-                            entries.iter().find(|e| e.callee_slug == *to)
-                        });
+                        .and_then(|entries| entries.iter().find(|e| e.callee_slug == *to));
                     match edge {
                         Some(e) => serde_json::json!({
                             "from": from,

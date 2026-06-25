@@ -9,7 +9,12 @@
 // codelet/graph/tests/codelet_graph_crate_lift.rs (which shells out to this
 // binary for the "lifted graph reset" scenario).
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 
 use std::path::PathBuf;
 
@@ -139,7 +144,9 @@ async fn test_reset_clears_in_memory_registry() {
         db2.has_node_type("Type"),
         "Re-initialized graph should have Type node from new schema"
     );
-    let stats = db2.stats().expect("stats should work on re-initialized graph");
+    let stats = db2
+        .stats()
+        .expect("stats should work on re-initialized graph");
     assert!(
         stats.is_object(),
         "Stats query should succeed on re-initialized graph"
@@ -206,8 +213,7 @@ async fn test_queries_work_after_reset_and_reindex() {
         .expect("init should succeed");
 
     // Reset (delete + clear registry)
-    registry::delete_graph_data("test-queries", &db_path)
-        .expect("delete should succeed");
+    registry::delete_graph_data("test-queries", &db_path).expect("delete should succeed");
     registry::reset_graph("test-queries");
 
     // Re-init with the full AST schema (simulates real re-index)
@@ -238,7 +244,9 @@ async fn test_queries_work_after_reset_and_reindex() {
         "all_functions should return loaded entities"
     );
     assert!(
-        functions.iter().any(|f| f.get("name").and_then(|v| v.as_str()) == Some("greet")),
+        functions
+            .iter()
+            .any(|f| f.get("name").and_then(|v| v.as_str()) == Some("greet")),
         "Should find the 'greet' function we loaded"
     );
 
@@ -361,4 +369,3 @@ fn test_delete_graph_data_returns_false_when_no_data() {
     let result = registry::delete_graph_data("test-no-data", &db_path);
     assert_eq!(result, Ok(false), "Should return false when no data exists");
 }
-

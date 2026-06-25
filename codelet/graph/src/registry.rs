@@ -179,7 +179,9 @@ pub fn resolve_graph_config(name: &str) -> Result<(PathBuf, &'static str), Strin
             let db_path = data_dir.join("graph/learnings.nano");
             Ok((db_path, LEARNINGS_SCHEMA))
         }
-        _ => Err(format!("Unknown graph name: '{name}'. Known: {AST_CODE_GRAPH}, {LEARNINGS_GRAPH}")),
+        _ => Err(format!(
+            "Unknown graph name: '{name}'. Known: {AST_CODE_GRAPH}, {LEARNINGS_GRAPH}"
+        )),
     }
 }
 

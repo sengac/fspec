@@ -43,7 +43,13 @@ pub fn extract_function_meta(matched_text: &str, language: &str) -> FunctionMeta
     let (source, truncated) = extract_source(matched_text);
     let docstring = extract_docstring(matched_text, language);
     let decorators = extract_decorators(matched_text, language);
-    FunctionMeta { parameters, source, docstring, decorators, truncated }
+    FunctionMeta {
+        parameters,
+        source,
+        docstring,
+        decorators,
+        truncated,
+    }
 }
 
 /// Extract all metadata for a type from its matched AST text.
@@ -53,7 +59,12 @@ pub fn extract_type_meta(matched_text: &str, language: &str) -> TypeMeta {
     let (source, truncated) = extract_source(matched_text);
     let docstring = extract_docstring(matched_text, language);
     let decorators = extract_decorators(matched_text, language);
-    TypeMeta { source, docstring, decorators, truncated }
+    TypeMeta {
+        source,
+        docstring,
+        decorators,
+        truncated,
+    }
 }
 
 /// Maximum number of lines to store in the `source` property.
@@ -120,20 +131,48 @@ struct DocConfig {
     style: DocStyle,
 }
 
-const TS_DOC: DocConfig = DocConfig { style: DocStyle::SlashStarStar };
-const RUST_DOC: DocConfig = DocConfig { style: DocStyle::TripleSlash };
-const PYTHON_DOC: DocConfig = DocConfig { style: DocStyle::PythonDocstring };
-const GO_DOC: DocConfig = DocConfig { style: DocStyle::DoubleSlashLines };
-const JAVA_DOC: DocConfig = DocConfig { style: DocStyle::SlashStarStar };
-const C_DOC: DocConfig = DocConfig { style: DocStyle::CStyleMixed };
-const CPP_DOC: DocConfig = DocConfig { style: DocStyle::CStyleMixed };
-const CSHARP_DOC: DocConfig = DocConfig { style: DocStyle::TripleSlash };
-const RUBY_DOC: DocConfig = DocConfig { style: DocStyle::HashLines };
-const KOTLIN_DOC: DocConfig = DocConfig { style: DocStyle::SlashStarStar };
-const SWIFT_DOC: DocConfig = DocConfig { style: DocStyle::TripleSlash };
-const SCALA_DOC: DocConfig = DocConfig { style: DocStyle::SlashStarStar };
-const PHP_DOC: DocConfig = DocConfig { style: DocStyle::SlashStarStar };
-const DART_DOC: DocConfig = DocConfig { style: DocStyle::TripleSlash };
+const TS_DOC: DocConfig = DocConfig {
+    style: DocStyle::SlashStarStar,
+};
+const RUST_DOC: DocConfig = DocConfig {
+    style: DocStyle::TripleSlash,
+};
+const PYTHON_DOC: DocConfig = DocConfig {
+    style: DocStyle::PythonDocstring,
+};
+const GO_DOC: DocConfig = DocConfig {
+    style: DocStyle::DoubleSlashLines,
+};
+const JAVA_DOC: DocConfig = DocConfig {
+    style: DocStyle::SlashStarStar,
+};
+const C_DOC: DocConfig = DocConfig {
+    style: DocStyle::CStyleMixed,
+};
+const CPP_DOC: DocConfig = DocConfig {
+    style: DocStyle::CStyleMixed,
+};
+const CSHARP_DOC: DocConfig = DocConfig {
+    style: DocStyle::TripleSlash,
+};
+const RUBY_DOC: DocConfig = DocConfig {
+    style: DocStyle::HashLines,
+};
+const KOTLIN_DOC: DocConfig = DocConfig {
+    style: DocStyle::SlashStarStar,
+};
+const SWIFT_DOC: DocConfig = DocConfig {
+    style: DocStyle::TripleSlash,
+};
+const SCALA_DOC: DocConfig = DocConfig {
+    style: DocStyle::SlashStarStar,
+};
+const PHP_DOC: DocConfig = DocConfig {
+    style: DocStyle::SlashStarStar,
+};
+const DART_DOC: DocConfig = DocConfig {
+    style: DocStyle::TripleSlash,
+};
 
 /// Get docstring config for a language.
 fn doc_config_for_language(language: &str) -> &'static DocConfig {
@@ -330,10 +369,7 @@ fn extract_hash_bracket_attrs(text: &str) -> Vec<String> {
         let trimmed = line.trim();
         if trimmed.starts_with("#[") {
             attrs.push(trimmed.to_string());
-        } else if !attrs.is_empty()
-            && !trimmed.is_empty()
-            && !trimmed.starts_with("//")
-        {
+        } else if !attrs.is_empty() && !trimmed.is_empty() && !trimmed.starts_with("//") {
             break;
         }
     }
@@ -347,10 +383,7 @@ fn extract_square_bracket_attrs(text: &str) -> Vec<String> {
         let trimmed = line.trim();
         if trimmed.starts_with('[') && trimmed.contains(']') {
             attrs.push(trimmed.to_string());
-        } else if !attrs.is_empty()
-            && !trimmed.is_empty()
-            && !trimmed.starts_with("//")
-        {
+        } else if !attrs.is_empty() && !trimmed.is_empty() && !trimmed.starts_with("//") {
             break;
         }
     }
@@ -439,7 +472,11 @@ fn extract_param_name(param: &str, language: &str) -> String {
         "typescript" | "tsx" | "javascript" | "jsx" | "rust" | "python" | "dart" | "kotlin"
         | "swift" | "scala" => {
             let before_default = param.split('=').next().unwrap_or(param).trim();
-            let name = before_default.split(':').next().unwrap_or(before_default).trim();
+            let name = before_default
+                .split(':')
+                .next()
+                .unwrap_or(before_default)
+                .trim();
             // Strip leading modifiers (mut, ref, etc.)
             name.split_whitespace().last().unwrap_or(name).to_string()
         }
@@ -454,11 +491,7 @@ fn extract_param_name(param: &str, language: &str) -> String {
         }
         "go" => {
             // Go: `name Type` — first token is the name
-            param
-                .split_whitespace()
-                .next()
-                .unwrap_or(param)
-                .to_string()
+            param.split_whitespace().next().unwrap_or(param).to_string()
         }
         "php" => {
             // PHP: `Type $name` or `$name`

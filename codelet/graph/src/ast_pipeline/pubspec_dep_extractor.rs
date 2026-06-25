@@ -16,9 +16,7 @@ use crate::graph_entities::GraphEntity;
 /// Creates Dependency nodes for each package in `dependencies:` and
 /// `dev_dependencies:` sections, plus DependsOn edges from the
 /// pubspec.yaml File node.
-pub fn extract_pubspec_dependencies(
-    project_root: &Path,
-) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_pubspec_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
     let pubspec_path = project_root.join("pubspec.yaml");
     if !pubspec_path.exists() {
         return Ok(vec![]);
@@ -54,11 +52,7 @@ pub fn extract_pubspec_dependencies(
 ///   `flutter:\n    sdk: flutter`
 ///
 /// We extract the package name and version (if available).
-fn parse_pubspec_dependencies(
-    content: &str,
-    file_slug: &str,
-    entities: &mut Vec<GraphEntity>,
-) {
+fn parse_pubspec_dependencies(content: &str, file_slug: &str, entities: &mut Vec<GraphEntity>) {
     #[derive(PartialEq)]
     enum Section {
         None,

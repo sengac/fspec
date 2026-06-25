@@ -127,13 +127,13 @@ pub fn extract_learnings_from_text(
     _source_text: &str,
     llm_response: Option<&str>,
 ) -> Result<LearningsExtractionResult, String> {
-    let response = llm_response
-        .ok_or_else(|| "LLM unavailable: no response provided".to_string())?;
+    let response =
+        llm_response.ok_or_else(|| "LLM unavailable: no response provided".to_string())?;
 
     let json_str = extract_json_from_response(response);
 
-    let raw: RawExtractionResponse = serde_json::from_str(json_str)
-        .map_err(|e| format!("Failed to parse LLM response: {e}"))?;
+    let raw: RawExtractionResponse =
+        serde_json::from_str(json_str).map_err(|e| format!("Failed to parse LLM response: {e}"))?;
 
     let now = Utc::now().to_rfc3339();
     let mut entities = Vec::new();
@@ -188,9 +188,7 @@ pub fn extract_learnings_from_text(
                 match node_type.as_str() {
                     "Learning" => {
                         learning_count += 1;
-                        if properties
-                            .get("category")
-                            .and_then(|c| c.as_str()) == Some("constraint")
+                        if properties.get("category").and_then(|c| c.as_str()) == Some("constraint")
                         {
                             constraint_count += 1;
                         }
@@ -224,8 +222,7 @@ const VALID_LEARNING_CATEGORIES: &[&str] = &[
 ];
 
 /// Valid outcomes for Exploration nodes.
-const VALID_EXPLORATION_OUTCOMES: &[&str] =
-    &["success", "partial", "failure", "abandoned"];
+const VALID_EXPLORATION_OUTCOMES: &[&str] = &["success", "partial", "failure", "abandoned"];
 
 /// Validate and convert a raw learning into a GraphEntity.
 fn validate_learning(raw: &RawLearning, now: &str) -> Option<GraphEntity> {

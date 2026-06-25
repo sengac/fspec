@@ -30,7 +30,13 @@ pub async fn dispatch_learnings_search(
     let mut results = Vec::new();
 
     // Search across all learnings node types
-    let search_types = ["Learning", "Decision", "Convention", "Exploration", "CodePattern"];
+    let search_types = [
+        "Learning",
+        "Decision",
+        "Convention",
+        "Exploration",
+        "CodePattern",
+    ];
 
     for node_type in search_types {
         let query_name = match node_type {
@@ -42,7 +48,10 @@ pub async fn dispatch_learnings_search(
             _ => continue,
         };
 
-        match db.query_with_source(LEARNINGS_QUERIES, query_name, None).await {
+        match db
+            .query_with_source(LEARNINGS_QUERIES, query_name, None)
+            .await
+        {
             Ok(Value::Array(items)) => {
                 for item in items {
                     if results.len() >= max_results {
@@ -94,7 +103,10 @@ pub async fn dispatch_learnings_decisions(
 ) -> String {
     let mut results = Vec::new();
 
-    match db.query_with_source(LEARNINGS_QUERIES, "all_decisions", None).await {
+    match db
+        .query_with_source(LEARNINGS_QUERIES, "all_decisions", None)
+        .await
+    {
         Ok(Value::Array(items)) => {
             for item in items {
                 // Apply domain filter
@@ -156,7 +168,10 @@ pub async fn dispatch_learnings_related(
     let mut results = Vec::new();
 
     // First find Learning nodes matching the topic
-    match db.query_with_source(LEARNINGS_QUERIES, "all_learnings", None).await {
+    match db
+        .query_with_source(LEARNINGS_QUERIES, "all_learnings", None)
+        .await
+    {
         Ok(Value::Array(items)) => {
             for item in items {
                 if results.len() >= max_results {

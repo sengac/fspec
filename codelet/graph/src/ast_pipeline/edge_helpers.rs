@@ -27,10 +27,7 @@ pub fn build_import_edge(
     // Stub File node for import target
     let mut target_props = Map::new();
     target_props.insert("slug".to_string(), Value::String(target_slug.clone()));
-    target_props.insert(
-        "path".to_string(),
-        Value::String(resolved_path.to_string()),
-    );
+    target_props.insert("path".to_string(), Value::String(resolved_path.to_string()));
     entities.push(GraphEntity::Node {
         node_type: "File".to_string(),
         slug: target_slug.clone(),
@@ -63,11 +60,7 @@ pub fn build_calls_edge(from_fn_slug: &str, to_fn_slug: &str, entities: &mut Vec
 }
 
 /// Build a TypeRef edge from a function to a type.
-pub fn build_typeref_edge(
-    from_fn_slug: &str,
-    to_type_slug: &str,
-    entities: &mut Vec<GraphEntity>,
-) {
+pub fn build_typeref_edge(from_fn_slug: &str, to_type_slug: &str, entities: &mut Vec<GraphEntity>) {
     entities.push(GraphEntity::Edge {
         edge_type: "TypeRef".to_string(),
         from_slug: from_fn_slug.to_string(),
@@ -156,10 +149,26 @@ pub fn extract_call_names_from_body(body: &str, out: &mut HashSet<String>) {
                 };
                 let not_keyword = !matches!(
                     name,
-                    "if" | "for" | "while" | "switch" | "catch" | "return"
-                        | "typeof" | "instanceof" | "await" | "function"
-                        | "foreach" | "match" | "echo" | "print" | "array"
-                        | "list" | "empty" | "isset" | "unset" | "die" | "exit"
+                    "if" | "for"
+                        | "while"
+                        | "switch"
+                        | "catch"
+                        | "return"
+                        | "typeof"
+                        | "instanceof"
+                        | "await"
+                        | "function"
+                        | "foreach"
+                        | "match"
+                        | "echo"
+                        | "print"
+                        | "array"
+                        | "list"
+                        | "empty"
+                        | "isset"
+                        | "unset"
+                        | "die"
+                        | "exit"
                 );
 
                 if not_method && not_constructor && not_keyword {
@@ -367,10 +376,7 @@ pub fn extract_c_includes(
                     .to_string();
 
                 let target_slug = super::helpers::slugify_path(header_path);
-                import_map.insert(
-                    local_name.clone(),
-                    (target_slug.clone(), true, local_name),
-                );
+                import_map.insert(local_name.clone(), (target_slug.clone(), true, local_name));
 
                 build_import_edge(file_slug, header_path, header_path, false, entities);
             }

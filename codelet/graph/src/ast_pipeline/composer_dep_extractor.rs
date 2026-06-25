@@ -35,7 +35,9 @@ pub fn extract_composer_dependencies(project_root: &Path) -> Result<Vec<GraphEnt
     if let Some(deps) = pkg.get("require").and_then(|v| v.as_object()) {
         for (name, version_val) in deps {
             let version = version_val.as_str().unwrap_or("*");
-            entities.push(helpers::build_dependency_node(name, version, false, "composer"));
+            entities.push(helpers::build_dependency_node(
+                name, version, false, "composer",
+            ));
             entities.push(helpers::build_depends_on_edge(&file_slug, name));
         }
     }
@@ -44,7 +46,9 @@ pub fn extract_composer_dependencies(project_root: &Path) -> Result<Vec<GraphEnt
     if let Some(dev_deps) = pkg.get("require-dev").and_then(|v| v.as_object()) {
         for (name, version_val) in dev_deps {
             let version = version_val.as_str().unwrap_or("*");
-            entities.push(helpers::build_dependency_node(name, version, true, "composer"));
+            entities.push(helpers::build_dependency_node(
+                name, version, true, "composer",
+            ));
             entities.push(helpers::build_depends_on_edge(&file_slug, name));
         }
     }

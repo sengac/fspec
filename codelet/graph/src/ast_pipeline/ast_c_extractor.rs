@@ -11,10 +11,10 @@ use std::collections::{HashMap, HashSet};
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for C function declarations.
@@ -24,14 +24,10 @@ const C_FUNCTION_PATTERNS: &[&str] = &[
 ];
 
 /// ast-grep patterns for C struct declarations.
-const C_STRUCT_PATTERNS: &[&str] = &[
-    "struct $NAME { $$$FIELDS }",
-];
+const C_STRUCT_PATTERNS: &[&str] = &["struct $NAME { $$$FIELDS }"];
 
 /// ast-grep patterns for C enum declarations.
-const C_ENUM_PATTERNS: &[&str] = &[
-    "enum $NAME { $$$VARIANTS }",
-];
+const C_ENUM_PATTERNS: &[&str] = &["enum $NAME { $$$VARIANTS }"];
 
 /// Extract entities from C source code.
 ///
@@ -47,7 +43,11 @@ pub fn extract_c(
 
     let line_count = source.lines().count() as i32;
     let is_test = rel_path.contains("test") || rel_path.contains("tests/");
-    let language = if rel_path.ends_with(".h") { "c-header" } else { "c" };
+    let language = if rel_path.ends_with(".h") {
+        "c-header"
+    } else {
+        "c"
+    };
 
     entities.push(helpers::build_file_node(
         rel_path, &file_slug, language, line_count, is_test,
@@ -62,10 +62,17 @@ pub fn extract_c(
     extract_types(&root, source, &file_slug, &mut entities);
 
     // Extract #include directives → Imports edges
-    let import_map = edge_helpers::extract_c_includes(source, &file_slug, known_files, &mut entities);
+    let import_map =
+        edge_helpers::extract_c_includes(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
-    extract_calls(&root, &file_slug, &function_names, &import_map, &mut entities);
+    extract_calls(
+        &root,
+        &file_slug,
+        &function_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract module-level variables
     variables::extract_variables(source, &file_slug, rel_path, "c", &mut entities);
@@ -91,7 +98,10 @@ fn extract_functions(
             }
 
             // Skip type keywords that look like functions
-            if matches!(name.as_str(), "if" | "for" | "while" | "switch" | "return" | "struct" | "enum" | "typedef") {
+            if matches!(
+                name.as_str(),
+                "if" | "for" | "while" | "switch" | "return" | "struct" | "enum" | "typedef"
+            ) {
                 continue;
             }
 
@@ -111,7 +121,7 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -121,9 +131,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -190,13 +198,22 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "c");
             entities.push(helpers::build_type_node(
-                file_slug, &name, "struct_kind", true,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "c", type_meta.truncated,
+                file_slug,
+                &name,
+                "struct_kind",
+                true,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "c",
+                type_meta.truncated,
             ));
             entities.push(helpers::build_contains_edge(
-                file_slug, &type_slug, "ContainsType",
+                file_slug,
+                &type_slug,
+                "ContainsType",
             ));
         }
     }
@@ -213,13 +230,22 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "c");
             entities.push(helpers::build_type_node(
-                file_slug, &name, "enum_kind", true,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "c", type_meta.truncated,
+                file_slug,
+                &name,
+                "enum_kind",
+                true,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "c",
+                type_meta.truncated,
             ));
             entities.push(helpers::build_contains_edge(
-                file_slug, &type_slug, "ContainsType",
+                file_slug,
+                &type_slug,
+                "ContainsType",
             ));
         }
     }
@@ -233,12 +259,23 @@ fn extract_types(
                 let type_slug = format!("{file_slug}::{name}");
                 let type_meta = metadata::extract_type_meta(trimmed, "c");
                 entities.push(helpers::build_type_node(
-                    file_slug, &name, "struct_kind", true,
-                    0, 0,
-                    &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                    "c", type_meta.truncated,
+                    file_slug,
+                    &name,
+                    "struct_kind",
+                    true,
+                    0,
+                    0,
+                    &type_meta.source,
+                    &type_meta.docstring,
+                    &type_meta.decorators,
+                    "c",
+                    type_meta.truncated,
                 ));
-                entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
+                entities.push(helpers::build_contains_edge(
+                    file_slug,
+                    &type_slug,
+                    "ContainsType",
+                ));
             }
         } else if trimmed.starts_with("enum ") && trimmed.contains('{') {
             let name = helpers::extract_name_after_keyword(trimmed, "enum ");
@@ -246,12 +283,23 @@ fn extract_types(
                 let type_slug = format!("{file_slug}::{name}");
                 let type_meta = metadata::extract_type_meta(trimmed, "c");
                 entities.push(helpers::build_type_node(
-                    file_slug, &name, "enum_kind", true,
-                    0, 0,
-                    &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                    "c", type_meta.truncated,
+                    file_slug,
+                    &name,
+                    "enum_kind",
+                    true,
+                    0,
+                    0,
+                    &type_meta.source,
+                    &type_meta.docstring,
+                    &type_meta.decorators,
+                    "c",
+                    type_meta.truncated,
                 ));
-                entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
+                entities.push(helpers::build_contains_edge(
+                    file_slug,
+                    &type_slug,
+                    "ContainsType",
+                ));
             }
         }
     }
@@ -266,19 +314,42 @@ fn extract_types(
         if name.is_empty() || !seen_names.insert(name.clone()) {
             continue;
         }
-        if matches!(name.as_str(), "struct" | "enum" | "int" | "void" | "char"
-            | "unsigned" | "signed" | "long" | "short" | "double" | "float") {
+        if matches!(
+            name.as_str(),
+            "struct"
+                | "enum"
+                | "int"
+                | "void"
+                | "char"
+                | "unsigned"
+                | "signed"
+                | "long"
+                | "short"
+                | "double"
+                | "float"
+        ) {
             continue;
         }
         let type_slug = format!("{file_slug}::{name}");
         let type_meta = metadata::extract_type_meta(trimmed, "c");
         entities.push(helpers::build_type_node(
-            file_slug, &name, "type_alias", true,
-            0, 0,
-            &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-            "c", type_meta.truncated,
+            file_slug,
+            &name,
+            "type_alias",
+            true,
+            0,
+            0,
+            &type_meta.source,
+            &type_meta.docstring,
+            &type_meta.decorators,
+            "c",
+            type_meta.truncated,
         ));
-        entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
+        entities.push(helpers::build_contains_edge(
+            file_slug,
+            &type_slug,
+            "ContainsType",
+        ));
     }
 }
 

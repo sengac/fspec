@@ -30,7 +30,9 @@ pub fn extract_java_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>
             // Lines like: implementation 'group:artifact:version'
             // or: testImplementation "group:artifact:version"
             if let Some((name, version, is_dev)) = parse_gradle_dependency(trimmed) {
-                entities.push(helpers::build_dependency_node(&name, &version, is_dev, "gradle"));
+                entities.push(helpers::build_dependency_node(
+                    &name, &version, is_dev, "gradle",
+                ));
                 entities.push(helpers::build_depends_on_edge(&file_slug, &name));
             }
         }
@@ -72,7 +74,10 @@ pub fn extract_java_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>
                         version.clone()
                     };
                     entities.push(helpers::build_dependency_node(
-                        &artifact_id, &ver, is_dev, "maven",
+                        &artifact_id,
+                        &ver,
+                        is_dev,
+                        "maven",
                     ));
                     entities.push(helpers::build_depends_on_edge(&file_slug, &artifact_id));
                 }
@@ -95,8 +100,7 @@ pub fn extract_java_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>
 
 /// Parse a Gradle dependency line.
 fn parse_gradle_dependency(line: &str) -> Option<(String, String, bool)> {
-    let is_dev = line.starts_with("testImplementation")
-        || line.starts_with("testCompile");
+    let is_dev = line.starts_with("testImplementation") || line.starts_with("testCompile");
     let is_dep = is_dev
         || line.starts_with("implementation")
         || line.starts_with("compile")

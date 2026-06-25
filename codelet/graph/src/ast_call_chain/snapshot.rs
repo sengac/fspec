@@ -28,8 +28,7 @@ impl GraphSnapshot {
         let mut file_paths = HashMap::new();
 
         // Load all files to build slug→path mapping
-        if let Ok(Value::Array(files)) =
-            db.query_with_source(AST_QUERIES, "all_files", None).await
+        if let Ok(Value::Array(files)) = db.query_with_source(AST_QUERIES, "all_files", None).await
         {
             for file in files {
                 if let (Some(slug), Some(path)) = (
@@ -42,8 +41,9 @@ impl GraphSnapshot {
         }
 
         // Load all functions
-        if let Ok(Value::Array(fns)) =
-            db.query_with_source(AST_QUERIES, "all_functions", None).await
+        if let Ok(Value::Array(fns)) = db
+            .query_with_source(AST_QUERIES, "all_functions", None)
+            .await
         {
             for func in fns {
                 if let Some(slug) = func.get("slug").and_then(|v| v.as_str()) {
@@ -53,7 +53,11 @@ impl GraphSnapshot {
             }
         }
 
-        Self { known_slugs, func_metadata, file_paths }
+        Self {
+            known_slugs,
+            func_metadata,
+            file_paths,
+        }
     }
 
     /// Check if a function slug exists in the graph (O(1) lookup).

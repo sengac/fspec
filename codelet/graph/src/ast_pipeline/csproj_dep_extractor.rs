@@ -10,8 +10,8 @@ use crate::graph_entities::GraphEntity;
 /// Extract C# dependencies from .csproj files.
 pub fn extract_csproj_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
     // Find .csproj files in the root
-    let entries = std::fs::read_dir(project_root)
-        .map_err(|e| format!("Failed to read project root: {e}"))?;
+    let entries =
+        std::fs::read_dir(project_root).map_err(|e| format!("Failed to read project root: {e}"))?;
 
     let mut entities = Vec::new();
 
@@ -44,7 +44,9 @@ pub fn extract_csproj_dependencies(project_root: &Path) -> Result<Vec<GraphEntit
             let trimmed = line.trim();
             if trimmed.contains("PackageReference") && trimmed.contains("Include=") {
                 if let Some((name, version)) = parse_package_reference(trimmed) {
-                    entities.push(helpers::build_dependency_node(&name, &version, false, "nuget"));
+                    entities.push(helpers::build_dependency_node(
+                        &name, &version, false, "nuget",
+                    ));
                     entities.push(helpers::build_depends_on_edge(&file_slug, &name));
                 }
             }

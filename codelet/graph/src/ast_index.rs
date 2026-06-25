@@ -176,13 +176,11 @@ async fn dispatch_full(
             tracing::info!(loaded, "AST index complete — entities loaded into graph");
             build_index_result(db, loaded, 0, false)
         }
-        Err(e) => {
-            serde_json::json!({
-                "action": "ast_index",
-                "error": format!("Failed to load entities into graph: {e}"),
-            })
-            .to_string()
-        }
+        Err(e) => serde_json::json!({
+            "action": "ast_index",
+            "error": format!("Failed to load entities into graph: {e}"),
+        })
+        .to_string(),
     }
 }
 
@@ -217,8 +215,7 @@ async fn dispatch_incremental(
     };
 
     // Phase 3: Partition files
-    let (changed, new_files, deleted) =
-        partition_changed_files(&current_mtimes, &stored_mtimes);
+    let (changed, new_files, deleted) = partition_changed_files(&current_mtimes, &stored_mtimes);
 
     let total_needing_extraction = changed.len() + new_files.len();
 
@@ -272,7 +269,11 @@ async fn dispatch_incremental(
         .chain(new_files.iter())
         .filter_map(|rel| {
             let full = project_root.join(rel);
-            if full.exists() { Some(full) } else { None }
+            if full.exists() {
+                Some(full)
+            } else {
+                None
+            }
         })
         .collect();
 
@@ -315,21 +316,15 @@ async fn dispatch_incremental(
 
     match db.load_entities_overwrite(&combined).await {
         Ok(loaded) => {
-            tracing::info!(
-                loaded,
-                re_extracted,
-                "Incremental AST index complete"
-            );
+            tracing::info!(loaded, re_extracted, "Incremental AST index complete");
             build_index_result(db, loaded, re_extracted, true)
         }
-        Err(e) => {
-            serde_json::json!({
-                "action": "ast_index",
-                "incremental": true,
-                "error": format!("Failed to load entities into graph: {e}"),
-            })
-            .to_string()
-        }
+        Err(e) => serde_json::json!({
+            "action": "ast_index",
+            "incremental": true,
+            "error": format!("Failed to load entities into graph: {e}"),
+        })
+        .to_string(),
     }
 }
 
@@ -348,10 +343,7 @@ fn build_index_result(
                 serde_json::Value::Number(loaded.into()),
             );
             if incremental {
-                obj.insert(
-                    "incremental".to_string(),
-                    serde_json::Value::Bool(true),
-                );
+                obj.insert("incremental".to_string(), serde_json::Value::Bool(true));
                 obj.insert(
                     "files_re_extracted".to_string(),
                     serde_json::Value::Number(re_extracted.into()),
@@ -369,18 +361,54 @@ fn extract_all_dependencies(
     project_root: &std::path::Path,
     all_entities: &mut Vec<super::graph_entities::GraphEntity>,
 ) {
-    let extractors: &[(&str, fn(&std::path::Path) -> Result<Vec<super::graph_entities::GraphEntity>, String>)] = &[
-        ("Cargo", super::ast_pipeline::cargo_dep_extractor::extract_cargo_dependencies),
-        ("NPM", super::ast_pipeline::npm_dep_extractor::extract_npm_dependencies),
-        ("Python", super::ast_pipeline::pip_dep_extractor::extract_python_dependencies),
-        ("Go", super::ast_pipeline::gomod_dep_extractor::extract_go_dependencies),
-        ("Java", super::ast_pipeline::java_dep_extractor::extract_java_dependencies),
-        ("Composer", super::ast_pipeline::composer_dep_extractor::extract_composer_dependencies),
-        ("Gemfile", super::ast_pipeline::gemfile_dep_extractor::extract_gemfile_dependencies),
-        ("C#", super::ast_pipeline::csproj_dep_extractor::extract_csproj_dependencies),
-        ("SBT", super::ast_pipeline::sbt_dep_extractor::extract_sbt_dependencies),
-        ("Swift", super::ast_pipeline::swift_dep_extractor::extract_swift_dependencies),
-        ("Pubspec", super::ast_pipeline::pubspec_dep_extractor::extract_pubspec_dependencies),
+    let extractors: &[(
+        &str,
+        fn(&std::path::Path) -> Result<Vec<super::graph_entities::GraphEntity>, String>,
+    )] = &[
+        (
+            "Cargo",
+            super::ast_pipeline::cargo_dep_extractor::extract_cargo_dependencies,
+        ),
+        (
+            "NPM",
+            super::ast_pipeline::npm_dep_extractor::extract_npm_dependencies,
+        ),
+        (
+            "Python",
+            super::ast_pipeline::pip_dep_extractor::extract_python_dependencies,
+        ),
+        (
+            "Go",
+            super::ast_pipeline::gomod_dep_extractor::extract_go_dependencies,
+        ),
+        (
+            "Java",
+            super::ast_pipeline::java_dep_extractor::extract_java_dependencies,
+        ),
+        (
+            "Composer",
+            super::ast_pipeline::composer_dep_extractor::extract_composer_dependencies,
+        ),
+        (
+            "Gemfile",
+            super::ast_pipeline::gemfile_dep_extractor::extract_gemfile_dependencies,
+        ),
+        (
+            "C#",
+            super::ast_pipeline::csproj_dep_extractor::extract_csproj_dependencies,
+        ),
+        (
+            "SBT",
+            super::ast_pipeline::sbt_dep_extractor::extract_sbt_dependencies,
+        ),
+        (
+            "Swift",
+            super::ast_pipeline::swift_dep_extractor::extract_swift_dependencies,
+        ),
+        (
+            "Pubspec",
+            super::ast_pipeline::pubspec_dep_extractor::extract_pubspec_dependencies,
+        ),
     ];
 
     for (name, extractor) in extractors {

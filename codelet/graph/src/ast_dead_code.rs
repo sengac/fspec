@@ -234,10 +234,7 @@ async fn is_flutter_project(db: &GraphDatabase) -> bool {
 /// Build a map of file_slug → isTest for filtering entities from test files.
 async fn build_file_test_index(db: &GraphDatabase) -> std::collections::HashMap<String, bool> {
     let mut index = std::collections::HashMap::new();
-    if let Ok(Value::Array(files)) = db
-        .query_with_source(AST_QUERIES, "all_files", None)
-        .await
-    {
+    if let Ok(Value::Array(files)) = db.query_with_source(AST_QUERIES, "all_files", None).await {
         for file in files {
             if let Some(slug) = file.get("slug").and_then(|v| v.as_str()) {
                 let is_test = file

@@ -14,8 +14,8 @@ pub fn extract_go_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, 
         return Ok(vec![]);
     }
 
-    let content = std::fs::read_to_string(&gomod_path)
-        .map_err(|e| format!("Failed to read go.mod: {e}"))?;
+    let content =
+        std::fs::read_to_string(&gomod_path).map_err(|e| format!("Failed to read go.mod: {e}"))?;
 
     let rel_path = "go.mod";
     let file_slug = helpers::slugify_path(rel_path);
@@ -60,12 +60,7 @@ pub fn extract_go_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, 
             if parts.len() >= 2 {
                 let name = parts[0];
                 let version = parts[1];
-                entities.push(helpers::build_dependency_node(
-                    name,
-                    version,
-                    false,
-                    "go",
-                ));
+                entities.push(helpers::build_dependency_node(name, version, false, "go"));
                 entities.push(helpers::build_depends_on_edge(&file_slug, name));
             }
         }

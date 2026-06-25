@@ -22,8 +22,9 @@ pub fn extract_cargo_dependencies(project_root: &Path) -> Result<Vec<GraphEntity
     let content = std::fs::read_to_string(&cargo_path)
         .map_err(|e| format!("Failed to read Cargo.toml: {e}"))?;
 
-    let parsed: toml::Value =
-        content.parse().map_err(|e| format!("Invalid Cargo.toml: {e}"))?;
+    let parsed: toml::Value = content
+        .parse()
+        .map_err(|e| format!("Invalid Cargo.toml: {e}"))?;
 
     let mut entities = Vec::new();
     let mut seen_deps = HashSet::new();

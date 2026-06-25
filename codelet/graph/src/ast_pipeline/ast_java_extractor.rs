@@ -14,10 +14,10 @@ use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for Java functions/methods.
@@ -44,9 +44,8 @@ pub fn extract_java(
     let mut entities = Vec::new();
 
     let line_count = source.lines().count() as i32;
-    let is_test = rel_path.contains("Test.java")
-        || rel_path.contains("test/")
-        || rel_path.contains("tests/");
+    let is_test =
+        rel_path.contains("Test.java") || rel_path.contains("test/") || rel_path.contains("tests/");
 
     entities.push(helpers::build_file_node(
         rel_path, &file_slug, "java", line_count, is_test,
@@ -64,11 +63,25 @@ pub fn extract_java(
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from method bodies
-    extract_calls(source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        lang,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract TypeRef edges from method signatures
     extract_type_refs(
-        source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities,
+        source,
+        &file_slug,
+        lang,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
     );
 
     // Extract class-level variables
@@ -116,7 +129,7 @@ fn extract_methods(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -126,9 +139,7 @@ fn extract_methods(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -178,10 +189,17 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "java");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "java", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "java",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -248,13 +266,7 @@ fn extract_imports(
             (target_slug.clone(), true, local_name.clone()),
         );
 
-        edge_helpers::build_import_edge(
-            file_slug,
-            import_path,
-            &resolved_path,
-            false,
-            entities,
-        );
+        edge_helpers::build_import_edge(file_slug, import_path, &resolved_path, false, entities);
     }
     import_map
 }
@@ -405,14 +417,49 @@ fn extract_type_refs(
 /// Filters out Java primitives and common standard library types.
 fn extract_java_type_annotations(signature: &str, out: &mut HashSet<String>) {
     let java_builtins: HashSet<&str> = [
-        "void", "int", "long", "short", "byte", "float", "double",
-        "boolean", "char", "String", "Object", "Integer", "Long",
-        "Short", "Byte", "Float", "Double", "Boolean", "Character",
-        "List", "Map", "Set", "Collection", "Optional", "Stream",
-        "Iterable", "Iterator", "Comparable", "Serializable",
-        "var", "final", "static", "public", "private", "protected",
-        "abstract", "synchronized", "volatile", "transient", "native",
-        "Override", "Test", "Deprecated",
+        "void",
+        "int",
+        "long",
+        "short",
+        "byte",
+        "float",
+        "double",
+        "boolean",
+        "char",
+        "String",
+        "Object",
+        "Integer",
+        "Long",
+        "Short",
+        "Byte",
+        "Float",
+        "Double",
+        "Boolean",
+        "Character",
+        "List",
+        "Map",
+        "Set",
+        "Collection",
+        "Optional",
+        "Stream",
+        "Iterable",
+        "Iterator",
+        "Comparable",
+        "Serializable",
+        "var",
+        "final",
+        "static",
+        "public",
+        "private",
+        "protected",
+        "abstract",
+        "synchronized",
+        "volatile",
+        "transient",
+        "native",
+        "Override",
+        "Test",
+        "Deprecated",
     ]
     .into_iter()
     .collect();

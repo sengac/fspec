@@ -32,35 +32,75 @@ struct NeighborQuery {
 /// we inject the edge type metadata on the Rust side.
 const NEIGHBOR_QUERIES: &[NeighborQuery] = &[
     // File neighbors
-    NeighborQuery { query_name: "file_functions", edge_type: "Contains" },
-    NeighborQuery { query_name: "file_types", edge_type: "ContainsType" },
-    NeighborQuery { query_name: "file_imports", edge_type: "Imports" },
-    NeighborQuery { query_name: "file_dependencies", edge_type: "DependsOn" },
-    NeighborQuery { query_name: "file_variables", edge_type: "ContainsVariable" },
+    NeighborQuery {
+        query_name: "file_functions",
+        edge_type: "Contains",
+    },
+    NeighborQuery {
+        query_name: "file_types",
+        edge_type: "ContainsType",
+    },
+    NeighborQuery {
+        query_name: "file_imports",
+        edge_type: "Imports",
+    },
+    NeighborQuery {
+        query_name: "file_dependencies",
+        edge_type: "DependsOn",
+    },
+    NeighborQuery {
+        query_name: "file_variables",
+        edge_type: "ContainsVariable",
+    },
     // Function neighbors
-    NeighborQuery { query_name: "function_calls", edge_type: "Calls" },
-    NeighborQuery { query_name: "function_callers", edge_type: "CalledBy" },
-    NeighborQuery { query_name: "function_type_refs", edge_type: "TypeRef" },
-    NeighborQuery { query_name: "function_container", edge_type: "ContainedBy" },
+    NeighborQuery {
+        query_name: "function_calls",
+        edge_type: "Calls",
+    },
+    NeighborQuery {
+        query_name: "function_callers",
+        edge_type: "CalledBy",
+    },
+    NeighborQuery {
+        query_name: "function_type_refs",
+        edge_type: "TypeRef",
+    },
+    NeighborQuery {
+        query_name: "function_container",
+        edge_type: "ContainedBy",
+    },
     // Type neighbors
-    NeighborQuery { query_name: "type_container", edge_type: "ContainedBy" },
-    NeighborQuery { query_name: "type_implements", edge_type: "Implements" },
-    NeighborQuery { query_name: "type_extends", edge_type: "Extends" },
-    NeighborQuery { query_name: "type_referencing_functions", edge_type: "ReferencedBy" },
+    NeighborQuery {
+        query_name: "type_container",
+        edge_type: "ContainedBy",
+    },
+    NeighborQuery {
+        query_name: "type_implements",
+        edge_type: "Implements",
+    },
+    NeighborQuery {
+        query_name: "type_extends",
+        edge_type: "Extends",
+    },
+    NeighborQuery {
+        query_name: "type_referencing_functions",
+        edge_type: "ReferencedBy",
+    },
     // Variable neighbors
-    NeighborQuery { query_name: "variable_container", edge_type: "ContainedBy" },
+    NeighborQuery {
+        query_name: "variable_container",
+        edge_type: "ContainedBy",
+    },
 ];
 
 /// Build a compiled glob matcher from an optional path pattern.
 /// Returns `None` if no pattern or if the pattern is invalid.
 pub(crate) fn build_glob_matcher(path_pattern: Option<&str>) -> Option<GlobMatcher> {
-    path_pattern.and_then(|pattern| {
-        match Glob::new(pattern) {
-            Ok(g) => Some(g.compile_matcher()),
-            Err(e) => {
-                warn!(pattern, error = %e, "Invalid glob pattern for path filter — ignoring");
-                None
-            }
+    path_pattern.and_then(|pattern| match Glob::new(pattern) {
+        Ok(g) => Some(g.compile_matcher()),
+        Err(e) => {
+            warn!(pattern, error = %e, "Invalid glob pattern for path filter — ignoring");
+            None
         }
     })
 }

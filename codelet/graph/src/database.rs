@@ -149,10 +149,7 @@ impl GraphDatabase {
     }
 
     /// Load entities using Overwrite mode — replaces ALL existing data.
-    pub async fn load_entities_overwrite(
-        &self,
-        entities: &[GraphEntity],
-    ) -> Result<usize, String> {
+    pub async fn load_entities_overwrite(&self, entities: &[GraphEntity]) -> Result<usize, String> {
         if entities.is_empty() {
             return Ok(0);
         }
@@ -172,11 +169,7 @@ impl GraphDatabase {
 
     /// Run a named query from the bundled query source.
     /// Requires `with_query_source()` to have been called.
-    pub async fn query(
-        &self,
-        query_name: &str,
-        params: Option<&Value>,
-    ) -> Result<Value, String> {
+    pub async fn query(&self, query_name: &str, params: Option<&Value>) -> Result<Value, String> {
         let source = self
             .query_source
             .as_deref()
@@ -246,16 +239,22 @@ impl GraphDatabase {
 
         let mut nodes = serde_json::Map::new();
         for name in catalog.node_types.keys() {
-            let c: usize = storage.node_segments.get(name.as_str())
-                .map(|s| s.batches.iter().map(|b| b.num_rows()).sum()).unwrap_or(0);
+            let c: usize = storage
+                .node_segments
+                .get(name.as_str())
+                .map(|s| s.batches.iter().map(|b| b.num_rows()).sum())
+                .unwrap_or(0);
             nodes.insert(name.clone(), Value::Number(c.into()));
         }
         stats.insert("nodes".to_string(), Value::Object(nodes));
 
         let mut edges = serde_json::Map::new();
         for name in catalog.edge_types.keys() {
-            let c: usize = storage.edge_segments.get(name.as_str())
-                .map(|s| s.batches.iter().map(|b| b.num_rows()).sum()).unwrap_or(0);
+            let c: usize = storage
+                .edge_segments
+                .get(name.as_str())
+                .map(|s| s.batches.iter().map(|b| b.num_rows()).sum())
+                .unwrap_or(0);
             edges.insert(name.clone(), Value::Number(c.into()));
         }
         stats.insert("edges".to_string(), Value::Object(edges));
@@ -276,7 +275,10 @@ impl GraphDatabase {
         }
         desc.push_str("\n=== Edge Types ===\n");
         for (name, et) in &catalog.edge_types {
-            desc.push_str(&format!("  {} ({} -> {})\n", name, et.from_type, et.to_type));
+            desc.push_str(&format!(
+                "  {} ({} -> {})\n",
+                name, et.from_type, et.to_type
+            ));
             for (pn, pt) in &et.properties {
                 desc.push_str(&format!("    - {}: {}\n", pn, pt.display_name()));
             }
@@ -289,11 +291,7 @@ impl std::fmt::Debug for GraphDatabase {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("GraphDatabase")
             .field("path", &self.path)
-            .field(
-                "has_query_source",
-                &self.query_source.is_some(),
-            )
+            .field("has_query_source", &self.query_source.is_some())
             .finish()
     }
 }
-

@@ -11,11 +11,11 @@ use std::collections::{HashMap, HashSet};
 
 use ast_grep_language::{LanguageExt, SupportLang};
 
-use super::edge_helpers;
 use super::complexity;
+use super::edge_helpers;
+use super::helpers;
 use super::metadata;
 use super::variables;
-use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Python function declarations.
@@ -25,10 +25,7 @@ const PYTHON_FUNCTION_PATTERNS: &[&str] = &[
 ];
 
 /// ast-grep patterns for Python class declarations.
-const PYTHON_CLASS_PATTERNS: &[&str] = &[
-    "class $NAME($$$BASES): $$$BODY",
-    "class $NAME: $$$BODY",
-];
+const PYTHON_CLASS_PATTERNS: &[&str] = &["class $NAME($$$BASES): $$$BODY", "class $NAME: $$$BODY"];
 
 /// Extract entities from Python source code.
 ///
@@ -66,10 +63,24 @@ pub fn extract_python(
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
-    extract_calls(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract TypeRef edges from function signatures (type annotations)
-    extract_type_refs(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+    extract_type_refs(
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract module-level variables
     variables::extract_variables(source, &file_slug, rel_path, "python", &mut entities);
@@ -111,7 +122,7 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -121,9 +132,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -155,10 +164,17 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "python");
             entities.push(helpers::build_type_node(
-                file_slug, &name, "class", is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "python", type_meta.truncated,
+                file_slug,
+                &name,
+                "class",
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "python",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -209,19 +225,15 @@ fn extract_imports(
                         continue;
                     }
 
-                    let (local_name, original_name) = if let Some((orig, alias)) =
-                        name_item.split_once(" as ")
-                    {
-                        (alias.trim().to_string(), orig.trim().to_string())
-                    } else {
-                        (name_item.to_string(), name_item.to_string())
-                    };
+                    let (local_name, original_name) =
+                        if let Some((orig, alias)) = name_item.split_once(" as ") {
+                            (alias.trim().to_string(), orig.trim().to_string())
+                        } else {
+                            (name_item.to_string(), name_item.to_string())
+                        };
 
                     let target_slug = helpers::slugify_path(&resolved_path);
-                    import_map.insert(
-                        local_name,
-                        (target_slug, true, original_name),
-                    );
+                    import_map.insert(local_name, (target_slug, true, original_name));
                 }
 
                 edge_helpers::build_import_edge(
@@ -242,13 +254,12 @@ fn extract_imports(
                     continue;
                 }
 
-                let (module_path, _local_name) = if let Some((mod_path, alias)) =
-                    module_item.split_once(" as ")
-                {
-                    (mod_path.trim(), alias.trim().to_string())
-                } else {
-                    (module_item, module_item.to_string())
-                };
+                let (module_path, _local_name) =
+                    if let Some((mod_path, alias)) = module_item.split_once(" as ") {
+                        (mod_path.trim(), alias.trim().to_string())
+                    } else {
+                        (module_item, module_item.to_string())
+                    };
 
                 if let Some(resolved_path) = resolve_python_module(module_path, known_files) {
                     edge_helpers::build_import_edge(
@@ -362,13 +373,43 @@ fn extract_type_refs(
     let root = lang.ast_grep(source);
 
     let python_builtins: HashSet<&str> = [
-        "str", "int", "float", "bool", "bytes", "None", "list", "dict",
-        "tuple", "set", "frozenset", "object", "type", "complex",
-        "range", "slice", "memoryview", "bytearray",
-        "List", "Dict", "Tuple", "Set", "FrozenSet", "Optional",
-        "Union", "Any", "Callable", "Iterator", "Generator",
-        "Sequence", "Mapping", "MutableMapping", "Iterable",
-        "Type", "ClassVar", "Final", "Literal",
+        "str",
+        "int",
+        "float",
+        "bool",
+        "bytes",
+        "None",
+        "list",
+        "dict",
+        "tuple",
+        "set",
+        "frozenset",
+        "object",
+        "type",
+        "complex",
+        "range",
+        "slice",
+        "memoryview",
+        "bytearray",
+        "List",
+        "Dict",
+        "Tuple",
+        "Set",
+        "FrozenSet",
+        "Optional",
+        "Union",
+        "Any",
+        "Callable",
+        "Iterator",
+        "Generator",
+        "Sequence",
+        "Mapping",
+        "MutableMapping",
+        "Iterable",
+        "Type",
+        "ClassVar",
+        "Final",
+        "Literal",
     ]
     .into_iter()
     .collect();

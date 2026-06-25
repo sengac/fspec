@@ -59,7 +59,7 @@ pub fn extract_gemfile_dependencies(project_root: &Path) -> Result<Vec<GraphEnti
 fn parse_gem_line(line: &str) -> Option<(String, String)> {
     // Find the gem name in quotes
     let name = extract_quoted_string(line)?;
-    
+
     // Try to find version after the name
     let after_name = &line[line.find(&name)? + name.len() + 1..];
     let version = extract_quoted_string(after_name).unwrap_or_else(|| "*".to_string());

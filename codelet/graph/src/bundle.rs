@@ -34,12 +34,11 @@ impl GraphDatabase {
         let jsonl = entities_to_jsonl(&entities);
 
         // Count nodes and edges
-        let (node_count, edge_count) = entities.iter().fold((0u64, 0u64), |(n, e), ent| {
-            match ent {
+        let (node_count, edge_count) =
+            entities.iter().fold((0u64, 0u64), |(n, e), ent| match ent {
                 GraphEntity::Node { .. } => (n + 1, e),
                 GraphEntity::Edge { .. } => (n, e + 1),
-            }
-        });
+            });
 
         // Build metadata
         let metadata = serde_json::json!({
@@ -53,8 +52,8 @@ impl GraphDatabase {
         let file = std::fs::File::create(output_path)
             .map_err(|e| format!("Failed to create bundle file: {e}"))?;
         let mut zip = ZipWriter::new(file);
-        let options = SimpleFileOptions::default()
-            .compression_method(zip::CompressionMethod::Deflated);
+        let options =
+            SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
 
         zip.start_file("entities.jsonl", options)
             .map_err(|e| format!("ZIP write error: {e}"))?;
@@ -98,10 +97,10 @@ impl GraphDatabase {
     ) -> Result<(), String> {
         use std::io::Read;
 
-        let file = std::fs::File::open(bundle_path)
-            .map_err(|e| format!("Failed to open bundle: {e}"))?;
-        let mut archive = zip::ZipArchive::new(file)
-            .map_err(|e| format!("Invalid ZIP archive: {e}"))?;
+        let file =
+            std::fs::File::open(bundle_path).map_err(|e| format!("Failed to open bundle: {e}"))?;
+        let mut archive =
+            zip::ZipArchive::new(file).map_err(|e| format!("Invalid ZIP archive: {e}"))?;
 
         // 1. Validate schema compatibility
         let mut schema_content = String::new();

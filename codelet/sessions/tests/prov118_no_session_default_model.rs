@@ -15,7 +15,7 @@
 
 #![allow(clippy::panic)]
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::SessionManager;
@@ -23,6 +23,13 @@ use codelet_sessions::SessionManager;
 /// Trimmed offline models.dev catalog (anthropic/openai/google). Seeded into
 /// the temp cache so registry validation is offline.
 const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
+
+/// Serializes the tests that swap the process-global data directory
+/// (`codelet_common::set_data_directory`) so a parallel test cannot observe a
+/// `SessionManager::new()` loading another test's persisted `default-model.json`
+/// under the swapped pointer. Mirrors PROV-119's `DATA_DIR_GUARD`; held across
+/// the synchronous test body (no `.await` occurs while the guard is live).
+static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
 
 /// Set dummy creds so `ProviderCredentials::detect()` passes offline.
 fn set_dummy_credentials() {
@@ -48,6 +55,9 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn set_default_model_via_handle_unblocks_create_session() -> Result<(), String> {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given no session exists and no default model is set
     let (_data_dir, manager) = manager_with_seeded_cache()?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
@@ -90,6 +100,9 @@ async fn set_default_model_via_handle_unblocks_create_session() -> Result<(), St
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn set_default_model_ignores_empty_string() -> Result<(), String> {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given a SessionManager with no default model set
     let (_data_dir, manager) = manager_with_seeded_cache()?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();

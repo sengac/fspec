@@ -14,10 +14,10 @@ use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for PHP functions/methods.
@@ -46,9 +46,8 @@ pub fn extract_php(
     let mut entities = Vec::new();
 
     let line_count = source.lines().count() as i32;
-    let is_test = rel_path.contains("Test.php")
-        || rel_path.contains("test/")
-        || rel_path.contains("tests/");
+    let is_test =
+        rel_path.contains("Test.php") || rel_path.contains("test/") || rel_path.contains("tests/");
 
     entities.push(helpers::build_file_node(
         rel_path, &file_slug, "php", line_count, is_test,
@@ -132,7 +131,7 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -142,9 +141,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -190,18 +187,25 @@ fn extract_types(
                 continue;
             }
 
-            let is_public = !matched_text.starts_with("private ")
-                && !matched_text.starts_with("internal ");
+            let is_public =
+                !matched_text.starts_with("private ") && !matched_text.starts_with("internal ");
 
             let type_slug = format!("{file_slug}::{name}");
             let type_start = node.start_pos();
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "php");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "php", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "php",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -244,7 +248,10 @@ fn extract_imports(
             .trim_end_matches(';')
             .trim();
 
-        if import_part.is_empty() || import_part.starts_with("function ") || import_part.starts_with("const ") {
+        if import_part.is_empty()
+            || import_part.starts_with("function ")
+            || import_part.starts_with("const ")
+        {
             continue;
         }
 
@@ -276,10 +283,7 @@ fn extract_imports(
                 .to_string();
 
             let target_slug = helpers::slugify_path(&resolved_path);
-            import_map.insert(
-                local_name,
-                (target_slug.clone(), true, original_name),
-            );
+            import_map.insert(local_name, (target_slug.clone(), true, original_name));
 
             edge_helpers::build_import_edge(
                 file_slug,
@@ -425,9 +429,9 @@ fn extract_type_refs(
 /// Filters out built-in PHP types (string, int, bool, array, etc.).
 fn extract_php_type_annotations(signature: &str, out: &mut HashSet<String>) {
     let php_builtins: HashSet<&str> = [
-        "string", "int", "integer", "float", "double", "bool", "boolean",
-        "void", "null", "array", "object", "mixed", "never", "self", "static",
-        "parent", "callable", "iterable", "resource", "true", "false",
+        "string", "int", "integer", "float", "double", "bool", "boolean", "void", "null", "array",
+        "object", "mixed", "never", "self", "static", "parent", "callable", "iterable", "resource",
+        "true", "false",
     ]
     .into_iter()
     .collect();

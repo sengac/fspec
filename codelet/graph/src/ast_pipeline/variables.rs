@@ -40,10 +40,8 @@ const TS_VAR_PATTERNS: &[(&str, bool)] = &[
     ("var $NAME = $VALUE", false),
 ];
 
-const PY_VAR_PATTERNS: &[(&str, bool)] = &[
-    ("$NAME = $VALUE", false),
-    ("$NAME: $TYPE = $VALUE", false),
-];
+const PY_VAR_PATTERNS: &[(&str, bool)] =
+    &[("$NAME = $VALUE", false), ("$NAME: $TYPE = $VALUE", false)];
 
 const RUST_VAR_PATTERNS: &[(&str, bool)] = &[
     ("const $NAME: $TYPE = $VALUE;", true),
@@ -92,10 +90,8 @@ const PHP_VAR_PATTERNS: &[(&str, bool)] = &[
     ("public const $NAME = $VALUE;", true),
 ];
 
-const SCALA_VAR_PATTERNS: &[(&str, bool)] = &[
-    ("val $NAME = $VALUE", true),
-    ("var $NAME = $VALUE", false),
-];
+const SCALA_VAR_PATTERNS: &[(&str, bool)] =
+    &[("val $NAME = $VALUE", true), ("var $NAME = $VALUE", false)];
 
 const C_VAR_PATTERNS: &[(&str, bool)] = &[
     ("const $TYPE $NAME = $VALUE;", true),
@@ -108,9 +104,7 @@ const CPP_VAR_PATTERNS: &[(&str, bool)] = &[
     ("static const $TYPE $NAME = $VALUE;", true),
 ];
 
-const RUBY_VAR_PATTERNS: &[(&str, bool)] = &[
-    ("$NAME = $VALUE", false),
-];
+const RUBY_VAR_PATTERNS: &[(&str, bool)] = &[("$NAME = $VALUE", false)];
 
 // ── Function Patterns (for scope filtering) ─────────────────────
 
@@ -119,9 +113,7 @@ const TS_FN_PATTERNS: &[&str] = &[
     "function $NAME($$$ARGS): $RET { $$$BODY }",
 ];
 
-const PY_FN_PATTERNS: &[&str] = &[
-    "def $NAME($$$ARGS): $$$BODY",
-];
+const PY_FN_PATTERNS: &[&str] = &["def $NAME($$$ARGS): $$$BODY"];
 
 const RUST_FN_PATTERNS: &[&str] = &[
     "fn $NAME($$$ARGS) { $$$BODY }",
@@ -133,13 +125,9 @@ const GO_FN_PATTERNS: &[&str] = &[
     "func $NAME($$$ARGS) $RET { $$$BODY }",
 ];
 
-const JAVA_FN_PATTERNS: &[&str] = &[
-    "$RET $NAME($$$ARGS) { $$$BODY }",
-];
+const JAVA_FN_PATTERNS: &[&str] = &["$RET $NAME($$$ARGS) { $$$BODY }"];
 
-const CSHARP_FN_PATTERNS: &[&str] = &[
-    "$RET $NAME($$$ARGS) { $$$BODY }",
-];
+const CSHARP_FN_PATTERNS: &[&str] = &["$RET $NAME($$$ARGS) { $$$BODY }"];
 
 const KOTLIN_FN_PATTERNS: &[&str] = &[
     "fun $NAME($$$ARGS) { $$$BODY }",
@@ -151,22 +139,16 @@ const SWIFT_FN_PATTERNS: &[&str] = &[
     "func $NAME($$$ARGS) -> $RET { $$$BODY }",
 ];
 
-const PHP_FN_PATTERNS: &[&str] = &[
-    "function $NAME($$$ARGS) { $$$BODY }",
-];
+const PHP_FN_PATTERNS: &[&str] = &["function $NAME($$$ARGS) { $$$BODY }"];
 
 const SCALA_FN_PATTERNS: &[&str] = &[
     "def $NAME($$$ARGS) = $BODY",
     "def $NAME($$$ARGS): $RET = $BODY",
 ];
 
-const C_FN_PATTERNS: &[&str] = &[
-    "$RET $NAME($$$ARGS) { $$$BODY }",
-];
+const C_FN_PATTERNS: &[&str] = &["$RET $NAME($$$ARGS) { $$$BODY }"];
 
-const RUBY_FN_PATTERNS: &[&str] = &[
-    "def $NAME($$$ARGS) $$$BODY end",
-];
+const RUBY_FN_PATTERNS: &[&str] = &["def $NAME($$$ARGS) $$$BODY end"];
 
 // ── Class Patterns (for class scope detection) ──────────────────
 
@@ -290,7 +272,9 @@ struct ScopeRange {
 /// Check if a name is ALL_CAPS (Python/Ruby/Go convention for constants).
 fn is_all_caps(name: &str) -> bool {
     !name.is_empty()
-        && name.chars().all(|c| c.is_ascii_uppercase() || c == '_' || c.is_ascii_digit())
+        && name
+            .chars()
+            .all(|c| c.is_ascii_uppercase() || c == '_' || c.is_ascii_digit())
         && name.chars().any(|c| c.is_ascii_uppercase())
 }
 
@@ -322,7 +306,11 @@ fn find_function_ranges(
                 .get_match("NAME")
                 .map(|n| n.text().to_string())
                 .unwrap_or_default();
-            ranges.push(ScopeRange { name, start: start_line, end: end_line });
+            ranges.push(ScopeRange {
+                name,
+                start: start_line,
+                end: end_line,
+            });
         }
     }
     ranges
@@ -343,7 +331,11 @@ fn find_class_ranges(
                 .get_match("NAME")
                 .map(|n| n.text().to_string())
                 .unwrap_or_default();
-            ranges.push(ScopeRange { name, start: start_line, end: end_line });
+            ranges.push(ScopeRange {
+                name,
+                start: start_line,
+                end: end_line,
+            });
         }
     }
     ranges
@@ -409,12 +401,14 @@ pub fn extract_variables(
             }
 
             // Determine scope
-            let (scope, scope_name) =
-                if let Some(cr) = class_ranges.iter().find(|r| line >= r.start && line <= r.end) {
-                    ("class", cr.name.as_str())
-                } else {
-                    ("module", "")
-                };
+            let (scope, scope_name) = if let Some(cr) = class_ranges
+                .iter()
+                .find(|r| line >= r.start && line <= r.end)
+            {
+                ("class", cr.name.as_str())
+            } else {
+                ("module", "")
+            };
 
             let matched_text = node.text().to_string();
             let value = extract_value(&matched_text);
@@ -422,7 +416,15 @@ pub fn extract_variables(
                 pattern_is_const || (config.all_caps_is_constant && is_all_caps(&name));
 
             let var_node = helpers::build_variable_node(
-                file_slug, &name, rel_path, line, &value, scope, scope_name, is_constant, language,
+                file_slug,
+                &name,
+                rel_path,
+                line,
+                &value,
+                scope,
+                scope_name,
+                is_constant,
+                language,
             );
             let var_slug = match &var_node {
                 GraphEntity::Node { slug, .. } => slug.clone(),

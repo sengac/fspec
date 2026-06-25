@@ -11,11 +11,11 @@ use std::collections::{HashMap, HashSet};
 
 use ast_grep_language::{LanguageExt, SupportLang};
 
-use super::edge_helpers;
 use super::complexity;
+use super::edge_helpers;
+use super::helpers;
 use super::metadata;
 use super::variables;
-use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Swift function declarations.
@@ -36,15 +36,18 @@ const SWIFT_TYPE_PATTERNS: &[(&str, &str)] = &[
 ///
 /// Extracts File, Function, and Type nodes, plus Calls edges.
 /// Swift uses module-level imports so Imports edges are not extracted.
-pub fn extract_swift(source: &str, rel_path: &str, _known_files: &HashSet<String>) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_swift(
+    source: &str,
+    rel_path: &str,
+    _known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::Swift;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
 
     let line_count = source.lines().count() as i32;
-    let is_test = rel_path.contains("Test")
-        || rel_path.contains("test")
-        || rel_path.contains("Tests/");
+    let is_test =
+        rel_path.contains("Test") || rel_path.contains("test") || rel_path.contains("Tests/");
 
     entities.push(helpers::build_file_node(
         rel_path, &file_slug, "swift", line_count, is_test,
@@ -62,7 +65,13 @@ pub fn extract_swift(source: &str, rel_path: &str, _known_files: &HashSet<String
     let import_map: HashMap<String, (String, bool, String)> = HashMap::new();
 
     // Extract Calls edges from function bodies
-    extract_calls(source, &file_slug, &function_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        &function_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract top-level and class-level variables
     variables::extract_variables(source, &file_slug, rel_path, "swift", &mut entities);
@@ -91,9 +100,9 @@ fn extract_functions(
             let end_pos = node.end_pos();
             let is_public = matched_text.starts_with("public ")
                 || matched_text.starts_with("open ")
-                || node
-                    .parent()
-                    .is_some_and(|p| p.text().starts_with("public ") || p.text().starts_with("open "));
+                || node.parent().is_some_and(|p| {
+                    p.text().starts_with("public ") || p.text().starts_with("open ")
+                });
             let is_async = matched_text.contains(" async ");
             let param_count = helpers::count_params(&matched_text);
 
@@ -108,7 +117,7 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -118,9 +127,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -150,18 +157,25 @@ fn extract_types(
                 continue;
             }
 
-            let is_public = matched_text.starts_with("public ")
-                || matched_text.starts_with("open ");
+            let is_public =
+                matched_text.starts_with("public ") || matched_text.starts_with("open ");
 
             let type_slug = format!("{file_slug}::{name}");
             let type_start = node.start_pos();
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "swift");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "swift", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "swift",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(

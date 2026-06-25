@@ -224,6 +224,10 @@ impl SessionManager {
     /// (`<data_dir>/default-model.json`) so it survives a process restart. The
     /// write is best-effort: a failure is logged and never propagates, so
     /// session creation is never blocked by a persistence error.
+    /// PROV-122: additionally persist the canonical `tui.lastUsedModel` in
+    /// `fspec-config.json` alongside the legacy store (kept for back-compat) so
+    /// the no-session selection path produces the key PROV-120's read path
+    /// prefers. Both writes are best-effort and non-fatal.
     pub fn set_default_model(&self, model: &str) {
         if !model.is_empty() {
             *self
@@ -236,6 +240,15 @@ impl SessionManager {
                     error = %e,
                     model,
                     "set_default_model: failed to persist default model (non-fatal)"
+                );
+            }
+            // PROV-122: also write the canonical fspec-config.json
+            // tui.lastUsedModel; best-effort and non-fatal.
+            if let Err(e) = crate::last_used_model_persistence::save_persisted_model_string(model) {
+                tracing::warn!(
+                    error = %e,
+                    model,
+                    "set_default_model: failed to persist lastUsedModel (non-fatal)"
                 );
             }
         }
@@ -734,6 +747,25 @@ impl SessionManager {
                 "PROV-007: Profile model detected, skipping registry validation for {}",
                 model
             );
+            // PROV-121: bridge the profile's stored baseUrl/apiKey into the
+            // OPENAI_* env BEFORE constructing the provider manager, via the
+            // SAME shared helper the resolver path uses so the two cannot
+            // drift. `colon_idx`/`slash_idx` re-parse the profile name segment
+            // (between ':' and '/').
+            if let (Some(colon_idx), Some(slash_idx)) = (model.find(':'), model.find('/')) {
+                let profile_name = &model[colon_idx + 1..slash_idx];
+                if let Err(e) = crate::model_resolution::apply_profile_env_vars(
+                    registry_provider,
+                    profile_name,
+                    model_part,
+                ) {
+                    tracing::warn!(
+                        "PROV-121: apply_profile_env_vars failed for profile '{}': {}",
+                        profile_name,
+                        e
+                    );
+                }
+            }
             codelet_providers::ProviderManager::with_provider_and_model(
                 registry_provider,
                 Some(model_part),

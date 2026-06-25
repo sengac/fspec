@@ -10,9 +10,9 @@ use ast_grep_language::{LanguageExt, SupportLang};
 use serde_json::{Map, Value};
 
 use super::complexity;
+use super::helpers;
 use super::metadata;
 use super::variables;
-use super::helpers;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for TypeScript function declarations.
@@ -58,9 +58,8 @@ pub fn extract_typescript(
 
     // Create File node
     let line_count = source.lines().count() as i32;
-    let is_test = rel_path.contains("test")
-        || rel_path.contains("spec")
-        || rel_path.contains("__tests__");
+    let is_test =
+        rel_path.contains("test") || rel_path.contains("spec") || rel_path.contains("__tests__");
     let language = if rel_path.ends_with(".tsx") || rel_path.ends_with(".jsx") {
         "tsx"
     } else {
@@ -83,10 +82,23 @@ pub fn extract_typescript(
     let import_map = extract_imports(&root, &file_slug, rel_path, known_files, &mut entities);
 
     // Extract Calls edges by scanning function bodies for call expressions
-    extract_calls(&root, &file_slug, &function_names, &import_map, &mut entities);
+    extract_calls(
+        &root,
+        &file_slug,
+        &function_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract TypeRef edges by scanning function signatures for type annotations
-    extract_type_refs(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+    extract_type_refs(
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract module-level and class-level variables
     variables::extract_variables(source, &file_slug, rel_path, language, &mut entities);
@@ -141,9 +153,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -177,10 +187,17 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "typescript");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "typescript", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "typescript",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -396,8 +413,15 @@ fn extract_call_names_from_body(body: &str, out: &mut HashSet<String>) {
                 // Not a keyword
                 let not_keyword = !matches!(
                     name,
-                    "if" | "for" | "while" | "switch" | "catch" | "return"
-                        | "typeof" | "instanceof" | "await" | "function"
+                    "if" | "for"
+                        | "while"
+                        | "switch"
+                        | "catch"
+                        | "return"
+                        | "typeof"
+                        | "instanceof"
+                        | "await"
+                        | "function"
                 );
 
                 if not_method && not_constructor && not_keyword {
@@ -490,8 +514,18 @@ fn extract_type_refs(
 /// Excludes primitive types (string, number, boolean, void, any, etc.).
 fn extract_type_names_from_signature(signature: &str, out: &mut HashSet<String>) {
     let primitives: HashSet<&str> = [
-        "string", "number", "boolean", "void", "any", "never", "null",
-        "undefined", "unknown", "object", "bigint", "symbol",
+        "string",
+        "number",
+        "boolean",
+        "void",
+        "any",
+        "never",
+        "null",
+        "undefined",
+        "unknown",
+        "object",
+        "bigint",
+        "symbol",
     ]
     .into_iter()
     .collect();
@@ -711,7 +745,10 @@ function getSuggestion(msg) {
         println!("Total entities: {}", entities.len());
         println!("Calls edges: {}", calls.len());
         for c in &calls {
-            if let GraphEntity::Edge { from_slug, to_slug, .. } = c {
+            if let GraphEntity::Edge {
+                from_slug, to_slug, ..
+            } = c
+            {
                 println!("  {} -> {}", from_slug, to_slug);
             }
         }
@@ -751,9 +788,7 @@ async function helper() {
         let entities = extract_typescript(source, "test/async.ts", &HashSet::new()).unwrap();
         let functions: Vec<_> = entities
             .iter()
-            .filter(|e| {
-                matches!(e, GraphEntity::Node { node_type, .. } if node_type == "Function")
-            })
+            .filter(|e| matches!(e, GraphEntity::Node { node_type, .. } if node_type == "Function"))
             .collect();
         let calls: Vec<_> = entities
             .iter()
@@ -767,7 +802,10 @@ async function helper() {
             }
         }
         for c in &calls {
-            if let GraphEntity::Edge { from_slug, to_slug, .. } = c {
+            if let GraphEntity::Edge {
+                from_slug, to_slug, ..
+            } = c
+            {
                 println!("  Call: {} -> {}", from_slug, to_slug);
             }
         }
@@ -782,28 +820,33 @@ async function helper() {
     fn test_extract_imported_names_with_aliases() {
         // Without alias
         let names = extract_imported_names("import { foo, bar } from './mod'");
-        assert_eq!(names, vec![
-            ("foo".to_string(), "foo".to_string()),
-            ("bar".to_string(), "bar".to_string()),
-        ]);
+        assert_eq!(
+            names,
+            vec![
+                ("foo".to_string(), "foo".to_string()),
+                ("bar".to_string(), "bar".to_string()),
+            ]
+        );
 
         // With alias — local name "util", original name "createCheckpoint"
         let names = extract_imported_names(
-            "import { createCheckpoint as util } from '../utils/git-checkpoint'"
+            "import { createCheckpoint as util } from '../utils/git-checkpoint'",
         );
-        assert_eq!(names, vec![
-            ("util".to_string(), "createCheckpoint".to_string()),
-        ]);
+        assert_eq!(
+            names,
+            vec![("util".to_string(), "createCheckpoint".to_string()),]
+        );
 
         // Mixed
-        let names = extract_imported_names(
-            "import { alpha, beta as b, gamma } from './lib'"
+        let names = extract_imported_names("import { alpha, beta as b, gamma } from './lib'");
+        assert_eq!(
+            names,
+            vec![
+                ("alpha".to_string(), "alpha".to_string()),
+                ("b".to_string(), "beta".to_string()),
+                ("gamma".to_string(), "gamma".to_string()),
+            ]
         );
-        assert_eq!(names, vec![
-            ("alpha".to_string(), "alpha".to_string()),
-            ("b".to_string(), "beta".to_string()),
-            ("gamma".to_string(), "gamma".to_string()),
-        ]);
     }
 
     #[test]
@@ -816,11 +859,18 @@ export function runCheckpoint() {
     return result;
 }
 "#;
-        let entities = extract_typescript(source, "src/commands/checkpoint.ts", &HashSet::new()).unwrap();
+        let entities =
+            extract_typescript(source, "src/commands/checkpoint.ts", &HashSet::new()).unwrap();
         let calls: Vec<_> = entities
             .iter()
             .filter_map(|e| {
-                if let GraphEntity::Edge { edge_type, from_slug, to_slug, .. } = e {
+                if let GraphEntity::Edge {
+                    edge_type,
+                    from_slug,
+                    to_slug,
+                    ..
+                } = e
+                {
                     if edge_type == "Calls" {
                         return Some((from_slug.as_str(), to_slug.as_str()));
                     }
@@ -831,7 +881,8 @@ export function runCheckpoint() {
         println!("Calls edges: {:?}", calls);
         // Should resolve to the original name "createCheckpoint", not the alias
         assert!(
-            calls.iter().any(|(_, to)| to.contains("::createCheckpoint") && !to.contains("::createCheckpointUtil")),
+            calls.iter().any(|(_, to)| to.contains("::createCheckpoint")
+                && !to.contains("::createCheckpointUtil")),
             "Cross-file call should use original export name, not alias. Got: {:?}",
             calls
         );
@@ -842,7 +893,10 @@ export function runCheckpoint() {
         // Without known_files, barrel import resolves to foo.ts (legacy)
         let empty = HashSet::new();
         let resolved = resolve_import_path("src/commands/program.ts", "../types", &empty);
-        assert_eq!(resolved, "src/types.ts", "Without known_files, should resolve to .ts");
+        assert_eq!(
+            resolved, "src/types.ts",
+            "Without known_files, should resolve to .ts"
+        );
 
         // With known_files containing the index.ts barrel file
         let mut known = HashSet::new();
@@ -903,7 +957,10 @@ export function listUnits(): void {
         let import_edges: Vec<_> = entities
             .iter()
             .filter_map(|e| {
-                if let GraphEntity::Edge { edge_type, to_slug, .. } = e {
+                if let GraphEntity::Edge {
+                    edge_type, to_slug, ..
+                } = e
+                {
                     if edge_type == "Imports" {
                         return Some(to_slug.as_str());
                     }
@@ -922,7 +979,12 @@ export function listUnits(): void {
         let target_file: Vec<_> = entities
             .iter()
             .filter_map(|e| {
-                if let GraphEntity::Node { node_type, properties, .. } = e {
+                if let GraphEntity::Node {
+                    node_type,
+                    properties,
+                    ..
+                } = e
+                {
                     if node_type == "File" {
                         let path = properties.get("path").and_then(|v| v.as_str());
                         if path == Some("src/types/index.ts") {
@@ -934,7 +996,8 @@ export function listUnits(): void {
             })
             .collect();
         assert_eq!(
-            target_file.len(), 1,
+            target_file.len(),
+            1,
             "Should create stub File node with correct barrel path"
         );
     }

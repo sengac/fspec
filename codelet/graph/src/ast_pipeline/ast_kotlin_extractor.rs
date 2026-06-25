@@ -14,10 +14,10 @@ use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for Kotlin type declarations.
@@ -29,31 +29,64 @@ const KOTLIN_TYPE_KINDS: &[(&str, &str)] = &[
 
 /// Kotlin standard library / JDK package prefixes that should NOT produce Imports edges.
 const KOTLIN_EXTERNAL_PREFIXES: &[&str] = &[
-    "java.", "javax.", "kotlin.", "android.", "org.junit", "org.jetbrains",
-    "kotlinx.", "io.ktor",
+    "java.",
+    "javax.",
+    "kotlin.",
+    "android.",
+    "org.junit",
+    "org.jetbrains",
+    "kotlinx.",
+    "io.ktor",
 ];
 
 /// Kotlin built-in types to filter from TypeRef edges.
 const KOTLIN_BUILTIN_TYPES: &[&str] = &[
-    "Int", "Long", "Short", "Byte", "Float", "Double", "Boolean", "Char",
-    "String", "Unit", "Any", "Nothing", "List", "Map", "Set", "MutableList",
-    "MutableMap", "MutableSet", "Array", "Pair", "Triple", "Sequence",
-    "Iterable", "Collection", "Comparable", "Throwable", "Exception",
-    "Void", "Object",
+    "Int",
+    "Long",
+    "Short",
+    "Byte",
+    "Float",
+    "Double",
+    "Boolean",
+    "Char",
+    "String",
+    "Unit",
+    "Any",
+    "Nothing",
+    "List",
+    "Map",
+    "Set",
+    "MutableList",
+    "MutableMap",
+    "MutableSet",
+    "Array",
+    "Pair",
+    "Triple",
+    "Sequence",
+    "Iterable",
+    "Collection",
+    "Comparable",
+    "Throwable",
+    "Exception",
+    "Void",
+    "Object",
 ];
 
 /// Extract entities from Kotlin source code.
 ///
 /// Extracts File, Function, and Type nodes, plus Imports, Calls, and TypeRef edges.
-pub fn extract_kotlin(source: &str, rel_path: &str, known_files: &HashSet<String>) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_kotlin(
+    source: &str,
+    rel_path: &str,
+    known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::Kotlin;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
 
     let line_count = source.lines().count() as i32;
-    let is_test = rel_path.contains("Test.kt")
-        || rel_path.contains("test/")
-        || rel_path.contains("tests/");
+    let is_test =
+        rel_path.contains("Test.kt") || rel_path.contains("test/") || rel_path.contains("tests/");
 
     entities.push(helpers::build_file_node(
         rel_path, &file_slug, "kotlin", line_count, is_test,
@@ -71,11 +104,25 @@ pub fn extract_kotlin(source: &str, rel_path: &str, known_files: &HashSet<String
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
-    extract_calls(source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        lang,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract TypeRef edges from function signatures
     extract_type_refs(
-        source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities,
+        source,
+        &file_slug,
+        lang,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
     );
 
     // Extract top-level and class-level variables
@@ -109,13 +156,13 @@ fn extract_functions(
         let start_pos = node.start_pos();
         let end_pos = node.end_pos();
         let is_async = matched_text.contains("suspend fun ");
-        let is_public = !matched_text.contains("private fun ")
-            && !matched_text.contains("internal fun ");
+        let is_public =
+            !matched_text.contains("private fun ") && !matched_text.contains("internal fun ");
         let param_count = helpers::count_params(&matched_text);
 
         let fn_slug = format!("{file_slug}::{name}");
         let cc = complexity::calculate(&matched_text, "kotlin");
-            let meta = metadata::extract_function_meta(&matched_text, "kotlin");
+        let meta = metadata::extract_function_meta(&matched_text, "kotlin");
         entities.push(helpers::build_function_node(
             file_slug,
             &name,
@@ -124,19 +171,17 @@ fn extract_functions(
             param_count,
             start_pos.line() as i32 + 1,
             end_pos.line() as i32 + 1,
-        cc,
+            cc,
             &meta.parameters,
             &meta.source,
             &meta.docstring,
             &meta.decorators,
             "kotlin",
             meta.truncated,
-            ));
+        ));
 
         entities.push(helpers::build_contains_edge(
-            file_slug,
-            &fn_slug,
-            "Contains",
+            file_slug, &fn_slug, "Contains",
         ));
     }
     seen_names
@@ -173,18 +218,25 @@ fn extract_types(
                 continue;
             }
 
-            let is_public = !matched_text.contains("private ")
-                && !matched_text.contains("internal ");
+            let is_public =
+                !matched_text.contains("private ") && !matched_text.contains("internal ");
 
             let type_slug = format!("{file_slug}::{name}");
             let type_start = node.start_pos();
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "kotlin");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "kotlin", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "kotlin",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -219,17 +271,17 @@ fn extract_imports(
             continue;
         }
 
-        let import_path = trimmed
-            .strip_prefix("import ")
-            .unwrap_or("")
-            .trim();
+        let import_path = trimmed.strip_prefix("import ").unwrap_or("").trim();
 
         if import_path.is_empty() {
             continue;
         }
 
         // Skip external/standard library imports
-        if KOTLIN_EXTERNAL_PREFIXES.iter().any(|p| import_path.starts_with(p)) {
+        if KOTLIN_EXTERNAL_PREFIXES
+            .iter()
+            .any(|p| import_path.starts_with(p))
+        {
             continue;
         }
 

@@ -13,10 +13,10 @@ use std::collections::{HashMap, HashSet};
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Ruby method declarations.
@@ -38,7 +38,11 @@ const RUBY_TYPE_PATTERNS: &[(&str, &str)] = &[
 /// Extracts File, Function, and Type nodes, plus Imports and Calls edges.
 /// The `known_files` set is used for import resolution — only project-local
 /// `require_relative` statements produce Imports edges.
-pub fn extract_ruby(source: &str, rel_path: &str, known_files: &HashSet<String>) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_ruby(
+    source: &str,
+    rel_path: &str,
+    known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::Ruby;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
@@ -65,7 +69,13 @@ pub fn extract_ruby(source: &str, rel_path: &str, known_files: &HashSet<String>)
     let import_map = extract_imports(source, rel_path, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from method bodies
-    extract_calls(source, &file_slug, &function_names, &import_map, &mut entities);
+    extract_calls(
+        source,
+        &file_slug,
+        &function_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract module-level variables
     variables::extract_variables(source, &file_slug, rel_path, "ruby", &mut entities);
@@ -121,7 +131,7 @@ fn extract_methods(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -131,9 +141,7 @@ fn extract_methods(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -166,10 +174,17 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "ruby");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, true,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "ruby", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                true,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "ruby",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -214,7 +229,10 @@ fn extract_imports(
             continue;
         }
 
-        let after = trimmed.strip_prefix("require_relative ").unwrap_or("").trim();
+        let after = trimmed
+            .strip_prefix("require_relative ")
+            .unwrap_or("")
+            .trim();
 
         // Extract the path from quotes
         let require_path = if (after.starts_with('\'') && after.ends_with('\''))

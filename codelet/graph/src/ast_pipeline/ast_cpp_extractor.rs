@@ -11,10 +11,10 @@ use std::collections::{HashMap, HashSet};
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::complexity;
-use super::metadata;
-use super::variables;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
+use super::variables;
 use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for C++ class/struct/enum declarations.
@@ -52,10 +52,17 @@ pub fn extract_cpp(
     extract_types(&root, &file_slug, &mut entities);
 
     // Extract #include directives → Imports edges (shared with C)
-    let import_map = edge_helpers::extract_c_includes(source, &file_slug, known_files, &mut entities);
+    let import_map =
+        edge_helpers::extract_c_includes(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
-    extract_calls_by_scanning(source, &file_slug, &function_names, &import_map, &mut entities);
+    extract_calls_by_scanning(
+        source,
+        &file_slug,
+        &function_names,
+        &import_map,
+        &mut entities,
+    );
 
     // Extract module-level variables
     variables::extract_variables(source, &file_slug, rel_path, "cpp", &mut entities);
@@ -106,9 +113,18 @@ fn extract_functions_by_scanning(
 
             if matches!(
                 name.as_str(),
-                "if" | "for" | "while" | "switch" | "return"
-                    | "struct" | "class" | "enum" | "namespace" | "typedef"
-                    | "using" | "catch" | "else"
+                "if" | "for"
+                    | "while"
+                    | "switch"
+                    | "return"
+                    | "struct"
+                    | "class"
+                    | "enum"
+                    | "namespace"
+                    | "typedef"
+                    | "using"
+                    | "catch"
+                    | "else"
             ) {
                 continue;
             }
@@ -123,7 +139,13 @@ fn extract_functions_by_scanning(
 
             let fn_slug = format!("{file_slug}::{name}");
             entities.push(helpers::build_function_node(
-                file_slug, &name, false, is_public, param_count, line_start, line_end,
+                file_slug,
+                &name,
+                false,
+                is_public,
+                param_count,
+                line_start,
+                line_end,
                 cc,
                 &meta.parameters,
                 &meta.source,
@@ -133,7 +155,9 @@ fn extract_functions_by_scanning(
                 meta.truncated,
             ));
 
-            entities.push(helpers::build_contains_edge(file_slug, &fn_slug, "Contains"));
+            entities.push(helpers::build_contains_edge(
+                file_slug, &fn_slug, "Contains",
+            ));
         }
     }
     seen_names
@@ -255,8 +279,24 @@ fn extract_types(
             let type_start = node.start_pos();
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "cpp");
-            entities.push(helpers::build_type_node(file_slug, &name, type_kind, true, type_start.line() as i32 + 1, type_end.line() as i32 + 1, &type_meta.source, &type_meta.docstring, &type_meta.decorators, "cpp", type_meta.truncated));
-            entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
+            entities.push(helpers::build_type_node(
+                file_slug,
+                &name,
+                type_kind,
+                true,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "cpp",
+                type_meta.truncated,
+            ));
+            entities.push(helpers::build_contains_edge(
+                file_slug,
+                &type_slug,
+                "ContainsType",
+            ));
         }
     }
 }

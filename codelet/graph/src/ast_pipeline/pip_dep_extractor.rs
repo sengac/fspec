@@ -34,7 +34,9 @@ pub fn extract_python_dependencies(project_root: &Path) -> Result<Vec<GraphEntit
             }
             let (name, version) = parse_requirement(line);
             if !name.is_empty() {
-                entities.push(helpers::build_dependency_node(&name, &version, false, "pip"));
+                entities.push(helpers::build_dependency_node(
+                    &name, &version, false, "pip",
+                ));
                 entities.push(helpers::build_depends_on_edge(&file_slug, &name));
             }
         }
@@ -67,7 +69,9 @@ pub fn extract_python_dependencies(project_root: &Path) -> Result<Vec<GraphEntit
                 if let Some(dep_str) = dep.as_str() {
                     let (name, version) = parse_requirement(dep_str);
                     if !name.is_empty() {
-                        entities.push(helpers::build_dependency_node(&name, &version, false, "pip"));
+                        entities.push(helpers::build_dependency_node(
+                            &name, &version, false, "pip",
+                        ));
                         entities.push(helpers::build_depends_on_edge(&file_slug, &name));
                     }
                 }
@@ -86,7 +90,9 @@ pub fn extract_python_dependencies(project_root: &Path) -> Result<Vec<GraphEntit
                         if let Some(dep_str) = dep.as_str() {
                             let (name, version) = parse_requirement(dep_str);
                             if !name.is_empty() {
-                                entities.push(helpers::build_dependency_node(&name, &version, true, "pip"));
+                                entities.push(helpers::build_dependency_node(
+                                    &name, &version, true, "pip",
+                                ));
                                 entities.push(helpers::build_depends_on_edge(&file_slug, &name));
                             }
                         }
@@ -120,6 +126,11 @@ fn parse_requirement(line: &str) -> (String, String) {
         }
     }
 
-    let name = line.split(';').next().unwrap_or(&line).trim().to_lowercase();
+    let name = line
+        .split(';')
+        .next()
+        .unwrap_or(&line)
+        .trim()
+        .to_lowercase();
     (name, "*".to_string())
 }

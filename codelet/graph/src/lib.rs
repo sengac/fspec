@@ -115,9 +115,7 @@ pub async fn call_learnings_extraction_llm(
         None,
     )
     .map_err(|e| {
-        tracing::warn!(
-            "[KGRAPH] Failed to create ProviderManager for learnings extraction: {e}"
-        );
+        tracing::warn!("[KGRAPH] Failed to create ProviderManager for learnings extraction: {e}");
         e
     })
     .ok()?;
@@ -134,9 +132,7 @@ pub async fn call_learnings_extraction_llm(
             let provider = manager
                 .$get_method()
                 .map_err(|e| {
-                    tracing::warn!(
-                        "[KGRAPH] Failed to get provider for learnings extraction: {e}"
-                    );
+                    tracing::warn!("[KGRAPH] Failed to get provider for learnings extraction: {e}");
                     e
                 })
                 .ok()?;
@@ -170,9 +166,7 @@ pub async fn call_learnings_extraction_llm(
             let provider = manager
                 .get_openai(uuid::Uuid::new_v4())
                 .map_err(|e| {
-                    tracing::warn!(
-                        "[KGRAPH] Failed to get provider for learnings extraction: {e}"
-                    );
+                    tracing::warn!("[KGRAPH] Failed to get provider for learnings extraction: {e}");
                     e
                 })
                 .ok()?;

@@ -71,10 +71,19 @@ pub fn build_function_node(
         "cyclomaticComplexity".to_string(),
         Value::Number(cyclomatic_complexity.into()),
     );
-    props.insert("parameters".to_string(), Value::String(parameters.to_string()));
+    props.insert(
+        "parameters".to_string(),
+        Value::String(parameters.to_string()),
+    );
     props.insert("source".to_string(), Value::String(source.to_string()));
-    props.insert("docstring".to_string(), Value::String(docstring.to_string()));
-    props.insert("decorators".to_string(), Value::String(decorators.to_string()));
+    props.insert(
+        "docstring".to_string(),
+        Value::String(docstring.to_string()),
+    );
+    props.insert(
+        "decorators".to_string(),
+        Value::String(decorators.to_string()),
+    );
     props.insert("language".to_string(), Value::String(language.to_string()));
     props.insert("truncated".to_string(), Value::Bool(truncated));
     GraphEntity::Node {
@@ -85,11 +94,7 @@ pub fn build_function_node(
 }
 
 /// Build a Contains edge from a File to a child entity.
-pub fn build_contains_edge(
-    file_slug: &str,
-    child_slug: &str,
-    edge_type: &str,
-) -> GraphEntity {
+pub fn build_contains_edge(file_slug: &str, child_slug: &str, edge_type: &str) -> GraphEntity {
     GraphEntity::Edge {
         edge_type: edge_type.to_string(),
         from_slug: file_slug.to_string(),
@@ -121,8 +126,14 @@ pub fn build_type_node(
     props.insert("lineStart".to_string(), Value::Number(line_start.into()));
     props.insert("lineEnd".to_string(), Value::Number(line_end.into()));
     props.insert("source".to_string(), Value::String(source.to_string()));
-    props.insert("docstring".to_string(), Value::String(docstring.to_string()));
-    props.insert("decorators".to_string(), Value::String(decorators.to_string()));
+    props.insert(
+        "docstring".to_string(),
+        Value::String(docstring.to_string()),
+    );
+    props.insert(
+        "decorators".to_string(),
+        Value::String(decorators.to_string()),
+    );
     props.insert("language".to_string(), Value::String(language.to_string()));
     props.insert("truncated".to_string(), Value::Bool(truncated));
     GraphEntity::Node {
@@ -154,9 +165,10 @@ pub fn build_variable_node(
     } else {
         format!("{file_slug}::{name}")
     };
-    // Cap value at 200 chars
-    let capped_value = if value.len() > 200 {
-        format!("{}…", &value[..199])
+    // Cap value at 200 chars (count by chars, not bytes, to stay on UTF-8 boundaries)
+    let capped_value = if value.chars().count() > 200 {
+        let truncated: String = value.chars().take(199).collect();
+        format!("{truncated}…")
     } else {
         value.to_string()
     };
@@ -167,7 +179,10 @@ pub fn build_variable_node(
     props.insert("lineStart".to_string(), Value::Number(line_start.into()));
     props.insert("value".to_string(), Value::String(capped_value));
     props.insert("scope".to_string(), Value::String(scope.to_string()));
-    props.insert("scopeName".to_string(), Value::String(scope_name.to_string()));
+    props.insert(
+        "scopeName".to_string(),
+        Value::String(scope_name.to_string()),
+    );
     props.insert("isConstant".to_string(), Value::Bool(is_constant));
     props.insert("language".to_string(), Value::String(language.to_string()));
     GraphEntity::Node {
@@ -228,12 +243,7 @@ pub fn count_params_rust(text: &str) -> i32 {
 /// Build a Dependency node with standard properties.
 ///
 /// Slug format: `dep::<package-name>` for upsert semantics.
-pub fn build_dependency_node(
-    name: &str,
-    version: &str,
-    is_dev: bool,
-    source: &str,
-) -> GraphEntity {
+pub fn build_dependency_node(name: &str, version: &str, is_dev: bool, source: &str) -> GraphEntity {
     let dep_slug = format!("dep::{name}");
     let mut props = Map::new();
     props.insert("slug".to_string(), Value::String(dep_slug.clone()));
@@ -272,7 +282,14 @@ pub fn count_params_python(text: &str) -> i32 {
                 .map(|p| p.trim())
                 .filter(|p| !p.is_empty())
                 .filter(|p| {
-                    let name = p.split(':').next().unwrap_or(p).split('=').next().unwrap_or(p).trim();
+                    let name = p
+                        .split(':')
+                        .next()
+                        .unwrap_or(p)
+                        .split('=')
+                        .next()
+                        .unwrap_or(p)
+                        .trim();
                     name != "self" && name != "cls"
                 })
                 .count();
@@ -389,4 +406,72 @@ pub fn find_closing_brace(lines: &[&str], start: usize) -> Option<usize> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Regression: `build_variable_node` previously byte-sliced the value at
+    /// `&value[..199]`, panicking when byte 199 landed inside a multi-byte
+    /// UTF-8 character (e.g. '•', '☁'). Truncation must be char-boundary safe.
+    #[test]
+    fn truncates_value_on_char_boundary_with_multibyte_chars() {
+        // '•' (U+2022) is 3 bytes; 201 of them = 201 chars / 603 bytes.
+        // Byte index 199 falls *inside* the 67th '•', which used to panic.
+        let value = "•".repeat(201);
+
+        let entity = build_variable_node(
+            "src/icons",
+            "maskedKey",
+            "src/icons.ts",
+            1,
+            &value,
+            "module",
+            "",
+            true,
+            "typescript",
+        );
+
+        let stored = match entity {
+            GraphEntity::Node { properties, .. } => properties
+                .get("value")
+                .and_then(Value::as_str)
+                .map(str::to_string)
+                .expect("value property present"),
+            _ => panic!("expected a Node"),
+        };
+
+        // 199 retained chars + the ellipsis marker.
+        assert!(stored.ends_with('…'));
+        assert_eq!(stored.chars().count(), 200);
+        // Must be valid UTF-8 with no replacement/garbage from a bad slice.
+        assert!(stored.chars().take(199).all(|c| c == '•'));
+    }
+
+    /// Short values (<= 200 chars) are stored verbatim, even with unicode.
+    #[test]
+    fn short_unicode_value_stored_verbatim() {
+        let value = "key = '☁ ✏ 🖥 ⚠'";
+        let entity = build_variable_node(
+            "src/icons",
+            "k",
+            "src/icons.ts",
+            1,
+            value,
+            "module",
+            "",
+            false,
+            "typescript",
+        );
+        let stored = match entity {
+            GraphEntity::Node { properties, .. } => properties
+                .get("value")
+                .and_then(Value::as_str)
+                .unwrap()
+                .to_string(),
+            _ => panic!("expected a Node"),
+        };
+        assert_eq!(stored, value);
+    }
 }

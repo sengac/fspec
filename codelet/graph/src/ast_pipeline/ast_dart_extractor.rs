@@ -12,13 +12,13 @@
 use std::collections::{HashMap, HashSet};
 
 use ast_grep_core::matcher::KindMatcher;
-use codelet_tools::dart_lang::DartLang;
 use ast_grep_language::LanguageExt;
+use codelet_tools::dart_lang::DartLang;
 
 use super::complexity;
-use super::metadata;
 use super::edge_helpers;
 use super::helpers;
+use super::metadata;
 use crate::graph_entities::GraphEntity;
 
 /// Dart language instance for AST parsing.
@@ -52,10 +52,34 @@ const DART_EXTERNAL_PREFIXES: &[&str] = &["dart:", "package:"];
 
 /// Dart built-in types to filter from TypeRef edges.
 const DART_BUILTIN_TYPES: &[&str] = &[
-    "int", "double", "num", "String", "bool", "void", "dynamic", "Object",
-    "List", "Map", "Set", "Future", "Stream", "Iterable", "Iterator",
-    "Null", "Never", "Function", "Type", "Symbol", "Duration", "DateTime",
-    "BigInt", "Comparable", "Pattern", "RegExp", "Uri", "FutureOr",
+    "int",
+    "double",
+    "num",
+    "String",
+    "bool",
+    "void",
+    "dynamic",
+    "Object",
+    "List",
+    "Map",
+    "Set",
+    "Future",
+    "Stream",
+    "Iterable",
+    "Iterator",
+    "Null",
+    "Never",
+    "Function",
+    "Type",
+    "Symbol",
+    "Duration",
+    "DateTime",
+    "BigInt",
+    "Comparable",
+    "Pattern",
+    "RegExp",
+    "Uri",
+    "FutureOr",
     "Record",
 ];
 
@@ -92,12 +116,22 @@ pub fn extract_dart(
 
     // Extract Calls edges from function bodies
     extract_calls(
-        source, &file_slug, &function_names, &type_names, &import_map, &mut entities,
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
     );
 
     // Extract TypeRef edges from function signatures
     extract_type_refs(
-        source, &file_slug, &function_names, &type_names, &import_map, &mut entities,
+        source,
+        &file_slug,
+        &function_names,
+        &type_names,
+        &import_map,
+        &mut entities,
     );
 
     Ok(entities)
@@ -146,7 +180,7 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
-            cc,
+                cc,
                 &meta.parameters,
                 &meta.source,
                 &meta.docstring,
@@ -156,9 +190,7 @@ fn extract_functions(
             ));
 
             entities.push(helpers::build_contains_edge(
-                file_slug,
-                &fn_slug,
-                "Contains",
+                file_slug, &fn_slug, "Contains",
             ));
         }
     }
@@ -276,8 +308,18 @@ fn extract_name_before_paren(text: &str) -> String {
     // Filter out keywords
     if matches!(
         name.as_str(),
-        "if" | "for" | "while" | "switch" | "catch" | "return" | "void"
-            | "var" | "final" | "const" | "class" | "abstract" | "static"
+        "if" | "for"
+            | "while"
+            | "switch"
+            | "catch"
+            | "return"
+            | "void"
+            | "var"
+            | "final"
+            | "const"
+            | "class"
+            | "abstract"
+            | "static"
     ) {
         return String::new();
     }
@@ -315,10 +357,17 @@ fn extract_types(
             let type_end = node.end_pos();
             let type_meta = metadata::extract_type_meta(&matched_text, "dart");
             entities.push(helpers::build_type_node(
-                file_slug, &name, type_kind, is_public,
-                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
-                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
-                "dart", type_meta.truncated,
+                file_slug,
+                &name,
+                type_kind,
+                is_public,
+                type_start.line() as i32 + 1,
+                type_end.line() as i32 + 1,
+                &type_meta.source,
+                &type_meta.docstring,
+                &type_meta.decorators,
+                "dart",
+                type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -522,7 +571,12 @@ fn extract_calls(
                     );
 
                     extract_qualified_calls(
-                        body, &caller_slug, file_slug, local_types, import_map, entities,
+                        body,
+                        &caller_slug,
+                        file_slug,
+                        local_types,
+                        import_map,
+                        entities,
                     );
                 }
             } else if let Some(brace_pos) = brace_pos {
@@ -544,7 +598,12 @@ fn extract_calls(
 
                 // Extract qualified static calls: ClassName.method()
                 extract_qualified_calls(
-                    &body, &caller_slug, file_slug, local_types, import_map, entities,
+                    &body,
+                    &caller_slug,
+                    file_slug,
+                    local_types,
+                    import_map,
+                    entities,
                 );
             }
         }
@@ -773,10 +832,16 @@ fn extract_qualified_calls(
                             // file that might contain this class.
                             // Heuristic: if class_name matches the PascalCase of an imported
                             // file's name (snake_case → PascalCase), emit the call.
-                            for (target_file_slug, is_relative, _original_name) in import_map.values() {
+                            for (target_file_slug, is_relative, _original_name) in
+                                import_map.values()
+                            {
                                 if *is_relative {
                                     let target_slug = format!("{target_file_slug}::{method_name}");
-                                    edge_helpers::build_calls_edge(caller_slug, &target_slug, entities);
+                                    edge_helpers::build_calls_edge(
+                                        caller_slug,
+                                        &target_slug,
+                                        entities,
+                                    );
                                 }
                             }
                         }
