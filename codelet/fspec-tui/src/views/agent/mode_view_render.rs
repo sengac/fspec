@@ -29,6 +29,33 @@ pub(crate) fn render_title_with_count(
     Paragraph::new(Line::from(Span::styled(text, style))).render(area, buf);
 }
 
+/// RPC-350 R1 — provider-specific two-span title: the name segment in
+/// **bold yellow** and the ` ({count} {suffix})` segment in dim gray
+/// (`Color::DarkGray`). Mirrors `ProviderSettingsPanel.tsx:550-555`
+/// (`<Text bold color="yellow">…</Text><Text dimColor> (N items)</Text>`).
+///
+/// This is intentionally SEPARATE from [`render_title_with_count`] so the
+/// shared blue-bold title used by ResumeSession / SearchHistory / model
+/// views is never affected (RPC-350 R5 guard). Wired into the provider
+/// view via `render_full_screen_scaffold_with_title`.
+pub(crate) fn render_two_span_title(
+    area: Rect,
+    buf: &mut Buffer,
+    name: &str,
+    count: usize,
+    suffix: &str,
+) {
+    let name_style = Style::default()
+        .fg(Color::Yellow)
+        .add_modifier(Modifier::BOLD);
+    let count_style = Style::default().fg(Color::DarkGray);
+    let line = Line::from(vec![
+        Span::styled(name.to_string(), name_style),
+        Span::styled(format!(" ({count} {suffix})"), count_style),
+    ]);
+    Paragraph::new(line).render(area, buf);
+}
+
 pub(crate) fn render_footer_hint(area: Rect, buf: &mut Buffer, text: &str) {
     Paragraph::new(text.to_string()).render(area, buf);
 }

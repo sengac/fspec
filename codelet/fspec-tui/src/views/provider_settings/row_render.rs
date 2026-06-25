@@ -81,7 +81,7 @@ fn row_style(kind: RowKind, selected: bool) -> Style {
 /// rows) the ▼/▶ expand glyph, OR (for child rows) the four-space
 /// inner indent + kind-specific icon. The label itself is appended
 /// after this prefix by the caller.
-fn row_prefix(kind: RowKind, selected: bool) -> String {
+pub(super) fn row_prefix(kind: RowKind, selected: bool) -> String {
     let marker = if selected { icons::SEL } else { icons::NOSEL };
     match kind {
         RowKind::Provider { expanded } => {

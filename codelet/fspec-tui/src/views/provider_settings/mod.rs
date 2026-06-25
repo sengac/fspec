@@ -38,6 +38,7 @@ mod profile_form_render;
 pub mod profiles_config;
 pub mod projection;
 pub mod row_render;
+mod row_segments;
 mod status_text;
 mod test_result;
 
@@ -263,16 +264,21 @@ impl ProviderSettingsView {
         // RPC-337: render via the shared full-screen scaffold. Title +
         // footer strings are computed up-front (owned) so the body
         // closure can borrow `self` mutably to capture body height.
+        // RPC-350 R1: route through the title-closure scaffold variant so the
+        // provider view paints a two-span (bold-yellow name + dim-gray count)
+        // title without touching the shared blue title other views depend on.
         let title = "Provider Settings";
         let count = self.nav_items.len();
         let footer = self.footer_hint();
         let overlay = self.delete_confirm.clone();
-        crate::views::full_screen_shell::render_full_screen_scaffold(
+        crate::views::full_screen_shell::render_full_screen_scaffold_with_title(
             area,
             buf,
-            title,
-            count,
-            "items",
+            |title_area, buf| {
+                crate::views::agent::mode_view_render::render_two_span_title(
+                    title_area, buf, title, count, "items",
+                );
+            },
             &footer,
             |body_area, buf| {
                 body_render::render_mode_body(self, body_area, buf);

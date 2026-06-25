@@ -18,7 +18,8 @@ use ratatui::style::Style;
 use ratatui::widgets::{Paragraph, Widget};
 
 use super::nav_item::{NavItem, NavItemKind};
-use super::row_render::{render_row, row_band_bg, RowKind};
+use super::row_render::{render_row, row_band_bg, row_prefix, RowKind};
+use super::row_segments::{render_segmented_row, Segment, SegmentRole};
 use super::ProviderSettingsView;
 
 pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf: &mut Buffer) {
@@ -44,7 +45,6 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
     for (row_idx, item) in nav_items[view.scroll_offset..end].iter().enumerate() {
         let global_idx = view.scroll_offset + row_idx;
         let selected = global_idx == view.selected_index;
-        let (kind, label) = row_kind_and_label(item, view);
         let y = body_area.y + row_idx as u16;
         let row_area = Rect {
             x: body_area.x,
@@ -52,7 +52,25 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
             width: body_area.width,
             height: 1,
         };
-        let end_x = render_row(kind, &label, selected, row_area, buf);
+
+        // RPC-350 R4: provider + api-key rows carry per-segment coloured
+        // inline status decorations (green key / dim source / gray empty
+        // state), so they paint through the span-aware row painter. Every
+        // other row kind keeps the single-`Style` `render_row` contract.
+        let (kind, label) = row_kind_and_label(item, view);
+        let segmented = matches!(kind, RowKind::Provider { .. } | RowKind::ApiKey);
+        let end_x = if segmented {
+            let display = view
+                .display_providers
+                .iter()
+                .find(|p| p.id == item.provider_id);
+            let segments = provider_row_segments(&item.kind, &item.provider_id, display);
+            let prefix = row_prefix(kind, selected);
+            let band_bg = row_band_bg(kind, selected);
+            render_segmented_row(&prefix, &segments, selected, band_bg, row_area, buf)
+        } else {
+            render_row(kind, &label, selected, row_area, buf)
+        };
         // RPC-158: paint the inline test-result decoration on Provider
         // header rows whose provider_id matches `view.test_result`. The
         // decoration is appended after the label with a single ASCII
@@ -73,6 +91,62 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
             }
         }
     }
+}
+
+/// RPC-350 R4: build the per-segment label fragments for a provider header or
+/// api-key child row. The name is white; the credential decorations split into
+/// green `✓ {masked}` + dim ` [{source}]`, or gray `(not configured)` /
+/// `(not set)`; openai header rows append a dim ` (N profile/s)` badge (R2).
+fn provider_row_segments(
+    kind: &NavItemKind,
+    provider_id: &str,
+    display: Option<&super::nav_item::ProviderDisplayInfo>,
+) -> Vec<Segment> {
+    let mut segments: Vec<Segment> = Vec::new();
+    let is_api_key = matches!(kind, NavItemKind::ApiKey);
+
+    // Name segment.
+    let name = match kind {
+        NavItemKind::ApiKey => "API Key".to_string(),
+        _ => display
+            .map(|p| p.name.clone())
+            .unwrap_or_else(|| provider_id.to_string()),
+    };
+    segments.push(Segment::new(name, SegmentRole::Name));
+
+    // Credential decoration: green key + dim source, OR gray empty state.
+    match display.and_then(|p| p.masked_key.as_deref()) {
+        Some(masked) => {
+            segments.push(Segment::new(format!(" ✓ {masked}"), SegmentRole::Key));
+            if let Some(source) = display.and_then(|p| p.source.as_deref()) {
+                segments.push(Segment::new(format!(" [{source}]"), SegmentRole::Dim));
+            }
+        }
+        None => {
+            let empty = if is_api_key {
+                " (not set)"
+            } else {
+                " (not configured)"
+            };
+            segments.push(Segment::new(empty.to_string(), SegmentRole::Gray));
+        }
+    }
+
+    // RPC-350 R2: openai header rows show a dim pluralized profile badge.
+    if !is_api_key && provider_id == "openai" {
+        if let Some(n) = display.map(|p| p.profiles.len()) {
+            if n > 0 {
+                let badge = if n == 1 {
+                    format!(" ({n} profile)")
+                } else {
+                    format!(" ({n} profiles)")
+                };
+                segments.push(Segment::new(badge, SegmentRole::Dim));
+            }
+        }
+    }
+
+    segments
 }
 
 fn paint_test_result_decoration(
@@ -129,7 +203,10 @@ fn row_kind_and_label(item: &NavItem, view: &ProviderSettingsView) -> (RowKind, 
             )
         }
         NavItemKind::Profile { profile_name } => (RowKind::Profile, profile_name.clone()),
-        NavItemKind::AddProfile => (RowKind::AddProfile, "Add Profile".to_string()),
+        // RPC-350 R3: parity label "Create new profile" (TS
+        // ProviderSettingsPanel.tsx:766). The "+ " glyph is supplied by the
+        // row prefix (icons::PLUS), so only the label string changes here.
+        NavItemKind::AddProfile => (RowKind::AddProfile, "Create new profile".to_string()),
         NavItemKind::ApiKey => {
             // PROV-098: append the credential annotation to the ApiKey
             // child row (TS ProviderSettingsPanel.tsx:734-746). Empty
