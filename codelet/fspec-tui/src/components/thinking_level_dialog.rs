@@ -16,7 +16,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use codelet_rpc_types::{SessionId, ThinkingLevel};
 
 use super::dialog_theme::{render_dialog, Accent, FspecDialog};
-use super::dialog_theme_rows::label_description_row;
+use super::dialog_theme_rows::label_description_default_row;
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove`.
@@ -36,6 +36,9 @@ pub struct ThinkingLevelDialog {
     id: String,
     session_id: SessionId,
     selected_index: usize,
+    /// TUI-094: index in `LEVELS` of the persisted default level, or
+    /// `None` when no default is set (TS-parity `defaultLevel === null`).
+    default_index: Option<usize>,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
 }
@@ -52,9 +55,18 @@ impl ThinkingLevelDialog {
             id: THINKING_LEVEL_DIALOG_ID.to_string(),
             session_id,
             selected_index,
+            default_index: None,
             action_tx: None,
             pending_action: None,
         }
+    }
+
+    /// TUI-094: thread the persisted default level into the dialog
+    /// (mirrors the nullable TS `defaultLevel` prop). `None` leaves the
+    /// dialog with no `(default)` marker. Builder so `new` stays stable.
+    pub fn with_default_level(mut self, default: Option<ThinkingLevel>) -> Self {
+        self.default_index = default.and_then(|d| LEVELS.iter().position(|(l, _, _)| *l == d));
+        self
     }
 
     pub fn with_action_tx(mut self, action_tx: UnboundedSender<Action>) -> Self {
@@ -140,6 +152,7 @@ impl Component for ThinkingLevelDialog {
                 // ThinkingLevelDialog.tsx lines 93-96).
                 KeyCode::Char('d') | KeyCode::Char('D') => {
                     let level = self.selected_level();
+                    self.default_index = Some(self.selected_index); // live marker move (TS parity)
                     let action = Action::SetThinkingLevelDefault(self.session_id.clone(), level);
                     self.emit_action(action);
                     return EventResult::consumed();
@@ -172,7 +185,12 @@ impl Component for ThinkingLevelDialog {
             .iter()
             .enumerate()
             .map(|(i, (_, label, desc))| {
-                label_description_row(label, desc, i == self.selected_index)
+                label_description_default_row(
+                    label,
+                    desc,
+                    i == self.selected_index,
+                    Some(i) == self.default_index,
+                )
             })
             .collect();
         let dialog = FspecDialog {

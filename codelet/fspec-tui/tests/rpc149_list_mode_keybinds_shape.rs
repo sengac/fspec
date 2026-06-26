@@ -116,34 +116,40 @@ fn scenario_list_rs_handle_list_key_has_no_refresh_models_keybind_arms() {
 
 #[test]
 fn scenario_list_rs_handle_list_key_has_no_page_or_jump_key_arms() {
+    // RPC-353 SUPERSEDES the RPC-149/157 "no Page/Home/End" constraint:
+    // the /provider list view now binds PageUp/PageDown/Home/End as a
+    // deliberate enhancement beyond TS parity (mouse-wheel + paging scroll,
+    // matching the chat view). This shape check is therefore inverted —
+    // the paging keys MUST now be present in handle_list_key. The r/R
+    // refresh-models removal (RPC-149) is unaffected and still pinned above.
     // @step Given I read the source of codelet/fspec-tui/src/views/provider_settings/list.rs
     let src = list_rs();
 
     // @step When I scan the handle_list_key match body
     let body = handle_list_key_body(&src);
 
-    // @step Then the source must NOT contain "KeyCode::PageUp"
+    // @step Then the source MUST contain "KeyCode::PageUp" (RPC-353)
     assert!(
-        !body.contains("KeyCode::PageUp"),
-        "list.rs handle_list_key must NOT bind PageUp (Rust-only deviation, RPC-149)"
+        body.contains("KeyCode::PageUp"),
+        "list.rs handle_list_key must bind PageUp (RPC-353 paging enhancement)"
     );
 
-    // @step And the source must NOT contain "KeyCode::PageDown"
+    // @step And the source MUST contain "KeyCode::PageDown" (RPC-353)
     assert!(
-        !body.contains("KeyCode::PageDown"),
-        "list.rs handle_list_key must NOT bind PageDown (Rust-only deviation, RPC-149)"
+        body.contains("KeyCode::PageDown"),
+        "list.rs handle_list_key must bind PageDown (RPC-353 paging enhancement)"
     );
 
-    // @step And the source must NOT contain "KeyCode::Home"
+    // @step And the source MUST contain "KeyCode::Home" (RPC-353)
     assert!(
-        !body.contains("KeyCode::Home"),
-        "list.rs handle_list_key must NOT bind Home (Rust-only deviation, RPC-149)"
+        body.contains("KeyCode::Home"),
+        "list.rs handle_list_key must bind Home (RPC-353 paging enhancement)"
     );
 
-    // @step And the source must NOT contain "KeyCode::End"
+    // @step And the source MUST contain "KeyCode::End" (RPC-353)
     assert!(
-        !body.contains("KeyCode::End"),
-        "list.rs handle_list_key must NOT bind End (Rust-only deviation, RPC-149)"
+        body.contains("KeyCode::End"),
+        "list.rs handle_list_key must bind End (RPC-353 paging enhancement)"
     );
 }
 

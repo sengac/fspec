@@ -846,6 +846,22 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         session_id: &SessionId,
         level: ThinkingLevel,
     ) -> Result<(), String> {
+        // TUI-002: mirror `set_default_model`'s entry/success logging so the
+        // default-thinking write path is observable in the combined log.
+        tracing::info!(
+            level = level as u8,
+            session_id = %session_id.value.as_str(),
+            "set_thinking_level_default: persisting + applying default thinking level"
+        );
+        // TUI-002: persist the chosen default ALWAYS (user-level setting,
+        // mirrors TS `saveDefaultThinkingLevel`). Best-effort: a persistence
+        // failure is non-fatal and must not block the in-memory apply.
+        if let Err(e) =
+            crate::default_thinking_level_persistence::save_default_thinking_level(level)
+        {
+            tracing::warn!("Failed to persist default thinking level: {e}");
+        }
+        // Apply in-memory when the session exists (idle render reflects it).
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
@@ -870,20 +886,32 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     fn get_model_info(&self, session_id: &SessionId) -> codelet_rpc_types::ModelInfo {
         use std::sync::atomic::Ordering;
         let uuid = uuid_from(session_id);
+        // TUI-001: build the models.dev registry once so `resolve_model_info`
+        // can promote the raw slug to the friendly catalog name + capability
+        // flags. `None` outside a multi-thread runtime / on cache failure →
+        // graceful fallback to the raw slug (mirrors the TS fallback path).
+        let registry = build_cloud_registry();
         self.get_session(&uuid.to_string())
             .map(|s| {
+                let provider_id = s
+                    .provider_id
+                    .read()
+                    .ok()
+                    .and_then(|g| g.clone())
+                    .unwrap_or_default();
                 let model_id = s
                     .model_id
                     .read()
                     .ok()
                     .and_then(|g| g.clone())
                     .unwrap_or_default();
-                codelet_rpc_types::ModelInfo {
-                    display_name: model_id,
-                    supports_reasoning: false,
-                    supports_vision: false,
-                    context_window: s.cached_context_window.load(Ordering::Acquire),
-                }
+                crate::cloud_models::resolve_model_info(
+                    registry.as_ref(),
+                    &provider_id,
+                    &model_id,
+                    s.cached_context_window.load(Ordering::Acquire),
+                    s.cached_compaction_threshold.load(Ordering::Acquire),
+                )
             })
             .unwrap_or_default()
     }

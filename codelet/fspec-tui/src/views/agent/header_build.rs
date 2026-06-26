@@ -71,9 +71,9 @@ pub(super) fn build_left_line(
                 Style::default().fg(Color::Blue),
             ));
         }
-        if m.context_window > 0 {
+        if let Some(label) = size_badge_label(m.compaction_threshold, m.context_window) {
             spans.push(Span::styled(
-                format!(" [{}]", format_context_window(m.context_window)),
+                format!(" [{label}]"),
                 Style::default().fg(Color::DarkGray),
             ));
         }
@@ -202,5 +202,24 @@ pub(crate) fn format_context_window(n: u32) -> String {
         format!("{}k", n / 1_000)
     } else {
         n.to_string()
+    }
+}
+
+/// TUI-001: pick the SessionHeader size-badge value, preferring the compaction
+/// threshold over the raw context window (mirrors TS `SessionHeader.tsx:165`
+/// `const badgeValue = compactionThreshold ?? contextWindow`), then format it
+/// via [`format_context_window`]. Returns `None` when neither value is set so
+/// the badge is hidden (graceful degradation), matching the prior
+/// `context_window > 0` guard.
+pub fn size_badge_label(compaction_threshold: u32, context_window: u32) -> Option<String> {
+    let value = if compaction_threshold > 0 {
+        compaction_threshold
+    } else {
+        context_window
+    };
+    if value > 0 {
+        Some(format_context_window(value))
+    } else {
+        None
     }
 }

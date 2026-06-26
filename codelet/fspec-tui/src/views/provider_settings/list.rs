@@ -5,7 +5,7 @@
 //! Extracted from `mod.rs` to keep each file under the 300-LoC ceiling.
 //! Owns:
 //!   * `handle_list_key` — Esc cascade, /-to-filter mode, clamped arrow
-//!     nav (no wrap-around, no PgUp/PgDn/Home/End — RPC-157),
+//!     nav (no wrap-around; PgUp/PgDn/Home/End added by RPC-353),
 //!     Enter→Detail, `d` opens ConfirmDialog.
 //!   * `render_list` — scrollable provider list, filter input line,
 //!     `(no providers configured)` placeholder.
@@ -50,6 +50,13 @@ pub(super) fn handle_list_key(
             view.filter_mode = true;
             ProviderSettingsEvent::Consumed
         }
+        // RPC-353: Page/Home/End paging parity with /model. Reached only
+        // when filter_mode is false (checked at the top of handle_list_key),
+        // so printable-char accumulation is unaffected. `paged` clamps + clears.
+        KeyCode::PageDown => paged(view, view.visible_rows().max(1) as i32),
+        KeyCode::PageUp => paged(view, -(view.visible_rows().max(1) as i32)),
+        KeyCode::Home => paged(view, i32::MIN / 2),
+        KeyCode::End => paged(view, i32::MAX / 2),
         // RPC-160: Tab in List mode emits the new SwitchToModels event.
         // Mirrors TS listModeHandler.ts lines 56-60 `if (key.tab) {
         // onSwitchToModels(); return; }`. No Action is emitted and no
@@ -141,6 +148,17 @@ pub(super) fn handle_list_key(
         }
         _ => ProviderSettingsEvent::Consumed,
     }
+}
+
+/// RPC-353: page/jump the list-mode selection by `delta` (clamped), clearing
+/// the inline test_result only on actual movement. Always Consumed.
+fn paged(view: &mut ProviderSettingsView, delta: i32) -> ProviderSettingsEvent {
+    let before = view.selected_index;
+    view.move_clamped(delta);
+    if view.selected_index != before {
+        view.clear_test_result();
+    }
+    ProviderSettingsEvent::Consumed
 }
 
 fn handle_filter_key(view: &mut ProviderSettingsView, key: KeyEvent) -> ProviderSettingsEvent {

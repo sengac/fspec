@@ -567,6 +567,18 @@ impl SessionManager {
             self.status_changes_tx.clone(),
         ));
 
+        // TUI-002: re-apply the persisted default thinking level to every new
+        // session so the first idle SessionHeader render shows `[T:<level>]`
+        // (parity with the TS `useDefaultThinkingLevel` hook). A missing/invalid
+        // persisted value resolves to `Off`, leaving the badge hidden.
+        let restored_thinking_level =
+            crate::default_thinking_level_persistence::load_default_thinking_level();
+        tracing::debug!(
+            level = restored_thinking_level as u8,
+            "create_session: applying persisted default thinking level to new session"
+        );
+        session.set_base_thinking_level(restored_thinking_level as u8);
+
         let initial_model_id = session
             .model_id
             .read()
@@ -839,6 +851,17 @@ impl SessionManager {
             self.chunks_tx.clone(),
             self.status_changes_tx.clone(),
         ));
+
+        // TUI-002: re-apply the persisted default thinking level to isolated
+        // sessions too, so spawned/isolated sessions match the same idle badge
+        // behaviour as the primary session-creation path.
+        let isolated_thinking_level =
+            crate::default_thinking_level_persistence::load_default_thinking_level();
+        tracing::debug!(
+            level = isolated_thinking_level as u8,
+            "create_isolated_session: applying persisted default thinking level to isolated session"
+        );
+        session.set_base_thinking_level(isolated_thinking_level as u8);
 
         let isolated_model_id = session
             .model_id

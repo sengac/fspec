@@ -87,6 +87,7 @@ async fn action_session_created_spawns_model_info_and_thinking_level_fetches() {
         supports_reasoning: true,
         supports_vision: false,
         context_window: 100_000,
+        compaction_threshold: 0,
     });
     mock.set_thinking_level(ThinkingLevel::Medium);
     assert!(app.agent_view_store().current_session().is_none());
@@ -130,6 +131,7 @@ fn action_model_info_loaded_for_non_current_session_still_updates_map() {
             supports_reasoning: false,
             supports_vision: false,
             context_window: 100_000,
+            compaction_threshold: 0,
         },
     ));
     // @step Then agent_view_store.model_info_for(SessionId("s-2")) returns Some(info)

@@ -114,7 +114,7 @@ pub(crate) fn render_body(
     }
 
     if overflow {
-        render_scrollbar(
+        crate::components::list_scrollbar::render_list_scrollbar(
             Rect {
                 x: area.x + list_width,
                 y: area.y,
@@ -172,35 +172,4 @@ fn render_row(
         spans.push(Span::styled(" (current)".to_string(), style));
     }
     Paragraph::new(Line::from(spans)).render(area, buf);
-}
-
-/// Draw a proportional scrollbar thumb `■` over the track `│`.
-fn render_scrollbar(
-    area: Rect,
-    buf: &mut Buffer,
-    scroll_offset: usize,
-    visible: usize,
-    total: usize,
-) {
-    let h = area.height as usize;
-    if h == 0 || total == 0 {
-        return;
-    }
-    let thumb_h = ((visible * h) / total).max(1);
-    let thumb_pos = (scroll_offset * h) / total;
-    for i in 0..h {
-        let is_thumb = i >= thumb_pos && i < thumb_pos + thumb_h;
-        let sym = if is_thumb { "■" } else { "│" };
-        let row = Rect {
-            x: area.x,
-            y: area.y + i as u16,
-            width: 1,
-            height: 1,
-        };
-        Paragraph::new(Span::styled(
-            sym,
-            Style::default().add_modifier(Modifier::DIM),
-        ))
-        .render(row, buf);
-    }
 }

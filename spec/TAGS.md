@@ -665,6 +665,7 @@ Tags for test-related scenarios and requirements.
 | `@error-cherry-pick-insufficient-context` | Error handling for cherry-pick |
 | `@error-invalid-fork-index` | Error handling for invalid fork |
 | `@error-invalid-merge-session` | Error handling for invalid merge |
+| `@guard` | Scenario covering once-per-session apply guard |
 | `@happy-path` | Happy path test scenarios |
 | `@ignore` | Marks a scenario as ignored — paired with #[ignore] on the corresponding test. Used for placeholder behaviour-parity assertions whose test body compiles but is awaiting a future work unit to wire the production behaviour. |
 | `@integration-test` | Integration Test Required |
@@ -673,6 +674,7 @@ Tags for test-related scenarios and requirements.
 | `@main-help` | Main help menu tests |
 | `@manual-test` | Requires Manual Testing |
 | `@medium-command` | Medium complexity command with multiple options |
+| `@no-default` | Scenario covering absent persisted default |
 | `@no-message-id` | Missing message ID edge case scenarios |
 | `@orphan-detection` | Tests for orphan detection logic |
 | `@overwrite` | Tests overwrite behavior (file replacement without prompts) |
@@ -680,11 +682,13 @@ Tags for test-related scenarios and requirements.
 | `@prune` | Tests for pruning operations |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |
 | `@removal` | Scenario for removed or deprecated functionality |
+| `@resume` | Scenario covering session resume/attach apply |
 | `@resume-command` | Scenarios testing the /resume command |
 | `@resume-on-enter` | Scenarios testing Enter key behavior for session resume |
 | `@simple-command` | Simple command with minimal options |
 | `@single-message` | Single message edge case scenarios |
 | `@smoke` | Smoke tests - quick validation of critical functionality |
+| `@startup` | Scenario covering startup-time restore behavior |
 | `@test` | Test-related scenarios |
 | `@test-infrastructure` | Test infrastructure and framework code |
 | `@test-isolation` | Test isolation and concurrent execution |
@@ -937,7 +941,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-06-19T00:54:07.588Z_
+_Last updated: 2026-06-26T03:54:54.530Z_
 
 **Update Command**: `fspec tag-stats`
 

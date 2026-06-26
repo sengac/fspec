@@ -1,0 +1,131 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing D moves the (default) marker to the selected row live",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui095_live_default_marker.rs",
+          "lines": "105-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing D sets the marker when no default was previously set",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui095_live_default_marker.rs",
+          "lines": "134-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing D on the row that is already default is idempotent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui095_live_default_marker.rs",
+          "lines": "155-175",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigating after D keeps the marker on the chosen row while only the highlight moves",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui095_live_default_marker.rs",
+          "lines": "178-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing D emits SetThinkingLevelDefault and keeps the dialog open",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui095_live_default_marker.rs",
+          "lines": "214-243",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/tui095_live_default_marker.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/components/thinking_level_dialog.rs"
+    ],
+    "totalLinesCovered": 166
+  }
+}

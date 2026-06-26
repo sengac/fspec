@@ -78,6 +78,9 @@ pub struct ModelSelectorView {
     is_refreshing: bool,
     loaded: bool,
     visible_rows: usize,
+    /// RPC-353: mouse-wheel velocity accelerator (1×–5× ramp) shared with
+    /// the chat view, so fast scrolling moves multiple model rows per event.
+    wheel: crate::components::scroll_viewport::WheelVelocity,
     /// RPC-344: custom-model CRUD sub-mode (browse / add / edit /
     /// delete-confirm) and the in-progress form values.
     custom_model_mode: CustomModelMode,

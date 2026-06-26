@@ -11,6 +11,7 @@
 pub mod data_dir;
 pub mod debug_capture;
 pub mod file_lock;
+pub mod fspec_config;
 pub mod image_dimensions;
 pub mod logging;
 pub mod token_estimator;

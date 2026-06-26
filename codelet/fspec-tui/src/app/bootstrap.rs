@@ -51,6 +51,7 @@ impl App {
         }
         self.spawn_subscriber_tasks();
         self.initialize_startup_model().await;
+        self.initialize_default_thinking_level();
         Ok(())
     }
 
@@ -81,6 +82,25 @@ impl App {
             if let Err(err) = self.backend.set_default_model(resolved.model_string).await {
                 debug!("bootstrap: backend.set_default_model() failed: {err}");
             }
+        }
+    }
+
+    /// TUI-093: restore the persisted default thinking level to the active
+    /// session at startup — the thinking-level analogue of
+    /// `initialize_startup_model` and parity with the TS
+    /// `useDefaultThinkingLevel` "load on mount → apply to active session".
+    /// Best-effort: with no active session yet (the lazy `create_session` path)
+    /// this just logs; the per-session guarded apply then fires when the first
+    /// session is created/resumed via `refresh_session_chrome`.
+    pub(crate) fn initialize_default_thinking_level(&mut self) {
+        let loaded =
+            codelet_sessions::default_thinking_level_persistence::load_default_thinking_level_opt();
+        debug!(
+            "bootstrap: default thinking level = {:?}",
+            loaded.map(|l| l as u8)
+        );
+        if let Some(session) = self.active_session_rx_snapshot() {
+            let _ = self.apply_default_thinking_level_if_needed(&session);
         }
     }
 

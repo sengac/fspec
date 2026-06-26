@@ -42,6 +42,16 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
         return;
     }
     let end = (view.scroll_offset + visible_rows).min(nav_items.len());
+    // RPC-352: render-only scrollbar parity with /model. When the nav list
+    // overflows the viewport, reserve a 1-cell column on the right edge for
+    // a proportional DIM ■/│ scrollbar so rows never paint under it.
+    let total = nav_items.len();
+    let overflow = total > visible_rows;
+    let list_width = if overflow {
+        body_area.width.saturating_sub(1)
+    } else {
+        body_area.width
+    };
     for (row_idx, item) in nav_items[view.scroll_offset..end].iter().enumerate() {
         let global_idx = view.scroll_offset + row_idx;
         let selected = global_idx == view.selected_index;
@@ -49,7 +59,7 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
         let row_area = Rect {
             x: body_area.x,
             y,
-            width: body_area.width,
+            width: list_width,
             height: 1,
         };
 
@@ -90,6 +100,22 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
                 }
             }
         }
+    }
+
+    // RPC-352: paint the proportional scrollbar in the reserved column.
+    if overflow {
+        crate::components::list_scrollbar::render_list_scrollbar(
+            Rect {
+                x: body_area.x + list_width,
+                y: body_area.y,
+                width: 1,
+                height: body_area.height,
+            },
+            buf,
+            view.scroll_offset,
+            visible_rows,
+            total,
+        );
     }
 }
 

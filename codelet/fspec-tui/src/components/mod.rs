@@ -23,6 +23,7 @@ pub mod exit_confirmation_dialog;
 pub mod hello;
 pub mod help_dialog;
 pub mod hitl_dialog;
+pub mod list_scrollbar;
 pub mod model_selector_dialog_rows;
 pub mod notification_dialog;
 pub mod pause_dialog;

@@ -74,6 +74,12 @@ pub struct App {
     /// awaits via `App::next_pending_task` — can still observe the
     /// task deterministically.
     pub(crate) search_history_debounce_handle: Option<tokio::task::AbortHandle>,
+    /// TUI-093: per-session guard recording which sessions have already had the
+    /// persisted default thinking level applied. The Rust equivalent of the TS
+    /// `appliedToSessionRef` (`src/tui/hooks/useDefaultThinkingLevel.ts`): the
+    /// default is applied at most once per session id, so a manual `/thinking`
+    /// selection is never clobbered when that session regains focus.
+    pub(crate) applied_default_thinking: std::collections::HashSet<SessionId>,
 }
 
 impl App {
@@ -113,6 +119,7 @@ impl App {
             active_session_rx,
             pending_input_save_handle: None,
             search_history_debounce_handle: None,
+            applied_default_thinking: std::collections::HashSet::new(),
         }
     }
 

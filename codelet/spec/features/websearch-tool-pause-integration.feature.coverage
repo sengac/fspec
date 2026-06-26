@@ -1,3 +1,21 @@
 {
-  "scenarios": []
+  "scenarios": [
+    {
+      "name": "OpenPage with pause shows visible browser and waits for user",
+      "testMappings": []
+    },
+    {
+      "name": "Pause with headless true auto-overrides to visible browser",
+      "testMappings": []
+    },
+    {
+      "name": "CaptureScreenshot with pause allows user interaction before capture",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 0,
+    "coveragePercent": 0
+  }
 }

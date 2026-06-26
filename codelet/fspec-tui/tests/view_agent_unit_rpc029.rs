@@ -190,6 +190,7 @@ async fn header_inserts_work_unit_prefix_between_session_number_and_model() {
             supports_reasoning: false,
             supports_vision: false,
             context_window: 0,
+            compaction_threshold: 0,
         },
     );
     // @step And the store's current_work_unit_id is "RPC-029"
@@ -222,6 +223,7 @@ async fn header_omits_work_unit_prefix_when_no_work_unit_is_set() {
             supports_reasoning: false,
             supports_vision: false,
             context_window: 0,
+            compaction_threshold: 0,
         },
     );
     // @step And the store has no current_work_unit_id
@@ -287,6 +289,7 @@ async fn header_and_footer_have_horizontal_padding_of_one_column_on_both_edges()
             supports_reasoning: false,
             supports_vision: false,
             context_window: 0,
+            compaction_threshold: 0,
         },
     );
     // @step And workspace is WorkspaceInfo { cwd: "/tmp/scratch", git_branch: None }
@@ -430,6 +433,7 @@ async fn header_debug_badge_paints_red_bold_when_debug_enabled() {
         supports_reasoning: false,
         supports_vision: false,
         context_window: 0,
+        compaction_threshold: 0,
     };
     // @step And the SessionHeader's is_debug_enabled field is true
     let header = SessionHeader {
@@ -482,6 +486,7 @@ async fn header_isolated_badge_paints_green_when_session_is_isolated() {
         supports_reasoning: false,
         supports_vision: false,
         context_window: 0,
+        compaction_threshold: 0,
     };
     // @step And the SessionHeader's is_isolated field is true
     let header = SessionHeader {
@@ -533,6 +538,7 @@ async fn header_prefix_work_unit_and_model_paint_cyan_bold() {
             supports_reasoning: false,
             supports_vision: false,
             context_window: 0,
+            compaction_threshold: 0,
         },
     );
     // @step And the store's current_work_unit_id is "RPC-029"

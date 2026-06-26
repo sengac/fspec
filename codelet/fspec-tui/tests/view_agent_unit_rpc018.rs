@@ -116,6 +116,7 @@ async fn header_paints_model_badges_and_thinking_level_when_session_has_model_in
             supports_reasoning: true,
             supports_vision: true,
             context_window: 192_000,
+            compaction_threshold: 0,
         },
     );
     // @step And thinking_level_by_session["s-1"] is ThinkingLevel::High
@@ -255,6 +256,7 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
             supports_reasoning: false,
             supports_vision: false,
             context_window: 0,
+            compaction_threshold: 0,
         },
     );
 

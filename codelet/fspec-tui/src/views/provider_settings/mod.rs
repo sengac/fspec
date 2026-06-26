@@ -27,6 +27,7 @@ mod list;
 mod list_actions;
 mod list_nav_render;
 mod mode;
+mod mouse;
 pub mod nav_item;
 mod nav_tree_ops;
 mod oauth_confirm;
@@ -103,6 +104,8 @@ pub struct ProviderSettingsView {
     pub(crate) oauth_last_provider: Option<String>,
     pub(crate) oauth_last_method: Option<OAuthMethod>,
     visible_rows: usize,
+    /// RPC-353: mouse-wheel 1×–5× velocity accelerator (shared chat-view ramp).
+    wheel: crate::components::scroll_viewport::WheelVelocity,
 }
 
 impl ProviderSettingsView {
@@ -128,6 +131,7 @@ impl ProviderSettingsView {
             oauth_last_provider: None,
             oauth_last_method: None,
             visible_rows: 18,
+            wheel: crate::components::scroll_viewport::WheelVelocity::new(),
         }
     }
 
@@ -170,11 +174,8 @@ impl ProviderSettingsView {
     }
 
     pub fn title_text(&self) -> String {
-        // RPC-105: count is the length of the flat NavItem tree — every
-        // visible row the cursor can navigate to, including expanded
-        // children and shrunk by the parent-anchored filter. Mirrors TS
-        // ProviderSettingsPanel.tsx (`navItems.length`). The previous
-        // `configured_count()` method has been removed (no callers).
+        // RPC-105: count is the flat NavItem tree length (mirrors TS
+        // ProviderSettingsPanel.tsx `navItems.length`).
         format!("Provider Settings ({} items)", self.nav_items.len())
     }
 

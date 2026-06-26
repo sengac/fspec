@@ -22,6 +22,7 @@ impl ModelSelectorView {
             is_refreshing: false,
             loaded: false,
             visible_rows: 12,
+            wheel: crate::components::scroll_viewport::WheelVelocity::new(),
             custom_model_mode: CustomModelMode::Browse,
             form: CustomModelForm::default(),
         }

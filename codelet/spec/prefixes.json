@@ -59,6 +59,11 @@
       "prefix": "PAUSE",
       "description": "Tool pause and interactive debugging features",
       "createdAt": "2026-01-26T03:49:58.729Z"
+    },
+    "TUI": {
+      "prefix": "TUI",
+      "description": "Terminal UI rendering and session chrome parity (Rust ratatui ↔ TS Ink)",
+      "createdAt": "2026-06-26T00:20:35.065Z"
     }
   }
 }

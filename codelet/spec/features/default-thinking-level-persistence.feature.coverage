@@ -1,0 +1,209 @@
+{
+  "scenarios": [
+    {
+      "name": "Saving the default thinking level round-trips from disk",
+      "testMappings": [
+        {
+          "file": "sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "49-62",
+          "implMappings": [
+            {
+              "file": "sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing config file loads as Off",
+      "testMappings": [
+        {
+          "file": "sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "64-74",
+          "implMappings": [
+            {
+              "file": "sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An out-of-range persisted value loads as Off",
+      "testMappings": [
+        {
+          "file": "sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "76-87",
+          "implMappings": [
+            {
+              "file": "sessions/src/default_thinking_level_persistence.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_thinking_level_default persists the level even with no live session",
+      "testMappings": [
+        {
+          "file": "sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "89-111",
+          "implMappings": [
+            {
+              "file": "sessions/src/handle_impl.rs",
+              "lines": [
+                844,
+                845,
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A new session inherits a persisted High default",
+      "testMappings": [
+        {
+          "file": "sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "113-131",
+          "implMappings": [
+            {
+              "file": "sessions/src/session_manager.rs",
+              "lines": [
+                569,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575,
+                576
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A new session inherits a persisted Off default",
+      "testMappings": [
+        {
+          "file": "sessions/tests/tui002_default_thinking_level.rs",
+          "lines": "133-151",
+          "implMappings": [
+            {
+              "file": "sessions/src/session_manager.rs",
+              "lines": [
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "sessions/tests/tui002_default_thinking_level.rs"
+    ],
+    "implFiles": [
+      "sessions/src/default_thinking_level_persistence.rs",
+      "sessions/src/handle_impl.rs",
+      "sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 193
+  }
+}

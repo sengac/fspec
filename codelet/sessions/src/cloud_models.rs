@@ -87,3 +87,43 @@ pub fn provider_has_credentials(canonical_id: &str) -> bool {
         .map(|opt| opt.is_some())
         .unwrap_or(false)
 }
+
+/// Resolve the SessionHeader `ModelInfo` (wire type) for a session's
+/// provider/model pair (TUI-001).
+///
+/// Mirrors the TypeScript `AgentView.tsx` `rustModelInfo` memo: on a models.dev
+/// catalog **hit** the friendly `name`, `reasoning` flag and `Vision`
+/// capability come from the registry; on a **miss** (unknown provider/model or
+/// no registry attached) it degrades gracefully to the raw `model_id` with both
+/// capability flags `false` — matching the prior stub behaviour and the TS
+/// fallback path.
+///
+/// `context_window` / `compaction_threshold` are the Rust-resolved session
+/// values (the size badge prefers the threshold; see `size_badge_label` in the
+/// fspec-tui header).
+pub fn resolve_model_info(
+    registry: Option<&ModelRegistry>,
+    provider_id: &str,
+    model_id: &str,
+    context_window: u32,
+    compaction_threshold: u32,
+) -> codelet_rpc_types::ModelInfo {
+    let dev_id = canonical_to_models_dev(provider_id);
+    let hit = registry.and_then(|r| r.get_model(dev_id, model_id).ok());
+    match hit {
+        Some(model) => codelet_rpc_types::ModelInfo {
+            display_name: model.name.clone(),
+            supports_reasoning: model.reasoning,
+            supports_vision: model.has_capability(Capability::Vision),
+            context_window,
+            compaction_threshold,
+        },
+        None => codelet_rpc_types::ModelInfo {
+            display_name: model_id.to_string(),
+            supports_reasoning: false,
+            supports_vision: false,
+            context_window,
+            compaction_threshold,
+        },
+    }
+}

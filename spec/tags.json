@@ -2450,6 +2450,10 @@
           "description": "Error handling for invalid merge"
         },
         {
+          "name": "@guard",
+          "description": "Scenario covering once-per-session apply guard"
+        },
+        {
           "name": "@happy-path",
           "description": "Happy path test scenarios"
         },
@@ -2482,6 +2486,10 @@
           "description": "Medium complexity command with multiple options"
         },
         {
+          "name": "@no-default",
+          "description": "Scenario covering absent persisted default"
+        },
+        {
           "name": "@no-message-id",
           "description": "Missing message ID edge case scenarios"
         },
@@ -2510,6 +2518,10 @@
           "description": "Scenario for removed or deprecated functionality"
         },
         {
+          "name": "@resume",
+          "description": "Scenario covering session resume/attach apply"
+        },
+        {
           "name": "@resume-command",
           "description": "Scenarios testing the /resume command"
         },
@@ -2528,6 +2540,10 @@
         {
           "name": "@smoke",
           "description": "Smoke tests - quick validation of critical functionality"
+        },
+        {
+          "name": "@startup",
+          "description": "Scenario covering startup-time restore behavior"
         },
         {
           "name": "@test",
@@ -2782,7 +2798,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-06-19T00:54:07.588Z",
+    "lastUpdated": "2026-06-26T03:54:54.530Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

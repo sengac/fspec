@@ -125,54 +125,46 @@ fn down_arrow_at_last_nav_item_is_clamped_no_op() {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: PageDown is silently ignored in list mode
+// Scenario: PageDown pages the list (RPC-353 SUPERSEDES the RPC-157 no-op)
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn pagedown_is_silently_ignored_in_list_mode() {
+    // RPC-353 supersedes RPC-157 for paging keys: /provider now pages by a
+    // viewport on PageDown as a deliberate enhancement beyond TS parity.
     // @step Given I have opened /provider with the 17 canonical providers loaded
     let mut view = list_view_with(seventeen_providers());
     view.set_visible_rows(18);
     // @step And the cursor is on the Mistral AI nav item (index 5)
     view.selected_index = 5;
-    // (scroll adjusted on next render)
-    let scroll_before = view.scroll_offset;
     // @step When I press the PageDown key
     let out = view.handle_key(key(KeyCode::PageDown));
-    // @step Then the cursor remains on index 5
-    assert_eq!(view.selected_index, 5);
-    // @step And no jump-by-page occurs
-    assert_eq!(view.scroll_offset, scroll_before);
-    // @step And no backend RPC is fired
-    // (no Action emitted)
+    // @step Then the cursor advances by one page (clamped to the last item)
+    assert_eq!(view.selected_index, 16);
+    // @step And the key is consumed without emitting an Action
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
     if let ProviderSettingsEvent::Emit(_) = out {
         panic!("PageDown must not emit an Action");
     }
-    // @step And no scrollback notice, error log, or tracing warning is emitted
-    // (silent no-op: the view re-renders unchanged — verified by absence of state mutation)
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: PageUp is silently ignored in list mode
+// Scenario: PageUp pages the list (RPC-353 SUPERSEDES the RPC-157 no-op)
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn pageup_is_silently_ignored_in_list_mode() {
+    // RPC-353 supersedes RPC-157: /provider pages up by a viewport on PageUp.
     // @step Given I have opened /provider with the 17 canonical providers loaded
     let mut view = list_view_with(seventeen_providers());
     view.set_visible_rows(18);
     // @step And the cursor is on index 5
     view.selected_index = 5;
-    // (scroll adjusted on next render)
-    let scroll_before = view.scroll_offset;
     // @step When I press the PageUp key
     let out = view.handle_key(key(KeyCode::PageUp));
-    // @step Then the cursor remains on index 5
-    assert_eq!(view.selected_index, 5);
-    // @step And no jump-by-page occurs
-    assert_eq!(view.scroll_offset, scroll_before);
-    // @step And no scrollback notice, error log, or tracing warning is emitted
+    // @step Then the cursor retreats by one page (clamped to the first item)
+    assert_eq!(view.selected_index, 0);
+    // @step And the key is consumed without emitting an Action
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
     if let ProviderSettingsEvent::Emit(_) = out {
         panic!("PageUp must not emit an Action");
@@ -180,24 +172,22 @@ fn pageup_is_silently_ignored_in_list_mode() {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: Home is silently ignored in list mode
+// Scenario: Home jumps to the first item (RPC-353 SUPERSEDES RPC-157 no-op)
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn home_is_silently_ignored_in_list_mode() {
+    // RPC-353 supersedes RPC-157: Home jumps to the first nav item.
     // @step Given I have opened /provider with the 17 canonical providers loaded
     let mut view = list_view_with(seventeen_providers());
     view.set_visible_rows(18);
     // @step And the cursor is on index 8
     view.selected_index = 8;
-    // (scroll adjusted on next render)
     // @step When I press the Home key
     let out = view.handle_key(key(KeyCode::Home));
-    // @step Then the cursor remains on index 8
-    assert_eq!(view.selected_index, 8);
-    // @step And the cursor does NOT jump to index 0
-    assert_ne!(view.selected_index, 0);
-    // @step And no scrollback notice, error log, or tracing warning is emitted
+    // @step Then the cursor jumps to index 0
+    assert_eq!(view.selected_index, 0);
+    // @step And the key is consumed without emitting an Action
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
     if let ProviderSettingsEvent::Emit(_) = out {
         panic!("Home must not emit an Action");
@@ -205,24 +195,22 @@ fn home_is_silently_ignored_in_list_mode() {
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// Scenario: End is silently ignored in list mode
+// Scenario: End jumps to the last item (RPC-353 SUPERSEDES RPC-157 no-op)
 // ────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn end_is_silently_ignored_in_list_mode() {
+    // RPC-353 supersedes RPC-157: End jumps to the last nav item.
     // @step Given I have opened /provider with the 17 canonical providers loaded
     let mut view = list_view_with(seventeen_providers());
     view.set_visible_rows(18);
     // @step And the cursor is on index 8
     view.selected_index = 8;
-    // (scroll adjusted on next render)
     // @step When I press the End key
     let out = view.handle_key(key(KeyCode::End));
-    // @step Then the cursor remains on index 8
-    assert_eq!(view.selected_index, 8);
-    // @step And the cursor does NOT jump to the last nav item
-    assert_ne!(view.selected_index, 16);
-    // @step And no scrollback notice, error log, or tracing warning is emitted
+    // @step Then the cursor jumps to the last nav item (index 16)
+    assert_eq!(view.selected_index, 16);
+    // @step And the key is consumed without emitting an Action
     assert!(matches!(out, ProviderSettingsEvent::Consumed));
     if let ProviderSettingsEvent::Emit(_) = out {
         panic!("End must not emit an Action");

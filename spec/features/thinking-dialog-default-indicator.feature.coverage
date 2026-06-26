@@ -1,0 +1,202 @@
+{
+  "scenarios": [
+    {
+      "name": "Default row shows the (default) marker appended to its description",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "lines": "78-93",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No default persisted shows no (default) marker on any row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "lines": "95-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default marker is independent of the selection highlight",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "lines": "110-133",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default equals current selection shows both the highlight and the (default) marker",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "lines": "135-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/thinking_level_dialog.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default marker on an unselected row is dimmed on the description span",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs",
+          "lines": "151-165",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/tui094_default_indicator_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/components/dialog_theme_rows.rs",
+      "codelet/fspec-tui/src/components/thinking_level_dialog.rs"
+    ],
+    "totalLinesCovered": 189
+  }
+}

@@ -15,6 +15,22 @@ use super::dialog_theme::{DialogRow, MARKER_SELECTED, MARKER_UNSELECTED};
 /// is dimmed when not selected (matches `dimColor={!isSelected}` in
 /// `ThinkingLevelDialog.tsx`).
 pub fn label_description_row(label: &str, description: &str, selected: bool) -> DialogRow {
+    label_description_default_row(label, description, selected, false)
+}
+
+/// TUI-094: `label_description_row` plus an optional ` (default)` marker
+/// appended onto the (dimmable) description span when `is_default` is
+/// true. Mirrors `ThinkingLevelDialog.tsx` lines 140-144 where the
+/// `(default)` text rides on the `dimColor={!isSelected}` description so
+/// it dims with the row. `is_default = false` is byte-identical to the
+/// pre-TUI-094 `label_description_row` output (the existing
+/// `ModelSelectorDialog` path is unaffected).
+pub fn label_description_default_row(
+    label: &str,
+    description: &str,
+    selected: bool,
+    is_default: bool,
+) -> DialogRow {
     let marker = if selected {
         MARKER_SELECTED
     } else {
@@ -29,7 +45,12 @@ pub fn label_description_row(label: &str, description: &str, selected: bool) -> 
         } else {
             Style::default().add_modifier(Modifier::DIM)
         };
-        spans.push(Span::styled(description.to_string(), desc_style));
+        let desc_text = if is_default {
+            format!("{description} (default)")
+        } else {
+            description.to_string()
+        };
+        spans.push(Span::styled(desc_text, desc_style));
     }
     DialogRow {
         spans,

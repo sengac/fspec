@@ -287,6 +287,12 @@ pub struct ModelInfo {
     pub supports_reasoning: bool,
     pub supports_vision: bool,
     pub context_window: u32,
+    /// Compaction threshold (tokens) — the point at which context compaction
+    /// triggers. The SessionHeader size badge prefers this over
+    /// `context_window` (mirrors TS `compactionThreshold ?? contextWindow` in
+    /// `SessionHeader.tsx`). `0` means "unknown" → the badge falls back to
+    /// `context_window`.
+    pub compaction_threshold: u32,
 }
 
 /// Per-session thinking/reasoning level. Mirrors the

@@ -1,17 +1,10 @@
-//! App::dispatch routing for RPC-022 Action variants:
-//! OpenModelDialog, OpenThinkingDialog, ListProvidersLoaded,
-//! ModelSelected, ThinkingLevelSelected, SetSessionRole,
-//! SessionRoleLoaded — plus the RPC-027
-//! Action::SetThinkingLevelDefault handler that persists the
-//! per-user default thinking level via `backend.set_thinking_level_default`.
-//!
-//! Factored out of `app/dispatch.rs` so the orchestrator file stays
-//! under the 300-LoC ceiling. The `parse_slash_command` helper lives
-//! in the sibling `slash_parser` module — re-exported from `app/mod.rs`
-//! for backwards compatibility. Routing is invoked from `App::dispatch`'s
-//! match arms via these explicit helper methods.
+//! App::dispatch routing for RPC-022 Action variants (model / thinking /
+//! role) plus the RPC-027 `Action::SetThinkingLevelDefault` handler that
+//! persists the per-user default via `backend.set_thinking_level_default`.
+//! Factored out of `app/dispatch.rs` to keep the orchestrator under 300 LoC.
 
 use codelet_rpc_types::{SessionId, ThinkingLevel};
+use codelet_sessions::default_thinking_level_persistence::load_default_thinking_level_opt;
 
 use crate::components::{
     thinking_level_dialog::{ThinkingLevelDialog, THINKING_LEVEL_DIALOG_ID},
@@ -21,8 +14,7 @@ use crate::components::{
 use super::state::App;
 
 impl App {
-    /// RPC-022: push a fresh ThinkingLevelDialog onto the Compositor,
-    /// seeded with the cached thinking level for the focused session.
+    /// RPC-022: push a fresh ThinkingLevelDialog seeded with the focused session's level.
     pub(crate) fn handle_open_thinking_dialog(&mut self) {
         let session_id = match self.agent_view_store.current_session().cloned() {
             Some(sid) => sid,
@@ -36,8 +28,11 @@ impl App {
             .thinking_level_for(&session_id)
             .copied()
             .unwrap_or(ThinkingLevel::Off);
-        let dialog =
-            ThinkingLevelDialog::new(session_id, current).with_action_tx(self.action_tx.clone());
+        // TUI-094: thread the persisted default (TS-parity nullable
+        // `defaultLevel`) so the matching row renders ` (default)`.
+        let dialog = ThinkingLevelDialog::new(session_id, current)
+            .with_default_level(load_default_thinking_level_opt())
+            .with_action_tx(self.action_tx.clone());
         self.compositor.push(Box::new(dialog));
     }
 
@@ -186,13 +181,10 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// RPC-027 rule [8]: persist the PER-USER DEFAULT thinking level
-    /// through the backend. Unlike `handle_thinking_level_selected`,
-    /// this does NOT close the dialog (the dialog keeps mount per
-    /// scenario "Pressing D in ThinkingLevelDialog … keeps the dialog
-    /// open"). Spawns a fire-and-forget write via
-    /// `backend.set_thinking_level_default`; the default no-op impl on
-    /// transports without a session manager keeps callers safe.
+    /// RPC-027 rule [8]: persist the PER-USER DEFAULT thinking level through the
+    /// backend. Unlike `handle_thinking_level_selected` this does NOT close the
+    /// dialog. TUI-093: after persisting, re-fetch + emit `ThinkingLevelLoaded`
+    /// so the active session's `[T:level]` badge repaints (TS `setDefault`).
     pub(crate) fn handle_set_thinking_level_default(
         &mut self,
         session_id: SessionId,
@@ -202,8 +194,15 @@ impl App {
             return;
         }
         let backend = self.backend.clone();
+        let action_tx = self.action_tx.clone();
+        let sid_for_refresh = session_id.clone();
         let handle = tokio::spawn(async move {
             let _ = backend.set_thinking_level_default(session_id, level).await;
+            // TUI-093: set_thinking_level_default applied the default in-memory,
+            // so a follow-up get reflects it (mirrors handle_thinking_level_selected).
+            if let Ok(fresh) = backend.get_thinking_level(sid_for_refresh.clone()).await {
+                let _ = action_tx.send(Action::ThinkingLevelLoaded(sid_for_refresh, fresh));
+            }
         });
         self.pending_tasks.push(handle);
     }
@@ -254,11 +253,9 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// Route the RPC-022 (model / thinking / role) and RPC-050
-    /// (work-unit attach / detach) Action variants through their
-    /// helpers. Called from the catch-all arm of `App::dispatch`'s
-    /// match so the orchestrator file `app/dispatch.rs` stays under
-    /// the 300-LoC ceiling. Returns `true` if the action was handled.
+    /// Route the RPC-022 (model / thinking / role) and RPC-050 (work-unit
+    /// attach / detach) Action variants through their helpers. Returns `true`
+    /// if the action was handled.
     pub(crate) fn try_dispatch_model_thinking_dialogs(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenThinkingDialog => self.handle_open_thinking_dialog(),

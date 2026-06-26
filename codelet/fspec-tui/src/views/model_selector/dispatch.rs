@@ -184,19 +184,25 @@ impl ModelSelectorView {
 
     /// Route a mouse-wheel event: ScrollUp/ScrollDown advance the
     /// selection across selectable rows (skipping headers), mirroring
-    /// the retired modal's wheel behaviour.
+    /// the retired modal's wheel behaviour. RPC-353: the shared
+    /// `WheelVelocity` 1×–5× ramp drives the step count so rapid wheel
+    /// events move multiple rows per event (same feel as the chat view).
     pub fn handle_mouse(&mut self, ev: crossterm::event::MouseEvent) -> ModelSelectorEvent {
+        use crate::components::scroll_viewport::WheelDirection;
         use crossterm::event::MouseEventKind;
-        match ev.kind {
-            MouseEventKind::ScrollUp => {
-                self.move_up();
-                ModelSelectorEvent::Consumed
-            }
-            MouseEventKind::ScrollDown => {
-                self.move_down();
-                ModelSelectorEvent::Consumed
-            }
-            _ => ModelSelectorEvent::Ignored,
+        let dir = match ev.kind {
+            MouseEventKind::ScrollUp => WheelDirection::Up,
+            MouseEventKind::ScrollDown => WheelDirection::Down,
+            _ => return ModelSelectorEvent::Ignored,
+        };
+        let step = self.wheel.step(dir);
+        let mover: fn(&mut Self) = match dir {
+            WheelDirection::Up => Self::move_up,
+            WheelDirection::Down => Self::move_down,
+        };
+        for _ in 0..step.unsigned_abs() {
+            mover(self);
         }
+        ModelSelectorEvent::Consumed
     }
 }

@@ -22,6 +22,14 @@ impl Navigator {
     /// translate its `ProviderSettingsEvent` outcomes onto the action
     /// bus.
     pub(crate) fn handle_provider_settings_event(&mut self, event: &Event) -> EventResult {
+        // RPC-353: route mouse-wheel events into the view's handle_mouse
+        // (previously dropped here). Key events fall through to handle_key.
+        if let Event::Mouse(mouse) = event {
+            return match self.provider_settings.handle_mouse(*mouse) {
+                ProviderSettingsEvent::Consumed => EventResult::consumed(),
+                _ => EventResult::ignored(),
+            };
+        }
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };
@@ -55,6 +63,14 @@ impl Navigator {
     /// its `ModelSelectorEvent` outcomes onto the action bus. Mirrors
     /// `handle_provider_settings_event`.
     pub(crate) fn handle_model_selector_event(&mut self, event: &Event) -> EventResult {
+        // RPC-353: route mouse-wheel events into the view's (previously
+        // dead-code) handle_mouse. Key events fall through to handle_key.
+        if let Event::Mouse(mouse) = event {
+            return match self.model_selector.handle_mouse(*mouse) {
+                ModelSelectorEvent::Consumed => EventResult::consumed(),
+                _ => EventResult::ignored(),
+            };
+        }
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };

@@ -1,0 +1,399 @@
+{
+  "scenarios": [
+    {
+      "name": "User-only config loads when no project file exists",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "32-46",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Project config deep-merges over user config per key",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "48-63",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nested objects merge recursively preserving sibling keys",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "65-79",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Arrays and scalars replace instead of merging",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "81-95",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing files load as an empty object without error",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "97-110",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Whitespace-only file loads as an empty object",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "112-123",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid JSON returns an error naming the offending path",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "125-143",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Writing user scope creates the data directory and file",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "145-163",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Writing project scope creates the spec directory and file",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "165-183",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Round-trip write then load merges with the other scope",
+      "testMappings": [
+        {
+          "file": "codelet/common/tests/config008_shared_config_merge.rs",
+          "lines": "185-198",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/fspec_config.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/common/tests/config008_shared_config_merge.rs"
+    ],
+    "implFiles": [
+      "codelet/common/src/fspec_config.rs"
+    ],
+    "totalLinesCovered": 381
+  }
+}

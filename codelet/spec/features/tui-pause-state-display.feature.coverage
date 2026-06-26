@@ -1,3 +1,17 @@
 {
-  "scenarios": []
+  "scenarios": [
+    {
+      "name": "TUI transitions from Thinking to Paused and back",
+      "testMappings": []
+    },
+    {
+      "name": "Confirm pause shows approval dialog for dangerous command",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 0,
+    "coveragePercent": 0
+  }
 }
