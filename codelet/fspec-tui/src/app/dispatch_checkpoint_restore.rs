@@ -17,12 +17,7 @@ use super::state::App;
 impl App {
     /// Spawn the single-file restore transport call and fold the outcome
     /// back as `RestoreCheckpointResult`.
-    pub(crate) fn spawn_restore_file(
-        &mut self,
-        work_unit_id: String,
-        name: String,
-        path: String,
-    ) {
+    pub(crate) fn spawn_restore_file(&mut self, work_unit_id: String, name: String, path: String) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }

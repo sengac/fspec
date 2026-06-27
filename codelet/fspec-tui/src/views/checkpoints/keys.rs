@@ -55,10 +55,14 @@ impl CheckpointsView {
     }
 
     pub(super) fn handle_mouse(&mut self, ev: MouseEvent) -> CheckpointsEvent {
-        // RPC-365/366: the restore/delete modal swallows wheel events
-        // while active.
+        // RPC-365/366: the restore/delete modal swallows all mouse input
+        // while active — this guard MUST run before click + wheel handling.
         if self.dialog().is_some() || self.delete_dialog().is_some() {
             return CheckpointsEvent::Consumed;
+        }
+        // RPC-369: a left click selects the row under the cursor.
+        if let MouseEventKind::Down(_) = ev.kind {
+            return self.handle_click(ev.column, ev.row);
         }
         let dir = match ev.kind {
             MouseEventKind::ScrollUp => WheelDirection::Up,
@@ -76,6 +80,33 @@ impl CheckpointsView {
             }
             Pane::Files => self.move_file_selection(step),
             Pane::Checkpoints => self.move_checkpoint_selection(step),
+        }
+    }
+
+    /// RPC-369: hit-test a left click. Focuses the pane under the cursor;
+    /// a Checkpoints/Files click selects the row (reusing the navigation
+    /// setters so the clamp / `ensure_visible` / `Emit` path is shared); a
+    /// Diff click only focuses. Clicks past the last populated row or
+    /// outside all rects change nothing.
+    fn handle_click(&mut self, col: u16, row: u16) -> CheckpointsEvent {
+        let pane = match self.pane_at(col, row) {
+            Some(p) => p,
+            None => return CheckpointsEvent::Ignored,
+        };
+        self.set_focused_pane(pane);
+        match pane {
+            Pane::Diff => CheckpointsEvent::Consumed,
+            Pane::Checkpoints => match self.row_target(row, true) {
+                Some(target) => self
+                    .move_checkpoint_selection(target as i32 - self.selected_checkpoint() as i32),
+                None => CheckpointsEvent::Consumed,
+            },
+            Pane::Files => match self.row_target(row, false) {
+                Some(target) => {
+                    self.move_file_selection(target as i32 - self.selected_file() as i32)
+                }
+                None => CheckpointsEvent::Consumed,
+            },
         }
     }
 }

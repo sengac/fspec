@@ -41,9 +41,7 @@ pub fn diff_line(text: &str) -> Line<'_> {
     let style = match classify(text) {
         DiffLineKind::Added => Style::default().fg(Color::Green),
         DiffLineKind::Removed => Style::default().fg(Color::Red),
-        DiffLineKind::Hunk => Style::default()
-            .fg(Color::Cyan)
-            .add_modifier(Modifier::DIM),
+        DiffLineKind::Hunk => Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM),
         DiffLineKind::Context => Style::default().fg(Color::White),
     };
     Line::from(Span::styled(text.to_string(), style))

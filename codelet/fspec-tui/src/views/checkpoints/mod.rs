@@ -159,13 +159,7 @@ impl CheckpointsView {
 
     /// Fold a `CheckpointFileDiffLoaded` response. Ignored when the key
     /// no longer matches the selected checkpoint + file.
-    pub fn set_diff(
-        &mut self,
-        work_unit_id: &str,
-        name: &str,
-        path: &str,
-        diff: Option<String>,
-    ) {
+    pub fn set_diff(&mut self, work_unit_id: &str, name: &str, path: &str, diff: Option<String>) {
         if !self.selection_matches(work_unit_id, name) {
             return;
         }
@@ -267,10 +261,36 @@ impl CheckpointsView {
         None
     }
 
+    /// RPC-369: focus the pane under a mouse click.
+    pub(super) fn set_focused_pane(&mut self, pane: Pane) {
+        self.focused_pane = pane;
+    }
+
+    /// RPC-369: map a clicked screen `row` to a list index for the
+    /// Checkpoints (`checkpoints = true`) or Files pane, using that pane's
+    /// cached CONTENT rect and scroll offset. Returns `None` when the rect
+    /// is unknown or the click lands past the last populated row.
+    pub(super) fn row_target(&self, row: u16, checkpoints: bool) -> Option<usize> {
+        let (rect, scroll, len) = if checkpoints {
+            (
+                self.last_checkpoints_rect,
+                self.checkpoint_scroll,
+                self.checkpoints.len(),
+            )
+        } else {
+            (self.last_files_rect, self.file_scroll, self.files.len())
+        };
+        let rect = rect?;
+        let offset = row.saturating_sub(rect.y) as usize;
+        if offset >= len.saturating_sub(scroll) {
+            return None;
+        }
+        Some(scroll + offset)
+    }
+
     /// Advance the wheel velocity model and return the resulting scroll
     /// step. Wrapper so `keys.rs` need not name `WheelVelocity`/dir.
     fn wheel_step(&mut self, dir: WheelDirection) -> i32 {
         self.wheel.step(dir)
     }
 }
-

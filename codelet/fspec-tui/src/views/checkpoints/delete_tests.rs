@@ -131,7 +131,8 @@ fn a_single_delete_result_removes_the_row_clamps_the_selection_and_reloads_the_n
     // @step Then the deleted checkpoint is removed leaving one checkpoint
     assert_eq!(view.checkpoint_count_total(), 1);
     assert_eq!(
-        view.selected_checkpoint_info().map(|c| c.work_unit_id.clone()),
+        view.selected_checkpoint_info()
+            .map(|c| c.work_unit_id.clone()),
         Some("AUTH-001".to_string())
     );
 
@@ -245,7 +246,10 @@ fn confirming_the_typed_delete_all_dispatches_delete_all_checkpoints() {
 
     // @step Then the view emits Action::DeleteAllCheckpoints
     assert!(
-        matches!(outcome, CheckpointsEvent::Emit(Action::DeleteAllCheckpoints)),
+        matches!(
+            outcome,
+            CheckpointsEvent::Emit(Action::DeleteAllCheckpoints)
+        ),
         "expected DeleteAllCheckpoints, got {outcome:?}"
     );
 

@@ -57,9 +57,19 @@ fn shared_file_row_shows_cursor_and_truncates_long_path() {
 #[test]
 fn shared_pane_scrollbar_paints_thumb_in_gutter() {
     // @step Given the shared diff-viewer module exposes a pane-scrollbar helper that delegates to list_scrollbar
-    let content = Rect { x: 0, y: 0, width: 10, height: 4 };
+    let content = Rect {
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 4,
+    };
     let list_width = 9u16;
-    let mut buf = Buffer::empty(Rect { x: 0, y: 0, width: 10, height: 4 });
+    let mut buf = Buffer::empty(Rect {
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 4,
+    });
 
     // @step When I render a pane-scrollbar gutter for a list that overflows its pane
     render_pane_scrollbar(content, &mut buf, list_width, 0, 4, 20);
@@ -70,7 +80,10 @@ fn shared_pane_scrollbar_paints_thumb_in_gutter() {
     for y in content.y..content.y + content.height {
         symbols.push_str(buf[(gutter_x, y)].symbol());
     }
-    assert!(symbols.contains('■'), "expected a thumb glyph in gutter, got {symbols:?}");
+    assert!(
+        symbols.contains('■'),
+        "expected a thumb glyph in gutter, got {symbols:?}"
+    );
 }
 
 #[test]
@@ -78,16 +91,41 @@ fn pane_header_on_tiny_areas_does_not_overflow_or_panic() {
     // @step Given the shared pane_header helper and a terminal too short to fit the heading, underline and content bands
     // A 1-row-high area cannot fit heading(1) + underline(1) + content, and a
     // 0-row-high area has no room at all. Both must be handled without panic.
-    let mut buf = Buffer::empty(Rect { x: 0, y: 0, width: 20, height: 1 });
+    let mut buf = Buffer::empty(Rect {
+        x: 0,
+        y: 0,
+        width: 20,
+        height: 1,
+    });
 
     // @step When pane_header is rendered into a 1-row-high area
-    let one_row = pane_header(Rect { x: 0, y: 0, width: 20, height: 1 }, &mut buf, "Files", true);
+    let one_row = pane_header(
+        Rect {
+            x: 0,
+            y: 0,
+            width: 20,
+            height: 1,
+        },
+        &mut buf,
+        "Files",
+        true,
+    );
 
     // @step Then it returns a content Rect with height 0 so list rows cannot overdraw the heading
     assert_eq!(one_row.height, 0, "1-row pane leaves no content rows");
 
     // @step When pane_header is rendered into a 0-row-high area
-    let zero_row = pane_header(Rect { x: 0, y: 0, width: 20, height: 0 }, &mut buf, "Files", false);
+    let zero_row = pane_header(
+        Rect {
+            x: 0,
+            y: 0,
+            width: 20,
+            height: 0,
+        },
+        &mut buf,
+        "Files",
+        false,
+    );
 
     // @step Then it returns a content Rect with height 0 and paints nothing
     assert_eq!(zero_row.height, 0, "0-row pane leaves no content rows");
@@ -96,13 +134,34 @@ fn pane_header_on_tiny_areas_does_not_overflow_or_panic() {
 #[test]
 fn render_vertical_divider_is_a_noop_for_zero_size_gutters() {
     // @step Given the shared render_vertical_divider helper and a buffer with no divider painted yet
-    let mut buf = Buffer::empty(Rect { x: 0, y: 0, width: 10, height: 4 });
+    let mut buf = Buffer::empty(Rect {
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 4,
+    });
 
     // @step When render_vertical_divider is called with a zero-height gutter
-    render_vertical_divider(Rect { x: 0, y: 0, width: 1, height: 0 }, &mut buf);
+    render_vertical_divider(
+        Rect {
+            x: 0,
+            y: 0,
+            width: 1,
+            height: 0,
+        },
+        &mut buf,
+    );
 
     // @step And render_vertical_divider is called with a zero-width gutter
-    render_vertical_divider(Rect { x: 0, y: 0, width: 0, height: 4 }, &mut buf);
+    render_vertical_divider(
+        Rect {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 4,
+        },
+        &mut buf,
+    );
 
     // @step Then no divider glyph is written and the buffer is unchanged
     let mut painted = false;

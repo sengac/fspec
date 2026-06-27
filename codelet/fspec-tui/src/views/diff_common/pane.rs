@@ -63,7 +63,11 @@ fn render_heading_underline(area: Rect, buf: &mut Buffer) {
         width: area.width,
         height: 1,
     };
-    Paragraph::new(Line::from(Span::styled(rule, Style::default().fg(Color::Reset)))).render(row, buf);
+    Paragraph::new(Line::from(Span::styled(
+        rule,
+        Style::default().fg(Color::Reset),
+    )))
+    .render(row, buf);
 }
 
 /// Paint a `│` vertical divider down the reserved 1-column `gutter` Rect

@@ -13,7 +13,9 @@
 use crossterm::event::Event;
 
 use crate::components::{Action, EventResult};
-use crate::views::{BlocklistEvent, ChangedFilesEvent, CheckpointsEvent, ModelSelectorEvent, ProviderSettingsEvent};
+use crate::views::{
+    BlocklistEvent, ChangedFilesEvent, CheckpointsEvent, ModelSelectorEvent, ProviderSettingsEvent,
+};
 
 use super::navigator::Navigator;
 

@@ -2340,8 +2340,10 @@ impl FspecBackend for MockBackend {
 
     async fn delete_checkpoint(&self, work_unit_id: String, name: String) -> Result<()> {
         self.delete_checkpoint_calls.fetch_add(1, Ordering::SeqCst);
-        *self.last_delete_checkpoint.lock().expect("MockBackend mutex") =
-            Some((work_unit_id, name));
+        *self
+            .last_delete_checkpoint
+            .lock()
+            .expect("MockBackend mutex") = Some((work_unit_id, name));
         Ok(())
     }
 

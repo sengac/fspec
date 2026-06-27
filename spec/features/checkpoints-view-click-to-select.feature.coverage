@@ -1,0 +1,442 @@
+{
+  "scenarios": [
+    {
+      "name": "Clicking a checkpoint name row selects it and loads its files",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "377-403",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking a file row selects it and loads its diff",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "406-432",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking inside the diff pane focuses it without changing any selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "436-457",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A click is swallowed while the restore dialog is open",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "488-513",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking the already-selected checkpoint row changes nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "516-536",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clicking empty space below the last checkpoint row changes nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "461-485",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/mod.rs",
+              "lines": [
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "461-485",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/checkpoints/tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/checkpoints/keys.rs",
+      "codelet/fspec-tui/src/views/checkpoints/mod.rs"
+    ],
+    "totalLinesCovered": 491
+  }
+}

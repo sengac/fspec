@@ -214,12 +214,7 @@ impl App {
                 path,
                 error,
             } => {
-                self.handle_restore_result(
-                    work_unit_id,
-                    name,
-                    path.as_deref(),
-                    error.as_deref(),
-                );
+                self.handle_restore_result(work_unit_id, name, path.as_deref(), error.as_deref());
             }
             Action::RefreshCheckpointCounts => {
                 self.spawn_refresh_checkpoint_counts();

@@ -75,9 +75,7 @@ impl RestoreDialog {
                         format!("Restore {path}? This overwrites the working copy.")
                     }
                     RestoreTarget::All { file_count, .. } => {
-                        format!(
-                            "Restore ALL {file_count} files? This overwrites the working copy."
-                        )
+                        format!("Restore ALL {file_count} files? This overwrites the working copy.")
                     }
                 };
                 vec![warning, String::new(), "y: confirm   n: cancel".to_string()]

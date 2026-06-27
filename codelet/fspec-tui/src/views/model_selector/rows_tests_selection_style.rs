@@ -203,18 +203,13 @@ fn selected_model_row_flips_tokens_black() {
     // @step When that model row is rendered while selected
     let cells = render_cells(&rows, sel, Some("gpt-4o"));
     let y = row_of(&cells, "(current)");
-    let glyphs: Vec<_> = cells
-        .iter()
-        .filter(|c| c.1 == y && c.2 != " ")
-        .collect();
+    let glyphs: Vec<_> = cells.iter().filter(|c| c.1 == y && c.2 != " ").collect();
 
     // @step Then the badges are rendered black
     for token in ["[C]", "[R]", "[V]", "[200k]"] {
         let first = token.chars().next().unwrap().to_string();
         assert!(
-            glyphs
-                .iter()
-                .any(|c| c.2 == first && c.3 == Color::Black),
+            glyphs.iter().any(|c| c.2 == first && c.3 == Color::Black),
             "badge {token} must render black on the selected row"
         );
     }

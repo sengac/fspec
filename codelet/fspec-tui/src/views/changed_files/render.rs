@@ -16,10 +16,10 @@ use ratatui::widgets::{Paragraph, Widget};
 
 use crate::views::full_screen_shell::render_full_screen_scaffold_raw_title;
 
+use super::{ChangedFilesView, Pane};
 use crate::views::diff_common::{
     diff_line, file_row, pane_header, render_pane_scrollbar, render_vertical_divider,
 };
-use super::{ChangedFilesView, Pane};
 
 const FOOTER_HINT: &str = "ESC: Back | Tab: Switch Panes | ↑↓: Navigate/Scroll | PgUp/PgDn: Scroll";
 const EMPTY_MESSAGE: &str = "No changed files";
@@ -60,10 +60,21 @@ impl ChangedFilesView {
                     ])
                     .split(body);
                 render_vertical_divider(panes[1], buf);
-                files_rect =
-                    Some(render_files_pane(panes[0], buf, &files, selected_index, file_scroll, focused));
-                diff_rect =
-                    Some(render_diff_pane(panes[2], buf, &diff_lines, diff_scroll, focused));
+                files_rect = Some(render_files_pane(
+                    panes[0],
+                    buf,
+                    &files,
+                    selected_index,
+                    file_scroll,
+                    focused,
+                ));
+                diff_rect = Some(render_diff_pane(
+                    panes[2],
+                    buf,
+                    &diff_lines,
+                    diff_scroll,
+                    focused,
+                ));
             },
             None,
         );
@@ -107,7 +118,10 @@ fn render_files_pane(
         .take(visible)
         .map(|(idx, f)| file_row(f, idx == selected_index, list_width as usize))
         .collect();
-    let list_area = Rect { width: list_width, ..content };
+    let list_area = Rect {
+        width: list_width,
+        ..content
+    };
     Paragraph::new(lines).render(list_area, buf);
     if overflow {
         render_pane_scrollbar(content, buf, list_width, scroll, visible, files.len());
@@ -136,7 +150,10 @@ fn render_diff_pane(
         .take(visible)
         .map(|l| diff_line(l))
         .collect();
-    let list_area = Rect { width: list_width, ..content };
+    let list_area = Rect {
+        width: list_width,
+        ..content
+    };
     Paragraph::new(lines).render(list_area, buf);
     if overflow {
         render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());

@@ -8,17 +8,17 @@
 //! on the right. Mirrors the TS `ChangedFilesViewer` + `FileDiffViewer`
 //! behaviour. Owned by `Navigator` via `ViewMode::ChangedFiles`.
 //!
-//! Split across sibling modules to stay under the 300-LoC source-shape
-//! ceiling: `render` (panes). The colored diff lines, file-row
-//! formatting, and pane-scrollbar gutter wrapper are shared via
+//! Split into sibling modules to stay under 300 LoC: `render` (panes),
+//! `mouse` (click selection, RPC-368). Diff colouring, file-row
+//! formatting, and the pane-scrollbar gutter wrapper are shared via
 //! `crate::views::diff_common` (RPC-363).
 
+use crate::components::scroll_viewport::{ensure_visible, WheelVelocity};
 use codelet_rpc_types::ChangedFile;
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::layout::Rect;
 
-use crate::components::scroll_viewport::{ensure_visible, WheelVelocity, WheelDirection};
-
+mod mouse;
 mod render;
 
 #[cfg(test)]
@@ -115,9 +115,7 @@ impl ChangedFilesView {
         self.diff_path = Some(path.to_string());
         self.diff_scroll = 0;
         self.diff_lines = match diff {
-            Some(text) if !text.is_empty() => {
-                text.split('\n').map(ToString::to_string).collect()
-            }
+            Some(text) if !text.is_empty() => text.split('\n').map(ToString::to_string).collect(),
             _ => vec!["No changes to display".to_string()],
         };
     }
@@ -187,27 +185,6 @@ impl ChangedFilesView {
         }
     }
 
-    fn handle_mouse(&mut self, ev: MouseEvent) -> ChangedFilesEvent {
-        let dir = match ev.kind {
-            MouseEventKind::ScrollUp => WheelDirection::Up,
-            MouseEventKind::ScrollDown => WheelDirection::Down,
-            _ => return ChangedFilesEvent::Ignored,
-        };
-        // Hit-test which pane the wheel landed over; default to the
-        // currently-focused pane when the cursor is outside both rects.
-        let target = self.pane_at(ev.column, ev.row).unwrap_or(self.focused_pane);
-        let step = self.wheel.step(dir);
-        match target {
-            Pane::Diff => {
-                self.apply_diff_scroll(step);
-                ChangedFilesEvent::Consumed
-            }
-            // Mirror `handle_key`: propagate the Emit(LoadFileDiff) so a
-            // wheel-driven selection change reloads the diff pane.
-            Pane::Files => self.move_selection(step),
-        }
-    }
-
     fn pane_at(&self, col: u16, row: u16) -> Option<Pane> {
         let inside = |r: &Rect| {
             col >= r.x
@@ -247,11 +224,13 @@ impl ChangedFilesView {
         }
         self.selected_index = clamped;
         self.diff_scroll = 0;
-        let visible = self
-            .last_files_rect
-            .map(|r| r.height as usize)
-            .unwrap_or(0);
-        ensure_visible(&mut self.file_scroll, self.selected_index, visible, self.files.len());
+        let visible = self.last_files_rect.map(|r| r.height as usize).unwrap_or(0);
+        ensure_visible(
+            &mut self.file_scroll,
+            self.selected_index,
+            visible,
+            self.files.len(),
+        );
         match self.selected_path() {
             Some(path) => ChangedFilesEvent::Emit(crate::components::Action::LoadFileDiff(path)),
             None => ChangedFilesEvent::Consumed,

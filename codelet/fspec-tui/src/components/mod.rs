@@ -968,7 +968,10 @@ pub enum Action {
     CloseChangedFilesView,
     ChangedFilesLoaded(Vec<codelet_rpc_types::ChangedFile>),
     LoadFileDiff(String),
-    FileDiffLoaded { path: String, diff: Option<String> },
+    FileDiffLoaded {
+        path: String,
+        diff: Option<String>,
+    },
 
     // RPC-364: Three-pane CheckpointsView (BoardView `C` opens; selecting a
     // checkpoint → LoadCheckpointFiles → CheckpointFilesLoaded; selecting a

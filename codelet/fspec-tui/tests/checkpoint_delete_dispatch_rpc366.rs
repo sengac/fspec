@@ -56,7 +56,10 @@ async fn dispatching_delete_checkpoint_calls_the_transport() {
         matches!(a, Action::DeleteCheckpointResult { .. })
     })
     .await;
-    assert!(result.is_some(), "expected a DeleteCheckpointResult on the bus");
+    assert!(
+        result.is_some(),
+        "expected a DeleteCheckpointResult on the bus"
+    );
 
     // @step Then the backend delete_checkpoint is called for that checkpoint
     assert_eq!(
@@ -86,7 +89,10 @@ async fn dispatching_delete_all_checkpoints_calls_the_transport() {
         matches!(a, Action::DeleteCheckpointResult { .. })
     })
     .await;
-    assert!(result.is_some(), "expected a DeleteCheckpointResult on the bus");
+    assert!(
+        result.is_some(),
+        "expected a DeleteCheckpointResult on the bus"
+    );
 
     // @step Then the backend delete_all_checkpoints is called
     assert_eq!(

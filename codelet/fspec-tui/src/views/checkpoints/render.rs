@@ -70,12 +70,28 @@ impl CheckpointsView {
                     .split(rows[0]);
                 render_vertical_divider(top[1], buf);
                 cp_rect = Some(render_checkpoints_pane(
-                    top[0], buf, &checkpoints, selected_cp, cp_scroll, focused,
+                    top[0],
+                    buf,
+                    &checkpoints,
+                    selected_cp,
+                    cp_scroll,
+                    focused,
                 ));
                 files_rect = Some(render_files_pane(
-                    top[2], buf, &files, selected_file, file_scroll, focused,
+                    top[2],
+                    buf,
+                    &files,
+                    selected_file,
+                    file_scroll,
+                    focused,
                 ));
-                diff_rect = Some(render_diff_pane(rows[1], buf, &diff_lines, diff_scroll, focused));
+                diff_rect = Some(render_diff_pane(
+                    rows[1],
+                    buf,
+                    &diff_lines,
+                    diff_scroll,
+                    focused,
+                ));
             },
             None,
         );
@@ -129,7 +145,10 @@ fn render_checkpoints_pane(
         .take(visible)
         .map(|(idx, c)| checkpoint_line(c, idx == selected, list_width as usize))
         .collect();
-    let list_area = Rect { width: list_width, ..content };
+    let list_area = Rect {
+        width: list_width,
+        ..content
+    };
     Paragraph::new(lines).render(list_area, buf);
     if overflow {
         render_pane_scrollbar(content, buf, list_width, scroll, visible, checkpoints.len());
@@ -180,7 +199,10 @@ fn render_files_pane(
         .take(visible)
         .map(|(idx, f)| file_row(f, idx == selected, list_width as usize))
         .collect();
-    let list_area = Rect { width: list_width, ..content };
+    let list_area = Rect {
+        width: list_width,
+        ..content
+    };
     Paragraph::new(lines).render(list_area, buf);
     if overflow {
         render_pane_scrollbar(content, buf, list_width, scroll, visible, files.len());
@@ -209,7 +231,10 @@ fn render_diff_pane(
         .take(visible)
         .map(|l| diff_line(l))
         .collect();
-    let list_area = Rect { width: list_width, ..content };
+    let list_area = Rect {
+        width: list_width,
+        ..content
+    };
     Paragraph::new(lines).render(list_area, buf);
     if overflow {
         render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());

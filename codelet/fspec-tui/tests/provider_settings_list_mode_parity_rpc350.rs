@@ -131,7 +131,11 @@ fn title_name_bold_yellow_count_dim_gray() {
     // @step Given the provider settings view has 19 nav items
     let mut view = ProviderSettingsView::new();
     view.set_provider_display_infos(nineteen_providers());
-    assert_eq!(view.nav_items.len(), 19, "fixture should yield 19 nav items");
+    assert_eq!(
+        view.nav_items.len(),
+        19,
+        "fixture should yield 19 nav items"
+    );
 
     // @step When the view is rendered to the terminal buffer
     let buf = render_to_buffer(&mut view);
@@ -301,7 +305,11 @@ fn configured_unselected_row_paints_per_color_segments() {
         Color::White,
         "provider name should be white"
     );
-    assert_eq!(cell_bg(&buf, name_x, ry), Color::Reset, "unselected bg reset");
+    assert_eq!(
+        cell_bg(&buf, name_x, ry),
+        Color::Reset,
+        "unselected bg reset"
+    );
 
     // @step And the "✓ AIza••••••••H3Ck" masked-key segment is foreground green
     let key_x = col_of(&buf, ry, "AIza") as u16;
@@ -464,8 +472,8 @@ fn resume_session_view_keeps_shared_blue_title() {
     view.render(a, &mut buf);
 
     // @step Then its title row "Resume Session (5 available)" keeps the shared blue bold styling
-    let ty = find_row(&buf, "Resume Session (5 available)")
-        .expect("resume title row should render");
+    let ty =
+        find_row(&buf, "Resume Session (5 available)").expect("resume title row should render");
     let name_x = col_of(&buf, ty, "Resume Session") as u16;
     assert_eq!(
         cell_fg(&buf, name_x, ty),
