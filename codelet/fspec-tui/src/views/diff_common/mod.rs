@@ -12,6 +12,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
 mod diff_render;
+mod pane;
 mod row;
 
 #[cfg(test)]
@@ -19,6 +20,7 @@ mod row;
 mod api_tests;
 
 pub use diff_render::{classify, diff_line, DiffLineKind};
+pub use pane::{pane_header, render_vertical_divider};
 pub use row::{file_row, status_color, truncate_path};
 
 /// Paint the proportional scrollbar in the reserved 1-col gutter to the

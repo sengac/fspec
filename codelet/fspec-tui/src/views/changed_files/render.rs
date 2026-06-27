@@ -10,13 +10,15 @@
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
 use crate::views::full_screen_shell::render_full_screen_scaffold_raw_title;
 
-use crate::views::diff_common::{diff_line, file_row, render_pane_scrollbar};
+use crate::views::diff_common::{
+    diff_line, file_row, pane_header, render_pane_scrollbar, render_vertical_divider,
+};
 use super::{ChangedFilesView, Pane};
 
 const FOOTER_HINT: &str = "ESC: Back | Tab: Switch Panes | ↑↓: Navigate/Scroll | PgUp/PgDn: Scroll";
@@ -51,12 +53,17 @@ impl ChangedFilesView {
                 }
                 let panes = Layout::default()
                     .direction(Direction::Horizontal)
-                    .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
+                    .constraints([
+                        Constraint::Percentage(40),
+                        Constraint::Length(1),
+                        Constraint::Percentage(60),
+                    ])
                     .split(body);
+                render_vertical_divider(panes[1], buf);
                 files_rect =
                     Some(render_files_pane(panes[0], buf, &files, selected_index, file_scroll, focused));
                 diff_rect =
-                    Some(render_diff_pane(panes[1], buf, &diff_lines, diff_scroll, focused));
+                    Some(render_diff_pane(panes[2], buf, &diff_lines, diff_scroll, focused));
             },
             None,
         );
@@ -75,28 +82,8 @@ fn render_empty(area: Rect, buf: &mut Buffer) {
     .render(area, buf);
 }
 
-/// Paint a 1-row pane header that highlights when focused. Returns the
-/// content Rect below the header.
-fn pane_header(area: Rect, buf: &mut Buffer, label: &str, focused: bool) -> Rect {
-    if area.height == 0 {
-        return area;
-    }
-    let split = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Length(1), Constraint::Min(0)])
-        .split(area);
-    let style = if focused {
-        Style::default()
-            .fg(Color::Black)
-            .bg(Color::Green)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::White)
-    };
-    Paragraph::new(Line::from(Span::styled(label.to_string(), style))).render(split[0], buf);
-    split[1]
-}
-
+/// Paint the file-list pane (shared focus-aware header + underline rule,
+/// the file rows, and an overflow scrollbar). Returns the content Rect.
 fn render_files_pane(
     area: Rect,
     buf: &mut Buffer,

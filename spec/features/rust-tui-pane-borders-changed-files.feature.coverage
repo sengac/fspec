@@ -1,0 +1,125 @@
+{
+  "scenarios": [
+    {
+      "name": "Changed Files view shows a vertical divider between the Files and Diff panes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "550-583",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Each pane shows a horizontal underline rule beneath its heading",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "586-611",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/diff_common/pane.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty Changed Files view still shows its empty-state message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "614-655",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/changed_files/tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/changed_files/render.rs",
+      "codelet/fspec-tui/src/views/diff_common/pane.rs"
+    ],
+    "totalLinesCovered": 162
+  }
+}
