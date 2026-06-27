@@ -22,7 +22,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use crate::components::{Action, EventResult, Priority};
 use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
-use crate::views::{AgentView, BlocklistView, BoardView, ModelSelectorView, ProviderSettingsView};
+use crate::views::{AgentView, BlocklistView, BoardView, ChangedFilesView, ModelSelectorView, ProviderSettingsView};
 
 /// Which top-level view is currently visible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -41,6 +41,10 @@ pub enum ViewMode {
     /// (`SwitchToModels`). Returns to `Agent` on Esc or after a model
     /// is committed.
     ModelSelector,
+    /// RPC-356: dual-pane ChangedFilesView entered from the board via
+    /// the `F` key (`OpenChangedFilesView`). Returns to `Board` on Esc
+    /// or `CloseChangedFilesView`.
+    ChangedFiles,
 }
 
 /// Top-level navigator. Owns the BoardView + AgentView components; the
@@ -57,6 +61,8 @@ pub struct Navigator {
     pub blocklist: BlocklistView,
     /// RPC-337: full-screen ModelSelectorView owned by the Navigator.
     pub model_selector: ModelSelectorView,
+    /// RPC-356: dual-pane ChangedFilesView owned by the Navigator.
+    pub changed_files: ChangedFilesView,
     pub active_view: ViewMode,
     pub action_tx: Option<UnboundedSender<Action>>,
 }
@@ -69,6 +75,7 @@ impl Navigator {
             provider_settings: ProviderSettingsView::new(),
             blocklist: BlocklistView::new(),
             model_selector: ModelSelectorView::new(),
+            changed_files: ChangedFilesView::new(),
             active_view: ViewMode::Board,
             action_tx: Some(action_tx),
         }
@@ -93,6 +100,7 @@ impl Navigator {
             ViewMode::ProviderSettings => self.handle_provider_settings_event(event),
             ViewMode::Blocklist => self.handle_blocklist_event(event),
             ViewMode::ModelSelector => self.handle_model_selector_event(event),
+            ViewMode::ChangedFiles => self.handle_changed_files_event(event),
         }
     }
 
@@ -127,6 +135,13 @@ impl Navigator {
                     "[MODEL-SELECT] navigator apply_action: closing ModelSelector view -> Agent"
                 );
                 self.active_view = ViewMode::Agent;
+            }
+            // RPC-356: changed-files mode-view flips.
+            Action::OpenChangedFilesView => {
+                self.active_view = ViewMode::ChangedFiles;
+            }
+            Action::CloseChangedFilesView if self.active_view == ViewMode::ChangedFiles => {
+                self.active_view = ViewMode::Board;
             }
             _ => {}
         }
@@ -164,6 +179,9 @@ impl Navigator {
             }
             ViewMode::ModelSelector => {
                 self.model_selector.render(area, buf);
+            }
+            ViewMode::ChangedFiles => {
+                self.changed_files.render(area, buf);
             }
         }
     }

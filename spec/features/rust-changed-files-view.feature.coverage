@@ -1,0 +1,326 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing F on the board opens the Changed Files view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "247-269",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opening flips the Navigator to the Changed Files view and closing returns to the board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "273-290",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The file list renders colored status letters and a selection cursor",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "62-83",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/row.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The diff pane renders colored add, remove and hunk-header lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "110-130",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/diff_render.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moving the selection down reloads the diff for the newly selected file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "132-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "lines": [
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab moves focus to the diff pane so PgDn scrolls the diff",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "154-180",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "lines": [
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An empty repo shows the empty-state message and Esc returns to the board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "182-198",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A mouse wheel scroll over the focused diff pane scrolls it by the WheelVelocity step",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "200-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Diff pane scroll stops at the last full page",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/changed_files/tests.rs",
+          "lines": "244-282",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "lines": [
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/changed_files/tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board.rs",
+      "codelet/fspec-tui/src/views/navigator.rs",
+      "codelet/fspec-tui/src/views/changed_files/row.rs",
+      "codelet/fspec-tui/src/views/changed_files/diff_render.rs",
+      "codelet/fspec-tui/src/views/changed_files/mod.rs",
+      "codelet/fspec-tui/src/views/changed_files/render.rs"
+    ],
+    "totalLinesCovered": 385
+  }
+}

@@ -599,10 +599,13 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     OAuthLoginFailed / OAuthOpenUrl / OAuthCopyUrl OAuth-login variants
     //     + docs)
     //   - PROV-116 added ≤10 lines (ProfileDeleteNavigate variant + doc)
-    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 = 1002
+    //   - RPC-356 added ≤8 lines (OpenChangedFilesView / CloseChangedFilesView /
+    //     ChangedFilesLoaded / LoadFileDiff / FileDiffLoaded changed-files
+    //     variants + a 2-line group comment)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 = 1010
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1002,
-        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337+RPC-347+PROV-109+PROV-113+PROV-116 budget is +200 over baseline 802"
+        n_components <= 1010,
+        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337+RPC-347+PROV-109+PROV-113+PROV-116+RPC-356 budget is +208 over baseline 802"
     );
 }

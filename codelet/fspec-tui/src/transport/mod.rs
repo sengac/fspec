@@ -18,10 +18,10 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
-    CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
-    IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
-    ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    CompactionResult, CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest,
+    HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy,
+    ModelEntry, ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition,
     ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
     SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
     SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
@@ -97,6 +97,24 @@ pub trait FspecBackend: Send + Sync {
     /// the shared `FspecService::checkpoint_counts` RPC method which
     /// in turn calls `codelet_git::ghost_commit::count_checkpoints`.
     async fn checkpoint_counts(&self) -> Result<CheckpointCounts>;
+
+    /// RPC-355: return the list of changed working-tree files (staged +
+    /// unstaged + untracked), each with a derived change type (A/M/D) and a
+    /// `staged` flag. Both transports delegate to the shared
+    /// `FspecService::changed_files` RPC method which builds the combined
+    /// list from the `codelet_git` change-type helpers. The default impl
+    /// returns an empty Vec so test doubles compile unchanged (RPC-037 /
+    /// PROV-109 convention).
+    async fn changed_files(&self) -> Result<Vec<ChangedFile>> {
+        Ok(Vec::new())
+    }
+
+    /// RPC-355: return the unified diff text for one changed file, or `None`
+    /// when there is no diff / no cwd. Both transports delegate to
+    /// `FspecService::file_diff`. The default impl returns `None`.
+    async fn file_diff(&self, _path: String) -> Result<Option<String>> {
+        Ok(None)
+    }
 
     /// RPC-017: move the work unit with `id` one position UP in its
     /// current `states[<column>]` array in `spec/work-units.json`.

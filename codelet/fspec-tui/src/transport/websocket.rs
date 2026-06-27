@@ -16,13 +16,14 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
-    CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
-    IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
-    ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
-    RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId, SessionInfo, SessionModel,
-    SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk, TestConnectionResult,
-    ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    CompactionResult, CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest,
+    HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy,
+    ModelEntry, ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput,
+    ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId, SessionInfo,
+    SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk,
+    TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext,
+    WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::{broadcast, mpsc::UnboundedSender, Notify, RwLock};
@@ -279,6 +280,22 @@ impl FspecBackend for WebSocketFspecBackend {
         Ok(client
             .client()
             .checkpoint_counts(context::current())
+            .await?)
+    }
+
+    async fn changed_files(&self) -> Result<Vec<ChangedFile>> {
+        // RPC-355: guarded delegate following the standard Disconnected pattern.
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client.client().changed_files(context::current()).await?)
+    }
+
+    async fn file_diff(&self, path: String) -> Result<Option<String>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .file_diff(context::current(), path)
             .await?)
     }
 

@@ -13,7 +13,7 @@
 use crossterm::event::Event;
 
 use crate::components::{Action, EventResult};
-use crate::views::{BlocklistEvent, ModelSelectorEvent, ProviderSettingsEvent};
+use crate::views::{BlocklistEvent, ChangedFilesEvent, ModelSelectorEvent, ProviderSettingsEvent};
 
 use super::navigator::Navigator;
 
@@ -130,6 +130,28 @@ impl Navigator {
                 EventResult::consumed()
             }
             BlocklistEvent::Emit(action) => {
+                if let Some(tx) = self.action_tx.as_ref() {
+                    let _ = tx.send(action);
+                }
+                EventResult::consumed()
+            }
+        }
+    }
+
+    /// RPC-356: forward key + mouse events to the ChangedFilesView and
+    /// translate its `ChangedFilesEvent` outcomes onto the action bus.
+    /// Mirrors `handle_blocklist_event`.
+    pub(crate) fn handle_changed_files_event(&mut self, event: &Event) -> EventResult {
+        match self.changed_files.handle_event(event) {
+            ChangedFilesEvent::Consumed => EventResult::consumed(),
+            ChangedFilesEvent::Ignored => EventResult::ignored(),
+            ChangedFilesEvent::Close => {
+                if let Some(tx) = self.action_tx.as_ref() {
+                    let _ = tx.send(Action::CloseChangedFilesView);
+                }
+                EventResult::consumed()
+            }
+            ChangedFilesEvent::Emit(action) => {
                 if let Some(tx) = self.action_tx.as_ref() {
                     let _ = tx.send(action);
                 }

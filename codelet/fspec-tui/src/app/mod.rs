@@ -20,6 +20,7 @@ pub mod bootstrap;
 pub mod dispatch;
 pub mod dispatch_agent_exit;
 pub mod dispatch_blocklist;
+pub mod dispatch_changed_files;
 pub mod dispatch_create_session_dialog;
 pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;

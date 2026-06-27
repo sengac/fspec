@@ -81,6 +81,27 @@ pub struct CheckpointCounts {
 }
 
 // ============================================================================
+// RPC-355: Changed-file wire type
+// ============================================================================
+
+/// One changed file in the working tree (RPC-355).
+///
+/// `change_type` is a single-letter `String` ("A" | "M" | "D" | "R") to stay
+/// serde/tarpc-friendly; the UI maps the letter to a color. Mirrors the TS
+/// `FileItem` shape consumed by `ChangedFilesViewer`.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ChangedFile {
+    /// Repo-relative path.
+    pub path: String,
+    /// Single-letter change type: "A" | "M" | "D" | "R".
+    #[serde(rename = "changeType")]
+    pub change_type: String,
+    /// true = staged (index), false = unstaged/untracked working-tree change.
+    pub staged: bool,
+}
+
+// ============================================================================
 // RPC-007: Session types
 // ============================================================================
 

@@ -5,6 +5,13 @@ use crate::{discover_repo, open_repo};
 use gix::bstr::BStr;
 use std::path::Path;
 
+// RPC-355: change-type derivation helpers live in a sibling module but are
+// re-exported here so callers use the single `codelet_git::status::*` path.
+pub use crate::change_type::{
+    get_staged_files_with_change_type, get_unstaged_files_with_change_type, ChangeType,
+    ChangedFileStatus,
+};
+
 /// Get list of staged files (files added to the index)
 ///
 /// # Arguments

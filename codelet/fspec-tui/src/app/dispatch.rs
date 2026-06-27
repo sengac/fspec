@@ -276,6 +276,7 @@ impl App {
                     || self.try_dispatch_pause_hitl(&action)
                     || self.try_dispatch_provider_settings(&action)
                     || self.try_dispatch_blocklist(&action)
+                    || self.try_dispatch_changed_files(&action)
                     || self.try_dispatch_merge_worktree(&action)
                     || self.try_dispatch_slash_schedule(&action)
                     || self.try_dispatch_slash_loop(&action)

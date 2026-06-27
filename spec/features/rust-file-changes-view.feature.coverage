@@ -1,0 +1,210 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing F on the board opens the Changed Files view with the changed file and its diff",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "147-187",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                174,
+                175,
+                176,
+                177,
+                178
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "147-187",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "147-187",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_changed_files.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "147-187",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Esc in the Changed Files view returns to the board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "190-217",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "190-217",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opening the Changed Files view in a clean repo shows an empty state",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "220-260",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/render.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/file_changes_view_rpc354.rs",
+          "lines": "220-260",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/changed_files/mod.rs",
+              "lines": [
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/file_changes_view_rpc354.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board.rs",
+      "codelet/fspec-tui/src/views/navigator.rs",
+      "codelet/fspec-tui/src/app/dispatch_changed_files.rs",
+      "codelet/fspec-tui/src/views/changed_files/mod.rs",
+      "codelet/fspec-tui/src/views/navigator_events.rs",
+      "codelet/fspec-tui/src/views/changed_files/render.rs"
+    ],
+    "totalLinesCovered": 388
+  }
+}

@@ -23,6 +23,7 @@
 pub mod agent;
 pub mod blocklist;
 pub mod board;
+pub mod changed_files;
 pub mod full_screen_shell;
 pub mod model_selector;
 pub mod navigator;
@@ -32,6 +33,7 @@ pub mod provider_settings;
 pub use agent::{AgentView, RenderedChunk as AgentRenderedChunk};
 pub use blocklist::{BlocklistEvent, BlocklistView};
 pub use board::BoardView;
+pub use changed_files::{ChangedFilesEvent, ChangedFilesView, Pane as ChangedFilesPane};
 pub use model_selector::{ModelSelectorEvent, ModelSelectorView};
 pub use navigator::{Navigator, ViewMode};
 pub use provider_settings::{

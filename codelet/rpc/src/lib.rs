@@ -27,7 +27,8 @@ use arc_swap::ArcSwap;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    CompactionResult,
     CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
     IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
     ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition,
@@ -46,11 +47,14 @@ use tarpc::context::Context;
 use tokio::sync::broadcast;
 use tokio::sync::Mutex as AsyncMutex;
 
+mod changed_files;
 mod log_layer;
 mod oauth_copilot;
 mod oauth_disconnect;
 mod oauth_login;
 pub use log_layer::{register_log_layer, BroadcastLogLayer};
+
+use changed_files::collect_changed_files;
 
 /// The fspec RPC service surface.
 ///
@@ -92,6 +96,19 @@ pub trait FspecService {
     /// Returns `CheckpointCounts { manual: 0, auto: 0 }` when no cwd
     /// has been attached or the cwd is not a git repository.
     async fn checkpoint_counts() -> CheckpointCounts;
+
+    /// RPC-355: return the list of changed working-tree files (staged +
+    /// unstaged + untracked), each with a derived change type (A/M/D) and a
+    /// `staged` flag. Delegates to the `codelet_git` change-type helpers
+    /// using the workspace cwd attached via `with_cwd`. Returns an empty Vec
+    /// when no cwd has been attached or the cwd is not a git repository —
+    /// gated exactly like `checkpoint_counts`.
+    async fn changed_files() -> Vec<ChangedFile>;
+
+    /// RPC-355: return the unified diff text for a single changed file, or
+    /// `None` when there is no diff (or no cwd is attached). Delegates to
+    /// `codelet_git::diff::get_file_diff`.
+    async fn file_diff(path: String) -> Option<String>;
 
     /// RPC-017: move the work unit with `id` one position UP in its
     /// current `states[<column>]` array. No-op at the top boundary.
@@ -901,6 +918,24 @@ impl FspecService for FspecServiceImpl {
         match self.inner.cwd() {
             Some(cwd) => codelet_git::ghost_commit::count_checkpoints(cwd).unwrap_or_default(),
             None => CheckpointCounts::default(),
+        }
+    }
+
+    async fn changed_files(self, _ctx: Context) -> Vec<ChangedFile> {
+        // RPC-355: gated on the attached cwd exactly like checkpoint_counts.
+        match self.inner.cwd() {
+            Some(cwd) => collect_changed_files(cwd).unwrap_or_default(),
+            None => Vec::new(),
+        }
+    }
+
+    async fn file_diff(self, _ctx: Context, path: String) -> Option<String> {
+        // RPC-355: delegate to the shared diff helper; None when no cwd,
+        // no diff, or the file is missing (deleted) so the UI degrades
+        // gracefully rather than surfacing an error.
+        match self.inner.cwd() {
+            Some(cwd) => codelet_git::get_file_diff(cwd, &path).ok().flatten(),
+            None => None,
         }
     }
 

@@ -960,6 +960,14 @@ pub enum Action {
     /// fires. `App::dispatch` routes this via `try_dispatch_dialog_dismiss`
     /// which calls `compositor.remove(&id)` and triggers a redraw.
     DismissDialog(String),
+
+    // RPC-356: Dual-pane ChangedFilesView (BoardView `F` opens; selection →
+    // LoadFileDiff → FileDiffLoaded; Esc → close).
+    OpenChangedFilesView,
+    CloseChangedFilesView,
+    ChangedFilesLoaded(Vec<codelet_rpc_types::ChangedFile>),
+    LoadFileDiff(String),
+    FileDiffLoaded { path: String, diff: Option<String> },
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

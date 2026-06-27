@@ -171,6 +171,11 @@ impl BoardView {
                 self.emit(Action::ReorderDown);
                 return EventResult::consumed();
             }
+            // RPC-356: open the dual-pane Changed Files view.
+            KeyCode::Char('f') | KeyCode::Char('F') => {
+                self.emit(Action::OpenChangedFilesView);
+                return EventResult::consumed();
+            }
             _ => {}
         }
 

@@ -12,6 +12,7 @@
 //! let branch = get_current_branch("/path/to/repo")?;
 //! ```
 
+mod change_type;
 mod checkout;
 mod diff;
 mod error;
@@ -40,7 +41,10 @@ pub use session_status::{
     DerivedSessionStatus, DiscardResult, MergeResult, PruneResult, SessionFilter, SessionInfo,
     SessionManifest,
 };
-pub use status::{get_current_branch, get_staged_files, get_unstaged_files, get_untracked_files};
+pub use status::{
+    get_current_branch, get_staged_files, get_staged_files_with_change_type, get_unstaged_files,
+    get_unstaged_files_with_change_type, get_untracked_files, ChangeType, ChangedFileStatus,
+};
 pub use worktree::{
     create_worktree, create_worktree_at_ref, list_worktrees, remove_worktree, WorktreeCreateResult,
     WorktreeInfo, FSPEC_WORKTREES_DIR,

@@ -18,10 +18,10 @@ use async_trait::async_trait;
 use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
-    CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
-    IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
-    ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProviderCredentialInfo,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    CompactionResult, CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest,
+    HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy,
+    ModelEntry, ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProviderCredentialInfo,
     ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob, SessionChangesSummary,
     SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo,
     StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState,
@@ -114,6 +114,15 @@ impl FspecBackend for EmbeddedFspecBackend {
         // embedded transport produces the same result as the WS
         // transport against the same SharedFspecService.
         Ok(self.client.checkpoint_counts(context::current()).await?)
+    }
+
+    async fn changed_files(&self) -> Result<Vec<ChangedFile>> {
+        // RPC-355: one-line delegate to the shared tarpc method.
+        Ok(self.client.changed_files(context::current()).await?)
+    }
+
+    async fn file_diff(&self, path: String) -> Result<Option<String>> {
+        Ok(self.client.file_diff(context::current(), path).await?)
     }
 
     async fn move_work_unit_up(&self, id: String) -> Result<()> {
