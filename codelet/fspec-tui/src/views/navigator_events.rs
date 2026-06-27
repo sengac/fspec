@@ -13,7 +13,7 @@
 use crossterm::event::Event;
 
 use crate::components::{Action, EventResult};
-use crate::views::{BlocklistEvent, ChangedFilesEvent, ModelSelectorEvent, ProviderSettingsEvent};
+use crate::views::{BlocklistEvent, ChangedFilesEvent, CheckpointsEvent, ModelSelectorEvent, ProviderSettingsEvent};
 
 use super::navigator::Navigator;
 
@@ -152,6 +152,28 @@ impl Navigator {
                 EventResult::consumed()
             }
             ChangedFilesEvent::Emit(action) => {
+                if let Some(tx) = self.action_tx.as_ref() {
+                    let _ = tx.send(action);
+                }
+                EventResult::consumed()
+            }
+        }
+    }
+
+    /// RPC-364: forward key + mouse events to the CheckpointsView and
+    /// translate its `CheckpointsEvent` outcomes onto the action bus.
+    /// Mirrors `handle_changed_files_event`.
+    pub(crate) fn handle_checkpoints_event(&mut self, event: &Event) -> EventResult {
+        match self.checkpoints.handle_event(event) {
+            CheckpointsEvent::Consumed => EventResult::consumed(),
+            CheckpointsEvent::Ignored => EventResult::ignored(),
+            CheckpointsEvent::Close => {
+                if let Some(tx) = self.action_tx.as_ref() {
+                    let _ = tx.send(Action::CloseCheckpointsView);
+                }
+                EventResult::consumed()
+            }
+            CheckpointsEvent::Emit(action) => {
                 if let Some(tx) = self.action_tx.as_ref() {
                     let _ = tx.send(action);
                 }

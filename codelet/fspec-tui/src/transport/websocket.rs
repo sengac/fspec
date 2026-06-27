@@ -16,7 +16,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo, CompactionProgress,
     CompactionResult, CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest,
     HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy,
     ModelEntry, ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput,
@@ -297,6 +297,87 @@ impl FspecBackend for WebSocketFspecBackend {
             .client()
             .file_diff(context::current(), path)
             .await?)
+    }
+
+    async fn list_checkpoints(&self) -> Result<Vec<CheckpointInfo>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .list_checkpoints(context::current())
+            .await?)
+    }
+
+    async fn checkpoint_diff_files(
+        &self,
+        work_unit_id: String,
+        name: String,
+    ) -> Result<Vec<ChangedFile>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .checkpoint_diff_files(context::current(), work_unit_id, name)
+            .await?)
+    }
+
+    async fn checkpoint_file_diff(
+        &self,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<Option<String>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .checkpoint_file_diff(context::current(), work_unit_id, name, path)
+            .await?)
+    }
+
+    async fn restore_checkpoint_file(
+        &self,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .restore_checkpoint_file(context::current(), work_unit_id, name, path)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn restore_checkpoint_all(&self, work_unit_id: String, name: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .restore_checkpoint_all(context::current(), work_unit_id, name)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_checkpoint(&self, work_unit_id: String, name: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .delete_checkpoint(context::current(), work_unit_id, name)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_all_checkpoints(&self) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .delete_all_checkpoints(context::current())
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
     async fn move_work_unit_up(&self, id: String) -> Result<()> {

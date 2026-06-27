@@ -22,7 +22,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use crate::components::{Action, EventResult, Priority};
 use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
-use crate::views::{AgentView, BlocklistView, BoardView, ChangedFilesView, ModelSelectorView, ProviderSettingsView};
+use crate::views::{AgentView, BlocklistView, BoardView, ChangedFilesView, CheckpointsView, ModelSelectorView, ProviderSettingsView};
 
 /// Which top-level view is currently visible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -45,6 +45,8 @@ pub enum ViewMode {
     /// the `F` key (`OpenChangedFilesView`). Returns to `Board` on Esc
     /// or `CloseChangedFilesView`.
     ChangedFiles,
+    /// RPC-364: three-pane CheckpointsView entered via the board `C` key.
+    Checkpoints,
 }
 
 /// Top-level navigator. Owns the BoardView + AgentView components; the
@@ -63,6 +65,8 @@ pub struct Navigator {
     pub model_selector: ModelSelectorView,
     /// RPC-356: dual-pane ChangedFilesView owned by the Navigator.
     pub changed_files: ChangedFilesView,
+    /// RPC-364: three-pane CheckpointsView owned by the Navigator.
+    pub checkpoints: CheckpointsView,
     pub active_view: ViewMode,
     pub action_tx: Option<UnboundedSender<Action>>,
 }
@@ -76,6 +80,7 @@ impl Navigator {
             blocklist: BlocklistView::new(),
             model_selector: ModelSelectorView::new(),
             changed_files: ChangedFilesView::new(),
+            checkpoints: CheckpointsView::new(),
             active_view: ViewMode::Board,
             action_tx: Some(action_tx),
         }
@@ -101,6 +106,7 @@ impl Navigator {
             ViewMode::Blocklist => self.handle_blocklist_event(event),
             ViewMode::ModelSelector => self.handle_model_selector_event(event),
             ViewMode::ChangedFiles => self.handle_changed_files_event(event),
+            ViewMode::Checkpoints => self.handle_checkpoints_event(event),
         }
     }
 
@@ -143,6 +149,11 @@ impl Navigator {
             Action::CloseChangedFilesView if self.active_view == ViewMode::ChangedFiles => {
                 self.active_view = ViewMode::Board;
             }
+            // RPC-364: checkpoints mode-view flips.
+            Action::OpenCheckpointsView => self.active_view = ViewMode::Checkpoints,
+            Action::CloseCheckpointsView if self.active_view == ViewMode::Checkpoints => {
+                self.active_view = ViewMode::Board;
+            }
             _ => {}
         }
     }
@@ -182,6 +193,9 @@ impl Navigator {
             }
             ViewMode::ChangedFiles => {
                 self.changed_files.render(area, buf);
+            }
+            ViewMode::Checkpoints => {
+                self.checkpoints.render(area, buf);
             }
         }
     }

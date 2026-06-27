@@ -50,9 +50,8 @@
           "lines": "67-87",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/row.rs",
+              "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
               "lines": [
-                49,
                 50,
                 51,
                 52,
@@ -69,7 +68,8 @@
                 63,
                 64,
                 65,
-                66
+                66,
+                67
               ]
             }
           ]
@@ -84,9 +84,8 @@
           "lines": "121-142",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/changed_files/diff_render.rs",
+              "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
               "lines": [
-                39,
                 40,
                 41,
                 42,
@@ -96,7 +95,8 @@
                 46,
                 47,
                 48,
-                49
+                49,
+                50
               ]
             }
           ]
@@ -698,8 +698,8 @@
     "implFiles": [
       "codelet/fspec-tui/src/views/board.rs",
       "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/views/changed_files/row.rs",
-      "codelet/fspec-tui/src/views/changed_files/diff_render.rs",
+      "codelet/fspec-tui/src/views/diff_common/row.rs",
+      "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
       "codelet/fspec-tui/src/views/changed_files/mod.rs",
       "codelet/fspec-tui/src/views/changed_files/render.rs"
     ],

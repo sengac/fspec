@@ -176,6 +176,11 @@ impl BoardView {
                 self.emit(Action::OpenChangedFilesView);
                 return EventResult::consumed();
             }
+            // RPC-364: open the three-pane Checkpoints view.
+            KeyCode::Char('c') | KeyCode::Char('C') => {
+                self.emit(Action::OpenCheckpointsView);
+                return EventResult::consumed();
+            }
             _ => {}
         }
 

@@ -36,6 +36,8 @@ codelet-git = { workspace = true }
 codelet-providers = { workspace = true }
 tarpc = { workspace = true }
 serde = { workspace = true }
+# RPC-362: checkpoint timestamp recovery reads the JSON metadata index.
+serde_json = { workspace = true }
 # RPC-006: Arc<WorkUnitsWatcher>, broadcast::Receiver — tokio sync feature
 # is used here, full runtime is unnecessary because this crate hosts no
 # server task itself.
@@ -52,3 +54,8 @@ arc-swap = "1.7"
 # RPC-025: persistence_add_history parses SessionId values back into
 # Uuid form when persisting to the lifted HistoryStore.
 uuid = { workspace = true }
+
+[dev-dependencies]
+# RPC-362: checkpoint transport integration tests build real temp git repos.
+tempfile = { workspace = true }
+serde_json = { workspace = true }

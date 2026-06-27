@@ -229,6 +229,16 @@ pub struct MockBackend {
     send_input_calls: AtomicUsize,
     interrupt_calls: AtomicUsize,
     checkpoint_counts_calls: AtomicUsize,
+    /// RPC-365: per-call counters + last-path capture for the restore
+    /// transport methods so App-dispatch tests can assert the wiring.
+    restore_checkpoint_file_calls: AtomicUsize,
+    restore_checkpoint_all_calls: AtomicUsize,
+    last_restore_file: Mutex<Option<(String, String, String)>>,
+    /// RPC-366: per-call counters + last-key capture for the delete
+    /// transport methods so App-dispatch tests can assert the wiring.
+    delete_checkpoint_calls: AtomicUsize,
+    delete_all_checkpoints_calls: AtomicUsize,
+    last_delete_checkpoint: Mutex<Option<(String, String)>>,
     /// RPC-017: per-call counters for the reorder methods + record of
     /// the most recently passed id so App-level dispatch tests can
     /// assert that `Action::ReorderUp`/`Down` routes to the focused-
@@ -664,6 +674,12 @@ impl Default for MockBackend {
             send_input_calls: AtomicUsize::new(0),
             interrupt_calls: AtomicUsize::new(0),
             checkpoint_counts_calls: AtomicUsize::new(0),
+            restore_checkpoint_file_calls: AtomicUsize::new(0),
+            restore_checkpoint_all_calls: AtomicUsize::new(0),
+            last_restore_file: Mutex::new(None),
+            delete_checkpoint_calls: AtomicUsize::new(0),
+            delete_all_checkpoints_calls: AtomicUsize::new(0),
+            last_delete_checkpoint: Mutex::new(None),
             move_work_unit_up_calls: AtomicUsize::new(0),
             move_work_unit_down_calls: AtomicUsize::new(0),
             last_move_work_unit_up_id: Mutex::new(None),
@@ -996,6 +1012,47 @@ impl MockBackend {
     /// RPC-015: how many times `checkpoint_counts()` has been awaited.
     pub fn checkpoint_counts_calls(&self) -> usize {
         self.checkpoint_counts_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-365: how many times `restore_checkpoint_file()` has been
+    /// awaited.
+    pub fn restore_checkpoint_file_calls(&self) -> usize {
+        self.restore_checkpoint_file_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-365: the `(work_unit_id, name, path)` of the most recent
+    /// `restore_checkpoint_file()` call, if any.
+    pub fn last_restore_file(&self) -> Option<(String, String, String)> {
+        self.last_restore_file
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-365: how many times `restore_checkpoint_all()` has been
+    /// awaited.
+    pub fn restore_checkpoint_all_calls(&self) -> usize {
+        self.restore_checkpoint_all_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-366: how many times `delete_checkpoint()` has been awaited.
+    pub fn delete_checkpoint_calls(&self) -> usize {
+        self.delete_checkpoint_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-366: the `(work_unit_id, name)` of the most recent
+    /// `delete_checkpoint()` call, if any.
+    pub fn last_delete_checkpoint(&self) -> Option<(String, String)> {
+        self.last_delete_checkpoint
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-366: how many times `delete_all_checkpoints()` has been
+    /// awaited.
+    pub fn delete_all_checkpoints_calls(&self) -> usize {
+        self.delete_all_checkpoints_calls.load(Ordering::SeqCst)
     }
 
     /// RPC-017: counter + capture for `move_work_unit_up`.
@@ -2260,6 +2317,38 @@ impl FspecBackend for MockBackend {
     async fn checkpoint_counts(&self) -> Result<CheckpointCounts> {
         self.checkpoint_counts_calls.fetch_add(1, Ordering::SeqCst);
         Ok(*self.checkpoint_counts.lock().expect("MockBackend mutex"))
+    }
+
+    async fn restore_checkpoint_file(
+        &self,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<()> {
+        self.restore_checkpoint_file_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self.last_restore_file.lock().expect("MockBackend mutex") =
+            Some((work_unit_id, name, path));
+        Ok(())
+    }
+
+    async fn restore_checkpoint_all(&self, _work_unit_id: String, _name: String) -> Result<()> {
+        self.restore_checkpoint_all_calls
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(())
+    }
+
+    async fn delete_checkpoint(&self, work_unit_id: String, name: String) -> Result<()> {
+        self.delete_checkpoint_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_delete_checkpoint.lock().expect("MockBackend mutex") =
+            Some((work_unit_id, name));
+        Ok(())
+    }
+
+    async fn delete_all_checkpoints(&self) -> Result<()> {
+        self.delete_all_checkpoints_calls
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(())
     }
 
     async fn move_work_unit_up(&self, id: String) -> Result<()> {

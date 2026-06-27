@@ -206,6 +206,10 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
     // @step Then NO new Action variant is emitted that opens a checkpoint viewer
     // @step And NO new Action variant is emitted that opens the FOUNDATION.md viewer
     // @step And NO new Action variant is emitted that opens the changed-files viewer
+    // NOTE (RPC-364): the board `C` key now legitimately opens the
+    // three-pane Checkpoints view (Action::OpenCheckpointsView), which is
+    // whitelisted in the match below. The RPC-015 card established C as a
+    // visible hint only; RPC-364 delivers its action wiring.
     let mut actions: Vec<Action> = Vec::new();
     while let Ok(a) = rx.try_recv() {
         actions.push(a);
@@ -223,6 +227,11 @@ fn keybinding_shortcuts_are_visible_hints_only_no_action_wiring_lands_in_this_ca
             | Action::EnterWorkUnit(_)
             | Action::OpenAgentView(_)
             | Action::BackToBoard => {}
+            // RPC-364: the board `C`/`c` key now opens the three-pane
+            // Checkpoints view. This supersedes the RPC-015-era assertion
+            // that C emitted no opener — the checkpoints opener is the
+            // intended wiring delivered by RPC-364.
+            Action::OpenCheckpointsView => {}
             other => panic!(
                 "C-press must not emit a new opener-action — observed {other:?} in {actions:?}"
             ),

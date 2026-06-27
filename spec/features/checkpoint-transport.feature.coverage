@@ -1,0 +1,339 @@
+{
+  "scenarios": [
+    {
+      "name": "list_checkpoints returns checkpoints most-recent-first with automatic flags",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "46-80",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/checkpoints.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "list_checkpoints caps the result at 200 entries",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "81-106",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/checkpoints.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "checkpoint_diff_files returns one ChangedFile per changed file",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "107-127",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/checkpoints.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "checkpoint_file_diff returns the unified diff for a changed file",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "128-146",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/checkpoints.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "restore_checkpoint_all restores the working tree",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "147-170",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/ghost_commit.rs",
+              "lines": [
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delete_checkpoint removes one checkpoint",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "171-189",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/checkpoints.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "restore_checkpoint_file restores a single file",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "192-209",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/checkpoints.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delete_all_checkpoints removes every checkpoint",
+      "testMappings": [
+        {
+          "file": "codelet/rpc/tests/checkpoint_transport_rpc362.rs",
+          "lines": "212-229",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/checkpoints.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/rpc/tests/checkpoint_transport_rpc362.rs"
+    ],
+    "implFiles": [
+      "codelet/rpc/src/checkpoints.rs",
+      "codelet/git/src/ghost_commit.rs"
+    ],
+    "totalLinesCovered": 374
+  }
+}

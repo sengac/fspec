@@ -18,7 +18,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo, CompactionProgress,
     CompactionResult, CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest,
     HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy,
     ModelEntry, ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProfileDefinition,
@@ -114,6 +114,64 @@ pub trait FspecBackend: Send + Sync {
     /// `FspecService::file_diff`. The default impl returns `None`.
     async fn file_diff(&self, _path: String) -> Result<Option<String>> {
         Ok(None)
+    }
+
+    /// RPC-362: list every ghost-commit checkpoint across all work units,
+    /// sorted most-recent-first and capped at 200. Both transports delegate to
+    /// `FspecService::list_checkpoints`. The default impl returns an empty Vec
+    /// so test doubles compile unchanged.
+    async fn list_checkpoints(&self) -> Result<Vec<CheckpointInfo>> {
+        Ok(Vec::new())
+    }
+
+    /// RPC-362: list the files that differ between a checkpoint and the working
+    /// tree. Delegates to `FspecService::checkpoint_diff_files`. Default: empty.
+    async fn checkpoint_diff_files(
+        &self,
+        _work_unit_id: String,
+        _name: String,
+    ) -> Result<Vec<ChangedFile>> {
+        Ok(Vec::new())
+    }
+
+    /// RPC-362: unified diff text for one file against a checkpoint ref.
+    /// Delegates to `FspecService::checkpoint_file_diff`. Default: `None`.
+    async fn checkpoint_file_diff(
+        &self,
+        _work_unit_id: String,
+        _name: String,
+        _path: String,
+    ) -> Result<Option<String>> {
+        Ok(None)
+    }
+
+    /// RPC-362: restore a single file from a checkpoint into the working tree.
+    /// Delegates to `FspecService::restore_checkpoint_file`. Default: `Ok(())`.
+    async fn restore_checkpoint_file(
+        &self,
+        _work_unit_id: String,
+        _name: String,
+        _path: String,
+    ) -> Result<()> {
+        Ok(())
+    }
+
+    /// RPC-362: restore the entire working tree to a checkpoint. Delegates to
+    /// `FspecService::restore_checkpoint_all`. Default: `Ok(())`.
+    async fn restore_checkpoint_all(&self, _work_unit_id: String, _name: String) -> Result<()> {
+        Ok(())
+    }
+
+    /// RPC-362: delete one checkpoint. Delegates to
+    /// `FspecService::delete_checkpoint`. Default: `Ok(())`.
+    async fn delete_checkpoint(&self, _work_unit_id: String, _name: String) -> Result<()> {
+        Ok(())
+    }
+
+    /// RPC-362: delete every checkpoint across all work units. Delegates to
+    /// `FspecService::delete_all_checkpoints`. Default: `Ok(())`.
+    async fn delete_all_checkpoints(&self) -> Result<()> {
+        Ok(())
     }
 
     /// RPC-017: move the work unit with `id` one position UP in its

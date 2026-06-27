@@ -1,6 +1,7 @@
-//! RPC-356 — file-row formatting for the Changed Files list pane.
+//! RPC-356 / RPC-363 — file-row formatting shared across the Changed
+//! Files and Checkpoints list panes.
 //!
-//! Feature: spec/features/rust-changed-files-view.feature
+//! Feature: spec/features/shared-diff-view-components.feature
 //!
 //! Builds one ratatui `Line` per changed file: a selection cursor
 //! (`>`/space), a colored single-letter status (A=green, M=yellow,
@@ -15,7 +16,7 @@ use ratatui::text::{Line, Span};
 ///
 /// A=green, M=yellow, D=red, R=cyan; anything else defaults to yellow
 /// (matching the TS `default` arm).
-pub(super) fn status_color(change_type: &str) -> Color {
+pub fn status_color(change_type: &str) -> Color {
     match change_type {
         "A" => Color::Green,
         "M" => Color::Yellow,
@@ -27,7 +28,7 @@ pub(super) fn status_color(change_type: &str) -> Color {
 
 /// Truncate `path` to fit `max_width` columns, appending an ellipsis
 /// when it overflows. `max_width == 0` yields an empty string.
-fn truncate_path(path: &str, max_width: usize) -> String {
+pub fn truncate_path(path: &str, max_width: usize) -> String {
     let len = path.chars().count();
     if max_width == 0 {
         return String::new();
@@ -46,7 +47,7 @@ fn truncate_path(path: &str, max_width: usize) -> String {
 /// Build the styled `Line` for one file row. `selected` drives the
 /// cursor glyph + the row foreground (cyan when selected, white
 /// otherwise). `width` is the pane width used to truncate the path.
-pub(super) fn file_row<'a>(file: &'a ChangedFile, selected: bool, width: usize) -> Line<'a> {
+pub fn file_row(file: &ChangedFile, selected: bool, width: usize) -> Line<'_> {
     let cursor = if selected { ">" } else { " " };
     let row_fg = if selected { Color::Cyan } else { Color::White };
     // Account for "> " + "X " prefixes (4 columns) when truncating.

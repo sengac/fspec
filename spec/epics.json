@@ -1147,6 +1147,20 @@
         "PROV-122",
         "PROV-123"
       ]
+    },
+    "checkpoints-view-rust": {
+      "id": "checkpoints-view-rust",
+      "title": "Rust Checkpoints Viewer (port from TypeScript)",
+      "createdAt": "2026-06-27T01:49:10.546Z",
+      "description": "Port the three-pane Checkpoints viewer from the original TypeScript TUI to the Rust ratatui TUI, reusing the changed_files diff/row/scrollbar components and the Action/Navigator/dispatch wiring pattern. Includes transport, shared-component refactor, the three-pane browse+diff view, and restore/delete actions with confirmation dialogs.",
+      "workUnits": [
+        "RPC-361",
+        "RPC-362",
+        "RPC-363",
+        "RPC-364",
+        "RPC-365",
+        "RPC-366"
+      ]
     }
   }
 }

@@ -16,8 +16,7 @@ use ratatui::widgets::{Paragraph, Widget};
 
 use crate::views::full_screen_shell::render_full_screen_scaffold_raw_title;
 
-use super::diff_render::diff_line;
-use super::row::file_row;
+use crate::views::diff_common::{diff_line, file_row, render_pane_scrollbar};
 use super::{ChangedFilesView, Pane};
 
 const FOOTER_HINT: &str = "ESC: Back | Tab: Switch Panes | ↑↓: Navigate/Scroll | PgUp/PgDn: Scroll";
@@ -156,28 +155,4 @@ fn render_diff_pane(
         render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());
     }
     content
-}
-
-/// Paint the proportional scrollbar in the reserved 1-col gutter to the
-/// right of a pane's content, reusing the shared list-scrollbar helper.
-fn render_pane_scrollbar(
-    content: Rect,
-    buf: &mut Buffer,
-    list_width: u16,
-    scroll: usize,
-    visible: usize,
-    total: usize,
-) {
-    crate::components::list_scrollbar::render_list_scrollbar(
-        Rect {
-            x: content.x + list_width,
-            y: content.y,
-            width: 1,
-            height: content.height,
-        },
-        buf,
-        scroll,
-        visible,
-        total,
-    );
 }

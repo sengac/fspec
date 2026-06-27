@@ -9,8 +9,9 @@
 //! behaviour. Owned by `Navigator` via `ViewMode::ChangedFiles`.
 //!
 //! Split across sibling modules to stay under the 300-LoC source-shape
-//! ceiling: `render` (panes), `row` (file-row formatting), `diff_render`
-//! (colored diff lines).
+//! ceiling: `render` (panes). The colored diff lines, file-row
+//! formatting, and pane-scrollbar gutter wrapper are shared via
+//! `crate::views::diff_common` (RPC-363).
 
 use codelet_rpc_types::ChangedFile;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
@@ -18,9 +19,7 @@ use ratatui::layout::Rect;
 
 use crate::components::scroll_viewport::{ensure_visible, WheelVelocity, WheelDirection};
 
-mod diff_render;
 mod render;
-mod row;
 
 #[cfg(test)]
 #[path = "tests.rs"]

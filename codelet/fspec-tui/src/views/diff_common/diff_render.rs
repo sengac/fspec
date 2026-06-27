@@ -1,6 +1,7 @@
-//! RPC-356 — colored diff-line rendering for the Changed Files diff pane.
+//! RPC-356 / RPC-363 — colored diff-line rendering shared across the
+//! Changed Files and Checkpoints diff panes.
 //!
-//! Feature: spec/features/rust-changed-files-view.feature
+//! Feature: spec/features/shared-diff-view-components.feature
 //!
 //! Classifies a raw unified-diff line and produces a styled ratatui
 //! `Line`: `+` add lines green, `-` remove lines red, `@@` hunk headers
@@ -12,7 +13,7 @@ use ratatui::text::{Line, Span};
 
 /// The visual classification of a single diff line.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum DiffLineKind {
+pub enum DiffLineKind {
     Added,
     Removed,
     Hunk,
@@ -23,7 +24,7 @@ pub(super) enum DiffLineKind {
 ///
 /// File headers (`--- `/`+++ `) are treated as hunk metadata so they do
 /// NOT colour as add/remove content (matches the TS parser).
-pub(super) fn classify(line: &str) -> DiffLineKind {
+pub fn classify(line: &str) -> DiffLineKind {
     if line.starts_with("@@") || line.starts_with("--- ") || line.starts_with("+++ ") {
         DiffLineKind::Hunk
     } else if line.starts_with('+') {
@@ -36,7 +37,7 @@ pub(super) fn classify(line: &str) -> DiffLineKind {
 }
 
 /// Build the styled `Line` for one diff row.
-pub(super) fn diff_line(text: &str) -> Line<'_> {
+pub fn diff_line(text: &str) -> Line<'_> {
     let style = match classify(text) {
         DiffLineKind::Added => Style::default().fg(Color::Green),
         DiffLineKind::Removed => Style::default().fg(Color::Red),

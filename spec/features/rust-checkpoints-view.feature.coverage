@@ -1,0 +1,415 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing C on the board opens the Checkpoints view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "101-122",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opening flips the Navigator to the Checkpoints view and closing returns to the board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "124-144",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Automatic checkpoints render as id and phase while manual checkpoints render their raw name",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "146-165",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab moves focus from the Checkpoints pane to the Files pane and highlights its heading",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "167-201",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/mod.rs",
+              "lines": [
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selecting a checkpoint loads its files and selecting a file shows its colored diff",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "208-232",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_checkpoints.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Arrow keys act on the focused pane",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "234-276",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/mod.rs",
+              "lines": [
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty repo shows a no-checkpoints message and Esc returns to the board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/tests.rs",
+          "lines": "278-294",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/render.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/checkpoints/tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board.rs",
+      "codelet/fspec-tui/src/views/navigator.rs",
+      "codelet/fspec-tui/src/views/checkpoints/checkpoint_row.rs",
+      "codelet/fspec-tui/src/views/checkpoints/mod.rs",
+      "codelet/fspec-tui/src/app/dispatch_checkpoints.rs",
+      "codelet/fspec-tui/src/views/checkpoints/render.rs"
+    ],
+    "totalLinesCovered": 465
+  }
+}

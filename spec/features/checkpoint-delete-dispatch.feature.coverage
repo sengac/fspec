@@ -1,0 +1,97 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatching DeleteCheckpoint calls the transport delete_checkpoint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
+          "lines": "41-71",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatching DeleteAllCheckpoints calls the transport delete_all_checkpoints",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs",
+          "lines": "74-97",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_delete.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/checkpoint_delete_dispatch_rpc366.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_checkpoint_delete.rs"
+    ],
+    "totalLinesCovered": 104
+  }
+}

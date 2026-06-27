@@ -1,0 +1,298 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing r with the Files pane focused opens a single-file restore confirmation naming the file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "lines": "57-72",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing r with the Checkpoints pane focused is a no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "lines": "74-92",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing t opens a restore-all confirmation naming the file count",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "lines": "94-110",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Confirming a single-file restore emits the RestoreCheckpointFile action",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "lines": "112-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancelling the restore confirmation closes the dialog and emits nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "lines": "133-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A restore result drives the status dialog to complete then refreshes the diff and counts",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "lines": "150-181",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A failed restore drives the status dialog to error with the message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs",
+          "lines": "183-207",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/restore.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/checkpoints/restore_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/checkpoints/restore.rs"
+    ],
+    "totalLinesCovered": 315
+  }
+}

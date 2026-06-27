@@ -14,6 +14,7 @@ use ratatui::layout::Rect;
 use crate::compositor::Compositor;
 
 pub mod board_exit_confirmation_dialog;
+pub mod checkpoint_restore_dialog;
 pub mod create_session_dialog;
 pub mod dialog_theme;
 pub mod dialog_theme_rows;
@@ -968,6 +969,81 @@ pub enum Action {
     ChangedFilesLoaded(Vec<codelet_rpc_types::ChangedFile>),
     LoadFileDiff(String),
     FileDiffLoaded { path: String, diff: Option<String> },
+
+    // RPC-364: Three-pane CheckpointsView (BoardView `C` opens; selecting a
+    // checkpoint → LoadCheckpointFiles → CheckpointFilesLoaded; selecting a
+    // file → LoadCheckpointFileDiff → CheckpointFileDiffLoaded; Esc → close).
+    OpenCheckpointsView,
+    CloseCheckpointsView,
+    CheckpointsLoaded(Vec<codelet_rpc_types::CheckpointInfo>),
+    LoadCheckpointFiles {
+        work_unit_id: String,
+        name: String,
+    },
+    CheckpointFilesLoaded {
+        work_unit_id: String,
+        name: String,
+        files: Vec<codelet_rpc_types::ChangedFile>,
+    },
+    LoadCheckpointFileDiff {
+        work_unit_id: String,
+        name: String,
+        path: String,
+    },
+    CheckpointFileDiffLoaded {
+        work_unit_id: String,
+        name: String,
+        path: String,
+        diff: Option<String>,
+    },
+
+    // RPC-365: Checkpoint restore actions. `r/R` (single file) and `t/T`
+    // (all files) open an in-view confirmation dialog; confirming emits a
+    // Restore* action which App::dispatch_checkpoints folds into a
+    // transport call, then routes a RestoreCheckpointResult back to drive
+    // the status dialog (complete | error) and refresh the diff + counts.
+    RestoreCheckpointFile {
+        work_unit_id: String,
+        name: String,
+        path: String,
+    },
+    RestoreCheckpointAll {
+        work_unit_id: String,
+        name: String,
+    },
+    RestoreCheckpointResult {
+        work_unit_id: String,
+        name: String,
+        /// `Some(path)` for a single-file restore (drives the diff
+        /// reload); `None` for a restore-all.
+        path: Option<String>,
+        /// `None` on success, `Some(message)` on failure.
+        error: Option<String>,
+    },
+    /// Re-fetch `checkpoint_counts()` so the board header repaints after a
+    /// restore changed the working tree.
+    RefreshCheckpointCounts,
+
+    // RPC-366: Checkpoint delete actions. `d/D` (single checkpoint) opens a
+    // yes/no confirmation; `a/A` (all checkpoints) opens a typed `DELETE
+    // ALL` confirmation. Confirming emits a Delete* action which
+    // App::dispatch_checkpoint_delete folds into a transport call, then
+    // routes a DeleteCheckpointResult back to remove the row / clear the
+    // list, clamp the selection (or close the view when empty) and refresh
+    // the board counts.
+    DeleteCheckpoint {
+        work_unit_id: String,
+        name: String,
+    },
+    DeleteAllCheckpoints,
+    DeleteCheckpointResult {
+        work_unit_id: String,
+        name: String,
+        /// `true` for a delete-all; `false` for a single-checkpoint delete.
+        all: bool,
+        /// `None` on success, `Some(message)` on failure.
+        error: Option<String>,
+    },
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

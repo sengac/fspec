@@ -18,7 +18,7 @@ use async_trait::async_trait;
 use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo, CompactionProgress,
     CompactionResult, CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest,
     HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy,
     ModelEntry, ModelInfo, OAuthDeviceStart, OAuthHeadlessStart, PauseState, ProviderCredentialInfo,
@@ -123,6 +123,67 @@ impl FspecBackend for EmbeddedFspecBackend {
 
     async fn file_diff(&self, path: String) -> Result<Option<String>> {
         Ok(self.client.file_diff(context::current(), path).await?)
+    }
+
+    async fn list_checkpoints(&self) -> Result<Vec<CheckpointInfo>> {
+        // RPC-362: one-line delegate to the shared tarpc method.
+        Ok(self.client.list_checkpoints(context::current()).await?)
+    }
+
+    async fn checkpoint_diff_files(
+        &self,
+        work_unit_id: String,
+        name: String,
+    ) -> Result<Vec<ChangedFile>> {
+        Ok(self
+            .client
+            .checkpoint_diff_files(context::current(), work_unit_id, name)
+            .await?)
+    }
+
+    async fn checkpoint_file_diff(
+        &self,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<Option<String>> {
+        Ok(self
+            .client
+            .checkpoint_file_diff(context::current(), work_unit_id, name, path)
+            .await?)
+    }
+
+    async fn restore_checkpoint_file(
+        &self,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<()> {
+        self.client
+            .restore_checkpoint_file(context::current(), work_unit_id, name, path)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn restore_checkpoint_all(&self, work_unit_id: String, name: String) -> Result<()> {
+        self.client
+            .restore_checkpoint_all(context::current(), work_unit_id, name)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_checkpoint(&self, work_unit_id: String, name: String) -> Result<()> {
+        self.client
+            .delete_checkpoint(context::current(), work_unit_id, name)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_all_checkpoints(&self) -> Result<()> {
+        self.client
+            .delete_all_checkpoints(context::current())
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
     async fn move_work_unit_up(&self, id: String) -> Result<()> {

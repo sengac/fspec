@@ -1,0 +1,99 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatching RestoreCheckpointFile calls the transport restore_checkpoint_file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs",
+          "lines": "40-79",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatching RestoreCheckpointAll calls the transport restore_checkpoint_all",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs",
+          "lines": "80-110",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_checkpoint_restore.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/checkpoint_restore_dispatch_rpc365.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_checkpoint_restore.rs"
+    ],
+    "totalLinesCovered": 122
+  }
+}

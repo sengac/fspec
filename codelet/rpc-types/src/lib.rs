@@ -102,6 +102,33 @@ pub struct ChangedFile {
 }
 
 // ============================================================================
+// RPC-362: Checkpoint info wire type
+// ============================================================================
+
+/// One ghost-commit checkpoint surfaced to the Rust TUI CheckpointsView
+/// (RPC-362).
+///
+/// Carries the `work_unit_id` + `name` pair needed to resolve the
+/// `refs/fspec-checkpoints/<work_unit_id>/<name>` ref for diff/restore/delete,
+/// the original creation `timestamp` recovered from the metadata index, and
+/// the derived `is_automatic` flag (`name` contains the `-auto-` substring).
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CheckpointInfo {
+    /// Work unit identifier the checkpoint belongs to (ref namespace).
+    #[serde(rename = "workUnitId")]
+    pub work_unit_id: String,
+    /// Checkpoint name (the final ref path segment).
+    pub name: String,
+    /// ISO-8601 creation timestamp recovered from the metadata index,
+    /// or a fallback "now" when the index is missing/malformed.
+    pub timestamp: String,
+    /// true when `name` contains the `-auto-` automatic-checkpoint pattern.
+    #[serde(rename = "isAutomatic")]
+    pub is_automatic: bool,
+}
+
+// ============================================================================
 // RPC-007: Session types
 // ============================================================================
 

@@ -27,7 +27,7 @@ use arc_swap::ArcSwap;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
-    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CompactionProgress,
+    ApprovalChoice, BlocklistRuleInfo, ChangedFile, CheckpointCounts, CheckpointInfo, CompactionProgress,
     CompactionResult,
     CustomModelDefinition, FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse,
     IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome, MergeStrategy, ModelEntry,
@@ -48,6 +48,8 @@ use tokio::sync::broadcast;
 use tokio::sync::Mutex as AsyncMutex;
 
 mod changed_files;
+#[doc(hidden)]
+pub mod checkpoints;
 mod log_layer;
 mod oauth_copilot;
 mod oauth_disconnect;
@@ -55,7 +57,6 @@ mod oauth_login;
 pub use log_layer::{register_log_layer, BroadcastLogLayer};
 
 use changed_files::collect_changed_files;
-
 /// The fspec RPC service surface.
 ///
 /// All methods take a `tarpc::context::Context` (injected by the macro) and
@@ -109,6 +110,45 @@ pub trait FspecService {
     /// `None` when there is no diff (or no cwd is attached). Delegates to
     /// `codelet_git::diff::get_file_diff`.
     async fn file_diff(path: String) -> Option<String>;
+
+    /// RPC-362: list every ghost-commit checkpoint across all work units,
+    /// sorted most-recent-first and capped at 200. Delegates to
+    /// `codelet_git::ghost_commit::list_all_ghost_checkpoints` + the metadata
+    /// index reader. Returns an empty Vec when no cwd is attached.
+    async fn list_checkpoints() -> Vec<CheckpointInfo>;
+
+    /// RPC-362: list the files that differ between a checkpoint and the current
+    /// working tree. Delegates to `get_checkpoint_diff_files`. Empty when no cwd.
+    async fn checkpoint_diff_files(work_unit_id: String, name: String) -> Vec<ChangedFile>;
+
+    /// RPC-362: unified diff text for one file against a checkpoint ref.
+    /// Delegates to `codelet_git::get_checkpoint_file_diff`. `None` when no cwd
+    /// or no diff.
+    async fn checkpoint_file_diff(
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Option<String>;
+
+    /// RPC-362: restore a single file from a checkpoint into the working tree.
+    /// Returns `Err(String)` on failure or when no cwd is attached.
+    async fn restore_checkpoint_file(
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<(), String>;
+
+    /// RPC-362: restore the entire working tree to a checkpoint. Delegates to
+    /// `restore_ghost_commit`. `Err(String)` on failure / no cwd.
+    async fn restore_checkpoint_all(work_unit_id: String, name: String) -> Result<(), String>;
+
+    /// RPC-362: delete one checkpoint (ref + index entry). `Err(String)` on
+    /// failure / no cwd.
+    async fn delete_checkpoint(work_unit_id: String, name: String) -> Result<(), String>;
+
+    /// RPC-362: delete every checkpoint across all work units + unlink index
+    /// sidecars. `Err(String)` on failure / no cwd.
+    async fn delete_all_checkpoints() -> Result<(), String>;
 
     /// RPC-017: move the work unit with `id` one position UP in its
     /// current `states[<column>]` array. No-op at the top boundary.
@@ -936,6 +976,103 @@ impl FspecService for FspecServiceImpl {
         match self.inner.cwd() {
             Some(cwd) => codelet_git::get_file_diff(cwd, &path).ok().flatten(),
             None => None,
+        }
+    }
+
+    async fn list_checkpoints(self, _ctx: Context) -> Vec<CheckpointInfo> {
+        // RPC-362: gated on the attached cwd exactly like checkpoint_counts.
+        match self.inner.cwd() {
+            Some(cwd) => checkpoints::collect_checkpoints(cwd).unwrap_or_default(),
+            None => Vec::new(),
+        }
+    }
+
+    async fn checkpoint_diff_files(
+        self,
+        _ctx: Context,
+        work_unit_id: String,
+        name: String,
+    ) -> Vec<ChangedFile> {
+        match self.inner.cwd() {
+            Some(cwd) => checkpoints::collect_checkpoint_diff_files(cwd, &work_unit_id, &name)
+                .unwrap_or_default(),
+            None => Vec::new(),
+        }
+    }
+
+    async fn checkpoint_file_diff(
+        self,
+        _ctx: Context,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Option<String> {
+        match self.inner.cwd() {
+            Some(cwd) => checkpoints::checkpoint_file_diff(cwd, &work_unit_id, &name, &path)
+                .ok()
+                .flatten(),
+            None => None,
+        }
+    }
+
+    async fn restore_checkpoint_file(
+        self,
+        _ctx: Context,
+        work_unit_id: String,
+        name: String,
+        path: String,
+    ) -> Result<(), String> {
+        match self.inner.cwd() {
+            Some(cwd) => checkpoints::restore_file(cwd, &work_unit_id, &name, &path)
+                .map_err(|e| format!("{e}")),
+            None => Err(
+                "restore_checkpoint_file requires a workspace cwd; SharedFspecService was constructed without with_cwd"
+                    .to_string(),
+            ),
+        }
+    }
+
+    async fn restore_checkpoint_all(
+        self,
+        _ctx: Context,
+        work_unit_id: String,
+        name: String,
+    ) -> Result<(), String> {
+        match self.inner.cwd() {
+            Some(cwd) => {
+                checkpoints::restore_all(cwd, &work_unit_id, &name).map_err(|e| format!("{e}"))
+            }
+            None => Err(
+                "restore_checkpoint_all requires a workspace cwd; SharedFspecService was constructed without with_cwd"
+                    .to_string(),
+            ),
+        }
+    }
+
+    async fn delete_checkpoint(
+        self,
+        _ctx: Context,
+        work_unit_id: String,
+        name: String,
+    ) -> Result<(), String> {
+        match self.inner.cwd() {
+            Some(cwd) => {
+                checkpoints::delete_one(cwd, &work_unit_id, &name).map_err(|e| format!("{e}"))
+            }
+            None => Err(
+                "delete_checkpoint requires a workspace cwd; SharedFspecService was constructed without with_cwd"
+                    .to_string(),
+            ),
+        }
+    }
+
+    async fn delete_all_checkpoints(self, _ctx: Context) -> Result<(), String> {
+        match self.inner.cwd() {
+            Some(cwd) => checkpoints::delete_all(cwd).map_err(|e| format!("{e}")),
+            None => Err(
+                "delete_all_checkpoints requires a workspace cwd; SharedFspecService was constructed without with_cwd"
+                    .to_string(),
+            ),
         }
     }
 

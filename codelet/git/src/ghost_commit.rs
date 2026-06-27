@@ -512,6 +512,57 @@ pub fn restore_ghost_commit(
     })
 }
 
+/// Restore a single file from a checkpoint into the working tree (RPC-362).
+///
+/// Resolves the checkpoint ref, reads the file's content from the checkpoint
+/// tree, and writes it to the working directory (creating parent dirs). When
+/// the file does not exist in the checkpoint tree it is removed from the
+/// working directory instead (restoring "this file was absent" state).
+///
+/// # Arguments
+/// * `dir` - Path to the repository root
+/// * `work_unit_id` - Work unit identifier
+/// * `checkpoint_name` - Name of the checkpoint
+/// * `path` - Repo-relative path of the file to restore
+pub fn restore_ghost_commit_file(
+    dir: &Path,
+    work_unit_id: &str,
+    checkpoint_name: &str,
+    path: &str,
+) -> Result<()> {
+    let repo = open_repo(dir)?;
+
+    let workdir = repo
+        .workdir()
+        .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?
+        .to_path_buf();
+
+    let ref_name = format!(
+        "{}/{}/{}",
+        CHECKPOINT_REF_PREFIX, work_unit_id, checkpoint_name
+    );
+    let commit_id = resolve_ref(&repo, &ref_name)?;
+    let checkpoint_files = crate::tree_utils::get_tree_files(&repo, &commit_id.to_string())?;
+
+    let full_path = workdir.join(path);
+    match checkpoint_files.get(path) {
+        Some(content) => {
+            if let Some(parent) = full_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::write(&full_path, content)?;
+        }
+        None => {
+            // File absent in the checkpoint — restoring means deleting it.
+            if full_path.exists() {
+                fs::remove_file(&full_path)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
 /// Resolve a ref to its target commit ID (internal helper)
 fn resolve_ref(repo: &gix::Repository, ref_name: &str) -> Result<gix::ObjectId> {
     let mut reference = repo
@@ -573,7 +624,47 @@ pub fn list_ghost_checkpoints(dir: &Path, work_unit_id: &str) -> Result<Vec<Stri
     Ok(checkpoints)
 }
 
-/// Delete a ghost commit checkpoint
+/// List every ghost-commit checkpoint across ALL work units (RPC-362).
+///
+/// Iterates every reference under `refs/fspec-checkpoints/` and splits the
+/// suffix into `(work_unit_id, checkpoint_name)` on the first `/`. Returns the
+/// pairs in arbitrary ref-iteration order (callers sort as needed). Gracefully
+/// returns an empty Vec for directories that are not git repositories — matches
+/// the ENOENT-tolerance of [`count_checkpoints`].
+///
+/// # Arguments
+/// * `dir` - Path to the repository root
+///
+/// # Returns
+/// Vector of `(work_unit_id, checkpoint_name)` pairs.
+pub fn list_all_ghost_checkpoints(dir: &Path) -> Result<Vec<(String, String)>> {
+    let repo = match open_repo(dir) {
+        Ok(r) => r,
+        Err(_) => return Ok(Vec::new()),
+    };
+
+    let prefix = format!("{}/", CHECKPOINT_REF_PREFIX);
+    let mut out: Vec<(String, String)> = Vec::new();
+
+    let refs = repo
+        .references()
+        .map_err(|e| GitError::Other(format!("Failed to get references: {}", e)))?;
+
+    for reference in refs.all().map_err(|e| GitError::Other(e.to_string()))? {
+        let reference = reference.map_err(|e| GitError::Other(e.to_string()))?;
+        let name = reference.name().as_bstr().to_string();
+
+        if let Some(suffix) = name.strip_prefix(&prefix) {
+            // suffix == "<work_unit_id>/<checkpoint_name>". Split on the first
+            // '/' so checkpoint names containing slashes stay intact.
+            if let Some((work_unit_id, checkpoint_name)) = suffix.split_once('/') {
+                out.push((work_unit_id.to_string(), checkpoint_name.to_string()));
+            }
+        }
+    }
+
+    Ok(out)
+}
 ///
 /// # Arguments
 /// * `dir` - Path to the repository root
