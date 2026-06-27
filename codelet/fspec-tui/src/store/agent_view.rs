@@ -21,6 +21,7 @@ pub mod chunk_processor;
 pub mod chunk_wrap;
 pub mod history_state;
 pub mod isolation_state;
+pub mod markdown_table_render;
 pub mod markdown_tables;
 pub mod navigation;
 pub mod role_state;

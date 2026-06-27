@@ -226,35 +226,32 @@ fn done_runs_format_markdown_tables_over_accumulated_text() {
 
     // @step Then the final in-flight chunk's source.text equals a pipe-aligned table
     //       where every row uses equal column widths
+    // RPC-370 superseded the pipe-padding renderer with a Unicode box-drawing
+    // grid; the Done finalisation now emits bordered rows. We assert the grid
+    // structure and equal border-row display widths.
     let final_text = nth_chunk_source_text(&app, &sid("s-1"), 0);
     let lines: Vec<&str> = final_text.lines().collect();
     assert_eq!(
         lines.len(),
-        3,
-        "expected 3 table rows after Done; got {final_text:?}"
+        5,
+        "expected 5 box-drawing rows after Done; got {final_text:?}"
     );
-    // Each column should be padded to its widest cell.
-    // col1: max width = 4 ("col1"), col2: max width = 4 ("col2"/"bb" → 4 from header)
-    let widths: Vec<Vec<usize>> = lines
+    // Border rows (top/separator/bottom) must share one display width.
+    let border_widths: Vec<usize> = lines
         .iter()
-        .filter(|l| !l.contains("---"))
-        .map(|l| {
-            l.split('|')
-                .filter(|c| !c.is_empty())
-                .map(|c| c.trim_matches(' ').len() + c.chars().filter(|ch| *ch == ' ').count())
-                .collect()
-        })
+        .filter(|l| l.starts_with('┌') || l.starts_with('├') || l.starts_with('└'))
+        .map(|l| l.chars().count())
         .collect();
-    // All non-separator rows should have the same number of cells with
-    // consistent width per column (column-major equality).
-    for col in 0..widths[0].len() {
-        let first = widths[0][col];
-        for row in &widths[1..] {
-            assert_eq!(
-                row[col], first,
-                "column {col} width must be equal across all rows in {final_text:?}"
-            );
-        }
+    assert_eq!(
+        border_widths.len(),
+        3,
+        "expected 3 border rows in {final_text:?}"
+    );
+    for w in &border_widths {
+        assert_eq!(
+            *w, border_widths[0],
+            "all border rows must share display width in {final_text:?}"
+        );
     }
 
     // @step And the chunk's is_streaming flag is false

@@ -13,6 +13,12 @@
 //! that flow through scrollback is ASCII-dominant; full Unicode East
 //! Asian Width handling can be layered on with the `unicode-width`
 //! crate in a later RPC if a multibyte-prefix variant is added.
+//!
+//! Paragraphs that already fit within `width` are passed through
+//! VERBATIM (internal whitespace preserved) — parity with
+//! `textWrap.ts` (lines 104-109). This keeps rendered table grid rows
+//! and their column padding intact instead of word-collapsing them;
+//! only over-width paragraphs are word-wrapped.
 
 /// Wrap `text` so every returned `String` has at most `width` chars.
 ///
@@ -27,6 +33,15 @@ pub fn wrap_to_width(text: &str, width: usize) -> Vec<String> {
     for paragraph in text.split('\n') {
         if paragraph.is_empty() {
             out.push(String::new());
+            continue;
+        }
+        // Parity with `textWrap.ts` (lines 104-109): a paragraph whose
+        // visual width (here the `char` count proxy) fits within `width`
+        // is emitted VERBATIM, preserving internal whitespace. This keeps
+        // rendered table grid rows (column padding) intact instead of
+        // word-collapsing them. Only over-width paragraphs are wrapped.
+        if paragraph.chars().count() <= width {
+            out.push(paragraph.to_string());
             continue;
         }
         wrap_paragraph(paragraph, width, &mut out);
@@ -156,6 +171,21 @@ mod tests {
         );
         let concatenated: String = rows.join("");
         assert_eq!(concatenated, "xxxxx done");
+    }
+
+    // Unit-level regression for the fits-within-width verbatim
+    // pass-through (parity with textWrap.ts lines 104-109). The
+    // scenario-linked end-to-end coverage lives in
+    // markdown_tables_tests.rs; this guards the wrap primitive directly.
+    #[test]
+    fn fits_within_width_preserves_internal_padding() {
+        let row = "│ Name  │ Role     │ Location  │";
+        let wrapped = wrap_to_width(row, 200);
+        assert_eq!(wrapped, vec![row.to_string()]);
+        assert!(
+            wrapped[0].contains("Name  "),
+            "padding must not collapse to a single space"
+        );
     }
 
     #[test]
