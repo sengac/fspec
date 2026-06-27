@@ -1,4 +1,7 @@
 @done
+@RPC-359
+@RPC-358
+@RPC-357
 @diff-viewer
 @tui
 @RPC-356
@@ -97,3 +100,52 @@ Feature: Dual-pane ChangedFilesView with F-key board wiring and Navigator integr
     Given a Changed Files view focused on the diff pane with a long diff and a known pane height
     When the user pages down far past the end of the diff
     Then the diff pane scroll offset never exceeds the diff line count minus the pane height
+
+  Scenario: Mouse wheel selection over the file list reloads the diff for the newly selected file
+    Given a Changed Files view listing a.txt then b.txt with a.txt selected
+    When a mouse wheel ScrollDown event arrives over the file list pane
+    Then the selected index becomes 1
+    And the view requests a diff reload for b.txt
+
+  Scenario: Mouse wheel over the diff pane scrolls the diff and leaves the file selection unchanged
+    Given a Changed Files view listing a.txt then b.txt with a.txt selected focused on the diff pane with a long diff
+    When a mouse wheel ScrollDown event arrives over the diff pane
+    Then the diff pane scroll offset advances by the WheelVelocity step
+    And the selected index is still 0
+
+  Scenario: With the diff pane focused the Down key scrolls the diff down one line
+    Given a Changed Files view focused on the diff pane with a long diff
+    When the user presses the Down key
+    Then the diff pane scroll offset increases from 0 to 1
+
+  Scenario: With the diff pane focused the Up key at the top keeps the diff scroll clamped at zero
+    Given a Changed Files view focused on the diff pane with a long diff at diff scroll 0
+    When the user presses the Up key
+    Then the diff pane scroll offset stays at 0
+
+  Scenario: With the diff pane focused the Down key does not change the file selection
+    Given a Changed Files view listing a.txt then b.txt with a.txt selected focused on the diff pane with a long diff
+    When the user presses the Down key
+    Then the selected index is still 0
+
+  Scenario: With the file list pane focused the Down key still moves the selection and reloads the diff
+    Given a Changed Files view listing a.txt then b.txt with a.txt selected focused on the file list pane
+    When the user presses the Down key
+    Then the selected index becomes 1
+    And the view requests a diff reload for b.txt
+
+  Scenario: A file list taller than the pane renders a scrollbar in the file list pane
+    Given a Changed Files view with 50 files rendered in a 10-row pane
+    When the view is rendered
+    Then a vertical scrollbar is painted in the rightmost column of the file list pane
+
+  Scenario: A diff longer than the pane renders a scrollbar in the diff pane
+    Given a Changed Files view with a 200-line diff rendered in a small pane
+    When the view is rendered
+    Then a vertical scrollbar is painted in the rightmost column of the diff pane
+
+  Scenario: A file list that fits the pane renders no scrollbar
+    Given a Changed Files view with 3 files rendered in a 10-row pane
+    When the view is rendered
+    Then no scrollbar is painted in the file list pane
+    And the file list content occupies the full pane width

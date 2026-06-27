@@ -20,7 +20,7 @@ use super::diff_render::diff_line;
 use super::row::file_row;
 use super::{ChangedFilesView, Pane};
 
-const FOOTER_HINT: &str = "ESC: Back | Tab: Switch Panes | ↑↓: Navigate | PgUp/PgDn: Scroll";
+const FOOTER_HINT: &str = "ESC: Back | Tab: Switch Panes | ↑↓: Navigate/Scroll | PgUp/PgDn: Scroll";
 const EMPTY_MESSAGE: &str = "No changed files";
 
 impl ChangedFilesView {
@@ -107,16 +107,25 @@ fn render_files_pane(
     focused: Pane,
 ) -> Rect {
     let content = pane_header(area, buf, "Files", focused == Pane::Files);
-    let width = content.width as usize;
     let visible = content.height as usize;
+    let overflow = files.len() > visible;
+    let list_width = if overflow {
+        content.width.saturating_sub(1)
+    } else {
+        content.width
+    };
     let lines: Vec<Line<'_>> = files
         .iter()
         .enumerate()
         .skip(scroll)
         .take(visible)
-        .map(|(idx, f)| file_row(f, idx == selected_index, width))
+        .map(|(idx, f)| file_row(f, idx == selected_index, list_width as usize))
         .collect();
-    Paragraph::new(lines).render(content, buf);
+    let list_area = Rect { width: list_width, ..content };
+    Paragraph::new(lines).render(list_area, buf);
+    if overflow {
+        render_pane_scrollbar(content, buf, list_width, scroll, visible, files.len());
+    }
     content
 }
 
@@ -129,12 +138,46 @@ fn render_diff_pane(
 ) -> Rect {
     let content = pane_header(area, buf, "Diff", focused == Pane::Diff);
     let visible = content.height as usize;
+    let overflow = diff_lines.len() > visible;
+    let list_width = if overflow {
+        content.width.saturating_sub(1)
+    } else {
+        content.width
+    };
     let lines: Vec<Line<'_>> = diff_lines
         .iter()
         .skip(scroll)
         .take(visible)
         .map(|l| diff_line(l))
         .collect();
-    Paragraph::new(lines).render(content, buf);
+    let list_area = Rect { width: list_width, ..content };
+    Paragraph::new(lines).render(list_area, buf);
+    if overflow {
+        render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());
+    }
     content
+}
+
+/// Paint the proportional scrollbar in the reserved 1-col gutter to the
+/// right of a pane's content, reusing the shared list-scrollbar helper.
+fn render_pane_scrollbar(
+    content: Rect,
+    buf: &mut Buffer,
+    list_width: u16,
+    scroll: usize,
+    visible: usize,
+    total: usize,
+) {
+    crate::components::list_scrollbar::render_list_scrollbar(
+        Rect {
+            x: content.x + list_width,
+            y: content.y,
+            width: 1,
+            height: content.height,
+        },
+        buf,
+        scroll,
+        visible,
+        total,
+    );
 }

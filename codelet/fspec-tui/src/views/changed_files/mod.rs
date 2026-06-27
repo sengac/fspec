@@ -180,8 +180,8 @@ impl ChangedFilesView {
                 self.toggle_pane();
                 ChangedFilesEvent::Consumed
             }
-            KeyCode::Down => self.move_selection(1),
-            KeyCode::Up => self.move_selection(-1),
+            KeyCode::Down => self.scroll_focused(1),
+            KeyCode::Up => self.scroll_focused(-1),
             KeyCode::PageDown => self.scroll_focused(self.page_step()),
             KeyCode::PageUp => self.scroll_focused(-self.page_step()),
             _ => ChangedFilesEvent::Consumed,
@@ -199,12 +199,14 @@ impl ChangedFilesView {
         let target = self.pane_at(ev.column, ev.row).unwrap_or(self.focused_pane);
         let step = self.wheel.step(dir);
         match target {
-            Pane::Diff => self.apply_diff_scroll(step),
-            Pane::Files => {
-                let _ = self.move_selection(step);
+            Pane::Diff => {
+                self.apply_diff_scroll(step);
+                ChangedFilesEvent::Consumed
             }
+            // Mirror `handle_key`: propagate the Emit(LoadFileDiff) so a
+            // wheel-driven selection change reloads the diff pane.
+            Pane::Files => self.move_selection(step),
         }
-        ChangedFilesEvent::Consumed
     }
 
     fn pane_at(&self, col: u16, row: u16) -> Option<Pane> {
@@ -231,9 +233,9 @@ impl ChangedFilesView {
     }
 
     /// Move the file selection by `delta`, clamped to the list bounds,
-    /// and request a diff reload for the new selection. Selection moves
-    /// regardless of which pane is focused (matches the TS VirtualList
-    /// arrow behaviour where the file list owns Up/Down).
+    /// and request a diff reload for the new selection. Reached for arrow
+    /// keys only when the Files pane is focused (see `scroll_focused`);
+    /// the Diff pane scrolls its content instead.
     fn move_selection(&mut self, delta: i32) -> ChangedFilesEvent {
         if self.files.is_empty() {
             return ChangedFilesEvent::Consumed;
