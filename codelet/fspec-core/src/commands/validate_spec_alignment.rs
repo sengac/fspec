@@ -62,21 +62,20 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // `--fix` is accepted but performs no work (TS parity).
     let _ = args.fix;
 
-    let work_unit_id = args
-        .work_unit_id
-        .filter(|s| !s.is_empty())
-        .ok_or_else(|| FspecCoreError::InvalidArgs {
-            command: "validate-spec-alignment",
-            reason: "work unit id is required".to_string(),
-        })?;
+    let work_unit_id =
+        args.work_unit_id
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "validate-spec-alignment",
+                reason: "work unit id is required".to_string(),
+            })?;
 
     // The TS `try { ... } catch` wraps EVERY failure (read, parse, missing
     // work unit) as `Failed to validate spec alignment: <msg>`. We mirror that
     // by computing the result in a helper that returns the bare message, then
     // wrapping any Err here.
-    validate(project_root, &work_unit_id).map_err(|msg| {
-        FspecCoreError::Message(format!("Failed to validate spec alignment: {msg}"))
-    })
+    validate(project_root, &work_unit_id)
+        .map_err(|msg| FspecCoreError::Message(format!("Failed to validate spec alignment: {msg}")))
 }
 
 /// Inner validation. Returns the rendered JSON body on success, or a BARE
@@ -157,7 +156,10 @@ mod tests {
         std::fs::create_dir_all(&spec).unwrap();
         let mut wus = serde_json::Map::new();
         for id in ids {
-            wus.insert((*id).to_string(), json!({ "id": id, "title": "t", "status": "backlog" }));
+            wus.insert(
+                (*id).to_string(),
+                json!({ "id": id, "title": "t", "status": "backlog" }),
+            );
         }
         let payload = json!({ "workUnits": Value::Object(wus), "states": {} });
         std::fs::write(spec.join("work-units.json"), payload.to_string()).unwrap();
@@ -188,7 +190,11 @@ mod tests {
     fn invalid_when_no_tagged_scenario() {
         let tmp = TempDir::new().unwrap();
         write_wu(tmp.path(), &["AUTH-001"]);
-        write_feature(tmp.path(), "o.feature", "Feature: O\n  @OTHER-001\n  Scenario: x\n");
+        write_feature(
+            tmp.path(),
+            "o.feature",
+            "Feature: O\n  @OTHER-001\n  Scenario: x\n",
+        );
         let out = validate(tmp.path(), "AUTH-001").unwrap();
         let parsed: Value = serde_json::from_str(&out).unwrap();
         assert_eq!(parsed["valid"], json!(false));

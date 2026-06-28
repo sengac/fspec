@@ -90,20 +90,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
 /// Wrapped body. Returns [`FspecCoreError::Message`] for every soft gate
 /// failure (rendered body) and surfaces hard errors via other variants.
-fn run_inner(
-    args: &GenerateScenariosArgs,
-    project_root: &Path,
-) -> Result<String, FspecCoreError> {
+fn run_inner(args: &GenerateScenariosArgs, project_root: &Path) -> Result<String, FspecCoreError> {
     // Read work units (auto-creates file if missing), parity with TS
     // `ensureWorkUnitsFile`.
     let data = ensure_work_units_file(project_root)?;
 
     // ── Validate work unit exists (TS :302-304) ────────────────────────
     let work_unit = data.work_units.get(&args.work_unit_id).ok_or_else(|| {
-        FspecCoreError::Message(format!(
-            "Work unit '{}' does not exist",
-            args.work_unit_id
-        ))
+        FspecCoreError::Message(format!("Work unit '{}' does not exist", args.work_unit_id))
     })?;
 
     // Example-mapping fields live in `WorkUnit.extra` as raw JSON.
@@ -123,7 +117,8 @@ fn run_inner(
         if unanswered > 0 {
             // TS only throws when the reminder is non-null (i.e. reminders
             // enabled); when disabled the gate is skipped entirely.
-            if let Some(reminder) = reminders::unanswered_questions(&args.work_unit_id, unanswered) {
+            if let Some(reminder) = reminders::unanswered_questions(&args.work_unit_id, unanswered)
+            {
                 let plural = if unanswered > 1 { "s" } else { "" };
                 return Err(FspecCoreError::Message(format!(
                     "Cannot generate scenarios: {unanswered} unanswered question{plural} found.\n\n{reminder}\n\nAnswer questions with 'fspec answer-question {} <index>' before generating.",
@@ -285,12 +280,11 @@ fn run_inner(
     })?;
 
     // Re-read for prefill detection (TS :542-544).
-    let final_content = std::fs::read_to_string(&feature_file).map_err(|source| {
-        FspecCoreError::Io {
+    let final_content =
+        std::fs::read_to_string(&feature_file).map_err(|source| FspecCoreError::Io {
             command: "generate-scenarios",
             source,
-        }
-    })?;
+        })?;
     let prefill_result = prefill::detect_prefill(&final_content);
 
     // ── Build system reminders (TS :546-611) ────────────────────────────
@@ -307,10 +301,9 @@ fn run_inner(
         &active_example_texts,
         &args.work_unit_id,
     ));
-    if let Some(post) = reminders::post_generation(
-        &args.work_unit_id,
-        &feature_file.display().to_string(),
-    ) {
+    if let Some(post) =
+        reminders::post_generation(&args.work_unit_id, &feature_file.display().to_string())
+    {
         system_reminders.push(post);
     }
     if prefill_result.has_prefill {
@@ -357,10 +350,7 @@ fn run_inner(
 
 /// Read an object field as a slice of JSON values, or empty if absent / not an
 /// array.
-fn array_field<'a>(
-    obj: &'a serde_json::Map<String, Value>,
-    key: &str,
-) -> Vec<&'a Value> {
+fn array_field<'a>(obj: &'a serde_json::Map<String, Value>, key: &str) -> Vec<&'a Value> {
     obj.get(key)
         .and_then(Value::as_array)
         .map(|a| a.iter().collect())
@@ -369,10 +359,7 @@ fn array_field<'a>(
 
 /// Read a string field from a JSON value, empty if absent.
 fn string_field(v: &Value, key: &str) -> String {
-    v.get(key)
-        .and_then(Value::as_str)
-        .unwrap_or("")
-        .to_string()
+    v.get(key).and_then(Value::as_str).unwrap_or("").to_string()
 }
 
 /// Format a similarity ratio as a 1-decimal percentage, matching the TS
@@ -421,7 +408,11 @@ fn generate_example_mapping_comments(extra: &serde_json::Map<String, Value>) -> 
             .filter(|r| !r.get("deleted").and_then(Value::as_bool).unwrap_or(false))
             .collect();
         for (index, rule) in active.iter().enumerate() {
-            lines.push(format!("  #   {}. {}", index + 1, string_field(rule, "text")));
+            lines.push(format!(
+                "  #   {}. {}",
+                index + 1,
+                string_field(rule, "text")
+            ));
         }
         lines.push("  #".to_string());
     }
@@ -898,10 +889,8 @@ mod similarity {
         }
 
         let m = matches as f64;
-        let jaro = (m / len1 as f64
-            + m / len2 as f64
-            + (m - transpositions as f64 / 2.0) / m)
-            / 3.0;
+        let jaro =
+            (m / len1 as f64 + m / len2 as f64 + (m - transpositions as f64 / 2.0) / m) / 3.0;
 
         // Common prefix up to 4 chars.
         let mut prefix = 0usize;
@@ -1137,9 +1126,7 @@ mod step_extraction {
         let normalized = example.trim();
 
         // Pattern 1: explicit Given/When/Then.
-        if let Ok(re) =
-            Regex::new(r"(?i)given\s+(.+?)\s+when\s+(.+?)\s+then\s+(.+)")
-        {
+        if let Ok(re) = Regex::new(r"(?i)given\s+(.+?)\s+when\s+(.+?)\s+then\s+(.+)") {
             if let Some(c) = re.captures(normalized) {
                 return ExtractedSteps {
                     given: Some(capitalize_first(c[1].trim())),
@@ -1264,7 +1251,13 @@ mod prefill {
         }
 
         if let Ok(re) = Regex::new(r"(?m)^@.*@component") {
-            push_tag_matches(&re, "@component", "fspec add-tag-to-feature", content, &mut matches);
+            push_tag_matches(
+                &re,
+                "@component",
+                "fspec add-tag-to-feature",
+                content,
+                &mut matches,
+            );
         }
         if let Ok(re) = Regex::new(r"(?m)^@.*@feature-group") {
             push_tag_matches(
@@ -1526,7 +1519,8 @@ mod tests {
                 ],
             }],
         };
-        let matches = similarity::find_matching_scenarios(&target, std::slice::from_ref(&feature), 0.7);
+        let matches =
+            similarity::find_matching_scenarios(&target, std::slice::from_ref(&feature), 0.7);
         assert_eq!(matches.len(), 1, "expected a duplicate match");
         assert!(
             matches[0].similarity_score >= 0.7,

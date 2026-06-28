@@ -16,11 +16,21 @@
 //! Based on the RLM paper (MIT CSAIL, arXiv:2512.24601).
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 mod tests;
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 mod recursive_tests;
 
 use std::collections::HashMap;
@@ -157,7 +167,11 @@ where
                 .filter_map(|v| match v {
                     serde_json::Value::String(s) => {
                         let t = s.trim().to_string();
-                        if t.is_empty() { None } else { Some(t) }
+                        if t.is_empty() {
+                            None
+                        } else {
+                            Some(t)
+                        }
                     }
                     _ => None,
                 })

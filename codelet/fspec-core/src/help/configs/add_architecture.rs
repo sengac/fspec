@@ -23,7 +23,8 @@ const ARGS: &[CommandArgument] = &[
 ];
 
 const EXAMPLES: &[CommandExample] = &[CommandExample {
-    command: "fspec add-architecture spec/features/login.feature \"Uses bcrypt for password hashing\"",
+    command:
+        "fspec add-architecture spec/features/login.feature \"Uses bcrypt for password hashing\"",
     description: Some("Add architecture notes"),
     output: Some("✓ Added architecture notes to spec/features/login.feature"),
 }];

@@ -109,10 +109,7 @@ async fn scenario_embedded_transport_exposes_the_watchers_broadcast_subscription
     // @step Then the receiver yields the post-mutation Vec<WorkUnitInfo> and the transport source contains no bincode encode call on the embedded push path
     let mut ids: Vec<String> = payload.into_iter().map(|wu| wu.id).collect();
     ids.sort();
-    assert_eq!(
-        ids,
-        vec!["AUTH-001".to_string(), "AUTH-002".to_string()],
-    );
+    assert_eq!(ids, vec!["AUTH-001".to_string(), "AUTH-002".to_string()],);
     // The "no bincode encode" half of the Then is enforced by the
     // source-shape regression test in rpc_006_source_shape.rs::
     // scenario_embedded_push_path_has_no_bincode_serialize.

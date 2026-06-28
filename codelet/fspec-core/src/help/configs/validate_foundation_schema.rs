@@ -14,7 +14,11 @@ const EXAMPLES: &[CommandExample] = &[CommandExample {
     output: Some(EXAMPLE_OUTPUT),
 }];
 
-const RELATED: &[&str] = &["show-foundation-schema", "show-foundation", "update-foundation"];
+const RELATED: &[&str] = &[
+    "show-foundation-schema",
+    "show-foundation",
+    "update-foundation",
+];
 
 const NOTES: &[&str] = &[
     "Uses Ajv for JSON Schema validation",

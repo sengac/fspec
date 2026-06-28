@@ -124,8 +124,12 @@ pub fn write_config_with_dirs(
         ConfigScope::Project => project_config_path(cwd),
     };
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|err| format!("Failed to create config directory {}: {err}", parent.display()))?;
+        std::fs::create_dir_all(parent).map_err(|err| {
+            format!(
+                "Failed to create config directory {}: {err}",
+                parent.display()
+            )
+        })?;
     }
     let json = serde_json::to_string_pretty(config)
         .map_err(|err| format!("Failed to serialize config: {err}"))?;

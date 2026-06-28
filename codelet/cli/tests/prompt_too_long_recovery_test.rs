@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::uninlined_format_args)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 //! Tests for prompt too long error detection and recovery
 //!
 //! Tests the is_prompt_too_long_error helper and related compaction recovery logic.
@@ -237,10 +242,7 @@ fn test_prov010_prompt_too_long_zero_turns_no_compaction() {
     // @step And the session has zero user/assistant conversation turns
     // Use the SAME function as production code: convert_messages_to_turns
     let has_compactable_turns = !convert_messages_to_turns(&messages).is_empty();
-    assert!(
-        !has_compactable_turns,
-        "Should have zero compactable turns"
-    );
+    assert!(!has_compactable_turns, "Should have zero compactable turns");
 
     // @step When an API error "prompt is too long" is received
     let error = "prompt is too long: 209834 tokens > 200000 maximum";

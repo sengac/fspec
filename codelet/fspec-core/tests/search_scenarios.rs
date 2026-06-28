@@ -134,7 +134,10 @@ fn no_match_returns_an_empty_scenarios_array() {
     );
 
     // @step And the scenarios array is empty
-    assert!(v["scenarios"].as_array().expect("scenarios array").is_empty());
+    assert!(v["scenarios"]
+        .as_array()
+        .expect("scenarios array")
+        .is_empty());
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -246,7 +249,10 @@ fn missing_spec_features_directory_yields_zero_searched_files() {
     assert_eq!(v["searchedFiles"].as_u64(), Some(0));
 
     // @step And the scenarios array is empty
-    assert!(v["scenarios"].as_array().expect("scenarios array").is_empty());
+    assert!(v["scenarios"]
+        .as_array()
+        .expect("scenarios array")
+        .is_empty());
 }
 
 // ═════════════════════════════════════════════════════════════════════════

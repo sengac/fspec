@@ -101,8 +101,7 @@ impl GeminiHistoryFacade {
                     if let AssistantContent::ToolCall(tool_call) = c {
                         // First tool call in this turn - ensure it has signature
                         if tool_call.signature.is_none() {
-                            tool_call.signature =
-                                Some(SYNTHETIC_THOUGHT_SIGNATURE.to_string());
+                            tool_call.signature = Some(SYNTHETIC_THOUGHT_SIGNATURE.to_string());
                         }
                         // Only process first tool call per model turn
                         break;
@@ -224,7 +223,11 @@ pub trait TurnCompletionFacade: Send + Sync {
     /// # Returns
     ///
     /// A `ContinuationStrategy` indicating what action to take
-    fn continuation_strategy(&self, response_text: &str, messages: &[Message]) -> ContinuationStrategy;
+    fn continuation_strategy(
+        &self,
+        response_text: &str,
+        messages: &[Message],
+    ) -> ContinuationStrategy;
 
     /// Check if the response indicates the model needs a continuation prompt.
     ///
@@ -235,7 +238,8 @@ pub trait TurnCompletionFacade: Send + Sync {
     /// - The response text is empty or whitespace-only
     /// - The last message in history is a tool result (not user text)
     fn needs_continuation(&self, response_text: &str, messages: &[Message]) -> bool {
-        self.continuation_strategy(response_text, messages).needs_continuation()
+        self.continuation_strategy(response_text, messages)
+            .needs_continuation()
     }
 
     /// Generate a continuation prompt to nudge the model to respond.
@@ -296,7 +300,11 @@ impl TurnCompletionFacade for GeminiTurnCompletionFacade {
         Self::is_gemini_3_model(model)
     }
 
-    fn continuation_strategy(&self, response_text: &str, messages: &[Message]) -> ContinuationStrategy {
+    fn continuation_strategy(
+        &self,
+        response_text: &str,
+        messages: &[Message],
+    ) -> ContinuationStrategy {
         // Condition 1: Response is empty or whitespace-only
         let response_empty = response_text.trim().is_empty();
 
@@ -333,7 +341,11 @@ impl TurnCompletionFacade for DefaultTurnCompletionFacade {
         false
     }
 
-    fn continuation_strategy(&self, _response_text: &str, _messages: &[Message]) -> ContinuationStrategy {
+    fn continuation_strategy(
+        &self,
+        _response_text: &str,
+        _messages: &[Message],
+    ) -> ContinuationStrategy {
         ContinuationStrategy::None
     }
 
@@ -440,8 +452,8 @@ mod tests {
     #[test]
     fn test_find_active_loop_start_with_tool_results() {
         let messages = vec![
-            make_user_text_message("Read file.txt"), // idx 0
-            make_tool_call_message("read_file", false), // idx 1
+            make_user_text_message("Read file.txt"),             // idx 0
+            make_tool_call_message("read_file", false),          // idx 1
             make_tool_result_message("call_1", "file contents"), // idx 2 - tool result, not text
         ];
 
@@ -473,10 +485,7 @@ mod tests {
         // Check that signature was added
         if let Message::Assistant { content, .. } = &messages[1] {
             if let AssistantContent::ToolCall(tc) = content.first() {
-                assert_eq!(
-                    tc.signature,
-                    Some(SYNTHETIC_THOUGHT_SIGNATURE.to_string())
-                );
+                assert_eq!(tc.signature, Some(SYNTHETIC_THOUGHT_SIGNATURE.to_string()));
             } else {
                 panic!("Expected ToolCall");
             }
@@ -603,17 +612,25 @@ mod tests {
 
     #[test]
     fn test_is_gemini_3_model() {
-        assert!(GeminiTurnCompletionFacade::is_gemini_3_model("gemini-3-pro"));
+        assert!(GeminiTurnCompletionFacade::is_gemini_3_model(
+            "gemini-3-pro"
+        ));
         assert!(GeminiTurnCompletionFacade::is_gemini_3_model(
             "gemini-3-flash-preview"
         ));
-        assert!(GeminiTurnCompletionFacade::is_gemini_3_model("gemini-2.5-pro"));
+        assert!(GeminiTurnCompletionFacade::is_gemini_3_model(
+            "gemini-2.5-pro"
+        ));
     }
 
     #[test]
     fn test_is_not_gemini_3_model() {
-        assert!(!GeminiTurnCompletionFacade::is_gemini_3_model("gemini-2.0-flash"));
-        assert!(!GeminiTurnCompletionFacade::is_gemini_3_model("gemini-1.5-pro"));
+        assert!(!GeminiTurnCompletionFacade::is_gemini_3_model(
+            "gemini-2.0-flash"
+        ));
+        assert!(!GeminiTurnCompletionFacade::is_gemini_3_model(
+            "gemini-1.5-pro"
+        ));
     }
 
     // =========================================================================
@@ -633,11 +650,11 @@ mod tests {
         // Empty response after tool result should return FullLoop strategy
         let strategy = facade.continuation_strategy("", &messages);
         assert!(matches!(strategy, ContinuationStrategy::FullLoop { .. }));
-        
+
         // Whitespace-only should also trigger FullLoop
         let strategy = facade.continuation_strategy("   ", &messages);
         assert!(matches!(strategy, ContinuationStrategy::FullLoop { .. }));
-        
+
         // Newlines/tabs should also trigger FullLoop
         let strategy = facade.continuation_strategy("\n\t", &messages);
         assert!(matches!(strategy, ContinuationStrategy::FullLoop { .. }));
@@ -656,7 +673,7 @@ mod tests {
         // Non-empty response should return None strategy
         let strategy = facade.continuation_strategy("Here's what I found...", &messages);
         assert!(matches!(strategy, ContinuationStrategy::None));
-        
+
         let strategy = facade.continuation_strategy("Based on the results...", &messages);
         assert!(matches!(strategy, ContinuationStrategy::None));
     }
@@ -761,7 +778,10 @@ mod tests {
     fn test_continuation_strategy_prompt() {
         assert_eq!(ContinuationStrategy::None.prompt(), None);
         assert_eq!(
-            ContinuationStrategy::FullLoop { prompt: "test prompt" }.prompt(),
+            ContinuationStrategy::FullLoop {
+                prompt: "test prompt"
+            }
+            .prompt(),
             Some("test prompt")
         );
     }

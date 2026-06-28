@@ -69,7 +69,11 @@ const COVERAGE_TWO_SCENARIOS: &str = r#"{
 fn scenario_dispatcher_deletes_a_scenario_from_a_two_scenario_feature() {
     // @step Given a project root tempdir with spec/features/login.feature containing scenarios 'Old scenario' and 'Keep scenario'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", TWO_SCENARIO_FEATURE);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        TWO_SCENARIO_FEATURE,
+    );
 
     // @step When I dispatch delete-scenario with feature='spec/features/login.feature' and scenario='Old scenario'
     let result = dispatch_command(req(
@@ -102,7 +106,11 @@ fn scenario_dispatcher_deletes_a_scenario_from_a_two_scenario_feature() {
 fn scenario_dispatcher_reports_a_missing_scenario_name() {
     // @step Given a project root tempdir with spec/features/login.feature containing a scenario 'Keep scenario'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", ONE_SCENARIO_FEATURE);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        ONE_SCENARIO_FEATURE,
+    );
 
     // @step When I dispatch delete-scenario with feature='spec/features/login.feature' and scenario='Missing'
     let result = dispatch_command(req(
@@ -156,7 +164,11 @@ fn scenario_dispatcher_reports_a_missing_feature_file() {
 fn scenario_dispatcher_updates_the_coverage_sidecar_when_present() {
     // @step Given a project root tempdir with spec/features/login.feature containing scenarios 'Old scenario' and 'Keep scenario'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", TWO_SCENARIO_FEATURE);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        TWO_SCENARIO_FEATURE,
+    );
 
     // @step And a spec/features/login.feature.coverage sidecar listing both scenarios
     write_feature(
@@ -198,7 +210,11 @@ fn scenario_dispatcher_updates_the_coverage_sidecar_when_present() {
 fn scenario_dispatcher_ignores_a_malformed_coverage_sidecar() {
     // @step Given a project root tempdir with spec/features/login.feature containing scenarios 'Old scenario' and 'Keep scenario'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", TWO_SCENARIO_FEATURE);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        TWO_SCENARIO_FEATURE,
+    );
 
     // @step And a spec/features/login.feature.coverage sidecar containing invalid JSON
     write_feature(

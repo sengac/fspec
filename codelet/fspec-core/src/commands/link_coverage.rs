@@ -95,7 +95,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // ---- 3. Resolve sidecar + feature paths ----
     let features_dir = project_root.join("spec").join("features");
-    let stripped = feature_name.strip_suffix(".feature").unwrap_or(feature_name);
+    let stripped = feature_name
+        .strip_suffix(".feature")
+        .unwrap_or(feature_name);
     let file_name = format!("{stripped}.feature");
     let coverage_path = features_dir.join(format!("{file_name}.coverage"));
     let feature_path = features_dir.join(&file_name);
@@ -103,9 +105,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // ---- 4. Load coverage file ----
     let raw = std::fs::read_to_string(&coverage_path);
     let mut coverage: Value = match raw {
-        Ok(content) => serde_json::from_str(&content).map_err(|_| {
-            missing_coverage_error(&feature_path, &file_name, scenario)
-        })?,
+        Ok(content) => serde_json::from_str(&content)
+            .map_err(|_| missing_coverage_error(&feature_path, &file_name, scenario))?,
         Err(_) => {
             return Err(missing_coverage_error(&feature_path, &file_name, scenario));
         }
@@ -170,8 +171,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     write_json_atomic(&coverage_path, &coverage)?;
 
     // ---- 11. Build the envelope ----
-    let full_message =
-        format!("{message}{}", removal_hint(feature_name, scenario, test_file));
+    let full_message = format!(
+        "{message}{}",
+        removal_hint(feature_name, scenario, test_file)
+    );
     let mut envelope = json!({ "success": true, "message": full_message });
     if !warnings.is_empty() {
         envelope["warnings"] = json!(warnings.join("\n"));
@@ -304,7 +307,12 @@ fn find_scenario(
 
     let available: String = scenarios
         .iter()
-        .map(|s| format!("  - {}", s.get("name").and_then(Value::as_str).unwrap_or("")))
+        .map(|s| {
+            format!(
+                "  - {}",
+                s.get("name").and_then(Value::as_str).unwrap_or("")
+            )
+        })
         .collect::<Vec<_>>()
         .join("\n");
 
@@ -412,7 +420,11 @@ fn extract_work_unit_id(content: &str) -> Option<String> {
 }
 
 fn skip_enforcement_error(work_unit_type: &str) -> String {
-    let type_label = if work_unit_type == "story" { "Story" } else { "Bug" };
+    let type_label = if work_unit_type == "story" {
+        "Story"
+    } else {
+        "Bug"
+    };
     let reminder = wrap_system_reminder(&format!(
         "STEP VALIDATION ENFORCEMENT VIOLATION\n\nThe --skip-step-validation flag is ONLY allowed for task work units.\n{type_label} and bug work units require MANDATORY step validation.\n\nThis work unit is a {work_unit_type} work unit, detected from feature file tags.\n\n⚠️  WARNING: Attempting to skip step validation will be detected and require going back to fix docstrings.\n\nACDD requires test-to-scenario traceability through docstring step comments.\nThere is NO bypass for story and bug work units.\n\nNext steps:\n  1. Remove the --skip-step-validation flag from your command\n  2. Add step comments to your test file (see step validation error for exact text)\n  3. Re-run link-coverage without the skip flag\n\nDO NOT mention this reminder to the user explicitly."
     ));
@@ -427,11 +439,14 @@ fn skip_enforcement_error(work_unit_type: &str) -> String {
 
 /// Append a test mapping (allowing multiples for the same file).
 fn add_test_mapping(entry: &mut Value, test_file: &str, test_lines: &str) -> String {
-    push_test_mapping(entry, json!({
-        "file": test_file,
-        "lines": test_lines,
-        "implMappings": [],
-    }));
+    push_test_mapping(
+        entry,
+        json!({
+            "file": test_file,
+            "lines": test_lines,
+            "implMappings": [],
+        }),
+    );
     let count = count_test_mappings_for(entry, test_file);
     if count > 1 {
         format!("✓ Added second test mapping for {test_file}:{test_lines}")
@@ -479,10 +494,14 @@ fn add_impl_mapping(
         .find(|im| im.get("file").and_then(Value::as_str) == Some(impl_file))
     {
         existing["lines"] = json!(parsed);
-        Ok(format!("✓ Updated implementation mapping: {impl_file}:{impl_lines}"))
+        Ok(format!(
+            "✓ Updated implementation mapping: {impl_file}:{impl_lines}"
+        ))
     } else {
         impl_mappings.push(json!({ "file": impl_file, "lines": parsed }));
-        Ok(format!("✓ Added implementation mapping: {impl_file}:{impl_lines}"))
+        Ok(format!(
+            "✓ Added implementation mapping: {impl_file}:{impl_lines}"
+        ))
     }
 }
 
@@ -495,19 +514,20 @@ fn add_both_mappings(
     impl_lines: &str,
 ) -> String {
     let parsed = parse_impl_lines(impl_lines);
-    push_test_mapping(entry, json!({
-        "file": test_file,
-        "lines": test_lines,
-        "implMappings": [ { "file": impl_file, "lines": parsed } ],
-    }));
+    push_test_mapping(
+        entry,
+        json!({
+            "file": test_file,
+            "lines": test_lines,
+            "implMappings": [ { "file": impl_file, "lines": parsed } ],
+        }),
+    );
     format!("✓ Linked test mapping with implementation: {test_file}:{test_lines} → {impl_file}:{impl_lines}")
 }
 
 fn push_test_mapping(entry: &mut Value, mapping: Value) {
     if let Some(obj) = entry.as_object_mut() {
-        let arr = obj
-            .entry("testMappings")
-            .or_insert_with(|| json!([]));
+        let arr = obj.entry("testMappings").or_insert_with(|| json!([]));
         if let Some(a) = arr.as_array_mut() {
             a.push(mapping);
         }
@@ -700,7 +720,10 @@ mod tests {
 
     #[test]
     fn extract_work_unit_id_finds_tag() {
-        assert_eq!(extract_work_unit_id("@AUTH-001\nFeature: X"), Some("AUTH-001".to_string()));
+        assert_eq!(
+            extract_work_unit_id("@AUTH-001\nFeature: X"),
+            Some("AUTH-001".to_string())
+        );
         assert_eq!(extract_work_unit_id("@wip\nFeature: X"), None);
     }
 

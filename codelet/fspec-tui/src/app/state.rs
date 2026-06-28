@@ -64,15 +64,11 @@ pub struct App {
     /// aborts any previous handle then stores the fresh one so a second
     /// edit within the 300ms debounce window cancels the previous save.
     pub(crate) pending_input_save_handle: Option<JoinHandle<()>>,
-    /// RPC-064: single in-flight debounced backend call abort handle
-    /// for the `/search` history-search round-trip. `App::handle_search_history`
-    /// aborts any previous handle then stores the fresh one so rapid
+    /// RPC-064: single in-flight debounced abort handle for the `/search`
+    /// history-search round-trip. Aborts the previous handle so rapid
     /// keystrokes inside the 150ms debounce window collapse to a single
-    /// `backend.persistence_search_history(query)` call carrying the
-    /// final query. The actual `JoinHandle` is parked on
-    /// `pending_tasks` so the existing RPC-026 test harness — which
-    /// awaits via `App::next_pending_task` — can still observe the
-    /// task deterministically.
+    /// `backend.persistence_search_history(query)` call. The `JoinHandle` is
+    /// parked on `pending_tasks` so the RPC-026 harness can await it.
     pub(crate) search_history_debounce_handle: Option<tokio::task::AbortHandle>,
     /// TUI-093: per-session guard recording which sessions have already had the
     /// persisted default thinking level applied. The Rust equivalent of the TS
@@ -80,6 +76,12 @@ pub struct App {
     /// default is applied at most once per session id, so a manual `/thinking`
     /// selection is never clobbered when that session regains focus.
     pub(crate) applied_default_thinking: std::collections::HashSet<SessionId>,
+    /// RPC-373: local port the RPC-372 viewer server bound to at bootstrap;
+    /// `None` when start failed (the board `D` key then no-ops).
+    pub(crate) viewer_port: Option<u16>,
+    /// RPC-373: handle to the running viewer server, retained so it shuts down
+    /// cleanly on App drop. `None` when the server failed to start.
+    pub(crate) viewer_handle: Option<codelet_attachment_viewer::ViewerHandle>,
 }
 
 impl App {
@@ -120,6 +122,8 @@ impl App {
             pending_input_save_handle: None,
             search_history_debounce_handle: None,
             applied_default_thinking: std::collections::HashSet::new(),
+            viewer_port: None,
+            viewer_handle: None,
         }
     }
 

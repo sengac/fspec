@@ -168,12 +168,18 @@ mod tests {
 
     #[test]
     fn test_disable_keyword_quickly() {
-        assert_eq!(detect_thinking_level("do this quickly"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("do this quickly"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
     fn test_disable_keyword_briefly() {
-        assert_eq!(detect_thinking_level("briefly explain"), JsThinkingLevel::Off);
+        assert_eq!(
+            detect_thinking_level("briefly explain"),
+            JsThinkingLevel::Off
+        );
     }
 
     #[test]
@@ -319,41 +325,29 @@ mod tests {
 
     #[test]
     fn test_effective_force_off_overrides_all() {
-        let result = compute_effective_thinking_level(
-            JsThinkingLevel::High,
-            JsThinkingLevel::High,
-            true,
-        );
+        let result =
+            compute_effective_thinking_level(JsThinkingLevel::High, JsThinkingLevel::High, true);
         assert_eq!(result, JsThinkingLevel::Off);
     }
 
     #[test]
     fn test_effective_max_of_base_and_detected() {
-        let result = compute_effective_thinking_level(
-            JsThinkingLevel::Medium,
-            JsThinkingLevel::High,
-            false,
-        );
+        let result =
+            compute_effective_thinking_level(JsThinkingLevel::Medium, JsThinkingLevel::High, false);
         assert_eq!(result, JsThinkingLevel::High);
     }
 
     #[test]
     fn test_effective_base_wins_when_higher() {
-        let result = compute_effective_thinking_level(
-            JsThinkingLevel::High,
-            JsThinkingLevel::Low,
-            false,
-        );
+        let result =
+            compute_effective_thinking_level(JsThinkingLevel::High, JsThinkingLevel::Low, false);
         assert_eq!(result, JsThinkingLevel::High);
     }
 
     #[test]
     fn test_effective_both_off_returns_off() {
-        let result = compute_effective_thinking_level(
-            JsThinkingLevel::Off,
-            JsThinkingLevel::Off,
-            false,
-        );
+        let result =
+            compute_effective_thinking_level(JsThinkingLevel::Off, JsThinkingLevel::Off, false);
         assert_eq!(result, JsThinkingLevel::Off);
     }
 

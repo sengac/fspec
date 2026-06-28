@@ -63,10 +63,7 @@ pub fn count_checkpoints(dir: &Path) -> Result<CheckpointCounts> {
     let prefix = format!("{}/", CHECKPOINT_REF_PREFIX);
     let mut manual: u32 = 0;
     let mut auto: u32 = 0;
-    for reference in refs
-        .all()
-        .map_err(|e| GitError::Other(e.to_string()))?
-    {
+    for reference in refs.all().map_err(|e| GitError::Other(e.to_string()))? {
         let reference = reference.map_err(|e| GitError::Other(e.to_string()))?;
         let name = reference.name().as_bstr().to_string();
         if !name.starts_with(&prefix) {

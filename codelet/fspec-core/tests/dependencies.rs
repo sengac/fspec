@@ -120,7 +120,11 @@ fn dispatch_unit_with_no_relationships_renders_only_the_header_line() {
     assert!(result.success, "expected success=true, got {result:?}");
 
     // @step Then the data field equals "Dependencies for MCP-001:\n"
-    assert_eq!(result.data, "Dependencies for MCP-001:\n", "got:\n{}", result.data);
+    assert_eq!(
+        result.data, "Dependencies for MCP-001:\n",
+        "got:\n{}",
+        result.data
+    );
 }
 
 #[test]

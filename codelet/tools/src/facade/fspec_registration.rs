@@ -9,13 +9,15 @@
 //! the tool wrapper knows which session's handler to use at call time,
 //! eliminating reliance on thread-local current session state.
 
-use super::fspec_facade::{ClaudeFspecFacade, GeminiFspecFacade, OpenAIFspecFacade, ZAIFspecFacade};
+use super::fspec_facade::{
+    ClaudeFspecFacade, GeminiFspecFacade, OpenAIFspecFacade, ZAIFspecFacade,
+};
 use super::wrapper::FspecToolFacadeWrapper;
 use std::sync::Arc;
 use uuid::Uuid;
 
 /// Create an FspecTool wrapper for Claude provider with explicit session association (TOOL-012)
-/// 
+///
 /// # Arguments
 /// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
 ///
@@ -25,7 +27,7 @@ pub fn claude_fspec_tool(session_id: Uuid) -> FspecToolFacadeWrapper {
 }
 
 /// Create an FspecTool wrapper for Gemini provider with explicit session association (TOOL-012)
-/// 
+///
 /// # Arguments
 /// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
 ///
@@ -35,7 +37,7 @@ pub fn gemini_fspec_tool(session_id: Uuid) -> FspecToolFacadeWrapper {
 }
 
 /// Create an FspecTool wrapper for OpenAI provider with explicit session association (TOOL-012)
-/// 
+///
 /// # Arguments
 /// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
 ///
@@ -45,7 +47,7 @@ pub fn openai_fspec_tool(session_id: Uuid) -> FspecToolFacadeWrapper {
 }
 
 /// Create an FspecTool wrapper for Z.AI provider with explicit session association (TOOL-012)
-/// 
+///
 /// # Arguments
 /// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
 ///
@@ -55,7 +57,7 @@ pub fn zai_fspec_tool(session_id: Uuid) -> FspecToolFacadeWrapper {
 }
 
 /// Create an FspecTool wrapper for Codex provider with explicit session association (TOOL-015)
-/// 
+///
 /// Codex reuses OpenAIFspecFacade since both use OpenAI-compatible function calling format.
 ///
 /// # Arguments
@@ -67,7 +69,7 @@ pub fn codex_fspec_tool(session_id: Uuid) -> FspecToolFacadeWrapper {
 }
 
 /// Create an FspecTool wrapper for the specified provider with explicit session association (TOOL-012)
-/// 
+///
 /// # Arguments
 /// * `provider` - Provider name ("claude", "gemini", "openai", "zai", "codex")
 /// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
@@ -91,7 +93,7 @@ mod tests {
     #[test]
     fn test_all_provider_tools_created() {
         let session_id = Uuid::new_v4();
-        
+
         let claude = claude_fspec_tool(session_id);
         assert_eq!(claude.provider(), "claude");
         assert_eq!(claude.session_id(), session_id);
@@ -116,7 +118,7 @@ mod tests {
     #[test]
     fn test_provider_lookup() {
         let session_id = Uuid::new_v4();
-        
+
         assert!(fspec_tool_for_provider("claude", session_id).is_some());
         assert!(fspec_tool_for_provider("gemini", session_id).is_some());
         assert!(fspec_tool_for_provider("openai", session_id).is_some());
@@ -129,10 +131,10 @@ mod tests {
     fn test_different_sessions_have_different_ids() {
         let session_a = Uuid::new_v4();
         let session_b = Uuid::new_v4();
-        
+
         let tool_a = claude_fspec_tool(session_a);
         let tool_b = claude_fspec_tool(session_b);
-        
+
         assert_eq!(tool_a.session_id(), session_a);
         assert_eq!(tool_b.session_id(), session_b);
         assert_ne!(tool_a.session_id(), tool_b.session_id());

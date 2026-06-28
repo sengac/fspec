@@ -60,7 +60,9 @@ const EX3_OUTPUT: &str = "What command were you running? fspec validate\nWhat di
 const EXAMPLES: &[CommandExample] = &[
     CommandExample {
         command: "fspec report-bug-to-github",
-        description: Some("Generate bug report with automatic context gathering and open in browser"),
+        description: Some(
+            "Generate bug report with automatic context gathering and open in browser",
+        ),
         output: Some(EX1_OUTPUT),
     },
     CommandExample {

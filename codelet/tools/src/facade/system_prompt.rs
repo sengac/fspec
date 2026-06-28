@@ -265,7 +265,7 @@ impl SystemPromptFacade for ClaudeOAuthSystemPromptFacade {
     fn format_for_api(&self, preamble: &str) -> Value {
         // Prepend fspec guidance to preamble
         let with_fspec = prepend_fspec_guidance(preamble);
-        
+
         // OAuth mode: Handle empty preamble case (PROV-006)
         // Anthropic API rejects: "cache_control cannot be set for empty text blocks"
         // Note: with_fspec is never empty because fspec guidance is always added
@@ -331,7 +331,7 @@ impl SystemPromptFacade for ClaudeApiKeySystemPromptFacade {
     fn format_for_api(&self, preamble: &str) -> Value {
         // Prepend fspec guidance to preamble
         let with_fspec = prepend_fspec_guidance(preamble);
-        
+
         // API key mode: single block with cache_control
         json!([
             {
@@ -483,7 +483,10 @@ mod tests {
         let result = facade.transform_preamble("Hello");
         // fspec guidance is prepended to all preambles
         assert!(result.contains("Hello"));
-        assert!(result.contains("fspec"), "fspec guidance should be prepended");
+        assert!(
+            result.contains("fspec"),
+            "fspec guidance should be prepended"
+        );
     }
 
     #[test]
@@ -506,7 +509,10 @@ mod tests {
         let result = facade.transform_preamble("Hello");
         // fspec guidance is prepended, then preamble, then web tool guidance
         assert!(result.contains("Hello"));
-        assert!(result.contains("fspec"), "fspec guidance should be prepended");
+        assert!(
+            result.contains("fspec"),
+            "fspec guidance should be prepended"
+        );
         assert!(result.contains(GEMINI_WEB_TOOL_GUIDANCE));
     }
 
@@ -567,7 +573,11 @@ mod tests {
         let result = facade.format_for_api("");
         assert!(result.is_array());
         let arr = result.as_array().unwrap();
-        assert_eq!(arr.len(), 2, "Empty preamble should produce two blocks (prefix + fspec guidance)");
+        assert_eq!(
+            arr.len(),
+            2,
+            "Empty preamble should produce two blocks (prefix + fspec guidance)"
+        );
         assert!(arr[0]["text"]
             .as_str()
             .unwrap()

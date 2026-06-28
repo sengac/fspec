@@ -76,7 +76,7 @@ pub(super) async fn run_agent_with_interruption(
                 &output,
             )
             .await
-        },
+        }
         "codex" => run_with_provider!(get_codex, None),
         "gemini" => run_with_provider!(get_gemini, None),
         _ => Err(anyhow::anyhow!("Unknown provider")),

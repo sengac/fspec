@@ -52,7 +52,34 @@ impl App {
         self.spawn_subscriber_tasks();
         self.initialize_startup_model().await;
         self.initialize_default_thinking_level();
+        self.start_viewer_server().await;
         Ok(())
+    }
+
+    /// RPC-373: start the RPC-372 attachment viewer server bound to the current
+    /// working directory. Best-effort / non-fatal — mirrors the
+    /// `checkpoint_counts` pattern: on success store the handle + port so the
+    /// board `D` key can build the FOUNDATION.md URL; on failure log via
+    /// `debug!` and leave `viewer_port = None` (the `D` key then no-ops). cwd is
+    /// resolved from `std::env::current_dir()` (the same source the rest of the
+    /// TUI uses at startup).
+    async fn start_viewer_server(&mut self) {
+        let cwd = match std::env::current_dir() {
+            Ok(cwd) => cwd,
+            Err(err) => {
+                debug!("bootstrap: current_dir() failed; viewer disabled: {err}");
+                return;
+            }
+        };
+        match codelet_attachment_viewer::start_viewer(cwd).await {
+            Ok(handle) => {
+                self.viewer_port = Some(handle.port);
+                self.viewer_handle = Some(handle);
+            }
+            Err(err) => {
+                debug!("bootstrap: start_viewer() failed; D key will no-op: {err}");
+            }
+        }
     }
 
     /// PROV-120: restore the TS-parity "first-available" startup model before

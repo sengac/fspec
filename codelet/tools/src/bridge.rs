@@ -147,7 +147,10 @@ impl BridgeManager {
 
     /// Get connection info for all active connections
     pub fn list_connections(&self) -> Vec<BridgeConnectionInfo> {
-        self.connections.values().map(BridgeConnection::info).collect()
+        self.connections
+            .values()
+            .map(BridgeConnection::info)
+            .collect()
     }
 
     /// Get a mutable reference to a connection
@@ -222,7 +225,9 @@ pub struct BridgeTool {
 
 impl Default for BridgeTool {
     fn default() -> Self {
-        Self { session_id: Uuid::nil() }
+        Self {
+            session_id: Uuid::nil(),
+        }
     }
 }
 
@@ -699,7 +704,11 @@ mod tests {
             {
                 let mgr = manager.read().await;
                 let conn = mgr.connections.get(test_url).unwrap();
-                assert_eq!(conn.outbound_buffer.len(), 2, "Should have 2 buffered messages");
+                assert_eq!(
+                    conn.outbound_buffer.len(),
+                    2,
+                    "Should have 2 buffered messages"
+                );
             }
 
             // @step When the WebSocket server becomes available again
@@ -720,8 +729,15 @@ mod tests {
             {
                 let mgr = manager.read().await;
                 let conn = mgr.connections.get(test_url).unwrap();
-                assert_eq!(conn.outbound_buffer.len(), 0, "Buffer should be empty after delivery");
-                assert_eq!(conn.buffer_size_bytes, 0, "Buffer size should be 0 after delivery");
+                assert_eq!(
+                    conn.outbound_buffer.len(),
+                    0,
+                    "Buffer should be empty after delivery"
+                );
+                assert_eq!(
+                    conn.buffer_size_bytes, 0,
+                    "Buffer size should be 0 after delivery"
+                );
             }
 
             // Cleanup
@@ -764,7 +780,10 @@ mod tests {
 
             // @step Then the bridge connection should be dropped
             // @step And the tool should report an error for that connection
-            assert!(result.is_err(), "Should return error when buffer exceeds 1GB");
+            assert!(
+                result.is_err(),
+                "Should return error when buffer exceeds 1GB"
+            );
             let err = result.unwrap_err();
             assert!(
                 err.to_string().contains("Buffer overflow"),
@@ -812,7 +831,10 @@ mod tests {
                 .await;
 
             // @step Then an error should mention "session context"
-            assert!(result.is_err(), "Direct call should fail without session context");
+            assert!(
+                result.is_err(),
+                "Direct call should fail without session context"
+            );
             let err = result.unwrap_err();
             assert!(
                 err.to_string().contains("session context"),

@@ -58,7 +58,10 @@ pub fn persist_user_message(
     // Store the message
     append_message_with_metadata(&mut session_manifest, "user", text, metadata_map)?;
 
-    tracing::debug!("REFAC-007: Persisted user message for session {}", session_id);
+    tracing::debug!(
+        "REFAC-007: Persisted user message for session {}",
+        session_id
+    );
     Ok(())
 }
 
@@ -119,7 +122,12 @@ pub fn persist_assistant_message_internal(
         .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
 
     // Store the message
-    append_message_with_metadata(&mut session_manifest, "assistant", &text_content, metadata_map)?;
+    append_message_with_metadata(
+        &mut session_manifest,
+        "assistant",
+        &text_content,
+        metadata_map,
+    )?;
 
     tracing::debug!(
         "REFAC-007: Persisted assistant message for session {}",

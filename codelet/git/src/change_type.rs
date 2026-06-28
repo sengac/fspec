@@ -50,9 +50,7 @@ pub struct ChangedFileStatus {
 ///
 /// A staged path absent from the HEAD tree is **Added**; a staged path missing
 /// from the working directory is **Deleted**; otherwise **Modified**.
-pub fn get_staged_files_with_change_type(
-    dir: impl AsRef<Path>,
-) -> Result<Vec<ChangedFileStatus>> {
+pub fn get_staged_files_with_change_type(dir: impl AsRef<Path>) -> Result<Vec<ChangedFileStatus>> {
     let dir = dir.as_ref();
     let repo = open_repo(dir)?;
     let workdir = repo

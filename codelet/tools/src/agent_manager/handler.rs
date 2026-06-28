@@ -101,10 +101,7 @@ pub fn has_agent_manager_handler(session_id: Uuid) -> bool {
 /// Execute an agent manager action via the handler for a specific session (sync)
 ///
 /// Called by AgentManagerTool for all non-async actions.
-pub fn execute_agent_manager(
-    session_id: Uuid,
-    action: AgentManagerAction,
-) -> AgentManagerResult {
+pub fn execute_agent_manager(session_id: Uuid, action: AgentManagerAction) -> AgentManagerResult {
     let handler = match AGENT_MANAGER_HANDLERS.read() {
         Ok(guard) => guard.get(&session_id).cloned(),
         Err(_) => {

@@ -46,12 +46,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // Read spec/work-units.json verbatim (TS: readFile + JSON.parse, wrapped
     // in a try/catch that re-throws as "Failed to generate summary report").
     let work_units_path = project_root.join("spec").join("work-units.json");
-    let raw = std::fs::read_to_string(&work_units_path).map_err(|e| {
-        FspecCoreError::InvalidArgs {
+    let raw =
+        std::fs::read_to_string(&work_units_path).map_err(|e| FspecCoreError::InvalidArgs {
             command: "generate-summary-report",
             reason: format!("Failed to generate summary report: {e}"),
-        }
-    })?;
+        })?;
     let data: Value = serde_json::from_str(&raw).map_err(|e| FspecCoreError::InvalidArgs {
         command: "generate-summary-report",
         reason: format!(
@@ -78,9 +77,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             .and_then(Value::as_str)
             .unwrap_or("unknown")
             .to_string();
-        let entry = by_status
-            .entry(status)
-            .or_insert_with(|| Value::from(0u64));
+        let entry = by_status.entry(status).or_insert_with(|| Value::from(0u64));
         let next = entry.as_u64().unwrap_or(0) + 1;
         *entry = Value::from(next);
     }

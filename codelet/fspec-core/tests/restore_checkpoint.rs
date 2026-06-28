@@ -142,15 +142,29 @@ fn dirty_working_tree_without_a_choice_requires_a_user_choice() {
 
     // @step And the rendered text contains "Working directory has uncommitted changes"
     assert!(
-        result.data.contains("Working directory has uncommitted changes"),
+        result
+            .data
+            .contains("Working directory has uncommitted changes"),
         "missing dirty-tree warning; got:\n{}",
         result.data
     );
 
     // @step And the rendered text lists three numbered risk options including "Low", "Medium", and "High"
-    assert!(result.data.contains("1."), "missing option 1; got:\n{}", result.data);
-    assert!(result.data.contains("2."), "missing option 2; got:\n{}", result.data);
-    assert!(result.data.contains("3."), "missing option 3; got:\n{}", result.data);
+    assert!(
+        result.data.contains("1."),
+        "missing option 1; got:\n{}",
+        result.data
+    );
+    assert!(
+        result.data.contains("2."),
+        "missing option 2; got:\n{}",
+        result.data
+    );
+    assert!(
+        result.data.contains("3."),
+        "missing option 3; got:\n{}",
+        result.data
+    );
     for risk in ["Low", "Medium", "High"] {
         assert!(
             result.data.contains(risk),
@@ -204,7 +218,9 @@ fn conflicts_detected_when_working_tree_files_differ() {
     );
 
     // @step And the systemReminder contains "CHECKPOINT RESTORATION CONFLICT DETECTED"
-    let reminder = data["systemReminder"].as_str().expect("systemReminder string");
+    let reminder = data["systemReminder"]
+        .as_str()
+        .expect("systemReminder string");
     assert!(
         reminder.contains("CHECKPOINT RESTORATION CONFLICT DETECTED"),
         "missing conflict header; got:\n{reminder}"

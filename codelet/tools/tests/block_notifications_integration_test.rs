@@ -14,13 +14,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use codelet_tools::blocklist::{
-    BlocklistAction, BlocklistConfig, BlocklistRule, check_bash_command,
-    clear_session_allowances, init_blocklist,
+    check_bash_command, clear_session_allowances, init_blocklist, BlocklistAction, BlocklistConfig,
+    BlocklistRule,
 };
+use codelet_tools::facade::{set_block_notification_callback, set_get_work_unit_stage_callback};
 use codelet_tools::stage_permissions::{check_write_permission, init_stage_permissions};
-use codelet_tools::facade::{
-    set_block_notification_callback, set_get_work_unit_stage_callback,
-};
 use serial_test::serial;
 use std::io::Write;
 use tempfile::TempDir;
@@ -46,7 +44,7 @@ mod callback_registration {
         // @step Given the notification callback infrastructure
         // @step When we register a callback
         set_block_notification_callback(test_notification_callback);
-        
+
         // @step Then the callback should be set without error
         // (The test passes if no panic occurs)
         // Note: set_block_notification_callback uses OnceLock, so it only sets once
@@ -57,7 +55,7 @@ mod callback_registration {
         // @step Given the stage callback infrastructure
         // @step When we register a callback
         set_get_work_unit_stage_callback(test_get_stage_testing);
-        
+
         // @step Then the callback should be set without error
     }
 }
@@ -89,7 +87,8 @@ mod blocklist_integration {
         let path = fspec_dir.join("blocklist.json");
         let mut file = std::fs::File::create(&path).expect("create blocklist.json");
         let json = serde_json::to_string_pretty(&config).expect("serialize config");
-        file.write_all(json.as_bytes()).expect("write blocklist.json");
+        file.write_all(json.as_bytes())
+            .expect("write blocklist.json");
 
         init_blocklist(Some(tmp.path()));
 
@@ -106,13 +105,13 @@ mod blocklist_integration {
             "Reason should contain 'Use git switch', got: {}",
             blocked.reason
         );
-        
+
         // @step And the user should see a notification "AI was blocked from git checkout - Use git switch instead"
         // The actual notification emission is done in BashToolFacadeWrapper.call() via emit_block_notification.
         // This test verifies the blocked error contains the reason that would be included in the notification.
         // The notification format is: "AI was blocked from {action} - {reason}"
         assert!(blocked.to_string().contains("Use git switch"));
-        
+
         // @step And the notification should auto-dismiss
         // Auto-dismiss is handled by TUI NotificationDialog with timeout - tested in TUI tests
 
@@ -143,7 +142,8 @@ mod blocklist_integration {
         let path = fspec_dir.join("blocklist.json");
         let mut file = std::fs::File::create(&path).expect("create blocklist.json");
         let json = serde_json::to_string_pretty(&config).expect("serialize config");
-        file.write_all(json.as_bytes()).expect("write blocklist.json");
+        file.write_all(json.as_bytes())
+            .expect("write blocklist.json");
 
         init_blocklist(Some(tmp.path()));
 
@@ -178,7 +178,10 @@ mod stage_permissions_integration {
         let result = check_write_permission("src/auth.ts", Some(stage));
 
         // @step Then the write should be blocked
-        assert!(result.is_err(), "Write to src/auth.ts should be blocked in testing stage");
+        assert!(
+            result.is_err(),
+            "Write to src/auth.ts should be blocked in testing stage"
+        );
 
         // @step And the error should mention the testing stage
         let blocked = result.unwrap_err();
@@ -187,13 +190,13 @@ mod stage_permissions_integration {
             "Reason should mention testing stage, got: {}",
             blocked.reason
         );
-        
+
         // @step And the user should see a notification "AI was blocked from writing src/auth.ts - Cannot write impl files in testing stage"
         // The actual notification emission is done in FileToolFacadeWrapper.call() via emit_block_notification.
         // This test verifies the blocked error contains the reason that would be included in the notification.
         // The notification format is: "AI was blocked from writing {file_path} - {reason}"
         assert!(blocked.to_string().contains("testing"));
-        
+
         // @step And the notification should auto-dismiss
         // Auto-dismiss is handled by TUI NotificationDialog with timeout - tested in TUI tests
     }
@@ -276,14 +279,17 @@ mod notification_format {
                 pattern: r"^cat\s+".to_string(),
                 action: BlocklistAction::Block,
                 reason: "Use Read tool instead".to_string(),
-                guidance: Some("The Read tool provides better encoding and line numbers.".to_string()),
+                guidance: Some(
+                    "The Read tool provides better encoding and line numbers.".to_string(),
+                ),
             }],
         };
 
         let path = fspec_dir.join("blocklist.json");
         let mut file = std::fs::File::create(&path).expect("create blocklist.json");
         let json = serde_json::to_string_pretty(&config).expect("serialize config");
-        file.write_all(json.as_bytes()).expect("write blocklist.json");
+        file.write_all(json.as_bytes())
+            .expect("write blocklist.json");
 
         init_blocklist(Some(tmp.path()));
 
@@ -322,10 +328,7 @@ mod notification_format {
 
         // The error reason should be usable in notification:
         // "AI was blocked from writing src/impl.ts - {reason}"
-        assert!(
-            !error.reason.is_empty(),
-            "Reason should not be empty"
-        );
+        assert!(!error.reason.is_empty(), "Reason should not be empty");
         assert!(
             error.reason.contains("testing") || error.reason.contains("impl"),
             "Reason should mention context, got: {}",

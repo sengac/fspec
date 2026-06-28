@@ -44,8 +44,7 @@ fn agent_loop_src(file: &str) -> PathBuf {
 
 fn read_source(file: &str) -> String {
     let path = agent_loop_src(file);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 fn read_workspace_source(rel: &str) -> String {
@@ -55,8 +54,7 @@ fn read_workspace_source(rel: &str) -> String {
         .and_then(|p| p.parent())
         .map(|p| p.join(rel))
         .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract the body of the `run_with_provider!` macro_rules! macro from
@@ -159,7 +157,11 @@ fn extract_custom_provider_fallthrough_arm(src: &str) -> &str {
 
 /// Line number (1-based) of `needle`'s first byte inside `src`.
 fn line_number_of(src: &str, needle_byte_offset: usize) -> usize {
-    src[..needle_byte_offset].bytes().filter(|b| *b == b'\n').count() + 1
+    src[..needle_byte_offset]
+        .bytes()
+        .filter(|b| *b == b'\n')
+        .count()
+        + 1
 }
 
 /// Count occurrences of a literal substring.
@@ -383,7 +385,9 @@ fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
     let arm_marker_abs = src
         .find("CustomProvider::create_rig_agent")
         .and_then(|p| src[..p].rfind("_ => {"))
-        .expect("agent_loop.rs must contain `_ => {` arm wrapping CustomProvider::create_rig_agent");
+        .expect(
+            "agent_loop.rs must contain `_ => {` arm wrapping CustomProvider::create_rig_agent",
+        );
     let stream_rel = src[arm_marker_abs..]
         .find("codelet_cli::interactive::run_agent_stream_with_images")
         .expect("custom-provider arm must invoke run_agent_stream_with_images");
@@ -425,9 +429,7 @@ fn agent_loop_body_does_not_use_complete_with_tools() {
 
         // Detect entering a #[cfg(test)] module on subsequent `mod` line or same-line `mod ... {`.
         if !in_test_module {
-            if trimmed.starts_with("#[cfg(test)]")
-                || trimmed.starts_with("#[cfg(all(test")
-            {
+            if trimmed.starts_with("#[cfg(test)]") || trimmed.starts_with("#[cfg(all(test") {
                 prev_line_is_cfg_test_attr = true;
                 continue;
             }
@@ -525,8 +527,7 @@ fn stream_chunk_enum_has_at_least_nineteen_variants() {
     for raw_line in body.lines() {
         let trimmed = raw_line.trim();
         // Skip blanks, comments, and attributes.
-        if trimmed.is_empty() || trimmed.starts_with("//") || trimmed.starts_with("#[")
-        {
+        if trimmed.is_empty() || trimmed.starts_with("//") || trimmed.starts_with("#[") {
             inner_depth += raw_line.chars().filter(|c| *c == '{').count() as i32;
             inner_depth -= raw_line.chars().filter(|c| *c == '}').count() as i32;
             continue;
@@ -634,10 +635,10 @@ fn background_output_emits_eleven_canonical_stream_chunk_constructors() {
 
 #[test]
 fn run_agent_stream_with_images_has_canonical_eight_argument_signature() {
-    use std::sync::Arc;
     use std::sync::atomic::AtomicBool;
+    use std::sync::Arc;
 
-    use codelet_cli::interactive::{BridgeImage, run_agent_stream_with_images};
+    use codelet_cli::interactive::{run_agent_stream_with_images, BridgeImage};
     use codelet_cli::session::Session;
     use codelet_core::RigAgent;
     use rig::completion::CompletionModel;
@@ -665,8 +666,7 @@ fn run_agent_stream_with_images_has_canonical_eight_argument_signature() {
     ) -> impl std::future::Future<Output = anyhow::Result<()>> + use<'a, 'b, 'c, M, O>
     where
         M: CompletionModel + 'static,
-        M::StreamingResponse:
-            rig::wasm_compat::WasmCompatSend + rig::completion::GetTokenUsage,
+        M::StreamingResponse: rig::wasm_compat::WasmCompatSend + rig::completion::GetTokenUsage,
         O: codelet_cli::interactive::StreamOutput,
     {
         run_agent_stream_with_images(
@@ -686,7 +686,8 @@ fn run_agent_stream_with_images_has_canonical_eight_argument_signature() {
     // `run_agent_stream_with_images` with the canonical 8 positional
     // arguments, so a type-checker drift breaks this test at compile
     // time)
-    let _ = typecheck::<rig::providers::openai::CompletionModel, codelet_cli::interactive::CliOutput>;
+    let _ =
+        typecheck::<rig::providers::openai::CompletionModel, codelet_cli::interactive::CliOutput>;
 
     // @step And the function is re-exported from codelet_cli::interactive so the agent loop dispatch arms can call it directly
     //

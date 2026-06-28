@@ -110,19 +110,20 @@ impl rig::tool::Tool for GlobTool {
         // Build glob matcher with optional case insensitivity
         let mut builder = GlobBuilder::new(&args.pattern);
         builder.literal_separator(false);
-        
+
         // Apply case insensitive option if specified
         if args.case_insensitive.unwrap_or(false) {
             builder.case_insensitive(true);
         }
-        
-        let matcher = builder
-            .build()
-            .map(|g| g.compile_matcher())
-            .map_err(|e| ToolError::Pattern {
-                tool: "glob",
-                message: e.to_string(),
-            })?;
+
+        let matcher =
+            builder
+                .build()
+                .map(|g| g.compile_matcher())
+                .map_err(|e| ToolError::Pattern {
+                    tool: "glob",
+                    message: e.to_string(),
+                })?;
 
         // Check if path exists (async, non-blocking)
         match tokio::fs::try_exists(&path).await {

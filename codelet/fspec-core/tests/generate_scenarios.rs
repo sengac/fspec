@@ -95,11 +95,11 @@ fn empty_work_units() -> Value {
 /// user story.
 fn ready_unit(id: &str, title: &str) -> Value {
     let mut data = unit_data(id, title, "specifying");
-    data["workUnits"][id]["rules"] = json!([{ "id": 0, "text": "Password must be 8+ characters", "deleted": false }]);
+    data["workUnits"][id]["rules"] =
+        json!([{ "id": 0, "text": "Password must be 8+ characters", "deleted": false }]);
     data["workUnits"][id]["examples"] =
         json!([{ "id": 0, "text": "User views the account settings page", "deleted": false }]);
-    data["workUnits"][id]["userStory"] =
-        json!({ "role": "registered user", "action": "log in securely", "benefit": "access my account" });
+    data["workUnits"][id]["userStory"] = json!({ "role": "registered user", "action": "log in securely", "benefit": "access my account" });
     data
 }
 
@@ -138,7 +138,10 @@ fn dispatch_creates_a_context_only_feature_file_for_a_complete_work_unit() {
 
     // @step Then a feature file is created under spec/features for WU-1 containing zero Scenario blocks
     let feature = tmp.path().join("spec/features/user-authentication.feature");
-    assert!(feature.exists(), "feature file must be created at {feature:?}");
+    assert!(
+        feature.exists(),
+        "feature file must be created at {feature:?}"
+    );
     let content = fs::read_to_string(&feature).expect("read generated feature");
     assert_eq!(
         scenario_block_count(&content),
@@ -190,8 +193,7 @@ fn dispatch_fails_when_a_question_is_unanswered() {
     // @step Given a project root tempdir whose work unit WU-1 has an unanswered question
     let tmp = TempDir::new().expect("tempdir");
     let mut data = ready_unit("WU-1", "User Authentication");
-    data["workUnits"]["WU-1"]["questions"] =
-        json!([{ "id": 0, "text": "@human: Should we support OAuth?", "deleted": false, "selected": false }]);
+    data["workUnits"]["WU-1"]["questions"] = json!([{ "id": 0, "text": "@human: Should we support OAuth?", "deleted": false, "selected": false }]);
     write_work_units(tmp.path(), &data);
 
     // @step When I dispatch generate-scenarios with workUnitId="WU-1"
@@ -214,7 +216,10 @@ fn dispatch_fails_when_there_is_no_example_mapping_data() {
 
     // @step Given a project root tempdir whose work unit WU-1 has no rules and no examples
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), &unit_data("WU-1", "User Authentication", "specifying"));
+    write_work_units(
+        tmp.path(),
+        &unit_data("WU-1", "User Authentication", "specifying"),
+    );
 
     // @step When I dispatch generate-scenarios with workUnitId="WU-1"
     let result = dispatch_command(req(tmp.path(), json!({ "workUnitId": "WU-1" })));
@@ -342,7 +347,10 @@ fn dispatch_proceeds_past_duplicates_with_ignore_possible_duplicates() {
 
     // @step Then a feature file is created under spec/features for WU-1 containing zero Scenario blocks
     let feature = tmp.path().join("spec/features/user-authentication.feature");
-    assert!(feature.exists(), "feature file must be created at {feature:?}");
+    assert!(
+        feature.exists(),
+        "feature file must be created at {feature:?}"
+    );
     let content = fs::read_to_string(&feature).expect("read generated feature");
     assert_eq!(
         scenario_block_count(&content),

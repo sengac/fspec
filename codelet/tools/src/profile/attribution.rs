@@ -288,20 +288,15 @@ pub fn attribute_samples(
                 .first()
                 .map(|f| f.symbol.as_str())
                 .unwrap_or("")
-                .cmp(
-                    b.frames
-                        .first()
-                        .map(|f| f.symbol.as_str())
-                        .unwrap_or(""),
-                )
+                .cmp(b.frames.first().map(|f| f.symbol.as_str()).unwrap_or(""))
         })
     });
     hot_stacks.truncate(top_n);
 
     // 8. Build sampling report + debug-info heuristic.
     let unresolved_samples = total_samples.saturating_sub(resolved_rust_samples);
-    let debug_info_available = total_samples == 0
-        || resolved_rust_samples.saturating_mul(10) >= total_samples;
+    let debug_info_available =
+        total_samples == 0 || resolved_rust_samples.saturating_mul(10) >= total_samples;
     let hint = if debug_info_available {
         None
     } else {

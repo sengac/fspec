@@ -13,6 +13,7 @@ use ratatui::layout::Rect;
 
 use crate::compositor::Compositor;
 
+pub mod attachment_picker_dialog;
 pub mod board_exit_confirmation_dialog;
 pub mod checkpoint_restore_dialog;
 pub mod create_session_dialog;
@@ -961,6 +962,16 @@ pub enum Action {
     /// fires. `App::dispatch` routes this via `try_dispatch_dialog_dismiss`
     /// which calls `compositor.remove(&id)` and triggers a redraw.
     DismissDialog(String),
+
+    // RPC-373: BoardView `D` opens the project FOUNDATION.md in the user's
+    // default browser via the RPC-372 viewer server (no-op when unavailable).
+    OpenFoundation,
+
+    // RPC-374: BoardView `A` opens an attachment picker for the selected work
+    // unit; `OpenAttachmentPicker` pushes the dialog and `OpenAttachment(path)`
+    // launches the browser at the viewer URL (no-op when unavailable).
+    OpenAttachmentPicker,
+    OpenAttachment(String),
 
     // RPC-356: Dual-pane ChangedFilesView (BoardView `F` opens; selection →
     // LoadFileDiff → FileDiffLoaded; Esc → close).

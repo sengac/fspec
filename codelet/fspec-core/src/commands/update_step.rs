@@ -68,10 +68,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let content = match std::fs::read_to_string(&feature_abs) {
         Ok(s) => s,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            return err_envelope(format!(
-                "Feature file not found: {}",
-                feature_abs.display()
-            ));
+            return err_envelope(format!("Feature file not found: {}", feature_abs.display()));
         }
         Err(source) => {
             return Err(FspecCoreError::Io {
@@ -317,7 +314,11 @@ mod tests {
     fn step_line_parse() {
         assert_eq!(
             parse_step_line("    Given I am here"),
-            Some(("    ".to_string(), "Given".to_string(), "I am here".to_string()))
+            Some((
+                "    ".to_string(),
+                "Given".to_string(),
+                "I am here".to_string()
+            ))
         );
         assert_eq!(parse_step_line("    Scenario: x"), None);
         assert_eq!(parse_step_line("    Given"), None);
@@ -325,7 +326,10 @@ mod tests {
 
     #[test]
     fn keyword_prefix_strip() {
-        assert_eq!(strip_keyword_prefix("When I submit"), Some("I submit".to_string()));
+        assert_eq!(
+            strip_keyword_prefix("When I submit"),
+            Some("I submit".to_string())
+        );
         assert_eq!(strip_keyword_prefix("I submit"), None);
     }
 }

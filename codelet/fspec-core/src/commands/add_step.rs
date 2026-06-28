@@ -147,8 +147,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let target = match target {
         Some(s) => *s,
         None => {
-            let available: Vec<&str> =
-                plain_scenarios.iter().map(|s| s.name.as_str()).collect();
+            let available: Vec<&str> = plain_scenarios.iter().map(|s| s.name.as_str()).collect();
             let available_str = if available.is_empty() {
                 "none".to_string()
             } else {

@@ -116,7 +116,12 @@ fn scenario_dispatcher_includes_deduplicated_coverage_file_paths() {
     // @step Given a project root tempdir with spec/work-units.json containing one work unit tagged @cli and one .feature.coverage file referencing one test file and one impl file
     let tmp = TempDir::new().expect("tempdir");
     write_work_units(tmp.path(), &[("CLI-001", &["@cli"])]);
-    write_coverage(tmp.path(), "a.feature.coverage", "test/a.test.ts", "src/a.ts");
+    write_coverage(
+        tmp.path(),
+        "a.feature.coverage",
+        "test/a.test.ts",
+        "src/a.ts",
+    );
 
     // @step When I dispatch compare-implementations with tag=@cli and showCoverage=true
     let result = dispatch_command(req(

@@ -42,8 +42,7 @@ fn agent_loop_src(file: &str) -> PathBuf {
 
 fn read_source(file: &str) -> String {
     let path = agent_loop_src(file);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 fn read_workspace_source(rel: &str) -> String {
@@ -53,8 +52,7 @@ fn read_workspace_source(rel: &str) -> String {
         .and_then(|p| p.parent())
         .map(|p| p.join(rel))
         .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract a balanced-brace block beginning at `start_marker` inside
@@ -251,7 +249,12 @@ async fn background_session_round_trips_update_tokens_and_get_tokens() {
         .to_string();
     let session_id_str = Uuid::new_v4().to_string();
     manager
-        .create_session_with_id(&session_id_str, "stub/canned", &project, "token-test-session")
+        .create_session_with_id(
+            &session_id_str,
+            "stub/canned",
+            &project,
+            "token-test-session",
+        )
         .await
         .expect("create_session_with_id");
 

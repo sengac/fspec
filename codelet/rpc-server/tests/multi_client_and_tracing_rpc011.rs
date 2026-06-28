@@ -39,9 +39,9 @@ async fn two_clients_attached_simultaneously_see_the_same_chunk_stream() {
     let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
@@ -108,7 +108,10 @@ async fn two_clients_attached_simultaneously_see_the_same_chunk_stream() {
     let chunks_b = drain_until_done(&mut rx_b, &sid).await;
 
     // @step Then both WS-A.chunks_rx() and WS-B.chunks_rx() yield the SAME sequence of (S, chunk) frames in the SAME order
-    assert!(!chunks_a.is_empty(), "client A must observe at least one chunk");
+    assert!(
+        !chunks_a.is_empty(),
+        "client A must observe at least one chunk"
+    );
     assert_eq!(
         bincode::serialize(&chunks_a).expect("encode A"),
         bincode::serialize(&chunks_b).expect("encode B"),
@@ -134,8 +137,8 @@ async fn two_clients_attached_simultaneously_see_the_same_chunk_stream() {
 fn broadcast_capacities_are_explicit_and_tuned() {
     // @step Given codelet/rpc/src/lib.rs
     let path = workspace_root().join("rpc").join("src").join("lib.rs");
-    let body = std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
+    let body =
+        std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
 
     // @step When inspecting the broadcast capacity constants
     // @step Then DEFAULT_CHUNKS_CAPACITY equals 1024
@@ -304,10 +307,7 @@ async fn tracing_spans_carry_client_id_on_per_connection_handler_tasks() {
     // (We cannot pin specific ephemeral ports; assert the shape only:
     // at least two records carry a client_id=127.0.0.1:<port> tag.)
     let captured = records.lock().unwrap().clone();
-    let client_id_count = captured
-        .iter()
-        .filter(|r| r.contains("client_id="))
-        .count();
+    let client_id_count = captured.iter().filter(|r| r.contains("client_id=")).count();
     assert!(
         client_id_count >= 2,
         "must observe at least 2 tracing records tagged with client_id. Got {client_id_count}; sample: {captured:?}"

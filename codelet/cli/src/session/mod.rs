@@ -215,9 +215,7 @@ impl Session {
         &mut self,
         isolation: Option<&context_gathering::IsolationContext>,
     ) {
-        use context_gathering::{
-            discover_claude_md, gather_environment_info_with_isolation,
-        };
+        use context_gathering::{discover_claude_md, gather_environment_info_with_isolation};
 
         // Inject CLAUDE.md/AGENTS.md content if found
         if let Some(content) = discover_claude_md(None) {

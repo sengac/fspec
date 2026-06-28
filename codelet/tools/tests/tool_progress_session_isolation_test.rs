@@ -32,15 +32,21 @@ fn test_per_session_callback_isolation() {
 
     // @step Given session A has registered a tool progress callback
     let cap_a = captured_a.clone();
-    set_tool_progress_callback(session_a, Some(Arc::new(move |chunk: &str, is_stderr: bool| {
-        cap_a.lock().unwrap().push((chunk.to_string(), is_stderr));
-    })));
+    set_tool_progress_callback(
+        session_a,
+        Some(Arc::new(move |chunk: &str, is_stderr: bool| {
+            cap_a.lock().unwrap().push((chunk.to_string(), is_stderr));
+        })),
+    );
 
     // @step And session B has registered a different tool progress callback
     let cap_b = captured_b.clone();
-    set_tool_progress_callback(session_b, Some(Arc::new(move |chunk: &str, is_stderr: bool| {
-        cap_b.lock().unwrap().push((chunk.to_string(), is_stderr));
-    })));
+    set_tool_progress_callback(
+        session_b,
+        Some(Arc::new(move |chunk: &str, is_stderr: bool| {
+            cap_b.lock().unwrap().push((chunk.to_string(), is_stderr));
+        })),
+    );
 
     // @step When tool progress is emitted for session A
     emit_tool_progress(session_a, "hello from A\n", false);
@@ -75,15 +81,21 @@ fn test_clearing_one_session_does_not_affect_another() {
 
     // @step Given session A has registered a tool progress callback
     let cap_a = captured_a.clone();
-    set_tool_progress_callback(session_a, Some(Arc::new(move |chunk: &str, is_stderr: bool| {
-        cap_a.lock().unwrap().push((chunk.to_string(), is_stderr));
-    })));
+    set_tool_progress_callback(
+        session_a,
+        Some(Arc::new(move |chunk: &str, is_stderr: bool| {
+            cap_a.lock().unwrap().push((chunk.to_string(), is_stderr));
+        })),
+    );
 
     // @step And session B has registered a tool progress callback
     let cap_b = captured_b.clone();
-    set_tool_progress_callback(session_b, Some(Arc::new(move |chunk: &str, is_stderr: bool| {
-        cap_b.lock().unwrap().push((chunk.to_string(), is_stderr));
-    })));
+    set_tool_progress_callback(
+        session_b,
+        Some(Arc::new(move |chunk: &str, is_stderr: bool| {
+            cap_b.lock().unwrap().push((chunk.to_string(), is_stderr));
+        })),
+    );
 
     // @step When session B's callback is cleared
     set_tool_progress_callback(session_b, None);
@@ -141,16 +153,22 @@ fn test_multiple_concurrent_callbacks_independent() {
     // @step Given session A has registered a tool progress callback capturing output to buffer A
     let buffer_a = Arc::new(Mutex::new(Vec::<String>::new()));
     let buf_a = buffer_a.clone();
-    set_tool_progress_callback(session_a, Some(Arc::new(move |chunk: &str, _is_stderr: bool| {
-        buf_a.lock().unwrap().push(chunk.to_string());
-    })));
+    set_tool_progress_callback(
+        session_a,
+        Some(Arc::new(move |chunk: &str, _is_stderr: bool| {
+            buf_a.lock().unwrap().push(chunk.to_string());
+        })),
+    );
 
     // @step And session B has registered a tool progress callback capturing output to buffer B
     let buffer_b = Arc::new(Mutex::new(Vec::<String>::new()));
     let buf_b = buffer_b.clone();
-    set_tool_progress_callback(session_b, Some(Arc::new(move |chunk: &str, _is_stderr: bool| {
-        buf_b.lock().unwrap().push(chunk.to_string());
-    })));
+    set_tool_progress_callback(
+        session_b,
+        Some(Arc::new(move |chunk: &str, _is_stderr: bool| {
+            buf_b.lock().unwrap().push(chunk.to_string());
+        })),
+    );
 
     // @step When tool progress "stdout line A" is emitted for session A
     emit_tool_progress(session_a, "stdout line A", false);
@@ -192,9 +210,12 @@ fn test_many_sessions_concurrent_registration() {
     // @step Given 10 sessions have each registered a tool progress callback
     for i in 0..session_count {
         let buf = buffers[i].clone();
-        set_tool_progress_callback(sessions[i], Some(Arc::new(move |chunk: &str, _: bool| {
-            buf.lock().unwrap().push(chunk.to_string());
-        })));
+        set_tool_progress_callback(
+            sessions[i],
+            Some(Arc::new(move |chunk: &str, _: bool| {
+                buf.lock().unwrap().push(chunk.to_string());
+            })),
+        );
     }
 
     // @step When tool progress is emitted for each session with a unique message
@@ -205,7 +226,11 @@ fn test_many_sessions_concurrent_registration() {
     // @step Then each session's callback received only its own message
     for (i, buffer) in buffers.iter().enumerate().take(session_count) {
         let contents = buffer.lock().unwrap();
-        assert_eq!(contents.len(), 1, "Session {i} should have exactly 1 message");
+        assert_eq!(
+            contents.len(),
+            1,
+            "Session {i} should have exactly 1 message"
+        );
         assert_eq!(contents[0], format!("msg-{i}"));
     }
 
@@ -215,9 +240,18 @@ fn test_many_sessions_concurrent_registration() {
     }
 
     // Verify all are cleared — emit should be no-ops
-    for (i, (&session, buffer)) in sessions.iter().zip(buffers.iter()).enumerate().take(session_count) {
+    for (i, (&session, buffer)) in sessions
+        .iter()
+        .zip(buffers.iter())
+        .enumerate()
+        .take(session_count)
+    {
         emit_tool_progress(session, "should not arrive", false);
         let contents = buffer.lock().unwrap();
-        assert_eq!(contents.len(), 1, "Session {i} should still have only its 1 original message after clear");
+        assert_eq!(
+            contents.len(),
+            1,
+            "Session {i} should still have only its 1 original message after clear"
+        );
     }
 }

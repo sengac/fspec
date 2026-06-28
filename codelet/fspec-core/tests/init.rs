@@ -76,7 +76,10 @@ fn installs_claude_agent_files_and_writes_the_config() {
 
     // @step Then the filesInstalled array contains 'spec/CLAUDE.md' and '.claude/commands/fspec.md'
     let files = files_installed(&data);
-    assert!(files.contains(&"spec/CLAUDE.md".to_string()), "got: {files:?}");
+    assert!(
+        files.contains(&"spec/CLAUDE.md".to_string()),
+        "got: {files:?}"
+    );
     assert!(
         files.contains(&".claude/commands/fspec.md".to_string()),
         "got: {files:?}"
@@ -146,7 +149,10 @@ fn replaces_all_template_placeholders_with_agent_specific_values() {
     let doc = read_to_string(tmp.path(), "spec/CLAUDE.md");
 
     // @step Then the doc file spec/CLAUDE.md does NOT contain the substring '{{AGENT_NAME}}'
-    assert!(!doc.contains("{{AGENT_NAME}}"), "AGENT_NAME placeholder leaked");
+    assert!(
+        !doc.contains("{{AGENT_NAME}}"),
+        "AGENT_NAME placeholder leaked"
+    );
 
     // @step Then the doc file spec/CLAUDE.md does NOT contain the substring '{{DOC_TEMPLATE}}'
     assert!(
@@ -286,14 +292,18 @@ fn shares_one_implementation_between_the_dispatcher_and_the_cli_bridge() {
     );
 
     // @step Then the CLI bridge codelet/fspec/src/init.rs delegates to init::run and contains no inline scaffolding or registry logic
-    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../fspec/src/init.rs");
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../fspec/src/init.rs");
     let bridge_src = fs::read_to_string(&bridge_path).expect("CLI bridge init.rs readable");
     assert!(
         bridge_src.contains("init::run") || bridge_src.contains("commands::init"),
         "bridge must delegate to init::run"
     );
-    for forbidden in ["CLAUDE.md", "create_dir_all", "AGENT_REGISTRY", "docTemplate"] {
+    for forbidden in [
+        "CLAUDE.md",
+        "create_dir_all",
+        "AGENT_REGISTRY",
+        "docTemplate",
+    ] {
         assert!(
             !bridge_src.contains(forbidden),
             "bridge must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
@@ -355,11 +365,31 @@ fn writes_the_codex_slash_command_under_an_injectable_home_directory() {
 #[test]
 fn generated_docs_match_typescript_byte_for_byte() {
     let cases: &[(&str, &str, &str)] = &[
-        ("claude", "spec/CLAUDE.md", include_str!("fixtures/init_docs/claude.md")),
-        ("cursor", "spec/CURSOR.md", include_str!("fixtures/init_docs/cursor.md")),
-        ("cline", "spec/CLINE.md", include_str!("fixtures/init_docs/cline.md")),
-        ("aider", "spec/AIDER.md", include_str!("fixtures/init_docs/aider.md")),
-        ("gemini", "spec/GEMINI.md", include_str!("fixtures/init_docs/gemini.md")),
+        (
+            "claude",
+            "spec/CLAUDE.md",
+            include_str!("fixtures/init_docs/claude.md"),
+        ),
+        (
+            "cursor",
+            "spec/CURSOR.md",
+            include_str!("fixtures/init_docs/cursor.md"),
+        ),
+        (
+            "cline",
+            "spec/CLINE.md",
+            include_str!("fixtures/init_docs/cline.md"),
+        ),
+        (
+            "aider",
+            "spec/AIDER.md",
+            include_str!("fixtures/init_docs/aider.md"),
+        ),
+        (
+            "gemini",
+            "spec/GEMINI.md",
+            include_str!("fixtures/init_docs/gemini.md"),
+        ),
     ];
 
     // Redirect HOME at an empty sandbox so no real ~/.fspec/fspec-config.json
@@ -392,5 +422,9 @@ fn generated_docs_match_typescript_byte_for_byte() {
         None => std::env::remove_var("HOME"),
     }
 
-    assert!(failures.is_empty(), "doc parity failures:\n{}", failures.join("\n"));
+    assert!(
+        failures.is_empty(),
+        "doc parity failures:\n{}",
+        failures.join("\n")
+    );
 }

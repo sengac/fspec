@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for Read tool image size validation
 //! Feature: spec/features/read-tool-image-size-validation.feature
@@ -46,9 +45,16 @@ async fn test_small_image_within_size_limit_is_returned_normally() {
     let result = tool.call(args).await;
 
     // @step Then the tool should return image data with media type "image/png"
-    assert!(result.is_ok(), "Small image should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Small image should succeed, got: {:?}",
+        result.err()
+    );
     let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
-    assert_eq!(output["media_type"], "image/png", "Should have PNG media type");
+    assert_eq!(
+        output["media_type"], "image/png",
+        "Should have PNG media type"
+    );
 
     // @step And the result should be a ReadOutput::Image with base64-encoded data
     assert_eq!(output["type"], "image", "Should return image type");
@@ -130,12 +136,22 @@ async fn test_image_at_exactly_the_size_limit_is_accepted() {
     let result = tool.call(args).await;
 
     // @step Then the tool should return image data with media type "image/png"
-    assert!(result.is_ok(), "Boundary image should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Boundary image should succeed, got: {:?}",
+        result.err()
+    );
     let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
-    assert_eq!(output["media_type"], "image/png", "Should have PNG media type");
+    assert_eq!(
+        output["media_type"], "image/png",
+        "Should have PNG media type"
+    );
 
     // @step And no validation error should occur
-    assert_eq!(output["type"], "image", "Should return image type, not error");
+    assert_eq!(
+        output["type"], "image",
+        "Should return image type, not error"
+    );
 }
 
 /// Scenario: SVG files are treated as text and bypass image size validation
@@ -171,7 +187,11 @@ async fn test_svg_files_are_treated_as_text() {
     let result = tool.call(args).await;
 
     // @step Then the tool should return text content, not image content
-    assert!(result.is_ok(), "SVG should succeed as text, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "SVG should succeed as text, got: {:?}",
+        result.err()
+    );
     let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
 
     // @step And the result should be a ReadOutput::Text with line-numbered content

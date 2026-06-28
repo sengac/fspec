@@ -24,8 +24,8 @@ static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
 
 /// Read `<data_dir>/fspec-config.json` as a `serde_json::Value`.
 fn read_user_config(data_dir: &std::path::Path) -> Value {
-    let raw =
-        std::fs::read_to_string(data_dir.join("fspec-config.json")).expect("read fspec-config.json");
+    let raw = std::fs::read_to_string(data_dir.join("fspec-config.json"))
+        .expect("read fspec-config.json");
     serde_json::from_str(&raw).expect("parse fspec-config.json")
 }
 

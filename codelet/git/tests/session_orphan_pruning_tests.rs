@@ -205,7 +205,10 @@ fn test_session_with_valid_manifest_not_orphaned() {
     let manifest = read_manifest(&session_id)
         .expect("Should read manifest")
         .expect("Manifest should exist");
-    assert!(!manifest.terminated, "Manifest should have terminated=false");
+    assert!(
+        !manifest.terminated,
+        "Manifest should have terminated=false"
+    );
 
     // @step And "session-4" is not in the active sessions set
     let active_sessions: HashSet<String> = HashSet::new();
@@ -425,10 +428,10 @@ fn test_prune_returns_list_of_pruned_ids() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let _info_orphan_1 = IsolatedSessionInfo::new_isolated(repo_path, &orphan_1)
-        .expect("Failed to create orphan 1");
-    let _info_orphan_2 = IsolatedSessionInfo::new_isolated(repo_path, &orphan_2)
-        .expect("Failed to create orphan 2");
+    let _info_orphan_1 =
+        IsolatedSessionInfo::new_isolated(repo_path, &orphan_1).expect("Failed to create orphan 1");
+    let _info_orphan_2 =
+        IsolatedSessionInfo::new_isolated(repo_path, &orphan_2).expect("Failed to create orphan 2");
 
     // @step And 1 active session worktree "active-1"
     let info_active = IsolatedSessionInfo::new_isolated(repo_path, &active_1)

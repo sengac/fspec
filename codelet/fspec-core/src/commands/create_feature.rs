@@ -253,13 +253,41 @@ struct PrefillPattern {
 /// multiline `@component` / `@feature-group` tag-line patterns are handled
 /// separately to mirror the `^@.*@component` regex semantics.
 const PREFILL_PATTERNS: &[PrefillPattern] = &[
-    PrefillPattern { needle: "[role]", name: "[role]", command: "fspec set-user-story" },
-    PrefillPattern { needle: "[action]", name: "[action]", command: "fspec set-user-story" },
-    PrefillPattern { needle: "[benefit]", name: "[benefit]", command: "fspec set-user-story" },
-    PrefillPattern { needle: "[precondition]", name: "[precondition]", command: "fspec add-step" },
-    PrefillPattern { needle: "[expected outcome]", name: "[expected outcome]", command: "fspec add-step" },
-    PrefillPattern { needle: "[scenario name]", name: "[scenario name]", command: "fspec add-scenario" },
-    PrefillPattern { needle: "todo:", name: "TODO:", command: "fspec add-architecture" },
+    PrefillPattern {
+        needle: "[role]",
+        name: "[role]",
+        command: "fspec set-user-story",
+    },
+    PrefillPattern {
+        needle: "[action]",
+        name: "[action]",
+        command: "fspec set-user-story",
+    },
+    PrefillPattern {
+        needle: "[benefit]",
+        name: "[benefit]",
+        command: "fspec set-user-story",
+    },
+    PrefillPattern {
+        needle: "[precondition]",
+        name: "[precondition]",
+        command: "fspec add-step",
+    },
+    PrefillPattern {
+        needle: "[expected outcome]",
+        name: "[expected outcome]",
+        command: "fspec add-step",
+    },
+    PrefillPattern {
+        needle: "[scenario name]",
+        name: "[scenario name]",
+        command: "fspec add-scenario",
+    },
+    PrefillPattern {
+        needle: "todo:",
+        name: "TODO:",
+        command: "fspec add-architecture",
+    },
 ];
 
 /// Detect prefill in feature content. Returns a JSON object matching the TS
@@ -410,7 +438,13 @@ fn reminders_enabled() -> bool {
 /// Mirror of `isTaskBasedNaming` — task verb prefixes or work-unit-ID pattern.
 fn is_task_based_naming(name: &str) -> bool {
     const TASK_PREFIXES: &[&str] = &[
-        "implement-", "add-", "create-", "fix-", "build-", "setup-", "update-",
+        "implement-",
+        "add-",
+        "create-",
+        "fix-",
+        "build-",
+        "setup-",
+        "update-",
     ];
     let lower = name.to_lowercase();
     if TASK_PREFIXES.iter().any(|p| lower.starts_with(p)) {

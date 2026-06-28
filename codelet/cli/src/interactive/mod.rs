@@ -20,56 +20,35 @@ mod stream_handlers;
 pub mod stream_loop;
 
 pub use error_classifiers::{
-    is_prompt_too_long_error,
-    is_image_content_error,
-    is_truncated_tool_call_error,
-    is_transient_network_error,
-    is_stall_timeout_error,
-    classify_compaction_branch,
-    CompactionBranch,
-    CompactionDisagreement,
+    classify_compaction_branch, is_image_content_error, is_prompt_too_long_error,
+    is_stall_timeout_error, is_transient_network_error, is_truncated_tool_call_error,
+    CompactionBranch, CompactionDisagreement,
 };
-pub use recovery_truncation::{
-    MAX_TRUNCATION_RETRIES,
-    build_truncation_recovery_message,
-    build_truncation_budget_exhausted_message,
-};
-pub use recovery_thinking::{
-    MAX_THINKING_EXHAUSTION_RETRIES,
-    THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
-    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
-    is_thinking_exhaustion,
-    build_thinking_exhaustion_recovery_message,
-    build_thinking_budget_exhausted_message,
-    downgrade_thinking_level,
-};
-pub use recovery_image::sanitize_image_content;
-pub use recovery_compaction::{
-    begin_compaction_recovery,
-    build_compaction_budget_exhausted_message,
-    compaction_retry_prompt,
-    execute_compaction_and_capture_events,
-    flush_partial_state_before_compaction,
-    CompactionRecoveryPolicy,
-    MAX_COMPACTION_RETRIES,
-};
-pub use recovery_network::{
-    MAX_NETWORK_RETRIES,
-    network_retry_delay,
-};
-pub use recovery_stall::{
-    STALL_TIMEOUT_SECS,
-    STALL_TIMEOUT_ERROR_PREFIX,
-    DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS,
-    build_stall_timeout_message,
-    build_deep_search_timeout_message,
-    stall_timeout_duration,
-    deep_search_wall_clock_timeout,
-};
-pub use multimodal::{BridgeImage, build_user_content_with_images};
+pub use multimodal::{build_user_content_with_images, BridgeImage};
 pub use output::{
     CliOutput, ContextFillInfo, StreamEvent, StreamOutput, TokenInfo, ToolCallEvent,
     ToolResultEvent,
+};
+pub use recovery_compaction::{
+    begin_compaction_recovery, build_compaction_budget_exhausted_message, compaction_retry_prompt,
+    execute_compaction_and_capture_events, flush_partial_state_before_compaction,
+    CompactionRecoveryPolicy, MAX_COMPACTION_RETRIES,
+};
+pub use recovery_image::sanitize_image_content;
+pub use recovery_network::{network_retry_delay, MAX_NETWORK_RETRIES};
+pub use recovery_stall::{
+    build_deep_search_timeout_message, build_stall_timeout_message, deep_search_wall_clock_timeout,
+    stall_timeout_duration, DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, STALL_TIMEOUT_ERROR_PREFIX,
+    STALL_TIMEOUT_SECS,
+};
+pub use recovery_thinking::{
+    build_thinking_budget_exhausted_message, build_thinking_exhaustion_recovery_message,
+    downgrade_thinking_level, is_thinking_exhaustion, MAX_THINKING_EXHAUSTION_RETRIES,
+    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD, THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
+};
+pub use recovery_truncation::{
+    build_truncation_budget_exhausted_message, build_truncation_recovery_message,
+    MAX_TRUNCATION_RETRIES,
 };
 pub use stream_loop::{run_agent_stream, run_agent_stream_with_images};
 

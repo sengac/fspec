@@ -12,8 +12,8 @@
 mod common;
 
 use codelet_rpc::checkpoints::{
-    checkpoint_file_diff, collect_checkpoint_diff_files, collect_checkpoints, delete_all, delete_one,
-    restore_all, restore_file,
+    checkpoint_file_diff, collect_checkpoint_diff_files, collect_checkpoints, delete_all,
+    delete_one, restore_all, restore_file,
 };
 
 use codelet_git::ghost_commit::create_ghost_commit;
@@ -89,7 +89,10 @@ fn list_checkpoints_caps_the_result_at_200_entries() {
         let name = format!("cp-{i:03}");
         make_checkpoint(repo, "AUTH-001", &name);
         // Timestamps strictly increase so ordering is deterministic.
-        entries.push((name, format!("2026-06-01T00:{:02}:{:02}.000Z", i / 60, i % 60)));
+        entries.push((
+            name,
+            format!("2026-06-01T00:{:02}:{:02}.000Z", i / 60, i % 60),
+        ));
     }
     let refs: Vec<(&str, &str)> = entries
         .iter()
@@ -141,7 +144,10 @@ fn checkpoint_file_diff_returns_the_unified_diff_for_a_changed_file() {
 
     // @step Then it returns Some unified diff text for a.txt
     let diff = diff.expect("some diff");
-    assert!(diff.contains("a.txt"), "diff should mention the file: {diff}");
+    assert!(
+        diff.contains("a.txt"),
+        "diff should mention the file: {diff}"
+    );
 }
 
 /// Scenario: restore_checkpoint_all restores the working tree
@@ -165,7 +171,10 @@ fn restore_checkpoint_all_restores_the_working_tree() {
 
     // @step And a subsequent checkpoint_diff_files reports no changed files
     let files = collect_checkpoint_diff_files(repo, "AUTH-001", "cp").expect("diff files");
-    assert!(files.is_empty(), "expected no diff after restore: {files:?}");
+    assert!(
+        files.is_empty(),
+        "expected no diff after restore: {files:?}"
+    );
 }
 
 /// Scenario: delete_checkpoint removes one checkpoint

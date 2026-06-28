@@ -284,7 +284,9 @@ fn event_belonging_to_a_different_context_id_is_not_matched() {
     // @step And the error message contains the substring "Domain event 'FeatureCreated' not found in bounded context 'Work Management'"
     let err = result.error.unwrap_or_default();
     assert!(
-        err.contains("Domain event 'FeatureCreated' not found in bounded context 'Work Management'"),
+        err.contains(
+            "Domain event 'FeatureCreated' not found in bounded context 'Work Management'"
+        ),
         "expected context-mismatch message; got: {err}"
     );
 }
@@ -316,7 +318,9 @@ fn removing_an_already_soft_deleted_event_fails_as_not_found() {
     // @step And the error message contains the substring "Domain event 'WorkUnitCreated' not found in bounded context 'Work Management'"
     let err = result.error.unwrap_or_default();
     assert!(
-        err.contains("Domain event 'WorkUnitCreated' not found in bounded context 'Work Management'"),
+        err.contains(
+            "Domain event 'WorkUnitCreated' not found in bounded context 'Work Management'"
+        ),
         "expected not-found-for-deleted message; got: {err}"
     );
 }

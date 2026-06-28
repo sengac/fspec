@@ -18,7 +18,12 @@ pub mod reassembly;
 pub mod types;
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 mod tests;
 
 use rig::tool::Tool;
@@ -30,13 +35,13 @@ use types::SessionSearchArgs;
 use uuid::Uuid;
 
 pub use handler::{
-    clear_all_session_search_handlers, has_session_search_handler,
-    set_session_search_handler, SessionSearchHandler,
+    clear_all_session_search_handlers, has_session_search_handler, set_session_search_handler,
+    SessionSearchHandler,
 };
 pub use types::{
-    ContextTurn, SearchMatch, SearchMatchGroup, SessionMessage, SessionSearchResult as SearchResult,
-    SessionSummary, DEFAULT_RECENT_COUNT, DEFAULT_SEARCH_LIMIT,
-    MESSAGE_TRUNCATION_LIMIT, USER_MESSAGE_PREVIEW_LEN,
+    ContextTurn, SearchMatch, SearchMatchGroup, SessionMessage,
+    SessionSearchResult as SearchResult, SessionSummary, DEFAULT_RECENT_COUNT,
+    DEFAULT_SEARCH_LIMIT, MESSAGE_TRUNCATION_LIMIT, USER_MESSAGE_PREVIEW_LEN,
 };
 
 /// SessionSearch Tool — Rig Tool implementation

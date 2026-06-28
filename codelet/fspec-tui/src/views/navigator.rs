@@ -1,13 +1,10 @@
 //! Navigator — top-level view that switches between BoardView and
-//! AgentView.
-//!
-//! Feature files:
-//!   - spec/features/rpc012-board-agent-navigation.feature
-//!   - spec/features/rpc013-source-shape.feature
+//! AgentView. Feature files:
+//! spec/features/rpc012-board-agent-navigation.feature,
+//! spec/features/rpc013-source-shape.feature.
 //!
 //! Cards: RPC-012 (replaces RPC-009 `RootView`), RPC-013 (footer moved
-//!   into each view; Navigator hands the full area to the active child).
-//!
+//! into each view; Navigator hands the full area to the active child).
 //! Renders EXACTLY ONE child view per frame — either BoardView OR
 //! AgentView — over the full area. Each view paints its own 1-row
 //! footer per RPC-013.
@@ -22,7 +19,10 @@ use tokio::sync::mpsc::UnboundedSender;
 use crate::components::{Action, EventResult, Priority};
 use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
-use crate::views::{AgentView, BlocklistView, BoardView, ChangedFilesView, CheckpointsView, ModelSelectorView, ProviderSettingsView};
+use crate::views::{
+    AgentView, BlocklistView, BoardView, ChangedFilesView, CheckpointsView, ModelSelectorView,
+    ProviderSettingsView,
+};
 
 /// Which top-level view is currently visible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

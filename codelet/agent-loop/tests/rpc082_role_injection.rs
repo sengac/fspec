@@ -44,8 +44,7 @@ fn agent_loop_src(file: &str) -> PathBuf {
 
 fn read_source(file: &str) -> String {
     let path = agent_loop_src(file);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract the body of the `run_with_provider!` macro_rules! macro from
@@ -183,7 +182,12 @@ async fn background_session_round_trips_set_get_clear_role() {
         .to_string();
     let session_id_str = Uuid::new_v4().to_string();
     manager
-        .create_session_with_id(&session_id_str, "stub/canned", &project, "role-test-session")
+        .create_session_with_id(
+            &session_id_str,
+            "stub/canned",
+            &project,
+            "role-test-session",
+        )
         .await
         .expect("create_session_with_id");
 

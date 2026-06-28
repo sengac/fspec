@@ -615,12 +615,7 @@ mod tests {
         let regular2 = create_test_message("Second message");
         let regular3 = create_test_message("Third message - lots of conversation");
 
-        let messages = vec![
-            env_reminder,
-            regular1,
-            regular2,
-            regular3,
-        ];
+        let messages = vec![env_reminder, regular1, regular2, regular3];
 
         // @step When context compaction is triggered due to context window limits
         let (preserved_reminders, compactable) = partition_for_compaction(&messages);

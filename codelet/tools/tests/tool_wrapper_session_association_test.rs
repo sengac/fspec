@@ -12,20 +12,17 @@
 //! - `claude_fspec_tool(session_id)` → wrapper stores session_id as field
 //! - Tool `call()` uses `self.session_id` directly for handler lookup
 
+use codelet_tools::bridge_handler::{remove_bridge_session_context, set_bridge_session_context};
+use codelet_tools::facade::{
+    claude_bridge_tool, claude_fspec_tool, gemini_fspec_tool, openai_fspec_tool,
+    wrapper::FacadeArgs, zai_fspec_tool,
+};
 use codelet_tools::fspec_handler::{
     clear_all_fspec_handlers, set_fspec_handler_for_session, FspecHandler, FspecResult,
 };
-use codelet_tools::bridge_handler::{
-    set_bridge_session_context, remove_bridge_session_context,
-};
-use codelet_tools::facade::{
-    claude_fspec_tool, gemini_fspec_tool, openai_fspec_tool, zai_fspec_tool,
-    claude_bridge_tool,
-    wrapper::FacadeArgs,
-};
 use rig::tool::Tool;
-use serial_test::serial;
 use serde_json::json;
+use serial_test::serial;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use uuid::Uuid;
@@ -75,7 +72,10 @@ async fn test_fspec_tool_stores_session_id_at_construction() {
     let result = tool.call(FacadeArgs(args)).await;
 
     // @step And the correct handler for "session-A" should be invoked
-    assert!(result.is_ok(), "Tool call should succeed using self.session_id");
+    assert!(
+        result.is_ok(),
+        "Tool call should succeed using self.session_id"
+    );
 
     // @step And the command should execute successfully
     assert_eq!(
@@ -131,7 +131,10 @@ async fn test_fspec_tool_survives_async_boundaries() {
     // @step Then self.session_id should still be valid
     // @step And the handler lookup should succeed
     // @step And the command should execute on the correct session
-    assert!(result.is_ok(), "Tool call should succeed across async boundary");
+    assert!(
+        result.is_ok(),
+        "Tool call should succeed across async boundary"
+    );
     let output = result.unwrap();
     assert!(
         output.contains("async_boundary_test_passed"),
@@ -313,16 +316,20 @@ async fn test_bridge_tool_stores_session_id() {
 
     // @step And bridge session context has been set for "session-C"
     let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
-    let broadcast_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
+    let broadcast_factory: codelet_tools::BroadcastReceiverFactory =
+        Arc::new(move || tx.subscribe());
     let input_injector: codelet_tools::InputInjector = Arc::new(|_| {});
     set_bridge_session_context(session_c, broadcast_factory, input_injector, None, None);
-    
+
     // Set up a bridge handler
-    use codelet_tools::bridge_handler::{set_bridge_handler, BridgeHandler};
     use codelet_tools::bridge::BridgeResult;
+    use codelet_tools::bridge_handler::{set_bridge_handler, BridgeHandler};
     let handler: BridgeHandler = Arc::new(move |req| {
         // Verify the request contains the correct session_id
-        assert_eq!(req.session_id, session_c, "Request should use self.session_id");
+        assert_eq!(
+            req.session_id, session_c,
+            "Request should use self.session_id"
+        );
         BridgeResult {
             success: true,
             message: "bridge_handler_called".to_string(),
@@ -407,7 +414,8 @@ fn test_session_id_at_construction() {
     // @step And set_bridge_session_context() should still exist
     // Bridge context still uses session_id
     let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
-    let broadcast_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
+    let broadcast_factory: codelet_tools::BroadcastReceiverFactory =
+        Arc::new(move || tx.subscribe());
     let input_injector: codelet_tools::InputInjector = Arc::new(|_| {});
     set_bridge_session_context(session_id, broadcast_factory, input_injector, None, None);
 
@@ -446,7 +454,7 @@ fn test_nil_uuid_for_testing() {
 #[serial]
 fn test_all_providers_have_consistent_api() {
     let session_id = Uuid::new_v4();
-    
+
     let claude = claude_fspec_tool(session_id);
     let gemini = gemini_fspec_tool(session_id);
     let openai = openai_fspec_tool(session_id);
@@ -457,7 +465,7 @@ fn test_all_providers_have_consistent_api() {
     assert_eq!(gemini.provider(), "gemini");
     assert_eq!(openai.provider(), "openai");
     assert_eq!(zai.provider(), "zai");
-    
+
     // All store session_id
     assert_eq!(claude.session_id(), session_id);
     assert_eq!(gemini.session_id(), session_id);

@@ -38,11 +38,21 @@ impl RecordingOutput {
     }
 
     fn count<F: Fn(&StreamEvent) -> bool>(&self, pred: F) -> usize {
-        self.events.lock().unwrap().iter().filter(|e| pred(e)).count()
+        self.events
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|e| pred(e))
+            .count()
     }
 
     fn find_first<F: Fn(&StreamEvent) -> bool>(&self, pred: F) -> Option<StreamEvent> {
-        self.events.lock().unwrap().iter().find(|e| pred(e)).cloned()
+        self.events
+            .lock()
+            .unwrap()
+            .iter()
+            .find(|e| pred(e))
+            .cloned()
     }
 }
 
@@ -149,8 +159,14 @@ fn path_b_and_path_c_produce_identical_end_states() {
     );
 
     // Structural equivalence: both sessions' last messages should be the Assistant message with "partial answer".
-    let last_b = session_b.messages.last().expect("session B has at least one message");
-    let last_c = session_c.messages.last().expect("session C has at least one message");
+    let last_b = session_b
+        .messages
+        .last()
+        .expect("session B has at least one message");
+    let last_c = session_c
+        .messages
+        .last()
+        .expect("session C has at least one message");
 
     match (last_b, last_c) {
         (
@@ -159,8 +175,14 @@ fn path_b_and_path_c_produce_identical_end_states() {
         ) => {
             let has_text_b = c_b.iter().any(|c| matches!(c, rig::message::AssistantContent::Text(t) if t.text == "partial answer"));
             let has_text_c = c_c.iter().any(|c| matches!(c, rig::message::AssistantContent::Text(t) if t.text == "partial answer"));
-            assert!(has_text_b, "Path B last message should carry the partial text");
-            assert!(has_text_c, "Path C last message should carry the partial text");
+            assert!(
+                has_text_b,
+                "Path B last message should carry the partial text"
+            );
+            assert!(
+                has_text_c,
+                "Path C last message should carry the partial text"
+            );
         }
         _ => panic!("expected both last messages to be Assistant"),
     }
@@ -180,18 +202,36 @@ fn path_b_and_path_c_produce_identical_end_states() {
     assert_eq!(session_b.token_tracker.output_tokens, 340);
 
     // @step Then both sessions have compaction_needed=true on their shared TokenState
-    assert!(token_state_b.lock().unwrap().compaction_needed, "Path B flag must be set");
-    assert!(token_state_c.lock().unwrap().compaction_needed, "Path C flag must be set");
+    assert!(
+        token_state_b.lock().unwrap().compaction_needed,
+        "Path B flag must be set"
+    );
+    assert!(
+        token_state_c.lock().unwrap().compaction_needed,
+        "Path C flag must be set"
+    );
 
     // Both assistant_text buffers must be cleared.
     assert!(text_b.is_empty());
     assert!(text_c.is_empty());
 
     // Both outputs emitted the compaction lifecycle events exactly once each.
-    assert_eq!(output_b.count(|e| matches!(e, StreamEvent::CompactionStarted)), 1);
-    assert_eq!(output_c.count(|e| matches!(e, StreamEvent::CompactionStarted)), 1);
-    assert_eq!(output_b.count(|e| matches!(e, StreamEvent::CompactionProgress(_))), 1);
-    assert_eq!(output_c.count(|e| matches!(e, StreamEvent::CompactionProgress(_))), 1);
+    assert_eq!(
+        output_b.count(|e| matches!(e, StreamEvent::CompactionStarted)),
+        1
+    );
+    assert_eq!(
+        output_c.count(|e| matches!(e, StreamEvent::CompactionStarted)),
+        1
+    );
+    assert_eq!(
+        output_b.count(|e| matches!(e, StreamEvent::CompactionProgress(_))),
+        1
+    );
+    assert_eq!(
+        output_c.count(|e| matches!(e, StreamEvent::CompactionProgress(_))),
+        1
+    );
 }
 
 /// Scenario: Path D preserves all messages when pop_user_prompt is false
@@ -229,7 +269,10 @@ fn path_d_preserves_all_messages_when_pop_user_prompt_is_false() {
     match last {
         rig::message::Message::User { content, .. } => {
             let has_text = content.iter().any(|c| matches!(c, rig::message::UserContent::Text(t) if t.text == "Continue with the next step"));
-            assert!(has_text, "Path D: last message must still be the User continuation prompt");
+            assert!(
+                has_text,
+                "Path D: last message must still be the User continuation prompt"
+            );
         }
         other => panic!("Path D: expected User at tail, got {other:?}"),
     }
@@ -238,11 +281,20 @@ fn path_d_preserves_all_messages_when_pop_user_prompt_is_false() {
     // (Covered by the length check above — length unchanged means no Assistant was appended.)
 
     // @step Then compaction_needed is set to true on the TokenState
-    assert!(token_state.lock().unwrap().compaction_needed, "Path D: flag must be set");
+    assert!(
+        token_state.lock().unwrap().compaction_needed,
+        "Path D: flag must be set"
+    );
 
     // Events emitted exactly once each.
-    assert_eq!(output.count(|e| matches!(e, StreamEvent::CompactionStarted)), 1);
-    assert_eq!(output.count(|e| matches!(e, StreamEvent::CompactionProgress(_))), 1);
+    assert_eq!(
+        output.count(|e| matches!(e, StreamEvent::CompactionStarted)),
+        1
+    );
+    assert_eq!(
+        output.count(|e| matches!(e, StreamEvent::CompactionProgress(_))),
+        1
+    );
 }
 
 /// Scenario: Helper emits compaction lifecycle events exactly once per entry
@@ -321,7 +373,10 @@ fn helper_succeeds_when_flag_already_true_on_entry() {
     );
 
     // @step Then the helper completes successfully without error
-    assert!(result.is_ok(), "helper must succeed even when flag was already set");
+    assert!(
+        result.is_ok(),
+        "helper must succeed even when flag was already set"
+    );
 
     // @step Then the compaction_needed flag remains true
     assert!(
@@ -330,8 +385,14 @@ fn helper_succeeds_when_flag_already_true_on_entry() {
     );
 
     // Lifecycle events still emitted exactly once.
-    assert_eq!(output.count(|e| matches!(e, StreamEvent::CompactionStarted)), 1);
-    assert_eq!(output.count(|e| matches!(e, StreamEvent::CompactionProgress(_))), 1);
+    assert_eq!(
+        output.count(|e| matches!(e, StreamEvent::CompactionStarted)),
+        1
+    );
+    assert_eq!(
+        output.count(|e| matches!(e, StreamEvent::CompactionProgress(_))),
+        1
+    );
 }
 
 /// Scenario: Empty partial assistant text does not append an empty Assistant message

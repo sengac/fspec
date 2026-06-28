@@ -12,11 +12,12 @@
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod integration_tests {
     use crate::bridge::{
-        get_or_create_bridge_manager, remove_bridge_manager, BridgeConnectionState,
-        OutboundMessage,
+        get_or_create_bridge_manager, remove_bridge_manager, BridgeConnectionState, OutboundMessage,
     };
-    use crate::bridge_handler::{handle_bridge_action, set_bridge_session_context, remove_bridge_session_context};
-    use crate::bridge_relay::{InputInjector, InjectedInput};
+    use crate::bridge_handler::{
+        handle_bridge_action, remove_bridge_session_context, set_bridge_session_context,
+    };
+    use crate::bridge_relay::{InjectedInput, InputInjector};
     use crate::bridge_test_fixtures::TestWebSocketServer;
     use crate::BridgeAction;
     use serde_json::json;
@@ -29,18 +30,17 @@ mod integration_tests {
     fn setup_session_context(session_id: Uuid) {
         let (broadcast_tx, _) = broadcast::channel::<serde_json::Value>(256);
         let broadcast_tx = Arc::new(broadcast_tx);
-        
-        let broadcast_rx_factory: crate::bridge_handler::BroadcastReceiverFactory = 
+
+        let broadcast_rx_factory: crate::bridge_handler::BroadcastReceiverFactory =
             Arc::new(move || broadcast_tx.subscribe());
-        
-        let input_injector: InputInjector = 
-            Arc::new(|_input: InjectedInput| {
-                // Mock input injector for tests
-            });
-        
+
+        let input_injector: InputInjector = Arc::new(|_input: InjectedInput| {
+            // Mock input injector for tests
+        });
+
         set_bridge_session_context(session_id, broadcast_rx_factory, input_injector, None, None);
     }
-    
+
     /// Clean up session context after test
     fn cleanup_session_context(session_id: Uuid) {
         remove_bridge_session_context(session_id);
@@ -81,10 +81,7 @@ mod integration_tests {
         // Verify by checking the connection state is Connected (not just Connecting)
         let manager = get_or_create_bridge_manager(session_id).await;
         let mgr = manager.read().await;
-        let conn = mgr
-            .connections
-            .get(&url)
-            .expect("Connection should exist");
+        let conn = mgr.connections.get(&url).expect("Connection should exist");
         assert_eq!(
             conn.state,
             BridgeConnectionState::Connected,
@@ -125,8 +122,8 @@ mod integration_tests {
 
         if let Some(conn) = mgr.connections.get("ws://127.0.0.1:59999") {
             assert!(
-                conn.state == BridgeConnectionState::Disconnected || 
-                conn.state == BridgeConnectionState::Reconnecting,
+                conn.state == BridgeConnectionState::Disconnected
+                    || conn.state == BridgeConnectionState::Reconnecting,
                 "Failed connection should be Disconnected or Reconnecting, got {:?}",
                 conn.state
             );
@@ -207,9 +204,10 @@ mod integration_tests {
             .expect("Test server should start");
         let url = server.url();
 
-        let connect_result = handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
-            .await
-            .expect("Connect should work");
+        let connect_result =
+            handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
+                .await
+                .expect("Connect should work");
         assert!(connect_result.success);
 
         tokio::time::sleep(Duration::from_millis(500)).await;
@@ -221,7 +219,9 @@ mod integration_tests {
 
         // @step Then the tool should return a list containing the connection
         assert!(list_result.success);
-        let connections = list_result.connections.expect("Should have connections list");
+        let connections = list_result
+            .connections
+            .expect("Should have connections list");
 
         assert_eq!(connections.len(), 1, "Should have one connection");
         assert_eq!(connections[0].url, url);
@@ -315,9 +315,10 @@ mod integration_tests {
             .expect("Server should start");
         let url = server.url();
 
-        let connect_result = handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
-            .await
-            .expect("Connect should work");
+        let connect_result =
+            handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
+                .await
+                .expect("Connect should work");
         assert!(connect_result.success);
 
         tokio::time::sleep(Duration::from_millis(500)).await;
@@ -327,7 +328,7 @@ mod integration_tests {
         // This requires the bridge to subscribe to the session broadcast channel
         // and forward messages to the WebSocket
         let manager = get_or_create_bridge_manager(session_id).await;
-        
+
         // For now, test the buffering mechanism as a proxy for relay
         // The actual relay requires the WebSocket task to be running
         {
@@ -352,8 +353,12 @@ mod integration_tests {
         // Verify the message was buffered correctly (tests state management)
         let mgr = manager.read().await;
         let conn = mgr.connections.get(&url).expect("Connection should exist");
-        assert_eq!(conn.outbound_buffer.len(), 1, "Should have buffered message");
-        
+        assert_eq!(
+            conn.outbound_buffer.len(),
+            1,
+            "Should have buffered message"
+        );
+
         let buffered_msg = &conn.outbound_buffer[0];
         assert_eq!(buffered_msg.msg_type, "chunk");
         assert_eq!(buffered_msg.data["type"], "text");
@@ -379,9 +384,10 @@ mod integration_tests {
             .expect("Server should start");
         let url = server.url();
 
-        let connect_result = handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
-            .await
-            .expect("Connect should work");
+        let connect_result =
+            handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
+                .await
+                .expect("Connect should work");
         assert!(connect_result.success);
 
         tokio::time::sleep(Duration::from_millis(500)).await;
@@ -420,9 +426,10 @@ mod integration_tests {
             .expect("Server should start");
         let url = server.url();
 
-        let connect_result = handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
-            .await
-            .expect("Connect should work");
+        let connect_result =
+            handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
+                .await
+                .expect("Connect should work");
         assert!(connect_result.success);
 
         tokio::time::sleep(Duration::from_millis(500)).await;
@@ -462,7 +469,11 @@ mod integration_tests {
         {
             let mgr = manager.read().await;
             let conn = mgr.connections.get(&url).expect("Connection should exist");
-            assert_eq!(conn.outbound_buffer.len(), 2, "Should have 2 buffered messages");
+            assert_eq!(
+                conn.outbound_buffer.len(),
+                2,
+                "Should have 2 buffered messages"
+            );
             assert_eq!(conn.state, BridgeConnectionState::Reconnecting);
         }
 
@@ -513,9 +524,10 @@ mod integration_tests {
             .expect("Server should start");
         let url = server.url();
 
-        let connect_result = handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
-            .await
-            .expect("Connect should work");
+        let connect_result =
+            handle_bridge_action(session_id, BridgeAction::Connect { url: url.clone() })
+                .await
+                .expect("Connect should work");
         assert!(connect_result.success);
 
         tokio::time::sleep(Duration::from_millis(500)).await;

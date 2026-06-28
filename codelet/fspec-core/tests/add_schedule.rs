@@ -97,7 +97,10 @@ fn scenario_add_agent_schedule_writes_entry_with_status_active() {
     // @step And the 'nightly-review' entry has overlapPolicy='skip', lastRunAt=null, lastRunStatus=null
     assert_eq!(entry["overlapPolicy"].as_str(), Some("skip"));
     assert!(entry["lastRunAt"].is_null(), "lastRunAt must be null");
-    assert!(entry["lastRunStatus"].is_null(), "lastRunStatus must be null");
+    assert!(
+        entry["lastRunStatus"].is_null(),
+        "lastRunStatus must be null"
+    );
 }
 
 #[test]
@@ -123,8 +126,8 @@ fn scenario_add_shell_schedule_writes_entry_with_default_skip_overlap_policy() {
     assert!(result.success, "expected success=true, got {result:?}");
 
     // @step And spec/schedules.json contains a schedule named 'daily-tests'
-    let entry = schedule_entry(tmp.path(), "daily-tests")
-        .expect("daily-tests entry must exist after add");
+    let entry =
+        schedule_entry(tmp.path(), "daily-tests").expect("daily-tests entry must exist after add");
 
     // @step And the 'daily-tests' entry has jobType='shell', overlapPolicy='skip', command='npm test'
     assert_eq!(entry["jobType"].as_str(), Some("shell"));

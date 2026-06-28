@@ -19,7 +19,8 @@ const ARGS: &[CommandArgument] = &[
     },
     CommandArgument {
         name: "<event-name>",
-        description: "Name of the domain event to remove (e.g., \"WorkUnitCreated\", \"UserLoggedIn\")",
+        description:
+            "Name of the domain event to remove (e.g., \"WorkUnitCreated\", \"UserLoggedIn\")",
         required: true,
     },
 ];

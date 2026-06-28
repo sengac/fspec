@@ -6,11 +6,11 @@
 //! These tests verify that bridge handlers are keyed by session_id
 //! so that concurrent sessions never route bridge commands to the wrong handler.
 
-use codelet_tools::bridge_handler::{
-    execute_bridge_command, has_bridge_handler_for_session, set_bridge_handler,
-    set_bridge_session_context, remove_bridge_session_context, BridgeHandler, BridgeRequest,
-};
 use codelet_tools::bridge::{BridgeAction, BridgeResult};
+use codelet_tools::bridge_handler::{
+    execute_bridge_command, has_bridge_handler_for_session, remove_bridge_session_context,
+    set_bridge_handler, set_bridge_session_context, BridgeHandler, BridgeRequest,
+};
 use codelet_tools::bridge_relay::InputInjector;
 use serial_test::serial;
 use std::sync::Arc;

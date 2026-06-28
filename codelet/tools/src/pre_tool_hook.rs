@@ -108,8 +108,7 @@ mod tests {
     fn test_no_handler_returns_continue() {
         cleanup();
         let session_id = Uuid::new_v4();
-        let result =
-            pre_tool_hook_check(session_id, "Bash", &Value::Null);
+        let result = pre_tool_hook_check(session_id, "Bash", &Value::Null);
         assert_eq!(result, Ok(PreToolHookDecision::Continue));
         cleanup();
     }
@@ -123,8 +122,7 @@ mod tests {
             Arc::new(|_sid, _name, _input| PreToolHookDecision::Allow);
         register_pre_tool_hook(session_id, handler);
 
-        let result =
-            pre_tool_hook_check(session_id, "Bash", &Value::Null);
+        let result = pre_tool_hook_check(session_id, "Bash", &Value::Null);
         assert_eq!(result, Ok(PreToolHookDecision::Allow));
         cleanup();
     }
@@ -139,8 +137,7 @@ mod tests {
         });
         register_pre_tool_hook(session_id, handler);
 
-        let result =
-            pre_tool_hook_check(session_id, "Bash", &Value::Null);
+        let result = pre_tool_hook_check(session_id, "Bash", &Value::Null);
         assert_eq!(result, Err("blocked by policy".to_string()));
         cleanup();
     }
@@ -162,11 +159,7 @@ mod tests {
         });
         register_pre_tool_hook(session_id, handler);
 
-        let _ = pre_tool_hook_check(
-            session_id,
-            "WebSearch",
-            &Value::Null,
-        );
+        let _ = pre_tool_hook_check(session_id, "WebSearch", &Value::Null);
 
         assert_eq!(*captured_session.lock().unwrap(), session_id);
         assert_eq!(*captured_name.lock().unwrap(), "WebSearch");
@@ -183,8 +176,7 @@ mod tests {
         register_pre_tool_hook(session_id, handler);
         unregister_pre_tool_hook(session_id);
 
-        let result =
-            pre_tool_hook_check(session_id, "Bash", &Value::Null);
+        let result = pre_tool_hook_check(session_id, "Bash", &Value::Null);
         assert_eq!(result, Ok(PreToolHookDecision::Continue));
         cleanup();
     }

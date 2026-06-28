@@ -179,7 +179,8 @@ fn import_a_file_with_only_one_category_leaves_the_others_untouched() {
     let wu = &data["workUnits"]["AUTH-001"];
     assert_eq!(wu["examples"].as_array().map(Vec::len), Some(2));
     assert!(
-        wu.get("rules").map(Value::is_null).unwrap_or(true) || wu["rules"].as_array() == Some(&vec![]),
+        wu.get("rules").map(Value::is_null).unwrap_or(true)
+            || wu["rules"].as_array() == Some(&vec![]),
         "rules must remain untouched (absent or empty); got {:?}",
         wu.get("rules")
     );
@@ -236,8 +237,14 @@ fn dispatcher_and_core_append_identical_data() {
     // @step Given a work units store where AUTH-001 is in specifying state
     let tmp_a = TempDir::new().expect("tempdir a");
     let tmp_b = TempDir::new().expect("tempdir b");
-    write_work_units(tmp_a.path(), &store_with("AUTH-001", "specifying", json!({})));
-    write_work_units(tmp_b.path(), &store_with("AUTH-001", "specifying", json!({})));
+    write_work_units(
+        tmp_a.path(),
+        &store_with("AUTH-001", "specifying", json!({})),
+    );
+    write_work_units(
+        tmp_b.path(),
+        &store_with("AUTH-001", "specifying", json!({})),
+    );
 
     // @step And an import file with one rule and one example
     let import = json!({ "rules": ["r1"], "examples": ["e1"] });

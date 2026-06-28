@@ -80,7 +80,11 @@ fn write_single_impl_sidecar(root: &Path, impl_rel: &str) {
 fn function_found_in_a_linked_implementation_file() {
     // @step Given a temp project root has a coverage sidecar whose implMappings reference an on-disk file containing "loadConfig"
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "src/config.ts", "export function loadConfig() {}\n");
+    write_file(
+        tmp.path(),
+        "src/config.ts",
+        "export function loadConfig() {}\n",
+    );
     write_single_impl_sidecar(tmp.path(), "src/config.ts");
 
     // @step When I dispatch search-implementation with function="loadConfig"
@@ -115,7 +119,11 @@ fn function_found_in_a_linked_implementation_file() {
 fn function_found_in_zero_files_returns_an_empty_files_array() {
     // @step Given a temp project root has a coverage sidecar whose implMappings reference an on-disk file NOT containing "zzzNope"
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "src/config.ts", "export function loadConfig() {}\n");
+    write_file(
+        tmp.path(),
+        "src/config.ts",
+        "export function loadConfig() {}\n",
+    );
     write_single_impl_sidecar(tmp.path(), "src/config.ts");
 
     // @step When I dispatch search-implementation with function="zzzNope"
@@ -162,7 +170,11 @@ fn multiple_impl_mappings_are_counted_in_searched_files() {
     "totalLinesCovered": 0
   }
 }"#;
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", body);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        body,
+    );
 
     // @step When I dispatch search-implementation with function="anything"
     let result = req(tmp.path(), json!({"function": "anything"}));
@@ -228,7 +240,11 @@ fn missing_spec_features_directory_yields_zero_searched_files() {
 fn shared_infrastructure_module_is_registered_for_search_implementation() {
     // @step Given the codelet/fspec-core crate is built
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "src/config.ts", "export function loadConfig() {}\n");
+    write_file(
+        tmp.path(),
+        "src/config.ts",
+        "export function loadConfig() {}\n",
+    );
     write_single_impl_sidecar(tmp.path(), "src/config.ts");
 
     // @step When I inspect codelet/fspec-core/src/commands/search_implementation.rs

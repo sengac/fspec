@@ -69,7 +69,10 @@ pub(crate) fn parse_patch(text: &str) -> Result<Vec<PatchOp>, String> {
         } else if line.is_empty() {
             i += 1;
         } else {
-            return Err(format!("Unexpected line in patch at line {}: {line}", i + 1));
+            return Err(format!(
+                "Unexpected line in patch at line {}: {line}",
+                i + 1
+            ));
         }
     }
 
@@ -110,11 +113,7 @@ fn parse_add_file(path: &str, lines: &[&str], start: usize) -> Result<(PatchOp, 
 }
 
 /// Parse an Update File block into hunks.
-fn parse_update_file(
-    path: &str,
-    lines: &[&str],
-    start: usize,
-) -> Result<(PatchOp, usize), String> {
+fn parse_update_file(path: &str, lines: &[&str], start: usize) -> Result<(PatchOp, usize), String> {
     let mut hunks: Vec<Hunk> = Vec::new();
     let mut i = start;
 
@@ -295,7 +294,9 @@ mod tests {
         let ops = parse_patch(patch).unwrap();
         assert_eq!(ops.len(), 3);
         assert!(matches!(&ops[0], PatchOp::Add { path, .. } if path == "/tmp/test/new.rs"));
-        assert!(matches!(&ops[1], PatchOp::Update { path, .. } if path == "/tmp/test/update_me.rs"));
+        assert!(
+            matches!(&ops[1], PatchOp::Update { path, .. } if path == "/tmp/test/update_me.rs")
+        );
         assert!(matches!(&ops[2], PatchOp::Delete { path } if path == "/tmp/test/delete_me.rs"));
     }
 

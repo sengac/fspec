@@ -1,14 +1,13 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for multimodal Read tool implementation
 //! Feature: spec/features/add-multimodal-content-support-to-read-tool.feature
 
-use uuid::Uuid;
 use codelet_tools::ReadTool;
 use rig::tool::Tool;
 use std::fs::File;
 use std::io::Write;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 /// Scenario: Read PNG image and display visually
 #[tokio::test]
@@ -171,8 +170,10 @@ async fn test_read_offset_exceeds_file_length() {
     let temp_dir = TempDir::new().unwrap();
     let text_path = temp_dir.path().join("short-file.txt");
     let mut file = File::create(&text_path).unwrap();
-    file.write_all(b"line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10")
-        .unwrap();
+    file.write_all(
+        b"line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10",
+    )
+    .unwrap();
 
     // @step When I read the file with an offset of 240 (way beyond the 10 lines)
     let tool = ReadTool::new(Uuid::nil());

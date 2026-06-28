@@ -46,7 +46,11 @@ const FEATURE_LOGIN_PLAIN: &str = "Feature: Login\n  Scenario: A\n    Given x\n"
 fn scenario_inserts_doc_string_after_feature_line() {
     // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-architecture with feature='spec/features/login.feature' and text='Uses bcrypt for password hashing'
     let result = dispatch_command(req(
@@ -77,7 +81,10 @@ fn scenario_inserts_doc_string_after_feature_line() {
     );
 
     // @step And the doc-string fences appear immediately after the 'Feature: Login' line
-    let feat = lines.iter().position(|l| *l == "Feature: Login").expect("Feature line");
+    let feat = lines
+        .iter()
+        .position(|l| *l == "Feature: Login")
+        .expect("Feature line");
     assert_eq!(
         lines.get(feat + 1).map(|l| l.trim()),
         Some("\"\"\""),
@@ -93,7 +100,11 @@ fn scenario_inserts_doc_string_after_feature_line() {
 fn scenario_inserts_multiline_doc_string() {
     // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-architecture with feature='spec/features/login.feature' and text='Uses bcrypt\nSessions in Redis'
     let result = dispatch_command(req(
@@ -109,10 +120,16 @@ fn scenario_inserts_multiline_doc_string() {
 
     // @step And the file on disk contains the line '  Uses bcrypt'
     let after = read_feature(tmp.path(), "spec/features/login.feature");
-    assert!(after.lines().any(|l| l == "  Uses bcrypt"), "missing line 1; got:\n{after}");
+    assert!(
+        after.lines().any(|l| l == "  Uses bcrypt"),
+        "missing line 1; got:\n{after}"
+    );
 
     // @step And the file on disk contains the line '  Sessions in Redis'
-    assert!(after.lines().any(|l| l == "  Sessions in Redis"), "missing line 2; got:\n{after}");
+    assert!(
+        after.lines().any(|l| l == "  Sessions in Redis"),
+        "missing line 2; got:\n{after}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -123,7 +140,11 @@ fn scenario_inserts_multiline_doc_string() {
 fn scenario_empty_text_is_rejected_and_file_untouched() {
     // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
     let pre_bytes = fs::read(tmp.path().join("spec/features/login.feature")).unwrap();
 
     // @step When I dispatch add-architecture with feature='spec/features/login.feature' and text=''
@@ -155,7 +176,11 @@ fn scenario_empty_text_is_rejected_and_file_untouched() {
 fn scenario_whitespace_only_text_is_rejected() {
     // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-architecture with feature='spec/features/login.feature' and text='   '
     let result = dispatch_command(req(
@@ -265,7 +290,10 @@ fn scenario_replaces_existing_doc_string_in_place() {
 
     // @step And the file on disk contains the line '  New architecture'
     let after = read_feature(tmp.path(), "spec/features/login.feature");
-    assert!(after.lines().any(|l| l == "  New architecture"), "missing new body; got:\n{after}");
+    assert!(
+        after.lines().any(|l| l == "  New architecture"),
+        "missing new body; got:\n{after}"
+    );
 
     // @step And the file on disk does NOT contain the line '  Old architecture'
     assert!(
@@ -275,7 +303,10 @@ fn scenario_replaces_existing_doc_string_in_place() {
 
     // @step And the file on disk contains exactly two doc-string fence lines
     let fences = after.lines().filter(|l| l.trim() == "\"\"\"").count();
-    assert_eq!(fences, 2, "expected exactly two fence lines; got {fences}:\n{after}");
+    assert_eq!(
+        fences, 2,
+        "expected exactly two fence lines; got {fences}:\n{after}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -286,7 +317,11 @@ fn scenario_replaces_existing_doc_string_in_place() {
 fn scenario_no_feature_line_is_rejected() {
     // @step Given a project root tempdir with spec/features/bad.feature containing only '# just a comment\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/bad.feature", "# just a comment\n");
+    write_feature(
+        tmp.path(),
+        "spec/features/bad.feature",
+        "# just a comment\n",
+    );
 
     // @step When I dispatch add-architecture with feature='spec/features/bad.feature' and text='Uses bcrypt'
     let result = dispatch_command(req(

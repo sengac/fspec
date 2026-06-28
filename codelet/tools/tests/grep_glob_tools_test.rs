@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/grep-and-glob-tools-implementation.feature
 //!
@@ -7,7 +6,6 @@
 //! These tests verify the implementation of grep crate-based content search
 //! and ignore crate-based gitignore-aware file pattern matching.
 
-use uuid::Uuid;
 use codelet_tools::{
     glob::{GlobArgs, GlobTool},
     grep::{GrepArgs, GrepTool},
@@ -15,6 +13,7 @@ use codelet_tools::{
 use rig::tool::Tool;
 use std::fs;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 // ==========================================
 // GREP TOOL EXECUTION TESTS
@@ -91,14 +90,14 @@ async fn test_grep_content_mode_shows_lines_with_numbers() {
 async fn test_grep_respects_gitignore() {
     // @step Given a directory with .gitignore excluding "build/"
     let temp_dir = TempDir::new().unwrap();
-    
+
     // Initialize as git repo for .gitignore to be respected
     std::process::Command::new("git")
         .args(["init"])
         .current_dir(temp_dir.path())
         .output()
         .ok();
-    
+
     let src_file = temp_dir.path().join("src.rs");
     let build_dir = temp_dir.path().join("build");
     let build_file = build_dir.join("output.rs");
@@ -149,9 +148,7 @@ async fn test_grep_no_matches() {
         .unwrap();
 
     // @step Then the result should indicate no matches or be empty
-    assert!(
-        result.contains("No matches") || result.is_empty() || result.trim().is_empty()
-    );
+    assert!(result.contains("No matches") || result.is_empty() || result.trim().is_empty());
 }
 
 // ==========================================
@@ -226,14 +223,14 @@ async fn test_glob_recursive_pattern_finds_nested_files() {
 async fn test_glob_respects_gitignore() {
     // @step Given a directory with .gitignore excluding "node_modules/"
     let temp_dir = TempDir::new().unwrap();
-    
+
     // Initialize as git repo for .gitignore to be respected
     std::process::Command::new("git")
         .args(["init"])
         .current_dir(temp_dir.path())
         .output()
         .ok();
-    
+
     let src_file = temp_dir.path().join("src.ts");
     let node_modules = temp_dir.path().join("node_modules");
     let nm_file = node_modules.join("pkg.ts");
@@ -280,9 +277,7 @@ async fn test_glob_no_matches() {
         .unwrap();
 
     // @step Then the result should indicate no matches or be empty
-    assert!(
-        result.contains("No matches") || result.is_empty() || result.trim().is_empty()
-    );
+    assert!(result.contains("No matches") || result.is_empty() || result.trim().is_empty());
 }
 
 // ==========================================

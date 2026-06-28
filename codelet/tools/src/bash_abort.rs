@@ -12,8 +12,7 @@ use uuid::Uuid;
 /// Per-session abort flags for bash tool cancellation.
 /// Each session gets its own `AtomicBool` so that pressing ESC in one session
 /// only aborts bash commands in that session.
-static BASH_ABORT_FLAGS: Lazy<SessionRegistry<Arc<AtomicBool>>> =
-    Lazy::new(SessionRegistry::new);
+static BASH_ABORT_FLAGS: Lazy<SessionRegistry<Arc<AtomicBool>>> = Lazy::new(SessionRegistry::new);
 
 /// Set the abort flag for a specific session to request cancellation.
 pub fn request_bash_abort(session_id: Uuid) {

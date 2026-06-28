@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 //! Feature: spec/features/dart-astgrep-support.feature
 //!
 //! Tests for Dart language support in AstGrep and AstGrepRefactor tools.

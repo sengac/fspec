@@ -95,9 +95,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut matching_order: Vec<String> = Vec::new();
 
     for r in &impl_refs {
-        let entry = content_cache.entry(r.file_path.clone()).or_insert_with(|| {
-            std::fs::read_to_string(project_root.join(&r.file_path)).ok()
-        });
+        let entry = content_cache
+            .entry(r.file_path.clone())
+            .or_insert_with(|| std::fs::read_to_string(project_root.join(&r.file_path)).ok());
         let contains = entry
             .as_ref()
             .map(|c| c.contains(function))
@@ -238,10 +238,9 @@ mod tests {
 
     #[test]
     fn args_parse_full() {
-        let a: SearchImplementationArgs = serde_json::from_str(
-            r#"{"function":"loadConfig","showWorkUnits":true,"json":true}"#,
-        )
-        .unwrap();
+        let a: SearchImplementationArgs =
+            serde_json::from_str(r#"{"function":"loadConfig","showWorkUnits":true,"json":true}"#)
+                .unwrap();
         assert_eq!(a.function.as_deref(), Some("loadConfig"));
         assert_eq!(a.show_work_units, Some(true));
         assert_eq!(a.json, Some(true));

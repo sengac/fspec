@@ -71,9 +71,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // TS: `readdir(featuresDir)` — any failure is surfaced as
     // "Failed to read features directory: <msg>".
-    let entries = std::fs::read_dir(&features_dir).map_err(|e| {
-        invalid(format!("Failed to read features directory: {e}"))
-    })?;
+    let entries = std::fs::read_dir(&features_dir)
+        .map_err(|e| invalid(format!("Failed to read features directory: {e}")))?;
 
     // Collect `*.feature` filenames (not `*.feature.coverage`), sorted for
     // deterministic ordering.
@@ -138,18 +137,14 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 }
 
 /// Process a single feature file, mutating / creating its sidecar as needed.
-fn process_feature(
-    feature_path: &Path,
-    coverage_path: &Path,
-) -> Result<Status, FspecCoreError> {
+fn process_feature(feature_path: &Path, coverage_path: &Path) -> Result<Status, FspecCoreError> {
     let feature_content = std::fs::read_to_string(feature_path)
         .map_err(|e| invalid(format!("Failed to read feature file: {e}")))?;
 
     // Parse the feature to extract scenario names (in file order).
     let feature = parse_feature_lenient(&feature_content)
         .map_err(|e| invalid(format!("Failed to parse feature file: {e}")))?;
-    let scenario_names: Vec<String> =
-        feature.scenarios.iter().map(|s| s.name.clone()).collect();
+    let scenario_names: Vec<String> = feature.scenarios.iter().map(|s| s.name.clone()).collect();
 
     match std::fs::read_to_string(coverage_path) {
         Ok(existing) => {

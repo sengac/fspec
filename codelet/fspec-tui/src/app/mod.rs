@@ -50,6 +50,7 @@ pub mod dispatch_slash_loop;
 pub mod dispatch_slash_schedule;
 pub mod dispatch_stream_chunks;
 pub mod dispatch_supervisor_links;
+pub mod dispatch_viewer;
 pub mod dispatch_work_unit_binding;
 pub mod events;
 pub mod loop_parser;

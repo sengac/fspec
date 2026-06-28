@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/codex-apply-patch.feature
 //!
@@ -308,7 +307,10 @@ async fn test_update_context_mismatch_returns_error_and_preserves_file() {
     let result = tool.call(ApplyPatchArgs { patch }).await;
 
     // @step Then the tool returns an error describing the context mismatch
-    assert!(result.is_err(), "Should return an error for context mismatch");
+    assert!(
+        result.is_err(),
+        "Should return an error for context mismatch"
+    );
     let err = format!("{:?}", result.unwrap_err());
     assert!(
         err.contains("Context mismatch") || err.contains("context") || err.contains("mismatch"),

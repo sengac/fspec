@@ -6,13 +6,13 @@
 //! Tests for PDF reading support with three modes: visual, text, and images.
 //! Uses lopdf for text/images modes and hayro (pure Rust) for visual mode.
 
-use uuid::Uuid;
 use codelet_tools::pdf::RenderedPdfPages;
 use codelet_tools::read::{ReadArgs, ReadTool};
 use lopdf::dictionary;
 use lopdf::{Document, Object, Stream};
 use rig::tool::Tool;
 use serial_test::serial;
+use uuid::Uuid;
 
 /// Scenario: Read PDF with default visual mode renders pages as images
 #[tokio::test]
@@ -21,7 +21,8 @@ async fn test_read_pdf_default_visual_mode_renders_pages_as_images() {
     // @step Given a PDF file "architecture-diagram.pdf" containing diagrams
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("architecture-diagram.pdf");
-    let pdf_bytes = create_test_pdf_with_pages(&["Diagram content page 1", "Diagram content page 2"]);
+    let pdf_bytes =
+        create_test_pdf_with_pages(&["Diagram content page 1", "Diagram content page 2"]);
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with no pdf_mode specified
@@ -242,7 +243,9 @@ async fn test_visual_mode_includes_page_count() {
     let parsed: serde_json::Value =
         serde_json::from_str(content_str).expect("Content should be valid JSON");
 
-    let total_pages = parsed.get("total_pages").and_then(serde_json::Value::as_u64);
+    let total_pages = parsed
+        .get("total_pages")
+        .and_then(serde_json::Value::as_u64);
     assert_eq!(total_pages, Some(25), "Should have 25 total pages");
 
     // @step And all 25 pages should be rendered as base64-encoded PNG images

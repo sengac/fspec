@@ -92,7 +92,10 @@ mod subordinate_relay_tests {
 
         // Get the senders for the parent (as the forwarding task does)
         let senders = get_subordinate_chunk_senders(parent_id);
-        assert!(!senders.is_empty(), "Parent should have at least one subordinate chunk sender");
+        assert!(
+            !senders.is_empty(),
+            "Parent should have at least one subordinate chunk sender"
+        );
 
         // @step And a subordinate session with id "sub-001" whose supervisor_broadcast emits StreamChunks
         let sub_id = uuid::Uuid::new_v4();
@@ -440,12 +443,8 @@ mod subordinate_relay_tests {
 
         // @step And appear in the subordinate's dashboard tab
         // Verified by checking the envelope uses the subordinate's session_id
-        let result = process_outbound_envelope(
-            &received_chunk,
-            "instance-1",
-            "parent-session",
-            None,
-        );
+        let result =
+            process_outbound_envelope(&received_chunk, "instance-1", "parent-session", None);
         match result {
             OutboundEnvelopeAction::RelayChunk(env) => {
                 assert_eq!(env.session_id.as_deref(), Some(sub_id.to_string().as_str()));

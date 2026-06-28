@@ -109,13 +109,10 @@ impl<T> SessionRegistry<T> {
         default: impl FnOnce() -> T,
         f: impl FnOnce(&T) -> R,
     ) -> Option<R> {
-        self.inner
-            .write()
-            .ok()
-            .map(|mut guard| {
-                let entry = guard.entry(session_id).or_insert_with(default);
-                f(entry)
-            })
+        self.inner.write().ok().map(|mut guard| {
+            let entry = guard.entry(session_id).or_insert_with(default);
+            f(entry)
+        })
     }
 }
 

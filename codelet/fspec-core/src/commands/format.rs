@@ -113,8 +113,7 @@ mod tests {
 
     #[test]
     fn args_parse_file() {
-        let a: FormatArgs =
-            serde_json::from_str(r#"{"file":"spec/features/a.feature"}"#).unwrap();
+        let a: FormatArgs = serde_json::from_str(r#"{"file":"spec/features/a.feature"}"#).unwrap();
         assert_eq!(a.file.as_deref(), Some("spec/features/a.feature"));
     }
 

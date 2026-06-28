@@ -164,11 +164,7 @@ pub fn create_terminal(
 }
 
 /// Resize a PTY terminal.
-pub async fn resize_terminal(
-    entry: &PtyEntry,
-    cols: u16,
-    rows: u16,
-) -> Result<(), String> {
+pub async fn resize_terminal(entry: &PtyEntry, cols: u16, rows: u16) -> Result<(), String> {
     let new_size = PtySize {
         rows,
         cols,
@@ -189,10 +185,7 @@ pub async fn resize_terminal(
 }
 
 /// Write decoded bytes to a PTY's stdin.
-pub async fn write_terminal_input(
-    entry: &PtyEntry,
-    data: &[u8],
-) -> Result<(), String> {
+pub async fn write_terminal_input(entry: &PtyEntry, data: &[u8]) -> Result<(), String> {
     let mut writer = entry.writer.lock().await;
     writer
         .write_all(data)
@@ -204,10 +197,7 @@ pub async fn write_terminal_input(
 }
 
 /// Destroy a PTY terminal — kill the process and remove from registry.
-pub async fn destroy_terminal(
-    registry: &PtyRegistry,
-    terminal_id: &str,
-) -> Result<(), String> {
+pub async fn destroy_terminal(registry: &PtyRegistry, terminal_id: &str) -> Result<(), String> {
     if let Some(entry) = registry.remove(terminal_id) {
         let mut child = entry.child.lock().await;
         let _ = child.kill();
@@ -260,12 +250,15 @@ mod tests {
         let registry = PtyRegistry::new();
 
         // Create a real PTY for testing
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80,
-            rows: 24,
-            shell: None,
-            cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         // This test depends on having a PTY system available
         if let Ok((terminal_id, _entry)) = result {
@@ -287,12 +280,15 @@ mod tests {
     async fn test_registry_terminal_ids() {
         let registry = PtyRegistry::new();
 
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80,
-            rows: 24,
-            shell: None,
-            cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if let Ok((terminal_id, _)) = result {
             let ids = registry.terminal_ids();
@@ -308,12 +304,15 @@ mod tests {
     async fn test_registry_remove() {
         let registry = PtyRegistry::new();
 
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80,
-            rows: 24,
-            shell: None,
-            cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if let Ok((terminal_id, _)) = result {
             let removed = registry.remove(&terminal_id);
@@ -355,17 +354,23 @@ mod tests {
         let registry = PtyRegistry::new();
 
         // @step When a message arrives with service "terminal", type "create"
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80,
-            rows: 24,
-            shell: None,
-            cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if let Ok((terminal_id, entry)) = result {
             // @step Then the agent should spawn a PTY shell process
             assert!(!terminal_id.is_empty());
-            assert!(uuid::Uuid::parse_str(&terminal_id).is_ok(), "terminal_id should be a UUID");
+            assert!(
+                uuid::Uuid::parse_str(&terminal_id).is_ok(),
+                "terminal_id should be a UUID"
+            );
 
             // @step And send a "created" response with the generated terminal_id and request_id "t1"
             // The Envelope builder is tested in bridge_multiplexed.rs — here we verify the terminal_id is valid
@@ -395,12 +400,15 @@ mod tests {
     async fn test_resize_terminal() {
         let registry = PtyRegistry::new();
 
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80,
-            rows: 24,
-            shell: None,
-            cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if let Ok((_terminal_id, entry)) = result {
             let resize_result = resize_terminal(&entry, 120, 40).await;
@@ -427,12 +435,15 @@ mod tests {
     async fn test_write_terminal_input() {
         let registry = PtyRegistry::new();
 
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80,
-            rows: 24,
-            shell: None,
-            cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if let Ok((_terminal_id, entry)) = result {
             // Write "ls\n" to the terminal
@@ -456,9 +467,15 @@ mod tests {
         let registry = PtyRegistry::new();
 
         // @step Given the bridge relay has an active terminal "T1" in the PtyRegistry
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80, rows: 24, shell: None, cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if let Ok((terminal_id, _entry)) = result {
             assert_eq!(registry.len(), 1);
@@ -495,12 +512,15 @@ mod tests {
     async fn test_destroy_terminal() {
         let registry = PtyRegistry::new();
 
-        let result = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80,
-            rows: 24,
-            shell: None,
-            cwd: Some("/tmp".to_string()),
-        });
+        let result = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if let Ok((terminal_id, _)) = result {
             assert_eq!(registry.len(), 1);
@@ -534,12 +554,24 @@ mod tests {
         let registry = PtyRegistry::new();
 
         // @step Given the bridge relay is authenticated with active terminals "T1" and "T2"
-        let r1 = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80, rows: 24, shell: None, cwd: Some("/tmp".to_string()),
-        });
-        let r2 = create_terminal(&registry, &CreateTerminalOpts {
-            cols: 80, rows: 24, shell: None, cwd: Some("/tmp".to_string()),
-        });
+        let r1 = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
+        let r2 = create_terminal(
+            &registry,
+            &CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        );
 
         if r1.is_ok() && r2.is_ok() {
             assert_eq!(registry.len(), 2);
@@ -578,7 +610,9 @@ mod tests {
     fn test_base64_decode_terminal_input() {
         use base64::Engine;
         let encoded = "bHMK"; // "ls\n"
-        let decoded = base64::engine::general_purpose::STANDARD.decode(encoded).unwrap();
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .unwrap();
         assert_eq!(decoded, b"ls\n");
     }
 }

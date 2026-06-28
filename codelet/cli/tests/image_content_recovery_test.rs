@@ -1,5 +1,9 @@
-
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::uninlined_format_args)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 //! Tests for image content error recovery in the stream loop
 //! Feature: spec/features/image-dimension-validation.feature
 //!
@@ -12,7 +16,9 @@
 use codelet_cli::interactive::is_image_content_error;
 use codelet_cli::interactive::sanitize_image_content;
 use codelet_cli::interactive::{build_user_content_with_images, BridgeImage};
-use rig::message::{DocumentSourceKind, Image, ImageMediaType, Message, ToolResultContent, UserContent};
+use rig::message::{
+    DocumentSourceKind, Image, ImageMediaType, Message, ToolResultContent, UserContent,
+};
 use rig::one_or_many::OneOrMany;
 
 // =============================================================================
@@ -28,9 +34,11 @@ fn test_session_recovers_from_image_dimension_400_error() {
             content: OneOrMany::one(UserContent::text("Analyze this image")),
         },
         Message::User {
-            content: OneOrMany::one(
-                UserContent::image_base64("iVBORw0KGgo=", Some(ImageMediaType::PNG), None),
-            ),
+            content: OneOrMany::one(UserContent::image_base64(
+                "iVBORw0KGgo=",
+                Some(ImageMediaType::PNG),
+                None,
+            )),
         },
     ];
 
@@ -82,17 +90,21 @@ fn test_session_recovers_from_image_dimension_400_error() {
 fn test_session_survives_unknown_content_400_error() {
     // @step Given a conversation has non-text content in its history
     let messages = [Message::User {
-            content: OneOrMany::one(UserContent::text("Hello")),
-        }];
+        content: OneOrMany::one(UserContent::text("Hello")),
+    }];
 
     // @step And the API returns a 400 invalid_request_error for an unknown reason
-    let error_str = r#"{"type":"invalid_request_error","message":"Something unexpected went wrong"}"#;
+    let error_str =
+        r#"{"type":"invalid_request_error","message":"Something unexpected went wrong"}"#;
     let is_image_error = is_image_content_error(error_str);
 
     // @step When the stream loop handles the error
     // @step Then it should show the error to the user
     // (Unknown errors are NOT image-related, so is_image_content_error returns false)
-    assert!(!is_image_error, "Unknown errors should not be detected as image errors");
+    assert!(
+        !is_image_error,
+        "Unknown errors should not be detected as image errors"
+    );
 
     // @step And the session should remain in Idle state and accept new input
     // (Verified by the caller: when is_image_content_error returns false, session stays idle)
@@ -120,9 +132,7 @@ fn test_is_image_content_error_detects_image_size_errors() {
     assert!(is_image_content_error(
         "image exceeds the maximum allowed size"
     ));
-    assert!(is_image_content_error(
-        "The image is too large to process"
-    ));
+    assert!(is_image_content_error("The image is too large to process"));
 }
 
 #[test]
@@ -144,9 +154,11 @@ fn test_sanitize_replaces_image_in_user_message() {
             content: OneOrMany::one(UserContent::text("Look at this")),
         },
         Message::User {
-            content: OneOrMany::one(
-                UserContent::image_base64("base64data", Some(ImageMediaType::JPEG), None),
-            ),
+            content: OneOrMany::one(UserContent::image_base64(
+                "base64data",
+                Some(ImageMediaType::JPEG),
+                None,
+            )),
         },
     ];
 
@@ -158,7 +170,10 @@ fn test_sanitize_replaces_image_in_user_message() {
         let first = content.first();
         match first {
             UserContent::Text(text) => {
-                assert!(text.text.contains("[Image removed"), "Should have removal placeholder");
+                assert!(
+                    text.text.contains("[Image removed"),
+                    "Should have removal placeholder"
+                );
             }
             _ => panic!("Image should have been replaced with text"),
         }
@@ -167,11 +182,9 @@ fn test_sanitize_replaces_image_in_user_message() {
 
 #[test]
 fn test_sanitize_no_images_returns_false() {
-    let mut messages = vec![
-        Message::User {
-            content: OneOrMany::one(UserContent::text("Just text")),
-        },
-    ];
+    let mut messages = vec![Message::User {
+        content: OneOrMany::one(UserContent::text("Just text")),
+    }];
 
     let replaced = sanitize_image_content(&mut messages);
     assert!(!replaced, "Should return false when no images found");
@@ -184,9 +197,11 @@ fn test_sanitize_preserves_text_messages() {
             content: OneOrMany::one(UserContent::text("Keep this")),
         },
         Message::User {
-            content: OneOrMany::one(
-                UserContent::image_base64("img", Some(ImageMediaType::PNG), None),
-            ),
+            content: OneOrMany::one(UserContent::image_base64(
+                "img",
+                Some(ImageMediaType::PNG),
+                None,
+            )),
         },
         Message::User {
             content: OneOrMany::one(UserContent::text("Keep this too")),
@@ -281,7 +296,7 @@ fn make_jpeg_base64(width: u16, height: u16) -> String {
 
     let mut bytes = Vec::new();
     bytes.extend_from_slice(&[0xFF, 0xD8]); // SOI
-    // APP0 (JFIF)
+                                            // APP0 (JFIF)
     bytes.extend_from_slice(&[0xFF, 0xE0]);
     bytes.extend_from_slice(&[0x00, 0x10]); // length 16
     bytes.extend_from_slice(b"JFIF\0");
@@ -394,13 +409,20 @@ fn test_build_user_content_mixed_oversized_and_normal_images() {
     // prompt text + error text (for oversized) + image (for normal) = 3
     assert_eq!(parts.len(), 3, "Should have prompt + error + image");
 
-    let image_count = parts.iter().filter(|p| matches!(p, UserContent::Image { .. })).count();
-    let error_count = parts.iter().filter(|p| {
-        matches!(p, UserContent::Text(text) if text.text.contains("5999"))
-    }).count();
+    let image_count = parts
+        .iter()
+        .filter(|p| matches!(p, UserContent::Image { .. }))
+        .count();
+    let error_count = parts
+        .iter()
+        .filter(|p| matches!(p, UserContent::Text(text) if text.text.contains("5999")))
+        .count();
 
     assert_eq!(image_count, 1, "Only the normal image should pass through");
-    assert_eq!(error_count, 1, "Only the oversized image should produce an error");
+    assert_eq!(
+        error_count, 1,
+        "Only the oversized image should produce an error"
+    );
 }
 
 #[test]
@@ -425,10 +447,7 @@ fn test_sanitize_preserves_none_call_id_on_tool_result() {
         additional_params: None,
     }));
     let mut messages = vec![Message::User {
-        content: OneOrMany::one(UserContent::tool_result(
-            "tool-id-789",
-            tool_result_content,
-        )),
+        content: OneOrMany::one(UserContent::tool_result("tool-id-789", tool_result_content)),
     }];
 
     let replaced = sanitize_image_content(&mut messages);

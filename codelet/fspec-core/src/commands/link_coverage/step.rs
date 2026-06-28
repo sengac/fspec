@@ -140,10 +140,11 @@ fn split_keyword<'a>(s: &'a str, keywords: &[&str]) -> Option<(String, &'a str)>
 /// Find the best-matching comment for `feature_step`. Keyword must match; the
 /// hybrid similarity must meet the adaptive threshold.
 fn match_step<'a>(feature_step: &str, comments: &'a [StepComment]) -> Option<&'a StepComment> {
-    let (feature_keyword, feature_text) = match split_keyword(feature_step, &["Given", "When", "Then", "And", "But"]) {
-        Some((k, t)) => (k, normalize_ws(t)),
-        None => return None,
-    };
+    let (feature_keyword, feature_text) =
+        match split_keyword(feature_step, &["Given", "When", "Then", "And", "But"]) {
+            Some((k, t)) => (k, normalize_ws(t)),
+            None => return None,
+        };
     let threshold = adaptive_threshold(&feature_text);
 
     let mut best: Option<(&StepComment, f64)> = None;
@@ -194,7 +195,9 @@ fn format_validation_error(missing: &[String], work_unit_type: &str) -> String {
     lines.push(String::new());
     lines.push("To fix:".to_string());
     lines.push("  1. DELETE and RECREATE test if created in current work unit".to_string());
-    lines.push("     - Test file recreation is better than editing for structural issues".to_string());
+    lines.push(
+        "     - Test file recreation is better than editing for structural issues".to_string(),
+    );
     lines.push("     - Start fresh with @step comments from the beginning".to_string());
     lines.push("     - Ensures proper test structure and step mapping".to_string());
     lines.push("  2. If test exists from other work unit, use checkpoint restore".to_string());
@@ -205,7 +208,8 @@ fn format_validation_error(missing: &[String], work_unit_type: &str) -> String {
     lines.push("     - Put the @step comment right before that line".to_string());
     lines.push("  4. Use the exact text shown above with // @step prefix".to_string());
     lines.push(String::new());
-    lines.push("⚠️  If you have duplicate Given/When/Then comments, remove them first:".to_string());
+    lines
+        .push("⚠️  If you have duplicate Given/When/Then comments, remove them first:".to_string());
     lines.push("     - @step comments replace existing step comments".to_string());
     lines.push("     - Do NOT create redundant comments for the same step".to_string());
     lines.push("     - Each step should have exactly ONE @step comment".to_string());
@@ -220,13 +224,25 @@ fn format_validation_error(missing: &[String], work_unit_type: &str) -> String {
 
     if work_unit_type == "task" {
         lines.push("To override validation (not recommended):".to_string());
-        lines.push("  fspec link-coverage <feature> --scenario <name> ... --skip-step-validation".to_string());
+        lines.push(
+            "  fspec link-coverage <feature> --scenario <name> ... --skip-step-validation"
+                .to_string(),
+        );
         lines.push(String::new());
     } else {
-        let type_label = if work_unit_type == "story" { "story" } else { "bug" };
-        lines.push(format!("⚠️  Step validation is MANDATORY for {type_label} work units."));
+        let type_label = if work_unit_type == "story" {
+            "story"
+        } else {
+            "bug"
+        };
+        lines.push(format!(
+            "⚠️  Step validation is MANDATORY for {type_label} work units."
+        ));
         lines.push("   There is NO skip option for story and bug work units.".to_string());
-        lines.push("   ACDD requires test-to-scenario traceability through docstring step comments.".to_string());
+        lines.push(
+            "   ACDD requires test-to-scenario traceability through docstring step comments."
+                .to_string(),
+        );
         lines.push(String::new());
     }
 
@@ -270,8 +286,16 @@ const SHORT_WEIGHTS: SimWeights = SimWeights {
 /// Hybrid similarity between two single-step texts (each treated as a scenario
 /// whose name and sole step is the text). Auto-selects short-string weights.
 fn hybrid_similarity(text1: &str, text2: &str) -> f64 {
-    let title_len = text1.trim().chars().count().min(text2.trim().chars().count());
-    let w = if title_len < 20 { &SHORT_WEIGHTS } else { &DEFAULT_WEIGHTS };
+    let title_len = text1
+        .trim()
+        .chars()
+        .count()
+        .min(text2.trim().chars().count());
+    let w = if title_len < 20 {
+        &SHORT_WEIGHTS
+    } else {
+        &DEFAULT_WEIGHTS
+    };
 
     let jw = jaro_winkler(text1, text2);
     let ts = token_set_ratio(text1, text2);
@@ -488,6 +512,9 @@ mod tests {
 
     #[test]
     fn hybrid_identical_is_one() {
-        assert!((hybrid_similarity("i am on the login page", "i am on the login page") - 1.0).abs() < 1e-9);
+        assert!(
+            (hybrid_similarity("i am on the login page", "i am on the login page") - 1.0).abs()
+                < 1e-9
+        );
     }
 }

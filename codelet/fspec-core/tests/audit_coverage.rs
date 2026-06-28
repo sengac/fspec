@@ -77,13 +77,19 @@ fn reports_all_files_present_when_every_referenced_file_exists() {
 
     // @step Then the output contains the substring '✅ All files found (3/3)'
     assert!(
-        data["output"].as_str().unwrap().contains("✅ All files found (3/3)"),
+        data["output"]
+            .as_str()
+            .unwrap()
+            .contains("✅ All files found (3/3)"),
         "output: {}",
         data["output"]
     );
 
     // @step Then the output contains the substring 'All mappings valid'
-    assert!(data["output"].as_str().unwrap().contains("All mappings valid"));
+    assert!(data["output"]
+        .as_str()
+        .unwrap()
+        .contains("All mappings valid"));
 
     // @step Then the envelope exitCode is 0
     assert_eq!(data["exitCode"].as_i64(), Some(0));
@@ -177,7 +183,10 @@ fn reports_a_missing_coverage_file_with_the_full_path() {
 
     // @step Then the output contains the substring '✗ Coverage file not found:'
     assert!(
-        data["output"].as_str().unwrap().contains("✗ Coverage file not found:"),
+        data["output"]
+            .as_str()
+            .unwrap()
+            .contains("✗ Coverage file not found:"),
         "output: {}",
         data["output"]
     );

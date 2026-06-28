@@ -1,12 +1,11 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Test for AstGrep rig::tool::Tool implementation
 
-use uuid::Uuid;
 use codelet_tools::AstGrepTool;
 use rig::tool::Tool;
 use std::fs;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 /// Test that the rig::tool::Tool interface correctly passes the language parameter
 #[tokio::test]

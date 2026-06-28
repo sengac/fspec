@@ -149,10 +149,7 @@ pub enum ContextReference {
         end_turn: usize,
     },
     /// Reference turns matching a search query: { session_id, query: "SQL injection" }
-    Query {
-        session_id: String,
-        query: String,
-    },
+    Query { session_id: String, query: String },
 }
 
 /// Top-level args for the AgentManager tool
@@ -209,25 +206,15 @@ pub struct SessionStatus {
 #[serde(untagged)]
 pub enum AgentManagerResult {
     /// Result from the `spawn` action
-    Spawned {
-        session_id: String,
-    },
+    Spawned { session_id: String },
     /// Result from the `list` action
-    Listed {
-        sessions: Vec<SessionEntry>,
-    },
+    Listed { sessions: Vec<SessionEntry> },
     /// Result from the `get_status` action
     Status(SessionStatus),
     /// Result from the `close` action
-    Closed {
-        closed: bool,
-        session_id: String,
-    },
+    Closed { closed: bool, session_id: String },
     /// Result from the `message` action (plain delivery, no context)
-    MessageDelivered {
-        delivered: bool,
-        session_id: String,
-    },
+    MessageDelivered { delivered: bool, session_id: String },
     /// Result from the `message` action with context resolution (AMGR-011)
     MessageDeliveredWithContext {
         delivered: bool,

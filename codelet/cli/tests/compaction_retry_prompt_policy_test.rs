@@ -70,8 +70,9 @@ fn flush_returns_true_when_partial_text_present() {
     let display = StreamingTokenDisplay::new(0, 0, 0, 0);
 
     // @step When flush_partial_state_before_compaction is invoked with that buffer
-    let appended = flush_partial_state_before_compaction(&mut session, &mut assistant_text, &display)
-        .expect("flush helper must succeed");
+    let appended =
+        flush_partial_state_before_compaction(&mut session, &mut assistant_text, &display)
+            .expect("flush helper must succeed");
 
     // @step Then the helper returns true to indicate an Assistant message was appended
     assert!(
@@ -91,11 +92,13 @@ fn flush_returns_true_when_partial_text_present() {
         .expect("session must have at least one message");
     match last {
         rig::message::Message::Assistant { content, .. } => {
-            let found = content.iter().any(|c| matches!(
-                c,
-                rig::message::AssistantContent::Text(t)
-                    if t.text.contains("The user asked about caching")
-            ));
+            let found = content.iter().any(|c| {
+                matches!(
+                    c,
+                    rig::message::AssistantContent::Text(t)
+                        if t.text.contains("The user asked about caching")
+                )
+            });
             assert!(
                 found,
                 "Assistant message must contain the accumulated partial text"
@@ -119,8 +122,9 @@ fn flush_returns_false_when_buffer_empty() {
     let display = StreamingTokenDisplay::new(0, 0, 0, 0);
 
     // @step When flush_partial_state_before_compaction is invoked with that buffer
-    let appended = flush_partial_state_before_compaction(&mut session, &mut assistant_text, &display)
-        .expect("flush helper must succeed");
+    let appended =
+        flush_partial_state_before_compaction(&mut session, &mut assistant_text, &display)
+            .expect("flush helper must succeed");
 
     // @step Then the helper returns false to indicate no Assistant message was appended
     assert!(
@@ -283,10 +287,9 @@ fn compaction_retry_prompt_resume_from_partial_mentions_left_off() {
 fn begin_compaction_recovery_emits_policy_selection_debug_log() {
     use std::path::PathBuf;
 
-    let src = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/interactive/recovery_compaction.rs");
-    let content = std::fs::read_to_string(&src)
-        .expect("recovery_compaction.rs must be present");
+    let src =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/recovery_compaction.rs");
+    let content = std::fs::read_to_string(&src).expect("recovery_compaction.rs must be present");
 
     // The helper must reference both policy variants inside a debug!/info!
     // call so operators can audit which branch fired (AC #4). We assert

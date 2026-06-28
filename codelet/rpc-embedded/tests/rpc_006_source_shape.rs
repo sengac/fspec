@@ -19,7 +19,9 @@
 
 mod source_helpers;
 
-use source_helpers::{collect_rs_files, read_to_string_or_panic, strip_rust_comments, workspace_root};
+use source_helpers::{
+    collect_rs_files, read_to_string_or_panic, strip_rust_comments, workspace_root,
+};
 
 #[test]
 fn scenario_default_fixture_is_unreachable_from_production_code() {
@@ -191,8 +193,12 @@ fn scenario_rpc_server_binary_still_binds_loopback_only_after_watcher_integratio
 #[test]
 fn scenario_work_unit_info_continues_to_be_defined_exactly_once_in_rpc_types() {
     // @step Given codelet/rpc-types defines a public WorkUnitInfo struct with fields id, title, work_type, status, description, estimate, and epic
-    let rpc_types_lib =
-        read_to_string_or_panic(&workspace_root().join("rpc-types").join("src").join("lib.rs"));
+    let rpc_types_lib = read_to_string_or_panic(
+        &workspace_root()
+            .join("rpc-types")
+            .join("src")
+            .join("lib.rs"),
+    );
     assert!(
         rpc_types_lib.contains("pub struct WorkUnitInfo"),
         "rpc-types must define `pub struct WorkUnitInfo`"
@@ -205,9 +211,7 @@ fn scenario_work_unit_info_continues_to_be_defined_exactly_once_in_rpc_types() {
         for path in collect_rs_files(&src_dir) {
             let body = read_to_string_or_panic(&path);
             let code = strip_rust_comments(&body);
-            if code.contains("pub struct WorkUnitInfo")
-                || code.contains("struct WorkUnitInfo {")
-            {
+            if code.contains("pub struct WorkUnitInfo") || code.contains("struct WorkUnitInfo {") {
                 local_definitions.push(path.display().to_string());
             }
         }

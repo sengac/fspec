@@ -34,8 +34,7 @@ fn agent_loop_src(file: &str) -> PathBuf {
 
 fn read_source(file: &str) -> String {
     let path = agent_loop_src(file);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract the body of the `run_with_provider!` macro_rules! macro from
@@ -151,9 +150,7 @@ fn count_occurrences(haystack: &str, needle: &str) -> usize {
 /// at `call_start_offset` in `src`. Returns the trimmed arg strings.
 fn parse_positional_args(src: &str, call_start_offset: usize) -> Vec<String> {
     let tail = &src[call_start_offset..];
-    let open_paren = tail
-        .find('(')
-        .expect("call site must include `(`");
+    let open_paren = tail.find('(').expect("call site must include `(`");
     let bytes = tail.as_bytes();
     let mut depth: i32 = 0;
     let mut starts: Vec<usize> = vec![open_paren + 1];
@@ -208,7 +205,9 @@ fn input_with_images_declares_thinking_config_option_string_field() {
         .find("pub(crate) struct InputWithImages")
         .expect("struct InputWithImages must be present");
     let struct_tail = &src[struct_pos..];
-    let body_open = struct_tail.find('{').expect("struct body must start with `{`");
+    let body_open = struct_tail
+        .find('{')
+        .expect("struct body must start with `{`");
     let bytes = struct_tail.as_bytes();
     let mut depth: i32 = 0;
     let mut i = body_open;
@@ -227,7 +226,11 @@ fn input_with_images_declares_thinking_config_option_string_field() {
         }
         i += 1;
     }
-    assert_ne!(body_end, usize::MAX, "InputWithImages struct body must close");
+    assert_ne!(
+        body_end,
+        usize::MAX,
+        "InputWithImages struct body must close"
+    );
     let body = &struct_tail[body_open..=body_end];
     assert!(
         body.contains("pub(crate) thinking_config: Option<String>"),
@@ -344,7 +347,11 @@ fn agent_loop_body_computes_thinking_config_value_per_turn() {
         }
         i += 1;
     }
-    assert_ne!(block_end, usize::MAX, "thinking_config_value block must close");
+    assert_ne!(
+        block_end,
+        usize::MAX,
+        "thinking_config_value block must close"
+    );
     let block = &tail[block_open..=block_end];
 
     for needle in [
@@ -419,7 +426,13 @@ fn all_run_with_provider_invocations_pass_thinking_config_value() {
 
     // @step And the enumerated providers cover claude, gemini, zai, codex, and copilot
     // The match arm pattern preceding each invocation identifies the provider.
-    let expected_providers = ["\"claude\"", "\"gemini\"", "\"zai\"", "\"codex\"", "\"github-copilot\" | \"copilot\""];
+    let expected_providers = [
+        "\"claude\"",
+        "\"gemini\"",
+        "\"zai\"",
+        "\"codex\"",
+        "\"github-copilot\" | \"copilot\"",
+    ];
     for expected in expected_providers {
         let arrow_marker = format!("{expected} => run_with_provider!(");
         let multiline_marker = format!("{expected} => run_with_provider!(\n");

@@ -181,10 +181,7 @@ fn remove_index_entry(cwd: &Path, work_unit_id: &str, name: &str) {
     let Some(mut index) = read_index(cwd, work_unit_id) else {
         return;
     };
-    if let Some(arr) = index
-        .get_mut("checkpoints")
-        .and_then(|v| v.as_array_mut())
-    {
+    if let Some(arr) = index.get_mut("checkpoints").and_then(|v| v.as_array_mut()) {
         arr.retain(|cp| cp.get("name").and_then(|n| n.as_str()) != Some(name));
     }
     if let Ok(serialized) = serde_json::to_string_pretty(&index) {

@@ -89,8 +89,7 @@ fn read_envelope_jsons(session_id: Uuid) -> Vec<serde_json::Value> {
     stored
         .into_iter()
         .map(|m| {
-            serde_json::to_value(&m.metadata)
-                .expect("metadata HashMap must serialise back to JSON")
+            serde_json::to_value(&m.metadata).expect("metadata HashMap must serialise back to JSON")
         })
         .collect()
 }
@@ -413,9 +412,7 @@ fn background_output_done_arm_persists_assistant_then_token_state() {
     // self.persist_assistant_message_with_stop_reason(stop_reason)
     let assistant_pos = arm
         .find("self.persist_assistant_message_with_stop_reason(stop_reason)")
-        .expect(
-            "Done arm must call self.persist_assistant_message_with_stop_reason(stop_reason)",
-        );
+        .expect("Done arm must call self.persist_assistant_message_with_stop_reason(stop_reason)");
 
     // @step And the same arm subsequently calls
     // persist_token_state(&self.session.id, input_tokens, output_tokens)
@@ -503,7 +500,10 @@ fn persistence_calls_in_agent_loop_use_crate_persist_not_napi() {
 
         // @step Then no .rs file under codelet/agent-loop/src/ references codelet_napi::persist
         if body.contains("codelet_napi::persist") || body.contains("codelet_napi :: persist") {
-            violations.push(format!("{}: references codelet_napi::persist", entry.display()));
+            violations.push(format!(
+                "{}: references codelet_napi::persist",
+                entry.display()
+            ));
         }
     }
     assert!(
@@ -540,8 +540,8 @@ fn persistence_calls_in_agent_loop_use_crate_persist_not_napi() {
 /// Recursively collect all .rs files under `dir`.
 fn walk_rs_files(dir: &PathBuf) -> Vec<PathBuf> {
     let mut out: Vec<PathBuf> = Vec::new();
-    let entries = std::fs::read_dir(dir)
-        .unwrap_or_else(|e| panic!("must read_dir {}: {e}", dir.display()));
+    let entries =
+        std::fs::read_dir(dir).unwrap_or_else(|e| panic!("must read_dir {}: {e}", dir.display()));
     for entry in entries.flatten() {
         let path = entry.path();
         if path.is_dir() {

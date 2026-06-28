@@ -105,7 +105,10 @@ fn tokenize_line(line: &str) -> Vec<Token> {
         // Advance past the current character safely (handles multi-byte UTF-8)
         let char_len = line[pos..].chars().next().map_or(1, char::len_utf8);
         let next_pos = pos + char_len;
-        let next_bracket = line.get(next_pos..).and_then(|s| s.find('[')).map(|p| p + next_pos);
+        let next_bracket = line
+            .get(next_pos..)
+            .and_then(|s| s.find('['))
+            .map(|p| p + next_pos);
         match next_bracket {
             Some(bp) => {
                 let text = &line[pos..bp];
@@ -137,21 +140,20 @@ pub fn reassemble_content(raw: &str) -> Vec<Section> {
     let mut buf_type: Option<&str> = None; // "thinking" or "text"
     let mut buf_parts: Vec<String> = Vec::new();
 
-    let flush = |sections: &mut Vec<Section>,
-                 buf_type: &mut Option<&str>,
-                 buf_parts: &mut Vec<String>| {
-        if let Some(bt) = buf_type.take() {
-            let joined = buf_parts.join("").trim().to_string();
-            if !joined.is_empty() {
-                match bt {
-                    "thinking" => sections.push(Section::Thinking(joined)),
-                    "text" => sections.push(Section::Text(joined)),
-                    _ => {}
+    let flush =
+        |sections: &mut Vec<Section>, buf_type: &mut Option<&str>, buf_parts: &mut Vec<String>| {
+            if let Some(bt) = buf_type.take() {
+                let joined = buf_parts.join("").trim().to_string();
+                if !joined.is_empty() {
+                    match bt {
+                        "thinking" => sections.push(Section::Thinking(joined)),
+                        "text" => sections.push(Section::Text(joined)),
+                        _ => {}
+                    }
                 }
             }
-        }
-        buf_parts.clear();
-    };
+            buf_parts.clear();
+        };
 
     for line in lines {
         let tokens = tokenize_line(line);

@@ -48,12 +48,11 @@ struct RetagArgs {
 
 /// Dispatcher entry point.
 pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
-    let args: RetagArgs = serde_json::from_str(args_json).map_err(|e| {
-        FspecCoreError::InvalidArgs {
+    let args: RetagArgs =
+        serde_json::from_str(args_json).map_err(|e| FspecCoreError::InvalidArgs {
             command: "retag",
             reason: format!("failed to parse args: {e}"),
-        }
-    })?;
+        })?;
 
     let from = args.from.unwrap_or_default();
     let to = args.to.unwrap_or_default();
@@ -103,7 +102,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         let abs = project_root.join(file);
         let content = match std::fs::read_to_string(&abs) {
             Ok(s) => s,
-            Err(source) => return Err(FspecCoreError::Io { command: "retag", source }),
+            Err(source) => {
+                return Err(FspecCoreError::Io {
+                    command: "retag",
+                    source,
+                })
+            }
         };
         let occurrences = count_tag_matches(&content, &from);
         if occurrences > 0 {
@@ -229,10 +233,7 @@ fn tag_match_starts(content: &str, from: &str) -> Vec<usize> {
             i = end;
         } else {
             // Advance one char past `start` to keep scanning.
-            let step = content[start..]
-                .chars()
-                .next()
-                .map_or(1, char::len_utf8);
+            let step = content[start..].chars().next().map_or(1, char::len_utf8);
             i = start + step;
         }
     }
@@ -302,7 +303,10 @@ mod tests {
     #[test]
     fn replace_preserves_surrounding_whitespace() {
         let content = "  @wip @smoke\n";
-        assert_eq!(replace_tags(content, "@wip", "@in-progress"), "  @in-progress @smoke\n");
+        assert_eq!(
+            replace_tags(content, "@wip", "@in-progress"),
+            "  @in-progress @smoke\n"
+        );
     }
 
     #[test]

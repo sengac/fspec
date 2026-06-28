@@ -100,8 +100,17 @@ fn dispatcher_reports_a_clean_store_as_valid() {
         .iter()
         .filter_map(|v| v.as_str().map(str::to_string))
         .collect();
-    for expected in ["schema", "uniqueIds", "parentChild", "exampleMapping", "dependencies"] {
-        assert!(checks.contains(&expected.to_string()), "checks missing {expected}: {data}");
+    for expected in [
+        "schema",
+        "uniqueIds",
+        "parentChild",
+        "exampleMapping",
+        "dependencies",
+    ] {
+        assert!(
+            checks.contains(&expected.to_string()),
+            "checks missing {expected}: {data}"
+        );
     }
 }
 
@@ -215,7 +224,10 @@ fn dispatcher_flags_a_missing_child_reference() {
 
     // @step Then the errors include 'Work unit AUTH-001 references non-existent child: AUTH-099'
     assert!(
-        has_exact_error(&data, "Work unit AUTH-001 references non-existent child: AUTH-099"),
+        has_exact_error(
+            &data,
+            "Work unit AUTH-001 references non-existent child: AUTH-099"
+        ),
         "got {data}"
     );
 }

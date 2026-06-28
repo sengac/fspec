@@ -94,7 +94,10 @@ const REGISTRY: &[RegistryTool] = &[
 /// tools.
 fn env_mappings(tool: &str) -> &'static [(&'static str, &'static str)] {
     match tool {
-        "perplexity" => &[("apiKey", "PERPLEXITY_API_KEY"), ("model", "PERPLEXITY_MODEL")],
+        "perplexity" => &[
+            ("apiKey", "PERPLEXITY_API_KEY"),
+            ("model", "PERPLEXITY_MODEL"),
+        ],
         "jira" => &[("url", "JIRA_URL"), ("token", "JIRA_TOKEN")],
         "confluence" => &[("url", "CONFLUENCE_URL"), ("token", "CONFLUENCE_TOKEN")],
         "stakeholder" => &[
@@ -225,7 +228,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 /// Resolve the configured status for a single registry tool by merging the
 /// config layers (defaults → project → user → ENV) and checking that every
 /// required field is present and non-empty.
-fn resolve_status(tool: &RegistryTool, project_root: &Path, user_config: Option<&str>) -> ToolStatus {
+fn resolve_status(
+    tool: &RegistryTool,
+    project_root: &Path,
+    user_config: Option<&str>,
+) -> ToolStatus {
     let config = resolve_config(tool.name, project_root, user_config);
     let configured = tool.required.iter().all(|field| {
         config
@@ -303,11 +310,7 @@ fn resolve_config(tool_name: &str, project_root: &Path, user_config: Option<&str
 /// Read `path` as JSON and, if it contains `.research[tool_name]`, merge that
 /// object's keys into `config` (later layers overwrite earlier ones).
 /// Missing file / unreadable / invalid JSON are silently ignored.
-fn merge_research_block(
-    config: &mut serde_json::Map<String, Value>,
-    path: &Path,
-    tool_name: &str,
-) {
+fn merge_research_block(config: &mut serde_json::Map<String, Value>, path: &Path, tool_name: &str) {
     let contents = match std::fs::read_to_string(path) {
         Ok(c) => c,
         Err(_) => return,
@@ -336,7 +339,11 @@ fn fspec_user_dir() -> std::path::PathBuf {
         .ok()
         .filter(|h| !h.is_empty())
         .map(std::path::PathBuf::from)
-        .or_else(|| std::env::var("USERPROFILE").ok().map(std::path::PathBuf::from));
+        .or_else(|| {
+            std::env::var("USERPROFILE")
+                .ok()
+                .map(std::path::PathBuf::from)
+        });
     match home {
         Some(h) => h.join(".fspec"),
         None => std::path::PathBuf::from(".fspec"),

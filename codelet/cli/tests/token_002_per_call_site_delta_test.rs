@@ -111,11 +111,7 @@ fn find_next_api_token_usage_new(src: &str, start: usize) -> Option<String> {
 /// bound to an identifier that is then passed as the last positional
 /// argument to the next `ApiTokenUsage::new(..)` call. The `site_label` is
 /// used solely for failure messages.
-fn assert_delta_flows_into_api_token_usage(
-    src: &str,
-    needle_ordinal: usize,
-    site_label: &str,
-) {
+fn assert_delta_flows_into_api_token_usage(src: &str, needle_ordinal: usize, site_label: &str) {
     let call_idx = nth_occurrence(src, "compute_output_delta(", needle_ordinal)
         .unwrap_or_else(|| panic!(
             "{site_label}: expected at least {needle_ordinal} compute_output_delta(..) call(s) in source"

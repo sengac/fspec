@@ -217,7 +217,11 @@ fn format_scenario(scenario: &Scenario, source: &str, lines: &mut Vec<String>, b
     }
 
     // Keyword (raw keyword, e.g. "Scenario" or "Scenario Outline").
-    lines.push(format!("{ind}{}: {}", scenario.keyword.trim(), scenario.name));
+    lines.push(format!(
+        "{ind}{}: {}",
+        scenario.keyword.trim(),
+        scenario.name
+    ));
 
     // Description ends at the first step (or first Examples table when the
     // scenario has no steps), re-extracted verbatim to keep blank lines.
@@ -565,8 +569,14 @@ mod tests {
         // closing delimiter (the RPC-230 parity bug).
         assert!(out.contains("      \"\"\"\n      line1\n"), "got:\n{out}");
         assert!(out.contains("      line2\n      \"\"\"\n"), "got:\n{out}");
-        assert!(!out.contains("\"\"\"\n\n"), "spurious blank after opening, got:\n{out}");
-        assert!(!out.contains("\n\n      \"\"\""), "spurious blank before closing, got:\n{out}");
+        assert!(
+            !out.contains("\"\"\"\n\n"),
+            "spurious blank after opening, got:\n{out}"
+        );
+        assert!(
+            !out.contains("\n\n      \"\"\""),
+            "spurious blank before closing, got:\n{out}"
+        );
     }
 
     #[test]
@@ -581,8 +591,14 @@ mod tests {
     fn docstring_media_type_preserved_on_opening_line() {
         let src = "Feature: D\n\n  Scenario: A\n    Given step:\n      \"\"\"json\n      {\"a\": 1}\n      \"\"\"\n    Then ok\n";
         let out = format_feature(&parse(src), src);
-        assert!(out.contains("      \"\"\"json\n"), "media type must stay on opening line, got:\n{out}");
-        assert!(out.contains("      {\"a\": 1}\n"), "content must be dedented, got:\n{out}");
+        assert!(
+            out.contains("      \"\"\"json\n"),
+            "media type must stay on opening line, got:\n{out}"
+        );
+        assert!(
+            out.contains("      {\"a\": 1}\n"),
+            "content must be dedented, got:\n{out}"
+        );
         // And it must be idempotent.
         let twice = format_feature(&parse(&out), &out);
         assert_eq!(out, twice, "media-type docstring must be idempotent");
@@ -636,7 +652,8 @@ mod tests {
     #[test]
     fn rpc330_single_paragraph_description_is_unchanged() {
         // @step Given a feature file with a single-line feature description and no internal blank lines:
-        let src = "Feature: One line desc\n\n  Only one paragraph here.\n\n  Scenario: A\n    Given x\n";
+        let src =
+            "Feature: One line desc\n\n  Only one paragraph here.\n\n  Scenario: A\n    Given x\n";
 
         // @step When the formatter formats the feature file
         let out = format_feature(&parse(src), src);

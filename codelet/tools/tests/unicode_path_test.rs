@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/unicode-path-normalization.feature
 //!
@@ -57,13 +56,14 @@ async fn test_resolve_file_with_u202f_when_user_types_regular_space() {
         create_file_with_unicode_whitespace(temp_dir.path(), "txt", b"hello unicode");
 
     // Verify the file actually exists with U+202F
-    assert!(actual_path.exists(), "File with U+202F should exist on disk");
+    assert!(
+        actual_path.exists(),
+        "File with U+202F should exist on disk"
+    );
 
     // @step When I call resolve_unicode_path with a path using a regular space instead of U+202F
     // This calls the resolve_unicode_path function from unicode_path module
-    let user_path_str = actual_path
-        .to_string_lossy()
-        .replace(NBSP_NARROW, " ");
+    let user_path_str = actual_path.to_string_lossy().replace(NBSP_NARROW, " ");
     let user_path = std::path::Path::new(&user_path_str);
 
     // The file should NOT exist with the user-typed path (proving the bug)
@@ -77,7 +77,10 @@ async fn test_resolve_file_with_u202f_when_user_types_regular_space() {
     let resolved = codelet_tools::unicode_path::resolve_unicode_path(user_path).await;
 
     // @step And the returned path should point to the actual file on disk containing U+202F
-    assert!(resolved.is_some(), "resolve_unicode_path should find the file via directory scan");
+    assert!(
+        resolved.is_some(),
+        "resolve_unicode_path should find the file via directory scan"
+    );
     assert_eq!(
         resolved.unwrap(),
         actual_path,
@@ -94,9 +97,7 @@ async fn test_resolve_file_with_regular_space_when_user_pastes_nbsp() {
     fs::write(&file_path, "content with regular spaces").unwrap();
 
     // @step When I call resolve_unicode_path with U+00A0 NO-BREAK SPACE instead of regular space
-    let nbsp_path_str = file_path
-        .to_string_lossy()
-        .replace(' ', NBSP);
+    let nbsp_path_str = file_path.to_string_lossy().replace(' ', NBSP);
     let nbsp_path = std::path::Path::new(&nbsp_path_str);
 
     // The path with U+00A0 should NOT exist (proving normalization is needed)
@@ -108,7 +109,10 @@ async fn test_resolve_file_with_regular_space_when_user_pastes_nbsp() {
     // @step Then the file should be found via normalized path lookup in phase 1b
     let resolved = codelet_tools::unicode_path::resolve_unicode_path(nbsp_path).await;
 
-    assert!(resolved.is_some(), "resolve_unicode_path should find the file via normalization");
+    assert!(
+        resolved.is_some(),
+        "resolve_unicode_path should find the file via normalization"
+    );
     assert_eq!(
         resolved.unwrap(),
         file_path,
@@ -133,17 +137,21 @@ async fn test_validate_and_resolve_path_normalizes_unicode_whitespace() {
 
     // Build a user path with U+00A0 (NO-BREAK SPACE) instead of regular space
     let nbsp_name = regular_name.replace(' ', NBSP);
-    let nbsp_path = temp_dir.path().join(&nbsp_name).to_string_lossy().to_string();
+    let nbsp_path = temp_dir
+        .path()
+        .join(&nbsp_name)
+        .to_string_lossy()
+        .to_string();
 
     // @step When I call validate_and_resolve_path with a path using regular ASCII spaces
-    let result = codelet_tools::facade::validate_and_resolve_path(
-        Uuid::nil(),
-        &nbsp_path,
-        "read",
-    );
+    let result = codelet_tools::facade::validate_and_resolve_path(Uuid::nil(), &nbsp_path, "read");
 
     // @step Then the returned PathBuf should point to the actual file on disk
-    assert!(result.is_ok(), "validate_and_resolve_path should succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "validate_and_resolve_path should succeed: {:?}",
+        result.err()
+    );
     let resolved = result.unwrap();
 
     // @step And the normalization should have occurred before any canonicalize or exists checks
@@ -181,11 +189,7 @@ async fn test_require_file_exists_directory_scan_fallback() {
     assert!(!user_path.exists());
 
     // @step Then it should succeed by finding the file via directory scan fallback
-    let result = codelet_tools::validation::require_file_exists(
-        &user_path,
-        &user_path_str,
-    )
-    .await;
+    let result = codelet_tools::validation::require_file_exists(&user_path, &user_path_str).await;
 
     // @step And the resolved path used for subsequent I/O should point to the actual file
     assert!(
@@ -232,10 +236,7 @@ async fn test_read_tool_unicode_text_file() {
         output.contains("This is the content"),
         "Output should contain the file content, got: {output}"
     );
-    assert!(
-        output.contains("1:"),
-        "Output should have line numbers"
-    );
+    assert!(output.contains("1:"), "Output should have line numbers");
 }
 
 /// Scenario: Read tool reads image with U+202F when user provides regular space path
@@ -251,10 +252,10 @@ async fn test_read_tool_unicode_image_file() {
         0x49, 0x48, 0x44, 0x52, // "IHDR"
         0x00, 0x00, 0x00, 0x01, // width = 1
         0x00, 0x00, 0x00, 0x01, // height = 1
-        0x08, 0x02,             // bit depth=8, color=RGB
-        0x00, 0x00, 0x00,       // compression, filter, interlace
+        0x08, 0x02, // bit depth=8, color=RGB
+        0x00, 0x00, 0x00, // compression, filter, interlace
         0x90, 0x77, 0x53, 0xDE, // CRC
-        0x00,                   // padding
+        0x00, // padding
     ];
     let mut png_data = Vec::new();
     png_data.extend_from_slice(&png_header);
@@ -350,7 +351,11 @@ async fn test_write_tool_normalizes_unicode_in_path() {
 
     // @step When I call WriteTool.call() with file_path containing U+00A0 NO-BREAK SPACE and some content
     let nbsp_name = format!("my{NBSP}file.txt");
-    let nbsp_path = temp_dir.path().join(&nbsp_name).to_string_lossy().to_string();
+    let nbsp_path = temp_dir
+        .path()
+        .join(&nbsp_name)
+        .to_string_lossy()
+        .to_string();
     let expected_name = "my file.txt"; // should normalize to regular space
 
     let tool = WriteTool::new(Uuid::nil());

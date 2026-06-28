@@ -14,13 +14,13 @@ use tracing::warn;
 /// real function, NOT a copy. See: codelet/cli/tests/prompt_too_long_recovery_test.rs
 pub fn is_prompt_too_long_error(error_str: &str) -> bool {
     let error_lower = error_str.to_lowercase();
-    
+
     // PROV-010: Exclude thinking budget configuration errors
     // These contain "budget_tokens" and should NOT trigger compaction
     if error_lower.contains("budget_tokens") {
         return false;
     }
-    
+
     error_lower.contains("prompt is too long")
         || error_lower.contains("maximum context length")
         || error_lower.contains("context_length_exceeded")
@@ -173,9 +173,7 @@ pub(super) fn extract_prompt_cancelled(
         // for the PromptCancelled variant so unrelated boxed variants
         // (e.g. MaxDepthError) continue walking.
         if let Some(boxed) = err.downcast_ref::<Box<rig::completion::PromptError>>() {
-            if let rig::completion::PromptError::PromptCancelled { chat_history } =
-                boxed.as_ref()
-            {
+            if let rig::completion::PromptError::PromptCancelled { chat_history } = boxed.as_ref() {
                 return Some(chat_history);
             }
         }
@@ -551,7 +549,9 @@ mod tests {
             if e.downcast_ref::<StreamingError>().is_some() {
                 found_streaming = true;
             }
-            if e.downcast_ref::<Box<rig::completion::PromptError>>().is_some() {
+            if e.downcast_ref::<Box<rig::completion::PromptError>>()
+                .is_some()
+            {
                 found_prompt = true;
             }
         }

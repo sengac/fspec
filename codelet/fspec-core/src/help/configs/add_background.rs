@@ -16,12 +16,14 @@ use super::super::{
 const ARGS: &[CommandArgument] = &[
     CommandArgument {
         name: "feature",
-        description: "Feature file name or path (e.g., \"login\" or \"spec/features/login.feature\")",
+        description:
+            "Feature file name or path (e.g., \"login\" or \"spec/features/login.feature\")",
         required: true,
     },
     CommandArgument {
         name: "text",
-        description: "User story text in format: \"As a [role] I want to [action] So that [benefit]\"",
+        description:
+            "User story text in format: \"As a [role] I want to [action] So that [benefit]\"",
         required: true,
     },
 ];

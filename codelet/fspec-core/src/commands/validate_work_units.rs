@@ -94,9 +94,8 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
         );
     }
     if !is_js_object_like(states_val) {
-        errors.push(
-            "Invalid work units data structure: missing or invalid states field".to_string(),
-        );
+        errors
+            .push("Invalid work units data structure: missing or invalid states field".to_string());
     }
 
     // ---- TS crash parity (Check 2) ----
@@ -159,7 +158,9 @@ pub async fn run(_args_json: &str, project_root: &Path) -> Result<String, FspecC
         // Child existence + back-link.
         if let Some(children) = wu.get("children").and_then(Value::as_array) {
             for child in children {
-                let Some(child_id) = child.as_str() else { continue };
+                let Some(child_id) = child.as_str() else {
+                    continue;
+                };
                 match work_units.get(child_id) {
                     None => {
                         errors.push(format!(
@@ -319,7 +320,10 @@ fn validate_questions(errors: &mut Vec<String>, id: &str, value: Option<&Value>)
         }
         if let Some(answer) = obj.get("answer") {
             if !answer.is_null() {
-                let answer_ok = answer.as_str().map(|s| !s.trim().is_empty()).unwrap_or(false);
+                let answer_ok = answer
+                    .as_str()
+                    .map(|s| !s.trim().is_empty())
+                    .unwrap_or(false);
                 if !answer_ok {
                     errors.push(format!(
                         "Work unit {id}: questions[{i}].answer must be a non-empty string if provided"

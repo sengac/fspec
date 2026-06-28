@@ -3,11 +3,11 @@
 //! Contains the command representation, result types, and argument wrapper
 //! shared across the tool implementation and facades.
 
+use super::process_store::SessionInfo;
 use crate::error::ToolError;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use super::process_store::SessionInfo;
 
 // ============================================================================
 // ExecCommand — String or Argv
@@ -28,14 +28,17 @@ impl ExecCommand {
         match v {
             Value::String(s) => Ok(ExecCommand::Shell(s.clone())),
             Value::Array(arr) => {
-                let args: Result<Vec<String>, _> = arr.iter().map(|item| {
-                    item.as_str()
-                        .map(String::from)
-                        .ok_or_else(|| ToolError::Validation {
-                            tool: "unified_exec",
-                            message: "command array must contain only strings".to_string(),
-                        })
-                }).collect();
+                let args: Result<Vec<String>, _> = arr
+                    .iter()
+                    .map(|item| {
+                        item.as_str()
+                            .map(String::from)
+                            .ok_or_else(|| ToolError::Validation {
+                                tool: "unified_exec",
+                                message: "command array must contain only strings".to_string(),
+                            })
+                    })
+                    .collect();
                 let args = args?;
                 if args.is_empty() {
                     return Err(ToolError::Validation {

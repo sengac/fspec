@@ -40,11 +40,7 @@ pub(crate) fn apply_hunks(content: &str, hunks: &[Hunk], path: &str) -> Result<S
 }
 
 /// Find the position in `file_lines` where a hunk's context_before matches.
-fn find_hunk_position(
-    file_lines: &[String],
-    hunk: &Hunk,
-    path: &str,
-) -> Result<usize, String> {
+fn find_hunk_position(file_lines: &[String], hunk: &Hunk, path: &str) -> Result<usize, String> {
     if hunk.context_before.is_empty() && hunk.removals.is_empty() {
         // Pure insertion at the end of the file
         return Ok(file_lines.len());

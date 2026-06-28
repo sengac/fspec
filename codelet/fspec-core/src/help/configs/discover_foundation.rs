@@ -73,7 +73,11 @@ const EXAMPLES: &[CommandExample] = &[
     },
 ];
 
-const RELATED: &[&str] = &["update-foundation", "show-foundation", "generate-foundation-md"];
+const RELATED: &[&str] = &[
+    "update-foundation",
+    "show-foundation",
+    "generate-foundation-md",
+];
 
 const NOTES: &[&str] = &[
     "AI-driven feedback loop: command guides AI field-by-field with system-reminders",

@@ -9,9 +9,7 @@
 mod hunk;
 mod parser;
 
-use super::bash_binary_guard::{
-    detect_bash_binary_output, format_file_tool_guard_message,
-};
+use super::bash_binary_guard::{detect_bash_binary_output, format_file_tool_guard_message};
 use super::blocklist::check_file_path;
 use super::error::ToolError;
 use super::facade::validate_and_resolve_path;
@@ -35,10 +33,7 @@ use uuid::Uuid;
 /// 1. `validate_and_resolve_path` (session isolation)
 /// 2. `check_file_path` (blocklist)
 /// 3. `require_absolute_path`
-fn validate_patch_path(
-    session_id: Uuid,
-    path: &str,
-) -> Result<std::path::PathBuf, ToolError> {
+fn validate_patch_path(session_id: Uuid, path: &str) -> Result<std::path::PathBuf, ToolError> {
     let resolved = validate_and_resolve_path(session_id, path, "apply_patch")?;
     let p = resolved.to_string_lossy().to_string();
     if let Err(blocked) = check_file_path(&p, session_id) {
@@ -150,12 +145,13 @@ impl rig::tool::Tool for ApplyPatchTool {
                 PatchOp::Update { path, hunks } => {
                     let abs = validate_patch_path(self.session_id, path)?;
                     let p = abs.to_string_lossy().to_string();
-                    let resolved = require_file_exists(&abs, &p)
-                        .await
-                        .map_err(|e| ToolError::Validation {
-                            tool: "apply_patch",
-                            message: e.content,
-                        })?;
+                    let resolved =
+                        require_file_exists(&abs, &p)
+                            .await
+                            .map_err(|e| ToolError::Validation {
+                                tool: "apply_patch",
+                                message: e.content,
+                            })?;
                     // Read as bytes and run binary-guard BEFORE attempting UTF-8
                     // decode (BUG-143). A PDF/PNG target would otherwise surface
                     // only as a generic UTF-8 decode error.
@@ -192,12 +188,13 @@ impl rig::tool::Tool for ApplyPatchTool {
                 PatchOp::Delete { path } => {
                     let abs = validate_patch_path(self.session_id, path)?;
                     let p = abs.to_string_lossy().to_string();
-                    let resolved = require_file_exists(&abs, &p)
-                        .await
-                        .map_err(|e| ToolError::Validation {
-                            tool: "apply_patch",
-                            message: e.content,
-                        })?;
+                    let resolved =
+                        require_file_exists(&abs, &p)
+                            .await
+                            .map_err(|e| ToolError::Validation {
+                                tool: "apply_patch",
+                                message: e.content,
+                            })?;
                     tokio::fs::remove_file(&resolved)
                         .await
                         .map_err(|e| ToolError::File {

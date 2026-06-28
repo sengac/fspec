@@ -128,7 +128,11 @@ fn reset_deletes_the_session_and_returns_session_reset() {
 
     // @step Given a project root tempdir with an active reverse session file on disk
     let ws = Workspace::new();
-    ws.write_session(&executing_session(2, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        2,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
     assert!(ws.session_file().exists());
 
     // @step When I dispatch reverse with reset=true
@@ -183,7 +187,11 @@ fn status_with_active_executing_session_emits_empty_body() {
 
     // @step Given a project root tempdir with an executing session having strategy=A strategyName='Spec Gap Filling' currentStep=2 totalSteps=3 and three gap files
     let ws = Workspace::new();
-    ws.write_session(&executing_session(2, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        2,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
 
     // @step When I dispatch reverse with status=true
     let result = dispatch_command(req(ws.path(), json!({ "status": true })));
@@ -199,7 +207,10 @@ fn status_with_active_executing_session_emits_empty_body() {
     );
 
     // @step Then the session file on disk is left untouched by a read-only status query
-    assert!(ws.session_file().exists(), "status must NOT delete the session");
+    assert!(
+        ws.session_file().exists(),
+        "status must NOT delete the session"
+    );
 }
 
 #[test]
@@ -230,7 +241,11 @@ fn complete_on_an_unfinished_session_is_rejected() {
 
     // @step Given a project root tempdir with an executing session having currentStep=1 and totalSteps=3
     let ws = Workspace::new();
-    ws.write_session(&executing_session(1, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        1,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
 
     // @step When I dispatch reverse with complete=true
     let result = dispatch_command(req(ws.path(), json!({ "complete": true })));
@@ -246,7 +261,10 @@ fn complete_on_an_unfinished_session_is_rejected() {
     );
 
     // @step Then the session file still exists on disk
-    assert!(ws.session_file().exists(), "session must NOT be deleted on failed complete");
+    assert!(
+        ws.session_file().exists(),
+        "session must NOT be deleted on failed complete"
+    );
 }
 
 #[test]
@@ -255,7 +273,11 @@ fn complete_on_a_finished_session_deletes_it_and_returns_success() {
 
     // @step Given a project root tempdir with an executing session having currentStep=3 and totalSteps=3
     let ws = Workspace::new();
-    ws.write_session(&executing_session(3, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        3,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
 
     // @step When I dispatch reverse with complete=true
     let result = dispatch_command(req(ws.path(), json!({ "complete": true })));
@@ -278,7 +300,10 @@ fn complete_on_a_finished_session_deletes_it_and_returns_success() {
     );
 
     // @step Then the session file no longer exists on disk
-    assert!(!ws.session_file().exists(), "session file must be deleted on complete");
+    assert!(
+        !ws.session_file().exists(),
+        "session file must be deleted on complete"
+    );
 }
 
 #[test]
@@ -309,7 +334,11 @@ fn continue_advances_the_step_and_emits_next_file_guidance() {
 
     // @step Given a project root tempdir with an executing session having currentStep=1 totalSteps=3 and gap files [a.test.ts, b.test.ts, c.test.ts]
     let ws = Workspace::new();
-    ws.write_session(&executing_session(1, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        1,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
 
     // @step When I dispatch reverse with continue=true
     let result = dispatch_command(req(ws.path(), json!({ "continue": true })));
@@ -340,7 +369,11 @@ fn continue_advances_the_step_and_emits_next_file_guidance() {
 
     // @step Then the session file on disk shows currentStep=2
     let session = ws.load_session();
-    assert_eq!(session.current_step, Some(2), "currentStep must be persisted as 2");
+    assert_eq!(
+        session.current_step,
+        Some(2),
+        "currentStep must be persisted as 2"
+    );
 }
 
 #[test]
@@ -349,7 +382,11 @@ fn continue_into_the_final_step_instructs_the_agent_to_run_complete() {
 
     // @step Given a project root tempdir with an executing session having currentStep=2 totalSteps=3 and gap files [a.test.ts, b.test.ts, c.test.ts]
     let ws = Workspace::new();
-    ws.write_session(&executing_session(2, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        2,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
 
     // @step When I dispatch reverse with continue=true
     let result = dispatch_command(req(ws.path(), json!({ "continue": true })));
@@ -400,7 +437,11 @@ fn strategy_a_on_a_gap_detection_session_moves_it_to_executing_at_step_1() {
 
     // @step Given a project root tempdir with a gap-detection session whose gaps.files are [a.test.ts, b.test.ts, c.test.ts]
     let ws = Workspace::new();
-    ws.write_session(&gap_detection_session(&["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&gap_detection_session(&[
+        "a.test.ts",
+        "b.test.ts",
+        "c.test.ts",
+    ]));
 
     // @step When I dispatch reverse with strategy='A'
     let result = dispatch_command(req(ws.path(), json!({ "strategy": "A" })));
@@ -467,7 +508,9 @@ fn strategy_d_with_implementation_context_returns_persona_guidance_without_a_ses
 
     // @step Then the rendered output contains the substring "REVERSE ACDD - PERSONA-DRIVEN DISCOVERY"
     assert!(
-        result.data.contains("REVERSE ACDD - PERSONA-DRIVEN DISCOVERY"),
+        result
+            .data
+            .contains("REVERSE ACDD - PERSONA-DRIVEN DISCOVERY"),
         "expected persona-driven header; got:\n{}",
         result.data
     );
@@ -480,7 +523,10 @@ fn strategy_d_with_implementation_context_returns_persona_guidance_without_a_ses
     );
 
     // @step Then no session file was created on disk
-    assert!(!ws.session_file().exists(), "Strategy D persona path must NOT create a session");
+    assert!(
+        !ws.session_file().exists(),
+        "Strategy D persona path must NOT create a session"
+    );
 }
 
 #[test]
@@ -489,7 +535,11 @@ fn existing_session_detected_blocks_a_new_analysis() {
 
     // @step Given a project root tempdir with a parseable executing session having strategy=A strategyName='Spec Gap Filling' currentStep=2 totalSteps=3
     let ws = Workspace::new();
-    ws.write_session(&executing_session(2, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        2,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
 
     // @step When I dispatch reverse with no flags
     let result = dispatch_command(req(ws.path(), json!({})));
@@ -611,7 +661,10 @@ fn dry_run_previews_analysis_without_writing_a_session() {
     );
 
     // @step Then no session file was created on disk
-    assert!(!ws.session_file().exists(), "dry-run must NOT create a session");
+    assert!(
+        !ws.session_file().exists(),
+        "dry-run must NOT create a session"
+    );
 }
 
 #[test]
@@ -620,7 +673,11 @@ fn flag_priority_resets_before_evaluating_status() {
 
     // @step Given a project root tempdir with an active reverse session file on disk
     let ws = Workspace::new();
-    ws.write_session(&executing_session(2, 3, &["a.test.ts", "b.test.ts", "c.test.ts"]));
+    ws.write_session(&executing_session(
+        2,
+        3,
+        &["a.test.ts", "b.test.ts", "c.test.ts"],
+    ));
     assert!(ws.session_file().exists());
 
     // @step When I dispatch reverse with both reset=true and status=true

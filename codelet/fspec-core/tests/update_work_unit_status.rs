@@ -276,7 +276,9 @@ fn specifying_to_testing_blocked_by_prefill_placeholders() {
     // @step And the error message reports the prefill placeholders that must be resolved
     let msg = result.error.as_ref().expect("error must be set");
     assert!(
-        msg.contains("prefill placeholder") || msg.contains("[role]") || msg.contains("placeholder"),
+        msg.contains("prefill placeholder")
+            || msg.contains("[role]")
+            || msg.contains("placeholder"),
         "missing prefill text; got: {msg}"
     );
 
@@ -294,10 +296,7 @@ fn specifying_to_testing_blocked_when_feature_has_no_scenarios() {
     // The unit passes review validation (rules/examples/notes/AST research) so
     // the scenarios-required gate is the one exercised. No @AUTH-001-tagged
     // feature file exists, so checkScenariosExist (tag presence) fails.
-    write_work_units(
-        tmp.path(),
-        &doc("AUTH-001", "specifying", REVIEW_OK),
-    );
+    write_work_units(tmp.path(), &doc("AUTH-001", "specifying", REVIEW_OK));
 
     // @step And its linked feature file has no scenarios
     // (No feature file is tagged @AUTH-001 — tag absence is what the TS
@@ -470,7 +469,6 @@ fn init_git_repo(dir: &Path) {
     }
 }
 
-
 /// Count checkpoint refs under refs/fspec-checkpoints/<id>/ for the given dir.
 fn count_auto_checkpoints(dir: &Path, work_unit_id: &str) -> usize {
     let out = Command::new("git")
@@ -634,7 +632,11 @@ fn transitioning_to_done_compacts_and_cleans_auto_checkpoints() {
         .as_array()
         .cloned()
         .unwrap_or_default();
-    assert_eq!(rules.len(), 1, "compaction must drop the deleted rule; got {data}");
+    assert_eq!(
+        rules.len(),
+        1,
+        "compaction must drop the deleted rule; got {data}"
+    );
     assert_eq!(status_of(&data, "AUTH-001"), "done");
 
     // @step And automatic checkpoints are removed while manual checkpoints are preserved

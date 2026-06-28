@@ -44,7 +44,12 @@ fn fresh_session() -> Session {
     Session::new(None).expect("failed to create test session")
 }
 
-fn make_tool_call(id: &str, call_id: Option<&str>, name: &str, args: serde_json::Value) -> ToolCall {
+fn make_tool_call(
+    id: &str,
+    call_id: Option<&str>,
+    name: &str,
+    args: serde_json::Value,
+) -> ToolCall {
     ToolCall {
         id: id.to_string(),
         call_id: call_id.map(ToString::to_string),
@@ -154,7 +159,9 @@ fn inject_synthetic_result_closes_dangling_tool_call_at_site_486() {
     // @step And the session.messages tail already holds the Assistant(ToolCall) from the tool_calls_buffer flush
     let mut session_messages: Vec<Message> = vec![assistant_tool_call_message(call)];
 
-    let orphans_before = validate_no_orphan_tool_calls(&session_messages).err().unwrap_or_default();
+    let orphans_before = validate_no_orphan_tool_calls(&session_messages)
+        .err()
+        .unwrap_or_default();
     assert_eq!(
         orphans_before.len(),
         1,
@@ -358,12 +365,14 @@ async fn execute_compaction_refuses_on_orphans_remaining() {
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text("second user prompt")),
     });
-    session.messages.push(assistant_tool_call_message(make_tool_call(
-        "dangling_1",
-        Some("call_dangling"),
-        "read",
-        serde_json::json!({"path": "missing.txt"}),
-    )));
+    session
+        .messages
+        .push(assistant_tool_call_message(make_tool_call(
+            "dangling_1",
+            Some("call_dangling"),
+            "read",
+            serde_json::json!({"path": "missing.txt"}),
+        )));
 
     let messages_len_before = session.messages.len();
     session.token_tracker.input_tokens = 42;
@@ -374,14 +383,18 @@ async fn execute_compaction_refuses_on_orphans_remaining() {
     let compaction_flag = Arc::new(AtomicBool::new(false));
 
     // @step When execute_compaction is invoked
-    let result = execute_compaction(&mut session, compaction_flag.clone(), Some("original prompt")).await;
+    let result = execute_compaction(
+        &mut session,
+        compaction_flag.clone(),
+        Some("original prompt"),
+    )
+    .await;
 
     // @step Then it returns an error describing the orphan call_ids
     let err = result.expect_err("execute_compaction must refuse when orphans remain");
     let err_text = format!("{err:#}");
     assert!(
-        err_text.to_lowercase().contains("orphan")
-            && err_text.contains("call_dangling"),
+        err_text.to_lowercase().contains("orphan") && err_text.contains("call_dangling"),
         "error must describe the orphan call_ids, got: {err_text:?}"
     );
 

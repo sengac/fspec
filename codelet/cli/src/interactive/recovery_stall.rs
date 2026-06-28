@@ -70,14 +70,11 @@ pub fn deep_search_wall_clock_timeout() -> Duration {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod tests {
-    use super::*;
     use super::super::error_classifiers::{
-        is_stall_timeout_error,
-        is_transient_network_error,
-        is_truncated_tool_call_error,
-        is_prompt_too_long_error,
-        is_image_content_error,
+        is_image_content_error, is_prompt_too_long_error, is_stall_timeout_error,
+        is_transient_network_error, is_truncated_tool_call_error,
     };
+    use super::*;
 
     // Feature: spec/features/agent-stall-detection.feature
 
@@ -102,7 +99,10 @@ mod tests {
         let result = tokio::time::timeout(timeout_duration, stalled_stream.next()).await;
 
         // The timeout must fire — this is the core mechanism
-        assert!(result.is_err(), "Stall timeout must fire when stream produces no data");
+        assert!(
+            result.is_err(),
+            "Stall timeout must fire when stream produces no data"
+        );
     }
 
     // @step And the agent should transition from running to idle status
@@ -253,7 +253,10 @@ mod tests {
             }
         }
 
-        assert!(stall_detected, "Stall must be detected after partial response");
+        assert!(
+            stall_detected,
+            "Stall must be detected after partial response"
+        );
         assert_eq!(received.len(), 2, "Partial text must be preserved");
         assert_eq!(received[0], "partial-0");
         assert_eq!(received[1], "partial-1");
@@ -278,14 +281,14 @@ mod tests {
         };
 
         // Apply wall-clock timeout (short for test speed)
-        let result = tokio::time::timeout(
-            std::time::Duration::from_millis(50),
-            never_completing,
-        )
-        .await;
+        let result =
+            tokio::time::timeout(std::time::Duration::from_millis(50), never_completing).await;
 
         // Timeout must fire
-        assert!(result.is_err(), "Wall-clock timeout must fire on stalled sub-agent");
+        assert!(
+            result.is_err(),
+            "Wall-clock timeout must fire on stalled sub-agent"
+        );
 
         // The error message returned to the parent must be descriptive
         let timeout_msg = build_deep_search_timeout_message(600);
@@ -391,7 +394,10 @@ mod tests {
     #[test]
     fn stall_timeout_defaults_to_600_seconds() {
         assert_eq!(STALL_TIMEOUT_SECS, 600);
-        assert_eq!(stall_timeout_duration(), std::time::Duration::from_secs(600));
+        assert_eq!(
+            stall_timeout_duration(),
+            std::time::Duration::from_secs(600)
+        );
     }
 
     // ====================================================================

@@ -63,9 +63,7 @@ pub fn load_blocklist_config(project_root: Option<&Path>) -> BlocklistConfig {
             match BlocklistConfig::load_from_file(&system_path) {
                 Ok(config) => system_config = config,
                 Err(e) => {
-                    error!(
-                        "Failed to load system blocklist config from {system_path:?}: {e}"
-                    );
+                    error!("Failed to load system blocklist config from {system_path:?}: {e}");
                 }
             }
         }
@@ -78,9 +76,7 @@ pub fn load_blocklist_config(project_root: Option<&Path>) -> BlocklistConfig {
             match BlocklistConfig::load_from_file(&project_path) {
                 Ok(config) => project_config = config,
                 Err(e) => {
-                    error!(
-                        "Failed to load project blocklist config from {project_path:?}: {e}"
-                    );
+                    error!("Failed to load project blocklist config from {project_path:?}: {e}");
                 }
             }
         }
@@ -102,15 +98,15 @@ pub fn init_blocklist(project_root: Option<&Path>) {
         };
         *root_guard = project_root.map(Path::to_path_buf);
     }
-    
+
     let config = load_blocklist_config(project_root);
-    
+
     let matcher = if config.rules.is_empty() {
         None
     } else {
         Some(BlocklistMatcher::new(config))
     };
-    
+
     let mut guard = match BLOCKLIST_MATCHER.write() {
         Ok(guard) => guard,
         Err(poisoned) => poisoned.into_inner(),
@@ -132,56 +128,61 @@ fn get_project_root() -> Option<PathBuf> {
 /// Reloads config on every check to pick up changes without restart.
 pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), BlockedError> {
     use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-    
+
     let project_root = get_project_root();
     let config = load_blocklist_config(project_root.as_deref());
-    
+
     if config.rules.is_empty() {
         return Ok(());
     }
-    
+
     let matcher = BlocklistMatcher::new(config);
     let result = matcher.check_command(command);
-    
+
     // Hard block - immediately reject
     if result.blocked {
         return Err(BlockedError {
-            reason: result.reason.unwrap_or_else(|| "Command blocked".to_string()),
+            reason: result
+                .reason
+                .unwrap_or_else(|| "Command blocked".to_string()),
             guidance: result.guidance,
             rule_id: result.matched_rule_id.unwrap_or_default(),
         });
     }
-    
+
     // Prompt case (not blocked, not allowed) - user decision required
     if !result.allowed {
         let pattern = result.matched_rule_id.clone().unwrap_or_default();
-        
+
         // Check session allowances first
         if is_session_allowed(&pattern) {
             return Ok(());
         }
-        
+
         // Pause for user decision
-        let response = pause_for_user(session_id, PauseRequest {
-            kind: PauseKind::Triple,
-            tool_name: "Bash".to_string(),
-            message: result.reason.unwrap_or_else(|| "Command requires approval".to_string()),
-            details: Some(command.to_string()),
-        });
-        
+        let response = pause_for_user(
+            session_id,
+            PauseRequest {
+                kind: PauseKind::Triple,
+                tool_name: "Bash".to_string(),
+                message: result
+                    .reason
+                    .unwrap_or_else(|| "Command requires approval".to_string()),
+                details: Some(command.to_string()),
+            },
+        );
+
         match response {
             PauseResponse::AllowOnce => Ok(()),
             PauseResponse::AllowSession => {
                 allow_for_session(&pattern);
                 Ok(())
             }
-            PauseResponse::Denied | PauseResponse::Interrupted => {
-                Err(BlockedError {
-                    reason: "User denied access".to_string(),
-                    guidance: result.guidance,
-                    rule_id: pattern,
-                })
-            }
+            PauseResponse::Denied | PauseResponse::Interrupted => Err(BlockedError {
+                reason: "User denied access".to_string(),
+                guidance: result.guidance,
+                rule_id: pattern,
+            }),
             _ => Ok(()),
         }
     } else {
@@ -195,56 +196,61 @@ pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), B
 /// Used by Read, Write, and Edit tools to protect sensitive files.
 pub fn check_file_path(file_path: &str, session_id: uuid::Uuid) -> Result<(), BlockedError> {
     use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-    
+
     let project_root = get_project_root();
     let config = load_blocklist_config(project_root.as_deref());
-    
+
     if config.rules.is_empty() {
         return Ok(());
     }
-    
+
     let matcher = BlocklistMatcher::new(config);
     let result = matcher.check_command(file_path);
-    
+
     // Hard block - immediately reject
     if result.blocked {
         return Err(BlockedError {
-            reason: result.reason.unwrap_or_else(|| "File access blocked".to_string()),
+            reason: result
+                .reason
+                .unwrap_or_else(|| "File access blocked".to_string()),
             guidance: result.guidance,
             rule_id: result.matched_rule_id.unwrap_or_default(),
         });
     }
-    
+
     // Prompt case (not blocked, not allowed) - user decision required
     if !result.allowed {
         let pattern = result.matched_rule_id.clone().unwrap_or_default();
-        
+
         // Check session allowances first
         if is_session_allowed(&pattern) {
             return Ok(());
         }
-        
+
         // Pause for user decision
-        let response = pause_for_user(session_id, PauseRequest {
-            kind: PauseKind::Triple,
-            tool_name: "Read".to_string(),
-            message: result.reason.unwrap_or_else(|| "Sensitive file access".to_string()),
-            details: Some(file_path.to_string()),
-        });
-        
+        let response = pause_for_user(
+            session_id,
+            PauseRequest {
+                kind: PauseKind::Triple,
+                tool_name: "Read".to_string(),
+                message: result
+                    .reason
+                    .unwrap_or_else(|| "Sensitive file access".to_string()),
+                details: Some(file_path.to_string()),
+            },
+        );
+
         match response {
             PauseResponse::AllowOnce => Ok(()),
             PauseResponse::AllowSession => {
                 allow_for_session(&pattern);
                 Ok(())
             }
-            PauseResponse::Denied | PauseResponse::Interrupted => {
-                Err(BlockedError {
-                    reason: "User denied access".to_string(),
-                    guidance: result.guidance,
-                    rule_id: pattern,
-                })
-            }
+            PauseResponse::Denied | PauseResponse::Interrupted => Err(BlockedError {
+                reason: "User denied access".to_string(),
+                guidance: result.guidance,
+                rule_id: pattern,
+            }),
             _ => Ok(()),
         }
     } else {
@@ -261,7 +267,7 @@ pub fn check_command_raw(command: &str) -> CheckResult {
         Ok(guard) => guard,
         Err(poisoned) => poisoned.into_inner(),
     };
-    
+
     if let Some(ref matcher) = *guard {
         matcher.check_command(command)
     } else {
@@ -341,16 +347,22 @@ mod tests {
     #[serial]
     fn test_load_empty_config_when_no_files() {
         let tmp = TempDir::new().expect("failed to create temp dir");
-        
+
         // Initialize blocklist with temp dir (no project blocklist.json)
         init_blocklist(Some(tmp.path()));
-        
+
         // The matcher should match system config only (if any)
-        // We test that no project config is loaded by checking that 
+        // We test that no project config is loaded by checking that
         // a command not in system config is not blocked
-        let result = check_bash_command("this_command_does_not_exist_in_any_blocklist", uuid::Uuid::nil());
-        assert!(result.is_ok(), "Random command should not be blocked when no project config exists");
-        
+        let result = check_bash_command(
+            "this_command_does_not_exist_in_any_blocklist",
+            uuid::Uuid::nil(),
+        );
+        assert!(
+            result.is_ok(),
+            "Random command should not be blocked when no project config exists"
+        );
+
         // Cleanup
         clear_session_allowances();
         init_blocklist(None);
@@ -360,26 +372,32 @@ mod tests {
     #[serial]
     fn test_load_project_config() {
         let tmp = TempDir::new().expect("failed to create temp dir");
-        
-        create_test_config(tmp.path(), vec![BlocklistRule {
-            id: "test-rule".to_string(),
-            pattern: "^testcmd123".to_string(),
-            action: BlocklistAction::Block,
-            reason: "Test reason".to_string(),
-            guidance: None,
-        }]);
-        
+
+        create_test_config(
+            tmp.path(),
+            vec![BlocklistRule {
+                id: "test-rule".to_string(),
+                pattern: "^testcmd123".to_string(),
+                action: BlocklistAction::Block,
+                reason: "Test reason".to_string(),
+                guidance: None,
+            }],
+        );
+
         // Initialize blocklist with temp dir containing our test config
         init_blocklist(Some(tmp.path()));
-        
+
         // The project rule should be loaded and active
         let result = check_bash_command("testcmd123 arg1", uuid::Uuid::nil());
-        assert!(result.is_err(), "Command matching project rule should be blocked");
-        
+        assert!(
+            result.is_err(),
+            "Command matching project rule should be blocked"
+        );
+
         let blocked = result.unwrap_err();
         assert_eq!(blocked.rule_id, "test-rule");
         assert!(blocked.reason.contains("Test reason"));
-        
+
         // Cleanup
         clear_session_allowances();
         init_blocklist(None);
@@ -392,7 +410,7 @@ mod tests {
             guidance: Some("Use git switch instead.".to_string()),
             rule_id: "git-checkout-block".to_string(),
         };
-        
+
         assert_eq!(
             error.to_string(),
             "Blocked: git checkout is deprecated Use git switch instead."
@@ -406,7 +424,7 @@ mod tests {
             guidance: None,
             rule_id: "dangerous".to_string(),
         };
-        
+
         assert_eq!(error.to_string(), "Blocked: Dangerous command");
     }
 
@@ -421,22 +439,22 @@ mod tests {
     fn test_session_allowances_add_and_check() {
         // Start with clean state for test isolation
         clear_session_allowances();
-        
+
         // @step Given a blocklist rule prompts for "npm install" commands
         let pattern = "^npm\\s+install";
-        
+
         // @step When the AI runs "npm install" and user allows for session
         allow_for_session(pattern);
-        
+
         // @step Then the AI can run "npm install lodash" without prompting
         assert!(is_session_allowed(pattern));
-        
+
         // @step When the user exits and restarts the TUI
         clear_session_allowances();
-        
+
         // @step And the AI runs "npm install axios"
         // (pattern check after restart)
-        
+
         // @step Then the user should be prompted again
         assert!(!is_session_allowed(pattern));
     }
@@ -447,20 +465,20 @@ mod tests {
     fn test_session_allowances_pattern_matching() {
         // Start with clean state for test isolation
         clear_session_allowances();
-        
+
         // @step Given a blocklist rule exists prompting for "~/.ssh" access
         let pattern = "~/.ssh";
-        
+
         // @step And the user selects "Allow Session"
         allow_for_session(pattern);
-        
+
         // @step When the AI tries to read "~/.ssh/known_hosts" later in the same session
         // @step Then the file should be read without prompting (same pattern)
         assert!(is_session_allowed(pattern));
-        
+
         // Different pattern should NOT be allowed
         assert!(!is_session_allowed("~/.aws"));
-        
+
         // Cleanup
         clear_session_allowances();
     }
@@ -471,17 +489,17 @@ mod tests {
     fn test_session_allowances_multiple_patterns() {
         // Start with clean state for test isolation
         clear_session_allowances();
-        
+
         // Allow multiple patterns
         allow_for_session("~/.ssh");
         allow_for_session(".env");
         allow_for_session("~/.fspec");
-        
+
         // All should be allowed
         assert!(is_session_allowed("~/.ssh"));
         assert!(is_session_allowed(".env"));
         assert!(is_session_allowed("~/.fspec"));
-        
+
         // Cleanup
         clear_session_allowances();
     }
@@ -492,14 +510,14 @@ mod tests {
     fn test_session_allowances_isolation() {
         // Start with clean state
         clear_session_allowances();
-        
+
         // Nothing should be allowed
         assert!(!is_session_allowed("any-pattern"));
-        
+
         // Add and verify
         allow_for_session("test-pattern");
         assert!(is_session_allowed("test-pattern"));
-        
+
         // Cleanup
         clear_session_allowances();
     }
@@ -514,69 +532,78 @@ mod tests {
     #[serial]
     fn test_prompt_rule_bypassed_when_session_allowed() {
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
-        use std::sync::Arc;
         use std::sync::atomic::{AtomicBool, Ordering};
-        
+        use std::sync::Arc;
+
         // Start with clean state
         clear_session_allowances();
         set_pause_handler(uuid::Uuid::nil(), None);
-        
+
         // Track if pause handler was called
         let pause_called = Arc::new(AtomicBool::new(false));
         let pause_called_clone = pause_called.clone();
-        
+
         // Set up a pause handler that tracks calls
         let handler: PauseHandler = Arc::new(move |_| {
             pause_called_clone.store(true, Ordering::SeqCst);
             PauseResponse::AllowOnce
         });
         set_pause_handler(uuid::Uuid::nil(), Some(handler));
-        
+
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
-        create_test_config(tmp.path(), vec![BlocklistRule {
-            id: "env-prompt".to_string(),
-            pattern: r"\.env".to_string(),
-            action: BlocklistAction::Prompt,
-            reason: "Environment files may contain secrets".to_string(),
-            guidance: None,
-        }]);
+        create_test_config(
+            tmp.path(),
+            vec![BlocklistRule {
+                id: "env-prompt".to_string(),
+                pattern: r"\.env".to_string(),
+                action: BlocklistAction::Prompt,
+                reason: "Environment files may contain secrets".to_string(),
+                guidance: None,
+            }],
+        );
         init_blocklist(Some(tmp.path()));
-        
+
         // @step And the user previously allowed ".env" pattern for the session
         allow_for_session("env-prompt");
-        
+
         // @step When the AI attempts to read "~/.env"
         let result = check_file_path("~/.env", uuid::Uuid::nil());
-        
+
         // Clean up before assertions
         set_pause_handler(uuid::Uuid::nil(), None);
         clear_session_allowances();
         init_blocklist(None);
-        
+
         // @step Then the file should be read without prompting
-        assert!(result.is_ok(), "File should be allowed when session allowance exists");
-        assert!(!pause_called.load(Ordering::SeqCst), "Pause handler should NOT be called when session allowance exists");
+        assert!(
+            result.is_ok(),
+            "File should be allowed when session allowance exists"
+        );
+        assert!(
+            !pause_called.load(Ordering::SeqCst),
+            "Pause handler should NOT be called when session allowance exists"
+        );
     }
 
     /// Scenario: User allows sensitive file access once
     #[test]
     #[serial]
     fn test_prompt_rule_allow_once_response() {
-        use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse, PauseKind};
-        use std::sync::Arc;
+        use crate::tool_pause::{set_pause_handler, PauseHandler, PauseKind, PauseResponse};
         use std::sync::atomic::{AtomicBool, Ordering};
-        
+        use std::sync::Arc;
+
         // Start with clean state
         clear_session_allowances();
         set_pause_handler(uuid::Uuid::nil(), None);
-        
+
         // Track pause handler calls and verify Triple kind
         let pause_called = Arc::new(AtomicBool::new(false));
         let pause_called_clone = pause_called.clone();
         let was_triple = Arc::new(AtomicBool::new(false));
         let was_triple_clone = was_triple.clone();
-        
+
         // @step When the user presses Enter to select "Allow Once"
         let handler: PauseHandler = Arc::new(move |req| {
             pause_called_clone.store(true, Ordering::SeqCst);
@@ -586,42 +613,57 @@ mod tests {
             PauseResponse::AllowOnce
         });
         set_pause_handler(uuid::Uuid::nil(), Some(handler));
-        
+
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
-        create_test_config(tmp.path(), vec![BlocklistRule {
-            id: "env-prompt".to_string(),
-            pattern: r"\.env".to_string(),
-            action: BlocklistAction::Prompt,
-            reason: "Sensitive file access".to_string(),
-            guidance: None,
-        }]);
+        create_test_config(
+            tmp.path(),
+            vec![BlocklistRule {
+                id: "env-prompt".to_string(),
+                pattern: r"\.env".to_string(),
+                action: BlocklistAction::Prompt,
+                reason: "Sensitive file access".to_string(),
+                guidance: None,
+            }],
+        );
         init_blocklist(Some(tmp.path()));
-        
+
         // @step And the AI session is active
         // (session is implicitly active when we can call check_file_path)
-        
+
         // @step When the AI attempts to read "~/.env"
         let result = check_file_path("~/.env", uuid::Uuid::nil());
-        
+
         // Clean up
         set_pause_handler(uuid::Uuid::nil(), None);
         init_blocklist(None);
-        
+
         // @step Then the TUI should show an inline triple pause with message "Sensitive file access (.env)"
-        assert!(pause_called.load(Ordering::SeqCst), "Pause handler should be called for prompt rule");
-        
+        assert!(
+            pause_called.load(Ordering::SeqCst),
+            "Pause handler should be called for prompt rule"
+        );
+
         // @step And the pause should display three options: Allow Once, Allow Session, Deny
-        assert!(was_triple.load(Ordering::SeqCst), "Pause should be PauseKind::Triple");
-        
+        assert!(
+            was_triple.load(Ordering::SeqCst),
+            "Pause should be PauseKind::Triple"
+        );
+
         // @step Then the file should be read successfully
-        assert!(result.is_ok(), "File should be allowed when user selects AllowOnce");
-        
+        assert!(
+            result.is_ok(),
+            "File should be allowed when user selects AllowOnce"
+        );
+
         // @step When the AI attempts to read "~/.env" again
         // @step Then the TUI should prompt again
         // (AllowOnce should NOT add to session allowances, so next access prompts again)
-        assert!(!is_session_allowed("env-prompt"), "AllowOnce should NOT add to session allowances");
-        
+        assert!(
+            !is_session_allowed("env-prompt"),
+            "AllowOnce should NOT add to session allowances"
+        );
+
         // Cleanup
         clear_session_allowances();
     }
@@ -632,46 +674,55 @@ mod tests {
     fn test_prompt_rule_allow_session_response() {
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
         use std::sync::Arc;
-        
-        // Start with clean state  
+
+        // Start with clean state
         clear_session_allowances();
         set_pause_handler(uuid::Uuid::nil(), None);
-        
+
         // @step When the user navigates right and selects "Allow Session"
         let handler: PauseHandler = Arc::new(|_| PauseResponse::AllowSession);
         set_pause_handler(uuid::Uuid::nil(), Some(handler));
-        
+
         // @step Given a blocklist rule with action "prompt" exists for "~/.ssh" access
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
-        create_test_config(tmp.path(), vec![BlocklistRule {
-            id: "ssh-prompt".to_string(),
-            pattern: r"\.ssh".to_string(),
-            action: BlocklistAction::Prompt,
-            reason: "SSH directory access".to_string(),
-            guidance: None,
-        }]);
+        create_test_config(
+            tmp.path(),
+            vec![BlocklistRule {
+                id: "ssh-prompt".to_string(),
+                pattern: r"\.ssh".to_string(),
+                action: BlocklistAction::Prompt,
+                reason: "SSH directory access".to_string(),
+                guidance: None,
+            }],
+        );
         init_blocklist(Some(tmp.path()));
-        
+
         // @step And the AI session is active
         // (session is implicitly active when we can call check_file_path)
-        
+
         // @step When the AI attempts to read "~/.ssh/config"
         let result = check_file_path("~/.ssh/config", uuid::Uuid::nil());
-        
+
         // Clean up handler but NOT session allowances yet
         set_pause_handler(uuid::Uuid::nil(), None);
         init_blocklist(None);
-        
+
         // @step Then the TUI should show an inline triple pause
         // (tested by pause handler being called - verified in allow_once test)
-        
+
         // @step Then the file should be read successfully
-        assert!(result.is_ok(), "File should be allowed when user selects AllowSession");
-        
+        assert!(
+            result.is_ok(),
+            "File should be allowed when user selects AllowSession"
+        );
+
         // @step When the AI attempts to read "~/.ssh/known_hosts" later
         // @step Then the file should be read without prompting
-        assert!(is_session_allowed("ssh-prompt"), "AllowSession should add pattern to session allowances");
-        
+        assert!(
+            is_session_allowed("ssh-prompt"),
+            "AllowSession should add pattern to session allowances"
+        );
+
         // Cleanup
         clear_session_allowances();
     }
@@ -682,47 +733,56 @@ mod tests {
     fn test_prompt_rule_deny_response() {
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
         use std::sync::Arc;
-        
+
         // Start with clean state
         clear_session_allowances();
         set_pause_handler(uuid::Uuid::nil(), None);
-        
+
         // @step When the user navigates to "Deny" and presses Enter
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
         set_pause_handler(uuid::Uuid::nil(), Some(handler));
-        
+
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
-        create_test_config(tmp.path(), vec![BlocklistRule {
-            id: "env-prompt".to_string(),
-            pattern: r"\.env".to_string(),
-            action: BlocklistAction::Prompt,
-            reason: "Environment file".to_string(),
-            guidance: None,
-        }]);
+        create_test_config(
+            tmp.path(),
+            vec![BlocklistRule {
+                id: "env-prompt".to_string(),
+                pattern: r"\.env".to_string(),
+                action: BlocklistAction::Prompt,
+                reason: "Environment file".to_string(),
+                guidance: None,
+            }],
+        );
         init_blocklist(Some(tmp.path()));
-        
+
         // @step And the AI session is active
         // (session is implicitly active when we can call check_file_path)
-        
+
         // @step When the AI attempts to read "~/.env"
         let result = check_file_path("~/.env", uuid::Uuid::nil());
-        
+
         // Clean up
         set_pause_handler(uuid::Uuid::nil(), None);
         clear_session_allowances();
         init_blocklist(None);
-        
+
         // @step Then the TUI should show an inline triple pause
         // (tested by pause handler being called - verified in allow_once test)
-        
+
         // @step Then the read should be blocked
-        assert!(result.is_err(), "File should be blocked when user selects Deny");
-        
+        assert!(
+            result.is_err(),
+            "File should be blocked when user selects Deny"
+        );
+
         // @step And the AI should receive an error message "User denied access to sensitive file"
         let err = result.unwrap_err();
-        assert!(err.reason.contains("denied") || err.reason.contains("Denied"), 
-                "Error should indicate user denied access, got: {}", err.reason);
+        assert!(
+            err.reason.contains("denied") || err.reason.contains("Denied"),
+            "Error should indicate user denied access, got: {}",
+            err.reason
+        );
     }
 
     /// Scenario: Session allowances cleared on TUI restart
@@ -730,52 +790,64 @@ mod tests {
     #[serial]
     fn test_session_allowances_cleared_on_restart() {
         use crate::tool_pause::{set_pause_handler, PauseHandler, PauseResponse};
-        use std::sync::Arc;
         use std::sync::atomic::{AtomicUsize, Ordering};
-        
+        use std::sync::Arc;
+
         // Start with clean state
         clear_session_allowances();
         set_pause_handler(uuid::Uuid::nil(), None);
-        
+
         // Track how many times pause handler is called
         let pause_count = Arc::new(AtomicUsize::new(0));
         let pause_count_clone = pause_count.clone();
-        
+
         let handler: PauseHandler = Arc::new(move |_| {
             pause_count_clone.fetch_add(1, Ordering::SeqCst);
             PauseResponse::AllowSession
         });
         set_pause_handler(uuid::Uuid::nil(), Some(handler));
-        
+
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
-        create_test_config(tmp.path(), vec![BlocklistRule {
-            id: "env-prompt".to_string(),
-            pattern: r"\.env".to_string(),
-            action: BlocklistAction::Prompt,
-            reason: "Environment file".to_string(),
-            guidance: None,
-        }]);
+        create_test_config(
+            tmp.path(),
+            vec![BlocklistRule {
+                id: "env-prompt".to_string(),
+                pattern: r"\.env".to_string(),
+                action: BlocklistAction::Prompt,
+                reason: "Environment file".to_string(),
+                guidance: None,
+            }],
+        );
         init_blocklist(Some(tmp.path()));
-        
+
         // @step And the user allowed ".env" pattern for the session
         allow_for_session("env-prompt");
-        
+
         // Verify initial state - should be allowed
-        assert!(is_session_allowed("env-prompt"), "Pattern should be allowed initially");
-        
+        assert!(
+            is_session_allowed("env-prompt"),
+            "Pattern should be allowed initially"
+        );
+
         // @step When the user restarts the TUI
         clear_session_allowances();
-        
+
         // Verify allowance was cleared
-        assert!(!is_session_allowed("env-prompt"), "Pattern should NOT be allowed after restart");
-        
+        assert!(
+            !is_session_allowed("env-prompt"),
+            "Pattern should NOT be allowed after restart"
+        );
+
         // @step And the AI attempts to read "~/.env"
         let _result = check_file_path("~/.env", uuid::Uuid::nil());
-        
+
         // @step Then the TUI should prompt again
-        assert!(pause_count.load(Ordering::SeqCst) > 0, "Pause handler should be called after restart");
-        
+        assert!(
+            pause_count.load(Ordering::SeqCst) > 0,
+            "Pause handler should be called after restart"
+        );
+
         // Cleanup
         set_pause_handler(uuid::Uuid::nil(), None);
         clear_session_allowances();

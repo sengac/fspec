@@ -36,7 +36,11 @@ async fn test_recent_sessions_for_discovery() {
                 .map(|i| SessionSummary {
                     session_id: format!("session-{i}"),
                     name: format!("Session {i}"),
-                    work_unit_id: if i == 0 { Some("AMGR-001".to_string()) } else { None },
+                    work_unit_id: if i == 0 {
+                        Some("AMGR-001".to_string())
+                    } else {
+                        None
+                    },
                     created_at: Utc::now(),
                     updated_at: Utc::now(),
                     message_count: 10 + i,
@@ -48,7 +52,9 @@ async fn test_recent_sessions_for_discovery() {
                 .collect();
             SessionSearchResult::Recent { sessions }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -110,7 +116,9 @@ async fn test_recent_defaults_to_10() {
                 .collect();
             SessionSearchResult::Recent { sessions }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -148,7 +156,9 @@ async fn test_search_no_matches() {
             query,
             message: "No matches found".to_string(),
         },
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -196,16 +206,23 @@ async fn test_show_nonexistent_session() {
     // @step Given no session exists with ID "00000000-0000-0000-0000-000000000000"
     let session_id = Uuid::new_v4();
     let handler: SessionSearchHandler = Arc::new(|action, _sid| match action {
-        SessionSearchAction::Show { session_id: show_id, .. } => {
+        SessionSearchAction::Show {
+            session_id: show_id,
+            ..
+        } => {
             if show_id.as_deref() == Some("00000000-0000-0000-0000-000000000000") {
                 SessionSearchResult::Error {
                     message: "Session 00000000-0000-0000-0000-000000000000 not found".to_string(),
                 }
             } else {
-                SessionSearchResult::Error { message: "unexpected".to_string() }
+                SessionSearchResult::Error {
+                    message: "unexpected".to_string(),
+                }
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -244,9 +261,8 @@ async fn test_output_is_structured_json() {
 
     // @step Given the persistence layer contains sessions
     let session_id = Uuid::new_v4();
-    let handler: SessionSearchHandler = Arc::new(|_, _| SessionSearchResult::Recent {
-        sessions: vec![],
-    });
+    let handler: SessionSearchHandler =
+        Arc::new(|_, _| SessionSearchResult::Recent { sessions: vec![] });
     set_session_search_handler(session_id, Some(handler));
 
     // @step When any SessionSearch action is called
@@ -282,13 +298,16 @@ fn test_uses_persistence_layer_directly() {
                 SessionSearchAction::Recent { .. } => {
                     SessionSearchResult::Recent { sessions: vec![] }
                 }
-                _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+                _ => SessionSearchResult::Error {
+                    message: "unexpected".to_string(),
+                },
             }
         });
         set_session_search_handler(session_id, Some(handler));
 
         // @step When any SessionSearch action is invoked
-        let result = execute_session_search(session_id, SessionSearchAction::Recent { count: None });
+        let result =
+            execute_session_search(session_id, SessionSearchAction::Recent { count: None });
 
         // @step Then data is read from MessageStore, HistoryStore, and BlobStore directly
         assert!(called.load(Ordering::SeqCst));
@@ -336,9 +355,8 @@ fn test_handler_concurrent_sessions_isolated() {
         let session_a = Uuid::new_v4();
         let session_b = Uuid::new_v4();
 
-        let handler_a: SessionSearchHandler = Arc::new(|_, _| SessionSearchResult::Recent {
-            sessions: vec![],
-        });
+        let handler_a: SessionSearchHandler =
+            Arc::new(|_, _| SessionSearchResult::Recent { sessions: vec![] });
         set_session_search_handler(session_a, Some(handler_a));
 
         let handler_b: SessionSearchHandler = Arc::new(|_, _| SessionSearchResult::Error {
@@ -347,7 +365,8 @@ fn test_handler_concurrent_sessions_isolated() {
         set_session_search_handler(session_b, Some(handler_b));
 
         // @step When any SessionSearch action is invoked
-        let result_a = execute_session_search(session_a, SessionSearchAction::Recent { count: None });
+        let result_a =
+            execute_session_search(session_a, SessionSearchAction::Recent { count: None });
 
         // @step Then data is read from MessageStore, HistoryStore, and BlobStore directly
         match result_a {
@@ -355,7 +374,8 @@ fn test_handler_concurrent_sessions_isolated() {
             _ => panic!("Expected Recent from session_a"),
         }
 
-        let result_b = execute_session_search(session_b, SessionSearchAction::Recent { count: None });
+        let result_b =
+            execute_session_search(session_b, SessionSearchAction::Recent { count: None });
         match result_b {
             SessionSearchResult::Error { message } => assert_eq!(message, "from_b"),
             _ => panic!("Expected Error from session_b"),
@@ -363,7 +383,8 @@ fn test_handler_concurrent_sessions_isolated() {
 
         // @step And no Python or bash subprocess is spawned
         set_session_search_handler(session_b, None);
-        let result_a2 = execute_session_search(session_a, SessionSearchAction::Recent { count: None });
+        let result_a2 =
+            execute_session_search(session_a, SessionSearchAction::Recent { count: None });
         match result_a2 {
             SessionSearchResult::Recent { .. } => {}
             _ => panic!("Expected Recent from session_a after removing b"),
@@ -418,7 +439,11 @@ fn test_action_deserialization() {
         _ => panic!("Expected Recent"),
     }
     match search.action {
-        SessionSearchAction::Search { query, context_turns, .. } => {
+        SessionSearchAction::Search {
+            query,
+            context_turns,
+            ..
+        } => {
             assert_eq!(query, "RLM-001");
             assert_eq!(context_turns, Some(3));
         }
@@ -487,7 +512,9 @@ async fn test_search_by_keyword_across_all_content() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -513,7 +540,11 @@ async fn test_search_by_keyword_across_all_content() {
 
     let parsed: SessionSearchResult = serde_json::from_str(&output).unwrap();
     match parsed {
-        SessionSearchResult::Search { query, total_matches, groups } => {
+        SessionSearchResult::Search {
+            query,
+            total_matches,
+            groups,
+        } => {
             assert_eq!(query, "RLM-001");
 
             // @step Then the result contains matches from user messages, assistant messages, and tool call content
@@ -549,7 +580,11 @@ async fn test_search_with_context_turns() {
     // @step Given a session contains a message mentioning "RLM-001" at turn 5
     let session_id = Uuid::new_v4();
     let handler: SessionSearchHandler = Arc::new(|action, _sid| match action {
-        SessionSearchAction::Search { query, context_turns, .. } => {
+        SessionSearchAction::Search {
+            query,
+            context_turns,
+            ..
+        } => {
             assert_eq!(context_turns, Some(3));
             SessionSearchResult::Search {
                 query,
@@ -573,7 +608,11 @@ async fn test_search_with_context_turns() {
                         (2..=8)
                             .map(|i| ContextTurn {
                                 turn_index: i,
-                                role: if i % 2 == 0 { "user".to_string() } else { "assistant".to_string() },
+                                role: if i % 2 == 0 {
+                                    "user".to_string()
+                                } else {
+                                    "assistant".to_string()
+                                },
                                 content: format!("Turn {i} content"),
                                 is_match: i == 5,
                             })
@@ -582,7 +621,9 @@ async fn test_search_with_context_turns() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -636,7 +677,11 @@ async fn test_search_defaults_to_current_project() {
     // @step And the current project is "/project-a"
     let session_id = Uuid::new_v4();
     let handler: SessionSearchHandler = Arc::new(|action, _sid| match action {
-        SessionSearchAction::Search { query, all_projects, .. } => {
+        SessionSearchAction::Search {
+            query,
+            all_projects,
+            ..
+        } => {
             // Handler verifies all_projects is None/false and only returns project-a
             assert!(all_projects.is_none() || all_projects == Some(false));
             SessionSearchResult::Search {
@@ -661,7 +706,9 @@ async fn test_search_defaults_to_current_project() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -711,7 +758,11 @@ async fn test_search_across_all_projects() {
     // @step And the current project is "/project-a"
     let session_id = Uuid::new_v4();
     let handler: SessionSearchHandler = Arc::new(|action, _sid| match action {
-        SessionSearchAction::Search { query, all_projects, .. } => {
+        SessionSearchAction::Search {
+            query,
+            all_projects,
+            ..
+        } => {
             assert_eq!(all_projects, Some(true));
             SessionSearchResult::Search {
                 query,
@@ -754,7 +805,9 @@ async fn test_search_across_all_projects() {
                 ],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -782,7 +835,10 @@ async fn test_search_across_all_projects() {
     let parsed: SessionSearchResult = serde_json::from_str(&output).unwrap();
     match parsed {
         SessionSearchResult::Search { groups, .. } => {
-            let projects: Vec<&str> = groups.iter().map(|g| g.matches[0].project.as_str()).collect();
+            let projects: Vec<&str> = groups
+                .iter()
+                .map(|g| g.matches[0].project.as_str())
+                .collect();
             assert!(projects.contains(&"/project-a"));
             assert!(projects.contains(&"/project-b"));
         }
@@ -802,7 +858,9 @@ async fn test_search_with_relative_time_filter() {
     let session_id = Uuid::new_v4();
     let two_hours_ago = Utc::now() - chrono::Duration::hours(2);
     let handler: SessionSearchHandler = Arc::new(move |action, _sid| match action {
-        SessionSearchAction::Search { query, last_hours, .. } => {
+        SessionSearchAction::Search {
+            query, last_hours, ..
+        } => {
             assert_eq!(last_hours, Some(24));
             // Handler simulates filtering: only returns the 2-hours-ago match
             SessionSearchResult::Search {
@@ -827,7 +885,9 @@ async fn test_search_with_relative_time_filter() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -854,7 +914,11 @@ async fn test_search_with_relative_time_filter() {
     // @step Then results only include matches from the last 24 hours
     let parsed: SessionSearchResult = serde_json::from_str(&output).unwrap();
     match parsed {
-        SessionSearchResult::Search { groups, total_matches, .. } => {
+        SessionSearchResult::Search {
+            groups,
+            total_matches,
+            ..
+        } => {
             assert_eq!(total_matches, 1);
             assert_eq!(groups[0].session_id, "recent-sess");
         }
@@ -897,7 +961,9 @@ async fn test_search_with_absolute_time_filter() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -986,7 +1052,9 @@ async fn test_search_uses_ripgrep_regex() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1013,9 +1081,17 @@ async fn test_search_uses_ripgrep_regex() {
     // @step Then all three variations are matched
     let parsed: SessionSearchResult = serde_json::from_str(&output).unwrap();
     match parsed {
-        SessionSearchResult::Search { total_matches, groups, .. } => {
+        SessionSearchResult::Search {
+            total_matches,
+            groups,
+            ..
+        } => {
             assert_eq!(total_matches, 3);
-            let contents: Vec<&str> = groups[0].matches.iter().map(|m| m.matched_content.as_str()).collect();
+            let contents: Vec<&str> = groups[0]
+                .matches
+                .iter()
+                .map(|m| m.matched_content.as_str())
+                .collect();
             assert!(contents.iter().any(|c| c.contains("DeepSearch")));
             assert!(contents.iter().any(|c| c.contains("deep_search")));
             assert!(contents.iter().any(|c| c.contains("DEEPSEARCH")));
@@ -1065,7 +1141,9 @@ async fn test_search_defaults_to_limit_20() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1092,7 +1170,11 @@ async fn test_search_defaults_to_limit_20() {
     // @step Then the result contains at most 20 matches
     let parsed: SessionSearchResult = serde_json::from_str(&output).unwrap();
     match parsed {
-        SessionSearchResult::Search { total_matches, groups, .. } => {
+        SessionSearchResult::Search {
+            total_matches,
+            groups,
+            ..
+        } => {
             let total_in_groups: usize = groups.iter().map(|g| g.matches.len()).sum();
             assert!(total_in_groups <= DEFAULT_SEARCH_LIMIT);
             assert_eq!(total_matches, DEFAULT_SEARCH_LIMIT);
@@ -1113,7 +1195,10 @@ async fn test_show_current_session_by_default() {
     let session_id = Uuid::new_v4();
     let session_id_str = session_id.to_string();
     let handler: SessionSearchHandler = Arc::new(move |action, sid| match action {
-        SessionSearchAction::Show { session_id: show_id, .. } => {
+        SessionSearchAction::Show {
+            session_id: show_id,
+            ..
+        } => {
             // When no session_id provided, handler uses the tool's own session_id
             assert!(show_id.is_none());
             SessionSearchResult::Session {
@@ -1137,7 +1222,9 @@ async fn test_show_current_session_by_default() {
                 ],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1158,7 +1245,11 @@ async fn test_show_current_session_by_default() {
 
     let parsed: SessionSearchResult = serde_json::from_str(&output).unwrap();
     match parsed {
-        SessionSearchResult::Session { session_id: sid, messages, .. } => {
+        SessionSearchResult::Session {
+            session_id: sid,
+            messages,
+            ..
+        } => {
             // @step Then the result contains the current session's full conversation
             assert_eq!(sid, session_id_str);
 
@@ -1183,7 +1274,10 @@ async fn test_show_session_with_current_keyword() {
     let session_id = Uuid::new_v4();
     let session_id_str = session_id.to_string();
     let handler: SessionSearchHandler = Arc::new(move |action, sid| match action {
-        SessionSearchAction::Show { session_id: show_id, .. } => {
+        SessionSearchAction::Show {
+            session_id: show_id,
+            ..
+        } => {
             // "current" keyword should be received as-is; handler maps it to current session
             assert_eq!(show_id, Some("current".to_string()));
             SessionSearchResult::Session {
@@ -1198,7 +1292,9 @@ async fn test_show_session_with_current_keyword() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1220,7 +1316,9 @@ async fn test_show_session_with_current_keyword() {
     // @step Then the result is identical to calling show with no session_id
     let parsed: SessionSearchResult = serde_json::from_str(&output_current).unwrap();
     match parsed {
-        SessionSearchResult::Session { session_id: sid, .. } => {
+        SessionSearchResult::Session {
+            session_id: sid, ..
+        } => {
             assert_eq!(sid, session_id_str);
         }
         _ => panic!("Expected Session result"),
@@ -1239,7 +1337,10 @@ async fn test_show_specific_session_by_uuid() {
     let session_id = Uuid::new_v4();
     let target_uuid = "7e0358a4-3395-4ee3-9a4b-62575d625b8c";
     let handler: SessionSearchHandler = Arc::new(|action, _sid| match action {
-        SessionSearchAction::Show { session_id: show_id, .. } => {
+        SessionSearchAction::Show {
+            session_id: show_id,
+            ..
+        } => {
             let id = show_id.unwrap();
             SessionSearchResult::Session {
                 session_id: id,
@@ -1262,7 +1363,9 @@ async fn test_show_specific_session_by_uuid() {
                 ],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1284,7 +1387,11 @@ async fn test_show_specific_session_by_uuid() {
     // @step Then the result contains that session's full conversation with messages in order
     let parsed: SessionSearchResult = serde_json::from_str(&output).unwrap();
     match parsed {
-        SessionSearchResult::Session { session_id: sid, messages, .. } => {
+        SessionSearchResult::Session {
+            session_id: sid,
+            messages,
+            ..
+        } => {
             assert_eq!(sid, target_uuid);
             assert_eq!(messages.len(), 2);
             assert!(messages[0].turn_index < messages[1].turn_index);
@@ -1318,7 +1425,9 @@ async fn test_show_session_resolves_blob_references() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1379,7 +1488,9 @@ async fn test_show_session_truncates_long_messages() {
                 }],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1444,7 +1555,9 @@ async fn test_show_session_with_user_only_filter() {
                 ],
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 
@@ -1493,7 +1606,11 @@ async fn test_show_session_with_max_turns_limit() {
             let messages: Vec<SessionMessage> = (90..100)
                 .map(|i| SessionMessage {
                     turn_index: i,
-                    role: if i % 2 == 0 { "user".to_string() } else { "assistant".to_string() },
+                    role: if i % 2 == 0 {
+                        "user".to_string()
+                    } else {
+                        "assistant".to_string()
+                    },
                     content: format!("Message {i}"),
                     timestamp: Utc::now(),
                     truncated: false,
@@ -1505,7 +1622,9 @@ async fn test_show_session_with_max_turns_limit() {
                 messages,
             }
         }
-        _ => SessionSearchResult::Error { message: "unexpected".to_string() },
+        _ => SessionSearchResult::Error {
+            message: "unexpected".to_string(),
+        },
     });
     set_session_search_handler(session_id, Some(handler));
 

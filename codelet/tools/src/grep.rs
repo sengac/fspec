@@ -453,7 +453,10 @@ impl rig::tool::Tool for GrepTool {
             value_map.insert("glob".to_string(), serde_json::Value::String(glob));
         }
         if let Some(limit) = args.limit {
-            value_map.insert("limit".to_string(), serde_json::Value::Number(serde_json::Number::from(limit)));
+            value_map.insert(
+                "limit".to_string(),
+                serde_json::Value::Number(serde_json::Number::from(limit)),
+            );
         }
 
         let result = self

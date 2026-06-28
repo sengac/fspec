@@ -980,27 +980,27 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "update-scenario",  // RPC-314
     "update-step",      // RPC-315
     // Batch 16 (2026-06-14) — validation + search + coverage + generator/retag
-    "validate-tags",               // RPC-324
-    "validate-work-units",         // RPC-325
-    "validate-hooks",              // RPC-322
-    "validate-foundation-schema",  // RPC-321
-    "validate",                    // RPC-320
-    "search-scenarios",            // RPC-297
-    "search-implementation",       // RPC-296
-    "unlink-coverage",             // RPC-311
-    "generate-tags-md",            // RPC-236
-    "retag",                       // RPC-293
+    "validate-tags",              // RPC-324
+    "validate-work-units",        // RPC-325
+    "validate-hooks",             // RPC-322
+    "validate-foundation-schema", // RPC-321
+    "validate",                   // RPC-320
+    "search-scenarios",           // RPC-297
+    "search-implementation",      // RPC-296
+    "unlink-coverage",            // RPC-311
+    "generate-tags-md",           // RPC-236
+    "retag",                      // RPC-293
     // Batch 17 (2026-06-15) — coverage/board/check/format/compare/import/report
-    "audit-coverage",              // RPC-197
-    "board",                       // RPC-199
-    "check",                       // RPC-201
-    "compare-implementations",     // RPC-207
-    "delete-scenarios",            // RPC-220
-    "format",                      // RPC-230
-    "generate-coverage",           // RPC-231
-    "link-coverage",               // RPC-240
-    "generate-summary-report",     // RPC-235
-    "import-example-map",          // RPC-238
+    "audit-coverage",          // RPC-197
+    "board",                   // RPC-199
+    "check",                   // RPC-201
+    "compare-implementations", // RPC-207
+    "delete-scenarios",        // RPC-220
+    "format",                  // RPC-230
+    "generate-coverage",       // RPC-231
+    "link-coverage",           // RPC-240
+    "generate-summary-report", // RPC-235
+    "import-example-map",      // RPC-238
     // Batch 18 (2026-06-16) — auto-advance/workflow/analysis/event-storm/init
     // (checkpoint trio RPC-202/203/288 wired separately once W1b lands)
     "discover-event-storm",                      // RPC-225

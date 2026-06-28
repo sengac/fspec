@@ -463,7 +463,9 @@ pub fn validate_timezone(timezone: &str) -> Result<(), String> {
             let lower_tz = tz.to_lowercase();
             lower_tz.contains(&lower_trimmed)
                 || lower_trimmed.contains(&lower_tz)
-                || lower_tz.split('/').any(|part| part.contains(&lower_trimmed))
+                || lower_tz
+                    .split('/')
+                    .any(|part| part.contains(&lower_trimmed))
                 || lower_trimmed.split('/').any(|part| lower_tz.contains(part))
         })
         .take(5)

@@ -212,9 +212,9 @@ mod tests {
 
         let config = StagePermissionsConfig::default_acdd();
         let path = fspec_dir.join("stage-permissions.json");
-        let mut file = std::fs::File::create(&path).expect("failed to create stage-permissions.json");
-        let json =
-            serde_json::to_string_pretty(&config).expect("failed to serialize config");
+        let mut file =
+            std::fs::File::create(&path).expect("failed to create stage-permissions.json");
+        let json = serde_json::to_string_pretty(&config).expect("failed to serialize config");
         file.write_all(json.as_bytes())
             .expect("failed to write stage-permissions.json");
     }

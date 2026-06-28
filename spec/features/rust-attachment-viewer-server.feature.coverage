@@ -1,0 +1,398 @@
+{
+  "scenarios": [
+    {
+      "name": "Render a markdown attachment as an HTML page",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "lines": "30-63",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/handlers/view.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Render mermaid code blocks for client-side rendering",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "lines": "65-90",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Serve a binary image attachment raw with the correct content-type",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "lines": "92-121",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/handlers/view.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block directory traversal outside the project directory",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "lines": "123-161",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/handlers/path.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Return not found for a missing file",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "lines": "163-176",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/handlers/view.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Report health",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "lines": "178-195",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/handlers/health.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Start on a random local port and stop cleanly",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/viewer_server.rs",
+          "lines": "197-226",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/lib.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/attachment-viewer/tests/viewer_server.rs"
+    ],
+    "implFiles": [
+      "codelet/attachment-viewer/src/handlers/view.rs",
+      "codelet/attachment-viewer/src/markdown/render.rs",
+      "codelet/attachment-viewer/src/handlers/path.rs",
+      "codelet/attachment-viewer/src/handlers/health.rs",
+      "codelet/attachment-viewer/src/lib.rs"
+    ],
+    "totalLinesCovered": 457
+  }
+}

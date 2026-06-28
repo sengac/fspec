@@ -182,9 +182,7 @@ pub struct SessionMessage {
 #[serde(tag = "result_type", rename_all = "snake_case")]
 pub enum SessionSearchResult {
     /// Result from the `recent` action
-    Recent {
-        sessions: Vec<SessionSummary>,
-    },
+    Recent { sessions: Vec<SessionSummary> },
     /// Result from the `search` action
     Search {
         query: String,
@@ -192,10 +190,7 @@ pub enum SessionSearchResult {
         groups: Vec<SearchMatchGroup>,
     },
     /// Result from the `search` action with no matches
-    NoMatches {
-        query: String,
-        message: String,
-    },
+    NoMatches { query: String, message: String },
     /// Result from the `show` action
     Session {
         session_id: String,
@@ -203,9 +198,7 @@ pub enum SessionSearchResult {
         messages: Vec<SessionMessage>,
     },
     /// Error result
-    Error {
-        message: String,
-    },
+    Error { message: String },
 }
 
 /// Message truncation limit for show action (matching existing tool conventions)
@@ -272,7 +265,8 @@ mod tests {
     // @step Given the SessionSearch args schema supports three action types
     #[test]
     fn test_search_action_with_time_filters() {
-        let json = r#"{"action_type": "search", "query": "test", "last_hours": 24, "all_projects": true}"#;
+        let json =
+            r#"{"action_type": "search", "query": "test", "last_hours": 24, "all_projects": true}"#;
         let args: SessionSearchArgs = serde_json::from_str(json).unwrap();
         match args.action {
             SessionSearchAction::Search {
@@ -384,7 +378,8 @@ mod tests {
     // @step Then the Show variant contains start_turn=10 and end_turn=20
     #[test]
     fn test_show_action_deserializes_with_turn_range() {
-        let json = r#"{"action_type": "show", "session_id": "current", "start_turn": 10, "end_turn": 20}"#;
+        let json =
+            r#"{"action_type": "show", "session_id": "current", "start_turn": 10, "end_turn": 20}"#;
         let args: SessionSearchArgs = serde_json::from_str(json).unwrap();
         match args.action {
             SessionSearchAction::Show {

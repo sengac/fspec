@@ -175,11 +175,10 @@ impl ReadTool {
         offset: Option<usize>,
         limit: Option<usize>,
     ) -> Result<ReadOutput, ToolError> {
-        let text_content =
-            String::from_utf8(binary_content).map_err(|e| ToolError::File {
-                tool: "read",
-                message: format!("Error reading file as text: {e}"),
-            })?;
+        let text_content = String::from_utf8(binary_content).map_err(|e| ToolError::File {
+            tool: "read",
+            message: format!("Error reading file as text: {e}"),
+        })?;
 
         let has_custom_range = offset.is_some() || limit.is_some();
 
@@ -345,7 +344,9 @@ impl rig::tool::Tool for ReadTool {
                             },
                             PdfError::ExtractionError { page, message } => ToolError::File {
                                 tool: "read",
-                                message: format!("Error extracting text from page {page}: {message}"),
+                                message: format!(
+                                    "Error extracting text from page {page}: {message}"
+                                ),
                             },
                             PdfError::RenderError { page, message } => ToolError::File {
                                 tool: "read",
@@ -356,16 +357,18 @@ impl rig::tool::Tool for ReadTool {
                         match mode {
                             "text" => {
                                 // TEXT MODE: Extract text page by page
-                                let pdf_content = read_pdf_from_bytes(&binary_content, &file_path_str)
-                                    .map_err(map_pdf_error)?;
+                                let pdf_content =
+                                    read_pdf_from_bytes(&binary_content, &file_path_str)
+                                        .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: pdf_content.format_display(),
                                 }
                             }
                             "images" => {
                                 // IMAGES MODE: Extract embedded images
-                                let images = super::pdf::extract_pdf_images(&binary_content, &file_path_str)
-                                    .map_err(map_pdf_error)?;
+                                let images =
+                                    super::pdf::extract_pdf_images(&binary_content, &file_path_str)
+                                        .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: serde_json::to_string_pretty(&images)
                                         .unwrap_or_else(|_| "[]".to_string()),
@@ -373,8 +376,9 @@ impl rig::tool::Tool for ReadTool {
                             }
                             _ => {
                                 // VISUAL MODE (default): Render pages as images
-                                let pages = super::pdf::render_pdf_pages(&binary_content, &file_path_str)
-                                    .map_err(map_pdf_error)?;
+                                let pages =
+                                    super::pdf::render_pdf_pages(&binary_content, &file_path_str)
+                                        .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: serde_json::to_string_pretty(&pages)
                                         .unwrap_or_else(|_| "[]".to_string()),

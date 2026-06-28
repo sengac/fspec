@@ -57,7 +57,10 @@ pub fn run_for_transition(
         if command.is_empty() {
             continue;
         }
-        let blocking = hook.get("blocking").and_then(Value::as_bool).unwrap_or(false);
+        let blocking = hook
+            .get("blocking")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
 
         // todo: gitContext support (run only on changed files via codelet_git)
         let result = run_one(project_root, command);

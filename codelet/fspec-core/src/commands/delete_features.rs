@@ -87,8 +87,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             Err(_) => continue, // skip invalid Gherkin
         };
         // gherkin-0.16 strips the leading '@'; re-prepend for comparison.
-        let feature_tags: Vec<String> =
-            feature.tags.iter().map(|t| format!("@{t}")).collect();
+        let feature_tags: Vec<String> = feature.tags.iter().map(|t| format!("@{t}")).collect();
         let has_all = args.tags.iter().all(|t| feature_tags.contains(t));
         if has_all {
             matching.push(file.clone());

@@ -4,12 +4,12 @@
 // Tests for WEB-002: Chrome DevTools Web Search Implementation
 // Uses rust-headless-chrome for full browser-based web search with JavaScript support
 
-use uuid::Uuid;
 use anyhow::Result;
 use codelet_tools::{
     ChromeBrowser, ChromeConfig, ChromeError, PageContent, PageFetcher, SearchEngine, SearchResult,
 };
 use std::sync::Arc;
+use uuid::Uuid;
 
 // Note: These tests require Chrome to be installed on the system
 // Run with: cargo test -p codelet-tools --test chrome_web_search_test -- --ignored

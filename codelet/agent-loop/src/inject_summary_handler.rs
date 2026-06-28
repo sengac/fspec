@@ -244,16 +244,16 @@ pub fn apply_pending_dag(
             .flat_map(|v| v.iter().cloned())
             .collect();
 
-        let existing_dag_files_str =
-            codelet_cli::compaction_dag::detect_existing_dag(&session.messages).and_then(
-                |(content, _)| {
-                    if content.contains("<dag-files>") {
-                        Some(content)
-                    } else {
-                        None
-                    }
-                },
-            );
+        let existing_dag_files_str = codelet_cli::compaction_dag::detect_existing_dag(
+            &session.messages,
+        )
+        .and_then(|(content, _)| {
+            if content.contains("<dag-files>") {
+                Some(content)
+            } else {
+                None
+            }
+        });
 
         if let Some(files_block) =
             build_dag_files_block(&all_annotations, existing_dag_files_str.as_deref())

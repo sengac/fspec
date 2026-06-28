@@ -4,17 +4,15 @@ use crate::session::Session;
 use anyhow::Result;
 use codelet_common::token_estimator::count_tokens;
 use codelet_core::compaction::{
-    ConversationTurn, ToolCall as CoreToolCall,
-    ToolResult as CoreToolResult,
+    ConversationTurn, ToolCall as CoreToolCall, ToolResult as CoreToolResult,
 };
 use rig::message::{AssistantContent, Message, ToolResultContent, UserContent};
 use rig::OneOrMany;
 use std::collections::HashSet;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::SystemTime;
 use tracing::{debug, warn};
-
 
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
 ///
@@ -345,20 +343,16 @@ pub fn reconcile_session_messages(
             Message::Assistant { content, .. } => {
                 for item in content.iter() {
                     if let AssistantContent::ToolCall(tc) = item {
-                        known_calls.insert(tool_call_correlation_key(
-                            &tc.id,
-                            tc.call_id.as_deref(),
-                        ));
+                        known_calls
+                            .insert(tool_call_correlation_key(&tc.id, tc.call_id.as_deref()));
                     }
                 }
             }
             Message::User { content } => {
                 for item in content.iter() {
                     if let UserContent::ToolResult(tr) = item {
-                        known_results.insert(tool_call_correlation_key(
-                            &tr.id,
-                            tr.call_id.as_deref(),
-                        ));
+                        known_results
+                            .insert(tool_call_correlation_key(&tr.id, tr.call_id.as_deref()));
                     }
                 }
             }
@@ -376,8 +370,7 @@ pub fn reconcile_session_messages(
                     .iter()
                     .filter_map(|item| match item {
                         AssistantContent::ToolCall(tc) => {
-                            let key =
-                                tool_call_correlation_key(&tc.id, tc.call_id.as_deref());
+                            let key = tool_call_correlation_key(&tc.id, tc.call_id.as_deref());
                             if known_calls.contains(&key) {
                                 None
                             } else {
@@ -410,8 +403,7 @@ pub fn reconcile_session_messages(
                     .iter()
                     .filter_map(|item| match item {
                         UserContent::ToolResult(tr) => {
-                            let key =
-                                tool_call_correlation_key(&tr.id, tr.call_id.as_deref());
+                            let key = tool_call_correlation_key(&tr.id, tr.call_id.as_deref());
                             if known_results.contains(&key) {
                                 None
                             } else {
@@ -479,8 +471,7 @@ pub fn inject_synthetic_tool_results_for_orphans(session_messages: &mut Vec<Mess
         if let Message::User { content } = msg {
             for item in content.iter() {
                 if let UserContent::ToolResult(tr) = item {
-                    seen_results
-                        .insert(tool_call_correlation_key(&tr.id, tr.call_id.as_deref()));
+                    seen_results.insert(tool_call_correlation_key(&tr.id, tr.call_id.as_deref()));
                 }
             }
         }
@@ -545,8 +536,7 @@ pub async fn execute_compaction(
     last_user_message: Option<&str>,
 ) -> Result<()> {
     use crate::compaction_dag::{
-        COMPACTION_INSTRUCTION_FRESH, COMPACTION_INSTRUCTION_INCREMENTAL,
-        detect_existing_dag,
+        detect_existing_dag, COMPACTION_INSTRUCTION_FRESH, COMPACTION_INSTRUCTION_INCREMENTAL,
     };
 
     debug!(
@@ -587,8 +577,7 @@ pub async fn execute_compaction(
 
     debug!(
         "[execute_compaction] partition: system_reminders={}, compactable={}",
-        reminder_count,
-        compactable_count
+        reminder_count, compactable_count
     );
 
     // Step 4: Select instruction variant based on existing DAG presence (CMPCT-019)

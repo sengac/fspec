@@ -140,8 +140,20 @@ fn dispatcher_derives_rules_from_policies_and_questions_from_hotspots() {
     // @step Given spec/work-units.json contains AUTH-001 in specifying status with an eventStorm containing 2 policies (each with when+then) and 1 hotspot with a concern
     let tmp = TempDir::new().expect("tempdir");
     let items = json!([
-        policy_item(0, "Send welcome email", "UserRegistered", "SendWelcomeEmail", false),
-        policy_item(1, "Send verification", "UserRegistered", "SendVerificationEmail", false),
+        policy_item(
+            0,
+            "Send welcome email",
+            "UserRegistered",
+            "SendWelcomeEmail",
+            false
+        ),
+        policy_item(
+            1,
+            "Send verification",
+            "UserRegistered",
+            "SendVerificationEmail",
+            false
+        ),
         hotspot_item(2, "Email timeout", "How long to wait", false)
     ]);
     write_value(tmp.path(), &seed_unit_with_event_storm("AUTH-001", items));
@@ -258,7 +270,12 @@ fn policy_is_converted_to_a_rule_using_pascal_case_to_sentence() {
 fn hotspot_concern_becomes_at_human_question_with_trailing_question_mark_added() {
     // @step Given spec/work-units.json contains AUTH-001 with an eventStorm hotspot concern='Unclear how long to wait'
     let tmp = TempDir::new().expect("tempdir");
-    let items = json!([hotspot_item(0, "Email timeout", "Unclear how long to wait", false)]);
+    let items = json!([hotspot_item(
+        0,
+        "Email timeout",
+        "Unclear how long to wait",
+        false
+    )]);
     write_value(tmp.path(), &seed_unit_with_event_storm("AUTH-001", items));
 
     // @step When I dispatch generate-example-mapping-from-event-storm with workUnitId='AUTH-001' against that project root
@@ -301,7 +318,13 @@ fn soft_deleted_event_storm_items_are_skipped() {
     // @step Given spec/work-units.json contains AUTH-001 with an eventStorm where the only policy and the only hotspot are marked deleted:true
     let tmp = TempDir::new().expect("tempdir");
     let items = json!([
-        policy_item(0, "Send welcome email", "UserRegistered", "SendWelcomeEmail", true),
+        policy_item(
+            0,
+            "Send welcome email",
+            "UserRegistered",
+            "SendWelcomeEmail",
+            true
+        ),
         hotspot_item(1, "Email timeout", "How long to wait", true)
     ]);
     write_value(tmp.path(), &seed_unit_with_event_storm("AUTH-001", items));
@@ -343,7 +366,10 @@ fn successful_run_bumps_timestamps_and_persists_atomically() {
 
     // @step Then the file meta.lastUpdated is refreshed to a new ISO-8601 timestamp
     let last_updated = v["meta"]["lastUpdated"].as_str().unwrap();
-    assert_ne!(last_updated, seeded_ts, "meta.lastUpdated must be refreshed");
+    assert_ne!(
+        last_updated, seeded_ts,
+        "meta.lastUpdated must be refreshed"
+    );
     assert!(
         last_updated.ends_with('Z'),
         "meta.lastUpdated must be ISO-8601 Zulu"

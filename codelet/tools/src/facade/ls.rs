@@ -43,6 +43,11 @@ impl LsToolFacade for GeminiListDirectoryFacade {
     fn map_params(&self, input: Value) -> Result<InternalLsParams, ToolError> {
         let path = input.get("path").and_then(|p| p.as_str()).map(String::from);
 
-        Ok(InternalLsParams::List { path, offset: None, limit: None, depth: None })
+        Ok(InternalLsParams::List {
+            path,
+            offset: None,
+            limit: None,
+            depth: None,
+        })
     }
 }

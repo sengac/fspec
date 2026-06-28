@@ -14,15 +14,11 @@
 
 mod common;
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
-use codelet_rpc_server::{
-    bind_and_serve, register_log_layer, ws_client_connect, Envelope,
-};
+use codelet_rpc_server::{bind_and_serve, register_log_layer, ws_client_connect, Envelope};
 use codelet_rpc_types::{LogRecord, SessionId, StreamChunk};
 use common::{connect_with_retry, make_workspace};
 use std::sync::Arc;
@@ -37,18 +33,17 @@ async fn scenario_tracing_emit_is_observable_on_ws_log_event() {
     let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
     ));
     register_log_layer(Arc::clone(&service)).expect("register layer");
-    let (addr, _stats, _join) =
-        bind_and_serve("127.0.0.1:0", Arc::clone(&service))
-            .await
-            .expect("bind_and_serve");
+    let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", Arc::clone(&service))
+        .await
+        .expect("bind_and_serve");
 
     // @step And an EmbeddedTransport host has registered the same Layer at EmbeddedTransport::with_log_layer
     // (Asserted by codelet/rpc-embedded/tests/embedded_log_event.rs.)
@@ -90,18 +85,17 @@ async fn scenario_event_and_log_event_ride_bincode_encoded_envelope() {
     let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
     ));
     register_log_layer(Arc::clone(&service)).expect("register layer");
-    let (addr, _stats, _join) =
-        bind_and_serve("127.0.0.1:0", Arc::clone(&service))
-            .await
-            .expect("bind_and_serve");
+    let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", Arc::clone(&service))
+        .await
+        .expect("bind_and_serve");
     let ws = connect_with_retry(addr.port()).await;
     let ws_client = ws_client_connect(ws).await.expect("ws_client_connect");
     let _chunks_rx = ws_client.chunks_rx();
@@ -129,8 +123,7 @@ async fn scenario_event_and_log_event_ride_bincode_encoded_envelope() {
         chunk: StreamChunk::text("hi".to_string()),
     };
     let ev_bytes = bincode::serialize(&ev_frame).expect("bincode encode Event");
-    let ev_round: Envelope =
-        bincode::deserialize(&ev_bytes).expect("bincode decode Event");
+    let ev_round: Envelope = bincode::deserialize(&ev_bytes).expect("bincode decode Event");
     assert!(
         matches!(ev_round, Envelope::Event { .. }),
         "Envelope::Event must round-trip via bincode",
@@ -143,10 +136,8 @@ async fn scenario_event_and_log_event_ride_bincode_encoded_envelope() {
         message: "ping".to_string(),
         timestamp_ms: 0,
     });
-    let log_bytes =
-        bincode::serialize(&log_frame).expect("bincode encode LogEvent");
-    let log_round: Envelope =
-        bincode::deserialize(&log_bytes).expect("bincode decode LogEvent");
+    let log_bytes = bincode::serialize(&log_frame).expect("bincode encode LogEvent");
+    let log_round: Envelope = bincode::deserialize(&log_bytes).expect("bincode decode LogEvent");
     assert!(
         matches!(log_round, Envelope::LogEvent(_)),
         "Envelope::LogEvent must round-trip via bincode",

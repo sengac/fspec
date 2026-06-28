@@ -43,16 +43,14 @@ pub fn collect_worktree_files(worktree_path: &Path) -> Result<HashMap<String, Ve
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?;
 
     // Get the index - this MUST succeed for properly initialized repos/worktrees
-    let index = repo.index().map_err(|e| {
-        GitError::CorruptedIndex {
-            message: format!(
-                "Git index not available at '{}'. This indicates a corrupted worktree \
+    let index = repo.index().map_err(|e| GitError::CorruptedIndex {
+        message: format!(
+            "Git index not available at '{}'. This indicates a corrupted worktree \
                  or a repo without any commits. All fspec worktrees should have an \
                  initialized index. Ensure repo has at least one commit. Error: {}",
-                worktree_path.display(),
-                e
-            ),
-        }
+            worktree_path.display(),
+            e
+        ),
     })?;
 
     // 1. Collect all tracked files from the index

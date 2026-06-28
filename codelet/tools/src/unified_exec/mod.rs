@@ -38,10 +38,10 @@ mod spawning;
 mod tool;
 mod types;
 
-pub use process_store::ProcessStore;
 pub use process_store::session_id_to_evict;
+pub use process_store::ProcessStore;
 pub use tool::UnifiedExecTool;
-pub use types::{UnifiedExecArgs, UnifiedExecResult, ExecCommand};
+pub use types::{ExecCommand, UnifiedExecArgs, UnifiedExecResult};
 
 // ============================================================================
 // Constants (from Codex reference)

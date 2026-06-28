@@ -82,7 +82,9 @@ fn scenario_update_step_text_while_keeping_the_keyword() {
     // @step And the feature file step line reads "    Given I navigate to the login page"
     let after = read_feature(tmp.path(), "spec/features/user-auth.feature");
     assert!(
-        after.lines().any(|l| l == "    Given I navigate to the login page"),
+        after
+            .lines()
+            .any(|l| l == "    Given I navigate to the login page"),
         "expected updated step line; got:\n{after}"
     );
 }
@@ -144,7 +146,9 @@ fn scenario_update_both_text_and_keyword_where_text_carries_a_keyword_prefix() {
     // @step And the feature file step line reads "    When I submit the login form"
     let after = read_feature(tmp.path(), "spec/features/user-auth.feature");
     assert!(
-        after.lines().any(|l| l == "    When I submit the login form"),
+        after
+            .lines()
+            .any(|l| l == "    When I submit the login form"),
         "expected merged step line; got:\n{after}"
     );
 }
@@ -175,7 +179,9 @@ fn scenario_match_a_step_by_its_text_alone_without_the_keyword() {
     // @step And the feature file step line reads "    Then I land on the dashboard"
     let after = read_feature(tmp.path(), "spec/features/user-auth.feature");
     assert!(
-        after.lines().any(|l| l == "    Then I land on the dashboard"),
+        after
+            .lines()
+            .any(|l| l == "    Then I land on the dashboard"),
         "expected text-matched step line; got:\n{after}"
     );
 }
@@ -208,7 +214,10 @@ fn scenario_supplying_neither_text_nor_keyword_fails_without_modifying_the_file(
     );
 
     // file unchanged
-    assert_eq!(read_feature(tmp.path(), "spec/features/user-auth.feature"), body);
+    assert_eq!(
+        read_feature(tmp.path(), "spec/features/user-auth.feature"),
+        body
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -233,7 +242,10 @@ fn scenario_updating_a_step_in_a_missing_feature_file_fails() {
 
     // @step And the response error contains "Feature file not found:"
     assert!(
-        data["error"].as_str().unwrap_or("").contains("Feature file not found:"),
+        data["error"]
+            .as_str()
+            .unwrap_or("")
+            .contains("Feature file not found:"),
         "unexpected error: {data}"
     );
 }

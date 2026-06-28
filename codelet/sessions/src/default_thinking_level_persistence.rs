@@ -26,9 +26,7 @@ use std::path::Path;
 
 use serde_json::{Map, Value};
 
-use codelet_common::fspec_config::{
-    load_config_with_dirs, write_config_with_dirs, ConfigScope,
-};
+use codelet_common::fspec_config::{load_config_with_dirs, write_config_with_dirs, ConfigScope};
 use codelet_rpc_types::ThinkingLevel;
 
 /// Nested config keys holding the persisted default level: `tui.defaultThinkingLevel`.
@@ -58,7 +56,8 @@ pub fn save_default_thinking_level_with_dirs(
 ) -> Result<(), String> {
     // Read the existing merged config; an unreadable / invalid file degrades to
     // an empty object rather than aborting the save.
-    let mut config = load_config_with_dirs(data_dir, cwd).unwrap_or_else(|_| Value::Object(Map::new()));
+    let mut config =
+        load_config_with_dirs(data_dir, cwd).unwrap_or_else(|_| Value::Object(Map::new()));
 
     // Ensure the root is an object (a non-object persisted value is replaced).
     if !config.is_object() {
@@ -144,8 +143,8 @@ pub fn load_default_thinking_level_with_dirs(data_dir: &Path, cwd: &Path) -> Thi
 /// the data-dir / write error so the caller can log it; treated as non-fatal.
 pub fn save_default_thinking_level(level: ThinkingLevel) -> Result<(), String> {
     let data_dir = codelet_common::get_data_dir()?;
-    let cwd = std::env::current_dir()
-        .map_err(|e| format!("Failed to resolve current directory: {e}"))?;
+    let cwd =
+        std::env::current_dir().map_err(|e| format!("Failed to resolve current directory: {e}"))?;
     save_default_thinking_level_with_dirs(&data_dir, &cwd, level)
 }
 

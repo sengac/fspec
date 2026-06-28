@@ -59,7 +59,10 @@ impl AstGrepTool {
         if lower == "dart" {
             return Some(LanguageChoice::Dart(DartLang));
         }
-        lower.parse::<SupportLang>().ok().map(LanguageChoice::Standard)
+        lower
+            .parse::<SupportLang>()
+            .ok()
+            .map(LanguageChoice::Standard)
     }
 
     /// Get file extensions for a language.

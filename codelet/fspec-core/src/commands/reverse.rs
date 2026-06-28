@@ -159,9 +159,15 @@ fn get_strategy_name(strategy: &str) -> &'static str {
 /// First non-zero gap summary string (parity with `formatGaps`).
 fn format_gaps(gaps: &GapAnalysis) -> String {
     if gaps.tests_without_features > 0 {
-        format!("{} test files without features", gaps.tests_without_features)
+        format!(
+            "{} test files without features",
+            gaps.tests_without_features
+        )
     } else if gaps.features_without_tests > 0 {
-        format!("{} feature files without tests", gaps.features_without_tests)
+        format!(
+            "{} feature files without tests",
+            gaps.features_without_tests
+        )
     } else if gaps.unmapped_scenarios > 0 {
         format!(
             "{} scenarios without coverage mappings",
@@ -358,7 +364,9 @@ fn handle_existing_session(project_root: &Path) -> Result<String, FspecCoreError
     // A present-but-unparseable session file → corrupt JSON sentinel
     // (parity with `reverse.ts:154-156`).
     if load_session(project_root).is_none() {
-        return Err(FspecCoreError::Message("Session file corrupted".to_string()));
+        return Err(FspecCoreError::Message(
+            "Session file corrupted".to_string(),
+        ));
     }
 
     let reminder = wrap_system_reminder(
@@ -386,10 +394,7 @@ fn handle_existing_session(project_root: &Path) -> Result<String, FspecCoreError
 /// Initial analysis (no flag, no session). Analyzes the project, detects gaps,
 /// and either previews (dry-run) or creates a gap-detection session
 /// (parity with `reverse.ts:184-253`).
-fn handle_initial_analysis(
-    project_root: &Path,
-    dry_run: bool,
-) -> Result<String, FspecCoreError> {
+fn handle_initial_analysis(project_root: &Path, dry_run: bool) -> Result<String, FspecCoreError> {
     let analysis = analyze_project(project_root);
     let gaps = detect_gaps(&analysis);
     let suggested = suggest_strategy(&gaps);
@@ -471,16 +476,17 @@ fn handle_strategy_d(project_root: &Path, implementation_context: &str) -> Strin
         personas: Vec<Persona>,
     }
 
-    let personas: Vec<Persona> = std::fs::read_to_string(
-        project_root.join("spec").join("foundation.json"),
-    )
-    .ok()
-    .and_then(|c| serde_json::from_str::<Foundation>(&c).ok())
-    .map(|f| f.personas)
-    .unwrap_or_default();
+    let personas: Vec<Persona> =
+        std::fs::read_to_string(project_root.join("spec").join("foundation.json"))
+            .ok()
+            .and_then(|c| serde_json::from_str::<Foundation>(&c).ok())
+            .map(|f| f.personas)
+            .unwrap_or_default();
 
     let mut sr = String::from("REVERSE ACDD - PERSONA-DRIVEN DISCOVERY\n\n");
-    sr.push_str(&format!("Implementation context: {implementation_context}\n\n"));
+    sr.push_str(&format!(
+        "Implementation context: {implementation_context}\n\n"
+    ));
 
     if !personas.is_empty() {
         sr.push_str("WHO uses this? (Check foundation.json personas)\n");
@@ -660,7 +666,10 @@ fn is_impl_file_name(name: &str) -> bool {
     if name.ends_with(".test.ts") {
         return false;
     }
-    name.ends_with(".ts") || name.ends_with(".js") || name.ends_with(".tsx") || name.ends_with(".jsx")
+    name.ends_with(".ts")
+        || name.ends_with(".js")
+        || name.ends_with(".tsx")
+        || name.ends_with(".jsx")
 }
 
 /// For each feature file, read its `.coverage` sidecar and count scenarios with
@@ -688,10 +697,7 @@ fn analyze_coverage(cwd: &Path, feature_files: &[String]) -> Option<CoverageAnal
                 let empty = mappings.map(Vec::is_empty).unwrap_or(true);
                 if empty {
                     unmapped_count += 1;
-                    let name = scenario
-                        .get("name")
-                        .and_then(|n| n.as_str())
-                        .unwrap_or("");
+                    let name = scenario.get("name").and_then(|n| n.as_str()).unwrap_or("");
                     scenarios.push(format!("{feature_file}:{name}"));
                 }
             }
@@ -831,9 +837,18 @@ mod tests {
 
     #[test]
     fn derive_feature_name_camel_and_pascal() {
-        assert_eq!(derive_feature_name("src/components/MusicPlayer.tsx"), "music-player");
-        assert_eq!(derive_feature_name("src/hooks/usePlaylistStore.ts"), "use-playlist-store");
-        assert_eq!(derive_feature_name("src/utils/formatTime.js"), "format-time");
+        assert_eq!(
+            derive_feature_name("src/components/MusicPlayer.tsx"),
+            "music-player"
+        );
+        assert_eq!(
+            derive_feature_name("src/hooks/usePlaylistStore.ts"),
+            "use-playlist-store"
+        );
+        assert_eq!(
+            derive_feature_name("src/utils/formatTime.js"),
+            "format-time"
+        );
     }
 
     #[test]

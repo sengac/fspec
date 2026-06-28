@@ -47,17 +47,14 @@ fn data_json(result: &codelet_fspec_core::DispatchResult) -> Value {
         .unwrap_or_else(|e| panic!("data not JSON: {e}; got:\n{}", result.data))
 }
 
-const VALID_A: &str =
-    "Feature: A\n\n  Scenario: A1\n    Given x\n    When y\n    Then z\n";
-const VALID_B: &str =
-    "Feature: B\n\n  Scenario: B1\n    Given p\n    When q\n    Then r\n";
+const VALID_A: &str = "Feature: A\n\n  Scenario: A1\n    Given x\n    When y\n    Then z\n";
+const VALID_B: &str = "Feature: B\n\n  Scenario: B1\n    Given p\n    When q\n    Then r\n";
 const VALID_LOGIN: &str =
     "Feature: Login\n\n  Scenario: Valid login\n    Given I am on the login page\n    When I submit credentials\n    Then I see the dashboard\n";
 // Definitively non-parseable gherkin (no Feature keyword, raw prose).
 const BROKEN: &str = "this is not gherkin";
 // Otherwise-shaped feature carrying four consecutive blank lines (>2 → heuristic).
-const FOUR_BLANKS: &str =
-    "Feature: Blanks\n\n  Scenario: A\n    Given x\n\n\n\n\n    Then y\n";
+const FOUR_BLANKS: &str = "Feature: Blanks\n\n  Scenario: A\n    Given x\n\n\n\n\n    Then y\n";
 
 // ───────── scenarios ─────────
 
@@ -74,7 +71,10 @@ fn validates_all_feature_files_and_reports_an_all_valid_summary() {
     let result = dispatch_command(req(tmp.path(), json!({})));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_json(&result);
     let output = data["output"].as_str().expect("output string");
 
@@ -110,7 +110,10 @@ fn validates_a_single_valid_file_with_no_summary_line() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_json(&result);
     let output = data["output"].as_str().expect("output string");
 

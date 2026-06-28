@@ -28,7 +28,9 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::error::FspecCoreError;
-use crate::generators::{format_errors, generate_foundation_md, validate_foundation, validate_mermaid};
+use crate::generators::{
+    format_errors, generate_foundation_md, validate_foundation, validate_mermaid,
+};
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]

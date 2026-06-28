@@ -8,8 +8,7 @@
 use std::path::Path;
 
 use codelet_git::{
-    get_staged_files_with_change_type, get_untracked_files,
-    get_unstaged_files_with_change_type,
+    get_staged_files_with_change_type, get_unstaged_files_with_change_type, get_untracked_files,
 };
 use codelet_rpc_types::ChangedFile;
 
@@ -18,7 +17,9 @@ use codelet_rpc_types::ChangedFile;
 /// Returns `Err` only when the underlying git inspection fails; the caller
 /// (`FspecService::changed_files`) maps that to an empty Vec via
 /// `unwrap_or_default()` so a non-repo cwd never panics.
-pub(crate) fn collect_changed_files(cwd: impl AsRef<Path>) -> codelet_git::Result<Vec<ChangedFile>> {
+pub(crate) fn collect_changed_files(
+    cwd: impl AsRef<Path>,
+) -> codelet_git::Result<Vec<ChangedFile>> {
     let cwd = cwd.as_ref();
     let mut out: Vec<ChangedFile> = Vec::new();
 

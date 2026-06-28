@@ -34,12 +34,15 @@ fn wait_for_response<'a>(
 #[serial]
 fn test_no_handler_returns_resumed_immediately() {
     with_clean_handler(|sid| {
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         assert_eq!(
             response,
@@ -68,12 +71,15 @@ fn test_handler_is_invoked_with_request() {
         });
 
         set_pause_handler(sid, Some(handler));
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         assert!(
             handler_called.load(Ordering::SeqCst),
@@ -90,12 +96,15 @@ fn test_handler_returns_approved() {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
         set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Confirm,
-            tool_name: "Bash".to_string(),
-            message: "Dangerous command".to_string(),
-            details: Some("rm -rf /".to_string()),
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Confirm,
+                tool_name: "Bash".to_string(),
+                message: "Dangerous command".to_string(),
+                details: Some("rm -rf /".to_string()),
+            },
+        );
 
         assert_eq!(response, PauseResponse::Approved);
     });
@@ -108,12 +117,15 @@ fn test_handler_returns_denied() {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
         set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Confirm,
-            tool_name: "Bash".to_string(),
-            message: "Dangerous command".to_string(),
-            details: Some("rm -rf /".to_string()),
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Confirm,
+                tool_name: "Bash".to_string(),
+                message: "Dangerous command".to_string(),
+                details: Some("rm -rf /".to_string()),
+            },
+        );
 
         assert_eq!(response, PauseResponse::Denied);
     });
@@ -126,12 +138,15 @@ fn test_handler_returns_interrupted() {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
         set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         assert_eq!(response, PauseResponse::Interrupted);
     });
@@ -172,12 +187,15 @@ fn test_handler_can_block_and_resume() -> anyhow::Result<()> {
         });
 
         set_pause_handler(sid, Some(handler));
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         signaler_thread
             .join()
@@ -227,12 +245,15 @@ fn test_handler_can_be_interrupted() -> anyhow::Result<()> {
         });
 
         set_pause_handler(sid, Some(handler));
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         signaler_thread
             .join()
@@ -254,7 +275,10 @@ fn test_has_pause_handler() {
 
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Resumed);
         set_pause_handler(sid, Some(handler));
-        assert!(has_pause_handler(sid), "Should return true when handler is set");
+        assert!(
+            has_pause_handler(sid),
+            "Should return true when handler is set"
+        );
 
         set_pause_handler(sid, None);
         assert!(
@@ -296,12 +320,15 @@ fn test_confirm_pause_with_details() -> anyhow::Result<()> {
         });
 
         set_pause_handler(sid, Some(handler));
-        pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Confirm,
-            tool_name: "Bash".to_string(),
-            message: "Dangerous command".to_string(),
-            details: Some("sudo rm -rf /*".to_string()),
-        });
+        pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Confirm,
+                tool_name: "Bash".to_string(),
+                message: "Dangerous command".to_string(),
+                details: Some("sudo rm -rf /*".to_string()),
+            },
+        );
 
         let captured = mutex_lock(&captured_details)?;
         assert_eq!(*captured, Some("sudo rm -rf /*".to_string()));
@@ -324,12 +351,15 @@ fn test_multiple_pause_calls() {
         set_pause_handler(sid, Some(handler));
 
         for _ in 0..3 {
-            let response = pause_for_user(sid, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "Test".to_string(),
-                message: "Test".to_string(),
-                details: None,
-            });
+            let response = pause_for_user(
+                sid,
+                PauseRequest {
+                    kind: PauseKind::Continue,
+                    tool_name: "Test".to_string(),
+                    message: "Test".to_string(),
+                    details: None,
+                },
+            );
             assert_eq!(response, PauseResponse::Resumed);
         }
 
@@ -345,21 +375,27 @@ fn test_handler_replacement() {
         let second_handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
 
         set_pause_handler(sid, Some(first_handler));
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Confirm,
-            tool_name: "Test".to_string(),
-            message: "First".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Confirm,
+                tool_name: "Test".to_string(),
+                message: "First".to_string(),
+                details: None,
+            },
+        );
         assert_eq!(response, PauseResponse::Approved);
 
         set_pause_handler(sid, Some(second_handler));
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Confirm,
-            tool_name: "Test".to_string(),
-            message: "Second".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Confirm,
+                tool_name: "Test".to_string(),
+                message: "Second".to_string(),
+                details: None,
+            },
+        );
         assert_eq!(response, PauseResponse::Denied);
     });
 }

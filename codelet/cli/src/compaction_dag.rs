@@ -6,15 +6,17 @@
 //! - Partial dag-node extraction from assistant messages
 //! - Force-inject DAG (Level 3 convergence guarantee)
 
-use crate::interactive_helpers::{collect_items, recalculate_token_tracker, reset_session_to_reminders};
+use crate::interactive_helpers::{
+    collect_items, recalculate_token_tracker, reset_session_to_reminders,
+};
 use crate::session::Session;
 use codelet_core::compaction::{parse_dag_nodes, wrap_dag_content};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use rig::message::{Message, UserContent};
 use rig::OneOrMany;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use tracing::debug;
 
 // ============================================================================
@@ -167,12 +169,11 @@ pub fn detect_existing_dag(messages: &[Message]) -> Option<(String, usize)> {
 
 /// Compiled regex for extracting `<dag-node ...>...</dag-node>` blocks.
 static DAG_NODE_BLOCK_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"(?s)<dag-node\s[^>]*>.*?</dag-node>")
-        .unwrap_or_else(|_| {
-            // SAFETY: "^$" is a trivially valid regex — unwrap is infallible.
-            #[allow(clippy::expect_used)]
-            Regex::new("^$").expect("infallible fallback regex")
-        })
+    Regex::new(r"(?s)<dag-node\s[^>]*>.*?</dag-node>").unwrap_or_else(|_| {
+        // SAFETY: "^$" is a trivially valid regex — unwrap is infallible.
+        #[allow(clippy::expect_used)]
+        Regex::new("^$").expect("infallible fallback regex")
+    })
 });
 
 /// Extract partial `<dag-node>` blocks from assistant messages.

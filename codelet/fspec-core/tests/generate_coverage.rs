@@ -132,7 +132,9 @@ fn creates_a_sidecar_for_a_feature_file_that_lacks_one() {
     // @step And the rendered output contains the link-coverage system-reminder block
     assert!(
         result.data.contains("<system-reminder>")
-            && result.data.contains("link-coverage POPULATES coverage files"),
+            && result
+                .data
+                .contains("link-coverage POPULATES coverage files"),
         "output must include the link-coverage system-reminder; got:\n{}",
         result.data
     );
@@ -185,9 +187,8 @@ fn skips_a_sidecar_that_is_already_in_sync() {
     );
 
     // @step And the existing sidecar is left byte-for-byte unchanged
-    let after =
-        fs::read_to_string(tmp.path().join("spec/features/user-login.feature.coverage"))
-            .expect("read sidecar");
+    let after = fs::read_to_string(tmp.path().join("spec/features/user-login.feature.coverage"))
+        .expect("read sidecar");
     assert_eq!(after, in_sync, "in-sync sidecar must not be rewritten");
 }
 
@@ -241,10 +242,7 @@ fn updates_a_sidecar_when_scenarios_were_added_and_removed() {
     // @step And the updated sidecar adds the new scenario with empty testMappings and drops the stale scenario
     let logout = scenario(&sidecar, "Logout").expect("Logout added");
     assert!(
-        logout["testMappings"]
-            .as_array()
-            .expect("array")
-            .is_empty(),
+        logout["testMappings"].as_array().expect("array").is_empty(),
         "new scenario must have empty testMappings; got {sidecar}"
     );
     assert!(
@@ -259,7 +257,10 @@ fn updates_a_sidecar_when_scenarios_were_added_and_removed() {
         .expect("array")
         .iter()
         .any(|tm| tm["file"].as_str() == Some("src/auth.test.ts"));
-    assert!(has_mapping, "Login's test mapping must be preserved; got {sidecar}");
+    assert!(
+        has_mapping,
+        "Login's test mapping must be preserved; got {sidecar}"
+    );
 
     // @step And the rendered output contains the substring "Updated 1"
     assert!(
@@ -297,7 +298,11 @@ fn recreates_a_sidecar_that_contains_invalid_json() {
     // @step And the sidecar is rewritten as valid JSON with one entry per scenario
     let sidecar = read_sidecar(tmp.path());
     let scenarios = sidecar["scenarios"].as_array().expect("scenarios array");
-    assert_eq!(scenarios.len(), 2, "must have one entry per scenario; got {sidecar}");
+    assert_eq!(
+        scenarios.len(),
+        2,
+        "must have one entry per scenario; got {sidecar}"
+    );
 
     // @step And the rendered output contains the substring "Recreated 1"
     assert!(
@@ -337,7 +342,9 @@ fn dry_run_reports_would_create_files_without_writing() {
 
     // @step And the rendered output contains the substring "Would create 1 coverage files (DRY RUN)"
     assert!(
-        result.data.contains("Would create 1 coverage files (DRY RUN)"),
+        result
+            .data
+            .contains("Would create 1 coverage files (DRY RUN)"),
         "output must mention would-create count; got:\n{}",
         result.data
     );

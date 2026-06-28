@@ -127,9 +127,7 @@ impl CompactionThresholdConfig {
     pub fn resolve(&self, context_window: u64) -> u64 {
         match self {
             Self::Tokens(tokens) => *tokens,
-            Self::Percentage(pct) => {
-                (context_window as f64 * (*pct as f64 / 100.0)) as u64
-            }
+            Self::Percentage(pct) => (context_window as f64 * (*pct as f64 / 100.0)) as u64,
         }
     }
 
@@ -173,9 +171,12 @@ pub fn builtin_compaction_threshold(model_id: Option<&str>) -> Option<Compaction
     }
 
     // OpenAI family (GPT, o-series): 80% of context window
-    if id_lower.starts_with("gpt-") || id_lower.starts_with("gpt4")
-        || id_lower.starts_with("o1") || id_lower.starts_with("o3")
-        || id_lower.starts_with("o4") || id_lower.starts_with("chatgpt-")
+    if id_lower.starts_with("gpt-")
+        || id_lower.starts_with("gpt4")
+        || id_lower.starts_with("o1")
+        || id_lower.starts_with("o3")
+        || id_lower.starts_with("o4")
+        || id_lower.starts_with("chatgpt-")
     {
         return Some(CompactionThresholdConfig::Percentage(80));
     }
@@ -367,7 +368,10 @@ mod tests {
         assert_eq!(usable, 168_000);
 
         // @step And compaction triggers when effective tokens exceed 168000
-        assert!(168_001 > usable - 1, "tokens exceeding threshold should trigger compaction");
+        assert!(
+            168_001 > usable - 1,
+            "tokens exceeding threshold should trigger compaction"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -387,7 +391,10 @@ mod tests {
         assert_eq!(usable, 27_904);
 
         // @step And compaction triggers when effective tokens exceed 27904
-        assert!(27_905 > usable - 1, "tokens exceeding threshold should trigger compaction");
+        assert!(
+            27_905 > usable - 1,
+            "tokens exceeding threshold should trigger compaction"
+        );
     }
 
     // =========================================================================
@@ -474,7 +481,10 @@ mod tests {
         // User override should take priority over everything
         let user_config = CompactionThresholdConfig::Tokens(150_000);
         let threshold = resolve_compaction_threshold(
-            200_000, 8_192, Some("claude-sonnet-4"), Some(&user_config),
+            200_000,
+            8_192,
+            Some("claude-sonnet-4"),
+            Some(&user_config),
         );
         assert_eq!(threshold, 150_000);
     }
@@ -482,18 +492,15 @@ mod tests {
     #[test]
     fn test_resolve_priority_builtin_gemini() {
         // No user config → built-in Gemini default (80%)
-        let threshold = resolve_compaction_threshold(
-            1_000_000, 65_536, Some("gemini-2.5-pro"), None,
-        );
+        let threshold =
+            resolve_compaction_threshold(1_000_000, 65_536, Some("gemini-2.5-pro"), None);
         assert_eq!(threshold, 800_000);
     }
 
     #[test]
     fn test_resolve_priority_claude_base() {
         // No user config → Claude has no built-in → base formula
-        let threshold = resolve_compaction_threshold(
-            200_000, 8_192, Some("claude-sonnet-4"), None,
-        );
+        let threshold = resolve_compaction_threshold(200_000, 8_192, Some("claude-sonnet-4"), None);
         // Legacy: 200k - min(8192, 32k) = 200k - 8192 = 191808
         assert_eq!(threshold, 191_808);
     }
@@ -501,9 +508,7 @@ mod tests {
     #[test]
     fn test_resolve_priority_unknown_base() {
         // Unknown model → no built-in → base formula
-        let threshold = resolve_compaction_threshold(
-            100_000, 0, Some("my-custom-llm"), None,
-        );
+        let threshold = resolve_compaction_threshold(100_000, 0, Some("my-custom-llm"), None);
         // Legacy: 100k - 32k (0→fallback) = 68k
         assert_eq!(threshold, 68_000);
     }
@@ -513,7 +518,10 @@ mod tests {
         // User sets 300k on a 200k context model → clamped to base threshold
         let user_config = CompactionThresholdConfig::Tokens(300_000);
         let threshold = resolve_compaction_threshold(
-            200_000, 100_000, Some("claude-sonnet-4"), Some(&user_config),
+            200_000,
+            100_000,
+            Some("claude-sonnet-4"),
+            Some(&user_config),
         );
         // Legacy: 200k - min(100k, 32k) = 200k - 32k = 168k
         assert_eq!(threshold, 168_000);
@@ -521,9 +529,7 @@ mod tests {
 
     #[test]
     fn test_resolve_openai_gpt4o() {
-        let threshold = resolve_compaction_threshold(
-            128_000, 16_384, Some("gpt-4o"), None,
-        );
+        let threshold = resolve_compaction_threshold(128_000, 16_384, Some("gpt-4o"), None);
         // Built-in: 80% of 128k = 102400
         // Legacy: 128k - 16384 = 111616
         // 102400 < 111616, so 102400 (not clamped)
@@ -603,12 +609,18 @@ mod tests {
         };
 
         // @step Then the fill percentage should be approximately 45 percent (not 9 percent from wrong 968k threshold)
-        assert_eq!(fill_percentage, 45, "87k / 191k should be ~45%, not 9% from wrong 968k threshold");
+        assert_eq!(
+            fill_percentage, 45,
+            "87k / 191k should be ~45%, not 9% from wrong 968k threshold"
+        );
 
         // Verify the wrong threshold would give wrong answer
         let wrong_threshold: u64 = 968_000; // What 1M - 32k would give with unclamped values
         let wrong_fill = ((total_tokens as f64 / wrong_threshold as f64) * 100.0) as u32;
-        assert_eq!(wrong_fill, 8, "With wrong 968k threshold, fill would be ~8-9% — incorrect");
+        assert_eq!(
+            wrong_fill, 8,
+            "With wrong 968k threshold, fill would be ~8-9% — incorrect"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -649,12 +661,8 @@ mod tests {
         let max_output: u64 = 65_536;
 
         // @step When resolve_compaction_threshold is called with model_id "gemini-2.5-pro"
-        let threshold = resolve_compaction_threshold(
-            context_window,
-            max_output,
-            Some("gemini-2.5-pro"),
-            None,
-        );
+        let threshold =
+            resolve_compaction_threshold(context_window, max_output, Some("gemini-2.5-pro"), None);
 
         // @step Then the threshold should be 800000 tokens (80 percent of 1M)
         assert_eq!(threshold, 800_000);
@@ -670,12 +678,8 @@ mod tests {
         let max_output: u64 = 16_384;
 
         // @step When resolve_compaction_threshold is called with model_id "gpt-4o"
-        let threshold = resolve_compaction_threshold(
-            context_window,
-            max_output,
-            Some("gpt-4o"),
-            None,
-        );
+        let threshold =
+            resolve_compaction_threshold(context_window, max_output, Some("gpt-4o"), None);
 
         // @step Then the threshold should be 102400 tokens (80 percent of 128k)
         assert_eq!(threshold, 102_400);
@@ -697,7 +701,10 @@ mod tests {
 
         // Verify wrong unclamped value would give wrong budget
         let wrong_budget = calculate_summarization_budget(1_000_000);
-        assert_eq!(wrong_budget, 950_000, "Unclamped 1M would give 950k budget — too high");
+        assert_eq!(
+            wrong_budget, 950_000,
+            "Unclamped 1M would give 950k budget — too high"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -721,12 +728,18 @@ mod tests {
         };
 
         // With clamped 200k, 185k tokens = 92.5% utilization → triggers >90% preservation
-        assert!(utilization_pct > 90.0, "185k / 200k = {utilization_pct:.1}% should trigger >90% preservation");
+        assert!(
+            utilization_pct > 90.0,
+            "185k / 200k = {utilization_pct:.1}% should trigger >90% preservation"
+        );
 
         // With wrong unclamped 1M, 185k tokens = 18.5% → would NOT trigger preservation
         let wrong_context_window: u64 = 1_000_000;
         let wrong_utilization = (current_tokens as f64 / wrong_context_window as f64) * 100.0;
-        assert!(wrong_utilization < 20.0, "185k / 1M = {wrong_utilization:.1}% would miss the >90% check");
+        assert!(
+            wrong_utilization < 20.0,
+            "185k / 1M = {wrong_utilization:.1}% would miss the >90% check"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -742,9 +755,8 @@ mod tests {
         let max_output: u64 = 8_192;
 
         // 1. Compaction threshold (stream_loop.rs:283)
-        let threshold = resolve_compaction_threshold(
-            context_window, max_output, Some("claude-opus-4-6"), None,
-        );
+        let threshold =
+            resolve_compaction_threshold(context_window, max_output, Some("claude-opus-4-6"), None);
         assert_eq!(threshold, 191_808);
 
         // 2. Summarization budget (compaction_retry.rs uses this)
@@ -790,7 +802,10 @@ mod tests {
         // @step Then it should return 200000 (clamped by provider hard max) not 1000000
         // The sub-agent's threshold should match the parent's threshold
         assert_eq!(sub_agent_threshold, 191_808);
-        assert_ne!(sub_agent_context_window, 1_000_000, "Must NOT be unclamped 1M");
+        assert_ne!(
+            sub_agent_context_window, 1_000_000,
+            "Must NOT be unclamped 1M"
+        );
         assert_eq!(sub_agent_context_window, 200_000, "Must be clamped 200k");
     }
 }

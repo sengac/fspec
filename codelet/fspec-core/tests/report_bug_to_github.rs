@@ -97,7 +97,10 @@ fn default_flow_produces_complete_report_with_all_sections() {
     let tmp = TempDir::new().expect("tempdir");
 
     // @step When I dispatch report-bug-to-github with bug-description "crash on save"
-    let result = dispatch_command(req(tmp.path(), json!({ "bugDescription": "crash on save" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "bugDescription": "crash on save" }),
+    ));
 
     // @step Then the dispatcher returns success
     assert!(result.success, "expected success; got {result:?}");
@@ -128,7 +131,10 @@ fn environment_section_reports_pinned_version_and_os() {
     let tmp = TempDir::new().expect("tempdir");
 
     // @step When I dispatch report-bug-to-github with bug-description "crash on save"
-    let result = dispatch_command(req(tmp.path(), json!({ "bugDescription": "crash on save" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "bugDescription": "crash on save" }),
+    ));
 
     // @step Then the dispatcher returns success
     assert!(result.success, "expected success; got {result:?}");
@@ -138,7 +144,11 @@ fn environment_section_reports_pinned_version_and_os() {
     assert!(md.contains("fspec version: 0.9.3"), "md={md}");
 
     // @step And the report markdown contains the current OS platform line
-    assert!(md.contains(std::env::consts::OS), "md must mention OS '{}': {md}", std::env::consts::OS);
+    assert!(
+        md.contains(std::env::consts::OS),
+        "md must mention OS '{}': {md}",
+        std::env::consts::OS
+    );
 }
 
 #[test]
@@ -147,7 +157,10 @@ fn constructed_url_targets_sengac_fspec_with_encoded_labels() {
     let tmp = TempDir::new().expect("tempdir");
 
     // @step When I dispatch report-bug-to-github with bug-description "crash on save"
-    let result = dispatch_command(req(tmp.path(), json!({ "bugDescription": "crash on save" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "bugDescription": "crash on save" }),
+    ));
 
     // @step Then the dispatcher returns success
     assert!(result.success, "expected success; got {result:?}");
@@ -212,10 +225,16 @@ fn work_unit_context_included_when_non_done_work_unit_exists() {
 fn gathering_context_faithfully_replicates_work_units_side_effect() {
     // @step Given an empty project root tempdir with no spec subdirectory
     let tmp = TempDir::new().expect("tempdir");
-    assert!(!tmp.path().join("spec").exists(), "precondition: no spec dir");
+    assert!(
+        !tmp.path().join("spec").exists(),
+        "precondition: no spec dir"
+    );
 
     // @step When I dispatch report-bug-to-github with bug-description "crash on save"
-    let result = dispatch_command(req(tmp.path(), json!({ "bugDescription": "crash on save" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "bugDescription": "crash on save" }),
+    ));
 
     // @step Then the dispatcher returns success
     assert!(result.success, "expected success; got {result:?}");
@@ -223,11 +242,18 @@ fn gathering_context_faithfully_replicates_work_units_side_effect() {
 
     // @step And spec/work-units.json is created in the project root with the canonical initial structure
     let wu_path = tmp.path().join("spec/work-units.json");
-    assert!(wu_path.exists(), "work-units.json must be created (faithful TS side-effect)");
+    assert!(
+        wu_path.exists(),
+        "work-units.json must be created (faithful TS side-effect)"
+    );
     let on_disk: Value =
-        serde_json::from_str(&fs::read_to_string(&wu_path).expect("read work-units")).expect("parse");
+        serde_json::from_str(&fs::read_to_string(&wu_path).expect("read work-units"))
+            .expect("parse");
     assert_eq!(on_disk["version"], json!("0.7.1"), "canonical version");
-    assert!(on_disk["states"]["backlog"].is_array(), "canonical states present");
+    assert!(
+        on_disk["states"]["backlog"].is_array(),
+        "canonical states present"
+    );
 
     // @step And the dispatcher does not return an error
     assert!(result.error.is_none(), "no error expected: {result:?}");
@@ -244,7 +270,10 @@ fn both_front_doors_converge_on_same_function() {
     // @step When I dispatch report-bug-to-github with bug-description "crash on save" via the dispatcher
     // (the binary front-door is exercised in cli_report_bug_to_github.rs; both call
     //  commands::report_bug_to_github::run)
-    let result = dispatch_command(req(tmp.path(), json!({ "bugDescription": "crash on save" })));
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({ "bugDescription": "crash on save" }),
+    ));
 
     // @step Then the dispatcher returns success
     assert!(result.success, "expected success; got {result:?}");

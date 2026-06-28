@@ -48,8 +48,9 @@ const NOTES: &[&str] = &[
     "Use fspec init to reinstall after removal",
 ];
 
-const PREREQS: &[&str] =
-    &["At least one agent must be installed (detected via spec/fspec-config.json or file detection)"];
+const PREREQS: &[&str] = &[
+    "At least one agent must be installed (detected via spec/fspec-config.json or file detection)",
+];
 
 pub const CONFIG: CommandHelpConfig = CommandHelpConfig {
     name: "remove-init-files",

@@ -74,9 +74,7 @@ pub fn sanitize_image_content(messages: &mut [Message]) -> bool {
                                         }
                                     }
                                 }
-                                if let Ok(new_tr_content) =
-                                    OneOrMany::many(new_tr_parts)
-                                {
+                                if let Ok(new_tr_content) = OneOrMany::many(new_tr_parts) {
                                     // Preserve call_id if present (OpenAI provider path)
                                     if let Some(call_id) = &tool_result.call_id {
                                         new_parts.push(UserContent::tool_result_with_call_id(

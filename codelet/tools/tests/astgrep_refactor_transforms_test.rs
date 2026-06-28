@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for Enhanced AST Refactor Tool with Transforms and Batch Mode (TOOLS-004)
 //!
@@ -11,7 +10,6 @@
 //! - Preview/dry-run mode
 //! - Error handling for invalid transforms
 
-use uuid::Uuid;
 use codelet_tools::astgrep_refactor::{
     AstGrepRefactorArgs, AstGrepRefactorTool, CaseType, ConvertTransform, ReplaceTransform,
     Separator, SubstringTransform, Transform,
@@ -20,6 +18,7 @@ use rig::tool::Tool;
 use std::collections::HashMap;
 use std::fs;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 // ============================================================================
 // Scenario: Match function using partial pattern with meta-variables

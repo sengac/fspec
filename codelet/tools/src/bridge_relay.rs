@@ -63,7 +63,11 @@ impl InjectedInput {
     pub fn with_images(message: String, images: Vec<ImageData>) -> Self {
         Self {
             message,
-            images: if images.is_empty() { None } else { Some(images) },
+            images: if images.is_empty() {
+                None
+            } else {
+                Some(images)
+            },
         }
     }
 }
@@ -152,8 +156,7 @@ static OUTBOUND_CONTROL_SENDERS: once_cell::sync::Lazy<
 /// SESS-017: Registered by the NAPI layer (`init_bridge_session_creator()`).
 /// The bridge calls this when a `session:create` envelope arrives so the
 /// dashboard's "+ > New fspec Session" click can actually spawn a session.
-pub type SessionCreator =
-    Arc<dyn Fn() -> Result<String, String> + Send + Sync>;
+pub type SessionCreator = Arc<dyn Fn() -> Result<String, String> + Send + Sync>;
 
 /// Global session creator. Set once at startup by the NAPI layer.
 static SESSION_CREATOR: RwLock<Option<SessionCreator>> = RwLock::new(None);
@@ -167,10 +170,7 @@ pub fn set_session_creator(creator: Option<SessionCreator>) {
 
 /// Query the registered session creator (returns a clone of the Arc).
 fn query_session_creator() -> Option<SessionCreator> {
-    SESSION_CREATOR
-        .read()
-        .ok()
-        .and_then(|guard| guard.clone())
+    SESSION_CREATOR.read().ok().and_then(|guard| guard.clone())
 }
 
 /// Global PTY registry. Set once at startup so the bridge can spawn
@@ -186,10 +186,7 @@ pub fn set_pty_registry(registry: Option<Arc<crate::PtyRegistry>>) {
 
 /// Query the registered PTY registry.
 fn query_pty_registry() -> Option<Arc<crate::PtyRegistry>> {
-    PTY_REGISTRY
-        .read()
-        .ok()
-        .and_then(|guard| guard.clone())
+    PTY_REGISTRY.read().ok().and_then(|guard| guard.clone())
 }
 
 /// Register an outbound control sender for a session's bridge connection.
@@ -400,11 +397,7 @@ pub fn process_outbound_envelope(
                 .and_then(|v| v.as_str())
                 .unwrap_or(session_id);
 
-            let env = Envelope::relay_chunk(
-                instance_id,
-                effective_session_id,
-                chunk_json.clone(),
-            );
+            let env = Envelope::relay_chunk(instance_id, effective_session_id, chunk_json.clone());
             OutboundEnvelopeAction::RelayChunk(env)
         }
     }
@@ -430,8 +423,8 @@ pub async fn handle_multiplexed_inbound(
     command_emitter: Option<CommandEmitter>,
     pending_commands: Option<PendingCommands>,
 ) -> Result<Option<Envelope>, String> {
-    let envelope: Envelope = serde_json::from_str(text)
-        .map_err(|e| format!("Failed to parse envelope: {e}"))?;
+    let envelope: Envelope =
+        serde_json::from_str(text).map_err(|e| format!("Failed to parse envelope: {e}"))?;
 
     let action = route_inbound(&envelope);
 
@@ -489,10 +482,7 @@ pub async fn handle_multiplexed_inbound(
                 tracing::info!("Handling control action: {}", action);
                 handler(&action, response.as_deref());
             } else {
-                tracing::warn!(
-                    "Received control '{}' but no handler configured",
-                    action
-                );
+                tracing::warn!("Received control '{}' but no handler configured", action);
             }
             Ok(None)
         }
@@ -512,10 +502,7 @@ pub async fn handle_multiplexed_inbound(
 
                 if let Some(pending) = pending_commands {
                     if let Ok(mut map) = pending.lock() {
-                        map.insert(
-                            tool_call_id.clone(),
-                            (request_id, command.clone()),
-                        );
+                        map.insert(tool_call_id.clone(), (request_id, command.clone()));
                     }
                 }
 
@@ -529,9 +516,7 @@ pub async fn handle_multiplexed_inbound(
             }
             Ok(None)
         }
-        InboundAction::SystemPing => {
-            Ok(Some(Envelope::system_pong()))
-        }
+        InboundAction::SystemPing => Ok(Some(Envelope::system_pong())),
         InboundAction::AuthResponse { success, data } => {
             tracing::info!("Auth response: success={}, data={:?}", success, data);
             Ok(None)
@@ -546,10 +531,7 @@ pub async fn handle_multiplexed_inbound(
             match query_session_creator() {
                 Some(creator) => match creator() {
                     Ok(new_session_id) => {
-                        tracing::info!(
-                            "session:create handled — new session {}",
-                            new_session_id
-                        );
+                        tracing::info!("session:create handled — new session {}", new_session_id);
                         Ok(Some(Envelope::session_created(
                             &instance_id,
                             &request_id,
@@ -557,10 +539,7 @@ pub async fn handle_multiplexed_inbound(
                         )))
                     }
                     Err(e) => {
-                        tracing::warn!(
-                            "session:create failed: {} — sending error envelope",
-                            e
-                        );
+                        tracing::warn!("session:create failed: {} — sending error envelope", e);
                         // Reply with a session:created envelope carrying empty
                         // session_id + an error field so the dashboard can
                         // surface the failure rather than hang forever.
@@ -579,9 +558,7 @@ pub async fn handle_multiplexed_inbound(
                     }
                 },
                 None => {
-                    tracing::warn!(
-                        "session:create received but no SessionCreator registered"
-                    );
+                    tracing::warn!("session:create received but no SessionCreator registered");
                     Ok(Some(Envelope {
                         service: Service::Session,
                         msg_type: "created".to_string(),
@@ -597,7 +574,13 @@ pub async fn handle_multiplexed_inbound(
                 }
             }
         }
-        InboundAction::TerminalCreate { request_id, cols, rows, shell, cwd } => {
+        InboundAction::TerminalCreate {
+            request_id,
+            cols,
+            rows,
+            shell,
+            cwd,
+        } => {
             // SESS-017 FIX 2: Spawn a PTY via the registered PtyRegistry and
             // respond with a terminal:created envelope. Without this the
             // dashboard's "+ > New Terminal" click hangs forever.
@@ -611,7 +594,12 @@ pub async fn handle_multiplexed_inbound(
 
             match query_pty_registry() {
                 Some(registry) => {
-                    let opts = crate::CreateTerminalOpts { cols, rows, shell, cwd };
+                    let opts = crate::CreateTerminalOpts {
+                        cols,
+                        rows,
+                        shell,
+                        cwd,
+                    };
                     match crate::create_terminal(&registry, &opts) {
                         Ok((terminal_id, entry)) => {
                             tracing::info!(
@@ -648,9 +636,7 @@ pub async fn handle_multiplexed_inbound(
                     }
                 }
                 None => {
-                    tracing::warn!(
-                        "terminal:create received but no PtyRegistry registered"
-                    );
+                    tracing::warn!("terminal:create received but no PtyRegistry registered");
                     Ok(Some(Envelope {
                         service: Service::Terminal,
                         msg_type: "created".to_string(),
@@ -666,7 +652,10 @@ pub async fn handle_multiplexed_inbound(
                 }
             }
         }
-        InboundAction::TerminalInput { terminal_id, base64_data } => {
+        InboundAction::TerminalInput {
+            terminal_id,
+            base64_data,
+        } => {
             // SESS-018: Decode the base64 payload and write the bytes to the
             // PTY's stdin via PtyRegistry. The shell echoes typed characters
             // on its output stream, which the spawned reader task forwards as
@@ -674,16 +663,11 @@ pub async fn handle_multiplexed_inbound(
             use base64::Engine;
 
             let Some(registry) = query_pty_registry() else {
-                tracing::warn!(
-                    "terminal:input received but no PtyRegistry registered"
-                );
+                tracing::warn!("terminal:input received but no PtyRegistry registered");
                 return Ok(None);
             };
             let Some(entry) = registry.get(&terminal_id) else {
-                tracing::warn!(
-                    "terminal:input for unknown terminal {}",
-                    terminal_id
-                );
+                tracing::warn!("terminal:input for unknown terminal {}", terminal_id);
                 return Ok(None);
             };
             let bytes = match base64::engine::general_purpose::STANDARD.decode(&base64_data) {
@@ -702,20 +686,19 @@ pub async fn handle_multiplexed_inbound(
             }
             Ok(None)
         }
-        InboundAction::TerminalResize { terminal_id, cols, rows } => {
+        InboundAction::TerminalResize {
+            terminal_id,
+            cols,
+            rows,
+        } => {
             // SESS-018: Resize the PTY via PtyRegistry so the shell receives
             // SIGWINCH and reflows output to the new dimensions.
             let Some(registry) = query_pty_registry() else {
-                tracing::warn!(
-                    "terminal:resize received but no PtyRegistry registered"
-                );
+                tracing::warn!("terminal:resize received but no PtyRegistry registered");
                 return Ok(None);
             };
             let Some(entry) = registry.get(&terminal_id) else {
-                tracing::warn!(
-                    "terminal:resize for unknown terminal {}",
-                    terminal_id
-                );
+                tracing::warn!("terminal:resize for unknown terminal {}", terminal_id);
                 return Ok(None);
             };
             if let Err(e) = crate::resize_terminal(&entry, cols, rows).await {
@@ -723,7 +706,10 @@ pub async fn handle_multiplexed_inbound(
             }
             Ok(None)
         }
-        InboundAction::TerminalDestroy { terminal_id, request_id } => {
+        InboundAction::TerminalDestroy {
+            terminal_id,
+            request_id,
+        } => {
             // SESS-018: Kill the PTY process, remove it from the registry, and
             // respond with a terminal:destroyed envelope so the dashboard can
             // unmount the tab. Always responds — even if the registry is
@@ -735,17 +721,11 @@ pub async fn handle_multiplexed_inbound(
             match query_pty_registry() {
                 Some(registry) => {
                     if let Err(e) = crate::destroy_terminal(&registry, &terminal_id).await {
-                        tracing::warn!(
-                            "terminal:destroy failed for {}: {}",
-                            terminal_id,
-                            e
-                        );
+                        tracing::warn!("terminal:destroy failed for {}: {}", terminal_id, e);
                     }
                 }
                 None => {
-                    tracing::warn!(
-                        "terminal:destroy received but no PtyRegistry registered"
-                    );
+                    tracing::warn!("terminal:destroy received but no PtyRegistry registered");
                 }
             }
 
@@ -793,11 +773,7 @@ fn spawn_pty_reader_task(
             match master.try_clone_reader() {
                 Ok(r) => r,
                 Err(e) => {
-                    tracing::warn!(
-                        "failed to clone PTY reader for {}: {}",
-                        terminal_id,
-                        e
-                    );
+                    tracing::warn!("failed to clone PTY reader for {}: {}", terminal_id, e);
                     return;
                 }
             }
@@ -814,23 +790,16 @@ fn spawn_pty_reader_task(
                 match reader.read(&mut buf) {
                     Ok(0) => break, // EOF — shell exited
                     Ok(n) => {
-                        let b64 = base64::engine::general_purpose::STANDARD
-                            .encode(&buf[..n]);
-                        let env = Envelope::terminal_data(
-                            &instance_id,
-                            &terminal_id_for_task,
-                            &b64,
-                        );
+                        let b64 = base64::engine::general_purpose::STANDARD.encode(&buf[..n]);
+                        let env =
+                            Envelope::terminal_data(&instance_id, &terminal_id_for_task, &b64);
 
                         // Snapshot senders for this connection_owner and fan out.
-                        let senders: Vec<OutboundControlTx> =
-                            match OUTBOUND_CONTROL_SENDERS.read() {
-                                Ok(guard) => guard
-                                    .get(&connection_owner)
-                                    .cloned()
-                                    .unwrap_or_default(),
-                                Err(_) => break,
-                            };
+                        let senders: Vec<OutboundControlTx> = match OUTBOUND_CONTROL_SENDERS.read()
+                        {
+                            Ok(guard) => guard.get(&connection_owner).cloned().unwrap_or_default(),
+                            Err(_) => break,
+                        };
                         if senders.is_empty() {
                             // Connection owner gone — terminal output is
                             // orphaned, drop the loop so the PTY can be
@@ -844,10 +813,7 @@ fn spawn_pty_reader_task(
                     Err(_) => break,
                 }
             }
-            tracing::debug!(
-                "PTY reader for {} exiting",
-                terminal_id_for_task
-            );
+            tracing::debug!("PTY reader for {} exiting", terminal_id_for_task);
         })
         .await;
     });
@@ -1043,10 +1009,7 @@ async fn connect_and_relay(
                             // outbound writer via the control channel.
                             if let Some(tx) = &inbound_response_tx {
                                 if let Err(e) = tx.send(response_env) {
-                                    tracing::warn!(
-                                        "Failed to forward inbound response: {}",
-                                        e
-                                    );
+                                    tracing::warn!("Failed to forward inbound response: {}", e);
                                 }
                             } else {
                                 tracing::warn!(
@@ -1286,7 +1249,8 @@ mod tests {
             *r.lock().unwrap() = input.message;
         });
 
-        let text = r#"{"service":"session","type":"input","session_id":"s1","data":{"message":"hi"}}"#;
+        let text =
+            r#"{"service":"session","type":"input","session_id":"s1","data":{"message":"hi"}}"#;
         let result =
             handle_multiplexed_inbound(text, Uuid::new_v4(), injector, None, None, None).await;
         assert!(result.is_ok());
@@ -1344,15 +1308,8 @@ mod tests {
         let injector: InputInjector = Arc::new(|_| {});
 
         // @step When the bridge routes the inbound envelope
-        let result = handle_multiplexed_inbound(
-            text,
-            Uuid::new_v4(),
-            injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(text, Uuid::new_v4(), injector, None, None, None).await;
 
         // @step And the SessionCreator callback should be invoked
         assert!(
@@ -1409,18 +1366,14 @@ mod tests {
         let injector: InputInjector = Arc::new(|_| {});
 
         // @step When the bridge routes the inbound envelope
-        let result = handle_multiplexed_inbound(
-            text,
-            Uuid::new_v4(),
-            injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(text, Uuid::new_v4(), injector, None, None, None).await;
 
         // @step And the bridge should spawn a PTY via the registry
-        assert!(!registry.is_empty(), "PtyRegistry should contain spawned PTY");
+        assert!(
+            !registry.is_empty(),
+            "PtyRegistry should contain spawned PTY"
+        );
 
         // @step And the bridge should send back a terminal:created envelope on the outbound channel
         // @step And the response envelope should contain the spawned terminal_id
@@ -1510,15 +1463,9 @@ mod tests {
         let text = format!(
             r#"{{"service":"session","type":"input","session_id":"{new_session_id}","data":{{"message":"what is 4 + 3?"}}}}"#,
         );
-        let result = handle_multiplexed_inbound(
-            &text,
-            supervisor_id,
-            supervisor_injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(&text, supervisor_id, supervisor_injector, None, None, None)
+                .await;
 
         assert!(result.is_ok(), "handle_multiplexed_inbound must succeed");
 
@@ -1559,15 +1506,9 @@ mod tests {
         let text = format!(
             r#"{{"service":"session","type":"input","session_id":"{unregistered_sid}","data":{{"message":"hi"}}}}"#,
         );
-        let result = handle_multiplexed_inbound(
-            &text,
-            supervisor_id,
-            supervisor_injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(&text, supervisor_id, supervisor_injector, None, None, None)
+                .await;
         assert!(result.is_ok());
 
         // Fallback to the parameter injector
@@ -1696,15 +1637,8 @@ mod tests {
         );
 
         let injector: InputInjector = Arc::new(|_| {});
-        let result = handle_multiplexed_inbound(
-            &text,
-            Uuid::new_v4(),
-            injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(&text, Uuid::new_v4(), injector, None, None, None).await;
         assert!(
             result.is_ok(),
             "terminal:input must dispatch cleanly, got: {result:?}",
@@ -1775,15 +1709,8 @@ mod tests {
             r#"{{"service":"terminal","type":"resize","terminal_id":"{term_id}","data":{{"cols":120,"rows":40}}}}"#,
         );
         let injector: InputInjector = Arc::new(|_| {});
-        let result = handle_multiplexed_inbound(
-            &text,
-            Uuid::new_v4(),
-            injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(&text, Uuid::new_v4(), injector, None, None, None).await;
         assert!(result.is_ok(), "terminal:resize must succeed");
 
         let size = entry.size.lock().await;
@@ -1825,15 +1752,8 @@ mod tests {
             r#"{{"service":"terminal","type":"destroy","terminal_id":"{term_id}","request_id":"destroy-1"}}"#,
         );
         let injector: InputInjector = Arc::new(|_| {});
-        let result = handle_multiplexed_inbound(
-            &text,
-            Uuid::new_v4(),
-            injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(&text, Uuid::new_v4(), injector, None, None, None).await;
 
         match result {
             Ok(Some(env)) => {
@@ -1883,15 +1803,8 @@ mod tests {
             "data": {"cols": 80, "rows": 24}
         }"#;
         let injector: InputInjector = Arc::new(|_| {});
-        let result = handle_multiplexed_inbound(
-            text,
-            connection_owner,
-            injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(text, connection_owner, injector, None, None, None).await;
 
         match result {
             Ok(Some(env)) => assert_eq!(env.msg_type, "created"),

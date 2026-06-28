@@ -213,12 +213,13 @@ mod agent_loop_dispatch_tests {
     fn copilot_create_rig_agent_signature_matches_dispatch_macro_contract() {
         use codelet_providers::copilot::CopilotProvider;
 
-        let _create_rig_agent_ref = |provider: &CopilotProvider,
-                                     session_id: uuid::Uuid,
-                                     preamble: Option<&str>,
-                                     thinking: Option<serde_json::Value>| {
-            provider.create_rig_agent(session_id, preamble, thinking)
-        };
+        let _create_rig_agent_ref =
+            |provider: &CopilotProvider,
+             session_id: uuid::Uuid,
+             preamble: Option<&str>,
+             thinking: Option<serde_json::Value>| {
+                provider.create_rig_agent(session_id, preamble, thinking)
+            };
 
         assert!(
             agent_loop_dispatch_supports_provider("github-copilot"),

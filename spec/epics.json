@@ -1163,6 +1163,24 @@
         "RPC-366",
         "RPC-369"
       ]
+    },
+    "rust-board-viewer": {
+      "id": "rust-board-viewer",
+      "title": "Rust Board Attachment & Foundation Viewer",
+      "createdAt": "2026-06-27T12:14:53.046Z",
+      "description": "Wire the A and D keys on the Rust port's board view to open a local browser-rendered viewer for card attachments (A) and the FOUNDATION.md document (D), porting the TypeScript attachment-server architecture using the fspec.pro axum HTTP server conventions.",
+      "workUnits": [
+        "RPC-371",
+        "RPC-372",
+        "RPC-373",
+        "RPC-374",
+        "RPC-375",
+        "RPC-376",
+        "RPC-377",
+        "RPC-378",
+        "RPC-379",
+        "RPC-380"
+      ]
     }
   }
 }

@@ -19,7 +19,8 @@ const ARGS: &[CommandArgument] = &[
     },
     CommandArgument {
         name: "<event-name>",
-        description: "Name of the domain event to add (e.g., \"WorkUnitCreated\", \"UserLoggedIn\")",
+        description:
+            "Name of the domain event to add (e.g., \"WorkUnitCreated\", \"UserLoggedIn\")",
         required: true,
     },
 ];
@@ -37,7 +38,9 @@ const PREREQUISITES: &[&str] = &[
 ];
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
-    CommonPatternEntry::Bullet("Use past tense for event names (WorkUnitCreated, not CreateWorkUnit)"),
+    CommonPatternEntry::Bullet(
+        "Use past tense for event names (WorkUnitCreated, not CreateWorkUnit)",
+    ),
     CommonPatternEntry::Bullet("Events represent facts that have already occurred"),
     CommonPatternEntry::Bullet("Add events during Big Picture Event Storm sessions"),
     CommonPatternEntry::Bullet("Events often trigger reactions in other bounded contexts"),

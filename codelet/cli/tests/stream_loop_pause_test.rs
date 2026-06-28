@@ -101,15 +101,21 @@ fn test_handler_invoked_with_request_returns_response() {
         });
 
         set_pause_handler(sid, Some(handler));
-        
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
 
-        assert!(handler_invoked.load(Ordering::SeqCst), "Handler should be invoked");
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
+
+        assert!(
+            handler_invoked.load(Ordering::SeqCst),
+            "Handler should be invoked"
+        );
         assert_eq!(response, PauseResponse::Resumed);
     });
 }
@@ -143,12 +149,15 @@ fn test_handler_sets_session_pause_state() {
 
         set_pause_handler(sid, Some(handler));
 
-        pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         // Verify pause state was set on session
         let state = session.get_pause_state();
@@ -183,10 +192,10 @@ fn test_handler_blocks_until_response() {
             };
             session_for_handler.set_pause_state(Some(state));
             session_for_handler.set_status(STATUS_PAUSED);
-            
+
             // Block until response received
             let response = session_for_handler.wait_for_pause_response();
-            
+
             session_for_handler.set_status(STATUS_RUNNING);
             response
         });
@@ -199,12 +208,15 @@ fn test_handler_blocks_until_response() {
 
         set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            },
+        );
 
         signaler.join().unwrap();
 
@@ -221,12 +233,15 @@ fn test_handler_blocks_until_response() {
 #[serial]
 fn test_no_handler_returns_resumed() {
     with_clean_handler(|sid| {
-        let response = pause_for_user(sid, PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "Test".to_string(),
-            message: "Test".to_string(),
-            details: None,
-        });
+        let response = pause_for_user(
+            sid,
+            PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "Test".to_string(),
+                message: "Test".to_string(),
+                details: None,
+            },
+        );
 
         assert_eq!(response, PauseResponse::Resumed);
     });
@@ -241,10 +256,10 @@ fn test_no_handler_returns_resumed() {
 fn test_handler_can_be_cleared() {
     with_clean_handler(|sid| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Resumed);
-        
+
         set_pause_handler(sid, Some(handler));
         assert!(has_pause_handler(sid));
-        
+
         set_pause_handler(sid, None);
         assert!(!has_pause_handler(sid));
     });

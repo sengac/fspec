@@ -131,8 +131,7 @@ mod tests {
 
     fn setup_test_data_dir() -> anyhow::Result<tempfile::TempDir> {
         let temp_dir = tempfile::tempdir()?;
-        crate::set_data_directory(temp_dir.path().to_path_buf())
-            .map_err(|e| anyhow::anyhow!(e))?;
+        crate::set_data_directory(temp_dir.path().to_path_buf()).map_err(|e| anyhow::anyhow!(e))?;
         Ok(temp_dir)
     }
 

@@ -64,8 +64,10 @@ mod tests {
         let mut f = valid_foundation();
         f["solutionSpace"]["capabilities"] = json!([]);
         let errs = validate_foundation(&f).unwrap_err();
-        assert!(errs.iter().any(|e| e.instance_path == "/solutionSpace/capabilities"
-            && e.message == "must NOT have fewer than 1 items"));
+        assert!(errs
+            .iter()
+            .any(|e| e.instance_path == "/solutionSpace/capabilities"
+                && e.message == "must NOT have fewer than 1 items"));
     }
 
     #[test]

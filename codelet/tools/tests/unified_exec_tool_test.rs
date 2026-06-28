@@ -1,22 +1,24 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 //! Feature: spec/features/unified-exec-tool.feature
 //!
 //! Tests for TOOL-016: Unified Exec Tool with PTY Session Management.
 //! Tests validate the ProcessStore, yield-and-resume pattern, action dispatch,
 //! and backward compatibility with BashTool's one-shot execution.
 
-
 use codelet_tools::unified_exec::{
-    UnifiedExecTool, UnifiedExecArgs, UnifiedExecResult,
-    MIN_YIELD_TIME_MS, MAX_YIELD_TIME_MS, DEFAULT_YIELD_TIME_MS,
-    MIN_EMPTY_YIELD_TIME_MS, MAX_UNIFIED_EXEC_PROCESSES,
-    UNIFIED_EXEC_OUTPUT_MAX_BYTES, LRU_PROTECT_COUNT,
-    session_id_to_evict,
+    session_id_to_evict, UnifiedExecArgs, UnifiedExecResult, UnifiedExecTool,
+    DEFAULT_YIELD_TIME_MS, LRU_PROTECT_COUNT, MAX_UNIFIED_EXEC_PROCESSES, MAX_YIELD_TIME_MS,
+    MIN_EMPTY_YIELD_TIME_MS, MIN_YIELD_TIME_MS, UNIFIED_EXEC_OUTPUT_MAX_BYTES,
 };
 use rig::tool::Tool;
 use serde_json::json;
-use uuid::Uuid;
 use std::time::Instant;
+use uuid::Uuid;
 
 // ============================================================================
 // Run Action — One-Shot Execution
@@ -29,10 +31,13 @@ async fn test_run_short_lived_command_returns_exit_code_and_output() {
     let tool = UnifiedExecTool::new(Uuid::nil());
 
     // @step When I call the run action with command "echo hello"
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "echo hello"
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "echo hello"
+        })))
+        .await
+        .unwrap();
 
     // @step Then the response should contain exit_code 0
     assert_eq!(result.exit_code, Some(0));
@@ -52,10 +57,13 @@ async fn test_run_command_as_argv_array() {
     let tool = UnifiedExecTool::new(Uuid::nil());
 
     // @step When I call the run action with command as array ["ls", "-la"]
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": ["ls", "-la"]
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": ["ls", "-la"]
+        })))
+        .await
+        .unwrap();
 
     // @step Then the response should contain exit_code
     assert!(result.exit_code.is_some());
@@ -79,15 +87,21 @@ async fn test_run_interactive_process_with_tty_returns_session_id() {
     let tool = UnifiedExecTool::new(Uuid::nil());
 
     // @step When I call the run action with command "cat" and tty true and yield_time_ms 500
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "cat",
-        "tty": true,
-        "yield_time_ms": 500
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "cat",
+            "tty": true,
+            "yield_time_ms": 500
+        })))
+        .await
+        .unwrap();
 
     // @step Then the response should contain a session_id
-    assert!(result.session_id.is_some(), "expected session_id, got: {result:?}");
+    assert!(
+        result.session_id.is_some(),
+        "expected session_id, got: {result:?}"
+    );
     let session_id = result.session_id.as_deref().unwrap();
 
     // @step And the response should not contain exit_code
@@ -97,10 +111,12 @@ async fn test_run_interactive_process_with_tty_returns_session_id() {
     assert!(result.output.is_some());
 
     // Cleanup
-    let _ = tool.call(UnifiedExecArgs(json!({
-        "action": "close",
-        "session_id": session_id
-    }))).await;
+    let _ = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "close",
+            "session_id": session_id
+        })))
+        .await;
 }
 
 /// Scenario: Run a long-running command yields session_id after yield_time_ms
@@ -111,27 +127,40 @@ async fn test_run_long_running_command_yields_session_id() {
 
     // @step When I call the run action with command "sleep 300" and yield_time_ms 2000
     let start = Instant::now();
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "sleep 300",
-        "yield_time_ms": 2000
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "sleep 300",
+            "yield_time_ms": 2000
+        })))
+        .await
+        .unwrap();
     let elapsed = start.elapsed();
 
     // @step Then the response should contain a session_id after approximately 2 seconds
     assert!(result.session_id.is_some());
-    assert!(elapsed.as_millis() >= 1500, "returned too quickly: {}ms", elapsed.as_millis());
-    assert!(elapsed.as_millis() <= 5000, "returned too slowly: {}ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() >= 1500,
+        "returned too quickly: {}ms",
+        elapsed.as_millis()
+    );
+    assert!(
+        elapsed.as_millis() <= 5000,
+        "returned too slowly: {}ms",
+        elapsed.as_millis()
+    );
 
     // @step And the response should not contain exit_code
     assert!(result.exit_code.is_none());
 
     // Cleanup
     let session_id = result.session_id.as_deref().unwrap();
-    let _ = tool.call(UnifiedExecArgs(json!({
-        "action": "close",
-        "session_id": session_id
-    }))).await;
+    let _ = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "close",
+            "session_id": session_id
+        })))
+        .await;
 }
 
 /// Scenario: Yield time is clamped to minimum 250ms
@@ -142,25 +171,34 @@ async fn test_yield_time_clamped_to_minimum() {
 
     // @step When I call the run action with command "sleep 300" and yield_time_ms 50
     let start = Instant::now();
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "sleep 300",
-        "yield_time_ms": 50
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "sleep 300",
+            "yield_time_ms": 50
+        })))
+        .await
+        .unwrap();
     let elapsed = start.elapsed();
 
     // @step Then the yield_time_ms used should be at least 250ms
-    assert!(elapsed.as_millis() >= 200, "returned in {}ms, expected at least ~250ms", elapsed.as_millis());
+    assert!(
+        elapsed.as_millis() >= 200,
+        "returned in {}ms, expected at least ~250ms",
+        elapsed.as_millis()
+    );
 
     // @step And the response should contain a session_id
     assert!(result.session_id.is_some());
 
     // Cleanup
     let session_id = result.session_id.as_deref().unwrap();
-    let _ = tool.call(UnifiedExecArgs(json!({
-        "action": "close",
-        "session_id": session_id
-    }))).await;
+    let _ = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "close",
+            "session_id": session_id
+        })))
+        .await;
 }
 
 /// Scenario: Yield time is clamped to maximum 30000ms
@@ -185,37 +223,48 @@ fn test_yield_time_clamped_to_maximum() {
 async fn test_write_input_to_running_session() {
     // @step Given a running session with session_id from command "cat" and tty true
     let tool = UnifiedExecTool::new(Uuid::nil());
-    let run_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "cat",
-        "tty": true,
-        "yield_time_ms": 500
-    }))).await.unwrap();
+    let run_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "cat",
+            "tty": true,
+            "yield_time_ms": 500
+        })))
+        .await
+        .unwrap();
     let session_id = run_result.session_id.as_deref().unwrap().to_string();
 
     // @step When I call the write action with that session_id and input "hello\n"
-    let write_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "write",
-        "session_id": session_id,
-        "input": "hello\n",
-        "yield_time_ms": 1000
-    }))).await.unwrap();
+    let write_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "write",
+            "session_id": session_id,
+            "input": "hello\n",
+            "yield_time_ms": 1000
+        })))
+        .await
+        .unwrap();
 
     // @step Then the response should contain output with "hello"
     let output = write_result.output.as_deref().unwrap_or("");
     assert!(output.contains("hello"), "output was: {output}");
 
     // @step And the response should contain the session_id
-    assert_eq!(write_result.session_id.as_deref(), Some(session_id.as_str()));
+    assert_eq!(
+        write_result.session_id.as_deref(),
+        Some(session_id.as_str())
+    );
 
     // @step And the response should not contain exit_code
     assert!(write_result.exit_code.is_none());
 
     // Cleanup
-    let _ = tool.call(UnifiedExecArgs(json!({
-        "action": "close",
-        "session_id": session_id
-    }))).await;
+    let _ = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "close",
+            "session_id": session_id
+        })))
+        .await;
 }
 
 /// Scenario: Write causes process to exit returns exit_code
@@ -229,22 +278,28 @@ async fn test_write_causes_process_exit() {
     // stdin forwarding channel keeps alive. Argv form bypasses shell wrapping
     // so there's no parent `sh` process to wait for.
     let tool = UnifiedExecTool::new(Uuid::nil());
-    let run_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": ["head", "-n1"],
-        "tty": true,
-        "yield_time_ms": 500
-    }))).await.unwrap();
+    let run_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": ["head", "-n1"],
+            "tty": true,
+            "yield_time_ms": 500
+        })))
+        .await
+        .unwrap();
     let session_id = run_result.session_id.as_deref().unwrap().to_string();
 
     // @step When I call the write action with EOF signal to terminate the process
     // Sending a line causes `head -n1` to output it and exit.
-    let write_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "write",
-        "session_id": session_id,
-        "input": "goodbye\n",
-        "yield_time_ms": 2000
-    }))).await.unwrap();
+    let write_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "write",
+            "session_id": session_id,
+            "input": "goodbye\n",
+            "yield_time_ms": 2000
+        })))
+        .await
+        .unwrap();
 
     // @step Then the response should contain exit_code
     assert!(
@@ -268,11 +323,14 @@ async fn test_write_causes_process_exit() {
 async fn test_poll_running_session() {
     // @step Given a running session with session_id that is producing output
     let tool = UnifiedExecTool::new(Uuid::nil());
-    let run_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "for i in 1 2 3; do echo line$i; sleep 0.2; done",
-        "yield_time_ms": 300
-    }))).await.unwrap();
+    let run_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "for i in 1 2 3; do echo line$i; sleep 0.2; done",
+            "yield_time_ms": 300
+        })))
+        .await
+        .unwrap();
 
     // Process may have exited or still running
     if let Some(session_id) = run_result.session_id.as_deref() {
@@ -280,11 +338,14 @@ async fn test_poll_running_session() {
         tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
 
         // @step When I call the poll action with that session_id
-        let poll_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-            "action": "poll",
-            "session_id": session_id,
-            "yield_time_ms": 5000
-        }))).await.unwrap();
+        let poll_result: UnifiedExecResult = tool
+            .call(UnifiedExecArgs(json!({
+                "action": "poll",
+                "session_id": session_id,
+                "yield_time_ms": 5000
+            })))
+            .await
+            .unwrap();
 
         // @step Then the response should contain any new output since last read
         let _output = poll_result.output.as_deref().unwrap_or("");
@@ -322,24 +383,34 @@ async fn test_list_active_sessions() {
     let tool = UnifiedExecTool::new(Uuid::nil());
     let mut session_ids = Vec::new();
     for _ in 0..3 {
-        let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-            "action": "run",
-            "command": "sleep 300",
-            "yield_time_ms": 300
-        }))).await.unwrap();
+        let result: UnifiedExecResult = tool
+            .call(UnifiedExecArgs(json!({
+                "action": "run",
+                "command": "sleep 300",
+                "yield_time_ms": 300
+            })))
+            .await
+            .unwrap();
         if let Some(sid) = result.session_id {
             session_ids.push(sid);
         }
     }
 
     // @step When I call the list action
-    let list_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "list"
-    }))).await.unwrap();
+    let list_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "list"
+        })))
+        .await
+        .unwrap();
 
     // @step Then the response should contain 3 sessions
     let sessions = list_result.sessions.unwrap();
-    assert!(sessions.len() >= 3, "expected at least 3 sessions, got {}", sessions.len());
+    assert!(
+        sessions.len() >= 3,
+        "expected at least 3 sessions, got {}",
+        sessions.len()
+    );
 
     // @step And each session should have a session_id
     for session in &sessions {
@@ -348,10 +419,12 @@ async fn test_list_active_sessions() {
 
     // Cleanup
     for sid in &session_ids {
-        let _ = tool.call(UnifiedExecArgs(json!({
-            "action": "close",
-            "session_id": sid
-        }))).await;
+        let _ = tool
+            .call(UnifiedExecArgs(json!({
+                "action": "close",
+                "session_id": sid
+            })))
+            .await;
     }
 }
 
@@ -362,13 +435,19 @@ async fn test_list_returns_array() {
     let tool = UnifiedExecTool::new(Uuid::nil());
 
     // @step When I call the list action
-    let list_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "list"
-    }))).await.unwrap();
+    let list_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "list"
+        })))
+        .await
+        .unwrap();
 
     // @step Then the response should contain 0 sessions
     // NOTE: Other tests may leave sessions, so we just verify it returns a list
-    assert!(list_result.sessions.is_some(), "list should return sessions array");
+    assert!(
+        list_result.sessions.is_some(),
+        "list should return sessions array"
+    );
 }
 
 // ============================================================================
@@ -380,27 +459,35 @@ async fn test_list_returns_array() {
 async fn test_close_running_session() {
     // @step Given a running session with session_id
     let tool = UnifiedExecTool::new(Uuid::nil());
-    let run_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "sleep 300",
-        "yield_time_ms": 300
-    }))).await.unwrap();
+    let run_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "sleep 300",
+            "yield_time_ms": 300
+        })))
+        .await
+        .unwrap();
     let session_id = run_result.session_id.unwrap();
 
     // @step When I call the close action with that session_id
-    let _close_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "close",
-        "session_id": session_id
-    }))).await.unwrap();
+    let _close_result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "close",
+            "session_id": session_id
+        })))
+        .await
+        .unwrap();
 
     // @step Then the process should be terminated
     // @step And the session should be removed from ProcessStore
     // @step And the response should confirm closure
     // Verify session is gone by trying to poll it
-    let poll_result = tool.call(UnifiedExecArgs(json!({
-        "action": "poll",
-        "session_id": session_id
-    }))).await;
+    let poll_result = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "poll",
+            "session_id": session_id
+        })))
+        .await;
     assert!(poll_result.is_err(), "session should not exist after close");
 }
 
@@ -411,10 +498,12 @@ async fn test_close_invalid_session_id() {
     let tool = UnifiedExecTool::new(Uuid::nil());
 
     // @step When I call the close action with session_id "nonexistent"
-    let result = tool.call(UnifiedExecArgs(json!({
-        "action": "close",
-        "session_id": "nonexistent"
-    }))).await;
+    let result = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "close",
+            "session_id": "nonexistent"
+        })))
+        .await;
 
     // @step Then the response should contain an error about unknown session
     assert!(result.is_err(), "close with invalid session_id should fail");
@@ -451,11 +540,17 @@ fn test_lru_eviction_policy() {
     assert!(victim.is_some(), "should select a victim");
     let victim_id = victim.unwrap();
     // session-0 is the oldest and NOT in the top 8 (session-56..session-63)
-    assert_eq!(victim_id, "session-0", "should evict the oldest unprotected session");
+    assert_eq!(
+        victim_id, "session-0",
+        "should evict the oldest unprotected session"
+    );
 
     // Verify the 8 most recent are protected
     let protected: Vec<String> = (56..64).map(|i| format!("session-{i}")).collect();
-    assert!(!protected.contains(&victim_id), "victim must not be in protected set");
+    assert!(
+        !protected.contains(&victim_id),
+        "victim must not be in protected set"
+    );
 
     // @step And the new process should be stored in its place
     // (verified by the eviction function returning the victim ID for removal)
@@ -501,21 +596,27 @@ async fn test_background_reaper_cleanup() {
 
     // Use a command that takes just long enough to survive the initial yield,
     // but exits before the reaper check. sleep 0.5 with 300ms yield.
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "sleep 0.5",
-        "yield_time_ms": 300
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "sleep 0.5",
+            "yield_time_ms": 300
+        })))
+        .await
+        .unwrap();
 
     // If process exited within yield_time, exit_code is returned directly — that's valid
     // but doesn't test the reaper. We need a session to have been created.
     if result.exit_code.is_some() {
         // Process was too fast — try again with a slightly longer command
-        let result2: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-            "action": "run",
-            "command": "sleep 1",
-            "yield_time_ms": 300
-        }))).await.unwrap();
+        let result2: UnifiedExecResult = tool
+            .call(UnifiedExecArgs(json!({
+                "action": "run",
+                "command": "sleep 1",
+                "yield_time_ms": 300
+            })))
+            .await
+            .unwrap();
 
         if result2.exit_code.is_some() {
             // Both exited within yield — skip reaper test in this environment
@@ -529,16 +630,21 @@ async fn test_background_reaper_cleanup() {
         tokio::time::sleep(tokio::time::Duration::from_millis(5000)).await;
 
         // @step Then the session should be removed from ProcessStore
-        let poll_result = tool.call(UnifiedExecArgs(json!({
-            "action": "poll",
-            "session_id": session_id,
-            "yield_time_ms": 5000
-        }))).await;
+        let poll_result = tool
+            .call(UnifiedExecArgs(json!({
+                "action": "poll",
+                "session_id": session_id,
+                "yield_time_ms": 5000
+            })))
+            .await;
 
         match poll_result {
             Err(_) => { /* Session was reaped — expected */ }
             Ok(r) => {
-                assert!(r.exit_code.is_some(), "reaper should have noticed process exit");
+                assert!(
+                    r.exit_code.is_some(),
+                    "reaper should have noticed process exit"
+                );
             }
         }
         return;
@@ -551,16 +657,21 @@ async fn test_background_reaper_cleanup() {
     tokio::time::sleep(tokio::time::Duration::from_millis(5000)).await;
 
     // @step Then the session should be removed from ProcessStore
-    let poll_result = tool.call(UnifiedExecArgs(json!({
-        "action": "poll",
-        "session_id": session_id,
-        "yield_time_ms": 5000
-    }))).await;
+    let poll_result = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "poll",
+            "session_id": session_id,
+            "yield_time_ms": 5000
+        })))
+        .await;
 
     match poll_result {
         Err(_) => { /* Session was reaped — expected */ }
         Ok(r) => {
-            assert!(r.exit_code.is_some(), "reaper should have noticed process exit");
+            assert!(
+                r.exit_code.is_some(),
+                "reaper should have noticed process exit"
+            );
         }
     }
 }
@@ -595,7 +706,11 @@ fn test_output_buffer_cap() {
         max_bytes,
         buffer.len()
     );
-    assert_eq!(buffer.len(), max_bytes, "buffer should be exactly at the cap");
+    assert_eq!(
+        buffer.len(),
+        max_bytes,
+        "buffer should be exactly at the cap"
+    );
 }
 
 // ============================================================================
@@ -606,8 +721,8 @@ fn test_output_buffer_cap() {
 #[tokio::test]
 async fn test_blocked_command_rejected() {
     use codelet_tools::blocklist::init_blocklist;
-    use tempfile::TempDir;
     use std::io::Write;
+    use tempfile::TempDir;
 
     // @step Given the unified exec tool is available
     let tool = UnifiedExecTool::new(Uuid::nil());
@@ -627,14 +742,17 @@ async fn test_blocked_command_rejected() {
         }]
     });
     let mut file = std::fs::File::create(fspec_dir.join("blocklist.json")).unwrap();
-    file.write_all(serde_json::to_string_pretty(&config).unwrap().as_bytes()).unwrap();
+    file.write_all(serde_json::to_string_pretty(&config).unwrap().as_bytes())
+        .unwrap();
     init_blocklist(Some(tmp.path()));
 
     // @step When I call the run action with command "rm -rf /"
-    let result = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "rm -rf /"
-    }))).await;
+    let result = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "rm -rf /"
+        })))
+        .await;
 
     // @step Then the command should be rejected with a blocklist error
     assert!(result.is_err(), "blocked command should return Err");
@@ -659,18 +777,23 @@ async fn test_session_isolation_effective_cwd() {
     let tool = UnifiedExecTool::new(Uuid::nil());
 
     // @step When I call the run action with command "pwd"
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "pwd",
-        "workdir": "/tmp"
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "pwd",
+            "workdir": "/tmp"
+        })))
+        .await
+        .unwrap();
 
     let output = result.output.as_deref().unwrap_or("");
     // @step Then the command should execute in "/tmp/worktree"
     // @step And the output should contain "/tmp/worktree"
     // (In unit test without effective_cwd callback, workdir param is used)
-    assert!(output.contains("/tmp") || output.contains("private/tmp"),
-        "command should run in specified workdir, got: {output}");
+    assert!(
+        output.contains("/tmp") || output.contains("private/tmp"),
+        "command should run in specified workdir, got: {output}"
+    );
 }
 
 /// Scenario: Explicit workdir overrides default but not session isolation
@@ -680,16 +803,21 @@ async fn test_explicit_workdir() {
     let tool = UnifiedExecTool::new(Uuid::nil());
 
     // @step When I call the run action with command "pwd" and workdir "/tmp"
-    let result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
-        "action": "run",
-        "command": "pwd",
-        "workdir": "/tmp"
-    }))).await.unwrap();
+    let result: UnifiedExecResult = tool
+        .call(UnifiedExecArgs(json!({
+            "action": "run",
+            "command": "pwd",
+            "workdir": "/tmp"
+        })))
+        .await
+        .unwrap();
 
     // @step Then the command should execute in "/tmp"
     let output = result.output.as_deref().unwrap_or("");
-    assert!(output.contains("/tmp") || output.contains("private/tmp"),
-        "got: {output}");
+    assert!(
+        output.contains("/tmp") || output.contains("private/tmp"),
+        "got: {output}"
+    );
 }
 
 // ============================================================================

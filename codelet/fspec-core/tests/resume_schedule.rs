@@ -109,7 +109,10 @@ fn scenario_resume_missing_schedule_reports_does_not_exist() {
     let result = dispatch_command(req(tmp.path(), json!({ "name": "ghost" })));
 
     // @step Then the dispatcher returns an error with message "Schedule 'ghost' does not exist"
-    assert!(!result.success, "expected failure for missing schedule, got {result:?}");
+    assert!(
+        !result.success,
+        "expected failure for missing schedule, got {result:?}"
+    );
     let err = result.error.unwrap_or_default();
     assert!(
         err.contains("Schedule 'ghost' does not exist"),
@@ -137,7 +140,10 @@ fn scenario_resume_already_active_reports_already_active() {
     let result = dispatch_command(req(tmp.path(), json!({ "name": "nightly-review" })));
 
     // @step Then the dispatcher returns an error with message "Schedule 'nightly-review' is already active"
-    assert!(!result.success, "expected failure for already-active schedule, got {result:?}");
+    assert!(
+        !result.success,
+        "expected failure for already-active schedule, got {result:?}"
+    );
     let err = result.error.unwrap_or_default();
     assert!(
         err.contains("Schedule 'nightly-review' is already active"),
@@ -212,9 +218,18 @@ fn scenario_resume_one_of_several_preserves_others_verbatim() {
     let after = read_schedules(tmp.path());
 
     // @step And only the 'beta' schedule has status 'active'
-    assert_eq!(after["schedules"]["beta"]["status"].as_str(), Some("active"));
-    assert_eq!(after["schedules"]["alpha"]["status"].as_str(), Some("paused"));
-    assert_eq!(after["schedules"]["gamma"]["status"].as_str(), Some("active"));
+    assert_eq!(
+        after["schedules"]["beta"]["status"].as_str(),
+        Some("active")
+    );
+    assert_eq!(
+        after["schedules"]["alpha"]["status"].as_str(),
+        Some("paused")
+    );
+    assert_eq!(
+        after["schedules"]["gamma"]["status"].as_str(),
+        Some("active")
+    );
 
     // @step And the 'alpha' and 'gamma' schedules retain their original status and all sibling fields verbatim
     assert_eq!(
@@ -227,13 +242,22 @@ fn scenario_resume_one_of_several_preserves_others_verbatim() {
     );
 
     // @step And the 'beta' schedule retains its cron, timezone, and jobType fields verbatim
-    assert_eq!(after["schedules"]["beta"]["cron"].as_str(), Some("0 9 * * 1-5"));
+    assert_eq!(
+        after["schedules"]["beta"]["cron"].as_str(),
+        Some("0 9 * * 1-5")
+    );
     assert_eq!(
         after["schedules"]["beta"]["timezone"].as_str(),
         Some("Australia/Sydney")
     );
-    assert_eq!(after["schedules"]["beta"]["jobType"].as_str(), Some("agent"));
-    assert_eq!(after["schedules"]["beta"]["role"].as_str(), Some("standup-bot"));
+    assert_eq!(
+        after["schedules"]["beta"]["jobType"].as_str(),
+        Some("agent")
+    );
+    assert_eq!(
+        after["schedules"]["beta"]["role"].as_str(),
+        Some("standup-bot")
+    );
     assert_eq!(
         after["schedules"]["beta"]["prompt"].as_str(),
         Some("Generate standup summary")

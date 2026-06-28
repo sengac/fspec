@@ -46,15 +46,11 @@ pub fn git_init(dir: impl AsRef<Path>, default_branch: &str) -> Result<()> {
     fs::create_dir_all(path)?;
 
     // Use non-bare init so gix recognizes it as a worktree
-    gix::init(path)
-        .map_err(|e| GitError::Other(format!("Failed to init repository: {}", e)))?;
+    gix::init(path).map_err(|e| GitError::Other(format!("Failed to init repository: {}", e)))?;
 
     // Set the default branch by writing HEAD
     let head_path = path.join(".git/HEAD");
-    fs::write(
-        &head_path,
-        format!("ref: refs/heads/{}\n", default_branch),
-    )?;
+    fs::write(&head_path, format!("ref: refs/heads/{}\n", default_branch))?;
 
     Ok(())
 }
@@ -162,13 +158,8 @@ pub fn git_add(dir: impl AsRef<Path>, filepath: &str) -> Result<()> {
     // Read the index file directly so we can mutate it
     let index_path = path.join(".git/index");
     let mut index = if index_path.exists() {
-        gix::index::File::at(
-            &index_path,
-            repo.object_hash(),
-            false,
-            Default::default(),
-        )
-        .map_err(|e| GitError::Other(format!("Failed to read index: {}", e)))?
+        gix::index::File::at(&index_path, repo.object_hash(), false, Default::default())
+            .map_err(|e| GitError::Other(format!("Failed to read index: {}", e)))?
     } else {
         gix::index::File::from_state(
             gix::index::State::new(repo.object_hash()),
@@ -238,7 +229,10 @@ fn git_add_all(dir: &Path) -> Result<()> {
 ///
 /// Uses the same approach as ghost_commit.rs - builds nested tree objects
 /// from flat index entries.
-fn build_tree_from_index(repo: &gix::Repository, index: &gix::index::File) -> Result<gix::ObjectId> {
+fn build_tree_from_index(
+    repo: &gix::Repository,
+    index: &gix::index::File,
+) -> Result<gix::ObjectId> {
     // Collect all entries from index
     let mut file_blobs: BTreeMap<String, (gix::ObjectId, bool)> = BTreeMap::new();
 
@@ -296,8 +290,16 @@ fn build_tree_from_index(repo: &gix::Repository, index: &gix::index::File) -> Re
     // Sort directories by depth (deepest first)
     let mut dirs: Vec<String> = dir_entries.keys().cloned().collect();
     dirs.sort_by(|a, b| {
-        let depth_a = if a.is_empty() { 0 } else { a.matches('/').count() + 1 };
-        let depth_b = if b.is_empty() { 0 } else { b.matches('/').count() + 1 };
+        let depth_a = if a.is_empty() {
+            0
+        } else {
+            a.matches('/').count() + 1
+        };
+        let depth_b = if b.is_empty() {
+            0
+        } else {
+            b.matches('/').count() + 1
+        };
         depth_b.cmp(&depth_a)
     });
 
@@ -384,13 +386,8 @@ pub fn git_commit(
     // Read current index
     let index_path = path.join(".git/index");
     let index = if index_path.exists() {
-        gix::index::File::at(
-            &index_path,
-            repo.object_hash(),
-            false,
-            Default::default(),
-        )
-        .map_err(|e| GitError::Other(format!("Failed to read index: {}", e)))?
+        gix::index::File::at(&index_path, repo.object_hash(), false, Default::default())
+            .map_err(|e| GitError::Other(format!("Failed to read index: {}", e)))?
     } else {
         gix::index::File::from_state(
             gix::index::State::new(repo.object_hash()),

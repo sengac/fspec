@@ -40,7 +40,10 @@ fn partial_assistant_text_is_saved_before_compaction() {
         user_message_count_before + 1,
         "exactly one Assistant message should have been appended"
     );
-    let last = session.messages.last().expect("must have at least one message");
+    let last = session
+        .messages
+        .last()
+        .expect("must have at least one message");
     match last {
         rig::message::Message::Assistant { content, .. } => {
             let has_expected_text = content.iter().any(|c| match c {

@@ -6,15 +6,11 @@
 //! For isolated sessions, file paths are validated and resolved to the worktree
 //! to ensure the session cannot edit files outside its isolated environment.
 
-use super::bash_binary_guard::{
-    detect_bash_binary_output, format_file_tool_guard_message,
-};
+use super::bash_binary_guard::{detect_bash_binary_output, format_file_tool_guard_message};
 use super::blocklist::check_file_path;
 use super::error::ToolError;
 use super::facade::validate_and_resolve_path;
-use super::validation::{
-    require_absolute_path, require_file_exists, write_file_contents,
-};
+use super::validation::{require_absolute_path, require_file_exists, write_file_contents};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;

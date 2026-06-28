@@ -354,7 +354,10 @@ mod tests {
 
     #[test]
     fn encode_uri_component_passes_unreserved() {
-        assert_eq!(encode_uri_component("abcABC123-_.!~*'()"), "abcABC123-_.!~*'()");
+        assert_eq!(
+            encode_uri_component("abcABC123-_.!~*'()"),
+            "abcABC123-_.!~*'()"
+        );
     }
 
     #[test]

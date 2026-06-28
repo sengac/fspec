@@ -2,9 +2,9 @@
 //!
 //! Evaluates commands against blocklist rules using regex patterns.
 
+use super::config::{BlocklistAction, BlocklistConfig, BlocklistRule};
 use regex::Regex;
 use tracing::error;
-use super::config::{BlocklistAction, BlocklistConfig, BlocklistRule};
 
 /// Result of checking a command against the blocklist
 #[derive(Debug, Clone)]
@@ -156,7 +156,11 @@ mod tests {
     fn test_word_boundary_pattern() {
         let config = BlocklistConfig {
             version: "1.0.0".to_string(),
-            rules: vec![make_block_rule("checkout", r"^git\s+checkout\b", "Use git switch")],
+            rules: vec![make_block_rule(
+                "checkout",
+                r"^git\s+checkout\b",
+                "Use git switch",
+            )],
         };
         let matcher = BlocklistMatcher::new(config);
 
@@ -192,7 +196,7 @@ mod tests {
 
         // Specific pattern is allowed
         assert!(matcher.check_command("rm -rf ./node_modules").allowed);
-        
+
         // General pattern is blocked
         assert!(matcher.check_command("rm -rf /").blocked);
         assert!(matcher.check_command("rm -rf ./src").blocked);
@@ -213,7 +217,7 @@ mod tests {
         let matcher = BlocklistMatcher::new(config);
 
         let result = matcher.check_command("test command");
-        
+
         assert!(result.blocked);
         assert_eq!(result.reason, Some("Test reason".to_string()));
         assert_eq!(result.guidance, Some("Test guidance".to_string()));

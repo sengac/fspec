@@ -81,7 +81,8 @@ fn scenario_dispatcher_deletes_a_step_matched_by_full_step_text() {
 
     // @step And the file on disk still contains the surrounding Given and Then steps
     assert!(
-        after.contains("Given I am on the login page") && after.contains("Then I see the dashboard"),
+        after.contains("Given I am on the login page")
+            && after.contains("Then I see the dashboard"),
         "surrounding steps must survive; got:\n{after}"
     );
 }

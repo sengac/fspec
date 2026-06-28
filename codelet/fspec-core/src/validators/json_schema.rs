@@ -63,8 +63,9 @@ impl SchemaError {
 /// panicking — keeping the crate clippy-clean (no `expect`/`unwrap`) and never
 /// silently passing invalid data.
 pub fn validate_against_schema(data: &Value, schema_src: &str) -> Result<(), Vec<SchemaError>> {
-    let schema: Value = serde_json::from_str(schema_src)
-        .map_err(|e| SchemaError::internal(format!("internal: invalid bundled schema JSON: {e}")))?;
+    let schema: Value = serde_json::from_str(schema_src).map_err(|e| {
+        SchemaError::internal(format!("internal: invalid bundled schema JSON: {e}"))
+    })?;
     let validator = jsonschema::draft7::options()
         .should_validate_formats(true)
         .build(&schema)
@@ -261,11 +262,11 @@ mod tests {
 
     #[test]
     fn min_items_uses_ajv_wording() {
-        let errs = validate_against_schema(&json!({ "name": "ok", "items": [] }), SCHEMA).unwrap_err();
-        assert!(errs
-            .iter()
-            .any(|e| e.instance_path == "/items"
-                && e.message == "must NOT have fewer than 1 items"));
+        let errs =
+            validate_against_schema(&json!({ "name": "ok", "items": [] }), SCHEMA).unwrap_err();
+        assert!(errs.iter().any(
+            |e| e.instance_path == "/items" && e.message == "must NOT have fewer than 1 items"
+        ));
     }
 
     #[test]
@@ -274,14 +275,14 @@ mod tests {
             validate_against_schema(&json!({ "name": "BAD", "items": [1] }), SCHEMA).unwrap_err();
         assert!(errs
             .iter()
-            .any(|e| e.instance_path == "/name"
-                && e.message == "must match pattern \"^[a-z]+$\""));
+            .any(|e| e.instance_path == "/name" && e.message == "must match pattern \"^[a-z]+$\""));
     }
 
     #[test]
     fn additional_properties_uses_ajv_wording() {
-        let errs = validate_against_schema(&json!({ "name": "ok", "items": [1], "junk": 1 }), SCHEMA)
-            .unwrap_err();
+        let errs =
+            validate_against_schema(&json!({ "name": "ok", "items": [1], "junk": 1 }), SCHEMA)
+                .unwrap_err();
         assert!(errs
             .iter()
             .any(|e| e.message == "must NOT have additional properties"));
@@ -289,9 +290,11 @@ mod tests {
 
     #[test]
     fn format_uri_is_actively_validated() {
-        let errs =
-            validate_against_schema(&json!({ "name": "ok", "items": [1], "url": "not a uri" }), SCHEMA)
-                .unwrap_err();
+        let errs = validate_against_schema(
+            &json!({ "name": "ok", "items": [1], "url": "not a uri" }),
+            SCHEMA,
+        )
+        .unwrap_err();
         assert!(errs
             .iter()
             .any(|e| e.instance_path == "/url" && e.message == "must match format \"uri\""));
@@ -306,8 +309,7 @@ mod tests {
             "type": "object",
             "properties": { "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" } }
         }"#;
-        let errs =
-            validate_against_schema(&json!({ "version": "2.0" }), DIGIT_SCHEMA).unwrap_err();
+        let errs = validate_against_schema(&json!({ "version": "2.0" }), DIGIT_SCHEMA).unwrap_err();
         assert_eq!(errs.len(), 1, "{errs:?}");
         assert_eq!(errs[0].instance_path, "/version");
         assert_eq!(
@@ -332,9 +334,11 @@ mod tests {
         }"#;
         // Missing required `a` (root), bad pattern at `/b` (depth 1), and an
         // extra `junk` property (root additionalProperties).
-        let errs =
-            validate_against_schema(&json!({ "b": "nope", "junk": 1 }), NESTED).unwrap_err();
-        let depths: Vec<usize> = errs.iter().map(|e| e.instance_path.matches('/').count()).collect();
+        let errs = validate_against_schema(&json!({ "b": "nope", "junk": 1 }), NESTED).unwrap_err();
+        let depths: Vec<usize> = errs
+            .iter()
+            .map(|e| e.instance_path.matches('/').count())
+            .collect();
         assert!(
             depths.windows(2).all(|w| w[0] <= w[1]),
             "errors must be non-decreasing in instance-path depth: {errs:?}"

@@ -153,7 +153,10 @@ fn persist_the_metadata_index_on_successful_capture() {
         })
         .expect("baseline checkpoints entry");
     assert!(
-        entry["sha"].as_str().map(|s| !s.is_empty()).unwrap_or(false),
+        entry["sha"]
+            .as_str()
+            .map(|s| !s.is_empty())
+            .unwrap_or(false),
         "baseline entry must carry a non-empty sha; got {entry:?}"
     );
     let ts = entry["timestamp"].as_str().expect("timestamp string");

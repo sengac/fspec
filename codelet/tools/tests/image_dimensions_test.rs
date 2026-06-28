@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for image dimension extraction from raw headers
 //! Feature: spec/features/image-dimension-validation.feature
@@ -130,14 +129,14 @@ fn make_jpeg_with_dimensions(width: u16, height: u16) -> Vec<u8> {
     bytes.extend_from_slice(&[0x00, 0x01]); // X density
     bytes.extend_from_slice(&[0x00, 0x01]); // Y density
     bytes.extend_from_slice(&[0x00, 0x00]); // thumbnail
-    // SOF0 marker (baseline DCT)
+                                            // SOF0 marker (baseline DCT)
     bytes.extend_from_slice(&[0xFF, 0xC0]); // SOF0
     bytes.extend_from_slice(&[0x00, 0x11]); // length = 17
     bytes.extend_from_slice(&[0x08]); // bits per sample
     bytes.extend_from_slice(&height.to_be_bytes()); // height (u16 BE)
     bytes.extend_from_slice(&width.to_be_bytes()); // width (u16 BE)
     bytes.extend_from_slice(&[0x03]); // number of components
-    // Component specs (3 components * 3 bytes each)
+                                      // Component specs (3 components * 3 bytes each)
     bytes.extend_from_slice(&[0x01, 0x22, 0x00]); // Y
     bytes.extend_from_slice(&[0x02, 0x11, 0x01]); // Cb
     bytes.extend_from_slice(&[0x03, 0x11, 0x01]); // Cr

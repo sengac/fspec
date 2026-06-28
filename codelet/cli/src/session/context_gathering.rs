@@ -75,11 +75,11 @@ impl EnvironmentInfo {
         if let Some(ref isolation) = self.isolation {
             if isolation.is_isolated {
                 lines.push("Isolation: ACTIVE".to_string());
-                
+
                 if let Some(ref path) = isolation.worktree_path {
                     lines.push(format!("Worktree: {path}"));
                 }
-                
+
                 if let Some(ref commit) = isolation.base_commit {
                     // Display short SHA (first 8 chars)
                     let short_sha = if commit.len() > 8 {
@@ -135,10 +135,7 @@ pub fn discover_claude_md(start_path: Option<&Path>) -> Option<String> {
         // with the Fspec tool integration which expects the tool-based workflow, not
         // the CLI-command workflow.  All other directory names in the upward walk
         // are unaffected.
-        let is_spec_dir = dir
-            .file_name()
-            .map(|name| name == "spec")
-            .unwrap_or(false);
+        let is_spec_dir = dir.file_name().map(|name| name == "spec").unwrap_or(false);
 
         if !is_spec_dir {
             // Check for each context file in priority order
@@ -222,7 +219,9 @@ pub fn gather_environment_info() -> EnvironmentInfo {
 ///
 /// # Returns
 /// * `EnvironmentInfo` - Gathered environment information with isolation context
-pub fn gather_environment_info_with_isolation(isolation: Option<&IsolationContext>) -> EnvironmentInfo {
+pub fn gather_environment_info_with_isolation(
+    isolation: Option<&IsolationContext>,
+) -> EnvironmentInfo {
     let mut info = gather_environment_info();
     info.isolation = isolation.cloned();
     info
@@ -303,8 +302,7 @@ mod tests {
 
         // Verify ISO 8601 format (YYYY-MM-DD)
         // Note: using expect() here as the regex pattern is compile-time constant and known valid
-        let date_regex = regex::Regex::new(r"^\d{4}-\d{2}-\d{2}$")
-            .expect("valid regex pattern");
+        let date_regex = regex::Regex::new(r"^\d{4}-\d{2}-\d{2}$").expect("valid regex pattern");
         assert!(
             date_regex.is_match(&info.date),
             "Date '{}' should be in YYYY-MM-DD format",
@@ -346,7 +344,9 @@ mod tests {
         let lines: Vec<&str> = content.lines().collect();
 
         // Find indices of Working directory and Date lines
-        let cwd_index = lines.iter().position(|l| l.starts_with("Working directory:"));
+        let cwd_index = lines
+            .iter()
+            .position(|l| l.starts_with("Working directory:"));
         let date_index = lines.iter().position(|l| l.starts_with("Date:"));
 
         assert!(cwd_index.is_some(), "Working directory line should exist");
@@ -459,7 +459,7 @@ mod tests {
     }
 
     // GIT-034: Tests for isolation context in environment reminder
-    
+
     /// Feature: spec/features/ai-system-reminder-includes-isolation-state-and-worktree-path.feature
     /// Scenario: Isolated session environment reminder includes isolation fields
     #[test]
@@ -554,7 +554,7 @@ mod tests {
         };
 
         let info = gather_environment_info_with_isolation(Some(&isolation));
-        
+
         assert!(info.isolation.is_some(), "Isolation context should be set");
         let iso = info.isolation.as_ref().unwrap();
         assert!(iso.is_isolated, "is_isolated should be true");
@@ -569,14 +569,23 @@ mod tests {
     #[test]
     fn test_gather_with_isolation_none_has_no_context() {
         let info = gather_environment_info_with_isolation(None);
-        
+
         assert!(info.isolation.is_none(), "Isolation context should be None");
-        
+
         // Content should not contain isolation fields
         let content = info.to_reminder_content();
-        assert!(!content.contains("Isolation:"), "Should not have Isolation field");
-        assert!(!content.contains("Worktree:"), "Should not have Worktree field");
-        assert!(!content.contains("Base commit:"), "Should not have Base commit field");
+        assert!(
+            !content.contains("Isolation:"),
+            "Should not have Isolation field"
+        );
+        assert!(
+            !content.contains("Worktree:"),
+            "Should not have Worktree field"
+        );
+        assert!(
+            !content.contains("Base commit:"),
+            "Should not have Base commit field"
+        );
     }
 
     /// GIT-034: Test that isolation fields appear in correct order
@@ -599,7 +608,9 @@ mod tests {
         let content = info.to_reminder_content();
         let lines: Vec<&str> = content.lines().collect();
 
-        let cwd_pos = lines.iter().position(|l| l.starts_with("Working directory:"));
+        let cwd_pos = lines
+            .iter()
+            .position(|l| l.starts_with("Working directory:"));
         let isolation_pos = lines.iter().position(|l| l.starts_with("Isolation:"));
         let worktree_pos = lines.iter().position(|l| l.starts_with("Worktree:"));
         let commit_pos = lines.iter().position(|l| l.starts_with("Base commit:"));
@@ -648,13 +659,13 @@ mod tests {
         };
 
         let content = info.to_reminder_content();
-        
+
         // Should display short SHA (first 8 chars)
         assert!(
             content.contains("Base commit: abcdef12"),
             "Should display short SHA (8 chars). Got:\n{content}"
         );
-        
+
         // Should NOT display full SHA
         assert!(
             !content.contains("abcdef1234567890abcdef"),
@@ -681,8 +692,13 @@ mod tests {
         let spec_dir = tmp.path().join("spec");
         fs::create_dir_all(&spec_dir).expect("create spec/");
 
-        fs::write(spec_dir.join("CLAUDE.md"), "# spec/CLAUDE.md content — CLI instructions").expect("write spec/CLAUDE.md");
-        fs::write(tmp.path().join("AGENTS.md"), "# AGENTS.md root content").expect("write AGENTS.md");
+        fs::write(
+            spec_dir.join("CLAUDE.md"),
+            "# spec/CLAUDE.md content — CLI instructions",
+        )
+        .expect("write spec/CLAUDE.md");
+        fs::write(tmp.path().join("AGENTS.md"), "# AGENTS.md root content")
+            .expect("write AGENTS.md");
 
         // Start search from within spec/ — simulates an agent launched there
         let result = discover_claude_md(Some(&spec_dir));
@@ -714,7 +730,11 @@ mod tests {
         let spec_dir = tmp.path().join("spec");
         fs::create_dir_all(&spec_dir).expect("create spec/");
 
-        fs::write(spec_dir.join("AGENTS.md"), "# spec/AGENTS.md — CLI instructions").expect("write spec/AGENTS.md");
+        fs::write(
+            spec_dir.join("AGENTS.md"),
+            "# spec/AGENTS.md — CLI instructions",
+        )
+        .expect("write spec/AGENTS.md");
         fs::write(tmp.path().join("CLAUDE.md"), "# Root CLAUDE.md").expect("write root CLAUDE.md");
 
         let result = discover_claude_md(Some(&spec_dir));

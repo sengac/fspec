@@ -48,8 +48,20 @@ fn allowed_transitions(from: &str) -> &'static [&'static str] {
         "testing" => &["implementing", "specifying", "blocked"],
         "implementing" => &["validating", "testing", "specifying", "blocked"],
         "validating" => &["done", "implementing", "testing", "specifying", "blocked"],
-        "done" => &["specifying", "testing", "implementing", "validating", "blocked"],
-        "blocked" => &["backlog", "specifying", "testing", "implementing", "validating"],
+        "done" => &[
+            "specifying",
+            "testing",
+            "implementing",
+            "validating",
+            "blocked",
+        ],
+        "blocked" => &[
+            "backlog",
+            "specifying",
+            "testing",
+            "implementing",
+            "validating",
+        ],
         _ => &[],
     }
 }
@@ -247,11 +259,7 @@ If the feature has no spec, create a story instead of a bug."
     }
 
     // GATE: temporal validation for implementing state (tests created after entering testing).
-    if new_status == "implementing"
-        && current_status == "testing"
-        && !skip_temporal
-        && !is_task
-    {
+    if new_status == "implementing" && current_status == "testing" && !skip_temporal && !is_task {
         check_temporal_ordering(project_root, &data, &id, &new_status)?;
     }
 
@@ -399,7 +407,9 @@ If the feature has no spec, create a story instead of a bug."
         out.push_str(&reminders::check_quality_commands(project_root));
         out.push('\n');
     }
-    out.push_str(&format!("✓ Work unit {id} status updated to {new_status}\n"));
+    out.push_str(&format!(
+        "✓ Work unit {id} status updated to {new_status}\n"
+    ));
     for w in &warnings {
         out.push_str(&format!("⚠ {w}\n"));
     }
@@ -591,7 +601,10 @@ fn detect_prefill(content: &str) -> Vec<PrefillMatch> {
             }
         }
     }
-    for (name, needle) in [("@component", "@component"), ("@feature-group", "@feature-group")] {
+    for (name, needle) in [
+        ("@component", "@component"),
+        ("@feature-group", "@feature-group"),
+    ] {
         for (i, line) in content.lines().enumerate() {
             if line.starts_with('@') && tag_placeholder_present(line, needle) {
                 matches.push(PrefillMatch {
@@ -757,7 +770,12 @@ fn check_coverage_completeness(
         .get(id)
         .and_then(|wu| wu.extra.get("linkedFeatures"))
         .and_then(Value::as_array)
-        .map(|a| a.iter().filter_map(Value::as_str).map(str::to_string).collect())
+        .map(|a| {
+            a.iter()
+                .filter_map(Value::as_str)
+                .map(str::to_string)
+                .collect()
+        })
         .unwrap_or_default();
 
     if names.is_empty() {
@@ -935,10 +953,7 @@ fn discover_feature_names_by_tag(project_root: &Path, id: &str) -> Vec<String> {
         };
         // The gherkin crate stores tag names WITHOUT the leading `@`, so match
         // on the stripped form (parity with TS `tag.name === \`@${id}\``).
-        let tagged = feature
-            .tags
-            .iter()
-            .any(|t| t.trim_start_matches('@') == id);
+        let tagged = feature.tags.iter().any(|t| t.trim_start_matches('@') == id);
         if tagged {
             let name = rel
                 .strip_prefix("spec/features/")
@@ -1174,9 +1189,7 @@ fn epoch_secs_to_iso(secs: u64, millis: u32) -> String {
     let d = doy - (153 * mp + 2) / 5 + 1;
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let year = if m <= 2 { y + 1 } else { y };
-    format!(
-        "{year:04}-{m:02}-{d:02}T{hh:02}:{mm:02}:{ss:02}.{millis:03}Z"
-    )
+    format!("{year:04}-{m:02}-{d:02}T{hh:02}:{mm:02}:{ss:02}.{millis:03}Z")
 }
 
 // --------------------------------------------------------------------------
@@ -1259,12 +1272,7 @@ fn cleanup_done_checkpoints(project_root: &Path, id: &str) {
 // State-array move + done compaction
 // --------------------------------------------------------------------------
 
-fn move_state(
-    data: &mut crate::types::work_unit::WorkUnitsData,
-    id: &str,
-    from: &str,
-    to: &str,
-) {
+fn move_state(data: &mut crate::types::work_unit::WorkUnitsData, id: &str, from: &str, to: &str) {
     if from == to {
         return;
     }
@@ -1343,7 +1351,10 @@ fn run_pre_hooks(
         if command.is_empty() {
             continue;
         }
-        let blocking = hook.get("blocking").and_then(Value::as_bool).unwrap_or(false);
+        let blocking = hook
+            .get("blocking")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
         let output = std::process::Command::new("sh")
             .arg("-c")
             .arg(command)
@@ -1379,11 +1390,13 @@ mod tests {
         let message = ast_research_error_message(false);
 
         // @step Then the message directs the user to fspec research --tool=ast
-        assert!(message.contains("Cannot transition to testing - no AST research performed during discovery."));
-        assert!(message.contains("FIRST run: fspec research --tool=ast --help"));
         assert!(message.contains(
-            "THEN use: fspec research --tool=ast --file <path> --operation <op>"
+            "Cannot transition to testing - no AST research performed during discovery."
         ));
+        assert!(message.contains("FIRST run: fspec research --tool=ast --help"));
+        assert!(
+            message.contains("THEN use: fspec research --tool=ast --file <path> --operation <op>")
+        );
         assert!(!message.contains("Use the AstGrep tool"));
     }
 
@@ -1393,7 +1406,9 @@ mod tests {
         let message = ast_research_error_message(true);
 
         // @step Then the message directs the agent to the AstGrep tool
-        assert!(message.contains("Cannot transition to testing - no AST research performed during discovery."));
+        assert!(message.contains(
+            "Cannot transition to testing - no AST research performed during discovery."
+        ));
         assert!(message.contains("Use the AstGrep tool to analyze relevant code in the codebase."));
         assert!(!message.contains("fspec research --tool=ast --help"));
     }
@@ -1402,7 +1417,10 @@ mod tests {
     fn capture_mode_defaults_to_false_for_cli() {
         // @step Given FSPEC_CAPTURE_MODE is not set to "1" (CLI default)
         // @step Then capture mode is false, matching the TS CLI default
-        if std::env::var("FSPEC_CAPTURE_MODE").map(|v| v == "1").unwrap_or(false) {
+        if std::env::var("FSPEC_CAPTURE_MODE")
+            .map(|v| v == "1")
+            .unwrap_or(false)
+        {
             // Environment explicitly opts in; nothing to assert in that case.
             return;
         }

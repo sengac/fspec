@@ -38,10 +38,7 @@ fn test_system_prompt_array_format_api_key_mode() {
 
     // @step And the first content block text should contain the preamble (with fspec guidance prepended)
     let text = array[0]["text"].as_str().unwrap();
-    assert!(
-        text.contains(preamble),
-        "Text should contain the preamble"
-    );
+    assert!(text.contains(preamble), "Text should contain the preamble");
     // fspec guidance is prepended to all preambles
     assert!(
         text.contains("fspec"),
@@ -76,10 +73,7 @@ fn test_system_prompt_array_format_oauth_mode() {
 
     // @step And the second content block text should contain the preamble (with fspec guidance prepended)
     let text = array[1]["text"].as_str().unwrap();
-    assert!(
-        text.contains(preamble),
-        "Text should contain the preamble"
-    );
+    assert!(text.contains(preamble), "Text should contain the preamble");
     // fspec guidance is prepended to all preambles
     assert!(
         text.contains("fspec"),
@@ -194,10 +188,7 @@ fn test_transform_system_prompt_oauth_mode() {
 
     // @step And block 1 should contain the preamble with cache_control (fspec guidance prepended)
     let text = array[1]["text"].as_str().unwrap();
-    assert!(
-        text.contains(preamble),
-        "Text should contain the preamble"
-    );
+    assert!(text.contains(preamble), "Text should contain the preamble");
     assert!(array[1].get("cache_control").is_some());
 }
 
@@ -245,8 +236,14 @@ fn test_oauth_mode_with_empty_preamble() {
     // Block 0: Claude Code prefix (no cache_control)
     // Block 1: fspec workflow guidance (with cache_control)
     assert_eq!(array.len(), 2);
-    assert!(array[0].get("cache_control").is_none(), "Prefix should not have cache_control");
-    assert!(array[1].get("cache_control").is_some(), "fspec guidance block should have cache_control");
+    assert!(
+        array[0].get("cache_control").is_none(),
+        "Prefix should not have cache_control"
+    );
+    assert!(
+        array[1].get("cache_control").is_some(),
+        "fspec guidance block should have cache_control"
+    );
 }
 
 #[test]

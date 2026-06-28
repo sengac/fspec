@@ -143,12 +143,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 self.persist_assistant_message();
 
                 // REFAC-007: Persist tool result immediately
-                if let Err(e) = persist_tool_result_internal(
-                    &self.session.id,
-                    &tr.id,
-                    &tr.content,
-                    tr.is_error,
-                ) {
+                if let Err(e) =
+                    persist_tool_result_internal(&self.session.id, &tr.id, &tr.content, tr.is_error)
+                {
                     tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
                 }
 
@@ -183,12 +180,10 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                                 )
                                 .await;
                                 for context_text in &outcome.additional_context {
-                                    session_for_hook.handle_output(
-                                        StreamChunk::user_notification(
-                                            format!("Hook context: {}", context_text),
-                                            NotificationSeverity::Info,
-                                        ),
-                                    );
+                                    session_for_hook.handle_output(StreamChunk::user_notification(
+                                        format!("Hook context: {}", context_text),
+                                        NotificationSeverity::Info,
+                                    ));
                                 }
                                 for msg in &outcome.messages {
                                     if msg.level == HookMessageLevel::Warning

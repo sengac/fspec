@@ -225,7 +225,10 @@ fn test_file_with_impl_file_removes_only_the_impl_mapping() {
         .expect("implMappings array")
         .iter()
         .any(|im| im["file"].as_str() == Some("src/old.ts"));
-    assert!(!still_refs_old, "impl mapping src/old.ts must be removed; got {sidecar}");
+    assert!(
+        !still_refs_old,
+        "impl mapping src/old.ts must be removed; got {sidecar}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -432,7 +435,11 @@ fn atomic_write_back_preserves_unknown_fields_in_the_sidecar() {
     "totalLinesCovered": 13
   }
 }"#;
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", body);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        body,
+    );
 
     // @step When I dispatch unlink-coverage for feature "user-login" with scenario="Login" and all=true
     let result = req(

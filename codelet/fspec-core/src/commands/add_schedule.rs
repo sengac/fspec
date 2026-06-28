@@ -153,7 +153,10 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // ── Build the new entry with explicit field declaration order ─────────
-    let overlap = args.overlap_policy.clone().unwrap_or_else(|| "skip".to_string());
+    let overlap = args
+        .overlap_policy
+        .clone()
+        .unwrap_or_else(|| "skip".to_string());
     let now = iso8601_now();
 
     let mut entry = Map::new();
@@ -246,9 +249,11 @@ fn is_slug(s: &str) -> bool {
         return false;
     }
     let groups: Vec<&str> = s.split('-').collect();
-    groups
-        .iter()
-        .all(|g| !g.is_empty() && g.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit()))
+    groups.iter().all(|g| {
+        !g.is_empty()
+            && g.bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit())
+    })
 }
 
 /// Validate a 5-field standard cron expression. Mirrors `validateCronExpression`
@@ -339,7 +344,10 @@ mod tests {
     fn cron_rejects_wrong_field_count() {
         let err = validate_cron("0 2 * *").unwrap_err();
         let msg = err.to_string();
-        assert!(msg.contains("expected 5 fields") && msg.contains("got 4"), "{msg}");
+        assert!(
+            msg.contains("expected 5 fields") && msg.contains("got 4"),
+            "{msg}"
+        );
     }
 
     #[test]

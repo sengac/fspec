@@ -275,11 +275,23 @@ Suggestions are based on sequential IDs, build/test pairs, and infrastructure pa
             .to_string();
     }
 
-    let mut out = format!("\nFound {} dependency suggestion(s):\n\n", suggestions.len());
+    let mut out = format!(
+        "\nFound {} dependency suggestion(s):\n\n",
+        suggestions.len()
+    );
     for (index, s) in suggestions.iter().enumerate() {
-        out.push_str(&format!("{}. {} → {} ({})\n", index + 1, s.from, s.to, s.r#type));
+        out.push_str(&format!(
+            "{}. {} → {} ({})\n",
+            index + 1,
+            s.from,
+            s.to,
+            s.r#type
+        ));
         out.push_str(&format!("   ● {}\n", s.reason));
-        out.push_str(&format!("   Confidence: {}\n\n", s.confidence.to_uppercase()));
+        out.push_str(&format!(
+            "   Confidence: {}\n\n",
+            s.confidence.to_uppercase()
+        ));
     }
     out.push_str("To apply a suggestion: fspec add-dependency <from-id> --depends-on=<to-id>");
     out

@@ -164,8 +164,8 @@ fn test_session_diff_shows_accurate_file_change_count() {
         .expect("Failed to modify file");
 
     // @step And I open the Session Management Panel (call get_session_diff)
-    let diff_result = get_session_diff(repo_path, "test-diff-session")
-        .expect("Failed to get session diff");
+    let diff_result =
+        get_session_diff(repo_path, "test-diff-session").expect("Failed to get session diff");
 
     // @step Then the session should show "1 files changed"
     assert_eq!(
@@ -177,7 +177,9 @@ fn test_session_diff_shows_accurate_file_change_count() {
 
     // @step And the modified file should appear in the changes list
     assert!(
-        diff_result.files_changed.contains(&"src/main.rs".to_string()),
+        diff_result
+            .files_changed
+            .contains(&"src/main.rs".to_string()),
         "Modified file src/main.rs should be in changes list. Got: {:?}",
         diff_result.files_changed
     );
@@ -278,7 +280,10 @@ fn test_session_diff_detects_corrupted_empty_index() {
         }
         Err(e) => {
             // Error is acceptable - it means the corruption was detected
-            eprintln!("get_session_diff correctly returned error for corrupted index: {:?}", e);
+            eprintln!(
+                "get_session_diff correctly returned error for corrupted index: {:?}",
+                e
+            );
         }
     }
 }

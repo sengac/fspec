@@ -71,14 +71,15 @@ fn dispatcher_error(result: &codelet_fspec_core::DispatchResult) -> String {
 fn scenario_dispatcher_dry_run_reports_matches_without_modifying_files() {
     // @step Given a project root tempdir with one feature containing two @spike scenarios and one untagged scenario
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/demo.feature", &two_spike_one_plain());
+    write_feature(
+        tmp.path(),
+        "spec/features/demo.feature",
+        &two_spike_one_plain(),
+    );
     let before = read_feature(tmp.path(), "spec/features/demo.feature");
 
     // @step When I dispatch delete-scenarios with tags=['@spike'] and dryRun=true
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({"tags": ["@spike"], "dryRun": true}),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({"tags": ["@spike"], "dryRun": true})));
     assert!(result.success, "expected success=true, got {result:?}");
     let data = data_of(&result);
 
@@ -107,7 +108,11 @@ fn scenario_dispatcher_dry_run_reports_matches_without_modifying_files() {
 fn scenario_dispatcher_real_delete_removes_matching_scenarios_and_keeps_the_rest() {
     // @step Given a project root tempdir with one feature containing two @spike scenarios and one untagged scenario
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/demo.feature", &two_spike_one_plain());
+    write_feature(
+        tmp.path(),
+        "spec/features/demo.feature",
+        &two_spike_one_plain(),
+    );
 
     // @step When I dispatch delete-scenarios with tags=['@spike']
     let result = dispatch_command(req(tmp.path(), json!({"tags": ["@spike"]})));
@@ -142,7 +147,11 @@ fn scenario_dispatcher_real_delete_removes_matching_scenarios_and_keeps_the_rest
 fn scenario_dispatcher_applies_and_logic_across_multiple_tags() {
     // @step Given a project root tempdir with one feature containing a scenario tagged @deprecated and @critical and a scenario tagged only @deprecated
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/demo.feature", &and_logic_feature());
+    write_feature(
+        tmp.path(),
+        "spec/features/demo.feature",
+        &and_logic_feature(),
+    );
 
     // @step When I dispatch delete-scenarios with tags=['@deprecated','@critical']
     let result = dispatch_command(req(
@@ -222,7 +231,11 @@ fn scenario_dispatcher_reports_no_matching_scenarios() {
 fn scenario_dispatcher_rejects_an_empty_tag_list() {
     // @step Given a project root tempdir with one feature tagged @spike
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/demo.feature", &two_spike_one_plain());
+    write_feature(
+        tmp.path(),
+        "spec/features/demo.feature",
+        &two_spike_one_plain(),
+    );
 
     // @step When I dispatch delete-scenarios with tags=[]
     let result = dispatch_command(req(tmp.path(), json!({"tags": []})));
@@ -231,7 +244,10 @@ fn scenario_dispatcher_rejects_an_empty_tag_list() {
     // Per delete-features parity: the core returns a result object (it does not
     // throw), so the dispatch envelope succeeds and the failure is carried by
     // the inner `success:false` field of the JSON payload.
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_of(&result);
     assert_eq!(
         data["success"].as_bool(),

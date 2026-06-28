@@ -72,7 +72,10 @@ fn renaming_a_tag_across_two_feature_files_rewrites_every_occurrence() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(true), "got data: {data}");
 
@@ -104,7 +107,10 @@ fn a_dry_run_reports_matches_but_leaves_every_file_byte_equal() {
     ));
 
     // @step Then the dispatcher returns success=true
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(true), "got data: {data}");
 
@@ -141,7 +147,10 @@ fn a_missing_to_is_rejected() {
     let result = dispatch_command(req(tmp.path(), json!({"from": "@wip", "to": ""})));
 
     // @step Then the dispatcher returns success=false
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(false), "got data: {data}");
 
@@ -167,7 +176,10 @@ fn an_invalid_target_tag_format_is_rejected() {
     let result = dispatch_command(req(tmp.path(), json!({"from": "@wip", "to": "WIP"})));
 
     // @step Then the dispatcher returns success=false
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(false), "got data: {data}");
 
@@ -193,19 +205,22 @@ fn a_from_tag_present_in_no_feature_file_reports_the_not_found_error() {
     let pre = fs::read(tmp.path().join("spec/features/a.feature")).unwrap();
 
     // @step When I dispatch retag with from='@missing' and to='@found'
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({"from": "@missing", "to": "@found"}),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({"from": "@missing", "to": "@found"})));
 
     // @step Then the dispatcher returns success=false
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(false), "got data: {data}");
 
     // @step And the error message is 'Tag @missing not found in any feature files'
     let err = dispatcher_error(&result);
-    assert_eq!(err, "Tag @missing not found in any feature files", "got: {err}");
+    assert_eq!(
+        err, "Tag @missing not found in any feature files",
+        "got: {err}"
+    );
 
     // @step And the feature file on disk is byte-equal to its pre-call contents
     assert_eq!(

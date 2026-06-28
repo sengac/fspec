@@ -77,7 +77,10 @@ pub fn codex_bridge_tool(session_id: Uuid) -> BridgeToolFacadeWrapper {
 /// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
 ///
 /// NO CLI FALLBACKS - This will throw an error if handler is not configured.
-pub fn bridge_tool_for_provider(provider: &str, session_id: Uuid) -> Option<BridgeToolFacadeWrapper> {
+pub fn bridge_tool_for_provider(
+    provider: &str,
+    session_id: Uuid,
+) -> Option<BridgeToolFacadeWrapper> {
     match provider {
         "claude" => Some(claude_bridge_tool(session_id)),
         "gemini" => Some(gemini_bridge_tool(session_id)),
@@ -95,7 +98,7 @@ mod tests {
     #[test]
     fn test_all_provider_tools_created() {
         let session_id = Uuid::new_v4();
-        
+
         let claude = claude_bridge_tool(session_id);
         assert_eq!(claude.provider(), "claude");
         assert_eq!(claude.session_id(), session_id);
@@ -120,7 +123,7 @@ mod tests {
     #[test]
     fn test_provider_lookup() {
         let session_id = Uuid::new_v4();
-        
+
         assert!(bridge_tool_for_provider("claude", session_id).is_some());
         assert!(bridge_tool_for_provider("gemini", session_id).is_some());
         assert!(bridge_tool_for_provider("openai", session_id).is_some());
@@ -133,10 +136,10 @@ mod tests {
     fn test_different_sessions_have_different_ids() {
         let session_a = Uuid::new_v4();
         let session_b = Uuid::new_v4();
-        
+
         let tool_a = claude_bridge_tool(session_a);
         let tool_b = claude_bridge_tool(session_b);
-        
+
         assert_eq!(tool_a.session_id(), session_a);
         assert_eq!(tool_b.session_id(), session_b);
         assert_ne!(tool_a.session_id(), tool_b.session_id());

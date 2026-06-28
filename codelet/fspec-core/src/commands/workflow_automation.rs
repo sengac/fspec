@@ -42,7 +42,7 @@ use crate::io::feature_glob::glob_feature_files;
 use crate::io::io_error::format_io_error;
 use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
-use crate::types::work_unit::{WorkUnitStatus, WorkUnitStates, WorkUnitsData};
+use crate::types::work_unit::{WorkUnitStates, WorkUnitStatus, WorkUnitsData};
 
 /// CLI / dispatcher arguments accepted by `workflow-automation`. Mirrors the TS
 /// `workflowAutomation(action, workUnitId, options)` signature
@@ -118,19 +118,22 @@ fn status_from_str(name: &str) -> Option<WorkUnitStatus> {
     }
 }
 
-fn load_work_units(project_root: &Path) -> Result<(std::path::PathBuf, WorkUnitsData), FspecCoreError> {
+fn load_work_units(
+    project_root: &Path,
+) -> Result<(std::path::PathBuf, WorkUnitsData), FspecCoreError> {
     let work_units_path = project_root.join("spec").join("work-units.json");
     let raw = std::fs::read_to_string(&work_units_path)
         .map_err(|e| invalid_args(format_io_error(&e, &work_units_path.display().to_string())))?;
-    let data: WorkUnitsData = serde_json::from_str(&raw)
-        .map_err(|e| FspecCoreError::JsonSyntax(crate::io::json_error::parse_json_reason(&raw, &e)))?;
+    let data: WorkUnitsData = serde_json::from_str(&raw).map_err(|e| {
+        FspecCoreError::JsonSyntax(crate::io::json_error::parse_json_reason(&raw, &e))
+    })?;
     Ok((work_units_path, data))
 }
 
 /// Dispatcher entry point. Two-front-doors invariant.
 pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> {
-    let args: WorkflowAutomationArgs =
-        serde_json::from_str(args_json).map_err(|e| invalid_args(format!("failed to parse args: {e}")))?;
+    let args: WorkflowAutomationArgs = serde_json::from_str(args_json)
+        .map_err(|e| invalid_args(format!("failed to parse args: {e}")))?;
 
     let action = args.action.as_deref().unwrap_or("");
     let work_unit_id = args.work_unit_id.as_deref().unwrap_or("undefined");
@@ -254,8 +257,10 @@ fn auto_advance(
     match wu.extra.get_mut("stateHistory") {
         Some(Value::Array(arr)) => arr.push(history_entry),
         _ => {
-            wu.extra
-                .insert("stateHistory".to_string(), Value::Array(vec![history_entry]));
+            wu.extra.insert(
+                "stateHistory".to_string(),
+                Value::Array(vec![history_entry]),
+            );
         }
     }
 
@@ -342,7 +347,10 @@ mod tests {
 
     #[test]
     fn status_from_str_known_values() {
-        assert_eq!(status_from_str("implementing"), Some(WorkUnitStatus::Implementing));
+        assert_eq!(
+            status_from_str("implementing"),
+            Some(WorkUnitStatus::Implementing)
+        );
         assert_eq!(status_from_str("done"), Some(WorkUnitStatus::Done));
         assert_eq!(status_from_str("testing"), Some(WorkUnitStatus::Testing));
         assert_eq!(status_from_str("nope"), None);

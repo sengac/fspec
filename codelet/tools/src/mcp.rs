@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
 
+use rig::tool::server::ToolServerHandle;
 use rmcp::model::{
     CallToolRequestParams, ClientCapabilities, ClientInfo, CreateMessageRequestParams,
     CreateMessageResult, Implementation, LoggingMessageNotificationParam,
@@ -17,7 +18,6 @@ use rmcp::model::{
 };
 use rmcp::service::{NotificationContext, RequestContext, RoleClient, RunningService};
 use rmcp::ServiceExt;
-use rig::tool::server::ToolServerHandle;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -207,9 +207,8 @@ impl rmcp::handler::client::ClientHandler for DynMcpHandler {
         &self,
         params: CreateMessageRequestParams,
         _context: RequestContext<RoleClient>,
-    ) -> impl std::future::Future<Output = Result<CreateMessageResult, rmcp::ErrorData>>
-           + Send
-           + '_ {
+    ) -> impl std::future::Future<Output = Result<CreateMessageResult, rmcp::ErrorData>> + Send + '_
+    {
         async move {
             let (response_tx, response_rx) = tokio::sync::oneshot::channel();
             let injection = McpInjection::SamplingRequest {
@@ -235,10 +234,7 @@ impl rmcp::handler::client::ClientHandler for DynMcpHandler {
                     ))
                 }
                 Err(_) => {
-                    error!(
-                        "[MCP:{}] Sampling response channel dropped",
-                        self.name
-                    );
+                    error!("[MCP:{}] Sampling response channel dropped", self.name);
                     Err(rmcp::ErrorData::internal_error(
                         "Response channel dropped",
                         None,
@@ -253,7 +249,10 @@ impl rmcp::handler::client::ClientHandler for DynMcpHandler {
         context: NotificationContext<RoleClient>,
     ) -> impl std::future::Future<Output = ()> + Send + '_ {
         async move {
-            debug!("[MCP:{}] Tool list changed notification received", self.name);
+            debug!(
+                "[MCP:{}] Tool list changed notification received",
+                self.name
+            );
 
             // Re-fetch tools from the server
             match context.peer.list_all_tools().await {
@@ -262,7 +261,10 @@ impl rmcp::handler::client::ClientHandler for DynMcpHandler {
                         .iter()
                         .map(|t| McpToolDef {
                             name: t.name.to_string(),
-                            description: t.description.as_ref().map(std::string::ToString::to_string),
+                            description: t
+                                .description
+                                .as_ref()
+                                .map(std::string::ToString::to_string),
                             input_schema: t.schema_as_json_value(),
                         })
                         .collect();
@@ -304,10 +306,7 @@ impl rmcp::handler::client::ClientHandler for DynMcpHandler {
         _context: NotificationContext<RoleClient>,
     ) -> impl std::future::Future<Output = ()> + Send + '_ {
         async move {
-            let msg = format!(
-                "[MCP:{}] Resource updated: {}",
-                self.name, params.uri
-            );
+            let msg = format!("[MCP:{}] Resource updated: {}", self.name, params.uri);
             let _ = self
                 .injection_tx
                 .send(McpInjection::Notification(msg))
@@ -363,14 +362,13 @@ pub async fn connect_stdio(
     let args = &parts[1..];
 
     // Build the transport
-    let transport_result = rmcp::transport::TokioChildProcess::new(
-        Command::new(program).configure(|cmd| {
+    let transport_result =
+        rmcp::transport::TokioChildProcess::new(Command::new(program).configure(|cmd| {
             cmd.args(args);
             if let Some(env_vars) = env {
                 cmd.envs(env_vars.iter());
             }
-        }),
-    );
+        }));
 
     let transport = match transport_result {
         Ok(t) => t,
@@ -454,10 +452,7 @@ pub async fn connect_stdio(
     let tool_list = tool_defs
         .iter()
         .map(|t| {
-            let desc = t
-                .description
-                .as_deref()
-                .unwrap_or("No description");
+            let desc = t.description.as_deref().unwrap_or("No description");
             format!("    - {} — {desc}", t.name)
         })
         .collect::<Vec<_>>()
@@ -568,10 +563,7 @@ pub async fn route_mcp_tool_call(
 }
 
 /// Disconnect a named MCP connection.
-pub async fn disconnect_mcp(
-    name: &str,
-    connections: &McpConnectionMap,
-) -> McpConnectResult {
+pub async fn disconnect_mcp(name: &str, connections: &McpConnectionMap) -> McpConnectResult {
     let mut map = connections.write().await;
     match map.remove(name) {
         Some(conn) => {
@@ -817,9 +809,8 @@ struct McpSessionState {
 /// Uses std::sync::Mutex (not tokio) because:
 /// 1. We never hold the lock across .await points
 /// 2. tokio::sync::Mutex doesn't work across different tokio runtimes (test isolation)
-static MCP_SESSIONS: once_cell::sync::Lazy<
-    std::sync::Mutex<HashMap<uuid::Uuid, McpSessionState>>,
-> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new(HashMap::new()));
+static MCP_SESSIONS: once_cell::sync::Lazy<std::sync::Mutex<HashMap<uuid::Uuid, McpSessionState>>> =
+    once_cell::sync::Lazy::new(|| std::sync::Mutex::new(HashMap::new()));
 
 /// Initialize MCP state for a session. Returns the injection receiver
 /// for the agent_loop to consume, and the McpConnectionMap for gathering tools.
@@ -833,7 +824,9 @@ pub fn init_mcp_session(
         injection_tx,
         tool_server_handle: None,
     };
-    let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    let mut sessions = MCP_SESSIONS
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions.insert(session_id, state);
     (injection_rx, connections)
 }
@@ -847,7 +840,9 @@ pub fn init_mcp_session(
 /// to drop.
 pub fn cleanup_mcp_session(session_id: uuid::Uuid) {
     let state = {
-        let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        let mut sessions = MCP_SESSIONS
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         sessions.remove(&session_id)
     };
     // Cancel each connection's service synchronously via the cancellation token.
@@ -867,15 +862,17 @@ pub fn cleanup_mcp_session(session_id: uuid::Uuid) {
 
 /// Get the McpConnectionMap for a session (for gathering tools at agent build time).
 pub fn get_mcp_connections(session_id: uuid::Uuid) -> Option<McpConnectionMap> {
-    let sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    let sessions = MCP_SESSIONS
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions.get(&session_id).map(|s| s.connections.clone())
 }
 
 /// Get injection_tx + connections for a session (used internally by ConnectMcpTool).
-fn get_mcp_session_state(
-    session_id: uuid::Uuid,
-) -> Option<(McpInjectionTx, McpConnectionMap)> {
-    let sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+fn get_mcp_session_state(session_id: uuid::Uuid) -> Option<(McpInjectionTx, McpConnectionMap)> {
+    let sessions = MCP_SESSIONS
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions
         .get(&session_id)
         .map(|s| (s.injection_tx.clone(), s.connections.clone()))
@@ -886,7 +883,9 @@ fn get_mcp_session_state(
 /// Called by run_with_provider! after building the agent, so that ConnectMcpTool
 /// can register newly connected tools mid-turn via `handle.add_tool()`.
 pub fn set_mcp_tool_server_handle(session_id: uuid::Uuid, handle: ToolServerHandle) {
-    let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    let mut sessions = MCP_SESSIONS
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     if let Some(state) = sessions.get_mut(&session_id) {
         state.tool_server_handle = Some(handle);
     }
@@ -894,7 +893,9 @@ pub fn set_mcp_tool_server_handle(session_id: uuid::Uuid, handle: ToolServerHand
 
 /// MCP-002: Retrieve the ToolServerHandle for a session (for mid-turn tool registration).
 fn get_mcp_tool_server_handle(session_id: uuid::Uuid) -> Option<ToolServerHandle> {
-    let sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    let sessions = MCP_SESSIONS
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions
         .get(&session_id)
         .and_then(|s| s.tool_server_handle.clone())
@@ -917,9 +918,7 @@ pub struct McpToolRegistration {
 ///
 /// Called fresh each turn by `create_rig_agent()` so newly connected tools
 /// appear immediately in the next turn.
-pub async fn gather_mcp_tool_registrations(
-    session_id: uuid::Uuid,
-) -> Vec<McpToolRegistration> {
+pub async fn gather_mcp_tool_registrations(session_id: uuid::Uuid) -> Vec<McpToolRegistration> {
     let connections = match get_mcp_connections(session_id) {
         Some(c) => c,
         None => return Vec::new(),
@@ -1016,12 +1015,11 @@ impl rig::tool::Tool for McpToolWrapper {
             });
         }
 
-        let connections = get_mcp_connections(self.session_id).ok_or_else(|| {
-            crate::ToolError::Execution {
+        let connections =
+            get_mcp_connections(self.session_id).ok_or_else(|| crate::ToolError::Execution {
                 tool: "mcp",
                 message: "MCP session not initialized".to_string(),
-            }
-        })?;
+            })?;
 
         route_mcp_tool_call(&self.qualified_name, args, &connections)
             .await
@@ -1236,11 +1234,9 @@ impl rig::tool::Tool for ConnectMcpTool {
         }
 
         let (injection_tx, connections) =
-            get_mcp_session_state(self.session_id).ok_or_else(|| {
-                crate::ToolError::Execution {
-                    tool: "ConnectMCP",
-                    message: "MCP session not initialized".to_string(),
-                }
+            get_mcp_session_state(self.session_id).ok_or_else(|| crate::ToolError::Execution {
+                tool: "ConnectMCP",
+                message: "MCP session not initialized".to_string(),
             })?;
 
         let result = match args.action {
@@ -1255,10 +1251,12 @@ impl rig::tool::Tool for ConnectMcpTool {
                 match transport {
                     McpTransport::Stdio => {
                         let command =
-                            args.command.as_deref().ok_or(crate::ToolError::Validation {
-                                tool: "ConnectMCP",
-                                message: "command is required for stdio transport".to_string(),
-                            })?;
+                            args.command
+                                .as_deref()
+                                .ok_or(crate::ToolError::Validation {
+                                    tool: "ConnectMCP",
+                                    message: "command is required for stdio transport".to_string(),
+                                })?;
                         connect_stdio(
                             name,
                             command,
@@ -1270,11 +1268,10 @@ impl rig::tool::Tool for ConnectMcpTool {
                         .await
                     }
                     McpTransport::Http => {
-                        let url =
-                            args.url.as_deref().ok_or(crate::ToolError::Validation {
-                                tool: "ConnectMCP",
-                                message: "url is required for http transport".to_string(),
-                            })?;
+                        let url = args.url.as_deref().ok_or(crate::ToolError::Validation {
+                            tool: "ConnectMCP",
+                            message: "url is required for http transport".to_string(),
+                        })?;
                         connect_http(
                             name,
                             url,
@@ -1383,7 +1380,12 @@ impl rig::tool::Tool for ConnectMcpTool {
 }
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 mod tests {
     use super::*;
 
@@ -1545,7 +1547,11 @@ mod tests {
     #[tokio::test]
     async fn test_route_tool_call_through_cached_mcp_connection() {
         // @step Given an MCP server "github" is connected with tools including "create_issue"
-        let data = make_test_data("github", &["create_issue", "list_repos"], McpTransport::Stdio);
+        let data = make_test_data(
+            "github",
+            &["create_issue", "list_repos"],
+            McpTransport::Stdio,
+        );
 
         // @step When the LLM calls tool "mcp__github__create_issue" with arguments owner "org" and repo "project" and title "Bug fix"
         let qualified_name = "mcp__github__create_issue";
@@ -1558,7 +1564,10 @@ mod tests {
         assert_eq!(tool, "create_issue");
 
         // @step And the tool should look up "github" in session.mcp_connections
-        assert_eq!(data.name, server, "connection name should match parsed server");
+        assert_eq!(
+            data.name, server,
+            "connection name should match parsed server"
+        );
 
         // @step And the tool should forward the call via peer().call_tool() with name "create_issue" and the provided arguments
         // NOTE: actual rmcp call_tool requires integration test; here we verify the tool exists
@@ -1655,7 +1664,11 @@ mod tests {
     #[tokio::test]
     async fn test_multi_server_workflow_with_independent_connections() {
         // @step Given the agent connects to MCP server "github" via stdio
-        let github = make_test_data("github", &["create_issue", "list_repos"], McpTransport::Stdio);
+        let github = make_test_data(
+            "github",
+            &["create_issue", "list_repos"],
+            McpTransport::Stdio,
+        );
 
         // @step And the agent connects to MCP server "sonar" via http
         let sonar = make_test_data("sonar", &["analyze", "get_metrics"], McpTransport::Http);
@@ -1703,11 +1716,12 @@ mod tests {
         // Simulate what on_tool_list_changed does: update cache then inject notification.
         // Original tools before the notification:
         let _original_tools = [McpToolDef {
-                name: "create_issue".to_string(),
-                description: Some("Create an issue".to_string()),
-                input_schema: serde_json::json!({"type": "object"}),
-            }];
-        let updated_tools = [McpToolDef {
+            name: "create_issue".to_string(),
+            description: Some("Create an issue".to_string()),
+            input_schema: serde_json::json!({"type": "object"}),
+        }];
+        let updated_tools = [
+            McpToolDef {
                 name: "create_issue".to_string(),
                 description: Some("Create an issue".to_string()),
                 input_schema: serde_json::json!({"type": "object"}),
@@ -1716,7 +1730,8 @@ mod tests {
                 name: "new_tool".to_string(),
                 description: Some("Newly added tool".to_string()),
                 input_schema: serde_json::json!({"type": "object"}),
-            }];
+            },
+        ];
         assert_eq!(updated_tools.len(), 2, "should have updated tool list");
         assert!(
             updated_tools.iter().any(|t| t.name == "new_tool"),
@@ -1784,12 +1799,10 @@ mod tests {
                 let result = CreateMessageResult::new(
                     rmcp::model::SamplingMessage::new(
                         rmcp::model::Role::Assistant,
-                        rmcp::model::SamplingMessageContent::Text(
-                            rmcp::model::RawTextContent {
-                                text: "Analysis complete".to_string(),
-                                meta: None,
-                            },
-                        ),
+                        rmcp::model::SamplingMessageContent::Text(rmcp::model::RawTextContent {
+                            text: "Analysis complete".to_string(),
+                            meta: None,
+                        }),
                     ),
                     "test-model".to_string(),
                 );
@@ -1850,7 +1863,11 @@ mod tests {
         // @step Given MCP server "github" is connected
         // disconnect_mcp requires McpConnectionMap with real McpConnection.
         // We test the result structure and verify parse + tool removal logic.
-        let data = make_test_data("github", &["create_issue", "list_repos"], McpTransport::Stdio);
+        let data = make_test_data(
+            "github",
+            &["create_issue", "list_repos"],
+            McpTransport::Stdio,
+        );
 
         // @step When the agent calls ConnectMCP with action "disconnect" and name "github"
         let args = McpConnectArgs {
@@ -2024,13 +2041,20 @@ mod tests {
         let built_in = ["Read", "Write", "Bash"];
 
         // @step And MCP server "github" is connected with tools "create_issue" and "list_repos"
-        let github = make_test_data("github", &["create_issue", "list_repos"], McpTransport::Stdio);
+        let github = make_test_data(
+            "github",
+            &["create_issue", "list_repos"],
+            McpTransport::Stdio,
+        );
 
         // @step When the tool list is gathered for an LLM API call
         let mcp_tools = gather_tools_from_test_data(&[&github]);
 
         // Simulate combining built-in + MCP tools (as done in create_rig_agent)
-        let mut all_tool_names: Vec<String> = built_in.iter().map(std::string::ToString::to_string).collect();
+        let mut all_tool_names: Vec<String> = built_in
+            .iter()
+            .map(std::string::ToString::to_string)
+            .collect();
         all_tool_names.extend(mcp_tools.iter().map(|t| t.name.clone()));
 
         // @step Then the result should contain "Read", "Write", "Bash" as built-in tools
@@ -2108,7 +2132,11 @@ mod tests {
 
         // @step And the new connection should replace it in session.mcp_connections
         tool_map.insert("github".to_string(), replacement.tools.clone());
-        assert_eq!(tool_map.len(), 1, "should still have exactly one github entry");
+        assert_eq!(
+            tool_map.len(),
+            1,
+            "should still have exactly one github entry"
+        );
         assert_eq!(
             tool_map.get("github").unwrap().len(),
             3,
@@ -2959,10 +2987,11 @@ mod tests {
             let has_existing = defs
                 .iter()
                 .any(|d| d.name == "mcp__existing_server__old_tool");
-            let has_new = defs
-                .iter()
-                .any(|d| d.name == "mcp__new_server__new_tool");
-            assert!(has_existing, "existing server tool should still be available");
+            let has_new = defs.iter().any(|d| d.name == "mcp__new_server__new_tool");
+            assert!(
+                has_existing,
+                "existing server tool should still be available"
+            );
             assert!(has_new, "new server tool should be available");
 
             // @step And only "new_server" tools were added mid-turn via add_tool
@@ -3053,7 +3082,11 @@ mod tests {
             set_mcp_tool_server_handle(session_id, handle.clone());
 
             // @step And server "webmcp" was previously connected with tools registered
-            let original_defs = make_tool_defs(&["browser_navigate", "browser_screenshot", "browser_list_tabs"]);
+            let original_defs = make_tool_defs(&[
+                "browser_navigate",
+                "browser_screenshot",
+                "browser_list_tabs",
+            ]);
             let original_wrappers: Vec<McpToolWrapper> = original_defs
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
@@ -3072,10 +3105,19 @@ mod tests {
 
             // Verify old tools are gone
             let defs_mid = handle.get_tool_defs(None).await.unwrap();
-            assert_eq!(defs_mid.len(), 0, "old tools should be removed before re-add");
+            assert_eq!(
+                defs_mid.len(),
+                0,
+                "old tools should be removed before re-add"
+            );
 
             // Now register the new tools (server may expose different tools after reconnect)
-            let new_defs = make_tool_defs(&["browser_navigate", "browser_screenshot", "browser_list_tabs", "getApiRequests"]);
+            let new_defs = make_tool_defs(&[
+                "browser_navigate",
+                "browser_screenshot",
+                "browser_list_tabs",
+                "getApiRequests",
+            ]);
             let new_wrappers: Vec<McpToolWrapper> = new_defs
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
@@ -3084,7 +3126,11 @@ mod tests {
 
             // @step Then the ToolServerHandle contains only the new tools (no duplicates)
             let defs_after = handle.get_tool_defs(None).await.unwrap();
-            assert_eq!(defs_after.len(), 4, "should have 4 new tools (3 original + 1 new)");
+            assert_eq!(
+                defs_after.len(),
+                4,
+                "should have 4 new tools (3 original + 1 new)"
+            );
 
             // @step And no duplicate tool names exist
             let mut names: Vec<String> = defs_after.iter().map(|d| d.name.clone()).collect();
@@ -3121,10 +3167,17 @@ mod tests {
 
             // @step And server "webmcp" is connected with 11 native browser tools
             let tool_names: Vec<&str> = vec![
-                "browser_navigate", "browser_screenshot", "browser_list_tabs",
-                "browser_execute_script", "browser_switch_tab", "browser_close_tab",
-                "browser_get_page_content", "browser_click_element", "browser_fill_form",
-                "browser_go_back", "browser_go_forward",
+                "browser_navigate",
+                "browser_screenshot",
+                "browser_list_tabs",
+                "browser_execute_script",
+                "browser_switch_tab",
+                "browser_close_tab",
+                "browser_get_page_content",
+                "browser_click_element",
+                "browser_fill_form",
+                "browser_go_back",
+                "browser_go_forward",
             ];
             let original_defs = make_tool_defs(&tool_names);
             let original_wrappers: Vec<McpToolWrapper> = original_defs
@@ -3193,7 +3246,8 @@ mod tests {
 
             // @step When the agent reconnects to "webmcp" with an additional tool
             remove_server_tools_from_handle(&handle, "webmcp", session_id).await;
-            let new_webmcp_defs = make_tool_defs(&["browser_navigate", "browser_screenshot", "getApiRequests"]);
+            let new_webmcp_defs =
+                make_tool_defs(&["browser_navigate", "browser_screenshot", "getApiRequests"]);
             let new_webmcp_wrappers: Vec<McpToolWrapper> = new_webmcp_defs
                 .iter()
                 .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
@@ -3213,10 +3267,18 @@ mod tests {
                 .iter()
                 .filter(|d| d.name.starts_with("mcp__webmcp__"))
                 .collect();
-            assert_eq!(webmcp_tools.len(), 3, "webmcp should have 3 tools after reconnect");
+            assert_eq!(
+                webmcp_tools.len(),
+                3,
+                "webmcp should have 3 tools after reconnect"
+            );
 
             // @step And total tool count is correct (no duplicates)
-            assert_eq!(defs_after.len(), 5, "total should be 5 (2 github + 3 webmcp)");
+            assert_eq!(
+                defs_after.len(),
+                5,
+                "total should be 5 (2 github + 3 webmcp)"
+            );
 
             cleanup_mcp_session(session_id);
         }

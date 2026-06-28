@@ -48,8 +48,7 @@ pub fn is_thinking_exhaustion(
     };
 
     let reason_lower = reason.to_lowercase();
-    let is_length_stop = reason_lower == "max_tokens"
-        || reason_lower == "length";
+    let is_length_stop = reason_lower == "max_tokens" || reason_lower == "length";
 
     if !is_length_stop {
         return false;

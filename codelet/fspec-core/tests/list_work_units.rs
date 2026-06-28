@@ -11,7 +11,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use codelet_fspec_core::{dispatch_command, canonical::is_ported, DispatchRequest};
+use codelet_fspec_core::{canonical::is_ported, dispatch_command, DispatchRequest};
 use serde_json::{json, Value};
 use tempfile::TempDir;
 

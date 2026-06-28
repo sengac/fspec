@@ -92,12 +92,21 @@ fn scenario_generated_content_matches_canonical_template_verbatim() {
     );
 
     // @step And the written file contains the line 'Feature: User Authentication'
-    assert!(content.contains("Feature: User Authentication"), "missing Feature line:\n{content}");
+    assert!(
+        content.contains("Feature: User Authentication"),
+        "missing Feature line:\n{content}"
+    );
 
     // @step And the written file contains the placeholder steps '[precondition]', '[action]', and '[expected outcome]'
-    assert!(content.contains("[precondition]"), "missing [precondition]:\n{content}");
+    assert!(
+        content.contains("[precondition]"),
+        "missing [precondition]:\n{content}"
+    );
     assert!(content.contains("[action]"), "missing [action]:\n{content}");
-    assert!(content.contains("[expected outcome]"), "missing [expected outcome]:\n{content}");
+    assert!(
+        content.contains("[expected outcome]"),
+        "missing [expected outcome]:\n{content}"
+    );
 
     // @step And the written file ends with a trailing newline
     assert!(content.ends_with('\n'), "must end with trailing newline");
@@ -117,7 +126,10 @@ fn scenario_coverage_sidecar_carries_one_empty_scenario_mapping_with_zeroed_stat
     let result = dispatch_command(req(tmp.path(), json!({"name": "User Authentication"})));
     assert!(result.success, "expected success=true, got {result:?}");
 
-    let cov_raw = read_file(tmp.path(), "spec/features/user-authentication.feature.coverage");
+    let cov_raw = read_file(
+        tmp.path(),
+        "spec/features/user-authentication.feature.coverage",
+    );
     let cov: Value = serde_json::from_str(&cov_raw).expect("parse coverage json");
 
     // @step Then the coverage sidecar parses to one scenario named '[Scenario name]' with empty testMappings
@@ -160,7 +172,9 @@ fn scenario_prefill_detection_reports_placeholders_in_the_template() {
 
     // @step And the dispatcher response carries a prefill systemReminder string
     assert!(
-        data["prefillDetection"]["systemReminder"].as_str().is_some(),
+        data["prefillDetection"]["systemReminder"]
+            .as_str()
+            .is_some(),
         "prefill systemReminder string expected"
     );
 }
@@ -182,7 +196,9 @@ fn scenario_capability_style_name_emits_no_file_naming_reminder() {
 
     // @step Then the dispatcher response has no fileNamingReminder field
     assert!(
-        data.get("fileNamingReminder").map(serde_json::Value::is_null).unwrap_or(true),
+        data.get("fileNamingReminder")
+            .map(serde_json::Value::is_null)
+            .unwrap_or(true),
         "fileNamingReminder must be absent/null for capability names; got {data}"
     );
 }
@@ -245,5 +261,8 @@ fn scenario_creating_existing_feature_file_fails_without_overwriting() {
 
     // @step And the file spec/features/user-authentication.feature still contains 'KEEP ME'
     let after = read_file(tmp.path(), "spec/features/user-authentication.feature");
-    assert!(after.contains("KEEP ME"), "existing file must not be overwritten");
+    assert!(
+        after.contains("KEEP ME"),
+        "existing file must not be overwritten"
+    );
 }

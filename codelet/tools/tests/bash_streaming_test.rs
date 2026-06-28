@@ -1,4 +1,10 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::await_holding_lock,
+    clippy::needless_collect
+)]
 //! Feature: spec/features/bash-tool-ui-streaming-during-execution.feature
 //!
 //! Tests for Bash Tool UI Streaming During Execution - TOOL-011
@@ -59,7 +65,7 @@ impl MockStreamCollector {
 async fn test_stream_command_output_to_ui_in_real_time() {
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
-    
+
     // @step Given a bash command that produces incremental output
     let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
@@ -98,7 +104,7 @@ async fn test_stream_command_output_to_ui_in_real_time() {
 async fn test_buffer_complete_output_for_llm_response() {
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
-    
+
     // @step Given a bash command that produces multiple lines of output
     let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
@@ -141,7 +147,7 @@ async fn test_buffer_complete_output_for_llm_response() {
 async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
-    
+
     // @step Given a bash command that produces output exceeding MAX_OUTPUT_CHARS
     let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
@@ -190,7 +196,7 @@ async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
 async fn test_emit_progress_through_stream_output_trait() {
     // Acquire lock to prevent abort flag race conditions
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
-    
+
     // @step Given a bash command is executing
     let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
@@ -247,7 +253,7 @@ async fn test_emit_progress_through_stream_output_trait() {
 async fn test_abort_running_bash_command() {
     // Acquire lock to prevent race conditions with other abort tests
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
-    
+
     use codelet_tools::{clear_bash_abort, request_bash_abort};
     use std::time::{Duration, Instant};
 
@@ -312,7 +318,7 @@ async fn test_abort_running_bash_command() {
 async fn test_clear_abort_allows_new_commands() {
     // Acquire lock to prevent race conditions with other abort tests
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
-    
+
     use codelet_tools::{clear_bash_abort, request_bash_abort};
 
     // @step Given the abort flag was previously set
@@ -335,7 +341,10 @@ async fn test_clear_abort_allows_new_commands() {
         )
         .await;
 
-    assert!(result.is_ok(), "Command should succeed after clearing abort flag");
+    assert!(
+        result.is_ok(),
+        "Command should succeed after clearing abort flag"
+    );
     assert!(
         result.unwrap().contains("success"),
         "Command output should contain 'success'"

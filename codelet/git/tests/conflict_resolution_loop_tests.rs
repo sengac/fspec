@@ -41,8 +41,6 @@ struct ConflictFixture {
     session_id: String,
 }
 
-
-
 /// Create a single-file conflict fixture.
 ///
 /// Sets up: base → session modifies file → main modifies file (overlapping)
@@ -103,8 +101,7 @@ fn setup_single_file_conflict(
     }
 
     // Verify markers were written
-    let worktree_content =
-        fs::read_to_string(worktree_path.join(filename)).expect("read worktree");
+    let worktree_content = fs::read_to_string(worktree_path.join(filename)).expect("read worktree");
     assert!(
         worktree_content.contains("<<<<<<< session (your changes)"),
         "Worktree should have markers after first merge. Got:\n{}",
@@ -191,13 +188,7 @@ fn test_bug_099_exact_reproduction_from_debug_session() {
     let main = "line1\nline2\n**Those Spec-Driven, Multi-Agent Coding Factory**\nline4\n";
 
     // @step When apply_session_changes is called the first time
-    let fixture = setup_single_file_conflict(
-        "bb90f15f-repro",
-        "README.md",
-        base,
-        session,
-        main,
-    );
+    let fixture = setup_single_file_conflict("bb90f15f-repro", "README.md", base, session, main);
 
     // @step Then a ConflictError should be returned listing "README.md"
     // (verified inside setup_single_file_conflict)
@@ -210,8 +201,7 @@ fn test_bug_099_exact_reproduction_from_debug_session() {
 
     // @step When the user resolves "README.md" by removing conflict markers and keeping "Ma Spec-Driven"
     let resolved = "line1\nline2\n**Ma Spec-Driven, Multi-Agent Coding Factory**\nline4\n";
-    fs::write(fixture.worktree_path.join("README.md"), resolved)
-        .expect("LLM resolves conflict");
+    fs::write(fixture.worktree_path.join("README.md"), resolved).expect("LLM resolves conflict");
 
     // @step And apply_session_changes is called again
     let result = apply_session_changes(&fixture.repo_path, &fixture.session_id);
@@ -227,8 +217,7 @@ fn test_bug_099_exact_reproduction_from_debug_session() {
     );
 
     // @step And the main worktree "README.md" should contain "Ma Spec-Driven"
-    let main_content =
-        fs::read_to_string(fixture.repo_path.join("README.md")).expect("read main");
+    let main_content = fs::read_to_string(fixture.repo_path.join("README.md")).expect("read main");
     assert!(
         main_content.contains("**Ma Spec-Driven, Multi-Agent Coding Factory**"),
         "Main should have LLM's resolved content after successful re-merge"
@@ -261,23 +250,15 @@ fn test_bug_099_markers_regenerated_overwrite_resolution() {
     let session = "line1\nline2\n**Ma Spec-Driven**\nline4\n";
     let main = "line1\nline2\n**Those Spec-Driven**\nline4\n";
 
-    let fixture = setup_single_file_conflict(
-        "overwrite-repro",
-        "README.md",
-        base,
-        session,
-        main,
-    );
+    let fixture = setup_single_file_conflict("overwrite-repro", "README.md", base, session, main);
 
     // @step And the worktree "README.md" still contains "<<<<<<< session (your changes)" markers
     // LLM resolves: keeps session version (no markers)
     let resolved = "line1\nline2\n**Ma Spec-Driven**\nline4\n";
-    fs::write(fixture.worktree_path.join("README.md"), resolved)
-        .expect("LLM resolves");
+    fs::write(fixture.worktree_path.join("README.md"), resolved).expect("LLM resolves");
 
     // Verify: no markers in worktree after resolution
-    let before_remerge =
-        fs::read_to_string(fixture.worktree_path.join("README.md")).expect("read");
+    let before_remerge = fs::read_to_string(fixture.worktree_path.join("README.md")).expect("read");
     assert!(
         !before_remerge.contains("<<<<<<<"),
         "After LLM resolution, worktree should NOT have markers"
@@ -301,8 +282,7 @@ fn test_bug_099_markers_regenerated_overwrite_resolution() {
     );
 
     // After successful merge, main should have the resolved content (not corrupted markers)
-    let main_content =
-        fs::read_to_string(fixture.repo_path.join("README.md")).expect("read main");
+    let main_content = fs::read_to_string(fixture.repo_path.join("README.md")).expect("read main");
     assert!(
         main_content.contains("**Ma Spec-Driven**"),
         "Main should have resolved content, not corrupted double-nested markers. Got: {}",
@@ -331,13 +311,8 @@ fn test_first_merge_creates_pending_conflicts_state_file() {
     let main = "main version\n";
 
     // @step When apply_session_changes is called
-    let fixture = setup_single_file_conflict(
-        "pending-state-test",
-        "README.md",
-        base,
-        session,
-        main,
-    );
+    let fixture =
+        setup_single_file_conflict("pending-state-test", "README.md", base, session, main);
 
     // @step Then a ConflictError should be returned listing "README.md"
     // (verified inside setup_single_file_conflict)
@@ -373,18 +348,11 @@ fn test_resolved_file_accepted_on_remerge() {
     let session = "line1\nline2\nsession-edit\nline4\n";
     let main = "line1\nline2\nmain-edit\nline4\n";
 
-    let fixture = setup_single_file_conflict(
-        "resolved-accept",
-        "README.md",
-        base,
-        session,
-        main,
-    );
+    let fixture = setup_single_file_conflict("resolved-accept", "README.md", base, session, main);
 
     // @step And the worktree "README.md" does NOT contain "<<<<<<< " markers
     let resolved = "line1\nline2\nmanual-merge-result\nline4\n";
-    fs::write(fixture.worktree_path.join("README.md"), resolved)
-        .expect("write resolution");
+    fs::write(fixture.worktree_path.join("README.md"), resolved).expect("write resolution");
 
     // @step When apply_session_changes is called
     let result = apply_session_changes(&fixture.repo_path, &fixture.session_id);
@@ -397,8 +365,7 @@ fn test_resolved_file_accepted_on_remerge() {
     );
 
     // @step And the worktree "README.md" content should be copied to main as the final resolution
-    let main_content =
-        fs::read_to_string(fixture.repo_path.join("README.md")).expect("read main");
+    let main_content = fs::read_to_string(fixture.repo_path.join("README.md")).expect("read main");
     assert!(
         main_content.contains("manual-merge-result"),
         "Main should have LLM's resolution as final answer. Got: {}",
@@ -426,13 +393,7 @@ fn test_unresolved_file_returns_error_without_overwrite() {
     let session = "line1\nsession-v\nline3\n";
     let main = "line1\nmain-v\nline3\n";
 
-    let fixture = setup_single_file_conflict(
-        "unresolved-test",
-        "README.md",
-        base,
-        session,
-        main,
-    );
+    let fixture = setup_single_file_conflict("unresolved-test", "README.md", base, session, main);
 
     // @step And the worktree "README.md" still contains "<<<<<<< session (your changes)" markers
     let markers_after_first =
@@ -542,18 +503,11 @@ fn test_resolution_matching_main_succeeds() {
     let session = "line1\nsession-edit\nline3\n";
     let main = "line1\nmain-edit\nline3\n";
 
-    let fixture = setup_single_file_conflict(
-        "match-main-test",
-        "README.md",
-        base,
-        session,
-        main,
-    );
+    let fixture = setup_single_file_conflict("match-main-test", "README.md", base, session, main);
 
     // @step And the worktree "README.md" has been resolved to match main exactly
     let resolved = "line1\nmain-edit\nline3\n";
-    fs::write(fixture.worktree_path.join("README.md"), resolved)
-        .expect("resolve to match main");
+    fs::write(fixture.worktree_path.join("README.md"), resolved).expect("resolve to match main");
 
     // @step When apply_session_changes is called
     let result = apply_session_changes(&fixture.repo_path, &fixture.session_id);
@@ -600,15 +554,10 @@ fn test_pending_conflicts_excluded_from_worktree_collection() {
     .expect("write state file");
 
     // Also make an actual change so the diff has something
-    fs::write(
-        worktree_path.join("README.md"),
-        "# Modified README\n",
-    )
-    .expect("modify readme");
+    fs::write(worktree_path.join("README.md"), "# Modified README\n").expect("modify readme");
 
     // @step When worktree files are collected for diff or apply
-    let diff = codelet_git::get_session_diff(repo_path, session_id)
-        .expect("get session diff");
+    let diff = codelet_git::get_session_diff(repo_path, session_id).expect("get session diff");
 
     // @step Then ".fspec-pending-conflicts" should NOT appear in the collected file list
     let all_files: Vec<&String> = diff
@@ -619,7 +568,9 @@ fn test_pending_conflicts_excluded_from_worktree_collection() {
         .collect();
 
     assert!(
-        !all_files.iter().any(|f| f.contains("fspec-pending-conflicts")),
+        !all_files
+            .iter()
+            .any(|f| f.contains("fspec-pending-conflicts")),
         "BUG-099: .fspec-pending-conflicts should be excluded from collected files.\n\
          files_changed: {:?}\n\
          files_added: {:?}\n\

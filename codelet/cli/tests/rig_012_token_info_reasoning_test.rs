@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/reasoning-token-propagation.feature
 //!
@@ -56,8 +55,7 @@ fn test_token_info_from_token_display_update_zero_reasoning() {
 #[test]
 fn test_token_info_from_usage_with_reasoning() {
     // @step Given an ApiTokenUsage with reasoning_tokens of 2000
-    let usage = ApiTokenUsage::new(10_000, 5_000, 1_000, 500)
-        .with_reasoning_tokens(2_000);
+    let usage = ApiTokenUsage::new(10_000, 5_000, 1_000, 500).with_reasoning_tokens(2_000);
 
     // @step When TokenInfo::from_usage is called
     let info = TokenInfo::from_usage(usage, Some(50.0));

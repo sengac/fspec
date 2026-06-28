@@ -279,7 +279,10 @@ fn test_claude_provider_uses_api_key_facade_for_non_oauth_tokens() {
     assert_eq!(arr.len(), 1, "API key mode should produce 1 block");
     // The text contains fspec guidance prepended
     let text = arr[0]["text"].as_str().unwrap();
-    assert!(text.contains("test preamble"), "Should contain the preamble");
+    assert!(
+        text.contains("test preamble"),
+        "Should contain the preamble"
+    );
     assert!(text.contains("fspec"), "Should contain fspec guidance");
 }
 
@@ -308,7 +311,10 @@ fn test_transform_preamble_applies_provider_specific_transformations() {
     let api_key = ClaudeApiKeySystemPromptFacade;
     let transformed = api_key.transform_preamble("Hello");
     assert!(transformed.contains("Hello"), "Should contain preamble");
-    assert!(transformed.contains("fspec"), "Should contain fspec guidance");
+    assert!(
+        transformed.contains("fspec"),
+        "Should contain fspec guidance"
+    );
 
     // Gemini should contain preamble, fspec guidance, and web tool guidance
     let gemini = GeminiSystemPromptFacade;
@@ -330,5 +336,8 @@ fn test_transform_preamble_applies_provider_specific_transformations() {
     let openai = OpenAISystemPromptFacade;
     let transformed = openai.transform_preamble("Hello");
     assert!(transformed.contains("Hello"), "Should contain preamble");
-    assert!(transformed.contains("fspec"), "Should contain fspec guidance");
+    assert!(
+        transformed.contains("fspec"),
+        "Should contain fspec guidance"
+    );
 }

@@ -149,8 +149,12 @@ impl UnifiedExecTool {
             });
         }
 
-        let tty = params.get("tty").and_then(crate::facade::param_extract::value_as_bool_lenient).unwrap_or(false);
-        let yield_time_ms = params.get("yield_time_ms")
+        let tty = params
+            .get("tty")
+            .and_then(crate::facade::param_extract::value_as_bool_lenient)
+            .unwrap_or(false);
+        let yield_time_ms = params
+            .get("yield_time_ms")
             .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .unwrap_or(DEFAULT_YIELD_TIME_MS);
         let yield_time_ms = clamp_yield_time(yield_time_ms);
@@ -168,9 +172,8 @@ impl UnifiedExecTool {
         };
 
         let start = Instant::now();
-        let output = collect_output_until_deadline(
-            &output_buffer, &output_notify, yield_time_ms,
-        ).await;
+        let output =
+            collect_output_until_deadline(&output_buffer, &output_notify, yield_time_ms).await;
 
         // Check if process exited
         let exit_status = child.try_wait().map_err(|e| ToolError::Execution {
@@ -221,18 +224,20 @@ impl UnifiedExecTool {
 
     /// Handle the `write` action — send input to stdin, poll for output.
     async fn handle_write(&self, params: &Value) -> Result<UnifiedExecResult, ToolError> {
-        let session_id = params.get("session_id")
-            .and_then(Value::as_str)
-            .ok_or(ToolError::Validation {
-                tool: "unified_exec",
-                message: "session_id is required for write action".to_string(),
-            })?;
-        let input = params.get("input")
-            .and_then(Value::as_str)
-            .unwrap_or("");
+        let session_id =
+            params
+                .get("session_id")
+                .and_then(Value::as_str)
+                .ok_or(ToolError::Validation {
+                    tool: "unified_exec",
+                    message: "session_id is required for write action".to_string(),
+                })?;
+        let input = params.get("input").and_then(Value::as_str).unwrap_or("");
 
         let store = global_store();
-        let stdin_tx = store.get_stdin_tx(session_id).await
+        let stdin_tx = store
+            .get_stdin_tx(session_id)
+            .await
             .ok_or(ToolError::Validation {
                 tool: "unified_exec",
                 message: format!("Unknown session: {session_id}"),
@@ -245,7 +250,8 @@ impl UnifiedExecTool {
         }
 
         // Empty write uses poll-level minimum yield time
-        let yield_time_ms = params.get("yield_time_ms")
+        let yield_time_ms = params
+            .get("yield_time_ms")
             .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .unwrap_or(DEFAULT_YIELD_TIME_MS);
         let yield_time_ms = if input.is_empty() {
@@ -259,14 +265,17 @@ impl UnifiedExecTool {
 
     /// Handle the `poll` action — check for output without sending input.
     async fn handle_poll(&self, params: &Value) -> Result<UnifiedExecResult, ToolError> {
-        let session_id = params.get("session_id")
-            .and_then(Value::as_str)
-            .ok_or(ToolError::Validation {
-                tool: "unified_exec",
-                message: "session_id is required for poll action".to_string(),
-            })?;
+        let session_id =
+            params
+                .get("session_id")
+                .and_then(Value::as_str)
+                .ok_or(ToolError::Validation {
+                    tool: "unified_exec",
+                    message: "session_id is required for poll action".to_string(),
+                })?;
 
-        let yield_time_ms = params.get("yield_time_ms")
+        let yield_time_ms = params
+            .get("yield_time_ms")
             .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .unwrap_or(DEFAULT_YIELD_TIME_MS);
         let yield_time_ms = clamp_poll_yield_time(yield_time_ms);
@@ -278,8 +287,8 @@ impl UnifiedExecTool {
     async fn handle_list(&self) -> Result<UnifiedExecResult, ToolError> {
         let store = global_store();
         let infos = store.list_sessions().await;
-        let sessions: Vec<SessionListEntry> = infos.into_iter()
-            .map(SessionListEntry::from).collect();
+        let sessions: Vec<SessionListEntry> =
+            infos.into_iter().map(SessionListEntry::from).collect();
 
         Ok(UnifiedExecResult {
             exit_code: None,
@@ -293,15 +302,19 @@ impl UnifiedExecTool {
 
     /// Handle the `close` action — terminate a session.
     async fn handle_close(&self, params: &Value) -> Result<UnifiedExecResult, ToolError> {
-        let session_id = params.get("session_id")
-            .and_then(Value::as_str)
-            .ok_or(ToolError::Validation {
-                tool: "unified_exec",
-                message: "session_id is required for close action".to_string(),
-            })?;
+        let session_id =
+            params
+                .get("session_id")
+                .and_then(Value::as_str)
+                .ok_or(ToolError::Validation {
+                    tool: "unified_exec",
+                    message: "session_id is required for close action".to_string(),
+                })?;
 
         let store = global_store();
-        let mut entry = store.remove(session_id).await
+        let mut entry = store
+            .remove(session_id)
+            .await
             .ok_or(ToolError::Validation {
                 tool: "unified_exec",
                 message: format!("Unknown session: {session_id}"),
@@ -336,16 +349,17 @@ async fn poll_session(
 ) -> Result<UnifiedExecResult, ToolError> {
     let store = global_store();
 
-    let (output_buffer, output_notify) = store.get_output_handles(session_id).await
-        .ok_or(ToolError::Validation {
-            tool: "unified_exec",
-            message: format!("Unknown session: {session_id}"),
-        })?;
+    let (output_buffer, output_notify) =
+        store
+            .get_output_handles(session_id)
+            .await
+            .ok_or(ToolError::Validation {
+                tool: "unified_exec",
+                message: format!("Unknown session: {session_id}"),
+            })?;
 
     let start = Instant::now();
-    let output = collect_output_until_deadline(
-        &output_buffer, &output_notify, yield_time_ms,
-    ).await;
+    let output = collect_output_until_deadline(&output_buffer, &output_notify, yield_time_ms).await;
     let wall_time = start.elapsed().as_secs_f64();
 
     match store.try_wait(session_id).await {

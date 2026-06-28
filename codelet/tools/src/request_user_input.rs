@@ -169,8 +169,7 @@ fn validate_questions(questions: &[HitlQuestion]) -> Result<(), String> {
 /// Handler function type for HITL execution.
 /// Takes session_id and validated HitlRequest, returns HitlResponse or error.
 /// The handler blocks synchronously until the TUI sends back the user's answers.
-pub type HitlHandler =
-    Arc<dyn Fn(Uuid, HitlRequest) -> Result<HitlResponse, String> + Send + Sync>;
+pub type HitlHandler = Arc<dyn Fn(Uuid, HitlRequest) -> Result<HitlResponse, String> + Send + Sync>;
 
 /// Per-session handler storage
 static HITL_HANDLERS: once_cell::sync::Lazy<RwLock<HashMap<Uuid, HitlHandler>>> =
@@ -205,10 +204,7 @@ pub fn has_hitl_handler(session_id: Uuid) -> bool {
 ///
 /// Called by RequestUserInputTool when the LLM invokes the tool.
 /// Validates questions first, then dispatches to the registered handler.
-pub fn execute_hitl(
-    session_id: Uuid,
-    request: HitlRequest,
-) -> Result<HitlResponse, String> {
+pub fn execute_hitl(session_id: Uuid, request: HitlRequest) -> Result<HitlResponse, String> {
     // Validate questions before dispatching
     validate_questions(&request.questions)?;
 
@@ -221,9 +217,7 @@ pub fn execute_hitl(
 
     match handler {
         Some(h) => h(session_id, request),
-        None => Err(
-            "request_user_input is unavailable in the current session mode".to_string(),
-        ),
+        None => Err("request_user_input is unavailable in the current session mode".to_string()),
     }
 }
 
@@ -354,12 +348,11 @@ impl Tool for RequestUserInputTool {
             questions: args.questions,
         };
 
-        let response = execute_hitl(self.session_id, request).map_err(|e| {
-            ToolError::Execution {
+        let response =
+            execute_hitl(self.session_id, request).map_err(|e| ToolError::Execution {
                 tool: "request_user_input",
                 message: e,
-            }
-        })?;
+            })?;
 
         serde_json::to_string_pretty(&response).map_err(|e| ToolError::Execution {
             tool: "request_user_input",
@@ -368,9 +361,13 @@ impl Tool for RequestUserInputTool {
     }
 }
 
-
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 mod tests {
     use super::*;
     use serial_test::serial;
@@ -509,9 +506,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with a question header "This Is Too Long"
@@ -544,9 +539,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with a question id "camelCase"
@@ -580,9 +573,7 @@ mod tests {
 
         // @step Given a HITL handler is registered for the current session
         // @step And the handler will return a cancellation
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with valid questions
@@ -615,9 +606,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with 4 questions
@@ -655,9 +644,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with a question having 1 option
@@ -758,9 +745,7 @@ mod tests {
         assert!(!has_hitl_handler(session_id));
 
         // @step When set_hitl_handler is called for session "abc-123"
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step Then has_hitl_handler should return true for session "abc-123"
@@ -784,18 +769,12 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with an empty questions array
         let tool = RequestUserInputTool::new(session_id);
-        let result = tool
-            .call(RequestUserInputArgs {
-                questions: vec![],
-            })
-            .await;
+        let result = tool.call(RequestUserInputArgs { questions: vec![] }).await;
 
         // @step Then the tool should return a validation error about questions being required
         assert!(result.is_err());
@@ -819,9 +798,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with a question having an empty id
@@ -854,9 +831,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with a question having an empty header
@@ -889,9 +864,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with a question having an empty question text
@@ -924,9 +897,7 @@ mod tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the agent calls request_user_input with a question having 4 options
@@ -938,10 +909,22 @@ mod tests {
                     header: "Test".to_string(),
                     question: "A question?".to_string(),
                     options: Some(vec![
-                        HitlOption { label: "A".to_string(), description: "Opt A".to_string() },
-                        HitlOption { label: "B".to_string(), description: "Opt B".to_string() },
-                        HitlOption { label: "C".to_string(), description: "Opt C".to_string() },
-                        HitlOption { label: "D".to_string(), description: "Opt D".to_string() },
+                        HitlOption {
+                            label: "A".to_string(),
+                            description: "Opt A".to_string(),
+                        },
+                        HitlOption {
+                            label: "B".to_string(),
+                            description: "Opt B".to_string(),
+                        },
+                        HitlOption {
+                            label: "C".to_string(),
+                            description: "Opt C".to_string(),
+                        },
+                        HitlOption {
+                            label: "D".to_string(),
+                            description: "Opt D".to_string(),
+                        },
                     ]),
                 }],
             })

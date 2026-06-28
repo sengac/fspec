@@ -25,8 +25,7 @@
 //! can be transport-agnostic.
 
 pub use codelet_rpc::{
-    register_log_layer, BroadcastLogLayer, FspecServiceClient, FspecServiceImpl,
-    SharedFspecService,
+    register_log_layer, BroadcastLogLayer, FspecServiceClient, FspecServiceImpl, SharedFspecService,
 };
 
 use codelet_rpc::FspecService;

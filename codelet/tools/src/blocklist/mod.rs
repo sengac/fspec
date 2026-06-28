@@ -160,8 +160,14 @@ mod tests {
         let allowed_result = matcher.check_command(allowed_command);
 
         // @step Then the command should be allowed
-        assert!(allowed_result.allowed, "rm -rf ./node_modules should be allowed");
-        assert!(!allowed_result.blocked, "rm -rf ./node_modules should not be blocked");
+        assert!(
+            allowed_result.allowed,
+            "rm -rf ./node_modules should be allowed"
+        );
+        assert!(
+            !allowed_result.blocked,
+            "rm -rf ./node_modules should not be blocked"
+        );
 
         // @step When the AI runs "rm -rf /"
         let blocked_command = "rm -rf /";

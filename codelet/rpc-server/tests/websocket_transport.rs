@@ -114,10 +114,7 @@ async fn scenario_2_websocket_transport_returns_work_unit_info_via_binary() {
     let actual = result.expect("RPC over WebSocket should succeed");
     let mut ids: Vec<String> = actual.into_iter().map(|wu| wu.id).collect();
     ids.sort();
-    assert_eq!(
-        ids,
-        vec!["AUTH-001".to_string(), "AUTH-002".to_string()],
-    );
+    assert_eq!(ids, vec!["AUTH-001".to_string(), "AUTH-002".to_string()],);
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -152,7 +149,11 @@ async fn scenario_5_websocket_frames_are_bincode_encoded_by_default() {
         .list_work_units(context::current())
         .await
         .expect("RPC over WebSocket should succeed");
-    assert_eq!(result, watcher.snapshot(), "real RPC must return live snapshot");
+    assert_eq!(
+        result,
+        watcher.snapshot(),
+        "real RPC must return live snapshot"
+    );
 
     // Allow the proxy to flush both directions through the recorder.
     let mut waited = 0u64;

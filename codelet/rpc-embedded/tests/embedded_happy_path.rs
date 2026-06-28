@@ -56,8 +56,5 @@ async fn embedded_transport_returns_work_unit_info_from_shared_impl() {
     assert_eq!(actual, expected);
     let mut ids: Vec<String> = actual.into_iter().map(|wu| wu.id).collect();
     ids.sort();
-    assert_eq!(
-        ids,
-        vec!["AUTH-001".to_string(), "AUTH-002".to_string()],
-    );
+    assert_eq!(ids, vec!["AUTH-001".to_string(), "AUTH-002".to_string()],);
 }

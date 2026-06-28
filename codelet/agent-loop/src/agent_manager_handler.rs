@@ -8,18 +8,17 @@
 //! Creates an `AgentManagerHandler` closure that accesses SessionManager
 //! directly to execute spawn/list/get_status/close/message/await_idle actions.
 
+use codelet_tools::agent_manager::types::ContextReference;
 use codelet_tools::agent_manager::{
     AgentManagerAction, AgentManagerAsyncHandler, AgentManagerHandler, AgentManagerResult,
-    AwaitOutcome, AwaitSessionResult,
-    SessionEntry, SessionStatus,
+    AwaitOutcome, AwaitSessionResult, SessionEntry, SessionStatus,
 };
-use codelet_tools::agent_manager::types::ContextReference;
 use std::sync::Arc;
 use uuid::Uuid;
 
+use crate::session_search_handler::resolve_message_content;
 use codelet_sessions::background_session::IncomingMessage;
 use codelet_sessions::session_manager::SessionManager;
-use crate::session_search_handler::resolve_message_content;
 
 /// Create an AgentManagerHandler closure for a specific session.
 ///
@@ -39,12 +38,12 @@ pub fn create_handler(
     spawner_context_window: Option<usize>,
     spawner_max_output_tokens: Option<usize>,
 ) -> AgentManagerHandler {
-    Arc::new(move |action: AgentManagerAction, calling_session_id: Uuid| {
-        let session_manager = SessionManager::instance();
+    Arc::new(
+        move |action: AgentManagerAction, calling_session_id: Uuid| {
+            let session_manager = SessionManager::instance();
 
-        match action {
-            AgentManagerAction::Spawn { role } => {
-                handle_spawn(
+            match action {
+                AgentManagerAction::Spawn { role } => handle_spawn(
                     session_manager,
                     calling_session_id,
                     &project,
@@ -52,35 +51,40 @@ pub fn create_handler(
                     role,
                     spawner_context_window,
                     spawner_max_output_tokens,
-                )
-            }
-            AgentManagerAction::List => {
-                handle_list(session_manager)
-            }
-            AgentManagerAction::GetStatus { session_id } => {
-                handle_get_status(session_manager, &session_id)
-            }
-            AgentManagerAction::Close { session_id } => {
-                handle_close(session_manager, calling_session_id, &session_id)
-            }
-            AgentManagerAction::Message { session_id, message, context } => {
-                handle_message(session_manager, calling_session_id, &session_id, &message, context)
-            }
-            AgentManagerAction::SetRole { session_id, role } => {
-                handle_set_role(session_manager, calling_session_id, session_id.as_deref(), &role)
-            }
-            AgentManagerAction::AwaitIdle { .. } => {
-                AgentManagerResult::invalid_parameter(
+                ),
+                AgentManagerAction::List => handle_list(session_manager),
+                AgentManagerAction::GetStatus { session_id } => {
+                    handle_get_status(session_manager, &session_id)
+                }
+                AgentManagerAction::Close { session_id } => {
+                    handle_close(session_manager, calling_session_id, &session_id)
+                }
+                AgentManagerAction::Message {
+                    session_id,
+                    message,
+                    context,
+                } => handle_message(
+                    session_manager,
+                    calling_session_id,
+                    &session_id,
+                    &message,
+                    context,
+                ),
+                AgentManagerAction::SetRole { session_id, role } => handle_set_role(
+                    session_manager,
+                    calling_session_id,
+                    session_id.as_deref(),
+                    &role,
+                ),
+                AgentManagerAction::AwaitIdle { .. } => AgentManagerResult::invalid_parameter(
                     "await_idle must be dispatched through the async handler",
-                )
-            }
-            AgentManagerAction::Profile { .. } => {
-                AgentManagerResult::invalid_parameter(
+                ),
+                AgentManagerAction::Profile { .. } => AgentManagerResult::invalid_parameter(
                     "profile must be dispatched through the async handler",
-                )
+                ),
             }
-        }
-    })
+        },
+    )
 }
 
 /// Handle the `spawn` action — create a subordinate session
@@ -133,7 +137,11 @@ fn handle_spawn(
         manifest.id = subordinate_id;
 
         if let Err(e) = codelet_core::persistence::save_session(&manifest) {
-            tracing::warn!("Failed to create persistence manifest for subordinate {}: {}", subordinate_id, e);
+            tracing::warn!(
+                "Failed to create persistence manifest for subordinate {}: {}",
+                subordinate_id,
+                e
+            );
             // Continue anyway — the session will work but won't be searchable
         }
     }
@@ -179,15 +187,16 @@ fn handle_spawn(
             tokio::task::block_in_place(|| {
                 rt.block_on(async {
                     let mut inner = sub_session.inner.lock().await;
-                    inner.provider_manager_mut().override_model_limits(
-                        spawner_context_window,
-                        spawner_max_output_tokens,
-                    );
+                    inner
+                        .provider_manager_mut()
+                        .override_model_limits(spawner_context_window, spawner_max_output_tokens);
                 });
             });
             tracing::debug!(
                 "MODEL-005: Propagated context_window={:?}, max_output={:?} to subordinate {}",
-                spawner_context_window, spawner_max_output_tokens, subordinate_id
+                spawner_context_window,
+                spawner_max_output_tokens,
+                subordinate_id
             );
         }
     }
@@ -245,7 +254,8 @@ fn spawn_subordinate_forwarding_task(
         Err(e) => {
             tracing::warn!(
                 "SESS-015: Failed to get subordinate session {} for forwarding: {}",
-                subordinate_id, e
+                subordinate_id,
+                e
             );
             return;
         }
@@ -265,7 +275,8 @@ fn spawn_subordinate_forwarding_task(
     tokio::spawn(async move {
         tracing::debug!(
             "SESS-015: Forwarding task started for subordinate {} → root parent {}",
-            sub_id, root_parent_id
+            sub_id,
+            root_parent_id
         );
 
         loop {
@@ -277,7 +288,8 @@ fn spawn_subordinate_forwarding_task(
             match sub_rx.recv().await {
                 Ok(chunk) => {
                     // Convert StreamChunk to JSON
-                    let mut chunk_json = crate::stream_chunk_json::stream_chunk_to_json_value(&chunk);
+                    let mut chunk_json =
+                        crate::stream_chunk_json::stream_chunk_to_json_value(&chunk);
 
                     // Inject _relay_session_id so process_outbound_envelope uses
                     // the subordinate's session_id in the relay envelope
@@ -293,7 +305,9 @@ fn spawn_subordinate_forwarding_task(
                     if senders.is_empty() {
                         // AMGR-017: counter-only witness scope — if this scope shows high call_count
                         // during a profile window, the subordinate is emitting chunks into the void.
-                        codelet_tools::profile_scope!("spawn_subordinate_forwarding_task::empty_senders_continue");
+                        codelet_tools::profile_scope!(
+                            "spawn_subordinate_forwarding_task::empty_senders_continue"
+                        );
                         // No relay connections yet — this is fine for late bridge
                         // connections. Chunks emitted before Bridge connect are lost,
                         // but chunks after connect will be forwarded.
@@ -315,7 +329,8 @@ fn spawn_subordinate_forwarding_task(
                 Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
                     tracing::warn!(
                         "SESS-015: Forwarding task lagged {} messages for subordinate {}",
-                        n, sub_id
+                        n,
+                        sub_id
                     );
                     // Continue receiving — we'll catch up
                 }
@@ -392,10 +407,7 @@ fn handle_list(session_manager: &SessionManager) -> AgentManagerResult {
 }
 
 /// Handle the `get_status` action — return detailed status for a session
-fn handle_get_status(
-    session_manager: &SessionManager,
-    session_id: &str,
-) -> AgentManagerResult {
+fn handle_get_status(session_manager: &SessionManager, session_id: &str) -> AgentManagerResult {
     let session = match session_manager.get_session(session_id) {
         Ok(s) => s,
         Err(_) => return AgentManagerResult::session_not_found(session_id),
@@ -565,22 +577,20 @@ fn handle_message(
 
     // Deliver via the target's incoming_message channel (non-blocking try_send)
     match target_session.receive_incoming_message(incoming) {
-        Ok(()) => {
-            match context_info {
-                Some(resolved_count) => AgentManagerResult::MessageDeliveredWithContext {
-                    delivered: true,
-                    session_id: target_session_id.to_string(),
-                    context_resolved: resolved_count,
-                },
-                None => AgentManagerResult::MessageDelivered {
-                    delivered: true,
-                    session_id: target_session_id.to_string(),
-                },
-            }
-        }
-        Err(_) => AgentManagerResult::delivery_failed(
-            &format!("Incoming message channel full for session {target_session_id}"),
-        ),
+        Ok(()) => match context_info {
+            Some(resolved_count) => AgentManagerResult::MessageDeliveredWithContext {
+                delivered: true,
+                session_id: target_session_id.to_string(),
+                context_resolved: resolved_count,
+            },
+            None => AgentManagerResult::MessageDelivered {
+                delivered: true,
+                session_id: target_session_id.to_string(),
+            },
+        },
+        Err(_) => AgentManagerResult::delivery_failed(&format!(
+            "Incoming message channel full for session {target_session_id}"
+        )),
     }
 }
 
@@ -615,16 +625,16 @@ fn resolve_context(refs: &[ContextReference]) -> (String, usize) {
 /// whether the reference resolved without degradation.
 fn resolve_single_context(reference: &ContextReference) -> (String, bool) {
     match reference {
-        ContextReference::Turns { session_id, turns } => {
-            resolve_turns_context(session_id, turns)
-        }
-        ContextReference::TurnRange { session_id, start_turn, end_turn } => {
+        ContextReference::Turns { session_id, turns } => resolve_turns_context(session_id, turns),
+        ContextReference::TurnRange {
+            session_id,
+            start_turn,
+            end_turn,
+        } => {
             let turn_indices: Vec<usize> = (*start_turn..=*end_turn).collect();
             resolve_turns_context(session_id, &turn_indices)
         }
-        ContextReference::Query { session_id, query } => {
-            resolve_query_context(session_id, query)
-        }
+        ContextReference::Query { session_id, query } => resolve_query_context(session_id, query),
     }
 }
 
@@ -699,8 +709,8 @@ fn resolve_turns_context(session_id: &str, turns: &[usize]) -> (String, bool) {
 
 /// Resolve a search query against a session's history
 fn resolve_query_context(session_id: &str, query: &str) -> (String, bool) {
-    use codelet_core::persistence;
     use crate::session_search_handler::{build_ripgrep_matcher, ripgrep_is_match};
+    use codelet_core::persistence;
 
     // Build the regex matcher
     let matcher = match build_ripgrep_matcher(query) {
@@ -780,7 +790,6 @@ fn resolve_query_context(session_id: &str, query: &str) -> (String, bool) {
     (block, true)
 }
 
-
 /// Format turn indices as a compact label (e.g., "1-3" or "1,3,5")
 fn format_turns_label(turns: &[usize]) -> String {
     if turns.is_empty() {
@@ -793,13 +802,17 @@ fn format_turns_label(turns: &[usize]) -> String {
     // Check if contiguous
     let min = turns[0];
     let max = turns[turns.len() - 1];
-    let is_contiguous = turns.len() == (max - min + 1)
-        && turns.windows(2).all(|w| w[1] == w[0] + 1);
+    let is_contiguous =
+        turns.len() == (max - min + 1) && turns.windows(2).all(|w| w[1] == w[0] + 1);
 
     if is_contiguous {
         format!("{min}-{max}")
     } else {
-        turns.iter().map(|t| t.to_string()).collect::<Vec<_>>().join(",")
+        turns
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<_>>()
+            .join(",")
     }
 }
 
@@ -809,28 +822,29 @@ fn format_turns_label(turns: &[usize]) -> String {
 /// channel and uses `tokio::select!` to wait for `SessionStateChange(Idle)`
 /// events — zero polling, notification-based waiting.
 pub fn create_async_handler() -> AgentManagerAsyncHandler {
-    Arc::new(move |action: AgentManagerAction, calling_session_id: Uuid| {
-        Box::pin(async move {
-            match action {
-                AgentManagerAction::AwaitIdle { session_id, timeout } => {
-                    handle_await_idle(
-                        calling_session_id,
-                        session_id.into_vec(),
+    Arc::new(
+        move |action: AgentManagerAction, calling_session_id: Uuid| {
+            Box::pin(async move {
+                match action {
+                    AgentManagerAction::AwaitIdle {
+                        session_id,
                         timeout,
-                    ).await
+                    } => {
+                        handle_await_idle(calling_session_id, session_id.into_vec(), timeout).await
+                    }
+                    AgentManagerAction::Profile {
+                        duration_secs,
+                        top_n,
+                        label_prefix,
+                        focus,
+                    } => handle_profile(duration_secs, top_n, label_prefix, focus).await,
+                    _ => AgentManagerResult::invalid_parameter(
+                        "Only await_idle and profile should be dispatched to the async handler",
+                    ),
                 }
-                AgentManagerAction::Profile {
-                    duration_secs,
-                    top_n,
-                    label_prefix,
-                    focus,
-                } => handle_profile(duration_secs, top_n, label_prefix, focus).await,
-                _ => AgentManagerResult::invalid_parameter(
-                    "Only await_idle and profile should be dispatched to the async handler",
-                ),
-            }
-        })
-    })
+            })
+        },
+    )
 }
 
 /// Handle the `profile` action — run a time-bounded profile window (AMGR-017)
@@ -896,7 +910,10 @@ async fn handle_await_idle(
 
     // Phase 1: Validate all sessions exist and check which are already idle
     let mut results: Vec<AwaitSessionResult> = Vec::new();
-    let mut pending: Vec<(String, tokio::sync::broadcast::Receiver<codelet_rpc_types::StreamChunk>)> = Vec::new();
+    let mut pending: Vec<(
+        String,
+        tokio::sync::broadcast::Receiver<codelet_rpc_types::StreamChunk>,
+    )> = Vec::new();
 
     for id in &session_ids {
         let session = match session_manager.get_session(id) {
@@ -941,7 +958,8 @@ async fn handle_await_idle(
                 codelet_tools::profile_scope!("handle_await_idle::per_session_recv_loop");
                 match rx.recv().await {
                     Ok(chunk) => {
-                        if let codelet_rpc_types::StreamChunk::SessionStateChange { state } = &chunk {
+                        if let codelet_rpc_types::StreamChunk::SessionStateChange { state } = &chunk
+                        {
                             if *state == SessionState::Idle {
                                 return (id, AwaitOutcome::Idle);
                             }
@@ -971,12 +989,16 @@ async fn handle_await_idle(
                 join_set.abort_all();
                 while let Some(res) = join_set.join_next().await {
                     if let Ok((id, outcome)) = res {
-                        results.push(AwaitSessionResult { session_id: id, status: outcome });
+                        results.push(AwaitSessionResult {
+                            session_id: id,
+                            status: outcome,
+                        });
                     }
                 }
                 let resolved_ids: std::collections::HashSet<&str> =
                     results.iter().map(|r| r.session_id.as_str()).collect();
-                let missing: Vec<String> = session_ids.iter()
+                let missing: Vec<String> = session_ids
+                    .iter()
                     .filter(|id| !resolved_ids.contains(id.as_str()))
                     .cloned()
                     .collect();
@@ -1032,10 +1054,19 @@ async fn handle_await_idle(
                 // No timeout, no interrupt — just wait for all tasks
                 match join_set.join_next().await {
                     Some(Ok((id, outcome))) => {
-                        results.push(AwaitSessionResult { session_id: id, status: outcome });
-                        if join_set.is_empty() { break; }
+                        results.push(AwaitSessionResult {
+                            session_id: id,
+                            status: outcome,
+                        });
+                        if join_set.is_empty() {
+                            break;
+                        }
                     }
-                    Some(Err(_)) => { if join_set.is_empty() { break; } }
+                    Some(Err(_)) => {
+                        if join_set.is_empty() {
+                            break;
+                        }
+                    }
                     None => break,
                 }
             }
@@ -1054,12 +1085,16 @@ async fn finish_interrupted(
     join_set.abort_all();
     while let Some(res) = join_set.join_next().await {
         if let Ok((id, outcome)) = res {
-            results.push(AwaitSessionResult { session_id: id, status: outcome });
+            results.push(AwaitSessionResult {
+                session_id: id,
+                status: outcome,
+            });
         }
     }
     let resolved_ids: std::collections::HashSet<&str> =
         results.iter().map(|r| r.session_id.as_str()).collect();
-    let missing: Vec<String> = session_ids.iter()
+    let missing: Vec<String> = session_ids
+        .iter()
         .filter(|id| !resolved_ids.contains(id.as_str()))
         .cloned()
         .collect();
@@ -1079,7 +1114,10 @@ fn handle_join_result(
 ) -> bool {
     match result {
         Some(Ok((id, outcome))) => {
-            results.push(AwaitSessionResult { session_id: id, status: outcome });
+            results.push(AwaitSessionResult {
+                session_id: id,
+                status: outcome,
+            });
             join_set.is_empty()
         }
         Some(Err(_)) => join_set.is_empty(),
@@ -1223,7 +1261,10 @@ mod tests {
             ("anthropic/claude-opus-4-6", "anthropic"),
             ("openai/gpt-4o", "openai"),
             ("google/gemini-2.5-pro", "google"),
-            ("anthropic:personal/claude-sonnet-4-20250514", "anthropic:personal"),
+            (
+                "anthropic:personal/claude-sonnet-4-20250514",
+                "anthropic:personal",
+            ),
             ("local/llama-3", "local"),
         ];
 

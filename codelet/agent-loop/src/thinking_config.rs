@@ -213,8 +213,8 @@ mod tests {
         let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
         assert_eq!(parsed["reasoning"]["effort"].as_str(), Some("medium"));
 
-        let config = get_thinking_config("codex".to_string(), JsThinkingLevel::Off)
-            .expect("Should succeed");
+        let config =
+            get_thinking_config("codex".to_string(), JsThinkingLevel::Off).expect("Should succeed");
         let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
         assert_eq!(parsed, serde_json::json!({}));
     }

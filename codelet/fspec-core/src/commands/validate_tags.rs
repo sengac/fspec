@@ -344,7 +344,11 @@ fn report_work_unit_tag(
     }
 }
 
-fn validate_required_category_tags(tags: &[String], registry: &Registry, errors: &mut Vec<TagError>) {
+fn validate_required_category_tags(
+    tags: &[String],
+    registry: &Registry,
+    errors: &mut Vec<TagError>,
+) {
     let has_component = tags.iter().any(|t| registry.component.contains(t));
     if !has_component && !tags.iter().any(|t| t == "@component") {
         errors.push(TagError {
@@ -482,7 +486,10 @@ mod tests {
         assert!(!is_work_unit_tag("@auth-001"));
         assert!(looks_like_work_unit_tag("@auth-001"));
         assert!(!looks_like_work_unit_tag("@made-up")); // "up" is not digits
-        assert_eq!(extract_work_unit_id("@AUTH-001").as_deref(), Some("AUTH-001"));
+        assert_eq!(
+            extract_work_unit_id("@AUTH-001").as_deref(),
+            Some("AUTH-001")
+        );
         assert_eq!(extract_work_unit_id("@auth-001"), None);
     }
 }

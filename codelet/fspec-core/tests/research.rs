@@ -45,10 +45,7 @@ fn write_project_config(project_root: &Path, config: &Value) {
 /// Parse the dispatcher data envelope and return its `tools` array.
 fn tools_of(result_data: &str) -> Vec<Value> {
     let data: Value = serde_json::from_str(result_data).expect("parse data json");
-    data["tools"]
-        .as_array()
-        .cloned()
-        .unwrap_or_default()
+    data["tools"].as_array().cloned().unwrap_or_default()
 }
 
 fn tool_named<'a>(tools: &'a [Value], name: &str) -> Option<&'a Value> {
@@ -76,20 +73,38 @@ fn list_mode_enumerates_bundled_registry_with_ast_configured_by_default() {
     let tools = tools_of(&result.data);
 
     // @step And the result lists the tool "ast"
-    assert!(tool_named(&tools, "ast").is_some(), "missing ast: {tools:?}");
+    assert!(
+        tool_named(&tools, "ast").is_some(),
+        "missing ast: {tools:?}"
+    );
     // @step And the result lists the tool "perplexity"
-    assert!(tool_named(&tools, "perplexity").is_some(), "missing perplexity");
+    assert!(
+        tool_named(&tools, "perplexity").is_some(),
+        "missing perplexity"
+    );
     // @step And the result lists the tool "jira"
     assert!(tool_named(&tools, "jira").is_some(), "missing jira");
     // @step And the result lists the tool "confluence"
-    assert!(tool_named(&tools, "confluence").is_some(), "missing confluence");
+    assert!(
+        tool_named(&tools, "confluence").is_some(),
+        "missing confluence"
+    );
     // @step And the result lists the tool "stakeholder"
-    assert!(tool_named(&tools, "stakeholder").is_some(), "missing stakeholder");
+    assert!(
+        tool_named(&tools, "stakeholder").is_some(),
+        "missing stakeholder"
+    );
 
     // @step And the tool "ast" is reported as configured
-    assert!(is_configured(&tools, "ast"), "ast must be configured: {tools:?}");
+    assert!(
+        is_configured(&tools, "ast"),
+        "ast must be configured: {tools:?}"
+    );
     // @step And the tool "perplexity" is reported as not configured
-    assert!(!is_configured(&tools, "perplexity"), "perplexity must be not configured");
+    assert!(
+        !is_configured(&tools, "perplexity"),
+        "perplexity must be not configured"
+    );
 }
 
 #[test]
@@ -109,7 +124,10 @@ fn list_mode_reflects_configured_perplexity_api_key_from_project_config() {
 
     // @step And the tool "perplexity" is reported as configured
     let tools = tools_of(&result.data);
-    assert!(is_configured(&tools, "perplexity"), "perplexity must be configured: {tools:?}");
+    assert!(
+        is_configured(&tools, "perplexity"),
+        "perplexity must be configured: {tools:?}"
+    );
 }
 
 #[test]
@@ -129,14 +147,20 @@ fn list_mode_reports_stakeholder_configured_when_required_webhook_present() {
 
     // @step And the tool "stakeholder" is reported as configured
     let tools = tools_of(&result.data);
-    assert!(is_configured(&tools, "stakeholder"), "stakeholder must be configured: {tools:?}");
+    assert!(
+        is_configured(&tools, "stakeholder"),
+        "stakeholder must be configured: {tools:?}"
+    );
 }
 
 #[test]
 fn list_mode_does_not_create_files_or_spawn_a_process() {
     // @step Given an empty project root tempdir with no spec subdirectory
     let tmp = TempDir::new().expect("tempdir");
-    assert!(!tmp.path().join("spec").exists(), "precondition: no spec dir");
+    assert!(
+        !tmp.path().join("spec").exists(),
+        "precondition: no spec dir"
+    );
 
     // @step When I dispatch research with no flags
     let result = dispatch_command(req(tmp.path(), json!({})));

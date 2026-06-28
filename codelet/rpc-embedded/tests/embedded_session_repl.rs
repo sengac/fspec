@@ -16,9 +16,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
@@ -48,8 +46,7 @@ fn build_transport() -> (TempDir, EmbeddedTransport) {
         Arc::clone(&watcher),
         Arc::clone(&manager),
     ));
-    let transport =
-        EmbeddedTransport::new(tokio::runtime::Handle::current(), service);
+    let transport = EmbeddedTransport::new(tokio::runtime::Handle::current(), service);
     (dir, transport)
 }
 
@@ -72,7 +69,10 @@ async fn scenario_embedded_list_sessions_matches_underlying_session_manager() {
         .expect("list_sessions must succeed");
 
     // @step Then the call returns Ok(Vec<SessionInfo>) with the same length and SessionId values that NAPI list_sessions would return
-    let ids: Vec<SessionId> = listed.iter().map(|s| SessionId::new(s.id.clone())).collect();
+    let ids: Vec<SessionId> = listed
+        .iter()
+        .map(|s| SessionId::new(s.id.clone()))
+        .collect();
     assert!(
         ids.contains(&seeded),
         "list_sessions must include the seeded session id {seeded:?}, got {ids:?}",
@@ -113,7 +113,10 @@ async fn scenario_embedded_send_input_emits_at_least_one_streamchunk_within_5s()
         .await
         .expect("chunks_rx must yield within 5s")
         .expect("broadcast not closed");
-    assert_eq!(got_sid, sid, "chunk session_id must match the active session");
+    assert_eq!(
+        got_sid, sid,
+        "chunk session_id must match the active session"
+    );
     assert!(
         matches!(chunk, StreamChunk::Text { .. }),
         "first chunk must be StreamChunk::Text, got {chunk:?}",

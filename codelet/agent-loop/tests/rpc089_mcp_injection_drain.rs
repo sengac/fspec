@@ -194,9 +194,9 @@ fn scenario_mcp_channel_open_initialiser_precedes_the_flag_flip_in_agent_loop() 
     );
 
     // @step And the function body must contain "mcp_channel_open = false;"
-    let flip_offset = body
-        .find("mcp_channel_open = false;")
-        .expect("agent_loop body must contain `mcp_channel_open = false;` inside the None arm (RPC-089)");
+    let flip_offset = body.find("mcp_channel_open = false;").expect(
+        "agent_loop body must contain `mcp_channel_open = false;` inside the None arm (RPC-089)",
+    );
 
     // @step And the offset of "let mut mcp_channel_open = true;" must be less than the offset of "mcp_channel_open = false;"
     assert!(

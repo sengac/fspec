@@ -5,8 +5,7 @@
 // Scenarios map directly to Gherkin scenarios.
 
 use codelet_cli::compaction_dag::{
-    extract_partial_dag_nodes, force_inject_fallback_dag,
-    COMPACTION_ESCALATION_MESSAGE,
+    extract_partial_dag_nodes, force_inject_fallback_dag, COMPACTION_ESCALATION_MESSAGE,
 };
 use rig::message::{AssistantContent, Message, Text, UserContent};
 use rig::one_or_many::OneOrMany;
@@ -74,7 +73,10 @@ fn test_escalation_triggers_after_first_failure() {
 
     // @step Then the watchdog should detect that compaction_in_progress is still true
     assert!(compaction_flag.load(Ordering::Acquire));
-    assert_eq!(watchdog_counter, 1, "Counter should be 1 after first failure");
+    assert_eq!(
+        watchdog_counter, 1,
+        "Counter should be 1 after first failure"
+    );
 
     // @step And an escalation message should be injected into session messages
     // Simulate watchdog decision logic
@@ -95,7 +97,10 @@ fn test_escalation_triggers_after_first_failure() {
 
     // @step And a second stream attempt should be initiated automatically
     // The watchdog counter being 1 means we should retry
-    assert!(watchdog_counter < 2, "Should retry before force-inject threshold");
+    assert!(
+        watchdog_counter < 2,
+        "Should retry before force-inject threshold"
+    );
 }
 
 // ========================================
@@ -158,7 +163,10 @@ Use SessionSearch to recover context.
         }
         false
     });
-    assert!(has_env_reminder, "Should preserve environment system reminder");
+    assert!(
+        has_env_reminder,
+        "Should preserve environment system reminder"
+    );
 
     // @step And the DAG should be wrapped in compaction-dag system-reminder tags
     let has_dag = session.messages.iter().any(|m| {
@@ -218,7 +226,8 @@ fn test_extract_partial_dag_nodes_finds_blocks() {
 - Implementing login
 </dag-node>
 
-I'll call inject_summary next..."#.to_string(),
+I'll call inject_summary next..."#
+                    .to_string(),
             })),
         },
     ];
@@ -261,7 +270,10 @@ fn test_extract_partial_dag_nodes_returns_empty() {
     let nodes = extract_partial_dag_nodes(&messages);
 
     // @step Then it should return an empty collection
-    assert!(nodes.is_empty(), "Should return empty when no dag-nodes found");
+    assert!(
+        nodes.is_empty(),
+        "Should return empty when no dag-nodes found"
+    );
 }
 
 // ========================================
@@ -284,7 +296,8 @@ fn test_force_inject_with_partial_dag_nodes() {
 </dag-node>
 <dag-node depth="D0" turns="31-50" label="Recent">
 - Current work
-</dag-node>"#.to_string(),
+</dag-node>"#
+                .to_string(),
         })),
     });
 
@@ -349,5 +362,8 @@ Use SessionSearch to recover context.
         false
     });
     assert!(has_dag, "Fallback DAG should be injected");
-    assert!(!compaction_flag.load(Ordering::Relaxed), "Flag should be cleared");
+    assert!(
+        !compaction_flag.load(Ordering::Relaxed),
+        "Flag should be cleared"
+    );
 }

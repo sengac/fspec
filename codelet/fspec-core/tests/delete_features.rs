@@ -59,8 +59,16 @@ fn dispatcher_error(result: &codelet_fspec_core::DispatchResult) -> String {
 fn scenario_dispatcher_deletes_features_carrying_a_single_tag() {
     // @step Given a project root tempdir with three features, two tagged @deprecated
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/a.feature", &tagged("@deprecated", "A"));
-    write_feature(tmp.path(), "spec/features/b.feature", &tagged("@deprecated", "B"));
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        &tagged("@deprecated", "A"),
+    );
+    write_feature(
+        tmp.path(),
+        "spec/features/b.feature",
+        &tagged("@deprecated", "B"),
+    );
     write_feature(tmp.path(), "spec/features/c.feature", &tagged("@keep", "C"));
 
     // @step When I dispatch delete-features with tags=['@deprecated']
@@ -99,10 +107,7 @@ fn scenario_dispatcher_applies_and_logic_across_multiple_tags() {
     );
 
     // @step When I dispatch delete-features with tags=['@critical','@spike']
-    let result = dispatch_command(req(
-        tmp.path(),
-        json!({"tags": ["@critical", "@spike"]}),
-    ));
+    let result = dispatch_command(req(tmp.path(), json!({"tags": ["@critical", "@spike"]})));
 
     // @step Then the dispatcher returns success=true and deletedCount=1
     assert!(result.success, "expected success=true, got {result:?}");
@@ -122,8 +127,16 @@ fn scenario_dispatcher_applies_and_logic_across_multiple_tags() {
 fn scenario_dispatcher_dry_run_leaves_all_files_on_disk() {
     // @step Given a project root tempdir with two features tagged @deprecated
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/a.feature", &tagged("@deprecated", "A"));
-    write_feature(tmp.path(), "spec/features/b.feature", &tagged("@deprecated", "B"));
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        &tagged("@deprecated", "A"),
+    );
+    write_feature(
+        tmp.path(),
+        "spec/features/b.feature",
+        &tagged("@deprecated", "B"),
+    );
 
     // @step When I dispatch delete-features with tags=['@deprecated'] and dryRun=true
     let result = dispatch_command(req(
@@ -153,7 +166,11 @@ fn scenario_dispatcher_dry_run_leaves_all_files_on_disk() {
 fn scenario_dispatcher_rejects_an_empty_tag_list() {
     // @step Given a project root tempdir with a feature tagged @deprecated
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/a.feature", &tagged("@deprecated", "A"));
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        &tagged("@deprecated", "A"),
+    );
 
     // @step When I dispatch delete-features with tags=[]
     let result = dispatch_command(req(tmp.path(), json!({"tags": []})));
@@ -162,7 +179,10 @@ fn scenario_dispatcher_rejects_an_empty_tag_list() {
     // Per TS parity: delete-features-by-tag.ts RETURNS a result object (it does
     // not throw) for an empty tag list, so the dispatch envelope succeeds and the
     // failure is carried by the inner `success:false` field of the JSON payload.
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(
         data["success"].as_bool(),
@@ -186,7 +206,11 @@ fn scenario_dispatcher_rejects_an_empty_tag_list() {
 fn scenario_dispatcher_reports_no_matches_for_an_unused_tag() {
     // @step Given a project root tempdir with a feature tagged @deprecated
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/a.feature", &tagged("@deprecated", "A"));
+    write_feature(
+        tmp.path(),
+        "spec/features/a.feature",
+        &tagged("@deprecated", "A"),
+    );
 
     // @step When I dispatch delete-features with tags=['@notpresent']
     let result = dispatch_command(req(tmp.path(), json!({"tags": ["@notpresent"]})));

@@ -427,4 +427,3 @@ fn test_reconstruction_after_compaction_preserves_reminders() {
         initial_count
     );
 }
-

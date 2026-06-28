@@ -25,8 +25,7 @@ fn staged_tracked_but_modified_file_is_reported_as_change_type_m() {
     let repo = tmp.path();
 
     // @step And the file is modified and staged in the index
-    fs::write(repo.join("README.md"), "# Test Repository\nmodified line\n")
-        .expect("modify README");
+    fs::write(repo.join("README.md"), "# Test Repository\nmodified line\n").expect("modify README");
     Command::new("git")
         .args(["add", "README.md"])
         .current_dir(repo)

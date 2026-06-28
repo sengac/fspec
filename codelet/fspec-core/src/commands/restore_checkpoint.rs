@@ -183,7 +183,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let effective_force =
         args.force || (is_dirty && args.user_choice.as_deref() == Some(OVERWRITE_CHOICE));
 
-    let result = restore_util(project_root, &work_unit_id, &checkpoint_name, effective_force);
+    let result = restore_util(
+        project_root,
+        &work_unit_id,
+        &checkpoint_name,
+        effective_force,
+    );
 
     let payload = RestoreResultPayload {
         success: result.success,
@@ -448,7 +453,12 @@ mod tests {
             requires_test_validation: false,
         };
         let data: Value = serde_json::from_str(&render_json(&payload).unwrap()).unwrap();
-        let keys: Vec<&str> = data.as_object().unwrap().keys().map(String::as_str).collect();
+        let keys: Vec<&str> = data
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect();
         assert_eq!(
             keys,
             vec![
@@ -471,7 +481,10 @@ mod tests {
             requires_test_validation: false,
         };
         let out = render_text("AUTH-001", "baseline", &payload);
-        assert_eq!(out, "\u{2713} Restored checkpoint \"baseline\" for AUTH-001");
+        assert_eq!(
+            out,
+            "\u{2713} Restored checkpoint \"baseline\" for AUTH-001"
+        );
     }
 
     #[test]

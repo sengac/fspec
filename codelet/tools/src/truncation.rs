@@ -68,7 +68,7 @@ pub fn truncate_line(line: &str, max_length: usize) -> String {
     } else {
         // Calculate the target truncation point (leave room for "...")
         let target = max_length.saturating_sub(3);
-        
+
         // Find a valid UTF-8 boundary at or before target
         // str::get() returns None if the range doesn't align with char boundaries
         // We iterate backwards from target to find the nearest valid boundary
@@ -76,7 +76,7 @@ pub fn truncate_line(line: &str, max_length: usize) -> String {
             .rev()
             .find(|&i| line.is_char_boundary(i))
             .unwrap_or(0);
-        
+
         // Use get() for safe slicing (returns None if indices are invalid)
         match line.get(..truncate_at) {
             Some(truncated) => format!("{truncated}..."),
@@ -177,7 +177,7 @@ mod tests {
         // "日本語" = 3 chars, 9 bytes (each char is 3 bytes)
         let japanese = "日本語test";
         let result = truncate_line(japanese, 7); // Would land in middle of 3rd kanji
-        // Should not panic and should be valid UTF-8
+                                                 // Should not panic and should be valid UTF-8
         assert!(result.ends_with("...") || result.len() <= 7);
         // Verify it's valid UTF-8 by iterating chars
         let _ = result.chars().count();
@@ -207,7 +207,7 @@ mod tests {
     fn test_truncate_line_zero_max() {
         // Edge case: max_length of 0
         let result = truncate_line("hello world", 0);
-        // Should not panic, produce "..." 
+        // Should not panic, produce "..."
         assert_eq!(result, "...");
     }
 

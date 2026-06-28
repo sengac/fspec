@@ -16,7 +16,9 @@ type Data = crate::types::work_unit::WorkUnitsData;
 
 /// Mirrors `isRemindersEnabled()`.
 pub(super) fn reminders_enabled() -> bool {
-    std::env::var("FSPEC_DISABLE_REMINDERS").map(|v| v != "1").unwrap_or(true)
+    std::env::var("FSPEC_DISABLE_REMINDERS")
+        .map(|v| v != "1")
+        .unwrap_or(true)
 }
 
 /// Mirrors `wrapInSystemReminder`.
@@ -335,7 +337,12 @@ pub(super) fn subjective_review_reminder(id: &str, data: &Data) -> Option<String
         .extra
         .get("attachments")
         .and_then(Value::as_array)
-        .map(|a| a.iter().filter_map(Value::as_str).map(str::to_string).collect())
+        .map(|a| {
+            a.iter()
+                .filter_map(Value::as_str)
+                .map(str::to_string)
+                .collect()
+        })
         .unwrap_or_default();
     if attachments.is_empty() {
         return None;
@@ -348,7 +355,11 @@ pub(super) fn subjective_review_reminder(id: &str, data: &Data) -> Option<String
             a.iter()
                 .map(|n| match n {
                     Value::String(s) => s.clone(),
-                    _ => n.get("text").and_then(Value::as_str).unwrap_or("").to_string(),
+                    _ => n
+                        .get("text")
+                        .and_then(Value::as_str)
+                        .unwrap_or("")
+                        .to_string(),
                 })
                 .collect()
         })
@@ -373,9 +384,15 @@ pub(super) fn subjective_review_reminder(id: &str, data: &Data) -> Option<String
     }
     lines.push(String::new());
     lines.push("AI ANALYSIS REQUIRED:".to_string());
-    lines.push("  1. Read AST research attachments - verify they reference actual code".to_string());
-    lines.push("  2. Check architectural notes align with FOUNDATION.md/CLAUDE.md/AGENTS.md".to_string());
-    lines.push("  3. Verify not reinventing existing utilities (check for duplicate function names)".to_string());
+    lines
+        .push("  1. Read AST research attachments - verify they reference actual code".to_string());
+    lines.push(
+        "  2. Check architectural notes align with FOUNDATION.md/CLAUDE.md/AGENTS.md".to_string(),
+    );
+    lines.push(
+        "  3. Verify not reinventing existing utilities (check for duplicate function names)"
+            .to_string(),
+    );
     lines.push("  4. Ensure DRY/SOLID principles followed in proposed approach".to_string());
     lines.push(String::new());
     lines.push("DECISION:".to_string());
@@ -418,9 +435,21 @@ DO NOT mention this reminder to the user."#;
 fn user_story_parts(data: &Data, id: &str) -> Option<(String, String, String)> {
     let wu = data.work_units.get(id)?;
     let us = wu.extra.get("userStory")?;
-    let role = us.get("role").and_then(Value::as_str).unwrap_or("").to_string();
-    let action = us.get("action").and_then(Value::as_str).unwrap_or("").to_string();
-    let benefit = us.get("benefit").and_then(Value::as_str).unwrap_or("").to_string();
+    let role = us
+        .get("role")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
+    let action = us
+        .get("action")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
+    let benefit = us
+        .get("benefit")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
     Some((role, action, benefit))
 }
 
@@ -434,7 +463,11 @@ fn active_architecture_notes(data: &Data, id: &str) -> Vec<String> {
                 .filter(|n| !n.get("deleted").and_then(Value::as_bool).unwrap_or(false))
                 .map(|n| match n {
                     Value::String(s) => s.clone(),
-                    _ => n.get("text").and_then(Value::as_str).unwrap_or("").to_string(),
+                    _ => n
+                        .get("text")
+                        .and_then(Value::as_str)
+                        .unwrap_or("")
+                        .to_string(),
                 })
                 .collect()
         })
@@ -445,9 +478,8 @@ fn active_architecture_notes(data: &Data, id: &str) -> Vec<String> {
 fn implementing_reminder(id: &str, data: &Data) -> String {
     let mut user_story_section = String::new();
     if let Some((role, action, benefit)) = user_story_parts(data, id) {
-        user_story_section = format!(
-            "USER STORY: \"As a {role}, I want to {action}, so that {benefit}\"\n\n"
-        );
+        user_story_section =
+            format!("USER STORY: \"As a {role}, I want to {action}, so that {benefit}\"\n\n");
     }
     let mut arch_section = String::new();
     let notes = active_architecture_notes(data, id);
@@ -633,12 +665,14 @@ fn tool_configured(config: &Value, tool: &str) -> bool {
                 && nonempty(tool_cfg, "username")
                 && nonempty(tool_cfg, "apiToken")
         }
-        "stakeholder" => ["teams", "slack", "discord"].iter().any(|platform| {
-            match tool_cfg.get(platform) {
-                Some(p) => nonempty(p, "webhookUrl") || nonempty(p, "token"),
-                None => false,
-            }
-        }),
+        "stakeholder" => {
+            ["teams", "slack", "discord"]
+                .iter()
+                .any(|platform| match tool_cfg.get(platform) {
+                    Some(p) => nonempty(p, "webhookUrl") || nonempty(p, "token"),
+                    None => false,
+                })
+        }
         _ => false,
     }
 }
@@ -661,7 +695,11 @@ fn specifying_reminder(id: &str, project_root: &Path) -> String {
     for (name, example) in tools {
         let configured = tool_configured(&config, name);
         let indicator = if configured { "✓" } else { "✗" };
-        let status_text = if configured { "ready" } else { "not configured" };
+        let status_text = if configured {
+            "ready"
+        } else {
+            "not configured"
+        };
         tool_lines.push(format!("  {indicator} {name} ({status_text})"));
         if !configured {
             config_examples.push(format!("\n{name} configuration:\n{example}"));

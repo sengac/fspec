@@ -68,7 +68,10 @@ fn scenario_shared_funnel_surfaces_caret_pointed_diagnostic_naming_the_file() {
         "missing corruption guidance: {msg}"
     );
     // @step And the error message contains the offending source line
-    assert!(msg.contains("status:"), "missing offending source line: {msg}");
+    assert!(
+        msg.contains("status:"),
+        "missing offending source line: {msg}"
+    );
     // @step And the error message contains a caret line with "key must be a string at line 4 column 37"
     assert!(msg.contains('^'), "missing caret: {msg}");
     assert!(
@@ -122,7 +125,10 @@ fn scenario_single_line_input_places_caret_under_exact_error_column() {
     let snippet = parse_json_reason(input, &err);
 
     // @step Then the snippet contains " 1 | { bad"
-    assert!(snippet.contains(" 1 | { bad"), "missing numbered line: {snippet}");
+    assert!(
+        snippet.contains(" 1 | { bad"),
+        "missing numbered line: {snippet}"
+    );
     // @step And the snippet contains a caret under column 3
     assert!(snippet.contains('^'), "missing caret: {snippet}");
     // @step And the snippet contains "key must be a string at line 1 column 3"

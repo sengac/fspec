@@ -24,8 +24,13 @@ use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_common::token_estimator::count_tokens;
-use codelet_core::compaction::annotation_detector::{detect_annotations, ToolCallInfo, TurnContext};
-use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState, ensure_thought_signatures, StreamingTokenDisplay};
+use codelet_core::compaction::annotation_detector::{
+    detect_annotations, ToolCallInfo, TurnContext,
+};
+use codelet_core::{
+    ensure_thought_signatures, ApiTokenUsage, CompactionHook, RigAgent, StreamingTokenDisplay,
+    TokenState,
+};
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
 use crossterm::event::KeyCode;
@@ -75,24 +80,30 @@ fn process_turn_annotations(
 }
 
 // Error classifiers moved to error_classifiers.rs
-use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_transient_network_error, is_stall_timeout_error, classify_compaction_branch, extract_prompt_cancelled, CompactionBranch};
+use super::error_classifiers::{
+    classify_compaction_branch, extract_prompt_cancelled, is_image_content_error,
+    is_prompt_too_long_error, is_stall_timeout_error, is_transient_network_error,
+    is_truncated_tool_call_error, CompactionBranch,
+};
 
 // Image recovery moved to recovery_image.rs
 use super::recovery_image::sanitize_image_content;
 
 // Truncation recovery moved to recovery_truncation.rs
-use super::recovery_truncation::{MAX_TRUNCATION_RETRIES, build_truncation_recovery_message, build_truncation_budget_exhausted_message};
+use super::recovery_truncation::{
+    build_truncation_budget_exhausted_message, build_truncation_recovery_message,
+    MAX_TRUNCATION_RETRIES,
+};
 
 // Thinking recovery moved to recovery_thinking.rs
 use super::recovery_thinking::{
-    MAX_THINKING_EXHAUSTION_RETRIES, THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
-    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
-    is_thinking_exhaustion, build_thinking_exhaustion_recovery_message,
-    build_thinking_budget_exhausted_message, downgrade_thinking_level,
+    build_thinking_budget_exhausted_message, build_thinking_exhaustion_recovery_message,
+    downgrade_thinking_level, is_thinking_exhaustion, MAX_THINKING_EXHAUSTION_RETRIES,
+    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD, THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
 };
 
 // Network recovery moved to recovery_network.rs
-use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay};
+use super::recovery_network::{network_retry_delay, MAX_NETWORK_RETRIES};
 
 // Stall timeout recovery moved to recovery_stall.rs
 use super::recovery_stall::{build_stall_timeout_message, stall_timeout_duration};
@@ -239,7 +250,7 @@ where
 }
 
 // Multimodal content building moved to multimodal.rs
-use super::multimodal::{BridgeImage, build_user_content_with_images};
+use super::multimodal::{build_user_content_with_images, BridgeImage};
 
 /// Internal generic stream loop
 ///
@@ -281,7 +292,9 @@ where
     // CTX-007: Resolve per-model compaction threshold through priority chain:
     // 1. User-configured override > 2. Built-in model family default > 3. Legacy formula
     let model_id = session.current_model_id();
-    let user_config = session.provider_manager().compaction_threshold_override()
+    let user_config = session
+        .provider_manager()
+        .compaction_threshold_override()
         .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
     let threshold = resolve_compaction_threshold(
         context_window,
@@ -311,7 +324,7 @@ where
     let prompt_tokens = count_tokens(prompt) as u64;
     let current_tokens = session.token_tracker.input_tokens + session.token_tracker.output_tokens;
     let estimated_total = current_tokens + prompt_tokens;
-    
+
     // PROV-005: Check if there are actual conversation turns to compact
     // convert_messages_to_turns returns empty if there are only system messages (no user+assistant pairs)
     let has_turns_to_compact = !convert_messages_to_turns(&session.messages).is_empty();
@@ -330,11 +343,12 @@ where
     if estimated_total > threshold && has_turns_to_compact {
         trace!(
             "Pre-prompt compaction triggered: estimated {} > threshold {}",
-            estimated_total, threshold
+            estimated_total,
+            threshold
         );
         // UX-002: Use structured compaction event instead of string status
         output.emit_compaction_started();
-        
+
         // UX-002: Emit progress for automatic compaction
         let total_turns = session.messages.len() as u32 / 2; // Approximate turn count
         output.emit_compaction_progress("Analyzing context", 0, total_turns.max(1));
@@ -444,9 +458,12 @@ where
     if let Some(emitter) = output.progress_emitter() {
         // BUG-126: Use Uuid::nil() for CLI mode (single-session; no cross-session risk)
         let cli_session_id = Uuid::nil();
-        set_tool_progress_callback(cli_session_id, Some(Arc::new(move |chunk: &str, is_stderr: bool| {
-            emitter.emit_tool_progress("", "bash", chunk, is_stderr);
-        })));
+        set_tool_progress_callback(
+            cli_session_id,
+            Some(Arc::new(move |chunk: &str, is_stderr: bool| {
+                emitter.emit_tool_progress("", "bash", chunk, is_stderr);
+            })),
+        );
     }
 
     // After compaction, the original prompt is embedded in the compaction instruction.
@@ -800,7 +817,8 @@ where
                         match tokio::time::timeout(effective_stall_timeout, stream.next()).await {
                             Ok(chunk) => Some(chunk),
                             Err(_elapsed) => {
-                                let stall_msg = build_stall_timeout_message(effective_stall_timeout.as_secs());
+                                let stall_msg =
+                                    build_stall_timeout_message(effective_stall_timeout.as_secs());
                                 warn!("AMGR-016: {}", stall_msg);
                                 output.emit_error(&stall_msg);
 
@@ -808,7 +826,8 @@ where
                                     handle_final_response(&assistant_text, &mut session.messages)?;
                                 }
 
-                                output.emit_done_with_stop_reason(Some("stall_timeout".to_string()));
+                                output
+                                    .emit_done_with_stop_reason(Some("stall_timeout".to_string()));
                                 return Err(anyhow::anyhow!("{stall_msg}"));
                             }
                         }
@@ -901,9 +920,11 @@ where
                     )?;
 
                     // Update matching ToolCallInfo with result data for annotation detection
-                    if let Some(info) = turn_tool_infos.iter_mut().rev().find(|ti| {
-                        ti.output.is_none()
-                    }) {
+                    if let Some(info) = turn_tool_infos
+                        .iter_mut()
+                        .rev()
+                        .find(|ti| ti.output.is_none())
+                    {
                         let result_text: String = tool_result
                             .content
                             .clone()
@@ -960,8 +981,14 @@ where
                                 update.cache_read_tokens,
                                 update.cache_creation_tokens,
                                 usage.output_tokens, // Current segment output for fill calculation
-                            ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
-                            emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
+                            )
+                            .with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
+                            emit_context_fill_from_usage(
+                                output,
+                                &fill_usage,
+                                threshold,
+                                context_window,
+                            );
                         }
                     }
                 }
@@ -976,7 +1003,7 @@ where
                     debug!(
                         "[stream_loop] FinalResponse received - checking compaction_needed state"
                     );
-                    
+
                     // PROV-039: Capture stop_reason from FinalResponse
                     final_stop_reason = final_resp.stop_reason().map(String::from);
                     if let Some(ref reason) = final_stop_reason {
@@ -989,7 +1016,9 @@ where
                     // PROV-002: OpenAI-compatible providers (including Z.AI) don't emit Usage events
                     // during streaming - they only return usage in FinalResponse.
                     // STREAMING-DISPLAY: update_from_final_response handles this case
-                    let final_update = if !streaming_display.has_authoritative_output() && usage.input_tokens > 0 {
+                    let final_update = if !streaming_display.has_authoritative_output()
+                        && usage.input_tokens > 0
+                    {
                         // OpenAI-compatible path: no Usage events during streaming
                         trace!(
                             "OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
@@ -1010,7 +1039,8 @@ where
                         final_update.cache_read_tokens,
                         final_update.cache_creation_tokens,
                         usage.output_tokens,
-                    ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
+                    )
+                    .with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
                     emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
 
                     // CLI-022: Capture api.response.end event
@@ -1072,7 +1102,9 @@ where
                     // GEMINI-TURN: Check if Gemini model needs a continuation prompt
                     // Extracted to gemini_continuation.rs
                     {
-                        use super::gemini_continuation::{handle_gemini_continuation, GeminiContinuationResult};
+                        use super::gemini_continuation::{
+                            handle_gemini_continuation, GeminiContinuationResult,
+                        };
                         match handle_gemini_continuation(
                             &agent,
                             session,
@@ -1084,7 +1116,9 @@ where
                             &assistant_text,
                             &streaming_display,
                             &mut final_stop_reason,
-                        ).await? {
+                        )
+                        .await?
+                        {
                             GeminiContinuationResult::NoContinuation => {
                                 // Fall through to normal processing below
                             }
@@ -1165,9 +1199,11 @@ where
                             // When cross-turn threshold is reached, downgrade the session thinking
                             // level and reset the counter for the next degradation cycle.
                             if thinking_exhaustion_retry_count == 1
-                                && session.thinking_exhaustion_cross_turn_count >= THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD
+                                && session.thinking_exhaustion_cross_turn_count
+                                    >= THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD
                             {
-                                session.session_thinking_level = downgrade_thinking_level(session.session_thinking_level);
+                                session.session_thinking_level =
+                                    downgrade_thinking_level(session.session_thinking_level);
                                 session.thinking_exhaustion_cross_turn_count = 0;
                                 output.emit_status(&format!(
                                     "Reasoning effort automatically reduced to {:?} due to repeated thinking budget exhaustion",
@@ -1227,7 +1263,8 @@ where
                                     output_tokens: 0,
                                     compaction_needed: false,
                                 }));
-                                let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+                                let retry_hook =
+                                    CompactionHook::new(Arc::clone(&retry_token_state), threshold);
 
                                 debug!(
                                     "API REQUEST (thinking exhaustion recovery {}/{}) - Provider: {}, Model: {}",
@@ -1266,14 +1303,19 @@ where
                                     session.token_tracker.input_tokens,
                                     session.token_tracker.output_tokens,
                                     session.token_tracker.cache_read_input_tokens.unwrap_or(0),
-                                    session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+                                    session
+                                        .token_tracker
+                                        .cache_creation_input_tokens
+                                        .unwrap_or(0),
                                 );
 
                                 debug!("[stream_loop] PROV-041: Created new stream for thinking exhaustion retry");
                                 continue;
                             } else {
                                 // Budget exhausted — emit warning and continue with best available response
-                                let budget_msg = build_thinking_budget_exhausted_message(MAX_THINKING_EXHAUSTION_RETRIES);
+                                let budget_msg = build_thinking_budget_exhausted_message(
+                                    MAX_THINKING_EXHAUSTION_RETRIES,
+                                );
                                 warn!(
                                     "PROV-041: Thinking exhaustion retry budget exhausted after {} attempts",
                                     MAX_THINKING_EXHAUSTION_RETRIES
@@ -1362,10 +1404,7 @@ where
                     // `error_classifiers::classify_compaction_branch`.
                     let branch = classify_compaction_branch(&e, &token_state);
 
-                    debug!(
-                        "[stream_loop] Error classification: branch={:?}",
-                        branch
-                    );
+                    debug!("[stream_loop] Error classification: branch={:?}", branch);
 
                     if matches!(branch, CompactionBranch::Recover { .. }) {
                         // CMPCT-029: reconcile in-flight tool state BEFORE
@@ -1410,7 +1449,8 @@ where
                             tool_calls_buffer.clear();
                         }
 
-                        let injected = inject_synthetic_tool_results_for_orphans(&mut session.messages);
+                        let injected =
+                            inject_synthetic_tool_results_for_orphans(&mut session.messages);
                         if injected > 0 {
                             warn!(
                                 injected,
@@ -1484,10 +1524,13 @@ where
 
                     // PROV-010: Only trigger compaction if there are actual user/assistant turns to compact
                     // session.messages may contain system prompts but no compactable turns
-                    let has_compactable_turns = !convert_messages_to_turns(&session.messages).is_empty();
-                    
+                    let has_compactable_turns =
+                        !convert_messages_to_turns(&session.messages).is_empty();
+
                     if is_prompt_too_long && has_compactable_turns {
-                        info!("Received 'prompt is too long' error, triggering recovery compaction");
+                        info!(
+                            "Received 'prompt is too long' error, triggering recovery compaction"
+                        );
                         // CMPCT-023: unified compaction-recovery entry
                         // (Path B — API-returned "prompt is too long").
                         //
@@ -1587,7 +1630,8 @@ where
                                 output_tokens: 0,
                                 compaction_needed: false,
                             }));
-                            let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+                            let retry_hook =
+                                CompactionHook::new(Arc::clone(&retry_token_state), threshold);
 
                             debug!(
                                 "API REQUEST (truncation recovery {}/{}) - Provider: {}, Model: {}",
@@ -1625,7 +1669,10 @@ where
                                 session.token_tracker.input_tokens,
                                 session.token_tracker.output_tokens,
                                 session.token_tracker.cache_read_input_tokens.unwrap_or(0),
-                                session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+                                session
+                                    .token_tracker
+                                    .cache_creation_input_tokens
+                                    .unwrap_or(0),
                             );
 
                             continue;
@@ -1636,7 +1683,8 @@ where
                             "PROV-040: Truncation retry budget exhausted after {} attempts",
                             MAX_TRUNCATION_RETRIES
                         );
-                        let budget_error = build_truncation_budget_exhausted_message(MAX_TRUNCATION_RETRIES);
+                        let budget_error =
+                            build_truncation_budget_exhausted_message(MAX_TRUNCATION_RETRIES);
                         output.emit_error(&budget_error);
                         return Err(anyhow::anyhow!("Agent error: truncation retry budget exhausted after {MAX_TRUNCATION_RETRIES} attempts"));
                     }
@@ -1686,7 +1734,8 @@ where
                                 output_tokens: session.token_tracker.output_tokens,
                                 compaction_needed: false,
                             }));
-                            let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+                            let retry_hook =
+                                CompactionHook::new(Arc::clone(&retry_token_state), threshold);
 
                             debug!(
                                 "API REQUEST (network retry {}/{}) - Provider: {}, Model: {}",
@@ -1724,7 +1773,10 @@ where
                                 session.token_tracker.input_tokens,
                                 session.token_tracker.output_tokens,
                                 session.token_tracker.cache_read_input_tokens.unwrap_or(0),
-                                session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+                                session
+                                    .token_tracker
+                                    .cache_creation_input_tokens
+                                    .unwrap_or(0),
                             );
 
                             debug!("[stream_loop] NET-001: Created new stream for network retry");
@@ -1790,7 +1842,7 @@ where
                             state.output_tokens
                         );
                     }
-                    
+
                     // Stream ended
                     if !assistant_text.is_empty() {
                         handle_final_response(&assistant_text, &mut session.messages)?;
@@ -1935,7 +1987,9 @@ where
             session.token_tracker.cumulative_billed_input,
             final_display.input_tokens
         );
-        session.token_tracker.update_from_usage(&final_usage, final_display.output_tokens);
+        session
+            .token_tracker
+            .update_from_usage(&final_usage, final_display.output_tokens);
         tracing::debug!(
             "CMPCT-001: After update: cumulative_billed_input={}, cumulative_billed_output={}",
             session.token_tracker.cumulative_billed_input,

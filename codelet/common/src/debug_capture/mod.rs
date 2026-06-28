@@ -335,11 +335,23 @@ mod tests {
 
         // @step When session B makes API calls and processes tool results
         // Capture some events on A
-        manager_a.capture("api.request", serde_json::json!({"from": "session_a"}), None);
-        manager_a.capture("tool.call", serde_json::json!({"tool": "bash", "from": "session_a"}), None);
+        manager_a.capture(
+            "api.request",
+            serde_json::json!({"from": "session_a"}),
+            None,
+        );
+        manager_a.capture(
+            "tool.call",
+            serde_json::json!({"tool": "bash", "from": "session_a"}),
+            None,
+        );
 
         // B tries to capture - should silently do nothing since disabled
-        manager_b.capture("api.request", serde_json::json!({"from": "session_b"}), None);
+        manager_b.capture(
+            "api.request",
+            serde_json::json!({"from": "session_b"}),
+            None,
+        );
 
         manager_a.stop_capture().unwrap();
 
@@ -405,7 +417,11 @@ mod tests {
         assert!(manager_b.is_enabled());
 
         // B can still capture events after A stopped
-        manager_b.capture("tool.call", serde_json::json!({"tool": "grep", "from": "b_after_a_stopped"}), None);
+        manager_b.capture(
+            "tool.call",
+            serde_json::json!({"tool": "grep", "from": "b_after_a_stopped"}),
+            None,
+        );
         manager_b.stop_capture().unwrap();
 
         // Verify B's file has the event written after A stopped
@@ -660,8 +676,14 @@ mod tests {
 
         // Exactly one session.start and one session.end, in that order.
         let events = read_events(std::path::Path::new(&file));
-        let start_count = events.iter().filter(|e| e["eventType"] == "session.start").count();
-        let end_count = events.iter().filter(|e| e["eventType"] == "session.end").count();
+        let start_count = events
+            .iter()
+            .filter(|e| e["eventType"] == "session.start")
+            .count();
+        let end_count = events
+            .iter()
+            .filter(|e| e["eventType"] == "session.end")
+            .count();
         assert_eq!(start_count, 1, "exactly one session.start event");
         assert_eq!(end_count, 1, "exactly one session.end event");
         assert_eq!(events[0]["eventType"], "session.start");
@@ -756,7 +778,10 @@ mod tests {
         });
 
         let events = read_events(std::path::Path::new(&file));
-        let start_count = events.iter().filter(|e| e["eventType"] == "session.start").count();
+        let start_count = events
+            .iter()
+            .filter(|e| e["eventType"] == "session.start")
+            .count();
         assert_eq!(start_count, 1, "no duplicate session.start events");
     }
 }

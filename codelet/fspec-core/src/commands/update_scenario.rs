@@ -58,10 +58,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let content = match std::fs::read_to_string(&feature_abs) {
         Ok(s) => s,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            return err_envelope(format!(
-                "Feature file not found: {}",
-                feature_abs.display()
-            ));
+            return err_envelope(format!("Feature file not found: {}", feature_abs.display()));
         }
         Err(source) => {
             return Err(FspecCoreError::Io {
@@ -309,7 +306,10 @@ mod tests {
             resolve_feature_rel("spec/features/x.feature"),
             "spec/features/x.feature"
         );
-        assert_eq!(resolve_feature_rel("user-login"), "spec/features/user-login.feature");
+        assert_eq!(
+            resolve_feature_rel("user-login"),
+            "spec/features/user-login.feature"
+        );
     }
 
     #[test]

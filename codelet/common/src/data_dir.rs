@@ -36,7 +36,7 @@ pub fn set_data_directory(dir: PathBuf) -> Result<(), String> {
 /// Returns an error if not initialized - this ensures proper startup.
 pub fn get_data_dir() -> Result<PathBuf, String> {
     let guard = DATA_DIRECTORY.lock().map_err(|e| e.to_string())?;
-    guard
-        .clone()
-        .ok_or_else(|| "Data directory not initialized. Call set_data_directory() at startup.".to_string())
+    guard.clone().ok_or_else(|| {
+        "Data directory not initialized. Call set_data_directory() at startup.".to_string()
+    })
 }

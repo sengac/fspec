@@ -40,13 +40,13 @@ pub fn register_deep_search_handler(
         .map(|s| s.to_string())
         .unwrap_or_else(|| inner_session.current_provider_name().to_string());
     let deep_search_model = inner_session.current_model_id().map(|s| s.to_string());
-    let deep_search_context_window =
-        inner_session.provider_manager().raw_model_context_window();
-    let deep_search_max_output =
-        inner_session.provider_manager().raw_model_max_output_tokens();
+    let deep_search_context_window = inner_session.provider_manager().raw_model_context_window();
+    let deep_search_max_output = inner_session
+        .provider_manager()
+        .raw_model_max_output_tokens();
 
-    let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(
-        move |query, scope, max_depth, max_recursion_depth| {
+    let deep_search_handler: codelet_tools::DeepSearchHandler =
+        std::sync::Arc::new(move |query, scope, max_depth, max_recursion_depth| {
             let path = project_path.clone();
             let provider = deep_search_provider.clone();
             let model = deep_search_model.clone();
@@ -65,8 +65,7 @@ pub fn register_deep_search_handler(
                 )
                 .await
             })
-        },
-    );
+        });
     codelet_tools::set_deep_search_handler(session_id, Some(deep_search_handler));
 }
 
@@ -82,10 +81,10 @@ pub fn register_agent_manager_handler(
     project: String,
 ) {
     let full_model_string = inner_session.provider_manager().selected_model_string();
-    let spawner_context_window =
-        inner_session.provider_manager().raw_model_context_window();
-    let spawner_max_output =
-        inner_session.provider_manager().raw_model_max_output_tokens();
+    let spawner_context_window = inner_session.provider_manager().raw_model_context_window();
+    let spawner_max_output = inner_session
+        .provider_manager()
+        .raw_model_max_output_tokens();
     let agent_manager_handler = crate::agent_manager_handler::create_handler(
         project,
         full_model_string,

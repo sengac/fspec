@@ -117,10 +117,8 @@ mod tests {
     fn test_no_handler_returns_error() {
         with_clean_handlers(|| {
             let session_id = Uuid::new_v4();
-            let result = execute_session_search(
-                session_id,
-                SessionSearchAction::Recent { count: Some(5) },
-            );
+            let result =
+                execute_session_search(session_id, SessionSearchAction::Recent { count: Some(5) });
 
             match result {
                 SessionSearchResult::Error { message } => {
@@ -158,10 +156,8 @@ mod tests {
 
             set_session_search_handler(session_id, Some(handler));
 
-            let result = execute_session_search(
-                session_id,
-                SessionSearchAction::Recent { count: Some(5) },
-            );
+            let result =
+                execute_session_search(session_id, SessionSearchAction::Recent { count: Some(5) });
 
             assert!(called.load(Ordering::SeqCst));
             match result {
@@ -181,10 +177,9 @@ mod tests {
 
             assert!(!has_session_search_handler(session_id));
 
-            let handler: SessionSearchHandler =
-                Arc::new(|_, _| SessionSearchResult::Error {
-                    message: "stub".to_string(),
-                });
+            let handler: SessionSearchHandler = Arc::new(|_, _| SessionSearchResult::Error {
+                message: "stub".to_string(),
+            });
             set_session_search_handler(session_id, Some(handler));
 
             assert!(has_session_search_handler(session_id));
@@ -202,32 +197,25 @@ mod tests {
             let session_b = Uuid::new_v4();
 
             let handler_a: SessionSearchHandler =
-                Arc::new(|_, _| SessionSearchResult::Recent {
-                    sessions: vec![],
-                });
+                Arc::new(|_, _| SessionSearchResult::Recent { sessions: vec![] });
             set_session_search_handler(session_a, Some(handler_a));
 
-            let handler_b: SessionSearchHandler =
-                Arc::new(|_, _| SessionSearchResult::Error {
-                    message: "from_b".to_string(),
-                });
+            let handler_b: SessionSearchHandler = Arc::new(|_, _| SessionSearchResult::Error {
+                message: "from_b".to_string(),
+            });
             set_session_search_handler(session_b, Some(handler_b));
 
             // session_a returns Recent
-            let result_a = execute_session_search(
-                session_a,
-                SessionSearchAction::Recent { count: None },
-            );
+            let result_a =
+                execute_session_search(session_a, SessionSearchAction::Recent { count: None });
             match result_a {
                 SessionSearchResult::Recent { .. } => {}
                 _ => panic!("Expected Recent from session_a"),
             }
 
             // session_b returns Error
-            let result_b = execute_session_search(
-                session_b,
-                SessionSearchAction::Recent { count: None },
-            );
+            let result_b =
+                execute_session_search(session_b, SessionSearchAction::Recent { count: None });
             match result_b {
                 SessionSearchResult::Error { message } => {
                     assert_eq!(message, "from_b");
@@ -237,10 +225,8 @@ mod tests {
 
             // Remove session_b handler — session_a still works
             set_session_search_handler(session_b, None);
-            let result_a2 = execute_session_search(
-                session_a,
-                SessionSearchAction::Recent { count: None },
-            );
+            let result_a2 =
+                execute_session_search(session_a, SessionSearchAction::Recent { count: None });
             match result_a2 {
                 SessionSearchResult::Recent { .. } => {}
                 _ => panic!("Expected Recent from session_a after removing b"),

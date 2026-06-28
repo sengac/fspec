@@ -9,7 +9,7 @@ use std::time::Instant;
 use tokio::process::Child;
 use tokio::sync::{mpsc, Mutex, Notify};
 
-use super::{MAX_UNIFIED_EXEC_PROCESSES, LRU_PROTECT_COUNT};
+use super::{LRU_PROTECT_COUNT, MAX_UNIFIED_EXEC_PROCESSES};
 
 /// A single managed process entry in the store.
 pub struct ProcessEntry {
@@ -86,13 +86,14 @@ impl ProcessStore {
     /// List all session IDs with metadata.
     pub async fn list_sessions(&self) -> Vec<SessionInfo> {
         let entries = self.entries.lock().await;
-        entries.iter().map(|(id, entry)| {
-            SessionInfo {
+        entries
+            .iter()
+            .map(|(id, entry)| SessionInfo {
                 session_id: id.clone(),
                 command: entry.command_display.clone(),
                 tty: entry.tty,
-            }
-        }).collect()
+            })
+            .collect()
     }
 
     /// Evict the least recently used session (not in the top N most recent).
@@ -104,10 +105,13 @@ impl ProcessStore {
         }
 
         // Build metadata for the pure selection function
-        let meta: Vec<(String, Instant, bool)> = entries.iter_mut().map(|(id, e)| {
-            let has_exited = e.child.try_wait().map(|s| s.is_some()).unwrap_or(false);
-            (id.clone(), e.last_used, has_exited)
-        }).collect();
+        let meta: Vec<(String, Instant, bool)> = entries
+            .iter_mut()
+            .map(|(id, e)| {
+                let has_exited = e.child.try_wait().map(|s| s.is_some()).unwrap_or(false);
+                (id.clone(), e.last_used, has_exited)
+            })
+            .collect();
 
         let victim_id = session_id_to_evict(&meta);
 
@@ -129,11 +133,17 @@ impl ProcessStore {
     }
 
     /// Get the output buffer and notify handle for a session.
-    pub async fn get_output_handles(&self, session_id: &str) -> Option<(Arc<Mutex<Vec<u8>>>, Arc<Notify>)> {
+    pub async fn get_output_handles(
+        &self,
+        session_id: &str,
+    ) -> Option<(Arc<Mutex<Vec<u8>>>, Arc<Notify>)> {
         let mut entries = self.entries.lock().await;
         if let Some(entry) = entries.get_mut(session_id) {
             entry.last_used = Instant::now();
-            Some((Arc::clone(&entry.output_buffer), Arc::clone(&entry.output_notify)))
+            Some((
+                Arc::clone(&entry.output_buffer),
+                Arc::clone(&entry.output_notify),
+            ))
         } else {
             None
         }
@@ -157,7 +167,6 @@ impl ProcessStore {
         let entries = self.entries.lock().await;
         entries.keys().cloned().collect()
     }
-
 }
 
 impl Default for ProcessStore {
@@ -219,7 +228,10 @@ pub fn session_id_to_evict(meta: &[(String, Instant, bool)]) -> Option<String> {
     lru.sort_by_key(|(_, last_used, _)| *last_used);
 
     // Prefer evicting exited sessions outside the protected set
-    if let Some((id, _, _)) = lru.iter().find(|(id, _, exited)| !protected.contains(id.as_str()) && *exited) {
+    if let Some((id, _, _)) = lru
+        .iter()
+        .find(|(id, _, exited)| !protected.contains(id.as_str()) && *exited)
+    {
         return Some(id.clone());
     }
 

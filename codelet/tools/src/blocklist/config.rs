@@ -55,13 +55,13 @@ impl BlocklistConfig {
     /// Rules with action=Allow can override blocking rules.
     pub fn merge(system: BlocklistConfig, project: BlocklistConfig) -> Self {
         let mut merged_rules = Vec::new();
-        
+
         // Project rules first (higher priority, more specific overrides)
         merged_rules.extend(project.rules);
-        
+
         // Then system rules
         merged_rules.extend(system.rules);
-        
+
         Self {
             version: project.version,
             rules: merged_rules,
@@ -80,12 +80,12 @@ impl BlocklistConfig {
     pub fn save_to_file(&self, path: &std::path::Path) -> Result<(), std::io::Error> {
         let content = serde_json::to_string_pretty(self)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
-        
+
         // Create parent directories if needed
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        
+
         std::fs::write(path, content)
     }
 }
@@ -144,7 +144,7 @@ mod tests {
         };
 
         let merged = BlocklistConfig::merge(system, project);
-        
+
         // Project rules should be first (higher priority)
         assert_eq!(merged.rules.len(), 2);
         assert_eq!(merged.rules[0].id, "project-override");

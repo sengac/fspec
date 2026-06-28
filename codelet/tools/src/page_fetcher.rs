@@ -282,7 +282,7 @@ impl PageFetcher {
     }
 
     /// Extract content from an already-navigated tab
-    /// 
+    ///
     /// Unlike `fetch`, this does NOT create or cleanup the tab - the caller
     /// is responsible for tab lifecycle. This is useful when you need to
     /// keep the tab open after extraction (e.g., for pause/user interaction).

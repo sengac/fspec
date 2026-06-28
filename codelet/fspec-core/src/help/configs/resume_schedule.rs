@@ -4,9 +4,7 @@
 //! Byte-for-byte parity with `node dist/index.js resume-schedule --help`
 //! (captured at `codelet/fspec/tests/fixtures/help/resume-schedule.txt`).
 
-use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommonError,
-};
+use super::super::{CommandArgument, CommandExample, CommandHelpConfig, CommonError};
 
 const PREREQUISITES: &[&str] = &[
     "Schedule must exist in spec/schedules.json",

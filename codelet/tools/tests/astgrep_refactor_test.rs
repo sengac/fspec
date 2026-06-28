@@ -1,14 +1,13 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for AstGrepRefactorTool
 //!
 //! Feature: spec/features/ast-code-refactor-tool-for-codelet.feature
 
-use uuid::Uuid;
 use codelet_tools::astgrep_refactor::{AstGrepRefactorArgs, AstGrepRefactorTool};
 use rig::tool::Tool;
 use std::fs;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 /// Scenario: Extract code matching AST pattern to new file
 #[tokio::test]

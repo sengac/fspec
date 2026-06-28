@@ -121,16 +121,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let mut tag_status = "PASS";
     match crate::commands::validate_tags::run("{}", project_root).await {
         Ok(env_json) => {
-            let env: Value = serde_json::from_str(&env_json).map_err(|e| {
-                FspecCoreError::InvalidArgs {
+            let env: Value =
+                serde_json::from_str(&env_json).map_err(|e| FspecCoreError::InvalidArgs {
                     command: "check",
                     reason: format!("failed to parse validate-tags envelope: {e}"),
-                }
-            })?;
-            let invalid_count = env
-                .get("invalidCount")
-                .and_then(Value::as_u64)
-                .unwrap_or(0);
+                })?;
+            let invalid_count = env.get("invalidCount").and_then(Value::as_u64).unwrap_or(0);
             if invalid_count > 0 {
                 tag_status = "FAIL";
                 // Collect per-tag error messages (parity with check.ts:78-84).
@@ -183,8 +179,7 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
     // ---- Determine overall success ----
     // A FAIL in any contributing check fails the run.
-    let success =
-        gherkin_status != "FAIL" && tag_status != "FAIL" && format_status != "FAIL";
+    let success = gherkin_status != "FAIL" && tag_status != "FAIL" && format_status != "FAIL";
 
     let mut payload = json!({
         "success": success,
@@ -242,7 +237,11 @@ mod tests {
                 { "name": "Technical Tags", "description": "", "required": false, "tags": [] }
             ]
         });
-        write(root, "spec/tags.json", &serde_json::to_string_pretty(&data).unwrap());
+        write(
+            root,
+            "spec/tags.json",
+            &serde_json::to_string_pretty(&data).unwrap(),
+        );
     }
 
     #[tokio::test]
@@ -330,7 +329,11 @@ mod tests {
     async fn invalid_gherkin_fails() {
         let ws = tempfile::tempdir().unwrap();
         write_tags(ws.path());
-        write(ws.path(), "spec/features/broken.feature", "this is not gherkin");
+        write(
+            ws.path(),
+            "spec/features/broken.feature",
+            "this is not gherkin",
+        );
         let out = run("{}", ws.path()).await.unwrap();
         let v: Value = serde_json::from_str(&out).unwrap();
         assert_eq!(v["gherkinStatus"], "FAIL");

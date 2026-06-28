@@ -98,7 +98,11 @@ fn reviewing_a_fully_compliant_work_unit_reports_pass() {
 
     // @step And a linked feature file whose coverage is 100 percent
     write_feature(tmp.path(), "user-login", &feature_one_scenario("AUTH-001"));
-    write_file(tmp.path(), "tests/login.test.ts", "const x: string = 'ok';\n");
+    write_file(
+        tmp.path(),
+        "tests/login.test.ts",
+        "const x: string = 'ok';\n",
+    );
     write_coverage(
         tmp.path(),
         "user-login",
@@ -119,16 +123,28 @@ fn reviewing_a_fully_compliant_work_unit_reports_pass() {
     let report = &result.data;
 
     // @step And the report header contains "REVIEW:" with the work unit id and title
-    assert!(report.contains("REVIEW: AUTH-001 - Login"), "header missing; got:\n{report}");
+    assert!(
+        report.contains("REVIEW: AUTH-001 - Login"),
+        "header missing; got:\n{report}"
+    );
 
     // @step And the report Issues Found section reports "No critical issues detected."
-    assert!(report.contains("No critical issues detected."), "got:\n{report}");
+    assert!(
+        report.contains("No critical issues detected."),
+        "got:\n{report}"
+    );
 
     // @step And the report ACDD Compliance section lists "Example Mapping completed"
-    assert!(report.contains("Example Mapping completed"), "got:\n{report}");
+    assert!(
+        report.contains("Example Mapping completed"),
+        "got:\n{report}"
+    );
 
     // @step And the report Summary section contains "Overall Assessment: PASS"
-    assert!(report.contains("**Overall Assessment:** PASS"), "got:\n{report}");
+    assert!(
+        report.contains("**Overall Assessment:** PASS"),
+        "got:\n{report}"
+    );
 }
 
 #[test]
@@ -156,10 +172,16 @@ fn reviewing_with_no_linked_feature_emits_a_warning_and_no_coverage_data() {
     let report = &result.data;
 
     // @step And the report Warnings section contains "No linked feature files found"
-    assert!(report.contains("No linked feature files found"), "got:\n{report}");
+    assert!(
+        report.contains("No linked feature files found"),
+        "got:\n{report}"
+    );
 
     // @step And the report Coverage Analysis section contains "No coverage data available"
-    assert!(report.contains("No coverage data available"), "got:\n{report}");
+    assert!(
+        report.contains("No coverage data available"),
+        "got:\n{report}"
+    );
 }
 
 #[test]
@@ -182,7 +204,11 @@ fn reviewing_with_partial_coverage_reports_needs_work_and_lists_uncovered() {
         "user-login",
         "@AUTH-001\nFeature: User Login\n\n  Scenario: Covered\n    Given a\n    When b\n    Then c\n\n  Scenario: Uncovered Scenario\n    Given a\n    When b\n    Then c\n",
     );
-    write_file(tmp.path(), "tests/login.test.ts", "const x: string = 'ok';\n");
+    write_file(
+        tmp.path(),
+        "tests/login.test.ts",
+        "const x: string = 'ok';\n",
+    );
 
     // @step And the coverage file lists one uncovered scenario
     write_coverage(
@@ -203,10 +229,16 @@ fn reviewing_with_partial_coverage_reports_needs_work_and_lists_uncovered() {
     let report = &result.data;
 
     // @step Then the report Summary section contains "Overall Assessment: NEEDS WORK"
-    assert!(report.contains("**Overall Assessment:** NEEDS WORK"), "got:\n{report}");
+    assert!(
+        report.contains("**Overall Assessment:** NEEDS WORK"),
+        "got:\n{report}"
+    );
 
     // @step And the report includes a recommendation to "Add tests for uncovered scenarios"
-    assert!(report.contains("Add tests for uncovered scenarios"), "got:\n{report}");
+    assert!(
+        report.contains("Add tests for uncovered scenarios"),
+        "got:\n{report}"
+    );
 
     // @step And the report Coverage Analysis section lists the uncovered scenario name
     assert!(report.contains("Uncovered Scenario"), "got:\n{report}");
@@ -246,10 +278,16 @@ fn reviewing_a_work_unit_whose_test_file_uses_any_reports_a_critical_issue() {
     let report = &result.data;
 
     // @step Then the report Critical Issues section contains "Use of `any` type detected"
-    assert!(report.contains("Use of `any` type detected"), "got:\n{report}");
+    assert!(
+        report.contains("Use of `any` type detected"),
+        "got:\n{report}"
+    );
 
     // @step And the report Summary section contains "Overall Assessment: CRITICAL ISSUES"
-    assert!(report.contains("**Overall Assessment:** CRITICAL ISSUES"), "got:\n{report}");
+    assert!(
+        report.contains("**Overall Assessment:** CRITICAL ISSUES"),
+        "got:\n{report}"
+    );
 }
 
 #[test]
@@ -278,7 +316,11 @@ fn reviewing_a_missing_work_unit_returns_an_error() {
     );
 
     // @step And no report is produced
-    assert!(result.data.is_empty(), "no report should be produced on error; got: {}", result.data);
+    assert!(
+        result.data.is_empty(),
+        "no report should be produced on error; got: {}",
+        result.data
+    );
 }
 
 #[test]
@@ -297,7 +339,11 @@ fn the_ai_reminder_is_wrapped_according_to_the_configured_agent() {
         })),
     );
     write_feature(tmp.path(), "user-login", &feature_one_scenario("AUTH-001"));
-    write_file(tmp.path(), "tests/login.test.ts", "const x: string = 'ok';\n");
+    write_file(
+        tmp.path(),
+        "tests/login.test.ts",
+        "const x: string = 'ok';\n",
+    );
     write_coverage(
         tmp.path(),
         "user-login",
@@ -315,7 +361,11 @@ fn the_ai_reminder_is_wrapped_according_to_the_configured_agent() {
     std::env::remove_var("FSPEC_AGENT");
 
     // @step And spec/fspec-config.json selects the agent "claude"
-    write_file(tmp.path(), "spec/fspec-config.json", &json!({ "agent": "claude" }).to_string());
+    write_file(
+        tmp.path(),
+        "spec/fspec-config.json",
+        &json!({ "agent": "claude" }).to_string(),
+    );
 
     // @step When I dispatch review for that work unit id
     let claude = dispatch_command(req(tmp.path(), "AUTH-001"));
@@ -324,7 +374,11 @@ fn the_ai_reminder_is_wrapped_according_to_the_configured_agent() {
     let claude_ok = claude.success && claude.data.contains("<system-reminder>");
 
     // @step When spec/fspec-config.json selects the cli agent "aider"
-    write_file(tmp.path(), "spec/fspec-config.json", &json!({ "agent": "aider" }).to_string());
+    write_file(
+        tmp.path(),
+        "spec/fspec-config.json",
+        &json!({ "agent": "aider" }).to_string(),
+    );
 
     // @step And I dispatch review for that work unit id again
     let aider = dispatch_command(req(tmp.path(), "AUTH-001"));
@@ -335,7 +389,11 @@ fn the_ai_reminder_is_wrapped_according_to_the_configured_agent() {
         None => std::env::remove_var("FSPEC_AGENT"),
     }
 
-    assert!(claude_ok, "claude agent must wrap reminder in <system-reminder>; got:\n{}", claude.data);
+    assert!(
+        claude_ok,
+        "claude agent must wrap reminder in <system-reminder>; got:\n{}",
+        claude.data
+    );
 
     // @step Then the final AI deep-review reminder is prefixed with "**IMPORTANT:**"
     assert!(aider.success, "expected success=true; got {aider:?}");
@@ -371,8 +429,14 @@ fn reviewing_a_non_backlog_unit_with_no_example_mapping_reports_an_acdd_failure(
     let report = &result.data;
 
     // @step Then the report ACDD Compliance section lists the failure "No Example Mapping data found"
-    assert!(report.contains("No Example Mapping data found"), "got:\n{report}");
+    assert!(
+        report.contains("No Example Mapping data found"),
+        "got:\n{report}"
+    );
 
     // @step And the report includes a recommendation to "Complete Example Mapping before specifying"
-    assert!(report.contains("Complete Example Mapping before specifying"), "got:\n{report}");
+    assert!(
+        report.contains("Complete Example Mapping before specifying"),
+        "got:\n{report}"
+    );
 }

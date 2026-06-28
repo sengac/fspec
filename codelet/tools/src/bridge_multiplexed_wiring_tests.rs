@@ -91,8 +91,7 @@ mod multiplexed_wiring_tests {
     #[test]
     fn test_auth_error_parsed_correctly() {
         // @step Given the bridge has connected and sent the auth envelope
-        let auth_error_json =
-            r#"{"service":"auth","type":"authError","data":{"code":"AUTH_FAILED","message":"Bad key"}}"#;
+        let auth_error_json = r#"{"service":"auth","type":"authError","data":{"code":"AUTH_FAILED","message":"Bad key"}}"#;
         let env: Envelope = serde_json::from_str(auth_error_json).unwrap();
 
         // @step When an authError response is received from the server
@@ -131,12 +130,8 @@ mod multiplexed_wiring_tests {
         });
 
         // @step When a text chunk is received from the broadcast channel
-        let result = process_outbound_envelope(
-            &chunk_json,
-            instance_id,
-            &session_id.to_string(),
-            None,
-        );
+        let result =
+            process_outbound_envelope(&chunk_json, instance_id, &session_id.to_string(), None);
 
         // @step Then the bridge should send an Envelope with service "relay" and type "chunk"
         match result {
@@ -261,15 +256,8 @@ mod multiplexed_wiring_tests {
         });
         let text = serde_json::to_string(&envelope_json).unwrap();
 
-        let result = handle_multiplexed_inbound(
-            &text,
-            session_id,
-            input_injector,
-            None,
-            None,
-            None,
-        )
-        .await;
+        let result =
+            handle_multiplexed_inbound(&text, session_id, input_injector, None, None, None).await;
 
         // @step Then the InputInjector should be called with message "hello" and the images
         assert!(result.is_ok());
@@ -338,10 +326,11 @@ mod multiplexed_wiring_tests {
         let cmd_clone = cmd_received.clone();
 
         let input_injector: InputInjector = Arc::new(|_| {});
-        let command_emitter: CommandEmitter =
-            Arc::new(move |cmd: String, _args: String, _root: String, _tcid: String| {
+        let command_emitter: CommandEmitter = Arc::new(
+            move |cmd: String, _args: String, _root: String, _tcid: String| {
                 *cmd_clone.lock().unwrap() = cmd;
-            });
+            },
+        );
 
         let pending_commands: PendingCommands = Arc::new(Mutex::new(HashMap::new()));
 

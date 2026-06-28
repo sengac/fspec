@@ -24,7 +24,12 @@ pub mod handler;
 pub mod types;
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 mod tests;
 
 use rig::tool::Tool;
@@ -36,14 +41,12 @@ use types::AgentManagerArgs;
 use uuid::Uuid;
 
 pub use handler::{
-    clear_all_agent_manager_handlers, has_agent_manager_handler,
-    set_agent_manager_handler, set_agent_manager_async_handler,
-    AgentManagerHandler, AgentManagerAsyncHandler,
+    clear_all_agent_manager_handlers, has_agent_manager_handler, set_agent_manager_async_handler,
+    set_agent_manager_handler, AgentManagerAsyncHandler, AgentManagerHandler,
 };
 pub use types::{
-    AgentManagerAction, AgentManagerArgs as Args, AgentManagerResult,
-    AwaitOutcome, AwaitSessionResult, SessionEntry, SessionIdParam,
-    SessionStatus,
+    AgentManagerAction, AgentManagerArgs as Args, AgentManagerResult, AwaitOutcome,
+    AwaitSessionResult, SessionEntry, SessionIdParam, SessionStatus,
 };
 
 /// AgentManager Tool — Rig Tool implementation

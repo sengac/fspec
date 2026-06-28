@@ -5,8 +5,7 @@
 // Scenarios map directly to Gherkin scenarios.
 
 use codelet_cli::compaction_dag::{
-    detect_existing_dag, COMPACTION_INSTRUCTION_FRESH,
-    COMPACTION_INSTRUCTION_INCREMENTAL,
+    detect_existing_dag, COMPACTION_INSTRUCTION_FRESH, COMPACTION_INSTRUCTION_INCREMENTAL,
 };
 use codelet_cli::interactive_helpers::execute_compaction;
 use rig::message::{AssistantContent, Message, Text, UserContent};
@@ -183,13 +182,11 @@ async fn test_second_compaction_uses_incremental_instruction() {
 #[test]
 fn test_detect_existing_dag_finds_dag() {
     // @step Given a session messages list containing a user message with compaction-dag marker
-    let mut messages = vec![
-        Message::User {
-            content: OneOrMany::one(UserContent::text(
-                "<system-reminder>\n<!-- type:environment -->\nPlatform: test\n</system-reminder>",
-            )),
-        },
-    ];
+    let mut messages = vec![Message::User {
+        content: OneOrMany::one(UserContent::text(
+            "<system-reminder>\n<!-- type:environment -->\nPlatform: test\n</system-reminder>",
+        )),
+    }];
 
     // @step And the DAG content has dag-node blocks with turns 0-20 and 21-50
     let dag = r#"<dag-node depth="D2" turns="0-20" label="Decisions">
@@ -198,9 +195,8 @@ fn test_detect_existing_dag_finds_dag() {
 <dag-node depth="D0" turns="21-50" label="Recent work">
 - Current task
 </dag-node>"#;
-    let wrapped = format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n{dag}\n</system-reminder>"
-    );
+    let wrapped =
+        format!("<system-reminder>\n<!-- type:compaction-dag -->\n{dag}\n</system-reminder>");
     messages.push(Message::User {
         content: OneOrMany::one(UserContent::text(&wrapped)),
     });
@@ -216,10 +212,7 @@ fn test_detect_existing_dag_finds_dag() {
     // @step Then it should return Some with the DAG content string
     assert!(result.is_some(), "Should detect existing DAG");
     let (content, turn_end) = result.unwrap();
-    assert!(
-        content.contains("Decisions"),
-        "Should contain DAG content"
-    );
+    assert!(content.contains("Decisions"), "Should contain DAG content");
 
     // @step And the returned max_turn_end should be 50
     assert_eq!(turn_end, 50, "max_turn_end should be 50");
@@ -284,10 +277,7 @@ fn test_incremental_template_substitution() {
     );
 
     // @step And the placeholder {last_compacted_turn} should be replaced with 95
-    assert!(
-        instruction.contains("95"),
-        "Should contain turn number 95"
-    );
+    assert!(instruction.contains("95"), "Should contain turn number 95");
     assert!(
         !instruction.contains("{last_compacted_turn}"),
         "Placeholder should be replaced"
@@ -349,13 +339,9 @@ async fn test_execute_compaction_appends_resume_prompt_incremental() {
     let compaction_flag = Arc::new(AtomicBool::new(false));
 
     // @step When execute_compaction is called with a last_user_message of "fix the test"
-    execute_compaction(
-        &mut session,
-        compaction_flag.clone(),
-        Some("fix the test"),
-    )
-    .await
-    .expect("should succeed");
+    execute_compaction(&mut session, compaction_flag.clone(), Some("fix the test"))
+        .await
+        .expect("should succeed");
 
     let last_user = session
         .messages
@@ -386,9 +372,8 @@ async fn test_execute_compaction_appends_resume_prompt_incremental() {
 fn test_detect_existing_dag_fallback_turn_end() {
     // @step Given a session with a compaction-dag system-reminder containing only plain text (no dag-node blocks)
     let plain_dag = "# Summary\n- Some notes without structured dag-node blocks";
-    let wrapped = format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n{plain_dag}\n</system-reminder>"
-    );
+    let wrapped =
+        format!("<system-reminder>\n<!-- type:compaction-dag -->\n{plain_dag}\n</system-reminder>");
     let messages = vec![Message::User {
         content: OneOrMany::one(UserContent::text(&wrapped)),
     }];
@@ -427,9 +412,18 @@ fn test_fresh_instruction_content() {
         instruction.contains("dag-node"),
         "Should mention dag-node format"
     );
-    assert!(instruction.contains("depth"), "Should mention depth attribute");
-    assert!(instruction.contains("turns"), "Should mention turns attribute");
-    assert!(instruction.contains("label"), "Should mention label attribute");
+    assert!(
+        instruction.contains("depth"),
+        "Should mention depth attribute"
+    );
+    assert!(
+        instruction.contains("turns"),
+        "Should mention turns attribute"
+    );
+    assert!(
+        instruction.contains("label"),
+        "Should mention label attribute"
+    );
 
     // @step And it should contain D0, D1, and D2 depth semantics
     assert!(instruction.contains("D0"), "Should mention D0");

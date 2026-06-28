@@ -6,14 +6,16 @@
 
 use super::error_classifiers::{classify_compaction_branch, CompactionBranch};
 use super::output::StreamOutput;
-use super::stream_handlers::{handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result};
+use super::stream_handlers::{
+    handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
+};
 
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_core::{
-    ApiTokenUsage, CompactionHook, ContinuationStrategy, GeminiTurnCompletionFacade,
-    RigAgent, StreamingTokenDisplay, TokenState, TurnCompletionFacade, ensure_thought_signatures,
+    ensure_thought_signatures, ApiTokenUsage, CompactionHook, ContinuationStrategy,
+    GeminiTurnCompletionFacade, RigAgent, StreamingTokenDisplay, TokenState, TurnCompletionFacade,
 };
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::InputQueue;
@@ -29,7 +31,13 @@ use std::sync::{Arc, Mutex};
 use tracing::{debug, info};
 
 /// Type-erased stream for continuation loops.
-type BoxedStream<'a, R> = Pin<Box<dyn futures::Stream<Item = std::result::Result<MultiTurnStreamItem<R>, anyhow::Error>> + Send + 'a>>;
+type BoxedStream<'a, R> = Pin<
+    Box<
+        dyn futures::Stream<Item = std::result::Result<MultiTurnStreamItem<R>, anyhow::Error>>
+            + Send
+            + 'a,
+    >,
+>;
 
 /// Result of a Gemini continuation attempt.
 pub(super) enum GeminiContinuationResult {
@@ -111,7 +119,9 @@ where
         current_display.cache_creation_tokens,
         0,
     );
-    session.token_tracker.update_display_only(&turn_usage, current_display.output_tokens);
+    session
+        .token_tracker
+        .update_display_only(&turn_usage, current_display.output_tokens);
 
     let continuation_token_state = Arc::new(Mutex::new(TokenState {
         input_tokens: session.token_tracker.input_tokens,
@@ -162,7 +172,8 @@ where
         &mut last_tool_name,
         &mut display,
         final_stop_reason,
-    ).await?;
+    )
+    .await?;
 
     Ok(result)
 }
@@ -209,9 +220,9 @@ where
         }
 
         match stream.next().await {
-            Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
-                StreamedAssistantContent::Text(chunk),
-            ))) => {
+            Some(Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(
+                chunk,
+            )))) => {
                 handle_text_chunk(&chunk.text, text, None, output)?;
                 if let Some(update) = display.record_chunk(&chunk.text) {
                     output.emit_tokens(&update.into());
@@ -237,9 +248,9 @@ where
                     output.emit_tokens(&update.into());
                 }
             }
-            Some(Ok(MultiTurnStreamItem::StreamUserItem(
-                StreamedUserContent::ToolResult(tool_result),
-            ))) => {
+            Some(Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(
+                tool_result,
+            )))) => {
                 handle_tool_result(
                     &tool_result,
                     &mut session.messages,
@@ -264,17 +275,27 @@ where
                 };
 
                 // Check if we need ANOTHER continuation (nested)
-                let nested_strategy = turn_completion.continuation_strategy(text, &session.messages);
+                let nested_strategy =
+                    turn_completion.continuation_strategy(text, &session.messages);
 
-                if let ContinuationStrategy::FullLoop { prompt: nested_prompt } = nested_strategy {
+                if let ContinuationStrategy::FullLoop {
+                    prompt: nested_prompt,
+                } = nested_strategy
+                {
                     info!("GEMINI-TURN: Nested empty response detected, continuing again");
-                    capture_continuation_event(model_id, nested_prompt, "nested_empty_response_after_tool");
+                    capture_continuation_event(
+                        model_id,
+                        nested_prompt,
+                        "nested_empty_response_after_tool",
+                    );
 
                     handle_final_response(text, &mut session.messages)?;
                     text.clear();
 
                     session.messages.push(rig::message::Message::User {
-                        content: rig::OneOrMany::one(rig::message::UserContent::text(nested_prompt)),
+                        content: rig::OneOrMany::one(rig::message::UserContent::text(
+                            nested_prompt,
+                        )),
                     });
                     if let Some(mid) = session.current_model_id() {
                         ensure_thought_signatures(&mut session.messages, &mid);
@@ -287,7 +308,8 @@ where
                         output_tokens: cont_final.output_tokens,
                         compaction_needed: false,
                     }));
-                    let nested_hook = CompactionHook::new(Arc::clone(&nested_token_state), threshold);
+                    let nested_hook =
+                        CompactionHook::new(Arc::clone(&nested_token_state), threshold);
 
                     debug!(
                         "API REQUEST (Gemini nested continuation) - Provider: {}, Model: {}",
@@ -328,7 +350,9 @@ where
                     cont_final.cache_creation_tokens,
                     per_turn_output_delta,
                 );
-                session.token_tracker.update_from_usage(&cont_usage, cont_final.output_tokens);
+                session
+                    .token_tracker
+                    .update_from_usage(&cont_usage, cont_final.output_tokens);
 
                 set_tool_progress_callback(uuid::Uuid::nil(), None);
                 output.emit_done_with_stop_reason(final_stop_reason.take());
@@ -436,7 +460,9 @@ fn update_token_tracker(session: &mut Session, display: &StreamingTokenDisplay) 
         current.cache_creation_tokens,
         per_turn_output_delta,
     );
-    session.token_tracker.update_from_usage(&usage, current.output_tokens);
+    session
+        .token_tracker
+        .update_from_usage(&usage, current.output_tokens);
 }
 
 /// Capture a continuation debug event.

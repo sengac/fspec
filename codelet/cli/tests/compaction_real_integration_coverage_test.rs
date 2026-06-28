@@ -56,8 +56,8 @@ fn fresh_session() -> Session {
 }
 
 fn gemini_continuation_source() -> String {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/interactive/gemini_continuation.rs");
+    let path =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/gemini_continuation.rs");
     std::fs::read_to_string(&path).unwrap_or_else(|e| {
         panic!(
             "gemini_continuation.rs must be readable at {}: {e}",
@@ -163,8 +163,7 @@ fn stream_end_path_selects_resume_from_partial_when_partial_text_saved() {
     let display = StreamingTokenDisplay::new(0, 0, 0, 0);
 
     // @step And a non-empty assistant_text buffer carrying partial text
-    let mut buffer =
-        String::from("Here is the analysis so far — paragraph one is complete");
+    let mut buffer = String::from("Here is the analysis so far — paragraph one is complete");
 
     // @step When flush_partial_state_before_compaction is invoked and the selected policy is chosen per the in-file rule
     // `flush_partial_state_before_compaction` returns `true` when it appended

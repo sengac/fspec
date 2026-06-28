@@ -230,8 +230,7 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case() {
-        let a: AuditCoverageArgs =
-            serde_json::from_str(r#"{"featureName":"user-login"}"#).unwrap();
+        let a: AuditCoverageArgs = serde_json::from_str(r#"{"featureName":"user-login"}"#).unwrap();
         assert_eq!(a.feature_name.as_deref(), Some("user-login"));
     }
 }

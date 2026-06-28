@@ -122,9 +122,9 @@ fn ensure_browser_mode(headless: bool) -> Result<Arc<ChromeBrowser>, ChromeError
         let browser = create_browser_with_headless(headless)?;
 
         // Store it
-        let mut guard = BROWSER
-            .lock()
-            .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire browser lock: {e}")))?;
+        let mut guard = BROWSER.lock().map_err(|e| {
+            ChromeError::LaunchError(format!("Failed to acquire browser lock: {e}"))
+        })?;
         *guard = Some(Arc::clone(&browser));
         drop(guard);
 
@@ -501,7 +501,11 @@ impl Tool for WebSearchTool {
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::OpenPage { url, headless, pause } => {
+            WebSearchAction::OpenPage {
+                url,
+                headless,
+                pause,
+            } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
                     return Err(ToolError::Validation {
@@ -510,7 +514,7 @@ impl Tool for WebSearchTool {
                     });
                 }
                 let effective_headless = if *pause { false } else { *headless };
-                
+
                 match fetch_page_content(url, effective_headless, *pause, self.session_id) {
                     Ok((content, was_interrupted)) => {
                         if was_interrupted {
@@ -524,7 +528,12 @@ impl Tool for WebSearchTool {
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::FindInPage { url, pattern, headless, pause } => {
+            WebSearchAction::FindInPage {
+                url,
+                pattern,
+                headless,
+                pause,
+            } => {
                 let url = url.as_deref().unwrap_or("");
                 let pattern = pattern.as_deref().unwrap_or("");
                 if url.is_empty() {
@@ -540,8 +549,14 @@ impl Tool for WebSearchTool {
                     });
                 }
                 let effective_headless = if *pause { false } else { *headless };
-                
-                match find_pattern_in_page(url, pattern, effective_headless, *pause, self.session_id) {
+
+                match find_pattern_in_page(
+                    url,
+                    pattern,
+                    effective_headless,
+                    *pause,
+                    self.session_id,
+                ) {
                     Ok((found, was_interrupted)) => {
                         if was_interrupted {
                             return Err(ToolError::Execution {
@@ -573,8 +588,15 @@ impl Tool for WebSearchTool {
                 }
                 let full_page = full_page.unwrap_or(false);
                 let effective_headless = if *pause { false } else { *headless };
-                
-                match capture_page_screenshot(url, output_path.clone(), full_page, effective_headless, *pause, self.session_id) {
+
+                match capture_page_screenshot(
+                    url,
+                    output_path.clone(),
+                    full_page,
+                    effective_headless,
+                    *pause,
+                    self.session_id,
+                ) {
                     Ok((file_path, was_interrupted)) => {
                         if was_interrupted {
                             return Err(ToolError::Execution {
@@ -647,16 +669,21 @@ fn perform_web_search(query: &str) -> Result<String, ChromeError> {
 }
 
 /// Fetch content from a web page, with optional pause for user interaction
-fn fetch_page_content(url: &str, headless: bool, pause: bool, session_id: Uuid) -> Result<(String, bool), ChromeError> {
+fn fetch_page_content(
+    url: &str,
+    headless: bool,
+    pause: bool,
+    session_id: Uuid,
+) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     with_browser_mode(headless, |browser| {
         let tab = browser.new_tab()?;
-        
+
         if let Err(e) = browser.navigate_and_wait(&tab, &url) {
             browser.cleanup_tab(&tab);
             return Err(e);
         }
-        
+
         let page_fetcher = PageFetcher::new(Arc::clone(&browser));
         let content = match page_fetcher.fetch_from_tab(&tab, &url) {
             Ok(c) => c,
@@ -665,20 +692,23 @@ fn fetch_page_content(url: &str, headless: bool, pause: bool, session_id: Uuid) 
                 return Err(e);
             }
         };
-        
+
         let was_interrupted = if pause {
             use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(session_id, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "WebSearch".to_string(),
-                message: format!("Page loaded: {url}"),
-                details: None,
-            });
+            let response = pause_for_user(
+                session_id,
+                PauseRequest {
+                    kind: PauseKind::Continue,
+                    tool_name: "WebSearch".to_string(),
+                    message: format!("Page loaded: {url}"),
+                    details: None,
+                },
+            );
             response == PauseResponse::Interrupted
         } else {
             false
         };
-        
+
         browser.cleanup_tab(&tab);
 
         let mut output = Vec::new();
@@ -737,12 +767,12 @@ fn capture_page_screenshot(
     let url = url.to_string();
     with_browser_mode(headless, |browser| {
         let tab = browser.new_tab()?;
-        
+
         if let Err(e) = browser.navigate_and_wait(&tab, &url) {
             browser.cleanup_tab(&tab);
             return Err(e);
         }
-        
+
         let was_interrupted = if pause {
             use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
             let response = pause_for_user(session_id, PauseRequest {
@@ -755,12 +785,12 @@ fn capture_page_screenshot(
         } else {
             false
         };
-        
+
         if was_interrupted {
             browser.cleanup_tab(&tab);
             return Ok((String::new(), true));
         }
-        
+
         let file_path = match browser.capture_screenshot(&tab, output_path.clone(), full_page) {
             Ok(path) => path,
             Err(e) => {
@@ -768,24 +798,30 @@ fn capture_page_screenshot(
                 return Err(e);
             }
         };
-        
+
         browser.cleanup_tab(&tab);
         Ok((file_path, false))
     })
 }
 
 /// Find a pattern in a web page with optional pause for user inspection
-fn find_pattern_in_page(url: &str, pattern: &str, headless: bool, pause: bool, session_id: Uuid) -> Result<(String, bool), ChromeError> {
+fn find_pattern_in_page(
+    url: &str,
+    pattern: &str,
+    headless: bool,
+    pause: bool,
+    session_id: Uuid,
+) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     let pattern = pattern.to_string();
     with_browser_mode(headless, |browser| {
         let tab = browser.new_tab()?;
-        
+
         if let Err(e) = browser.navigate_and_wait(&tab, &url) {
             browser.cleanup_tab(&tab);
             return Err(e);
         }
-        
+
         let page_fetcher = PageFetcher::new(Arc::clone(&browser));
         let content = match page_fetcher.fetch_from_tab(&tab, &url) {
             Ok(c) => c,
@@ -794,9 +830,9 @@ fn find_pattern_in_page(url: &str, pattern: &str, headless: bool, pause: bool, s
                 return Err(e);
             }
         };
-        
+
         let matches = find_matches_in_content(&content.main_content, &pattern);
-        
+
         let result_output = if matches.is_empty() {
             format!("Pattern '{pattern}' not found on page")
         } else {
@@ -821,18 +857,21 @@ fn find_pattern_in_page(url: &str, pattern: &str, headless: bool, pause: bool, s
                 );
                 final_output.push_str(&warning);
             }
-            
+
             final_output
         };
-        
+
         let was_interrupted = if pause {
             use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(session_id, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "WebSearch".to_string(),
-                message: format!("Pattern search complete on: {url}"),
-                details: None,
-            });
+            let response = pause_for_user(
+                session_id,
+                PauseRequest {
+                    kind: PauseKind::Continue,
+                    tool_name: "WebSearch".to_string(),
+                    message: format!("Pattern search complete on: {url}"),
+                    details: None,
+                },
+            );
             response == PauseResponse::Interrupted
         } else {
             false
@@ -848,27 +887,27 @@ fn find_matches_in_content(content: &str, pattern: &str) -> Vec<String> {
     let pattern_lower = pattern.to_lowercase();
     let content_lower = content.to_lowercase();
     let mut matches = Vec::new();
-    
+
     let context_chars = 50;
     let mut search_start = 0;
-    
+
     while let Some(pos) = content_lower[search_start..].find(&pattern_lower) {
         let absolute_pos = search_start + pos;
         let start = absolute_pos.saturating_sub(context_chars);
         let end = (absolute_pos + pattern.len() + context_chars).min(content.len());
-        
+
         // Get the context string from original content (preserving case)
         let context = &content[start..end];
         matches.push(context.to_string());
-        
+
         search_start = absolute_pos + pattern.len();
-        
+
         // Limit matches to prevent huge output
         if matches.len() >= 20 {
             break;
         }
     }
-    
+
     matches
 }
 

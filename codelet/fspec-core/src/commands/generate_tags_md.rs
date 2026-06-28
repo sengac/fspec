@@ -185,8 +185,7 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         write_tags(tmp.path(), &valid_tags());
         let message = generate(tmp.path(), None).unwrap();
-        let written =
-            std::fs::read_to_string(tmp.path().join("spec").join("TAGS.md")).unwrap();
+        let written = std::fs::read_to_string(tmp.path().join("spec").join("TAGS.md")).unwrap();
         assert_eq!(written, render_tags_md(&valid_tags()));
         assert_eq!(message, "Generated spec/TAGS.md from spec/tags.json");
     }

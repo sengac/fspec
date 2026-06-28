@@ -89,7 +89,9 @@ fn scenario_rename_a_scenario_and_update_its_coverage_entry() {
     // @step And the feature file header line reads "  Scenario: Login with email and password"
     let after = read_feature(tmp.path(), "spec/features/user-auth.feature");
     assert!(
-        after.lines().any(|l| l == "  Scenario: Login with email and password"),
+        after
+            .lines()
+            .any(|l| l == "  Scenario: Login with email and password"),
         "expected renamed header line; got:\n{after}"
     );
 
@@ -99,7 +101,10 @@ fn scenario_rename_a_scenario_and_update_its_coverage_entry() {
     )
     .unwrap();
     let entry = &cov_after["scenarios"][0];
-    assert_eq!(entry["name"].as_str(), Some("Login with email and password"));
+    assert_eq!(
+        entry["name"].as_str(),
+        Some("Login with email and password")
+    );
     assert_eq!(entry["testMappings"][0]["file"].as_str(), Some("t.ts"));
 }
 
@@ -126,7 +131,9 @@ fn scenario_header_indentation_and_keyword_are_preserved_on_rename() {
     // @step And the feature file header line reads "  Scenario Outline: New outline name"
     let after = read_feature(tmp.path(), "spec/features/outline.feature");
     assert!(
-        after.lines().any(|l| l == "  Scenario Outline: New outline name"),
+        after
+            .lines()
+            .any(|l| l == "  Scenario Outline: New outline name"),
         "expected renamed outline header; got:\n{after}"
     );
 }
@@ -153,7 +160,10 @@ fn scenario_renaming_a_scenario_in_a_missing_feature_file_fails() {
 
     // @step And the response error contains "Feature file not found:"
     assert!(
-        data["error"].as_str().unwrap_or("").contains("Feature file not found:"),
+        data["error"]
+            .as_str()
+            .unwrap_or("")
+            .contains("Feature file not found:"),
         "unexpected error: {data}"
     );
 }

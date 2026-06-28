@@ -240,8 +240,7 @@ fn collect_matching_scenarios(
     let mut out: Vec<ScenarioInfo> = Vec::new();
 
     for scenario in &feature.scenarios {
-        let scenario_tags: Vec<String> =
-            scenario.tags.iter().map(|t| format!("@{t}")).collect();
+        let scenario_tags: Vec<String> = scenario.tags.iter().map(|t| format!("@{t}")).collect();
 
         let has_all = wanted.iter().all(|t| scenario_tags.contains(t));
         if !has_all {
@@ -283,7 +282,7 @@ fn scenario_block_start_line(lines: &[&str], keyword_line: usize) -> usize {
         return 1;
     }
     let mut start = keyword_line; // 1-based
-    // Index of the line ABOVE the keyword line is keyword_line-2 (0-based).
+                                  // Index of the line ABOVE the keyword line is keyword_line-2 (0-based).
     let mut idx = keyword_line as isize - 2;
     while idx >= 0 {
         let trimmed = lines[idx as usize].trim();

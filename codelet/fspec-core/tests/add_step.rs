@@ -40,7 +40,8 @@ const FEATURE_PLACEHOLDERS: &str =
     "Feature: Login\n  Scenario: Login\n    Given [precondition]\n    When [action]\n    Then [expected outcome]\n";
 const FEATURE_REAL_STEPS: &str =
     "Feature: Login\n  Scenario: Login\n    Given I am logged in\n    When I click\n    Then I see it\n";
-const FEATURE_DEEP_INDENT: &str = "Feature: Login\n  Scenario: Login\n      Given deeply indented\n";
+const FEATURE_DEEP_INDENT: &str =
+    "Feature: Login\n  Scenario: Login\n      Given deeply indented\n";
 const FEATURE_PLAIN: &str = "Feature: Login\n  Scenario: Login\n    Given x\n";
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -51,7 +52,11 @@ const FEATURE_PLAIN: &str = "Feature: Login\n  Scenario: Login\n    Given x\n";
 fn scenario_replaces_a_matching_placeholder_step_in_place() {
     // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given [precondition]\n    When [action]\n    Then [expected outcome]\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_PLACEHOLDERS);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_PLACEHOLDERS,
+    );
 
     // @step When I dispatch add-step with feature='spec/features/login.feature', scenario='Login', type='given' and text='I am on the login page'
     let result = dispatch_command(req(
@@ -69,7 +74,9 @@ fn scenario_replaces_a_matching_placeholder_step_in_place() {
 
     // @step And the file on disk contains the line '    Given I am on the login page'
     assert!(
-        after.lines().any(|l| l == "    Given I am on the login page"),
+        after
+            .lines()
+            .any(|l| l == "    Given I am on the login page"),
         "missing replaced step:\n{after}"
     );
 
@@ -88,7 +95,11 @@ fn scenario_replaces_a_matching_placeholder_step_in_place() {
 fn scenario_appends_a_new_step_after_the_last_existing_step() {
     // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n    Given I am logged in\n    When I click\n    Then I see it\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_REAL_STEPS);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_REAL_STEPS,
+    );
 
     // @step When I dispatch add-step with feature='spec/features/login.feature', scenario='Login', type='and' and text='I am happy'
     let result = dispatch_command(req(
@@ -104,9 +115,18 @@ fn scenario_appends_a_new_step_after_the_last_existing_step() {
     // @step And the file on disk contains the line '    And I am happy' after the line '    Then I see it'
     let after = read_feature(tmp.path(), "spec/features/login.feature");
     let lines: Vec<&str> = after.lines().collect();
-    let then_idx = lines.iter().position(|l| *l == "    Then I see it").expect("then line");
-    let and_idx = lines.iter().position(|l| *l == "    And I am happy").expect("and line");
-    assert!(and_idx > then_idx, "And step must come after Then step:\n{after}");
+    let then_idx = lines
+        .iter()
+        .position(|l| *l == "    Then I see it")
+        .expect("then line");
+    let and_idx = lines
+        .iter()
+        .position(|l| *l == "    And I am happy")
+        .expect("and line");
+    assert!(
+        and_idx > then_idx,
+        "And step must come after Then step:\n{after}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -117,7 +137,11 @@ fn scenario_appends_a_new_step_after_the_last_existing_step() {
 fn scenario_indentation_is_inherited_from_existing_steps() {
     // @step Given a project root tempdir with spec/features/login.feature containing 'Feature: Login\n  Scenario: Login\n      Given deeply indented\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_DEEP_INDENT);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_DEEP_INDENT,
+    );
 
     // @step When I dispatch add-step with feature='spec/features/login.feature', scenario='Login', type='and' and text='also deep'
     let result = dispatch_command(req(
@@ -153,7 +177,10 @@ fn scenario_invalid_step_type_is_rejected() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(result.success, "dispatcher envelope succeeds; inner success=false");
+    assert!(
+        result.success,
+        "dispatcher envelope succeeds; inner success=false"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(false));
 
@@ -184,7 +211,10 @@ fn scenario_unknown_scenario_name_is_rejected_with_available_list() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(result.success, "dispatcher envelope succeeds; inner success=false");
+    assert!(
+        result.success,
+        "dispatcher envelope succeeds; inner success=false"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(false));
 
@@ -216,11 +246,17 @@ fn scenario_missing_feature_file_surfaces_the_not_found_error() {
     ));
 
     // @step Then the dispatcher returns success=false
-    assert!(result.success, "dispatcher envelope succeeds; inner success=false");
+    assert!(
+        result.success,
+        "dispatcher envelope succeeds; inner success=false"
+    );
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     assert_eq!(data["success"].as_bool(), Some(false));
 
     // @step And the error contains 'Feature file not found: '
     let err = data["error"].as_str().unwrap_or("");
-    assert!(err.contains("Feature file not found: "), "unexpected error: {err}");
+    assert!(
+        err.contains("Feature file not found: "),
+        "unexpected error: {err}"
+    );
 }

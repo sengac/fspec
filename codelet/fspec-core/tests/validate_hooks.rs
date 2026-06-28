@@ -100,7 +100,10 @@ fn dispatcher_reports_a_missing_hook_script() {
     assert_eq!(data["exitCode"].as_i64(), Some(1), "got {data}");
 
     // @step Then the message contains '✗ Hook validation failed'
-    assert!(message(&data).contains("✗ Hook validation failed"), "got {data}");
+    assert!(
+        message(&data).contains("✗ Hook validation failed"),
+        "got {data}"
+    );
 
     // @step Then the message contains 'Hook command not found: spec/hooks/lint.sh'
     assert!(
@@ -125,7 +128,11 @@ fn dispatcher_reports_no_hooks_configured_for_empty_hooks_object() {
     let data = parse_data(&result);
 
     // @step Then the message is 'No hooks configured (nothing to validate)' with exitCode 0
-    assert_eq!(message(&data), "No hooks configured (nothing to validate)", "got {data}");
+    assert_eq!(
+        message(&data),
+        "No hooks configured (nothing to validate)",
+        "got {data}"
+    );
     assert_eq!(data["exitCode"].as_i64(), Some(0), "got {data}");
 }
 
@@ -147,7 +154,11 @@ fn dispatcher_reports_a_load_failure_when_the_config_is_missing() {
     assert_eq!(data["exitCode"].as_i64(), Some(1), "got {data}");
 
     // @step Then the message is 'Failed to load hook configuration'
-    assert_eq!(message(&data), "Failed to load hook configuration", "got {data}");
+    assert_eq!(
+        message(&data),
+        "Failed to load hook configuration",
+        "got {data}"
+    );
 }
 
 #[test]
@@ -168,7 +179,11 @@ fn dispatcher_reports_a_load_failure_when_the_config_is_malformed_json() {
     assert_eq!(data["exitCode"].as_i64(), Some(1), "got {data}");
 
     // @step Then the message is 'Failed to load hook configuration'
-    assert_eq!(message(&data), "Failed to load hook configuration", "got {data}");
+    assert_eq!(
+        message(&data),
+        "Failed to load hook configuration",
+        "got {data}"
+    );
 }
 
 #[test]

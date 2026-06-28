@@ -89,25 +89,234 @@ use SlashFormat::{Markdown, Toml};
 
 /// Inlined agent registry table (19 agents). Order matches the TS source.
 const AGENT_REGISTRY: &[Agent] = &[
-    Agent { id: "claude", name: "Claude Code", description: "Anthropic CLI (nested slash commands, system-reminders)", slash_command_path: ".claude/commands/", slash_command_format: Markdown, supports_system_reminders: true, doc_template: "CLAUDE.md", category: Cli, detection_paths: &[".claude/", ".claude/commands/"], available: true },
-    Agent { id: "cursor", name: "Cursor", description: "IDE with AI assistant (flat slash commands)", slash_command_path: ".cursor/commands/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "CURSOR.md", category: Ide, detection_paths: &[".cursor/", ".cursor/commands/"], available: true },
-    Agent { id: "cline", name: "Cline", description: "VS Code extension (no system-reminders)", slash_command_path: ".cline/commands/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "CLINE.md", category: Extension, detection_paths: &[".cline/", ".continue/"], available: true },
-    Agent { id: "aider", name: "Aider", description: "CLI agent (no meta-cognitive prompts)", slash_command_path: ".aider/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "AIDER.md", category: Cli, detection_paths: &[".aider/"], available: true },
-    Agent { id: "windsurf", name: "Windsurf", description: "IDE-based agent", slash_command_path: ".windsurf/workflows/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "WINDSURF.md", category: Ide, detection_paths: &[".windsurf/"], available: true },
-    Agent { id: "copilot", name: "GitHub Copilot", description: "GitHub AI assistant", slash_command_path: ".github/prompts/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "COPILOT.md", category: Extension, detection_paths: &[".github/prompts/"], available: true },
-    Agent { id: "gemini", name: "Gemini CLI", description: "Google CLI agent (TOML format)", slash_command_path: ".gemini/commands/", slash_command_format: Toml, supports_system_reminders: false, doc_template: "GEMINI.md", category: Cli, detection_paths: &[".gemini/"], available: true },
-    Agent { id: "qwen", name: "Qwen Code", description: "Qwen CLI agent (TOML format)", slash_command_path: ".qwen/commands/", slash_command_format: Toml, supports_system_reminders: false, doc_template: "QWEN.md", category: Cli, detection_paths: &[".qwen/"], available: true },
-    Agent { id: "kilocode", name: "Kilo Code", description: "IDE agent with rules-based pattern", slash_command_path: ".kilocode/rules/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "KILOCODE.md", category: Ide, detection_paths: &[".kilocode/"], available: true },
-    Agent { id: "roo", name: "Roo Code", description: "IDE agent with rules pattern", slash_command_path: ".roo/rules/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "ROO.md", category: Ide, detection_paths: &[".roo/"], available: true },
-    Agent { id: "codebuddy", name: "CodeBuddy", description: "CLI-based agent", slash_command_path: ".codebuddy/commands/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "CODEBUDDY.md", category: Cli, detection_paths: &[".codebuddy/"], available: true },
-    Agent { id: "amazonq", name: "Amazon Q", description: "AWS AI assistant", slash_command_path: ".amazonq/prompts/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "AMAZONQ.md", category: Extension, detection_paths: &[".amazonq/"], available: true },
-    Agent { id: "auggie", name: "Auggie", description: "Augment CLI agent", slash_command_path: ".auggie/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "AUGGIE.md", category: Cli, detection_paths: &[".auggie/"], available: true },
-    Agent { id: "opencode", name: "OpenCode", description: "CLI agent", slash_command_path: ".opencode/command/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "OPENCODE.md", category: Cli, detection_paths: &[".opencode/"], available: true },
-    Agent { id: "codex", name: "Codex", description: "OpenAI Codex agent", slash_command_path: ".codex/prompts/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "AGENTS.md", category: Cli, detection_paths: &[".codex/"], available: true },
-    Agent { id: "factory", name: "Factory Droid", description: "Factory agent", slash_command_path: ".factory/commands/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "FACTORY.md", category: Cli, detection_paths: &[".factory/"], available: true },
-    Agent { id: "crush", name: "Crush", description: "Crush agent", slash_command_path: ".crush/commands/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "CRUSH.md", category: Cli, detection_paths: &[".crush/"], available: true },
-    Agent { id: "codex-cli", name: "Codex CLI", description: "Codex command-line interface", slash_command_path: ".codex/prompts/", slash_command_format: Markdown, supports_system_reminders: false, doc_template: "AGENTS.md", category: Cli, detection_paths: &[".codex-cli/"], available: true },
-    Agent { id: "antigravity", name: "Antigravity", description: "Google Deepmind Agentic AI", slash_command_path: ".antigravity/commands/", slash_command_format: Markdown, supports_system_reminders: true, doc_template: "ANTIGRAVITY.md", category: Cli, detection_paths: &[".antigravity/"], available: true },
+    Agent {
+        id: "claude",
+        name: "Claude Code",
+        description: "Anthropic CLI (nested slash commands, system-reminders)",
+        slash_command_path: ".claude/commands/",
+        slash_command_format: Markdown,
+        supports_system_reminders: true,
+        doc_template: "CLAUDE.md",
+        category: Cli,
+        detection_paths: &[".claude/", ".claude/commands/"],
+        available: true,
+    },
+    Agent {
+        id: "cursor",
+        name: "Cursor",
+        description: "IDE with AI assistant (flat slash commands)",
+        slash_command_path: ".cursor/commands/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "CURSOR.md",
+        category: Ide,
+        detection_paths: &[".cursor/", ".cursor/commands/"],
+        available: true,
+    },
+    Agent {
+        id: "cline",
+        name: "Cline",
+        description: "VS Code extension (no system-reminders)",
+        slash_command_path: ".cline/commands/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "CLINE.md",
+        category: Extension,
+        detection_paths: &[".cline/", ".continue/"],
+        available: true,
+    },
+    Agent {
+        id: "aider",
+        name: "Aider",
+        description: "CLI agent (no meta-cognitive prompts)",
+        slash_command_path: ".aider/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "AIDER.md",
+        category: Cli,
+        detection_paths: &[".aider/"],
+        available: true,
+    },
+    Agent {
+        id: "windsurf",
+        name: "Windsurf",
+        description: "IDE-based agent",
+        slash_command_path: ".windsurf/workflows/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "WINDSURF.md",
+        category: Ide,
+        detection_paths: &[".windsurf/"],
+        available: true,
+    },
+    Agent {
+        id: "copilot",
+        name: "GitHub Copilot",
+        description: "GitHub AI assistant",
+        slash_command_path: ".github/prompts/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "COPILOT.md",
+        category: Extension,
+        detection_paths: &[".github/prompts/"],
+        available: true,
+    },
+    Agent {
+        id: "gemini",
+        name: "Gemini CLI",
+        description: "Google CLI agent (TOML format)",
+        slash_command_path: ".gemini/commands/",
+        slash_command_format: Toml,
+        supports_system_reminders: false,
+        doc_template: "GEMINI.md",
+        category: Cli,
+        detection_paths: &[".gemini/"],
+        available: true,
+    },
+    Agent {
+        id: "qwen",
+        name: "Qwen Code",
+        description: "Qwen CLI agent (TOML format)",
+        slash_command_path: ".qwen/commands/",
+        slash_command_format: Toml,
+        supports_system_reminders: false,
+        doc_template: "QWEN.md",
+        category: Cli,
+        detection_paths: &[".qwen/"],
+        available: true,
+    },
+    Agent {
+        id: "kilocode",
+        name: "Kilo Code",
+        description: "IDE agent with rules-based pattern",
+        slash_command_path: ".kilocode/rules/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "KILOCODE.md",
+        category: Ide,
+        detection_paths: &[".kilocode/"],
+        available: true,
+    },
+    Agent {
+        id: "roo",
+        name: "Roo Code",
+        description: "IDE agent with rules pattern",
+        slash_command_path: ".roo/rules/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "ROO.md",
+        category: Ide,
+        detection_paths: &[".roo/"],
+        available: true,
+    },
+    Agent {
+        id: "codebuddy",
+        name: "CodeBuddy",
+        description: "CLI-based agent",
+        slash_command_path: ".codebuddy/commands/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "CODEBUDDY.md",
+        category: Cli,
+        detection_paths: &[".codebuddy/"],
+        available: true,
+    },
+    Agent {
+        id: "amazonq",
+        name: "Amazon Q",
+        description: "AWS AI assistant",
+        slash_command_path: ".amazonq/prompts/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "AMAZONQ.md",
+        category: Extension,
+        detection_paths: &[".amazonq/"],
+        available: true,
+    },
+    Agent {
+        id: "auggie",
+        name: "Auggie",
+        description: "Augment CLI agent",
+        slash_command_path: ".auggie/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "AUGGIE.md",
+        category: Cli,
+        detection_paths: &[".auggie/"],
+        available: true,
+    },
+    Agent {
+        id: "opencode",
+        name: "OpenCode",
+        description: "CLI agent",
+        slash_command_path: ".opencode/command/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "OPENCODE.md",
+        category: Cli,
+        detection_paths: &[".opencode/"],
+        available: true,
+    },
+    Agent {
+        id: "codex",
+        name: "Codex",
+        description: "OpenAI Codex agent",
+        slash_command_path: ".codex/prompts/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "AGENTS.md",
+        category: Cli,
+        detection_paths: &[".codex/"],
+        available: true,
+    },
+    Agent {
+        id: "factory",
+        name: "Factory Droid",
+        description: "Factory agent",
+        slash_command_path: ".factory/commands/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "FACTORY.md",
+        category: Cli,
+        detection_paths: &[".factory/"],
+        available: true,
+    },
+    Agent {
+        id: "crush",
+        name: "Crush",
+        description: "Crush agent",
+        slash_command_path: ".crush/commands/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "CRUSH.md",
+        category: Cli,
+        detection_paths: &[".crush/"],
+        available: true,
+    },
+    Agent {
+        id: "codex-cli",
+        name: "Codex CLI",
+        description: "Codex command-line interface",
+        slash_command_path: ".codex/prompts/",
+        slash_command_format: Markdown,
+        supports_system_reminders: false,
+        doc_template: "AGENTS.md",
+        category: Cli,
+        detection_paths: &[".codex-cli/"],
+        available: true,
+    },
+    Agent {
+        id: "antigravity",
+        name: "Antigravity",
+        description: "Google Deepmind Agentic AI",
+        slash_command_path: ".antigravity/commands/",
+        slash_command_format: Markdown,
+        supports_system_reminders: true,
+        doc_template: "ANTIGRAVITY.md",
+        category: Cli,
+        detection_paths: &[".antigravity/"],
+        available: true,
+    },
 ];
 
 fn get_agent_by_id(id: &str) -> Option<&'static Agent> {
@@ -167,7 +376,10 @@ fn activation_message(agent: &Agent) -> String {
         "aider" => "Add .aider/ to your Aider configuration to activate".to_string(),
         _ => match agent.category {
             Ide | Extension => {
-                format!("Open {} in {} to activate", agent.slash_command_path, agent.name)
+                format!(
+                    "Open {} in {} to activate",
+                    agent.slash_command_path, agent.name
+                )
             }
             Cli if !agent.slash_command_path.is_empty() => format!(
                 "Add {} to your {} configuration to activate",
@@ -237,9 +449,8 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // pre-existing keys survive — parity with writeAgentConfig).
     write_agent_config(project_root, &args.agent[0])?;
 
-    let first = get_agent_by_id(&args.agent[0]).ok_or_else(|| {
-        FspecCoreError::Message(format!("Unknown agent: {}", args.agent[0]))
-    })?;
+    let first = get_agent_by_id(&args.agent[0])
+        .ok_or_else(|| FspecCoreError::Message(format!("Unknown agent: {}", args.agent[0])))?;
     let result = json!({
         "filesInstalled": files_installed,
         "cancelled": false,
@@ -383,7 +594,8 @@ fn apply_tool_command_replacements(content: &str, project_root: &Path) -> String
 
     // Project value wins over user value (parity with `deepMerge(user, project)`
     // narrowed to the two scalar keys this command reads).
-    let test_command = tool_test_command(&project_config).or_else(|| tool_test_command(&user_config));
+    let test_command =
+        tool_test_command(&project_config).or_else(|| tool_test_command(&user_config));
     if let Some(cmd) = test_command {
         // `if (config?.tools?.test?.command)` — JS truthiness: a non-empty string.
         if !cmd.is_empty() {
@@ -507,7 +719,10 @@ mod tests {
     #[test]
     fn registry_contains_claude_and_gemini() {
         assert!(get_agent_by_id("claude").is_some());
-        assert_eq!(get_agent_by_id("gemini").unwrap().slash_command_format, Toml);
+        assert_eq!(
+            get_agent_by_id("gemini").unwrap().slash_command_format,
+            Toml
+        );
         assert!(get_agent_by_id("bogus").is_none());
     }
 

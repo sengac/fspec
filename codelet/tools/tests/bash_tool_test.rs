@@ -49,14 +49,11 @@ async fn test_execute_command_fails_returns_error() {
     // @step Then the result should be an error
     // The rig::tool::Tool implementation returns Err for non-zero exit codes
     assert!(result.is_err());
-    
+
     // @step And the error should contain stderr information
     let err = result.unwrap_err();
     let err_msg = format!("{err:?}");
-    assert!(
-        err_msg.contains("No such file")
-            || err_msg.contains("cannot access")
-    );
+    assert!(err_msg.contains("No such file") || err_msg.contains("cannot access"));
 }
 
 /// Scenario: Long output is truncated at character limit
@@ -109,10 +106,10 @@ async fn test_command_timeout_returns_error() {
     // Note: BashTool::with_timeout was removed in the rig refactor
     // Timeout behavior is now handled differently - skip this test
     // or test via the streaming API if needed
-    
+
     // For now, we verify the tool can handle commands (timeout is controlled externally)
     let tool = BashTool::new(Uuid::nil());
-    
+
     // Just verify we can execute a quick command
     let result = tool
         .call(codelet_tools::bash::BashArgs {
@@ -121,7 +118,7 @@ async fn test_command_timeout_returns_error() {
         })
         .await
         .unwrap();
-    
+
     assert!(result.contains("test"));
 }
 
@@ -137,7 +134,7 @@ async fn test_bash_tool_has_correct_definition() {
 
     // @step Then the tool should have the correct name
     assert_eq!(BashTool::NAME, "Bash");
-    
+
     // @step And the tool definition should have a description
     let def = tool.definition("".to_string()).await;
     assert_eq!(def.name, "Bash");
@@ -165,8 +162,14 @@ async fn test_output_does_not_contain_labels() {
     // Output should contain the content but NOT the labels
     assert!(result.contains("stdout"));
     assert!(result.contains("stderr warning"));
-    assert!(!result.contains("Stdout:"), "Output should not contain 'Stdout:' label");
-    assert!(!result.contains("Stderr:"), "Output should not contain 'Stderr:' label");
+    assert!(
+        !result.contains("Stdout:"),
+        "Output should not contain 'Stdout:' label"
+    );
+    assert!(
+        !result.contains("Stderr:"),
+        "Output should not contain 'Stderr:' label"
+    );
 }
 
 /// Scenario: Error output should not contain "Stderr:" or "Stdout:" labels
@@ -185,16 +188,22 @@ async fn test_error_output_does_not_contain_labels() {
     assert!(result.is_err());
     let err = result.unwrap_err();
     let err_msg = err.to_string();
-    
+
     // Error should contain "Command failed with exit code" format
     assert!(
         err_msg.contains("Command failed with exit code"),
         "Error should indicate command failure with exit code. Got: {err_msg}"
     );
-    
+
     // Error should NOT contain old-style labels
-    assert!(!err_msg.contains("Stdout:"), "Error should not contain 'Stdout:' label. Got: {err_msg}");
-    assert!(!err_msg.contains("Stderr:"), "Error should not contain 'Stderr:' label. Got: {err_msg}");
+    assert!(
+        !err_msg.contains("Stdout:"),
+        "Error should not contain 'Stdout:' label. Got: {err_msg}"
+    );
+    assert!(
+        !err_msg.contains("Stderr:"),
+        "Error should not contain 'Stderr:' label. Got: {err_msg}"
+    );
 }
 
 /// Scenario: Exit code should be clearly indicated in error message
@@ -213,7 +222,7 @@ async fn test_exit_code_clearly_indicated() {
     assert!(result.is_err());
     let err = result.unwrap_err();
     let err_msg = err.to_string();
-    
+
     // Should clearly indicate the exit code
     assert!(
         err_msg.contains("exit code 42"),
@@ -231,7 +240,7 @@ async fn test_exit_code_clearly_indicated() {
 async fn test_execute_command_with_cwd_parameter() {
     // @step Given I have a valid directory path "/tmp"
     let tool = BashTool::new(Uuid::nil());
-    
+
     // @step When I call the Bash tool with cwd="/tmp" and command="pwd"
     let result = tool
         .call(codelet_tools::bash::BashArgs {
@@ -240,7 +249,7 @@ async fn test_execute_command_with_cwd_parameter() {
         })
         .await
         .unwrap();
-    
+
     // @step Then the output should show "/tmp"
     // Note: On macOS, /tmp is a symlink to /private/tmp
     assert!(
@@ -254,7 +263,7 @@ async fn test_execute_command_with_cwd_parameter() {
 async fn test_execute_command_without_cwd_parameter() {
     // @step Given I do not specify a cwd parameter
     let tool = BashTool::new(Uuid::nil());
-    
+
     // @step When I call the Bash tool with command="pwd"
     let result = tool
         .call(codelet_tools::bash::BashArgs {
@@ -263,12 +272,15 @@ async fn test_execute_command_without_cwd_parameter() {
         })
         .await
         .unwrap();
-    
+
     // @step Then the command should run in fspec's working directory
     // @step And the behavior should match the previous implementation
     // The command should succeed and return some path
     assert!(!result.is_empty(), "pwd should return a path");
-    assert!(result.starts_with('/'), "pwd should return an absolute path");
+    assert!(
+        result.starts_with('/'),
+        "pwd should return an absolute path"
+    );
 }
 
 /// Scenario: Error when cwd directory does not exist
@@ -276,7 +288,7 @@ async fn test_execute_command_without_cwd_parameter() {
 async fn test_error_when_cwd_directory_does_not_exist() {
     // @step Given I specify a non-existent directory "/nonexistent/path/to/dir"
     let tool = BashTool::new(Uuid::nil());
-    
+
     // @step When I call the Bash tool with cwd="/nonexistent/path/to/dir" and command="pwd"
     let result = tool
         .call(codelet_tools::bash::BashArgs {
@@ -284,10 +296,10 @@ async fn test_error_when_cwd_directory_does_not_exist() {
             cwd: Some("/nonexistent/path/to/dir".to_string()),
         })
         .await;
-    
+
     // @step Then the tool should return an error
     assert!(result.is_err(), "Expected an error for non-existent cwd");
-    
+
     // @step And the error message should contain "Directory not found: /nonexistent/path/to/dir"
     let err = result.unwrap_err();
     let err_msg = err.to_string();
@@ -295,7 +307,7 @@ async fn test_error_when_cwd_directory_does_not_exist() {
         err_msg.contains("Directory not found") && err_msg.contains("/nonexistent/path/to/dir"),
         "Expected 'Directory not found: /nonexistent/path/to/dir' in error. Got: {err_msg}"
     );
-    
+
     // @step And the command should not be executed
     // (verified by the fact that we got an error before execution)
 }

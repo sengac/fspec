@@ -276,7 +276,13 @@ pub trait StreamOutput: Send + Sync {
 
     /// Emit tool execution progress - streaming output from bash/shell tools (TOOL-011)
     #[inline]
-    fn emit_tool_progress(&self, tool_call_id: &str, tool_name: &str, output_chunk: &str, is_stderr: bool) {
+    fn emit_tool_progress(
+        &self,
+        tool_call_id: &str,
+        tool_name: &str,
+        output_chunk: &str,
+        is_stderr: bool,
+    ) {
         self.emit(StreamEvent::ToolProgress(ToolProgressEvent {
             tool_call_id: tool_call_id.to_string(),
             tool_name: tool_name.to_string(),
@@ -309,7 +315,12 @@ pub trait StreamOutput: Send + Sync {
 
     /// UX-002: Emit compaction completed event
     #[inline]
-    fn emit_compaction_complete(&self, original_tokens: u32, compacted_tokens: u32, compression_ratio: f64) {
+    fn emit_compaction_complete(
+        &self,
+        original_tokens: u32,
+        compacted_tokens: u32,
+        compression_ratio: f64,
+    ) {
         self.emit(StreamEvent::CompactionComplete(CompactionCompleteInfo {
             original_tokens,
             compacted_tokens,
@@ -320,7 +331,9 @@ pub trait StreamOutput: Send + Sync {
     /// UX-002: Emit compaction failed event
     #[inline]
     fn emit_compaction_failed(&self, reason: &str) {
-        self.emit(StreamEvent::CompactionFailed { reason: reason.to_string() });
+        self.emit(StreamEvent::CompactionFailed {
+            reason: reason.to_string(),
+        });
     }
 
     /// UX-002: Emit compaction continuing event (after successful compaction)
@@ -460,7 +473,10 @@ impl StreamOutput for CliOutput {
             }
             StreamEvent::CompactionProgress(progress) => {
                 // UX-002: Display compaction progress for CLI
-                print!("\r[{}... {}/{} turns]", progress.phase, progress.current, progress.total);
+                print!(
+                    "\r[{}... {}/{} turns]",
+                    progress.phase, progress.current, progress.total
+                );
                 std::io::stdout().flush().ok();
             }
             StreamEvent::CompactionComplete(info) => {

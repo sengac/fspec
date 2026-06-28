@@ -41,6 +41,9 @@ pub mod views;
 mod compositor_tests;
 
 pub use app::{parse_slash_command, synth_key, App, SlashCommandParse};
+pub use components::attachment_picker_dialog::{
+    AttachmentPickerDialog, ATTACHMENT_PICKER_DIALOG_ID,
+};
 pub use components::create_session_dialog::{
     CreateSessionDialog, CreateSessionOption, CREATE_SESSION_DIALOG_ID,
 };

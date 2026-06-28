@@ -6,11 +6,11 @@
 //! These tests verify the implementation of AST-based code search
 //! using the native ast-grep Rust crates (ast-grep-core + ast-grep-language).
 
-use uuid::Uuid;
 use codelet_tools::astgrep::{AstGrepArgs, AstGrepTool};
 use rig::tool::Tool;
 use std::fs;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 // ==========================================
 // ASTGREP TOOL EXECUTION TESTS
@@ -53,9 +53,7 @@ function helperFunction() {
 
     // @step And the result should be in "file:line:column:text" format
     // Format: file:line:column:matched_text
-    let has_format = result.lines().any(|line| {
-        line.splitn(4, ':').count() >= 3
-    });
+    let has_format = result.lines().any(|line| line.splitn(4, ':').count() >= 3);
     assert!(has_format);
 }
 
@@ -89,7 +87,10 @@ logger.debug("Debug info", { key: "value" });
 
     // @step Then the result should contain multiple matches
     let match_count = result.lines().filter(|l| l.contains("app.ts")).count();
-    assert!(match_count >= 3, "Expected at least 3 matches for logger calls");
+    assert!(
+        match_count >= 3,
+        "Expected at least 3 matches for logger calls"
+    );
 
     // @step And each match should include the method name (info, error, debug)
     assert!(result.contains("info") || result.contains("logger.info"));
@@ -171,8 +172,8 @@ def create_user(data: dict) -> dict:
         Ok(content) => {
             // Either found functions or no matches message
             assert!(
-                content.contains("get_user") 
-                    || content.contains("create_user") 
+                content.contains("get_user")
+                    || content.contains("create_user")
                     || content.contains("def")
                     || content.contains("No matches")
                     || content.is_empty(),
@@ -386,7 +387,7 @@ function anotherFunction(x) {
 
     // @step Then the result should find all function definitions
     println!("Result:\n{result}");
-    
+
     // Should find at least the regular functions
     assert!(
         result.contains("myFunction") || result.contains("anotherFunction"),

@@ -14,9 +14,7 @@
 
 mod common;
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
@@ -35,20 +33,18 @@ async fn scenario_napi_co_listener_byte_equal_with_embedded_subscriber() {
     let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
     ));
 
-    let embedded =
-        EmbeddedTransport::new(tokio::runtime::Handle::current(), Arc::clone(&service));
-    let (addr, _stats, _join) =
-        bind_and_serve("127.0.0.1:0", Arc::clone(&service))
-            .await
-            .expect("bind_and_serve");
+    let embedded = EmbeddedTransport::new(tokio::runtime::Handle::current(), Arc::clone(&service));
+    let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", Arc::clone(&service))
+        .await
+        .expect("bind_and_serve");
     let ws_client = ws_client_connect(connect_with_retry(addr.port()).await)
         .await
         .expect("ws_client_connect");
@@ -94,7 +90,10 @@ async fn scenario_napi_co_listener_byte_equal_with_embedded_subscriber() {
     let ws_chunks = drain(&mut ws_rx, &sid).await;
 
     // @step Then the embedded subscriber and the WS client observe byte-equal StreamChunks
-    assert!(!em_chunks.is_empty(), "embedded subscriber must observe chunks");
+    assert!(
+        !em_chunks.is_empty(),
+        "embedded subscriber must observe chunks"
+    );
     assert!(!ws_chunks.is_empty(), "WS subscriber must observe chunks");
     assert_eq!(
         bincode::serialize(&em_chunks).expect("encode embedded"),

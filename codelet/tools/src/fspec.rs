@@ -3,8 +3,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 // NAPI imports for direct function calls (JS-controlled invocation)
-use napi::bindgen_prelude::Function;
 use super::error::ToolError;
+use napi::bindgen_prelude::Function;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct FspecTool {
@@ -19,10 +19,10 @@ impl FspecTool {
     }
 
     /// Execute fspec command via JS-provided callback (JS-controlled invocation).
-    /// 
+    ///
     /// The callback signature in TypeScript should be:
     /// `(command: string, argsJson: string, projectRoot: string) => string`
-    /// 
+    ///
     /// This is called directly with the callback provided by JS at execution time.
     pub fn execute_with_js_callback(
         &self,
@@ -100,7 +100,7 @@ impl Tool for FspecTool {
 
         // NO CLI FALLBACKS - JS-controlled invocation is required
         // The facade wrapper must provide the callback mechanism
-        
+
         Err(ToolError::Execution {
             tool: "fspec",
             message: "FspecTool requires JS-controlled invocation with callback - direct Tool::call not supported".to_string(),

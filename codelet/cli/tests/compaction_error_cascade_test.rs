@@ -208,7 +208,9 @@ async fn execute_compaction_helper_clears_prior_turns_and_resets_tracker() {
                 "compaction instruction must embed the original prompt, got: {text:?}"
             );
         }
-        other => panic!("expected final message to be User (compaction instruction), got {other:?}"),
+        other => {
+            panic!("expected final message to be User (compaction instruction), got {other:?}")
+        }
     }
 
     // The original user/assistant pair must no longer be present.
@@ -365,8 +367,8 @@ fn collect_rust_sources(dir: &std::path::Path) -> Vec<std::path::PathBuf> {
 #[test]
 fn stream_loop_declares_compaction_retry_counter_and_checks_budget() {
     // @step Given the stream loop must bound cascaded compaction attempts
-    let stream_loop = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/interactive/stream_loop.rs");
+    let stream_loop =
+        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/stream_loop.rs");
 
     // @step When the stream_loop.rs source is inspected
     let content = std::fs::read_to_string(&stream_loop).expect("stream_loop.rs must exist");

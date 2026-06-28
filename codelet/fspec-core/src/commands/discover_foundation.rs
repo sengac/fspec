@@ -100,7 +100,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     if args.finalize {
-        return finalize(project_root, &draft_path, &final_path, args.auto_generate_md);
+        return finalize(
+            project_root,
+            &draft_path,
+            &final_path,
+            args.auto_generate_md,
+        );
     }
 
     create_draft(project_root, &draft_path, &final_path, args.force)
@@ -410,9 +415,7 @@ Foundation is ready.",
 /// skip), and `Ok(None)` when nothing could be determined. Mirrors the TS
 /// result fields `workUnitCreated` / `workUnitId`. The whole block is
 /// best-effort — the caller swallows every error.
-fn create_found_work_unit(
-    project_root: &Path,
-) -> Result<Option<(String, bool)>, FspecCoreError> {
+fn create_found_work_unit(project_root: &Path) -> Result<Option<(String, bool)>, FspecCoreError> {
     let wu_path = project_root.join("spec").join("work-units.json");
 
     // Load existing work-units.json as a raw object (preserve key order). When
@@ -442,7 +445,10 @@ fn create_found_work_unit(
     })
     .to_string();
     // create_prefix::run is sync (single-poll); drive it via a blocking poll.
-    let _ = poll_now(crate::commands::create_prefix::run(&prefix_args, project_root));
+    let _ = poll_now(crate::commands::create_prefix::run(
+        &prefix_args,
+        project_root,
+    ));
 
     // Re-read after prefix creation so we operate on the freshest object.
     if let Ok(raw) = std::fs::read_to_string(&wu_path) {
@@ -521,7 +527,9 @@ fn create_found_work_unit(
 /// Canonical empty work-units.json object shape (matches
 /// `WorkUnitsData::initial` field set: version, workUnits, states, ...).
 fn empty_work_units_object() -> Map<String, Value> {
-    match serde_json::to_value(crate::types::work_unit::WorkUnitsData::initial(iso8601_now())) {
+    match serde_json::to_value(crate::types::work_unit::WorkUnitsData::initial(
+        iso8601_now(),
+    )) {
         Ok(Value::Object(m)) => m,
         _ => Map::new(),
     }
@@ -606,11 +614,11 @@ where
 ///   * empty required array (minItems) → `Missing required: <field>
 ///     (at least one item required)`
 ///   * everything else → `Invalid value at <field>: <message>`
-fn format_schema_error(err: &crate::generators::foundation_schema::SchemaError, _foundation: &Value) -> String {
-    let field = err
-        .instance_path
-        .trim_start_matches('/')
-        .replace('/', ".");
+fn format_schema_error(
+    err: &crate::generators::foundation_schema::SchemaError,
+    _foundation: &Value,
+) -> String {
+    let field = err.instance_path.trim_start_matches('/').replace('/', ".");
     let message = err.message.as_str();
 
     // `required` keyword: "must have required property 'X'".
@@ -715,7 +723,10 @@ fn scan_draft_for_next_field(draft: &Value) -> Option<(&'static str, usize, Opti
             "problemSpace.primaryProblem.description",
             draft.pointer("/problemSpace/primaryProblem/description"),
         ),
-        ("solutionSpace.overview", draft.pointer("/solutionSpace/overview")),
+        (
+            "solutionSpace.overview",
+            draft.pointer("/solutionSpace/overview"),
+        ),
         (
             "solutionSpace.capabilities",
             draft.pointer("/solutionSpace/capabilities"),
@@ -733,8 +744,7 @@ fn scan_draft_for_next_field(draft: &Value) -> Option<(&'static str, usize, Opti
             Value::String(s) => s.clone(),
             other => other.to_string(),
         };
-        let has_placeholder =
-            value_str.contains("[QUESTION:") || value_str.contains("[DETECTED:");
+        let has_placeholder = value_str.contains("[QUESTION:") || value_str.contains("[DETECTED:");
         if has_placeholder {
             let detected = if *path == "project.projectType" {
                 draft
@@ -768,7 +778,13 @@ fn generate_field_reminder(
     supports_meta: bool,
     detected_value: Option<&str>,
 ) -> String {
-    let body = field_reminder_body(field_path, field_num, total_fields, supports_meta, detected_value);
+    let body = field_reminder_body(
+        field_path,
+        field_num,
+        total_fields,
+        supports_meta,
+        detected_value,
+    );
     wrap_in_system_reminder(&body)
 }
 
@@ -996,7 +1012,10 @@ mod tests {
 
     #[test]
     fn extract_detected_value_works() {
-        assert_eq!(extract_detected_value("[DETECTED: web-app]").as_deref(), Some("web-app"));
+        assert_eq!(
+            extract_detected_value("[DETECTED: web-app]").as_deref(),
+            Some("web-app")
+        );
         assert_eq!(extract_detected_value("no marker"), None);
     }
 

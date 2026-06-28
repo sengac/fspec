@@ -43,7 +43,7 @@ use crate::error::FspecCoreError;
 use crate::io::io_error::format_io_error;
 use crate::io::locked_file::write_json_atomic;
 use crate::io::time::iso8601_now;
-use crate::types::work_unit::{WorkUnitStatus, WorkUnitStates, WorkUnitsData};
+use crate::types::work_unit::{WorkUnitStates, WorkUnitStatus, WorkUnitsData};
 
 /// CLI / dispatcher arguments accepted by `auto-advance`. Mirrors the TS
 /// `autoAdvance` options object (`src/commands/auto-advance.ts:38-43`).
@@ -229,9 +229,10 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case() {
-        let a: AutoAdvanceArgs =
-            serde_json::from_str(r#"{"workUnitId":"AUTH-001","from":"testing","event":"tests-pass"}"#)
-                .unwrap();
+        let a: AutoAdvanceArgs = serde_json::from_str(
+            r#"{"workUnitId":"AUTH-001","from":"testing","event":"tests-pass"}"#,
+        )
+        .unwrap();
         assert_eq!(a.work_unit_id.as_deref(), Some("AUTH-001"));
         assert_eq!(a.from.as_deref(), Some("testing"));
         assert_eq!(a.event.as_deref(), Some("tests-pass"));

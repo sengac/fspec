@@ -173,10 +173,7 @@ impl ServerStats {
 
     /// RPC-011: snapshot of the most recent watcher snapshot Instant.
     pub fn last_watcher_event_at(&self) -> Option<Instant> {
-        self.last_watcher_event_at
-            .lock()
-            .ok()
-            .and_then(|g| *g)
+        self.last_watcher_event_at.lock().ok().and_then(|g| *g)
     }
 }
 

@@ -102,10 +102,8 @@ pub fn extract_jpeg_dimensions(bytes: &[u8]) -> Option<(u32, u32)> {
         }
 
         // Check for SOF markers: C0-CF excluding C4 (DHT), C8 (JPG reserved), CC (DAC)
-        let is_sof = matches!(marker, 0xC0..=0xCF)
-            && marker != 0xC4
-            && marker != 0xC8
-            && marker != 0xCC;
+        let is_sof =
+            matches!(marker, 0xC0..=0xCF) && marker != 0xC4 && marker != 0xC8 && marker != 0xCC;
 
         if is_sof {
             // SOF marker found — read dimensions
@@ -409,14 +407,21 @@ mod tests {
         let result = check_image_dimensions(&b64, None);
 
         // @step Then it should replace the image with a ToolResultContent::text error
-        assert!(result.is_some(), "Oversized image should produce error message");
-        let msg = result.expect("Error message should be present for oversized image with file path");
+        assert!(
+            result.is_some(),
+            "Oversized image should produce error message"
+        );
+        let msg =
+            result.expect("Error message should be present for oversized image with file path");
 
         // @step And the error text should indicate the image exceeds dimension limits
         assert!(msg.contains("10000"), "Should contain actual width");
         assert!(msg.contains("5000"), "Should contain actual height");
         assert!(msg.contains("5999"), "Should contain the limit");
-        assert!(msg.contains("sips") || msg.contains("convert"), "Should suggest resize");
+        assert!(
+            msg.contains("sips") || msg.contains("convert"),
+            "Should suggest resize"
+        );
 
         // @step And no ToolResultContent::Image should be emitted
         // (Verified: check_image_dimensions returns Some(error_msg), so the caller
@@ -431,7 +436,10 @@ mod tests {
 
         let result = check_image_dimensions(&b64, None);
 
-        assert!(result.is_none(), "Normal image should return None (allow through)");
+        assert!(
+            result.is_none(),
+            "Normal image should return None (allow through)"
+        );
     }
 
     /// Oversized PDF page render (PNG) via base64 → returns error message

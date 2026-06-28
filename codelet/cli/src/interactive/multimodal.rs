@@ -48,8 +48,9 @@ pub fn build_user_content_with_images(
                     codelet_tools::image_dimensions::extract_dimensions_from_base64(&img.data)
                 {
                     if codelet_tools::image_dimensions::exceeds_pixel_limit(width, height) {
-                        let error_msg =
-                            codelet_tools::image_dimensions::format_dimension_error(None, width, height);
+                        let error_msg = codelet_tools::image_dimensions::format_dimension_error(
+                            None, width, height,
+                        );
                         warn!(
                             "Rejecting user-pasted image: {}x{} exceeds limit",
                             width, height

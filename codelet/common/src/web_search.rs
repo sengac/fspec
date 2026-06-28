@@ -14,7 +14,10 @@ pub enum WebSearchAction {
     OpenPage {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         url: Option<String>,
-        #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
+        #[serde(
+            default = "default_headless",
+            skip_serializing_if = "is_default_headless"
+        )]
         headless: bool,
         /// When true, pause after page load for user interaction before returning.
         /// Also implies headless: false (pausing a headless browser is pointless).
@@ -26,7 +29,10 @@ pub enum WebSearchAction {
         url: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pattern: Option<String>,
-        #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
+        #[serde(
+            default = "default_headless",
+            skip_serializing_if = "is_default_headless"
+        )]
         headless: bool,
         /// When true, pause after page load for user interaction before returning.
         /// Also implies headless: false (pausing a headless browser is pointless).
@@ -40,7 +46,10 @@ pub enum WebSearchAction {
         output_path: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         full_page: Option<bool>,
-        #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
+        #[serde(
+            default = "default_headless",
+            skip_serializing_if = "is_default_headless"
+        )]
         headless: bool,
         /// When true, pause after page load for user interaction before returning.
         /// Also implies headless: false (pausing a headless browser is pointless).

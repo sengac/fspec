@@ -143,7 +143,10 @@ impl TestWebSocketServer {
     }
 
     /// Send a message to all connected clients
-    pub async fn send_to_clients(&self, message: &str) -> Result<(), mpsc::error::SendError<String>> {
+    pub async fn send_to_clients(
+        &self,
+        message: &str,
+    ) -> Result<(), mpsc::error::SendError<String>> {
         self.send_tx.send(message.to_string()).await
     }
 
@@ -248,7 +251,10 @@ impl TestWebSocketClient {
     }
 
     /// Send a message
-    pub async fn send(&mut self, message: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    pub async fn send(
+        &mut self,
+        message: &str,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.ws_stream
             .send(Message::Text(message.to_string().into()))
             .await?;
@@ -358,15 +364,15 @@ mod fixture_tests {
         let _result = TestWebSocketClient::connect_with_timeout(&url, 1).await;
         // Connection might succeed TCP-wise but WebSocket handshake will fail
         // or it will timeout - either way we expect an error or quick disconnect
-        
+
         // Resume and verify normal operation
         server.resume_accepting().await;
-        
+
         let client = TestWebSocketClient::connect(&url)
             .await
             .expect("Should connect after resume");
         client.close().await.expect("Close should succeed");
-        
+
         server.shutdown().await;
     }
 }

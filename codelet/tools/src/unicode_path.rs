@@ -20,10 +20,9 @@ use std::path::{Path, PathBuf};
 /// - U+205F MEDIUM MATHEMATICAL SPACE
 /// - U+3000 IDEOGRAPHIC SPACE
 fn is_unicode_whitespace(c: char) -> bool {
-    matches!(c,
-        '\u{00A0}' | '\u{1680}' |
-        '\u{2000}'..='\u{200A}' |
-        '\u{202F}' | '\u{205F}' | '\u{3000}'
+    matches!(
+        c,
+        '\u{00A0}' | '\u{1680}' | '\u{2000}'..='\u{200A}' | '\u{202F}' | '\u{205F}' | '\u{3000}'
     )
 }
 
@@ -66,7 +65,10 @@ pub async fn resolve_unicode_path(path: &Path) -> Option<PathBuf> {
     let normalized_str = normalize_unicode_whitespace(&path_str);
     if normalized_str != path_str.as_ref() {
         let normalized_path = PathBuf::from(&normalized_str);
-        if tokio::fs::try_exists(&normalized_path).await.unwrap_or(false) {
+        if tokio::fs::try_exists(&normalized_path)
+            .await
+            .unwrap_or(false)
+        {
             return Some(normalized_path);
         }
     }

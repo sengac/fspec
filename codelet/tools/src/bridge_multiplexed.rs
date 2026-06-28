@@ -86,11 +86,7 @@ impl Envelope {
     }
 
     /// Build a relay chunk envelope (outbound session stream).
-    pub fn relay_chunk(
-        instance_id: &str,
-        session_id: &str,
-        chunk: serde_json::Value,
-    ) -> Self {
+    pub fn relay_chunk(instance_id: &str, session_id: &str, chunk: serde_json::Value) -> Self {
         Self {
             service: Service::Relay,
             msg_type: "chunk".to_string(),
@@ -131,11 +127,7 @@ impl Envelope {
     }
 
     /// Build a terminal data envelope (PTY stdout, base64-encoded).
-    pub fn terminal_data(
-        instance_id: &str,
-        terminal_id: &str,
-        base64_data: &str,
-    ) -> Self {
+    pub fn terminal_data(instance_id: &str, terminal_id: &str, base64_data: &str) -> Self {
         Self {
             service: Service::Terminal,
             msg_type: "data".to_string(),
@@ -148,11 +140,7 @@ impl Envelope {
     }
 
     /// Build a terminal created response.
-    pub fn terminal_created(
-        instance_id: &str,
-        request_id: &str,
-        terminal_id: &str,
-    ) -> Self {
+    pub fn terminal_created(instance_id: &str, request_id: &str, terminal_id: &str) -> Self {
         Self {
             service: Service::Terminal,
             msg_type: "created".to_string(),
@@ -165,11 +153,7 @@ impl Envelope {
     }
 
     /// Build a terminal destroyed response.
-    pub fn terminal_destroyed(
-        instance_id: &str,
-        request_id: &str,
-        terminal_id: &str,
-    ) -> Self {
+    pub fn terminal_destroyed(instance_id: &str, request_id: &str, terminal_id: &str) -> Self {
         Self {
             service: Service::Terminal,
             msg_type: "destroyed".to_string(),
@@ -182,11 +166,7 @@ impl Envelope {
     }
 
     /// Build a terminal exited notification.
-    pub fn terminal_exited(
-        instance_id: &str,
-        terminal_id: &str,
-        exit_code: i32,
-    ) -> Self {
+    pub fn terminal_exited(instance_id: &str, terminal_id: &str, exit_code: i32) -> Self {
         Self {
             service: Service::Terminal,
             msg_type: "exited".to_string(),
@@ -212,10 +192,7 @@ impl Envelope {
     }
 
     /// Build a relay metadataUpdate envelope for live session/model changes.
-    pub fn relay_metadata_update(
-        instance_id: &str,
-        data: serde_json::Value,
-    ) -> Self {
+    pub fn relay_metadata_update(instance_id: &str, data: serde_json::Value) -> Self {
         Self {
             service: Service::Relay,
             msg_type: "metadataUpdate".to_string(),
@@ -231,11 +208,7 @@ impl Envelope {
     ///
     /// SESS-017: Sent in response to a session:create request after the
     /// SessionCreator callback has spawned a new codelet session.
-    pub fn session_created(
-        instance_id: &str,
-        request_id: &str,
-        session_id: &str,
-    ) -> Self {
+    pub fn session_created(instance_id: &str, request_id: &str, session_id: &str) -> Self {
         Self {
             service: Service::Session,
             msg_type: "created".to_string(),
@@ -288,9 +261,7 @@ pub enum InboundAction {
     /// Session create: spawn a new codelet session and respond with session:created.
     /// SESS-017: Dashboard "+ > New fspec Session" sends this; the bridge must
     /// invoke the registered SessionCreator and emit a `session:created` response.
-    SessionCreate {
-        request_id: String,
-    },
+    SessionCreate { request_id: String },
     /// fspec command execution request.
     FspecCommand {
         request_id: String,
@@ -329,10 +300,7 @@ pub enum InboundAction {
         data: Option<serde_json::Value>,
     },
     /// Unknown or unhandled message — log and skip.
-    Unknown {
-        service: String,
-        msg_type: String,
-    },
+    Unknown { service: String, msg_type: String },
 }
 
 /// Route an inbound multiplexed envelope to the appropriate action.
@@ -347,24 +315,16 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
         }
         Service::Session => match envelope.msg_type.as_str() {
             "input" => {
-                let session_id = envelope
-                    .session_id
-                    .clone()
-                    .unwrap_or_default();
+                let session_id = envelope.session_id.clone().unwrap_or_default();
                 let data = envelope.data.as_ref();
                 let message = data
                     .and_then(|d| d.get("message"))
                     .and_then(|m| m.as_str())
                     .unwrap_or("")
                     .to_string();
-                let images = data
-                    .and_then(|d| d.get("images"))
-                    .and_then(|imgs| {
-                        serde_json::from_value::<Vec<crate::bridge_relay::ImageData>>(
-                            imgs.clone(),
-                        )
-                        .ok()
-                    });
+                let images = data.and_then(|d| d.get("images")).and_then(|imgs| {
+                    serde_json::from_value::<Vec<crate::bridge_relay::ImageData>>(imgs.clone()).ok()
+                });
                 InboundAction::SessionInput {
                     session_id,
                     message,
@@ -372,10 +332,7 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                 }
             }
             "control" => {
-                let session_id = envelope
-                    .session_id
-                    .clone()
-                    .unwrap_or_default();
+                let session_id = envelope.session_id.clone().unwrap_or_default();
                 let data = envelope.data.as_ref();
                 let action = data
                     .and_then(|d| d.get("action"))
@@ -396,10 +353,7 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                 // SESS-017: Route session:create to a SessionCreate action
                 // so the bridge can spawn a new codelet session via the
                 // registered SessionCreator and respond with session:created.
-                let request_id = envelope
-                    .request_id
-                    .clone()
-                    .unwrap_or_default();
+                let request_id = envelope.request_id.clone().unwrap_or_default();
                 InboundAction::SessionCreate { request_id }
             }
             other => InboundAction::Unknown {
@@ -410,10 +364,7 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
         Service::Fspec => {
             if envelope.msg_type == "command" {
                 let data = envelope.data.as_ref();
-                let request_id = envelope
-                    .request_id
-                    .clone()
-                    .unwrap_or_default();
+                let request_id = envelope.request_id.clone().unwrap_or_default();
                 let command = data
                     .and_then(|d| d.get("command"))
                     .and_then(|c| c.as_str())
@@ -438,10 +389,7 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
         Service::Terminal => match envelope.msg_type.as_str() {
             "create" => {
                 let data = envelope.data.as_ref();
-                let request_id = envelope
-                    .request_id
-                    .clone()
-                    .unwrap_or_default();
+                let request_id = envelope.request_id.clone().unwrap_or_default();
                 let cols = data
                     .and_then(|d| d.get("cols"))
                     .and_then(crate::facade::param_extract::value_as_u64_lenient)
@@ -467,10 +415,7 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                 }
             }
             "input" => {
-                let terminal_id = envelope
-                    .terminal_id
-                    .clone()
-                    .unwrap_or_default();
+                let terminal_id = envelope.terminal_id.clone().unwrap_or_default();
                 let base64_data = envelope
                     .data
                     .as_ref()
@@ -484,10 +429,7 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                 }
             }
             "resize" => {
-                let terminal_id = envelope
-                    .terminal_id
-                    .clone()
-                    .unwrap_or_default();
+                let terminal_id = envelope.terminal_id.clone().unwrap_or_default();
                 let data = envelope.data.as_ref();
                 let cols = data
                     .and_then(|d| d.get("cols"))
@@ -504,14 +446,8 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                 }
             }
             "destroy" => {
-                let terminal_id = envelope
-                    .terminal_id
-                    .clone()
-                    .unwrap_or_default();
-                let request_id = envelope
-                    .request_id
-                    .clone()
-                    .unwrap_or_default();
+                let terminal_id = envelope.terminal_id.clone().unwrap_or_default();
+                let request_id = envelope.request_id.clone().unwrap_or_default();
                 InboundAction::TerminalDestroy {
                     terminal_id,
                     request_id,
@@ -677,7 +613,11 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::SessionInput { session_id, message, images } => {
+            InboundAction::SessionInput {
+                session_id,
+                message,
+                images,
+            } => {
                 assert_eq!(session_id, "abc-123");
                 assert_eq!(message, "Hello agent");
                 let imgs = images.unwrap();
@@ -702,7 +642,9 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::SessionInput { message, images, .. } => {
+            InboundAction::SessionInput {
+                message, images, ..
+            } => {
                 assert_eq!(message, "Just text");
                 assert!(images.is_none());
             }
@@ -730,7 +672,11 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::SessionControl { session_id, action, response } => {
+            InboundAction::SessionControl {
+                session_id,
+                action,
+                response,
+            } => {
                 assert_eq!(session_id, "abc-123");
                 assert_eq!(action, "interrupt");
                 assert!(response.is_none());
@@ -752,7 +698,9 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::SessionControl { action, response, .. } => {
+            InboundAction::SessionControl {
+                action, response, ..
+            } => {
                 assert_eq!(action, "pause_response");
                 assert_eq!(response.as_deref(), Some("allow_once"));
             }
@@ -786,7 +734,11 @@ mod tests {
 
         // @step Then the command_emitter should fire with the command and args
         match action {
-            InboundAction::FspecCommand { request_id, command, args_json } => {
+            InboundAction::FspecCommand {
+                request_id,
+                command,
+                args_json,
+            } => {
                 assert_eq!(request_id, "r1");
                 assert_eq!(command, "board");
                 assert!(!args_json.is_empty());
@@ -797,9 +749,8 @@ mod tests {
         // @step And when the FspecCommandResult comes back on the broadcast channel
         // @step Then the bridge should send a commandResponse envelope with service "fspec" and request_id "r1"
         let result = serde_json::json!({"columns": {}});
-        let response_env = Envelope::fspec_command_response(
-            "my-project", "r1", "board", true, result, None,
-        );
+        let response_env =
+            Envelope::fspec_command_response("my-project", "r1", "board", true, result, None);
         assert_eq!(response_env.service, Service::Fspec);
         assert_eq!(response_env.msg_type, "commandResponse");
         assert_eq!(response_env.request_id.as_deref(), Some("r1"));
@@ -814,9 +765,7 @@ mod tests {
     #[test]
     fn test_fspec_command_response_envelope() {
         let result = serde_json::json!({"columns": {}});
-        let env = Envelope::fspec_command_response(
-            "my-project", "r1", "board", true, result, None,
-        );
+        let env = Envelope::fspec_command_response("my-project", "r1", "board", true, result, None);
 
         assert_eq!(env.service, Service::Fspec);
         assert_eq!(env.msg_type, "commandResponse");
@@ -831,7 +780,10 @@ mod tests {
     #[test]
     fn test_fspec_command_response_with_error() {
         let env = Envelope::fspec_command_response(
-            "proj", "r2", "bad-cmd", false,
+            "proj",
+            "r2",
+            "bad-cmd",
+            false,
             serde_json::Value::Null,
             Some("Command not found"),
         );
@@ -861,7 +813,13 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::TerminalCreate { request_id, cols, rows, shell, cwd } => {
+            InboundAction::TerminalCreate {
+                request_id,
+                cols,
+                rows,
+                shell,
+                cwd,
+            } => {
                 assert_eq!(request_id, "t1");
                 assert_eq!(cols, 80);
                 assert_eq!(rows, 24);
@@ -885,7 +843,13 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::TerminalCreate { cols, rows, shell, cwd, .. } => {
+            InboundAction::TerminalCreate {
+                cols,
+                rows,
+                shell,
+                cwd,
+                ..
+            } => {
                 assert_eq!(cols, 120);
                 assert_eq!(rows, 40);
                 assert_eq!(shell.as_deref(), Some("/bin/bash"));
@@ -914,7 +878,10 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::TerminalInput { terminal_id, base64_data } => {
+            InboundAction::TerminalInput {
+                terminal_id,
+                base64_data,
+            } => {
                 assert_eq!(terminal_id, "T1");
                 assert_eq!(base64_data, "bHMK");
             }
@@ -941,7 +908,11 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::TerminalResize { terminal_id, cols, rows } => {
+            InboundAction::TerminalResize {
+                terminal_id,
+                cols,
+                rows,
+            } => {
                 assert_eq!(terminal_id, "T1");
                 assert_eq!(cols, 120);
                 assert_eq!(rows, 40);
@@ -968,7 +939,10 @@ mod tests {
         let action = route_inbound(&env);
 
         match action {
-            InboundAction::TerminalDestroy { terminal_id, request_id } => {
+            InboundAction::TerminalDestroy {
+                terminal_id,
+                request_id,
+            } => {
                 assert_eq!(terminal_id, "T1");
                 assert_eq!(request_id, "d1");
             }
@@ -1069,13 +1043,17 @@ mod tests {
 
     #[test]
     fn test_is_multiplexed_query_param() {
-        assert!(is_multiplexed_endpoint("ws://server:3001/ws?protocol=multiplexed"));
+        assert!(is_multiplexed_endpoint(
+            "ws://server:3001/ws?protocol=multiplexed"
+        ));
     }
 
     #[test]
     fn test_not_multiplexed_plain_ws() {
         assert!(!is_multiplexed_endpoint("ws://server:3001/ws"));
-        assert!(!is_multiplexed_endpoint("ws://telegram-relay.example.com/bridge"));
+        assert!(!is_multiplexed_endpoint(
+            "ws://telegram-relay.example.com/bridge"
+        ));
     }
 
     // =========================================================================
@@ -1084,7 +1062,11 @@ mod tests {
 
     #[test]
     fn test_envelope_round_trip() {
-        let env = Envelope::relay_chunk("inst-1", "sess-1", serde_json::json!({"type": "text", "text": "Hi"}));
+        let env = Envelope::relay_chunk(
+            "inst-1",
+            "sess-1",
+            serde_json::json!({"type": "text", "text": "Hi"}),
+        );
         let json = serde_json::to_string(&env).unwrap();
         let parsed: Envelope = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.service, Service::Relay);

@@ -141,9 +141,9 @@ fn dispatcher_emits_guidance_for_a_work_unit_in_specifying_status() {
 
     // @step Then the output ends the reminder body with the hint 'When done, run: fspec generate-example-mapping-from-event-storm AUTH-001'
     assert!(
-        result.data.contains(
-            "When done, run: fspec generate-example-mapping-from-event-storm AUTH-001"
-        ),
+        result
+            .data
+            .contains("When done, run: fspec generate-example-mapping-from-event-storm AUTH-001"),
         "expected next-step hint; got:\n{}",
         result.data
     );

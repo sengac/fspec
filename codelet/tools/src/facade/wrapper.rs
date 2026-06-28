@@ -92,23 +92,30 @@ impl Tool for FacadeToolWrapper {
             InternalWebSearchParams::Search { query } => WebSearchRequest {
                 action: WebSearchAction::Search { query: Some(query) },
             },
-            InternalWebSearchParams::OpenPage { url, headless, pause } => WebSearchRequest {
+            InternalWebSearchParams::OpenPage {
+                url,
+                headless,
+                pause,
+            } => WebSearchRequest {
                 action: WebSearchAction::OpenPage {
                     url: Some(url),
                     headless,
                     pause,
                 },
             },
-            InternalWebSearchParams::FindInPage { url, pattern, headless, pause } => {
-                WebSearchRequest {
-                    action: WebSearchAction::FindInPage {
-                        url: Some(url),
-                        pattern: Some(pattern),
-                        headless,
-                        pause,
-                    },
-                }
-            }
+            InternalWebSearchParams::FindInPage {
+                url,
+                pattern,
+                headless,
+                pause,
+            } => WebSearchRequest {
+                action: WebSearchAction::FindInPage {
+                    url: Some(url),
+                    pattern: Some(pattern),
+                    headless,
+                    pause,
+                },
+            },
             InternalWebSearchParams::CaptureScreenshot {
                 url,
                 output_path,
@@ -228,28 +235,25 @@ impl Tool for HitlToolFacadeWrapper {
         let request = HitlRequest { questions };
 
         // Execute via the HITL handler registry
-        let response = execute_hitl(self.session_id, request).map_err(|e| {
-            ToolError::Execution {
+        let response =
+            execute_hitl(self.session_id, request).map_err(|e| ToolError::Execution {
                 tool: "request_user_input",
                 message: e,
-            }
-        })?;
+            })?;
 
         // Map response: Answered → JSON, Cancelled → tool error
         match response {
             HitlResponse::Answered { .. } => {
-                let json = serde_json::to_string_pretty(&response).map_err(|e| {
-                    ToolError::Execution {
+                let json =
+                    serde_json::to_string_pretty(&response).map_err(|e| ToolError::Execution {
                         tool: "request_user_input",
                         message: format!("Failed to serialize response: {e}"),
-                    }
-                })?;
+                    })?;
                 Ok(HitlOperationResult(json))
             }
             HitlResponse::Cancelled { .. } => Err(ToolError::Execution {
                 tool: "request_user_input",
-                message: "request_user_input was cancelled before receiving a response"
-                    .to_string(),
+                message: "request_user_input was cancelled before receiving a response".to_string(),
             }),
         }
     }
@@ -416,17 +420,18 @@ impl Tool for FileToolFacadeWrapper {
                 indentation: _,
             } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
-                let resolved_path = match validate_and_resolve_path(self.session_id, &file_path, "read") {
-                    Ok(path) => path.to_string_lossy().to_string(),
-                    Err(e) => {
-                        return Ok(FileOperationResult {
-                            success: false,
-                            content: None,
-                            error: Some(e.to_string()),
-                        });
-                    }
-                };
-                
+                let resolved_path =
+                    match validate_and_resolve_path(self.session_id, &file_path, "read") {
+                        Ok(path) => path.to_string_lossy().to_string(),
+                        Err(e) => {
+                            return Ok(FileOperationResult {
+                                success: false,
+                                content: None,
+                                error: Some(e.to_string()),
+                            });
+                        }
+                    };
+
                 use crate::read::ReadArgs;
                 let read_args = ReadArgs {
                     file_path: resolved_path,
@@ -449,20 +454,21 @@ impl Tool for FileToolFacadeWrapper {
             }
             InternalFileParams::Write { file_path, content } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
-                let resolved_path = match validate_and_resolve_path(self.session_id, &file_path, "write") {
-                    Ok(path) => path.to_string_lossy().to_string(),
-                    Err(e) => {
-                        // Emit notification for blocked path
-                        let action = format!("writing {file_path}");
-                        emit_block_notification(self.session_id, &action, &e.to_string());
-                        return Ok(FileOperationResult {
-                            success: false,
-                            content: None,
-                            error: Some(e.to_string()),
-                        });
-                    }
-                };
-                
+                let resolved_path =
+                    match validate_and_resolve_path(self.session_id, &file_path, "write") {
+                        Ok(path) => path.to_string_lossy().to_string(),
+                        Err(e) => {
+                            // Emit notification for blocked path
+                            let action = format!("writing {file_path}");
+                            emit_block_notification(self.session_id, &action, &e.to_string());
+                            return Ok(FileOperationResult {
+                                success: false,
+                                content: None,
+                                error: Some(e.to_string()),
+                            });
+                        }
+                    };
+
                 // BLOCK-006: Check stage permissions before write
                 // Get the current work unit's stage from the session
                 let stage = get_work_unit_stage(self.session_id);
@@ -470,16 +476,19 @@ impl Tool for FileToolFacadeWrapper {
                     // Emit notification to TUI before returning blocked error
                     let action = format!("writing {file_path}");
                     emit_block_notification(self.session_id, &action, &blocked.reason);
-                    
+
                     return Ok(FileOperationResult {
                         success: false,
                         content: None,
                         error: Some(blocked.to_string()),
                     });
                 }
-                
+
                 use crate::write::WriteArgs;
-                let write_args = WriteArgs { file_path: resolved_path, content };
+                let write_args = WriteArgs {
+                    file_path: resolved_path,
+                    content,
+                };
                 match self.write_tool.call(write_args).await {
                     Ok(result) => Ok(FileOperationResult {
                         success: true,
@@ -499,20 +508,21 @@ impl Tool for FileToolFacadeWrapper {
                 new_string,
             } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
-                let resolved_path = match validate_and_resolve_path(self.session_id, &file_path, "edit") {
-                    Ok(path) => path.to_string_lossy().to_string(),
-                    Err(e) => {
-                        // Emit notification for blocked path
-                        let action = format!("editing {file_path}");
-                        emit_block_notification(self.session_id, &action, &e.to_string());
-                        return Ok(FileOperationResult {
-                            success: false,
-                            content: None,
-                            error: Some(e.to_string()),
-                        });
-                    }
-                };
-                
+                let resolved_path =
+                    match validate_and_resolve_path(self.session_id, &file_path, "edit") {
+                        Ok(path) => path.to_string_lossy().to_string(),
+                        Err(e) => {
+                            // Emit notification for blocked path
+                            let action = format!("editing {file_path}");
+                            emit_block_notification(self.session_id, &action, &e.to_string());
+                            return Ok(FileOperationResult {
+                                success: false,
+                                content: None,
+                                error: Some(e.to_string()),
+                            });
+                        }
+                    };
+
                 // BLOCK-006: Check stage permissions before edit (same as write)
                 // Get the current work unit's stage from the session
                 let stage = get_work_unit_stage(self.session_id);
@@ -520,14 +530,14 @@ impl Tool for FileToolFacadeWrapper {
                     // Emit notification to TUI before returning blocked error
                     let action = format!("editing {file_path}");
                     emit_block_notification(self.session_id, &action, &blocked.reason);
-                    
+
                     return Ok(FileOperationResult {
                         success: false,
                         content: None,
                         error: Some(blocked.to_string()),
                     });
                 }
-                
+
                 use crate::edit::EditArgs;
                 let edit_args = EditArgs {
                     file_path: resolved_path,
@@ -571,12 +581,10 @@ use uuid::Uuid;
 fn check_pre_tool_hook(session_id: Uuid, tool_name: &str, args: &Value) -> Result<(), ToolError> {
     match pre_tool_hook_check(session_id, tool_name, args) {
         Ok(PreToolHookDecision::Allow | PreToolHookDecision::Continue) => Ok(()),
-        Ok(PreToolHookDecision::Deny(reason)) | Err(reason) => {
-            Err(ToolError::Blocked {
-                tool: "pre_tool_use_hook",
-                message: reason,
-            })
-        }
+        Ok(PreToolHookDecision::Deny(reason)) | Err(reason) => Err(ToolError::Blocked {
+            tool: "pre_tool_use_hook",
+            message: reason,
+        }),
     }
 }
 
@@ -595,8 +603,8 @@ pub type BlockNotificationCallback = fn(String, String, String);
 pub type GetWorkUnitStageCallback = fn(String) -> Option<String>;
 
 /// GIT-020: Isolation context for file access control in isolated sessions.
-/// 
-/// Contains both the worktree path (where operations are allowed) and the 
+///
+/// Contains both the worktree path (where operations are allowed) and the
 /// blocked project path (where operations are forbidden).
 #[derive(Clone, Debug)]
 pub struct IsolationContext {
@@ -654,7 +662,8 @@ pub fn set_get_effective_cwd_callback(callback: GetEffectiveCwdCallback) {
 /// - Session not found
 /// - No work unit context attached to session
 fn get_work_unit_stage(session_id: Uuid) -> Option<String> {
-    GET_WORK_UNIT_STAGE_CALLBACK.get()
+    GET_WORK_UNIT_STAGE_CALLBACK
+        .get()
         .and_then(|callback| callback(session_id.to_string()))
 }
 
@@ -670,7 +679,8 @@ fn get_work_unit_stage(session_id: Uuid) -> Option<String> {
 /// * `Some(IsolationContext)` - The isolation context for restricted access
 /// * `None` - No isolation (callback not registered, session not found, or non-isolated session)
 pub fn get_isolation_context(session_id: Uuid) -> Option<IsolationContext> {
-    GET_EFFECTIVE_CWD_CALLBACK.get()
+    GET_EFFECTIVE_CWD_CALLBACK
+        .get()
         .and_then(|callback| callback(session_id.to_string()))
 }
 
@@ -690,7 +700,11 @@ pub fn get_effective_cwd(session_id: Uuid) -> Option<PathBuf> {
 /// The notification message follows the format: "AI was blocked from {action} - {reason}"
 pub fn emit_block_notification(session_id: Uuid, action: &str, reason: &str) {
     if let Some(callback) = BLOCK_NOTIFICATION_CALLBACK.get() {
-        callback(session_id.to_string(), action.to_string(), reason.to_string());
+        callback(
+            session_id.to_string(),
+            action.to_string(),
+            reason.to_string(),
+        );
     }
 }
 
@@ -751,15 +765,19 @@ pub fn validate_and_resolve_path_with_isolation(
     match isolation_ctx {
         Some(ctx) => {
             let path_buf = std::path::Path::new(path);
-            
+
             // Get canonical paths for comparison (best-effort: fall back to raw paths
             // if the paths don't exist on disk, e.g. in tests with synthetic paths)
-            let canonical_worktree = ctx.worktree_path.canonicalize()
+            let canonical_worktree = ctx
+                .worktree_path
+                .canonicalize()
                 .unwrap_or_else(|_| normalize_path(&ctx.worktree_path));
-            
-            let canonical_blocked = ctx.blocked_project_path.canonicalize()
+
+            let canonical_blocked = ctx
+                .blocked_project_path
+                .canonicalize()
                 .unwrap_or_else(|_| normalize_path(&ctx.blocked_project_path));
-            
+
             if path_buf.is_absolute() {
                 // For absolute paths, check against both worktree and blocked project
                 match path_buf.canonicalize() {
@@ -785,11 +803,15 @@ pub fn validate_and_resolve_path_with_isolation(
                     Err(_) => {
                         // Path doesn't exist yet - check by prefix
                         // First check if it would be within worktree
-                        if path_buf.starts_with(&canonical_worktree) || path_buf.starts_with(&ctx.worktree_path) {
+                        if path_buf.starts_with(&canonical_worktree)
+                            || path_buf.starts_with(&ctx.worktree_path)
+                        {
                             return Ok(path_buf.to_path_buf());
                         }
                         // Then check if it would be within blocked_project
-                        if path_buf.starts_with(&canonical_blocked) || path_buf.starts_with(&ctx.blocked_project_path) {
+                        if path_buf.starts_with(&canonical_blocked)
+                            || path_buf.starts_with(&ctx.blocked_project_path)
+                        {
                             return Err(ToolError::Validation {
                                 tool: tool_name,
                                 message: format!(
@@ -806,7 +828,7 @@ pub fn validate_and_resolve_path_with_isolation(
             } else {
                 // Relative path - resolve to worktree, then validate
                 let resolved = ctx.worktree_path.join(path);
-                
+
                 // Try to canonicalize to follow symlinks and resolve .. components
                 match resolved.canonicalize() {
                     Ok(canonical_path) => {
@@ -831,13 +853,17 @@ pub fn validate_and_resolve_path_with_isolation(
                     Err(_) => {
                         // Path doesn't exist - normalize manually and check for escape
                         let normalized = normalize_path(&resolved);
-                        
+
                         // Check if normalized path is within worktree
-                        if normalized.starts_with(&canonical_worktree) || normalized.starts_with(&ctx.worktree_path) {
+                        if normalized.starts_with(&canonical_worktree)
+                            || normalized.starts_with(&ctx.worktree_path)
+                        {
                             return Ok(normalized);
                         }
                         // Check if it escaped to blocked_project
-                        if normalized.starts_with(&canonical_blocked) || normalized.starts_with(&ctx.blocked_project_path) {
+                        if normalized.starts_with(&canonical_blocked)
+                            || normalized.starts_with(&ctx.blocked_project_path)
+                        {
                             return Err(ToolError::Validation {
                                 tool: tool_name,
                                 message: format!(
@@ -861,7 +887,7 @@ pub fn validate_and_resolve_path_with_isolation(
 }
 
 /// Legacy wrapper for backward compatibility with tests.
-/// 
+///
 /// This function is used by existing tests that pass just a worktree path.
 /// For isolated sessions, it creates an IsolationContext where the blocked_project
 /// is derived from the worktree path (parent of .fspec/worktrees/).
@@ -920,7 +946,7 @@ fn derive_project_root_from_worktree(worktree: &Path) -> PathBuf {
 /// This is used for validating paths to files that don't exist yet.
 fn normalize_path(path: &std::path::Path) -> PathBuf {
     let mut components = Vec::new();
-    
+
     for component in path.components() {
         match component {
             std::path::Component::Prefix(p) => components.push(std::path::Component::Prefix(p)),
@@ -934,7 +960,10 @@ fn normalize_path(path: &std::path::Path) -> PathBuf {
             std::path::Component::ParentDir => {
                 // Pop the last component if possible (but don't go above root)
                 if let Some(last) = components.last() {
-                    if !matches!(last, std::path::Component::RootDir | std::path::Component::Prefix(_)) {
+                    if !matches!(
+                        last,
+                        std::path::Component::RootDir | std::path::Component::Prefix(_)
+                    ) {
                         components.pop();
                     }
                 }
@@ -944,7 +973,7 @@ fn normalize_path(path: &std::path::Path) -> PathBuf {
             }
         }
     }
-    
+
     components.iter().collect()
 }
 
@@ -1028,7 +1057,9 @@ impl Tool for FspecToolFacadeWrapper {
         // HOOK-013: Run pre_tool_use hooks before execution
         check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
 
-        use crate::fspec_handler::{execute_fspec_command_for_session, FspecRequest, has_fspec_handler_for_session};
+        use crate::fspec_handler::{
+            execute_fspec_command_for_session, has_fspec_handler_for_session, FspecRequest,
+        };
 
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
@@ -1067,7 +1098,9 @@ impl Tool for FspecToolFacadeWrapper {
         } else {
             Err(ToolError::Execution {
                 tool: "fspec",
-                message: result.error.unwrap_or_else(|| "Unknown fspec error".to_string()),
+                message: result
+                    .error
+                    .unwrap_or_else(|| "Unknown fspec error".to_string()),
             })
         }
     }
@@ -1151,7 +1184,7 @@ impl Tool for BashToolFacadeWrapper {
         // TOOL-013: BashTool now handles effective_cwd lookup internally via session_id
         match internal_params {
             InternalBashParams::Execute { command, cwd, .. } => {
-                let bash_args = BashArgs { 
+                let bash_args = BashArgs {
                     command: command.clone(),
                     cwd, // Pass facade-provided cwd; BashTool applies session isolation override
                 };
@@ -1163,7 +1196,11 @@ impl Tool for BashToolFacadeWrapper {
                     }),
                     Err(ToolError::Blocked { message, .. }) => {
                         // Emit notification to TUI for blocked commands
-                        let action = command.split_whitespace().take(2).collect::<Vec<_>>().join(" ");
+                        let action = command
+                            .split_whitespace()
+                            .take(2)
+                            .collect::<Vec<_>>()
+                            .join(" ");
                         emit_block_notification(self.session_id, &action, &message);
                         Ok(BashOperationResult {
                             success: false,
@@ -1275,7 +1312,12 @@ impl Tool for SearchToolFacadeWrapper {
 
         // Execute the appropriate base tool based on the operation type
         match internal_params {
-            InternalSearchParams::Grep { pattern, path, include, limit } => {
+            InternalSearchParams::Grep {
+                pattern,
+                path,
+                include,
+                limit,
+            } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
                 let resolved_path = if let Some(p) = path {
                     match validate_and_resolve_path(self.session_id, &p, "grep") {
@@ -1301,7 +1343,7 @@ impl Tool for SearchToolFacadeWrapper {
                         }
                     }
                 };
-                
+
                 use crate::grep::GrepArgs;
                 let grep_args = GrepArgs {
                     pattern,
@@ -1362,9 +1404,13 @@ impl Tool for SearchToolFacadeWrapper {
                         }
                     }
                 };
-                
+
                 use crate::glob::GlobArgs;
-                let glob_args = GlobArgs { pattern, path: resolved_path, case_insensitive: None };
+                let glob_args = GlobArgs {
+                    pattern,
+                    path: resolved_path,
+                    case_insensitive: None,
+                };
                 match self.glob_tool.call(glob_args).await {
                     Ok(output) => Ok(SearchOperationResult {
                         success: true,
@@ -1474,7 +1520,12 @@ impl Tool for LsToolFacadeWrapper {
 
         // Execute the ls tool based on the operation type
         match internal_params {
-            InternalLsParams::List { path, offset, limit, depth: _depth } => {
+            InternalLsParams::List {
+                path,
+                offset,
+                limit,
+                depth: _depth,
+            } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
                 let resolved_path = if let Some(p) = path {
                     match validate_and_resolve_path(self.session_id, &p, "ls") {
@@ -1500,8 +1551,10 @@ impl Tool for LsToolFacadeWrapper {
                         }
                     }
                 };
-                
-                let ls_args = LsArgs { path: resolved_path };
+
+                let ls_args = LsArgs {
+                    path: resolved_path,
+                };
                 match self.ls_tool.call(ls_args).await {
                     Ok(output) => {
                         // BUG-110: Apply offset/limit pagination post-hoc on output lines
@@ -1542,7 +1595,10 @@ fn apply_pagination(output: &str, offset: Option<usize>, limit: Option<usize>) -
     let start_idx = offset.unwrap_or(1).saturating_sub(1); // Convert 1-indexed to 0-indexed
 
     if start_idx >= total {
-        return format!("offset {offset} exceeds directory entry count ({total})", offset = offset.unwrap_or(1));
+        return format!(
+            "offset {offset} exceeds directory entry count ({total})",
+            offset = offset.unwrap_or(1)
+        );
     }
 
     let remaining = total - start_idx;
@@ -1565,7 +1621,9 @@ fn apply_pagination(output: &str, offset: Option<usize>, limit: Option<usize>) -
 
 use super::bridge_facade::{BoxedBridgeToolFacade, InternalBridgeParams};
 use crate::bridge::BridgeAction;
-use crate::bridge_handler::{execute_bridge_command, has_bridge_handler_for_session, BridgeRequest};
+use crate::bridge_handler::{
+    execute_bridge_command, has_bridge_handler_for_session, BridgeRequest,
+};
 
 /// Result type for bridge operations
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1687,7 +1745,7 @@ impl Tool for BridgeToolFacadeWrapper {
 // ============================================================================
 
 use super::traits::{BoxedExecToolFacade, InternalExecParams};
-use crate::unified_exec::{UnifiedExecTool, UnifiedExecArgs};
+use crate::unified_exec::{UnifiedExecArgs, UnifiedExecTool};
 
 /// Result type for exec facade operations
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2019,9 +2077,7 @@ mod hitl_wrapper_tests {
 
         // @step Given a HITL handler is registered for the current session
         // @step And the handler will return a cancellation
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the Codex model calls request_user_input with valid questions
@@ -2061,9 +2117,7 @@ mod hitl_wrapper_tests {
         let session_id = Uuid::new_v4();
 
         // @step Given a HITL handler is registered for the current session
-        let handler: HitlHandler = Arc::new(|_, _| {
-            Ok(HitlResponse::Cancelled { cancelled: true })
-        });
+        let handler: HitlHandler = Arc::new(|_, _| Ok(HitlResponse::Cancelled { cancelled: true }));
         set_hitl_handler(session_id, Some(handler));
 
         // @step When the Codex model calls request_user_input with a question header "This Is Too Long"
@@ -2173,8 +2227,11 @@ mod hitl_wrapper_tests {
 #[allow(clippy::unwrap_used, clippy::expect_used)]
 mod bridge_wrapper_tests {
     use super::*;
-    use crate::bridge_handler::{set_bridge_handler, set_bridge_session_context, remove_bridge_session_context, BridgeHandler};
     use crate::bridge::BridgeResult;
+    use crate::bridge_handler::{
+        remove_bridge_session_context, set_bridge_handler, set_bridge_session_context,
+        BridgeHandler,
+    };
     use crate::facade::bridge_facade::ClaudeBridgeFacade;
     use serial_test::serial;
     use std::sync::Arc;
@@ -2205,10 +2262,17 @@ mod bridge_wrapper_tests {
         let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
         let broadcast_factory: crate::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
         let input_injector: crate::InputInjector = Arc::new(|_| {});
-        set_bridge_session_context(expected_session_id, broadcast_factory, input_injector, None, None);
+        set_bridge_session_context(
+            expected_session_id,
+            broadcast_factory,
+            input_injector,
+            None,
+            None,
+        );
 
         // @step When the BridgeToolFacadeWrapper is created with session_id at construction (TOOL-012)
-        let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade), expected_session_id);
+        let wrapper =
+            BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade), expected_session_id);
 
         // @step Then the wrapper should store session_id as a field
         assert_eq!(wrapper.session_id(), expected_session_id);
@@ -2247,7 +2311,10 @@ mod bridge_wrapper_tests {
         let result = wrapper.call(args).await;
 
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("handler not configured"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("handler not configured"));
     }
 }
 
@@ -2271,16 +2338,19 @@ mod worktree_isolation_tests {
     fn test_validate_and_resolve_path_no_worktree() {
         // @step Given a non-isolated session with Uuid::nil()
         // (effective_cwd is None)
-        
+
         // @step When get_effective_cwd is called
         // @step Then it should return None
         // @step And tools should operate in the current directory without path validation
         let result = validate_and_resolve_path_with_cwd("src/file.rs", None, "read");
         assert!(result.is_ok(), "Should succeed without worktree");
         assert_eq!(result.unwrap(), PathBuf::from("src/file.rs"));
-        
+
         let result = validate_and_resolve_path_with_cwd("/absolute/path/file.rs", None, "read");
-        assert!(result.is_ok(), "Absolute path should succeed without worktree");
+        assert!(
+            result.is_ok(),
+            "Absolute path should succeed without worktree"
+        );
         assert_eq!(result.unwrap(), PathBuf::from("/absolute/path/file.rs"));
     }
 
@@ -2329,11 +2399,8 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When ReadTool attempts to read "/project/src/main.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src/main.rs",
-            Some(&worktree),
-            "read",
-        );
+        let result =
+            validate_and_resolve_path_with_cwd("/project/src/main.rs", Some(&worktree), "read");
 
         // @step Then it should return ToolError::Validation with tool "read"
         assert!(result.is_err(), "Should reject path outside worktree");
@@ -2355,11 +2422,8 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When WriteTool attempts to write to "/project/src/new.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src/new.rs",
-            Some(&worktree),
-            "write",
-        );
+        let result =
+            validate_and_resolve_path_with_cwd("/project/src/new.rs", Some(&worktree), "write");
 
         // @step Then it should return ToolError::Validation with tool "write"
         assert!(result.is_err(), "Should reject path outside worktree");
@@ -2377,11 +2441,8 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When EditTool attempts to edit "/project/src/lib.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src/lib.rs",
-            Some(&worktree),
-            "edit",
-        );
+        let result =
+            validate_and_resolve_path_with_cwd("/project/src/lib.rs", Some(&worktree), "edit");
 
         // @step Then it should return ToolError::Validation with tool "edit"
         assert!(result.is_err(), "Should reject path outside worktree");
@@ -2399,11 +2460,7 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When GrepTool attempts to search with path "/project/src"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src",
-            Some(&worktree),
-            "grep",
-        );
+        let result = validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "grep");
 
         // @step Then it should return ToolError::Validation with tool "grep"
         assert!(result.is_err(), "Should reject path outside worktree");
@@ -2421,11 +2478,7 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When GlobTool attempts to search with path "/project/src"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src",
-            Some(&worktree),
-            "glob",
-        );
+        let result = validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "glob");
 
         // @step Then it should return ToolError::Validation with tool "glob"
         assert!(result.is_err(), "Should reject path outside worktree");
@@ -2443,11 +2496,7 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When LsTool attempts to list "/project/src"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src",
-            Some(&worktree),
-            "ls",
-        );
+        let result = validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "ls");
 
         // @step Then it should return ToolError::Validation with tool "ls"
         assert!(result.is_err(), "Should reject path outside worktree");
@@ -2465,18 +2514,21 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When AstGrepTool attempts to search with path "/project/src"
-        let result = validate_and_resolve_path_with_cwd(
-            "/project/src",
-            Some(&worktree),
-            "ast_grep",
-        );
+        let result =
+            validate_and_resolve_path_with_cwd("/project/src", Some(&worktree), "ast_grep");
 
         // @step Then it should return ToolError::Validation with tool "ast_grep"
         assert!(result.is_err(), "Should reject path outside worktree");
 
         // @step And the error message should contain "outside isolated worktree"
         let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "ast_grep", .. }));
+        assert!(matches!(
+            err,
+            ToolError::Validation {
+                tool: "ast_grep",
+                ..
+            }
+        ));
     }
 
     /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
@@ -2498,7 +2550,13 @@ mod worktree_isolation_tests {
 
         // @step And the error message should contain "outside isolated worktree"
         let err = result.unwrap_err();
-        assert!(matches!(err, ToolError::Validation { tool: "ast_grep_refactor", .. }));
+        assert!(matches!(
+            err,
+            ToolError::Validation {
+                tool: "ast_grep_refactor",
+                ..
+            }
+        ));
     }
 
     /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
@@ -2509,11 +2567,7 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When WriteTool writes to "src/new.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "src/new.rs",
-            Some(&worktree),
-            "write",
-        );
+        let result = validate_and_resolve_path_with_cwd("src/new.rs", Some(&worktree), "write");
 
         // @step Then the file should be created at ".fspec/worktrees/abc123/src/new.rs"
         assert!(result.is_ok(), "Should resolve relative path to worktree");
@@ -2538,20 +2592,18 @@ mod worktree_isolation_tests {
         // (simulated by passing None to validate_and_resolve_path_with_cwd)
 
         // @step And tools should operate in the current directory without path validation
-        let result = validate_and_resolve_path_with_cwd(
-            "/any/absolute/path",
-            None,
-            "read",
+        let result = validate_and_resolve_path_with_cwd("/any/absolute/path", None, "read");
+        assert!(
+            result.is_ok(),
+            "Should allow any path when no worktree isolation"
         );
-        assert!(result.is_ok(), "Should allow any path when no worktree isolation");
         assert_eq!(result.unwrap(), PathBuf::from("/any/absolute/path"));
 
-        let result = validate_and_resolve_path_with_cwd(
-            "relative/path",
-            None,
-            "write",
+        let result = validate_and_resolve_path_with_cwd("relative/path", None, "write");
+        assert!(
+            result.is_ok(),
+            "Should allow relative paths when no worktree isolation"
         );
-        assert!(result.is_ok(), "Should allow relative paths when no worktree isolation");
         assert_eq!(result.unwrap(), PathBuf::from("relative/path"));
     }
 
@@ -2567,11 +2619,7 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When WriteTool writes to "src/new.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "src/new.rs",
-            Some(&worktree),
-            "write",
-        );
+        let result = validate_and_resolve_path_with_cwd("src/new.rs", Some(&worktree), "write");
 
         // @step Then the file should be created at ".fspec/worktrees/abc123/src/new.rs"
         assert!(result.is_ok(), "Should resolve relative path");
@@ -2595,11 +2643,7 @@ mod worktree_isolation_tests {
         // (File existence is checked by EditTool, not path validation)
 
         // @step When EditTool edits "src/lib.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "src/lib.rs",
-            Some(&worktree),
-            "edit",
-        );
+        let result = validate_and_resolve_path_with_cwd("src/lib.rs", Some(&worktree), "edit");
 
         // @step Then it should modify ".fspec/worktrees/abc123/src/lib.rs"
         assert!(result.is_ok(), "Should resolve relative path");
@@ -2620,11 +2664,7 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When GrepTool searches with path "src/"
-        let result = validate_and_resolve_path_with_cwd(
-            "src/",
-            Some(&worktree),
-            "grep",
-        );
+        let result = validate_and_resolve_path_with_cwd("src/", Some(&worktree), "grep");
 
         // @step Then it should search within ".fspec/worktrees/abc123/src/"
         assert!(result.is_ok(), "Should resolve relative path");
@@ -2646,11 +2686,7 @@ mod worktree_isolation_tests {
 
         // @step When GlobTool searches for "**/*.rs"
         // Note: GlobTool uses "." as default path if not specified
-        let result = validate_and_resolve_path_with_cwd(
-            ".",
-            Some(&worktree),
-            "glob",
-        );
+        let result = validate_and_resolve_path_with_cwd(".", Some(&worktree), "glob");
 
         // @step Then it should only return files within ".fspec/worktrees/abc123/"
         assert!(result.is_ok(), "Should resolve dot path");
@@ -2671,11 +2707,7 @@ mod worktree_isolation_tests {
         let worktree = PathBuf::from("/project/.fspec/worktrees/abc123");
 
         // @step When AstGrepTool searches with path "src/"
-        let result = validate_and_resolve_path_with_cwd(
-            "src/",
-            Some(&worktree),
-            "ast_grep",
-        );
+        let result = validate_and_resolve_path_with_cwd("src/", Some(&worktree), "ast_grep");
 
         // @step Then it should search within ".fspec/worktrees/abc123/src/"
         assert!(result.is_ok(), "Should resolve relative path");
@@ -2696,11 +2728,8 @@ mod worktree_isolation_tests {
         // (File existence is checked by AstGrepRefactorTool, not path validation)
 
         // @step When AstGrepRefactorTool refactors "src/lib.rs"
-        let result = validate_and_resolve_path_with_cwd(
-            "src/lib.rs",
-            Some(&worktree),
-            "ast_grep_refactor",
-        );
+        let result =
+            validate_and_resolve_path_with_cwd("src/lib.rs", Some(&worktree), "ast_grep_refactor");
 
         // @step Then it should modify ".fspec/worktrees/abc123/src/lib.rs"
         assert!(result.is_ok(), "Should resolve relative path");
@@ -2901,5 +2930,4 @@ mod worktree_isolation_tests {
         // @step And calling LsToolFacadeWrapper::new() without session_id MUST fail to compile
         // @step And LsToolFacadeWrapper MUST NOT implement Default trait
     }
-
 }

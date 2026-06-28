@@ -42,11 +42,7 @@ macro_rules! profile_scope {
         let _profile_guard = if $crate::profile::registry::PROFILING_ACTIVE
             .load(std::sync::atomic::Ordering::Relaxed)
         {
-            $crate::profile::scope::ProfileScope::enter(concat!(
-                module_path!(),
-                "::",
-                $label
-            ))
+            $crate::profile::scope::ProfileScope::enter(concat!(module_path!(), "::", $label))
         } else {
             None
         };

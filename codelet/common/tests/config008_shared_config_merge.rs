@@ -11,9 +11,7 @@
 use std::fs;
 use std::path::Path;
 
-use codelet_common::fspec_config::{
-    load_config_with_dirs, write_config_with_dirs, ConfigScope,
-};
+use codelet_common::fspec_config::{load_config_with_dirs, write_config_with_dirs, ConfigScope};
 use serde_json::{json, Value};
 
 /// Write `content` to `<data_dir>/fspec-config.json` (user scope).
@@ -134,7 +132,10 @@ fn invalid_json_returns_an_error_naming_the_offending_path() {
         "error `{err}` should mention path `{}`",
         expected_path.display()
     );
-    assert!(err.contains("Invalid JSON"), "error `{err}` should say Invalid JSON");
+    assert!(
+        err.contains("Invalid JSON"),
+        "error `{err}` should say Invalid JSON"
+    );
 }
 
 /// Scenario: Writing user scope creates the data directory and file
@@ -184,8 +185,13 @@ fn round_trip_write_then_load_merges_with_the_other_scope() {
     // @step Given a user config file containing {"u":1}
     seed_user(data.path(), r#"{"u":1}"#);
     // @step When the config {"x":1} is written to the project scope
-    write_config_with_dirs(ConfigScope::Project, &json!({"x":1}), data.path(), cwd.path())
-        .expect("write project");
+    write_config_with_dirs(
+        ConfigScope::Project,
+        &json!({"x":1}),
+        data.path(),
+        cwd.path(),
+    )
+    .expect("write project");
     // @step And the config is loaded
     let loaded = load_config_with_dirs(data.path(), cwd.path()).expect("load");
     // @step Then the loaded config equals {"u":1,"x":1}

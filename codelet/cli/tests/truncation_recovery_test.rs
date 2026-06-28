@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::uninlined_format_args)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::uninlined_format_args
+)]
 //! Feature: spec/features/truncated-tool-call-recovery-auto-chunk-large-writes-and-retry-on-max-tokens.feature
 //!
 //! PROV-040: Truncated tool call recovery — auto-chunk large writes and retry on max_tokens
@@ -94,7 +99,11 @@ fn test_retry_budget_prevents_infinite_loops() {
         );
         // In production: recovery message is built and retry stream is started
         let recovery = build_truncation_recovery_message(error);
-        assert!(!recovery.is_empty(), "Recovery should be generated for attempt {}", attempt);
+        assert!(
+            !recovery.is_empty(),
+            "Recovery should be generated for attempt {}",
+            attempt
+        );
     }
 
     // Third attempt exceeds the budget:
@@ -247,20 +256,27 @@ fn test_provider_agnostic_detection() {
         "Streaming error: ResponseError: Tool call truncated due to output token limit. \
          Tool 'Write' received incomplete JSON arguments. \
          Partial arguments: {\"file_path\": \"/tmp/test.txt\"";
-    let openai_error =
-        "Tool call truncated due to output token limit. \
+    let openai_error = "Tool call truncated due to output token limit. \
          Tool 'Edit' received incomplete JSON arguments. \
          Partial arguments: {\"file_path\": \"/src/main.rs\"";
-    let gemini_error =
-        "Tool call truncated due to output token limit. \
+    let gemini_error = "Tool call truncated due to output token limit. \
          Tool 'Bash' received incomplete JSON arguments. \
          Partial arguments: {\"command\": \"echo test\"";
 
     // @step When a truncation error containing "Tool call truncated due to output token limit" is received
     // @step Then the same recovery logic fires regardless of whether the provider is Anthropic, OpenAI, or Gemini
-    assert!(is_truncated_tool_call_error(anthropic_error), "Should detect Anthropic truncation");
-    assert!(is_truncated_tool_call_error(openai_error), "Should detect OpenAI truncation");
-    assert!(is_truncated_tool_call_error(gemini_error), "Should detect Gemini truncation");
+    assert!(
+        is_truncated_tool_call_error(anthropic_error),
+        "Should detect Anthropic truncation"
+    );
+    assert!(
+        is_truncated_tool_call_error(openai_error),
+        "Should detect OpenAI truncation"
+    );
+    assert!(
+        is_truncated_tool_call_error(gemini_error),
+        "Should detect Gemini truncation"
+    );
 
     // @step And the recovery instruction content is identical across all providers
     let recovery_anthropic = build_truncation_recovery_message(anthropic_error);
@@ -269,9 +285,18 @@ fn test_provider_agnostic_detection() {
 
     // All recovery messages must contain the same strategy suggestions
     for recovery in [&recovery_anthropic, &recovery_openai, &recovery_gemini] {
-        assert!(recovery.contains("Bash"), "All recoveries should suggest Bash");
-        assert!(recovery.contains("heredoc"), "All recoveries should suggest heredoc");
-        assert!(recovery.contains("smaller Write"), "All recoveries should suggest splitting");
+        assert!(
+            recovery.contains("Bash"),
+            "All recoveries should suggest Bash"
+        );
+        assert!(
+            recovery.contains("heredoc"),
+            "All recoveries should suggest heredoc"
+        );
+        assert!(
+            recovery.contains("smaller Write"),
+            "All recoveries should suggest splitting"
+        );
     }
 
     // Recovery messages differ only in tool name and partial args — verify tool names are correct
@@ -297,8 +322,12 @@ fn test_partial_match_not_detected() {
 
 #[test]
 fn test_detection_is_case_sensitive() {
-    assert!(!is_truncated_tool_call_error("tool call truncated due to output token limit"));
-    assert!(is_truncated_tool_call_error("Tool call truncated due to output token limit"));
+    assert!(!is_truncated_tool_call_error(
+        "tool call truncated due to output token limit"
+    ));
+    assert!(is_truncated_tool_call_error(
+        "Tool call truncated due to output token limit"
+    ));
 }
 
 #[test]
@@ -343,10 +372,16 @@ fn test_budget_exhausted_message_content() {
     // Verify the budget-exhausted message contains all required components
     let msg = build_truncation_budget_exhausted_message(MAX_TRUNCATION_RETRIES);
     assert!(msg.contains("2"), "Should include retry count");
-    assert!(msg.contains("retry budget exhausted"), "Should state budget exhaustion");
+    assert!(
+        msg.contains("retry budget exhausted"),
+        "Should state budget exhaustion"
+    );
     assert!(msg.contains("Bash"), "Should suggest Bash alternative");
     assert!(msg.contains("heredoc"), "Should suggest heredoc");
-    assert!(msg.contains("smaller operations"), "Should suggest splitting");
+    assert!(
+        msg.contains("smaller operations"),
+        "Should suggest splitting"
+    );
 }
 
 #[test]

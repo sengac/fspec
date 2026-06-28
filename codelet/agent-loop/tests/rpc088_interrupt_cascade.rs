@@ -50,8 +50,7 @@ fn agent_loop_src(file: &str) -> PathBuf {
 
 fn read_source(file: &str) -> String {
     let path = agent_loop_src(file);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 fn read_workspace_source(rel: &str) -> String {
@@ -61,8 +60,7 @@ fn read_workspace_source(rel: &str) -> String {
         .and_then(|p| p.parent())
         .map(|p| p.join(rel))
         .unwrap_or_else(|| PathBuf::from(rel));
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract a balanced-brace block beginning at `start_marker` inside
@@ -252,8 +250,8 @@ fn background_session_declares_interrupt_handle_fields() {
 #[cfg(feature = "test-support")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn background_session_interrupt_flips_flag_and_wakes_notifier() {
-    use std::sync::Arc;
     use std::sync::atomic::Ordering;
+    use std::sync::Arc;
     use std::time::Duration;
 
     use codelet_agent_loop::FspecAgentHooks;
@@ -445,9 +443,7 @@ fn run_with_provider_macro_forwards_both_interrupt_handles() {
         .find("codelet_cli::interactive::run_agent_stream_with_images")
         .expect("call site exists (checked above)");
     let call_tail = &body[call_start..];
-    let open_paren = call_tail
-        .find('(')
-        .expect("call site must contain `(`");
+    let open_paren = call_tail.find('(').expect("call site must contain `(`");
     let bytes = call_tail.as_bytes();
     let mut depth: i32 = 0;
     let mut i = open_paren;
@@ -589,8 +585,7 @@ fn openai_inlined_arm_forwards_both_interrupt_handles() {
         .find("session.interrupt_notify.clone()")
         .expect("call site must forward interrupt_notify (checked above)");
     assert!(
-        is_interrupted_pos < compaction_pos
-            && compaction_pos < interrupt_notify_pos,
+        is_interrupted_pos < compaction_pos && compaction_pos < interrupt_notify_pos,
         "OpenAI inlined arm must forward args in canonical order: \
          is_interrupted (5), compaction_in_progress (6), interrupt_notify (7); \
          call site was:\n{call_text}"
@@ -630,8 +625,7 @@ fn custom_provider_fallthrough_arm_forwards_both_interrupt_handles() {
         .find("session.interrupt_notify.clone()")
         .expect("call site must forward interrupt_notify (checked above)");
     assert!(
-        is_interrupted_pos < compaction_pos
-            && compaction_pos < interrupt_notify_pos,
+        is_interrupted_pos < compaction_pos && compaction_pos < interrupt_notify_pos,
         "Custom-provider fallthrough arm must forward args in canonical order: \
          is_interrupted (5), compaction_in_progress (6), interrupt_notify (7); \
          call site was:\n{call_text}"

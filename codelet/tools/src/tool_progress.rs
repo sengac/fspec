@@ -98,9 +98,15 @@ mod tests {
         let captured = Arc::new(Mutex::new(Vec::new()));
         let captured_clone = captured.clone();
 
-        set_tool_progress_callback(session_id, Some(Arc::new(move |chunk, is_stderr| {
-            captured_clone.lock().unwrap().push((chunk.to_string(), is_stderr));
-        })));
+        set_tool_progress_callback(
+            session_id,
+            Some(Arc::new(move |chunk, is_stderr| {
+                captured_clone
+                    .lock()
+                    .unwrap()
+                    .push((chunk.to_string(), is_stderr));
+            })),
+        );
 
         emit_tool_progress(session_id, "line 1\n", false);
         emit_tool_progress(session_id, "error\n", true);
@@ -123,9 +129,15 @@ mod tests {
         let captured = Arc::new(Mutex::new(Vec::new()));
         let captured_clone = captured.clone();
 
-        set_tool_progress_callback(session_id, Some(Arc::new(move |chunk, is_stderr| {
-            captured_clone.lock().unwrap().push((chunk.to_string(), is_stderr));
-        })));
+        set_tool_progress_callback(
+            session_id,
+            Some(Arc::new(move |chunk, is_stderr| {
+                captured_clone
+                    .lock()
+                    .unwrap()
+                    .push((chunk.to_string(), is_stderr));
+            })),
+        );
 
         emit_tool_progress(session_id, "before clear\n", false);
         set_tool_progress_callback(session_id, None);
@@ -146,9 +158,15 @@ mod tests {
         let captured = Arc::new(Mutex::new(Vec::new()));
         let captured_clone = captured.clone();
 
-        set_tool_progress_callback(session_id, Some(Arc::new(move |chunk, is_stderr| {
-            captured_clone.lock().unwrap().push((chunk.to_string(), is_stderr));
-        })));
+        set_tool_progress_callback(
+            session_id,
+            Some(Arc::new(move |chunk, is_stderr| {
+                captured_clone
+                    .lock()
+                    .unwrap()
+                    .push((chunk.to_string(), is_stderr));
+            })),
+        );
 
         emit_tool_progress(session_id, "stdout line\n", false);
         emit_tool_progress(session_id, "stderr line\n", true);
@@ -157,7 +175,7 @@ mod tests {
         let events = captured.lock().unwrap();
         assert_eq!(events.len(), 3);
         assert!(!events[0].1); // stdout
-        assert!(events[1].1);  // stderr
+        assert!(events[1].1); // stderr
         assert!(!events[2].1); // stdout
 
         set_tool_progress_callback(session_id, None);

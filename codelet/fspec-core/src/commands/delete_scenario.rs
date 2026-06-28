@@ -309,10 +309,9 @@ mod tests {
 
     #[test]
     fn args_parse_camel_case() {
-        let a: DeleteScenarioArgs = serde_json::from_str(
-            r#"{"feature":"spec/features/x.feature","scenario":"Old"}"#,
-        )
-        .unwrap();
+        let a: DeleteScenarioArgs =
+            serde_json::from_str(r#"{"feature":"spec/features/x.feature","scenario":"Old"}"#)
+                .unwrap();
         assert_eq!(a.feature, "spec/features/x.feature");
         assert_eq!(a.scenario, "Old");
     }

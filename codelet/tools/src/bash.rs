@@ -35,8 +35,7 @@ use crate::bash_process::ProcessGroupKiller;
 
 // Re-export public items so external users can still use `bash::*`
 pub use crate::bash_abort::{
-    clear_bash_abort, is_bash_abort_requested, request_bash_abort,
-    unregister_bash_abort_flag,
+    clear_bash_abort, is_bash_abort_requested, request_bash_abort, unregister_bash_abort_flag,
 };
 pub use crate::bash_output::STDERR_MARKER;
 pub use crate::bash_streams::StreamCallback;

@@ -151,13 +151,8 @@ async fn scenario_filter_scopes_by_label_prefix() {
     reset_profiling_state();
 
     // @step When an AI agent invokes the AgentManager profile action with duration_secs 5 and label_prefix "handle_await_idle"
-    let result = ProfileSession::run(
-        Some(1),
-        None,
-        Some("handle_await_idle".to_string()),
-        None,
-    )
-    .await;
+    let result =
+        ProfileSession::run(Some(1), None, Some("handle_await_idle".to_string()), None).await;
     let profile = result.expect("profile session should complete successfully");
 
     // @step Then the tool call blocks for 5 seconds
@@ -300,8 +295,8 @@ async fn scenario_invoke_profile_via_rig_tool_trait() {
 
     // @step When the subordinate LLM emits a tool_use call with action "profile" and duration_secs 10
     // Deserialise into the AgentManagerAction enum (which must have a Profile variant after the implementing phase)
-    let action: crate::agent_manager::types::AgentManagerAction =
-        serde_json::from_value(args_json).expect(
+    let action: crate::agent_manager::types::AgentManagerAction = serde_json::from_value(args_json)
+        .expect(
             "the AgentManagerAction enum must include a Profile variant that deserialises from \
              {\"action\": \"profile\", duration_secs, top_n, label_prefix}",
         );
@@ -351,11 +346,7 @@ async fn scenario_validate_duration_secs_range() {
 
     // @step Then the call returns immediately with an error indicating duration_secs must be between 1 and 60
     match result_zero {
-        Err(ProfileRunError::InvalidDuration {
-            min,
-            max,
-            provided,
-        }) => {
+        Err(ProfileRunError::InvalidDuration { min, max, provided }) => {
             assert_eq!(min, MIN_DURATION_SECS);
             assert_eq!(max, MAX_DURATION_SECS);
             assert_eq!(provided, 0);
@@ -375,11 +366,7 @@ async fn scenario_validate_duration_secs_range() {
 
     // @step Then the call returns immediately with the same out-of-range error
     match result_sixty_one {
-        Err(ProfileRunError::InvalidDuration {
-            min,
-            max,
-            provided,
-        }) => {
+        Err(ProfileRunError::InvalidDuration { min, max, provided }) => {
             assert_eq!(min, MIN_DURATION_SECS);
             assert_eq!(max, MAX_DURATION_SECS);
             assert_eq!(provided, 61);

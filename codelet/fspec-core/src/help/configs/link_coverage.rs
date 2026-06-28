@@ -10,8 +10,8 @@
 //! renders as the literal text `undefined`. Reproduced verbatim.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const ARGUMENTS: &[CommandArgument] = &[CommandArgument {

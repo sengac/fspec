@@ -630,6 +630,8 @@ Tags tracking development status of features.
 | `@rpc-153` | RPC-153: Provider settings api-key edit filterPrintableChars ASCII 32-126 restriction — regression-shape coverage card pinning the is_printable_ascii helper signature, body range expression, and guard placement before draft.push(c) in handle_edit_key |
 | `@rpc-252` | Work unit identifier tag for RPC-252 — port list-virtual-hooks command to Rust |
 | `@rpc-337` | Work unit identifier tag for RPC-337 — full-screen Model Selector mode-view + shared full-screen shell extraction |
+| `@rpc-376` | Work unit identifier for RPC-376 — heading anchor IDs and in-page anchor navigation in the Rust markdown viewer |
+| `@rpc-377` | Work unit identifier for RPC-377 — client-side viewer parity (Prism, copy/badge, theme toggle, font controls) in the Rust markdown viewer |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -941,7 +943,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-06-26T03:54:54.530Z_
+_Last updated: 2026-06-28T04:32:02.170Z_
 
 **Update Command**: `fspec tag-stats`
 

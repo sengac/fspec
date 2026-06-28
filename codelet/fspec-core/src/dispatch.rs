@@ -516,9 +516,7 @@ fn run_ported(
             "validate-spec-alignment" => {
                 commands::validate_spec_alignment::run(args_json, project_root).await
             }
-            "remove-init-files" => {
-                commands::remove_init_files::run(args_json, project_root).await
-            }
+            "remove-init-files" => commands::remove_init_files::run(args_json, project_root).await,
             "auto-advance" => commands::auto_advance::run(args_json, project_root).await,
             "workflow-automation" => {
                 commands::workflow_automation::run(args_json, project_root).await
@@ -576,256 +574,256 @@ fn run_stub(name: &'static str, _args_json: &str) -> Result<String, FspecCoreErr
         // The block of comments below documents every canonical command that is
         // handled by `run_ported` before reaching this stub. Any name that
         // arrives here is unwired and surfaces as `UnknownCommand`.
-            // "add-aggregate-to-foundation" — ported (RPC-166, Batch 13). Handled by `run_ported`.
-            // "add-architecture" — ported (RPC-167, Batch 15). Handled by `run_ported`.
-            // "add-architecture-note" — ported (RPC-168, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-assumption" — ported (RPC-169, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-attachment" — ported (RPC-170, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-background" — ported (RPC-171, Batch 15). Handled by `run_ported`.
-            // "add-bounded-context" — ported (RPC-172, Batch 11). Handled by `run_ported`.
-            // "add-capability" — ported (RPC-173, Batch 13). Handled by `run_ported`.
-            // "add-command" — ported (RPC-174, Batch 11). Handled by `run_ported`.
-            // "add-command-to-foundation" — ported (RPC-175, Batch 13). Handled by `run_ported`.
-            // "add-dependencies" — ported (RPC-176, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-dependency" — ported (RPC-177, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-diagram" — ported (RPC-178, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-domain-event" — ported (RPC-179, Batch 11). Handled by `run_ported`.
-            // "add-domain-event-to-foundation" — ported (RPC-180, Batch 14). Handled by `run_ported`.
-            // "add-example" — ported (RPC-181, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-external-system" — ported (RPC-182, Batch 11). Handled by `run_ported`.
-            // "add-foundation-bounded-context" — ported (RPC-183, Batch 13). Handled by `run_ported`.
-            // "add-hook" — ported (RPC-184, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-hotspot" — ported (RPC-185, Batch 11). Handled by `run_ported`.
-            // "add-persona" — ported (RPC-186, Batch 13). Handled by `run_ported`.
-            // "add-policy" — ported (RPC-187, Batch 11). Handled by `run_ported`.
-            // "add-question" — ported (RPC-188, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-rule" — ported (RPC-189, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-scenario" — ported (RPC-190, Batch 15). Handled by `run_ported`.
-            // "add-schedule" — ported (RPC-191, Batch 14). Handled by `run_ported`.
-            // "add-step" — ported (RPC-192, Batch 15). Handled by `run_ported`.
-            // "add-tag-to-feature" — ported (RPC-193, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-tag-to-scenario" — ported (RPC-194, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "add-virtual-hook" — ported (RPC-195, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "answer-question" — ported (RPC-196, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "audit-coverage" — ported (RPC-197, Batch 17). Handled by `run_ported`.
-            // "auto-advance" — ported (RPC-198, Batch 18). Handled by `run_ported`.
-            // "bootstrap" — ported (RPC-200, Batch 20). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "check" — ported (RPC-201, Batch 17). Handled by `run_ported`.
-            // "checkpoint" — ported (RPC-202, Batch 18). Handled by `run_ported`.
-            // "cleanup-checkpoints" — ported (RPC-203, Batch 18). Handled by `run_ported`.
-            // "clear-dependencies" — ported (RPC-204, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "clear-virtual-hooks" — ported (RPC-205, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "compact-work-unit" — ported (RPC-206, Batch 12). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "compare-implementations" — ported (RPC-207, Batch 17). Handled by `run_ported`.
-            // "configure-tools" — ported (RPC-208, Batch 14). Handled by `run_ported`.
-            // "copy-virtual-hooks" — ported (RPC-209, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "create-bug" — ported (RPC-210, Batch 11). Handled by `run_ported`.
-            // "create-epic" — ported (RPC-211, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "create-feature" — ported (RPC-212, Batch 15). Handled by `run_ported`.
-            // "create-prefix" — ported (RPC-213, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "create-story" — ported (RPC-214, Batch 11). Handled by `run_ported`.
-            // "create-task" — ported (RPC-215, Batch 11). Handled by `run_ported`.
-            // "delete-diagram" — ported (RPC-216, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "delete-epic" — ported (RPC-217, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "delete-features" — ported (RPC-218, Batch 15). Handled by `run_ported`.
-            // "delete-scenario" — ported (RPC-219, Batch 15). Handled by `run_ported`.
-            // "delete-scenarios" — ported (RPC-220, Batch 17). Handled by `run_ported`.
-            // "delete-step" — ported (RPC-221, Batch 15). Handled by `run_ported`.
-            // "delete-tag" — ported (RPC-222, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "delete-work-unit" — ported (RPC-223, Batch 12). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "dependencies" — ported (RPC-224, Batch 14). Handled by `run_ported`.
-            // "discover-event-storm" — ported (RPC-225, Batch 18). Handled by `run_ported`.
-            // "discover-foundation" — ported (RPC-226, Batch 19). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "export-dependencies" — ported (RPC-227, Batch 12). Handled by `run_ported`.
-            // "export-example-map" — ported (RPC-228, Batch 12). Handled by `run_ported`.
-            // "export-work-units" — ported (RPC-229, Batch 12). Handled by `run_ported`.
-            // "format" — ported (RPC-230, Batch 17). Handled by `run_ported`.
-            // "generate-coverage" — ported (RPC-231, Batch 17). Handled by `run_ported`.
-            // "generate-example-mapping-from-event-storm" — ported (RPC-232, Batch 18). Handled by `run_ported`.
-            // "generate-foundation-md" — ported (RPC-233). Handled by `run_ported`.
-            // "generate-scenarios" — ported (RPC-234, Batch 20). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "generate-summary-report" — ported (RPC-235, Batch 17). Handled by `run_ported`.
-            // "generate-tags-md" — ported (RPC-236, Batch 16). Handled by `run_ported`.
-            // "get-scenarios" — ported (RPC-237, Batch 14). Handled by `run_ported`.
-            // "import-example-map" — ported (RPC-238, Batch 17). Handled by `run_ported`.
-            // "init" — ported (RPC-239, Batch 20). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "link-coverage" — ported (RPC-240, Batch 17). Handled by `run_ported`.
-            // "list-attachments" — ported (RPC-241). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-checkpoints" — ported (RPC-242). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-epics" — ported (RPC-243). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-feature-tags" — ported (RPC-244). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-features" — ported (RPC-245). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-foundation-sections" — ported (RPC-246). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-hooks" — ported (RPC-247). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-prefixes" — ported (RPC-248). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-scenario-tags" — ported (RPC-249). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-schedules" — ported (RPC-250). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-tags" — ported (RPC-251). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-virtual-hooks" — ported (RPC-252). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "list-work-units" — ported (RPC-253). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "pause-schedule" — ported (RPC-254, Batch 14). Handled by `run_ported`.
-            // "prioritize-work-unit" — ported (RPC-255, Batch 12). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-bottlenecks" — ported (RPC-256). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-dependency-stats" — ported (RPC-257). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-estimate-accuracy" — ported (RPC-258). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-estimation-guide" — ported (RPC-259). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-example-mapping-stats" — ported (RPC-260). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-metrics" — ported (RPC-261). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-orphans" — ported (RPC-262). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "query-work-units" — ported (RPC-263). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "record-iteration" — ported (RPC-264, Batch 12). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "register-tag" — ported (RPC-265, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-aggregate-from-foundation" — ported (RPC-266, Batch 13). Handled by `run_ported`.
-            // "remove-architecture-note" — ported (RPC-267, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-attachment" — ported (RPC-268, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-capability" — ported (RPC-269, Batch 13). Handled by `run_ported`.
-            // "remove-command-from-foundation" — ported (RPC-270, Batch 13). Handled by `run_ported`.
-            // "remove-dependency" — ported (RPC-271, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-domain-event-from-foundation" — ported (RPC-272, Batch 14). Handled by `run_ported`.
-            // "remove-example" — ported (RPC-273, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-foundation-bounded-context" — ported (RPC-274, Batch 13). Handled by `run_ported`.
-            // "remove-hook" — ported (RPC-275, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-init-files" — ported (RPC-276, Batch 18). Handled by `run_ported`.
-            // "remove-persona" — ported (RPC-277, Batch 13). Handled by `run_ported`.
-            // "remove-question" — ported (RPC-278, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-rule" — ported (RPC-279, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-schedule" — ported (RPC-280, Batch 14). Handled by `run_ported`.
-            // "remove-tag-from-feature" — ported (RPC-281, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-tag-from-scenario" — ported (RPC-282, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "remove-virtual-hook" — ported (RPC-283, Batch 10). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "repair-work-units" — ported (RPC-284, Batch 12). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "report-bug-to-github" — ported (RPC-285, Batch 20). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "research" — ported (RPC-286, Batch 20). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "restore-architecture-note" — ported (RPC-287, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "restore-checkpoint" — ported (RPC-288, Batch 18). Handled by `run_ported`.
-            // "restore-example" — ported (RPC-289, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "restore-question" — ported (RPC-290, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "restore-rule" — ported (RPC-291, Batch 9). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "resume-schedule" — ported (RPC-292, Batch 14). Handled by `run_ported`.
-            // "retag" — ported (RPC-293, Batch 16). Handled by `run_ported`.
-            // "reverse" — ported (RPC-294, Batch 19). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "review" — ported (RPC-295, Batch 20). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "search-implementation" — ported (RPC-296, Batch 16). Handled by `run_ported`.
-            // "search-scenarios" — ported (RPC-297, Batch 16). Handled by `run_ported`.
-            // "set-user-story" — ported (RPC-298, Batch 8). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-acceptance-criteria" — ported (RPC-299). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-coverage" — ported (RPC-300). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-deleted" — ported (RPC-301). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-epic" — ported (RPC-302). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-event-storm" — ported (RPC-303). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-feature" — ported (RPC-304). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-foundation" — ported (RPC-305). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-foundation-event-storm" — ported (RPC-306). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-test-patterns" — ported (RPC-307). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "show-work-unit" — ported (RPC-308). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "suggest-dependencies" — ported (RPC-309, Batch 18). Handled by `run_ported`.
-            // "tag-stats" — ported (RPC-310). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "unlink-coverage" — ported (RPC-311, Batch 16). Handled by `run_ported`.
-            // "update-foundation" — ported (RPC-312, Batch 14). Handled by `run_ported`.
-            // "update-prefix" — ported (RPC-313, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "update-scenario" — ported (RPC-314, Batch 15). Handled by `run_ported`.
-            // "update-step" — ported (RPC-315, Batch 15). Handled by `run_ported`.
-            // "update-tag" — ported (RPC-316, Batch 7). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "update-work-unit" — ported (RPC-317, Batch 12). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "update-work-unit-estimate" — ported (RPC-318, Batch 12). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "update-work-unit-status" — ported (RPC-319, Batch 19). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
-            // "validate" — ported (RPC-320, Batch 16). Handled by `run_ported`.
-            // "validate-foundation-schema" — ported (RPC-321, Batch 16). Handled by `run_ported`.
-            // "validate-hooks" — ported (RPC-322, Batch 16). Handled by `run_ported`.
-            // "validate-spec-alignment" — ported (RPC-323, Batch 18). Handled by `run_ported`.
-            // "validate-tags" — ported (RPC-324, Batch 16). Handled by `run_ported`.
-            // "validate-work-units" — ported (RPC-325, Batch 16). Handled by `run_ported`.
-            // "workflow-automation" — ported (RPC-326, Batch 18). Handled by `run_ported`.
-            // Unreachable: canonical lookup already validated the
-            // command exists, and every canonical entry has a stub.
+        // "add-aggregate-to-foundation" — ported (RPC-166, Batch 13). Handled by `run_ported`.
+        // "add-architecture" — ported (RPC-167, Batch 15). Handled by `run_ported`.
+        // "add-architecture-note" — ported (RPC-168, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-assumption" — ported (RPC-169, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-attachment" — ported (RPC-170, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-background" — ported (RPC-171, Batch 15). Handled by `run_ported`.
+        // "add-bounded-context" — ported (RPC-172, Batch 11). Handled by `run_ported`.
+        // "add-capability" — ported (RPC-173, Batch 13). Handled by `run_ported`.
+        // "add-command" — ported (RPC-174, Batch 11). Handled by `run_ported`.
+        // "add-command-to-foundation" — ported (RPC-175, Batch 13). Handled by `run_ported`.
+        // "add-dependencies" — ported (RPC-176, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-dependency" — ported (RPC-177, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-diagram" — ported (RPC-178, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-domain-event" — ported (RPC-179, Batch 11). Handled by `run_ported`.
+        // "add-domain-event-to-foundation" — ported (RPC-180, Batch 14). Handled by `run_ported`.
+        // "add-example" — ported (RPC-181, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-external-system" — ported (RPC-182, Batch 11). Handled by `run_ported`.
+        // "add-foundation-bounded-context" — ported (RPC-183, Batch 13). Handled by `run_ported`.
+        // "add-hook" — ported (RPC-184, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-hotspot" — ported (RPC-185, Batch 11). Handled by `run_ported`.
+        // "add-persona" — ported (RPC-186, Batch 13). Handled by `run_ported`.
+        // "add-policy" — ported (RPC-187, Batch 11). Handled by `run_ported`.
+        // "add-question" — ported (RPC-188, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-rule" — ported (RPC-189, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-scenario" — ported (RPC-190, Batch 15). Handled by `run_ported`.
+        // "add-schedule" — ported (RPC-191, Batch 14). Handled by `run_ported`.
+        // "add-step" — ported (RPC-192, Batch 15). Handled by `run_ported`.
+        // "add-tag-to-feature" — ported (RPC-193, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-tag-to-scenario" — ported (RPC-194, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "add-virtual-hook" — ported (RPC-195, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "answer-question" — ported (RPC-196, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "audit-coverage" — ported (RPC-197, Batch 17). Handled by `run_ported`.
+        // "auto-advance" — ported (RPC-198, Batch 18). Handled by `run_ported`.
+        // "bootstrap" — ported (RPC-200, Batch 20). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "check" — ported (RPC-201, Batch 17). Handled by `run_ported`.
+        // "checkpoint" — ported (RPC-202, Batch 18). Handled by `run_ported`.
+        // "cleanup-checkpoints" — ported (RPC-203, Batch 18). Handled by `run_ported`.
+        // "clear-dependencies" — ported (RPC-204, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "clear-virtual-hooks" — ported (RPC-205, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "compact-work-unit" — ported (RPC-206, Batch 12). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "compare-implementations" — ported (RPC-207, Batch 17). Handled by `run_ported`.
+        // "configure-tools" — ported (RPC-208, Batch 14). Handled by `run_ported`.
+        // "copy-virtual-hooks" — ported (RPC-209, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "create-bug" — ported (RPC-210, Batch 11). Handled by `run_ported`.
+        // "create-epic" — ported (RPC-211, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "create-feature" — ported (RPC-212, Batch 15). Handled by `run_ported`.
+        // "create-prefix" — ported (RPC-213, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "create-story" — ported (RPC-214, Batch 11). Handled by `run_ported`.
+        // "create-task" — ported (RPC-215, Batch 11). Handled by `run_ported`.
+        // "delete-diagram" — ported (RPC-216, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "delete-epic" — ported (RPC-217, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "delete-features" — ported (RPC-218, Batch 15). Handled by `run_ported`.
+        // "delete-scenario" — ported (RPC-219, Batch 15). Handled by `run_ported`.
+        // "delete-scenarios" — ported (RPC-220, Batch 17). Handled by `run_ported`.
+        // "delete-step" — ported (RPC-221, Batch 15). Handled by `run_ported`.
+        // "delete-tag" — ported (RPC-222, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "delete-work-unit" — ported (RPC-223, Batch 12). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "dependencies" — ported (RPC-224, Batch 14). Handled by `run_ported`.
+        // "discover-event-storm" — ported (RPC-225, Batch 18). Handled by `run_ported`.
+        // "discover-foundation" — ported (RPC-226, Batch 19). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "export-dependencies" — ported (RPC-227, Batch 12). Handled by `run_ported`.
+        // "export-example-map" — ported (RPC-228, Batch 12). Handled by `run_ported`.
+        // "export-work-units" — ported (RPC-229, Batch 12). Handled by `run_ported`.
+        // "format" — ported (RPC-230, Batch 17). Handled by `run_ported`.
+        // "generate-coverage" — ported (RPC-231, Batch 17). Handled by `run_ported`.
+        // "generate-example-mapping-from-event-storm" — ported (RPC-232, Batch 18). Handled by `run_ported`.
+        // "generate-foundation-md" — ported (RPC-233). Handled by `run_ported`.
+        // "generate-scenarios" — ported (RPC-234, Batch 20). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "generate-summary-report" — ported (RPC-235, Batch 17). Handled by `run_ported`.
+        // "generate-tags-md" — ported (RPC-236, Batch 16). Handled by `run_ported`.
+        // "get-scenarios" — ported (RPC-237, Batch 14). Handled by `run_ported`.
+        // "import-example-map" — ported (RPC-238, Batch 17). Handled by `run_ported`.
+        // "init" — ported (RPC-239, Batch 20). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "link-coverage" — ported (RPC-240, Batch 17). Handled by `run_ported`.
+        // "list-attachments" — ported (RPC-241). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-checkpoints" — ported (RPC-242). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-epics" — ported (RPC-243). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-feature-tags" — ported (RPC-244). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-features" — ported (RPC-245). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-foundation-sections" — ported (RPC-246). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-hooks" — ported (RPC-247). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-prefixes" — ported (RPC-248). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-scenario-tags" — ported (RPC-249). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-schedules" — ported (RPC-250). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-tags" — ported (RPC-251). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-virtual-hooks" — ported (RPC-252). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "list-work-units" — ported (RPC-253). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "pause-schedule" — ported (RPC-254, Batch 14). Handled by `run_ported`.
+        // "prioritize-work-unit" — ported (RPC-255, Batch 12). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-bottlenecks" — ported (RPC-256). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-dependency-stats" — ported (RPC-257). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-estimate-accuracy" — ported (RPC-258). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-estimation-guide" — ported (RPC-259). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-example-mapping-stats" — ported (RPC-260). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-metrics" — ported (RPC-261). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-orphans" — ported (RPC-262). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "query-work-units" — ported (RPC-263). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "record-iteration" — ported (RPC-264, Batch 12). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "register-tag" — ported (RPC-265, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-aggregate-from-foundation" — ported (RPC-266, Batch 13). Handled by `run_ported`.
+        // "remove-architecture-note" — ported (RPC-267, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-attachment" — ported (RPC-268, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-capability" — ported (RPC-269, Batch 13). Handled by `run_ported`.
+        // "remove-command-from-foundation" — ported (RPC-270, Batch 13). Handled by `run_ported`.
+        // "remove-dependency" — ported (RPC-271, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-domain-event-from-foundation" — ported (RPC-272, Batch 14). Handled by `run_ported`.
+        // "remove-example" — ported (RPC-273, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-foundation-bounded-context" — ported (RPC-274, Batch 13). Handled by `run_ported`.
+        // "remove-hook" — ported (RPC-275, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-init-files" — ported (RPC-276, Batch 18). Handled by `run_ported`.
+        // "remove-persona" — ported (RPC-277, Batch 13). Handled by `run_ported`.
+        // "remove-question" — ported (RPC-278, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-rule" — ported (RPC-279, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-schedule" — ported (RPC-280, Batch 14). Handled by `run_ported`.
+        // "remove-tag-from-feature" — ported (RPC-281, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-tag-from-scenario" — ported (RPC-282, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "remove-virtual-hook" — ported (RPC-283, Batch 10). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "repair-work-units" — ported (RPC-284, Batch 12). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "report-bug-to-github" — ported (RPC-285, Batch 20). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "research" — ported (RPC-286, Batch 20). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "restore-architecture-note" — ported (RPC-287, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "restore-checkpoint" — ported (RPC-288, Batch 18). Handled by `run_ported`.
+        // "restore-example" — ported (RPC-289, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "restore-question" — ported (RPC-290, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "restore-rule" — ported (RPC-291, Batch 9). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "resume-schedule" — ported (RPC-292, Batch 14). Handled by `run_ported`.
+        // "retag" — ported (RPC-293, Batch 16). Handled by `run_ported`.
+        // "reverse" — ported (RPC-294, Batch 19). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "review" — ported (RPC-295, Batch 20). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "search-implementation" — ported (RPC-296, Batch 16). Handled by `run_ported`.
+        // "search-scenarios" — ported (RPC-297, Batch 16). Handled by `run_ported`.
+        // "set-user-story" — ported (RPC-298, Batch 8). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-acceptance-criteria" — ported (RPC-299). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-coverage" — ported (RPC-300). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-deleted" — ported (RPC-301). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-epic" — ported (RPC-302). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-event-storm" — ported (RPC-303). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-feature" — ported (RPC-304). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-foundation" — ported (RPC-305). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-foundation-event-storm" — ported (RPC-306). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-test-patterns" — ported (RPC-307). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "show-work-unit" — ported (RPC-308). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "suggest-dependencies" — ported (RPC-309, Batch 18). Handled by `run_ported`.
+        // "tag-stats" — ported (RPC-310). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "unlink-coverage" — ported (RPC-311, Batch 16). Handled by `run_ported`.
+        // "update-foundation" — ported (RPC-312, Batch 14). Handled by `run_ported`.
+        // "update-prefix" — ported (RPC-313, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "update-scenario" — ported (RPC-314, Batch 15). Handled by `run_ported`.
+        // "update-step" — ported (RPC-315, Batch 15). Handled by `run_ported`.
+        // "update-tag" — ported (RPC-316, Batch 7). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "update-work-unit" — ported (RPC-317, Batch 12). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "update-work-unit-estimate" — ported (RPC-318, Batch 12). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "update-work-unit-status" — ported (RPC-319, Batch 19). Handled by `run_ported`
+        // before reaching this match; intentionally absent here.
+        // "validate" — ported (RPC-320, Batch 16). Handled by `run_ported`.
+        // "validate-foundation-schema" — ported (RPC-321, Batch 16). Handled by `run_ported`.
+        // "validate-hooks" — ported (RPC-322, Batch 16). Handled by `run_ported`.
+        // "validate-spec-alignment" — ported (RPC-323, Batch 18). Handled by `run_ported`.
+        // "validate-tags" — ported (RPC-324, Batch 16). Handled by `run_ported`.
+        // "validate-work-units" — ported (RPC-325, Batch 16). Handled by `run_ported`.
+        // "workflow-automation" — ported (RPC-326, Batch 18). Handled by `run_ported`.
+        // Unreachable: canonical lookup already validated the
+        // command exists, and every canonical entry has a stub.
         Err(FspecCoreError::UnknownCommand {
             command: name.to_string(),
         })

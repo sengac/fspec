@@ -34,7 +34,7 @@ fn png_bytes() -> Vec<u8> {
     data.extend_from_slice(&[0x00, 0x00, 0x00, 0x01]); // height
     data.extend_from_slice(&[0x08, 0x06, 0x00, 0x00, 0x00]);
     data.extend_from_slice(&[0x1F, 0x15, 0xC4, 0x89]); // CRC
-    // IEND chunk
+                                                       // IEND chunk
     data.extend_from_slice(&[0x00, 0x00, 0x00, 0x00]);
     data.extend_from_slice(b"IEND");
     data.extend_from_slice(&[0xAE, 0x42, 0x60, 0x82]);
@@ -43,8 +43,8 @@ fn png_bytes() -> Vec<u8> {
 
 fn jpeg_bytes() -> Vec<u8> {
     vec![
-        0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00,
-        0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xFF, 0xD9,
+        0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00,
+        0x48, 0x00, 0x48, 0x00, 0x00, 0xFF, 0xD9,
     ]
 }
 
@@ -212,8 +212,7 @@ async fn raw_nul_bytes_on_stdout_trigger_generic_guard() {
     // @step Given a bash command prints "\x00\x01\x02\x03hello" to stdout (bytes with an embedded NUL)
     // @step And the command exits with status 0
     // @step When the Bash tool returns
-    let result =
-        run_bash(r#"printf '\x00\x01\x02\x03hello'"#).await;
+    let result = run_bash(r#"printf '\x00\x01\x02\x03hello'"#).await;
 
     // @step Then the caller receives a ToolError::Execution
     let err = result.expect_err("binary output must produce an error");
@@ -272,8 +271,7 @@ async fn missing_file_error_is_not_intercepted_by_guard() {
     // @step And stdout is empty
     // @step And stderr contains "cat: /tmp/missing.png: No such file or directory"
     // @step When the Bash tool returns
-    let result =
-        run_bash("cat /tmp/this_really_should_not_exist_for_BUG142.png").await;
+    let result = run_bash("cat /tmp/this_really_should_not_exist_for_BUG142.png").await;
 
     // @step Then the caller receives a ToolError::Execution
     let err = result.expect_err("missing file must fail");
@@ -303,8 +301,7 @@ async fn mixed_text_and_png_payload_is_intercepted() {
 
     // @step And the command exits with status 0
     // @step When the Bash tool returns
-    let result =
-        run_bash(&format!("{{ printf 'header\\n'; cat '{path}'; }}")).await;
+    let result = run_bash(&format!("{{ printf 'header\\n'; cat '{path}'; }}")).await;
 
     // @step Then the caller receives a ToolError::Execution
     let err = result.expect_err("mixed binary payload must fail");
@@ -367,8 +364,7 @@ async fn binary_payload_with_nonzero_exit_prefers_guard_error() {
     let path = file.path().to_string_lossy().to_string();
 
     // @step When the Bash tool returns
-    let result =
-        run_bash(&format!("cat '{path}'; exit 2")).await;
+    let result = run_bash(&format!("cat '{path}'; exit 2")).await;
 
     // @step Then the caller receives a ToolError::Execution
     let err = result.expect_err("failure path must still guard");

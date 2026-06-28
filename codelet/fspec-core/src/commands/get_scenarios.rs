@@ -127,9 +127,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
 
             // AND-logic against the feature ∪ scenario tag union.
             if !tags.is_empty() {
-                let matches_all = tags.iter().all(|t| {
-                    feature_tags.contains(t) || scenario_tags.contains(t)
-                });
+                let matches_all = tags
+                    .iter()
+                    .all(|t| feature_tags.contains(t) || scenario_tags.contains(t));
                 if !matches_all {
                     continue;
                 }

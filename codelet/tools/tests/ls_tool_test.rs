@@ -1,14 +1,13 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for LsTool implementation
 //! Feature: spec/features/add-ls-tool-for-directory-listing.feature
 
-use uuid::Uuid;
 use codelet_tools::LsTool;
 use rig::tool::Tool;
 use std::fs::{self, File};
 use std::io::Write;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 /// Scenario: List directory returns files and subdirectories with metadata
 #[tokio::test]

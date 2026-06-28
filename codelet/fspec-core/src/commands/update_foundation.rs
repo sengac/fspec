@@ -193,11 +193,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         result["systemReminder"] = Value::String(reminder);
     }
 
-    serde_json::to_string(&result).map_err(|e| {
-        FspecCoreError::InvalidArgs {
-            command: "update-foundation",
-            reason: format!("failed to serialize result: {e}"),
-        }
+    serde_json::to_string(&result).map_err(|e| FspecCoreError::InvalidArgs {
+        command: "update-foundation",
+        reason: format!("failed to serialize result: {e}"),
     })
 }
 
@@ -224,7 +222,11 @@ fn update_json_field(foundation: &mut Value, section: &str, content: &str) -> bo
         }
         // Problem space fields
         "problemTitle" => {
-            set_nested(foundation, &["problemSpace", "primaryProblem", "title"], value);
+            set_nested(
+                foundation,
+                &["problemSpace", "primaryProblem", "title"],
+                value,
+            );
             true
         }
         "problemDefinition" | "problemDescription" => {
@@ -236,7 +238,11 @@ fn update_json_field(foundation: &mut Value, section: &str, content: &str) -> bo
             true
         }
         "problemImpact" => {
-            set_nested(foundation, &["problemSpace", "primaryProblem", "impact"], value);
+            set_nested(
+                foundation,
+                &["problemSpace", "primaryProblem", "impact"],
+                value,
+            );
             true
         }
         // Solution space fields
@@ -246,7 +252,10 @@ fn update_json_field(foundation: &mut Value, section: &str, content: &str) -> bo
         }
         // Legacy mappings for backward compatibility — map to
         // solutionSpace.overview (old schema fields).
-        "testingStrategy" | "developmentTools" | "architecturePattern" | "painPoints"
+        "testingStrategy"
+        | "developmentTools"
+        | "architecturePattern"
+        | "painPoints"
         | "methodology" => {
             set_nested(foundation, &["solutionSpace", "overview"], value);
             true
@@ -404,7 +413,10 @@ fn scan_draft_for_next_field_reminder(draft: &Value, project_root: &Path) -> Opt
             "problemSpace.primaryProblem.description",
             draft.pointer("/problemSpace/primaryProblem/description"),
         ),
-        ("solutionSpace.overview", draft.pointer("/solutionSpace/overview")),
+        (
+            "solutionSpace.overview",
+            draft.pointer("/solutionSpace/overview"),
+        ),
         (
             "solutionSpace.capabilities",
             draft.pointer("/solutionSpace/capabilities"),
@@ -429,8 +441,7 @@ fn scan_draft_for_next_field_reminder(draft: &Value, project_root: &Path) -> Opt
             other => other.to_string(),
         };
 
-        let has_placeholder =
-            value_str.contains("[QUESTION:") || value_str.contains("[DETECTED:");
+        let has_placeholder = value_str.contains("[QUESTION:") || value_str.contains("[DETECTED:");
 
         if has_placeholder && next_field.is_none() {
             next_field = Some((path, i + 1));
@@ -591,7 +602,10 @@ mod tests {
             &["problemSpace", "primaryProblem", "title"],
             Value::String("T".to_string()),
         );
-        assert_eq!(v["problemSpace"]["primaryProblem"]["title"].as_str(), Some("T"));
+        assert_eq!(
+            v["problemSpace"]["primaryProblem"]["title"].as_str(),
+            Some("T")
+        );
     }
 
     #[test]
@@ -680,8 +694,14 @@ mod tests {
 
     #[test]
     fn extract_detected_value_works() {
-        assert_eq!(extract_detected_value("[DETECTED: web-app]").as_deref(), Some("web-app"));
-        assert_eq!(extract_detected_value("[DETECTED:  cli-tool ]").as_deref(), Some("cli-tool"));
+        assert_eq!(
+            extract_detected_value("[DETECTED: web-app]").as_deref(),
+            Some("web-app")
+        );
+        assert_eq!(
+            extract_detected_value("[DETECTED:  cli-tool ]").as_deref(),
+            Some("cli-tool")
+        );
         assert_eq!(extract_detected_value("no marker"), None);
     }
 

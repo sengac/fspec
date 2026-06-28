@@ -297,11 +297,20 @@ fn scenario_filter_samples_by_focus_substring() {
 
     // @step When the profile result is built with focus set to a substring
     //        matching only one of those call chains
-    let output = attribute_samples(&stacks, 1.0, 250, 20, Some("spawn_subordinate_forwarding_task"));
+    let output = attribute_samples(
+        &stacks,
+        1.0,
+        250,
+        20,
+        Some("spawn_subordinate_forwarding_task"),
+    );
 
     // @step Then every entry in hot_stacks contains at least one frame whose
     //        symbol contains the focus substring
-    assert!(!output.hot_stacks.is_empty(), "hot_stacks must be non-empty after focus filter");
+    assert!(
+        !output.hot_stacks.is_empty(),
+        "hot_stacks must be non-empty after focus filter"
+    );
     for stack in &output.hot_stacks {
         let has_focus = stack
             .frames
@@ -389,9 +398,7 @@ fn scenario_walk_leaf_to_root_skipping_noise_frames() {
 
     // Sanity: both blocklist prefixes are still in the noise set so this
     // contract cannot drift.
-    assert!(NOISE_FRAME_PREFIXES
-        .iter()
-        .any(|p| p.contains("os_unfair")));
+    assert!(NOISE_FRAME_PREFIXES.iter().any(|p| p.contains("os_unfair")));
     assert!(NOISE_FRAME_PREFIXES
         .iter()
         .any(|p| p.contains("napi_register_module_v1")));
@@ -435,16 +442,12 @@ fn scenario_credit_only_outermost_inlined_symbol_per_physical_frame() {
 
     // @step Then the attributed label matches the outermost inlined symbol name
     assert!(
-        output.scopes_by_calls[0]
-            .label
-            .contains("outer_wrapper"),
+        output.scopes_by_calls[0].label.contains("outer_wrapper"),
         "attributed label must be the outermost inlined symbol, got {:?}",
         output.scopes_by_calls[0].label
     );
     assert!(
-        !output.scopes_by_calls[0]
-            .label
-            .contains("leaf_helper"),
+        !output.scopes_by_calls[0].label.contains("leaf_helper"),
         "the innermost inlined symbol must NOT be credited, got {:?}",
         output.scopes_by_calls[0].label
     );

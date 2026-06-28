@@ -246,7 +246,10 @@ fn matching_features(project_root: &Path, id: &str) -> Vec<MatchedFeature> {
                     .collect(),
             })
             .collect();
-        out.push(MatchedFeature { rel_path, scenarios });
+        out.push(MatchedFeature {
+            rel_path,
+            scenarios,
+        });
     }
     out
 }
@@ -423,9 +426,8 @@ fn format_validation_error(missing: &[String], work_unit_type: &str) -> String {
     lines.push("     - Put the @step comment right before that line".to_string());
     lines.push("  4. Use the exact text shown above with // @step prefix".to_string());
     lines.push(String::new());
-    lines.push(
-        "⚠️  If you have duplicate Given/When/Then comments, remove them first:".to_string(),
-    );
+    lines
+        .push("⚠️  If you have duplicate Given/When/Then comments, remove them first:".to_string());
     lines.push("     - @step comments replace existing step comments".to_string());
     lines.push("     - Do NOT create redundant comments for the same step".to_string());
     lines.push("     - Each step should have exactly ONE @step comment".to_string());
@@ -446,7 +448,11 @@ fn format_validation_error(missing: &[String], work_unit_type: &str) -> String {
         );
         lines.push(String::new());
     } else {
-        let type_label = if work_unit_type == "story" { "story" } else { "bug" };
+        let type_label = if work_unit_type == "story" {
+            "story"
+        } else {
+            "bug"
+        };
         lines.push(format!(
             "⚠️  Step validation is MANDATORY for {type_label} work units."
         ));
@@ -729,7 +735,8 @@ mod tests {
             "When I enter valid credentials".to_string(),
             "Then I should see the dashboard".to_string(),
         ];
-        let test = "// @step Given I am on the login page\n// @step When I enter valid credentials\n";
+        let test =
+            "// @step Given I am on the login page\n// @step When I enter valid credentials\n";
         let result = validate_steps(&steps, test);
         assert!(!result.valid);
         assert_eq!(result.missing_steps.len(), 1);

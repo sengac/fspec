@@ -16,12 +16,17 @@
 
 mod source_helpers;
 
-use source_helpers::{collect_rs_files, read_to_string_or_panic, strip_rust_comments, workspace_root};
+use source_helpers::{
+    collect_rs_files, read_to_string_or_panic, strip_rust_comments, workspace_root,
+};
 
 #[test]
 fn scenario_7_embedded_transport_requires_tokio_handle_at_construction() {
     // @step Given the codelet/rpc-embedded crate exposes an EmbeddedTransport public constructor
-    let lib_path = workspace_root().join("rpc-embedded").join("src").join("lib.rs");
+    let lib_path = workspace_root()
+        .join("rpc-embedded")
+        .join("src")
+        .join("lib.rs");
     let lib_src = read_to_string_or_panic(&lib_path);
 
     // @step When I inspect the public type signature of the constructor and search the codelet/rpc-embedded source for runtime construction calls
@@ -114,8 +119,12 @@ fn scenario_7_embedded_transport_requires_tokio_handle_at_construction() {
 #[test]
 fn scenario_8_work_unit_info_is_defined_once_in_rpc_types_and_re_exported_by_napi() {
     // @step Given codelet/rpc-types defines a public WorkUnitInfo struct with fields id, title, work_type, status, description, estimate, and epic
-    let rpc_types_lib =
-        read_to_string_or_panic(&workspace_root().join("rpc-types").join("src").join("lib.rs"));
+    let rpc_types_lib = read_to_string_or_panic(
+        &workspace_root()
+            .join("rpc-types")
+            .join("src")
+            .join("lib.rs"),
+    );
     let required_fields = [
         "pub id: String",
         "pub title: String",

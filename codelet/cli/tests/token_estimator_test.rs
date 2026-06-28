@@ -5,13 +5,13 @@
 //!
 //! Tests for tiktoken-rs based token estimation and file read limits.
 
-use uuid::Uuid;
 use codelet_common::token_estimator::{count_tokens, max_file_tokens, DEFAULT_MAX_FILE_TOKENS};
-use codelet_tools::read::{ReadArgs, ReadTool};
 use codelet_tools::error::ToolError;
+use codelet_tools::read::{ReadArgs, ReadTool};
 use lopdf::{dictionary, Document, Object, Stream};
 use rig::tool::Tool;
 use serial_test::serial;
+use uuid::Uuid;
 
 // ============================================
 // TOKEN ESTIMATION WITH TIKTOKEN-RS
@@ -93,7 +93,10 @@ async fn test_read_file_under_token_limit() {
         .await;
 
     // @step Then the file content should be returned successfully
-    assert!(result.is_ok(), "Read should succeed for file under token limit");
+    assert!(
+        result.is_ok(),
+        "Read should succeed for file under token limit"
+    );
 
     // @step And no token limit error should be raised
     // Already verified by is_ok()
@@ -125,7 +128,10 @@ async fn test_read_file_exceeding_token_limit() {
         .await;
 
     // @step Then a token limit error should be raised
-    assert!(result.is_err(), "Read should fail for file over token limit");
+    assert!(
+        result.is_err(),
+        "Read should fail for file over token limit"
+    );
     let err = result.unwrap_err();
 
     // @step And the error should be a TokenLimit error
@@ -136,8 +142,14 @@ async fn test_read_file_exceeding_token_limit() {
 
     // @step And the error message should include relevant information
     let err_msg = err.to_string();
-    assert!(err_msg.contains("Token limit"), "Error should mention token limit");
-    assert!(err_msg.contains("bundle.js"), "Error should include file path");
+    assert!(
+        err_msg.contains("Token limit"),
+        "Error should mention token limit"
+    );
+    assert!(
+        err_msg.contains("bundle.js"),
+        "Error should include file path"
+    );
 
     // Cleanup
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");
@@ -161,7 +173,7 @@ async fn test_read_image_file_exempt() {
     content.extend_from_slice(b"IHDR");
     content.extend_from_slice(&[0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0]); // 1x1 RGB
     content.extend_from_slice(&[0x90, 0x77, 0x53, 0xDE]); // CRC
-    // Add IEND chunk
+                                                          // Add IEND chunk
     content.extend_from_slice(&[0, 0, 0, 0]);
     content.extend_from_slice(b"IEND");
     content.extend_from_slice(&[0xAE, 0x42, 0x60, 0x82]);
@@ -179,7 +191,10 @@ async fn test_read_image_file_exempt() {
         .await;
 
     // @step Then the image should be processed successfully
-    assert!(result.is_ok(), "Image read should succeed despite low token limit");
+    assert!(
+        result.is_ok(),
+        "Image read should succeed despite low token limit"
+    );
 
     // @step And the token limit check should be skipped
     // Verified by success - would fail if token limit was applied
@@ -217,7 +232,11 @@ async fn test_read_pdf_file_exempt() {
 
     // @step Then the PDF should be processed successfully
     // @step And the token limit check should be skipped
-    assert!(result.is_ok(), "PDF read should succeed despite low token limit: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "PDF read should succeed despite low token limit: {:?}",
+        result.err()
+    );
 
     // Cleanup
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");
@@ -358,7 +377,10 @@ async fn test_interactive_helpers_uses_token_estimator() {
     // Tiktoken gives more accurate results than bytes/4
     // "Hello, world!" = 4 tokens with tiktoken vs 3 with bytes/4
     assert!(token_count > 0, "Token count should be positive");
-    assert!(token_count < 10, "Token count for short text should be small");
+    assert!(
+        token_count < 10,
+        "Token count for short text should be small"
+    );
 
     // @step And the APPROX_BYTES_PER_TOKEN constant should be removed
     // Verified by successful compilation - removed constant would cause errors
@@ -418,9 +440,9 @@ async fn test_compactor_uses_token_estimator() {
 #[serial]
 async fn test_debug_line_and_token_limits() {
     use codelet_common::token_estimator::count_tokens;
-    
+
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");
-    
+
     // Create file with 5000 lines
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("big.js");
@@ -429,7 +451,7 @@ async fn test_debug_line_and_token_limits() {
         content.push_str(&format!("const variable_{i} = someValue;\n"));
     }
     std::fs::write(&file_path, &content).expect("Failed to write test file");
-    
+
     let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
@@ -447,20 +469,30 @@ async fn test_debug_line_and_token_limits() {
             let content = parsed["content"].as_str().unwrap();
             let line_count = content.lines().count();
             let token_count = count_tokens(content);
-            
+
             println!("=== DEBUG OUTPUT ===");
             println!("Input file lines: 5000");
             println!("Output lines: {line_count}");
             println!("Output tokens: {token_count}");
             println!("First line: {}", content.lines().next().unwrap_or("N/A"));
             println!("Last 3 lines:");
-            for line in content.lines().rev().take(3).collect::<Vec<_>>().into_iter().rev() {
+            for line in content
+                .lines()
+                .rev()
+                .take(3)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+            {
                 println!("  {line}");
             }
             println!("===================");
-            
+
             // Verify 2000 line limit
-            assert!(line_count <= 2005, "Should be ~2000 lines, got {line_count}");
+            assert!(
+                line_count <= 2005,
+                "Should be ~2000 lines, got {line_count}"
+            );
         }
         Err(e) => {
             println!("ERROR (might be token limit): {e}");

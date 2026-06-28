@@ -214,7 +214,8 @@ fn a_feature_work_unit_depends_on_a_same_prefix_infrastructure_work_unit_with_hi
     // @step And that suggestion reason contains 'infrastructure work (schema/migration) should complete before feature work'
     let reason = found.unwrap()["reason"].as_str().unwrap_or("");
     assert!(
-        reason.contains("infrastructure work (schema/migration) should complete before feature work"),
+        reason
+            .contains("infrastructure work (schema/migration) should complete before feature work"),
         "reason missing substring; got: {reason}"
     );
 }

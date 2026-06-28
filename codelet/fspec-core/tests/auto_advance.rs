@@ -119,10 +119,7 @@ fn scenario_advances_testing_unit_to_implementing_on_tests_pass() {
         .unwrap()
         .iter()
         .any(|v| v.as_str() == Some("AUTH-001"));
-    assert!(
-        implementing_has_auth,
-        "must be present in implementing"
-    );
+    assert!(implementing_has_auth, "must be present in implementing");
 }
 
 // ─────────────────────────────────────────────────────────────────────────

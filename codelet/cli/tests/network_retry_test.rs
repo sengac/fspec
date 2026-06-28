@@ -8,7 +8,7 @@
 //! codelet_cli::interactive — no copies, no mocks.
 
 use codelet_cli::interactive::{
-    is_transient_network_error, MAX_NETWORK_RETRIES, network_retry_delay,
+    is_transient_network_error, network_retry_delay, MAX_NETWORK_RETRIES,
 };
 use std::time::Duration;
 
@@ -140,7 +140,10 @@ fn test_user_interruption_during_backoff() {
     // (verified by stream_loop integration — breaks out of retry on is_interrupted)
     // Unit-level: verify delays are reasonable so interruption is responsive
     let max_single_delay = network_retry_delay(MAX_NETWORK_RETRIES);
-    assert!(max_single_delay <= Duration::from_secs(5), "Max single delay should be <=5s for responsive interruption");
+    assert!(
+        max_single_delay <= Duration::from_secs(5),
+        "Max single delay should be <=5s for responsive interruption"
+    );
 }
 
 // =============================================================================
@@ -158,11 +161,17 @@ fn test_non_network_errors_not_retried() {
     assert!(!is_transient_network_error("authentication failed"));
     assert!(!is_transient_network_error("unauthorized"));
     assert!(!is_transient_network_error("prompt is too long"));
-    assert!(!is_transient_network_error("maximum context length exceeded"));
+    assert!(!is_transient_network_error(
+        "maximum context length exceeded"
+    ));
     assert!(!is_transient_network_error("rate limit exceeded"));
     assert!(!is_transient_network_error("429 Too Many Requests"));
-    assert!(!is_transient_network_error("Tool call truncated due to output token limit"));
-    assert!(!is_transient_network_error("Failed to parse JSON: expected ','"));
+    assert!(!is_transient_network_error(
+        "Tool call truncated due to output token limit"
+    ));
+    assert!(!is_transient_network_error(
+        "Failed to parse JSON: expected ','"
+    ));
     assert!(!is_transient_network_error("model not found: claude-4"));
     assert!(!is_transient_network_error("content policy violation"));
     assert!(!is_transient_network_error(""));
@@ -228,11 +237,12 @@ fn test_retry_counter_resets() {
 
     // @step Then the retry counter resets to zero
     // @step And future network errors get the full 3 retry attempts again
-    let total_budget: Duration = (1..=MAX_NETWORK_RETRIES)
-        .map(network_retry_delay)
-        .sum();
-    assert_eq!(total_budget, Duration::from_millis(7000),
-        "Full budget after reset should be 7s (1+2+4)");
+    let total_budget: Duration = (1..=MAX_NETWORK_RETRIES).map(network_retry_delay).sum();
+    assert_eq!(
+        total_budget,
+        Duration::from_millis(7000),
+        "Full budget after reset should be 7s (1+2+4)"
+    );
 }
 
 // =============================================================================
@@ -247,26 +257,40 @@ fn test_transient_error_patterns_detected() {
 
     // @step Then it detects connection reset, connection refused, and connection closed errors
     assert!(is_transient_network_error("connection reset by peer"));
-    assert!(is_transient_network_error("Connection reset during streaming"));
+    assert!(is_transient_network_error(
+        "Connection reset during streaming"
+    ));
     assert!(is_transient_network_error("connection refused"));
-    assert!(is_transient_network_error("Connection refused: 127.0.0.1:443"));
-    assert!(is_transient_network_error("connection closed before message completed"));
+    assert!(is_transient_network_error(
+        "Connection refused: 127.0.0.1:443"
+    ));
+    assert!(is_transient_network_error(
+        "connection closed before message completed"
+    ));
 
     // @step And it detects broken pipe, DNS error, and network unreachable errors
     assert!(is_transient_network_error("broken pipe"));
     assert!(is_transient_network_error("Broken pipe during write"));
-    assert!(is_transient_network_error("DNS error: failed to resolve api.anthropic.com"));
+    assert!(is_transient_network_error(
+        "DNS error: failed to resolve api.anthropic.com"
+    ));
     assert!(is_transient_network_error("network is unreachable"));
     assert!(is_transient_network_error("connection aborted"));
 
     // @step And it detects timeout, hyper, unexpected EOF, and SSL errors
     assert!(is_transient_network_error("operation timed out"));
     assert!(is_transient_network_error("request timed out"));
-    assert!(is_transient_network_error("hyper::Error(IncompleteMessage)"));
-    assert!(is_transient_network_error("stream closed before completion"));
+    assert!(is_transient_network_error(
+        "hyper::Error(IncompleteMessage)"
+    ));
+    assert!(is_transient_network_error(
+        "stream closed before completion"
+    ));
     assert!(is_transient_network_error("unexpected eof while reading"));
     assert!(is_transient_network_error("incomplete message"));
-    assert!(is_transient_network_error("ssl routines:OPENSSL internal error"));
+    assert!(is_transient_network_error(
+        "ssl routines:OPENSSL internal error"
+    ));
     assert!(is_transient_network_error("certificate verify failed"));
 
     // @step And it detects SSE HTTP client errors with nested error wrapping
@@ -284,5 +308,7 @@ fn test_transient_error_patterns_detected() {
     assert!(!is_transient_network_error("rate limit exceeded"));
     assert!(!is_transient_network_error("invalid api key"));
     assert!(!is_transient_network_error("content policy violation"));
-    assert!(!is_transient_network_error("context_length_exceeded timed out"));
+    assert!(!is_transient_network_error(
+        "context_length_exceeded timed out"
+    ));
 }

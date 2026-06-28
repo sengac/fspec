@@ -169,34 +169,37 @@ fn parse_action_with_url(
 /// Handles both cases:
 /// 1. `action` is already a JSON object: `{"action": {"type": "connect", "url": "..."}}`
 /// 2. `action` is a JSON string that needs parsing: `{"action": "{\"type\": \"connect\", ...}"}`
-fn parse_nested_action_schema(input: &Value, tool_name: &'static str) -> Result<InternalBridgeParams, ToolError> {
-    let action_value = input
-        .get("action")
-        .ok_or_else(|| ToolError::Validation {
-            tool: tool_name,
-            message: "Missing 'action' field".to_string(),
-        })?;
+fn parse_nested_action_schema(
+    input: &Value,
+    tool_name: &'static str,
+) -> Result<InternalBridgeParams, ToolError> {
+    let action_value = input.get("action").ok_or_else(|| ToolError::Validation {
+        tool: tool_name,
+        message: "Missing 'action' field".to_string(),
+    })?;
 
     // Handle case where action is a JSON string that needs parsing
     let action: std::borrow::Cow<'_, Value> = if let Some(action_str) = action_value.as_str() {
         // Try to parse the string as JSON
-        let parsed: Value = serde_json::from_str(action_str).map_err(|e| ToolError::Validation {
-            tool: tool_name,
-            message: format!("Invalid JSON in 'action' field: {e}"),
-        })?;
+        let parsed: Value =
+            serde_json::from_str(action_str).map_err(|e| ToolError::Validation {
+                tool: tool_name,
+                message: format!("Invalid JSON in 'action' field: {e}"),
+            })?;
         std::borrow::Cow::Owned(parsed)
     } else {
         // Already a JSON object
         std::borrow::Cow::Borrowed(action_value)
     };
 
-    let action_type = action
-        .get("type")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| ToolError::Validation {
-            tool: tool_name,
-            message: "Missing 'action.type' field".to_string(),
-        })?;
+    let action_type =
+        action
+            .get("type")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| ToolError::Validation {
+                tool: tool_name,
+                message: "Missing 'action.type' field".to_string(),
+            })?;
 
     let url = action.get("url").and_then(|v| v.as_str());
     parse_action_with_url(action_type, url, tool_name, "url")
@@ -478,7 +481,10 @@ mod tests {
         let input = json!({});
         let result = facade.map_params(input);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Missing 'action' field"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Missing 'action' field"));
     }
 
     #[test]
@@ -491,7 +497,10 @@ mod tests {
         });
         let result = facade.map_params(input);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Missing 'url' field"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Missing 'url' field"));
     }
 
     #[test]
@@ -504,7 +513,10 @@ mod tests {
         });
         let result = facade.map_params(input);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Unknown action type"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Unknown action type"));
     }
 
     #[test]

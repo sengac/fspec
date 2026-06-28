@@ -13,7 +13,9 @@
 
 mod source_helpers;
 
-use source_helpers::{collect_rs_files, read_to_string_or_panic, strip_rust_comments, workspace_root};
+use source_helpers::{
+    collect_rs_files, read_to_string_or_panic, strip_rust_comments, workspace_root,
+};
 
 #[test]
 fn scenario_rpc_007_source_shape_invariants() {
@@ -72,7 +74,14 @@ fn scenario_rpc_007_source_shape_invariants() {
     for ty in lifted_types {
         definition_sites.insert(ty, Vec::new());
     }
-    for crate_name in ["rpc-types", "rpc", "rpc-server", "rpc-embedded", "napi", "core"] {
+    for crate_name in [
+        "rpc-types",
+        "rpc",
+        "rpc-server",
+        "rpc-embedded",
+        "napi",
+        "core",
+    ] {
         let src = root.join(crate_name).join("src");
         if !src.exists() {
             continue;
@@ -138,13 +147,10 @@ fn scenario_rpc_007_source_shape_invariants() {
     }
 
     // @step And codelet/napi re-exports each type via the existing #[cfg_attr(feature = "napi", napi(...))] pattern
-    let napi_lib =
-        read_to_string_or_panic(&root.join("napi").join("src").join("lib.rs"));
-    let napi_types =
-        read_to_string_or_panic(&root.join("napi").join("src").join("types.rs"));
-    let napi_session_manager = read_to_string_or_panic(
-        &root.join("napi").join("src").join("session_manager.rs"),
-    );
+    let napi_lib = read_to_string_or_panic(&root.join("napi").join("src").join("lib.rs"));
+    let napi_types = read_to_string_or_panic(&root.join("napi").join("src").join("types.rs"));
+    let napi_session_manager =
+        read_to_string_or_panic(&root.join("napi").join("src").join("session_manager.rs"));
     for ty in lifted_types {
         let appears_via_use = napi_lib.contains(&format!("codelet_rpc_types::{ty}"))
             || napi_types.contains(&format!("codelet_rpc_types::{ty}"))

@@ -45,8 +45,7 @@ fn test_apply_writes_conflict_markers_to_worktree_file() {
     let tmp_dir = common::setup_test_repo();
     let repo_path = tmp_dir.path();
 
-    let base_content =
-        "line1\nline2\nline3\nline4\nline5\nline6\nThe Spec-Driven\nline8\n";
+    let base_content = "line1\nline2\nline3\nline4\nline5\nline6\nThe Spec-Driven\nline8\n";
     fs::write(repo_path.join("README.md"), base_content).expect("write base");
     Command::new("git")
         .args(["add", "."])
@@ -67,13 +66,11 @@ fn test_apply_writes_conflict_markers_to_worktree_file() {
     let worktree_path = repo_path.join(FSPEC_WORKTREES_DIR).join(session_id);
 
     // Session modifies line 7
-    let session_content =
-        "line1\nline2\nline3\nline4\nline5\nline6\nDa Spec-Driven\nline8\n";
+    let session_content = "line1\nline2\nline3\nline4\nline5\nline6\nDa Spec-Driven\nline8\n";
     fs::write(worktree_path.join("README.md"), session_content).expect("write session");
 
     // Main also modifies line 7
-    let main_content =
-        "line1\nline2\nline3\nline4\nline5\nline6\nThe Spec-Driven (v2.0)\nline8\n";
+    let main_content = "line1\nline2\nline3\nline4\nline5\nline6\nThe Spec-Driven (v2.0)\nline8\n";
     fs::write(repo_path.join("README.md"), main_content).expect("write main");
 
     // When apply_session_changes is called
@@ -172,11 +169,7 @@ fn test_apply_auto_merges_non_overlapping_changes() {
     // Main modifies lines 18-19 (bottom, no overlap)
     base_lines[17] = "MAIN_EDIT_18".to_string();
     base_lines[18] = "MAIN_EDIT_19".to_string();
-    fs::write(
-        repo_path.join("src/app.ts"),
-        base_lines.join("\n") + "\n",
-    )
-    .expect("write main");
+    fs::write(repo_path.join("src/app.ts"), base_lines.join("\n") + "\n").expect("write main");
 
     // When apply_session_changes is called
     let result = apply_session_changes(repo_path, session_id);
@@ -189,8 +182,7 @@ fn test_apply_auto_merges_non_overlapping_changes() {
     );
 
     // And main should have both changes merged
-    let main_content =
-        fs::read_to_string(repo_path.join("src/app.ts")).expect("read main");
+    let main_content = fs::read_to_string(repo_path.join("src/app.ts")).expect("read main");
     assert!(
         main_content.contains("SESSION_EDIT_2"),
         "Main should contain session edit"
@@ -226,11 +218,7 @@ fn test_apply_new_file_conflict_writes_markers() {
     let worktree_path = repo_path.join(FSPEC_WORKTREES_DIR).join(session_id);
 
     // Session adds utils.ts
-    fs::write(
-        worktree_path.join("utils.ts"),
-        "export const x = 1;\n",
-    )
-    .expect("write session");
+    fs::write(worktree_path.join("utils.ts"), "export const x = 1;\n").expect("write session");
 
     // Main also adds utils.ts with different content
     fs::write(repo_path.join("utils.ts"), "export const x = 2;\n").expect("write main");
@@ -247,8 +235,7 @@ fn test_apply_new_file_conflict_writes_markers() {
     }
 
     // Worktree file should have conflict markers
-    let content =
-        fs::read_to_string(worktree_path.join("utils.ts")).expect("read worktree");
+    let content = fs::read_to_string(worktree_path.join("utils.ts")).expect("read worktree");
     assert!(
         content.contains("<<<<<<< session (your changes)"),
         "New-file conflict should have session marker. Got:\n{}",
@@ -378,8 +365,7 @@ fn test_apply_identical_changes_no_conflict() {
     );
 
     // Main should have the content without conflict markers
-    let main_content =
-        fs::read_to_string(repo_path.join("README.md")).expect("read main");
+    let main_content = fs::read_to_string(repo_path.join("README.md")).expect("read main");
     assert!(main_content.contains("Da"), "Should contain the change");
     assert!(
         !main_content.contains("<<<<<<<"),

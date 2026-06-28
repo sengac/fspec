@@ -192,9 +192,7 @@ fn insert_or_replace_doc_string(content: &str, text: &str) -> Result<String, Fsp
     while i < lines.len() {
         let line = lines[i].trim();
 
-        if line.starts_with("Background:")
-            || line.starts_with("Scenario:")
-            || line.starts_with('@')
+        if line.starts_with("Background:") || line.starts_with("Scenario:") || line.starts_with('@')
         {
             break;
         }

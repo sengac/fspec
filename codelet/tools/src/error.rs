@@ -46,7 +46,9 @@ pub enum ToolError {
     Language { tool: &'static str, message: String },
 
     /// Token limit exceeded - file content exceeds maximum token limit (PROV-002)
-    #[error("Token limit exceeded: {file_path} has ~{estimated_tokens} tokens (limit: {max_tokens})")]
+    #[error(
+        "Token limit exceeded: {file_path} has ~{estimated_tokens} tokens (limit: {max_tokens})"
+    )]
     TokenLimit {
         tool: &'static str,
         file_path: String,
@@ -110,7 +112,7 @@ mod tests {
             message: "Command failed with exit code 1".to_string(),
         };
         assert_eq!(err.to_string(), "Command failed with exit code 1");
-        
+
         // File errors should show just the message
         let err = ToolError::File {
             tool: "read",

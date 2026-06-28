@@ -47,7 +47,11 @@ const FEATURE_LOGIN_PLAIN: &str = "Feature: Login\n  Scenario: A\n    Given x\n"
 fn scenario_adds_background_to_feature_with_no_existing_background() {
     // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-background with feature='spec/features/login.feature' and text='As a user\nI want to log in\nSo that I access my account'
     let result = dispatch_command(req(
@@ -84,10 +88,22 @@ fn scenario_adds_background_to_feature_with_no_existing_background() {
     );
 
     // @step And the Background block appears after the 'Feature: Login' line and before the 'Scenario: A' line
-    let feat = lines.iter().position(|l| *l == "Feature: Login").expect("Feature line");
-    let bg = lines.iter().position(|l| *l == "  Background: User Story").expect("Background line");
-    let scen = lines.iter().position(|l| l.trim() == "Scenario: A").expect("Scenario line");
-    assert!(feat < bg && bg < scen, "expected Feature < Background < Scenario; got {feat}/{bg}/{scen}");
+    let feat = lines
+        .iter()
+        .position(|l| *l == "Feature: Login")
+        .expect("Feature line");
+    let bg = lines
+        .iter()
+        .position(|l| *l == "  Background: User Story")
+        .expect("Background line");
+    let scen = lines
+        .iter()
+        .position(|l| l.trim() == "Scenario: A")
+        .expect("Scenario line");
+    assert!(
+        feat < bg && bg < scen,
+        "expected Feature < Background < Scenario; got {feat}/{bg}/{scen}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -98,7 +114,11 @@ fn scenario_adds_background_to_feature_with_no_existing_background() {
 fn scenario_empty_text_is_rejected_and_file_untouched() {
     // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
     let pre_bytes = fs::read(tmp.path().join("spec/features/login.feature")).unwrap();
 
     // @step When I dispatch add-background with feature='spec/features/login.feature' and text=''
@@ -130,7 +150,11 @@ fn scenario_empty_text_is_rejected_and_file_untouched() {
 fn scenario_whitespace_only_text_is_rejected() {
     // @step Given a project root tempdir with spec/features/login.feature containing only 'Feature: Login\n  Scenario: A\n    Given x\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/login.feature", FEATURE_LOGIN_PLAIN);
+    write_feature(
+        tmp.path(),
+        "spec/features/login.feature",
+        FEATURE_LOGIN_PLAIN,
+    );
 
     // @step When I dispatch add-background with feature='spec/features/login.feature' and text='   '
     let result = dispatch_command(req(
@@ -205,7 +229,10 @@ fn scenario_bare_feature_name_resolves_by_basename() {
     // @step And the dispatcher message contains 'Added background to dashboard'
     let data: Value = serde_json::from_str(&result.data).expect("parse data json");
     let msg = data["message"].as_str().unwrap_or("");
-    assert!(msg.contains("Added background to dashboard"), "unexpected message: {msg}");
+    assert!(
+        msg.contains("Added background to dashboard"),
+        "unexpected message: {msg}"
+    );
 
     // @step And the file spec/features/dashboard.feature on disk contains the line '  Background: User Story'
     let after = read_feature(tmp.path(), "spec/features/dashboard.feature");
@@ -255,8 +282,14 @@ fn scenario_replaces_existing_background_in_place() {
     );
 
     // @step And the file on disk contains exactly one 'Background: User Story' line
-    let count = after.lines().filter(|l| l.trim() == "Background: User Story").count();
-    assert_eq!(count, 1, "expected exactly one Background line; got {count}:\n{after}");
+    let count = after
+        .lines()
+        .filter(|l| l.trim() == "Background: User Story")
+        .count();
+    assert_eq!(
+        count, 1,
+        "expected exactly one Background line; got {count}:\n{after}"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -288,10 +321,22 @@ fn scenario_inserts_background_after_feature_doc_string() {
     // @step And the Background block appears after the closing doc-string fence and before the 'Scenario: A' line
     let after = read_feature(tmp.path(), "spec/features/api.feature");
     let lines: Vec<&str> = after.lines().collect();
-    let last_fence = lines.iter().rposition(|l| l.trim() == "\"\"\"").expect("closing fence");
-    let bg = lines.iter().position(|l| l.trim() == "Background: User Story").expect("Background line");
-    let scen = lines.iter().position(|l| l.trim() == "Scenario: A").expect("Scenario line");
-    assert!(last_fence < bg && bg < scen, "expected fence < Background < Scenario; got {last_fence}/{bg}/{scen}");
+    let last_fence = lines
+        .iter()
+        .rposition(|l| l.trim() == "\"\"\"")
+        .expect("closing fence");
+    let bg = lines
+        .iter()
+        .position(|l| l.trim() == "Background: User Story")
+        .expect("Background line");
+    let scen = lines
+        .iter()
+        .position(|l| l.trim() == "Scenario: A")
+        .expect("Scenario line");
+    assert!(
+        last_fence < bg && bg < scen,
+        "expected fence < Background < Scenario; got {last_fence}/{bg}/{scen}"
+    );
 
     // @step And the file on disk still contains the line '  Architecture notes'
     assert!(
@@ -308,7 +353,11 @@ fn scenario_inserts_background_after_feature_doc_string() {
 fn scenario_no_feature_line_is_rejected() {
     // @step Given a project root tempdir with spec/features/bad.feature containing only '# just a comment\n'
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/bad.feature", "# just a comment\n");
+    write_feature(
+        tmp.path(),
+        "spec/features/bad.feature",
+        "# just a comment\n",
+    );
 
     // @step When I dispatch add-background with feature='spec/features/bad.feature' and text='As a user'
     let result = dispatch_command(req(

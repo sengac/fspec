@@ -34,9 +34,8 @@ fn register_deny_handler(session_id: Uuid) -> Arc<std::sync::atomic::AtomicUsize
 
 /// Register an Allow hook handler for a session.
 fn register_allow_handler(session_id: Uuid) {
-    let handler: PreToolHookHandler = Arc::new(move |_sid, _tool_name, _tool_input| {
-        PreToolHookDecision::Allow
-    });
+    let handler: PreToolHookHandler =
+        Arc::new(move |_sid, _tool_name, _tool_input| PreToolHookDecision::Allow);
     register_pre_tool_hook(session_id, handler);
 }
 
@@ -409,7 +408,10 @@ async fn pre_tool_use_hook_fires_for_astgrep_refactor_tool() {
     let result = tool.call(args).await;
 
     // @step Then the tool should return ToolError::Blocked with the deny reason
-    assert!(result.is_err(), "AstGrepRefactorTool should have been blocked");
+    assert!(
+        result.is_err(),
+        "AstGrepRefactorTool should have been blocked"
+    );
     let err = result.unwrap_err();
     assert!(
         format!("{err:?}").contains("Blocked"),
@@ -568,7 +570,10 @@ async fn pre_tool_use_allow_handler_lets_native_tool_proceed() {
     let result = tool.call(args).await;
 
     // @step Then the command should execute successfully
-    assert!(result.is_ok(), "BashTool should have succeeded with Allow handler");
+    assert!(
+        result.is_ok(),
+        "BashTool should have succeeded with Allow handler"
+    );
 
     // @step And the output should contain the command result
     let output = result.unwrap();

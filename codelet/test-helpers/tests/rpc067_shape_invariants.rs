@@ -209,8 +209,9 @@ fn scenario_migrated_codelet_fspec_tui_regression_test_delegates_to_the_shared_h
     // @step And it contains exactly two #[test] fns
     assert_eq!(body.matches("#[test]").count(), 2);
     // @step And one #[test] fn calls `codelet_test_helpers::dependency_rules::assert_no_transitive_dependency("codelet-fspec-tui", "codelet-napi")`
-    assert!(body
-        .contains("assert_no_transitive_dependency!(\"codelet-fspec-tui\", \"codelet-napi\")"));
+    assert!(
+        body.contains("assert_no_transitive_dependency!(\"codelet-fspec-tui\", \"codelet-napi\")")
+    );
     // @step And the other #[test] fn calls `codelet_test_helpers::dependency_rules::assert_no_import_in_sources("fspec-tui", "codelet_napi")`
     assert!(body.contains("assert_no_import_in_sources!(\"fspec-tui\", \"codelet_napi\")"));
     // @step And codelet/fspec-tui/Cargo.toml declares `codelet-test-helpers.workspace = true` under [dev-dependencies]
@@ -232,8 +233,9 @@ fn scenario_migrated_codelet_sessions_regression_test_delegates_to_the_shared_he
     // @step And it contains exactly two #[test] fns
     assert_eq!(body.matches("#[test]").count(), 2);
     // @step And one #[test] fn calls `codelet_test_helpers::dependency_rules::assert_no_transitive_dependency("codelet-sessions", "codelet-napi")`
-    assert!(body
-        .contains("assert_no_transitive_dependency!(\"codelet-sessions\", \"codelet-napi\")"));
+    assert!(
+        body.contains("assert_no_transitive_dependency!(\"codelet-sessions\", \"codelet-napi\")")
+    );
     // @step And the other #[test] fn calls `codelet_test_helpers::dependency_rules::assert_no_import_in_sources("sessions", "codelet_napi")`
     assert!(body.contains("assert_no_import_in_sources!(\"sessions\", \"codelet_napi\")"));
     // @step And codelet/sessions/Cargo.toml declares `codelet-test-helpers.workspace = true` under [dev-dependencies]

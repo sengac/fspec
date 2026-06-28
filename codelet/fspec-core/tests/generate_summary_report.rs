@@ -136,7 +136,10 @@ fn markdown_report_renders_the_expected_layout() {
 fn json_report_is_pretty_printed_with_two_space_indent() {
     // @step Given a work units store containing one work unit
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), &work_units_with(&[("A-1", Some("done"), Some(3))]));
+    write_work_units(
+        tmp.path(),
+        &work_units_with(&[("A-1", Some("done"), Some(3))]),
+    );
 
     // @step When I generate a json summary report
     let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
@@ -155,7 +158,10 @@ fn json_report_is_pretty_printed_with_two_space_indent() {
 fn a_custom_output_path_is_honoured() {
     // @step Given a work units store containing one work unit
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), &work_units_with(&[("A-1", Some("done"), Some(3))]));
+    write_work_units(
+        tmp.path(),
+        &work_units_with(&[("A-1", Some("done"), Some(3))]),
+    );
 
     // @step When I generate a markdown summary report to custom.md
     let result = dispatch_command(req(
@@ -212,7 +218,10 @@ fn a_missing_work_units_file_fails() {
 fn dispatcher_and_core_produce_identical_report_content() {
     // @step Given a work units store containing one work unit
     let tmp = TempDir::new().expect("tempdir");
-    write_work_units(tmp.path(), &work_units_with(&[("A-1", Some("done"), Some(3))]));
+    write_work_units(
+        tmp.path(),
+        &work_units_with(&[("A-1", Some("done"), Some(3))]),
+    );
 
     // @step When I generate a json summary report via the core run function
     let first = dispatch_command(req(

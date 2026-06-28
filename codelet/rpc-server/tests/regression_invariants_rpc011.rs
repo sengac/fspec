@@ -25,8 +25,7 @@ fn workspace_root() -> PathBuf {
 }
 
 fn read(path: &Path) -> String {
-    std::fs::read_to_string(path)
-        .unwrap_or_else(|e| panic!("read {}: {}", path.display(), e))
+    std::fs::read_to_string(path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e))
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -36,7 +35,10 @@ fn read(path: &Path) -> String {
 #[test]
 fn bind_and_serve_signature_is_unchanged() {
     // @step Given the public signature of codelet_rpc_server::bind_and_serve
-    let server_rs = workspace_root().join("rpc-server").join("src").join("server.rs");
+    let server_rs = workspace_root()
+        .join("rpc-server")
+        .join("src")
+        .join("server.rs");
     let body = read(&server_rs);
 
     // @step When compared against its RPC-005 form
@@ -58,7 +60,9 @@ fn bind_and_serve_signature_is_unchanged() {
         .find("pub async fn bind_and_serve")
         .expect("bind_and_serve must be public");
     let after = &body[sig_idx..];
-    let close_paren_idx = after.find(") -> anyhow::Result<").expect("signature must end");
+    let close_paren_idx = after
+        .find(") -> anyhow::Result<")
+        .expect("signature must end");
     let sig_body = &after[..close_paren_idx];
     let comma_count = sig_body.matches(',').count();
     assert!(
@@ -130,7 +134,10 @@ fn architecture_invariants_from_rpc_005_still_hold() {
     // @step And the test passes
 
     // Source-shape pin-points:
-    let server_rs = workspace_root().join("rpc-server").join("src").join("server.rs");
+    let server_rs = workspace_root()
+        .join("rpc-server")
+        .join("src")
+        .join("server.rs");
     let server_body = read(&server_rs);
     // No new runtime construction in rpc-server/src/.
     assert!(

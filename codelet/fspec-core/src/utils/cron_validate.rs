@@ -41,10 +41,7 @@ pub fn validate_default_5field(trimmed: &str) -> Result<(), Vec<String>> {
     // "Expected 5 values, but got N." — parity preserved by splitting on ' '.
     let parts: Vec<&str> = trimmed.split(' ').collect();
     if parts.len() != 5 {
-        return Err(vec![format!(
-            "Expected 5 values, but got {}.",
-            parts.len()
-        )]);
+        return Err(vec![format!("Expected 5 values, but got {}.", parts.len())]);
     }
 
     let mut errors: Vec<String> = Vec::new();

@@ -22,8 +22,7 @@ fn make_checkpoint(repo_path: &std::path::Path, work_unit_id: &str, name: &str) 
     // `create_ghost_commit` helper short-circuits when nothing changed).
     let f = repo_path.join(format!("touch-{work_unit_id}-{name}.txt"));
     fs::write(&f, format!("{work_unit_id}/{name}")).expect("write touch file");
-    ghost_commit::create_ghost_commit(repo_path, work_unit_id, name)
-        .expect("create_ghost_commit");
+    ghost_commit::create_ghost_commit(repo_path, work_unit_id, name).expect("create_ghost_commit");
 }
 
 /// Scenario: count_checkpoints returns zero in a directory that is not a git repo

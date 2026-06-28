@@ -48,8 +48,7 @@ impl BashOutput {
         let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
 
         let mut output = truncate_result.output;
-        let was_truncated =
-            truncate_result.char_truncated || truncate_result.remaining_count > 0;
+        let was_truncated = truncate_result.char_truncated || truncate_result.remaining_count > 0;
 
         if was_truncated {
             let warning = format_truncation_warning(

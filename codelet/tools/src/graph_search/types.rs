@@ -16,7 +16,6 @@ use serde::Deserialize;
 #[serde(tag = "action_type", rename_all = "snake_case")]
 pub enum GraphSearchAction {
     // ── AST Graph Actions ────────────────────────────────────
-
     /// Search AST code entities (functions, types, files) by name/pattern.
     AstSearch {
         query: String,
@@ -141,7 +140,6 @@ pub enum GraphSearchAction {
     },
 
     // ── Learnings Graph Actions ──────────────────────────────────
-
     /// Search Learnings entities (learnings, decisions, conventions) by text/category.
     LearningsSearch {
         query: String,

@@ -17,9 +17,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use codelet_tools::facade::{
-    build_gemini_system_prompt, prepend_fspec_guidance,
-    ClaudeApiKeySystemPromptFacade, ClaudeOAuthSystemPromptFacade,
-    GeminiSystemPromptFacade, OpenAISystemPromptFacade, SystemPromptFacade,
+    build_gemini_system_prompt, prepend_fspec_guidance, ClaudeApiKeySystemPromptFacade,
+    ClaudeOAuthSystemPromptFacade, GeminiSystemPromptFacade, OpenAISystemPromptFacade,
+    SystemPromptFacade,
 };
 
 /// Unique role text that cannot appear in any system prompt boilerplate.
@@ -367,7 +367,9 @@ fn test_spawned_subordinate_role_flows_through_claude_facade() {
     );
     // Also verify the API format (cache_control blocks) includes the role
     let api_format = facade.format_for_api(role);
-    let all_text: String = api_format.as_array().unwrap()
+    let all_text: String = api_format
+        .as_array()
+        .unwrap()
         .iter()
         .filter_map(|b| b["text"].as_str())
         .collect::<Vec<_>>()

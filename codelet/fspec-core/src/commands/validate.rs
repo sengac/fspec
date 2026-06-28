@@ -399,7 +399,8 @@ mod tests {
         let content = "Feature: B\n\n  Scenario: A\n    Given x\n\n\n\n\n    Then y\n";
         let errs = check_for_common_issues(content);
         assert!(
-            errs.iter().any(|e| e.message.contains("Excessive blank lines detected")),
+            errs.iter()
+                .any(|e| e.message.contains("Excessive blank lines detected")),
             "expected blank-line heuristic; got {errs:?}"
         );
     }
@@ -413,7 +414,10 @@ mod tests {
     #[test]
     fn get_suggestion_feature_keyword() {
         let s = get_suggestion("expected: #Feature, got 'Scenario'");
-        assert_eq!(s.as_deref(), Some("Add Feature keyword at the beginning of the file"));
+        assert_eq!(
+            s.as_deref(),
+            Some("Add Feature keyword at the beginning of the file")
+        );
     }
 
     #[test]

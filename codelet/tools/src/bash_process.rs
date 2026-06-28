@@ -116,13 +116,7 @@ pub fn spawn_command(command: &str, cwd: Option<&str>) -> Result<tokio::process:
 /// Take stdout and stderr handles from child process.
 pub fn take_stdio_handles(
     child: &mut tokio::process::Child,
-) -> Result<
-    (
-        tokio::process::ChildStdout,
-        tokio::process::ChildStderr,
-    ),
-    ToolError,
-> {
+) -> Result<(tokio::process::ChildStdout, tokio::process::ChildStderr), ToolError> {
     let stdout = child.stdout.take().ok_or(ToolError::Execution {
         tool: "bash",
         message: "Failed to capture stdout".to_string(),

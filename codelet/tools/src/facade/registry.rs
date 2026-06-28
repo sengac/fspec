@@ -59,7 +59,7 @@ impl ProviderToolRegistry {
 
         // Note: FspecTool is handled separately via FspecToolFacadeWrapper
         // It's not registered here because it doesn't use web search patterns
-        
+
         Self { facades }
     }
 
@@ -134,7 +134,7 @@ mod tests {
 
         // TOOL-012: Test that FspecToolFacadeWrapper can be created with session_id
         let session_id = Uuid::new_v4();
-        
+
         let claude_wrapper = claude_fspec_tool(session_id);
         assert_eq!(claude_wrapper.provider(), "claude");
         assert_eq!(claude_wrapper.session_id(), session_id);

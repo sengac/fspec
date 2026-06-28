@@ -21,6 +21,9 @@ codelet-providers.workspace = true
 # PROV-120: App::bootstrap restores the TS-parity first-available startup model
 # via resolve_startup_model + load_persisted_model_string.
 codelet-sessions.workspace = true
+# RPC-373: App::bootstrap starts the attachment viewer server; the board D key
+# opens FOUNDATION.md through it.
+codelet-attachment-viewer.workspace = true
 
 # Async
 tokio.workspace = true
@@ -51,6 +54,12 @@ serde_json.workspace = true
 
 # RPC-059: `/loop` parser uses regex for leading/trailing interval matching.
 regex.workspace = true
+
+# RPC-373: launch the default browser for the board D key (FOUNDATION.md).
+open.workspace = true
+
+# RPC-374: percent-encode attachment paths when building the viewer /view URL.
+urlencoding.workspace = true
 
 # Logging
 tracing.workspace = true

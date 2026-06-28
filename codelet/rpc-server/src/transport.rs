@@ -40,10 +40,7 @@ where
 {
     type Item = std::io::Result<Item>;
 
-    fn poll_next(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Option<Self::Item>> {
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match Pin::new(&mut self.incoming).poll_next(cx) {
             Poll::Ready(Some(bytes)) => match bincode::deserialize::<Item>(&bytes) {
                 Ok(item) => Poll::Ready(Some(Ok(item))),

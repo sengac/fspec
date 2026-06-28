@@ -193,8 +193,8 @@ pub mod reverse;
 pub mod update_work_unit_status;
 
 // Batch 20
+pub mod bootstrap;
 pub mod generate_scenarios;
 pub mod init;
-pub mod research;
-pub mod bootstrap;
 pub mod report_bug_to_github;
+pub mod research;

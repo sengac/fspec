@@ -237,7 +237,10 @@ fn dispatcher_reports_a_feature_level_work_unit_tag_not_in_work_units_json() {
 
     // @step Then the file errors include the message 'Work unit @AUTH-999 not found in spec/work-units.json'
     assert!(
-        has_message(&data, "Work unit @AUTH-999 not found in spec/work-units.json"),
+        has_message(
+            &data,
+            "Work unit @AUTH-999 not found in spec/work-units.json"
+        ),
         "got {data}"
     );
 }
@@ -298,7 +301,10 @@ fn dispatcher_reports_a_missing_required_component_tag() {
     assert!(any_file_valid(&data, false), "got {data}");
 
     // @step Then the file errors include the message 'Missing required component tag'
-    assert!(has_message(&data, "Missing required component tag"), "got {data}");
+    assert!(
+        has_message(&data, "Missing required component tag"),
+        "got {data}"
+    );
 }
 
 #[test]
@@ -376,7 +382,10 @@ fn dispatcher_flags_a_placeholder_component_tag() {
     let data = parse_data(&result);
 
     // @step Then the file errors include the message 'Placeholder tag: @component'
-    assert!(has_message(&data, "Placeholder tag: @component"), "got {data}");
+    assert!(
+        has_message(&data, "Placeholder tag: @component"),
+        "got {data}"
+    );
 }
 
 #[test]
@@ -406,7 +415,11 @@ fn dispatcher_validates_only_the_single_file_named_by_the_file_argument() {
     // @step Given two feature files exist but only one carries an unregistered tag
     let tmp = TempDir::new().expect("tempdir");
     write_tags(tmp.path(), &["@comp"], &["@grp"], &[]);
-    write_feature(tmp.path(), "spec/features/good.feature", &valid_feature("Good"));
+    write_feature(
+        tmp.path(),
+        "spec/features/good.feature",
+        &valid_feature("Good"),
+    );
     write_feature(
         tmp.path(),
         "spec/features/bad.feature",

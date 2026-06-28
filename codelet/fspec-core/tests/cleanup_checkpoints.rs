@@ -323,7 +323,9 @@ fn format_json_emits_the_structured_cleanup_payload() {
 
     // @step And "deleted" and "preserved" are arrays of objects with "name" and "timestamp" fields
     for key in ["deleted", "preserved"] {
-        let arr = data[key].as_array().unwrap_or_else(|| panic!("{key} array"));
+        let arr = data[key]
+            .as_array()
+            .unwrap_or_else(|| panic!("{key} array"));
         for entry in arr {
             assert!(
                 entry["name"].as_str().is_some(),

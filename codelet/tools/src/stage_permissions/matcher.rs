@@ -412,7 +412,15 @@ mod tests {
 
         // All file types should be allowed in implementing stage
         assert!(matcher.check_write("src/auth.ts", stage).allowed);
-        assert!(matcher.check_write("src/__tests__/auth.test.ts", stage).allowed);
-        assert!(matcher.check_write("spec/features/login.feature", stage).allowed);
+        assert!(
+            matcher
+                .check_write("src/__tests__/auth.test.ts", stage)
+                .allowed
+        );
+        assert!(
+            matcher
+                .check_write("spec/features/login.feature", stage)
+                .allowed
+        );
     }
 }

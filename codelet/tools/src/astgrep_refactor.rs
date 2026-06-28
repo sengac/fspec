@@ -7,12 +7,12 @@
 //! For isolated sessions, file paths are validated and resolved to the worktree
 //! to ensure the session cannot refactor files outside its isolated environment.
 
+use crate::astgrep::{AstGrepTool, LanguageChoice};
 use crate::{error::ToolError, facade::validate_and_resolve_path, ToolOutput};
 use anyhow::Result;
 use ast_grep_core::matcher::Pattern;
 use ast_grep_core::meta_var::MetaVariable;
 use ast_grep_language::LanguageExt;
-use crate::astgrep::{AstGrepTool, LanguageChoice};
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -1081,7 +1081,11 @@ impl rig::tool::Tool for AstGrepRefactorTool {
         }
 
         // TOOL-014: Validate and resolve source_file path for worktree isolation
-        let resolved_source = match validate_and_resolve_path(self.session_id, &args.source_file, "ast_grep_refactor") {
+        let resolved_source = match validate_and_resolve_path(
+            self.session_id,
+            &args.source_file,
+            "ast_grep_refactor",
+        ) {
             Ok(resolved) => resolved.to_string_lossy().to_string(),
             Err(e) => return Err(e),
         };

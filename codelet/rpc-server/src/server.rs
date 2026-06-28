@@ -78,7 +78,7 @@ pub fn request_shutdown(stats: &ServerStats) {
 /// [`tokio::task::JoinHandle`] callers may abort to shut down.
 pub async fn bind_and_serve(
     bind_addr: &str,
-    service: Arc<SharedFspecService>
+    service: Arc<SharedFspecService>,
 ) -> anyhow::Result<(SocketAddr, ServerStats, tokio::task::JoinHandle<()>)> {
     let listener = TcpListener::bind(bind_addr).await?;
     let local = listener.local_addr()?;
@@ -139,8 +139,7 @@ async fn handle_connection(
 
     let (rpc_bytes_tx, rpc_bytes_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
     let (server_out_tx, server_out_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
-    let (envelope_out_tx, envelope_out_rx) =
-        tokio::sync::mpsc::unbounded_channel::<Envelope>();
+    let (envelope_out_tx, envelope_out_rx) = tokio::sync::mpsc::unbounded_channel::<Envelope>();
 
     // RPC-006: send the initial WorkUnitsUpdate snapshot before any RPC
     // traffic so a fresh client always observes at least the current
@@ -174,8 +173,11 @@ async fn handle_connection(
     let logs_rx = service.logs_rx();
     let envelope_out_tx_for_logs = envelope_out_tx.clone();
     let lag_logs = Arc::clone(&stats.lag_logs);
-    let logs_fanout =
-        tokio::spawn(log_events_fanout(logs_rx, envelope_out_tx_for_logs, lag_logs));
+    let logs_fanout = tokio::spawn(log_events_fanout(
+        logs_rx,
+        envelope_out_tx_for_logs,
+        lag_logs,
+    ));
 
     // RPC-037: per-connection fanout for push-driven session status
     // updates. Drains `SharedFspecService::status_changes_rx` (which
@@ -302,10 +304,7 @@ async fn log_events_fanout(
     loop {
         match logs_rx.recv().await {
             Ok(record) => {
-                if envelope_out_tx
-                    .send(Envelope::LogEvent(record))
-                    .is_err()
-                {
+                if envelope_out_tx.send(Envelope::LogEvent(record)).is_err() {
                     break;
                 }
             }

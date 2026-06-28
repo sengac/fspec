@@ -168,11 +168,12 @@ impl Tool for InjectSummaryTool {
             });
         }
 
-        let result = execute_inject_summary(self.session_id, args.content)
-            .map_err(|e| ToolError::Execution {
+        let result = execute_inject_summary(self.session_id, args.content).map_err(|e| {
+            ToolError::Execution {
                 tool: "inject_summary",
                 message: e,
-            })?;
+            }
+        })?;
 
         serde_json::to_string_pretty(&result).map_err(|e| ToolError::Execution {
             tool: "inject_summary",
@@ -279,10 +280,16 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         let err_msg = err.to_string();
-        assert!(err_msg.contains("not configured"), "Error should contain 'not configured', got: {err_msg}");
+        assert!(
+            err_msg.contains("not configured"),
+            "Error should contain 'not configured', got: {err_msg}"
+        );
 
         // @step And the error message includes the session UUID
-        assert!(err_msg.contains(&session_id.to_string()), "Error should contain session UUID, got: {err_msg}");
+        assert!(
+            err_msg.contains(&session_id.to_string()),
+            "Error should contain session UUID, got: {err_msg}"
+        );
 
         clear_all_inject_summary_handlers();
     }

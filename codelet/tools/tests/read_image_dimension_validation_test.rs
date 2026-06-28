@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for Read tool pixel dimension validation
 //! Feature: spec/features/image-dimension-validation.feature
@@ -15,12 +14,19 @@ use tempfile::TempDir;
 use uuid::Uuid;
 
 /// Helper: create a PNG file with valid IHDR header specifying dimensions
-fn create_png_with_dimensions(dir: &TempDir, name: &str, width: u32, height: u32, body_size: usize) -> String {
+fn create_png_with_dimensions(
+    dir: &TempDir,
+    name: &str,
+    width: u32,
+    height: u32,
+    body_size: usize,
+) -> String {
     let path = dir.path().join(name);
     let mut file = File::create(&path).unwrap();
 
     // PNG signature
-    file.write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]).unwrap();
+    file.write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        .unwrap();
     // IHDR chunk length: 13 bytes
     file.write_all(&[0x00, 0x00, 0x00, 0x0D]).unwrap();
     // IHDR chunk type
@@ -36,14 +42,21 @@ fn create_png_with_dimensions(dir: &TempDir, name: &str, width: u32, height: u32
     // Fill remaining body
     let header_bytes = 8 + 4 + 4 + 4 + 4 + 5 + 4; // = 33
     if body_size > header_bytes {
-        file.write_all(&vec![0u8; body_size - header_bytes]).unwrap();
+        file.write_all(&vec![0u8; body_size - header_bytes])
+            .unwrap();
     }
 
     path.to_string_lossy().to_string()
 }
 
 /// Helper: create a JPEG file with SOF0 marker specifying dimensions
-fn create_jpeg_with_dimensions(dir: &TempDir, name: &str, width: u16, height: u16, body_size: usize) -> String {
+fn create_jpeg_with_dimensions(
+    dir: &TempDir,
+    name: &str,
+    width: u16,
+    height: u16,
+    body_size: usize,
+) -> String {
     let path = dir.path().join(name);
     let mut file = File::create(&path).unwrap();
 
@@ -70,7 +83,8 @@ fn create_jpeg_with_dimensions(dir: &TempDir, name: &str, width: u16, height: u1
     // Fill remaining body
     let header_bytes = 2 + 2 + 16 + 2 + 17; // = 39
     if body_size > header_bytes {
-        file.write_all(&vec![0u8; body_size - header_bytes]).unwrap();
+        file.write_all(&vec![0u8; body_size - header_bytes])
+            .unwrap();
     }
 
     path.to_string_lossy().to_string()
@@ -84,7 +98,13 @@ async fn test_read_tool_rejects_png_exceeding_pixel_limit() {
     // @step Given I have a PNG image file at "/tmp/full-page-screenshot.png"
     // @step And the image has dimensions 800x15000 pixels
     // @step And the image is 3MB in file size
-    let file_path = create_png_with_dimensions(&temp_dir, "full-page-screenshot.png", 800, 15000, 3 * 1024 * 1024);
+    let file_path = create_png_with_dimensions(
+        &temp_dir,
+        "full-page-screenshot.png",
+        800,
+        15000,
+        3 * 1024 * 1024,
+    );
 
     // @step When the Read tool reads the image file
     let tool = ReadTool::new(Uuid::nil());
@@ -97,7 +117,10 @@ async fn test_read_tool_rejects_png_exceeding_pixel_limit() {
     let result = tool.call(args).await;
 
     // @step Then the tool should return a validation error instead of image data
-    assert!(result.is_err(), "Oversized pixel dimensions should return an error, got OK");
+    assert!(
+        result.is_err(),
+        "Oversized pixel dimensions should return an error, got OK"
+    );
     let error_msg = result.unwrap_err().to_string();
 
     // @step And the error message should contain the actual dimensions "800x15000"
@@ -114,7 +137,9 @@ async fn test_read_tool_rejects_png_exceeding_pixel_limit() {
 
     // @step And the error message should suggest resizing the image
     assert!(
-        error_msg.contains("sips") || error_msg.contains("convert") || error_msg.to_lowercase().contains("resize"),
+        error_msg.contains("sips")
+            || error_msg.contains("convert")
+            || error_msg.to_lowercase().contains("resize"),
         "Error should suggest resizing, got: {error_msg}"
     );
 
@@ -134,7 +159,13 @@ async fn test_read_tool_accepts_image_within_pixel_limit() {
     // @step Given I have a PNG image file at "/tmp/viewport-screenshot.png"
     // @step And the image has dimensions 1920x1080 pixels
     // @step And the image is 2MB in file size
-    let file_path = create_png_with_dimensions(&temp_dir, "viewport-screenshot.png", 1920, 1080, 2 * 1024 * 1024);
+    let file_path = create_png_with_dimensions(
+        &temp_dir,
+        "viewport-screenshot.png",
+        1920,
+        1080,
+        2 * 1024 * 1024,
+    );
 
     // @step When the Read tool reads the image file
     let tool = ReadTool::new(Uuid::nil());
@@ -147,7 +178,11 @@ async fn test_read_tool_accepts_image_within_pixel_limit() {
     let result = tool.call(args).await;
 
     // @step Then the tool should return ReadOutput::Image with base64-encoded data
-    assert!(result.is_ok(), "Normal-sized image should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Normal-sized image should succeed, got: {:?}",
+        result.err()
+    );
     let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
 
     // @step And the image media type should be "image/png"
@@ -175,7 +210,11 @@ async fn test_read_tool_accepts_image_exactly_at_pixel_limit() {
     let result = tool.call(args).await;
 
     // @step Then the tool should return ReadOutput::Image with base64-encoded data
-    assert!(result.is_ok(), "Boundary image should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Boundary image should succeed, got: {:?}",
+        result.err()
+    );
     let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
 
     // @step And the image should pass the pixel dimension check
@@ -191,7 +230,8 @@ async fn test_read_tool_allows_corrupt_header_image_through() {
     let path = temp_dir.path().join("corrupt.png");
     let mut file = File::create(&path).unwrap();
     // Write PNG magic bytes but truncate IHDR (no width/height)
-    file.write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]).unwrap();
+    file.write_all(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        .unwrap();
     file.write_all(&[0x00; 100]).unwrap(); // garbage after signature
     let file_path = path.to_string_lossy().to_string();
 
@@ -207,7 +247,11 @@ async fn test_read_tool_allows_corrupt_header_image_through() {
     let result = tool.call(args).await;
 
     // @step Then the tool should allow the image through without blocking
-    assert!(result.is_ok(), "Corrupt-header image should be allowed through, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Corrupt-header image should be allowed through, got: {:?}",
+        result.err()
+    );
 
     // @step And the dimension check should fail gracefully without crashing
     let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
@@ -235,7 +279,10 @@ async fn test_read_tool_rejects_jpeg_exceeding_pixel_limit() {
     let result = tool.call(args).await;
 
     // Oversized JPEG should be rejected
-    assert!(result.is_err(), "Oversized JPEG should return an error, got OK");
+    assert!(
+        result.is_err(),
+        "Oversized JPEG should return an error, got OK"
+    );
     let error_msg = result.unwrap_err().to_string();
 
     assert!(
@@ -253,7 +300,9 @@ async fn test_read_tool_rejects_jpeg_exceeding_pixel_limit() {
 #[tokio::test]
 async fn test_parse_tool_result_content_detects_oversized_image_from_base64() {
     use base64::{engine::general_purpose::STANDARD, Engine};
-    use codelet_tools::image_dimensions::{extract_dimensions_from_base64, MAX_IMAGE_PIXEL_DIMENSION};
+    use codelet_tools::image_dimensions::{
+        extract_dimensions_from_base64, MAX_IMAGE_PIXEL_DIMENSION,
+    };
 
     // @step Given a tool has returned base64-encoded image data
     // Helper: create a valid PNG header with specified dimensions (same as image_dimensions_test)

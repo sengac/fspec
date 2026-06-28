@@ -160,9 +160,17 @@ fn test_only_mode_appends_a_test_mapping_and_recalculates_stats() {
 fn impl_only_mode_adds_an_implementation_mapping_to_an_existing_test_mapping() {
     // @step Given a temp project root has a coverage sidecar where scenario "Login" already has a test mapping for the test file
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature", FEATURE_STORY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        FEATURE_STORY,
+    );
     write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
-    write_file(tmp.path(), "src/login.ts", "export const login = () => {};\n");
+    write_file(
+        tmp.path(),
+        "src/login.ts",
+        "export const login = () => {};\n",
+    );
     let sidecar = r#"{
   "scenarios": [
     {
@@ -181,7 +189,11 @@ fn impl_only_mode_adds_an_implementation_mapping_to_an_existing_test_mapping() {
     "totalLinesCovered": 18
   }
 }"#;
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", sidecar);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        sidecar,
+    );
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile, implFile and implLines "10-12"
     let result = req(
@@ -218,7 +230,11 @@ fn impl_only_mode_adds_an_implementation_mapping_to_an_existing_test_mapping() {
         .iter()
         .map(|n| n.as_i64().expect("line number"))
         .collect();
-    assert_eq!(lines, vec![10, 11, 12], "impl lines must expand the range; got {sidecar}");
+    assert_eq!(
+        lines,
+        vec![10, 11, 12],
+        "impl lines must expand the range; got {sidecar}"
+    );
 
     // @step And the result message contains "implementation mapping"
     assert!(
@@ -237,7 +253,11 @@ fn both_mode_appends_a_test_mapping_carrying_its_implementation_mapping() {
     // @step Given a temp project root has a feature file and matching coverage sidecar with scenario "Login", and a test file with matching @step comments
     let tmp = TempDir::new().expect("tempdir");
     seed_story(tmp.path());
-    write_file(tmp.path(), "src/login.ts", "export const login = () => {};\n");
+    write_file(
+        tmp.path(),
+        "src/login.ts",
+        "export const login = () => {};\n",
+    );
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile, testLines, implFile and implLines
     let result = req(
@@ -268,7 +288,10 @@ fn both_mode_appends_a_test_mapping_carrying_its_implementation_mapping() {
         .expect("implMappings array")
         .iter()
         .any(|im| im["file"].as_str() == Some("src/login.ts"));
-    assert!(has_impl, "implMappings must include src/login.ts; got {sidecar}");
+    assert!(
+        has_impl,
+        "implMappings must include src/login.ts; got {sidecar}"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -279,7 +302,11 @@ fn both_mode_appends_a_test_mapping_carrying_its_implementation_mapping() {
 fn impl_file_without_test_file_surfaces_a_flag_combination_error() {
     // @step Given a temp project root has a coverage sidecar with scenario "Login"
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", SIDECAR_LOGIN_EMPTY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login" and implFile only
     let result = req(
@@ -308,7 +335,11 @@ fn impl_file_without_test_file_surfaces_a_flag_combination_error() {
 fn test_file_without_test_lines_surfaces_a_flag_combination_error() {
     // @step Given a temp project root has a coverage sidecar with scenario "Login"
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", SIDECAR_LOGIN_EMPTY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login" and testFile only
     let result = req(
@@ -337,7 +368,11 @@ fn test_file_without_test_lines_surfaces_a_flag_combination_error() {
 fn a_missing_test_file_without_skip_validation_errors() {
     // @step Given a temp project root has a coverage sidecar with scenario "Login" and no test file on disk
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", SIDECAR_LOGIN_EMPTY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", a non-existent testFile and testLines
     let result = req(
@@ -353,7 +388,11 @@ fn a_missing_test_file_without_skip_validation_errors() {
     // @step Then the dispatcher returns an error whose message contains "File not found"
     assert!(!result.success, "expected failure; got {result:?}");
     assert!(
-        result.error.as_deref().unwrap_or("").contains("File not found"),
+        result
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("File not found"),
         "error must mention File not found; got {:?}",
         result.error
     );
@@ -372,7 +411,11 @@ fn skip_validation_downgrades_a_missing_file_to_a_warning() {
         "spec/features/user-login.feature",
         "@TASK-001\nFeature: User Login\n\n  Scenario: Login\n    Given I am on the login page\n    When I enter valid credentials\n    Then I see the dashboard\n",
     );
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", SIDECAR_LOGIN_EMPTY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
     write_file(
         tmp.path(),
         "spec/work-units.json",
@@ -411,7 +454,11 @@ fn skip_validation_downgrades_a_missing_file_to_a_warning() {
 fn a_missing_coverage_sidecar_errors_with_a_generate_coverage_suggestion() {
     // @step Given a temp project root has a feature file with scenarios but no coverage sidecar
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature", FEATURE_STORY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        FEATURE_STORY,
+    );
     write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile and testLines
@@ -450,8 +497,16 @@ fn a_missing_coverage_sidecar_errors_with_a_generate_coverage_suggestion() {
 fn a_scenario_absent_from_the_sidecar_errors_with_available_scenarios_listed() {
     // @step Given a temp project root has a coverage sidecar that does not contain scenario "Nope"
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature", FEATURE_STORY);
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", SIDECAR_LOGIN_EMPTY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        FEATURE_STORY,
+    );
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
     write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Nope", testFile and testLines
@@ -490,8 +545,16 @@ fn a_scenario_absent_from_the_sidecar_errors_with_available_scenarios_listed() {
 fn step_validation_fails_when_a_required_step_comment_is_missing() {
     // @step Given a temp project root has a story feature file whose scenario "Login" has steps, a coverage sidecar, and a test file missing one required @step comment
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature", FEATURE_STORY);
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", SIDECAR_LOGIN_EMPTY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        FEATURE_STORY,
+    );
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
     write_file(tmp.path(), "src/auth.test.ts", TEST_MISSING_STEP);
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile and testLines
@@ -518,10 +581,12 @@ fn step_validation_fails_when_a_required_step_comment_is_missing() {
     );
 
     // @step And the sidecar is not modified
-    let after =
-        fs::read_to_string(tmp.path().join("spec/features/user-login.feature.coverage"))
-            .expect("read sidecar");
-    assert_eq!(after, SIDECAR_LOGIN_EMPTY, "sidecar must be unchanged on validation failure");
+    let after = fs::read_to_string(tmp.path().join("spec/features/user-login.feature.coverage"))
+        .expect("read sidecar");
+    assert_eq!(
+        after, SIDECAR_LOGIN_EMPTY,
+        "sidecar must be unchanged on validation failure"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -532,8 +597,16 @@ fn step_validation_fails_when_a_required_step_comment_is_missing() {
 fn skip_step_validation_is_rejected_for_a_story_work_unit() {
     // @step Given a temp project root has a story feature file for scenario "Login", a coverage sidecar, and a test file missing required @step comments
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature", FEATURE_STORY);
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", SIDECAR_LOGIN_EMPTY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        FEATURE_STORY,
+    );
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        SIDECAR_LOGIN_EMPTY,
+    );
     write_file(tmp.path(), "src/auth.test.ts", TEST_MISSING_STEP);
     write_file(
         tmp.path(),
@@ -566,10 +639,12 @@ fn skip_step_validation_is_rejected_for_a_story_work_unit() {
     );
 
     // @step And the sidecar is not modified
-    let after =
-        fs::read_to_string(tmp.path().join("spec/features/user-login.feature.coverage"))
-            .expect("read sidecar");
-    assert_eq!(after, SIDECAR_LOGIN_EMPTY, "sidecar must be unchanged when skip is rejected");
+    let after = fs::read_to_string(tmp.path().join("spec/features/user-login.feature.coverage"))
+        .expect("read sidecar");
+    assert_eq!(
+        after, SIDECAR_LOGIN_EMPTY,
+        "sidecar must be unchanged when skip is rejected"
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -580,7 +655,11 @@ fn skip_step_validation_is_rejected_for_a_story_work_unit() {
 fn written_sidecar_preserves_unknown_top_level_fields_and_is_atomic_2_space_json() {
     // @step Given a temp project root has a coverage sidecar carrying an unknown top-level field and scenario "Login" with a matching test file
     let tmp = TempDir::new().expect("tempdir");
-    write_file(tmp.path(), "spec/features/user-login.feature", FEATURE_STORY);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature",
+        FEATURE_STORY,
+    );
     write_file(tmp.path(), "src/auth.test.ts", TEST_MATCHING);
     let body = r#"{
   "customField": "keepme",
@@ -596,7 +675,11 @@ fn written_sidecar_preserves_unknown_top_level_fields_and_is_atomic_2_space_json
     "totalLinesCovered": 0
   }
 }"#;
-    write_file(tmp.path(), "spec/features/user-login.feature.coverage", body);
+    write_file(
+        tmp.path(),
+        "spec/features/user-login.feature.coverage",
+        body,
+    );
 
     // @step When I dispatch link-coverage for feature "user-login" with scenario="Login", testFile and testLines
     let result = req(

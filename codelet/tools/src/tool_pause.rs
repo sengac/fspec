@@ -21,7 +21,7 @@ use crate::session_registry::SessionRegistry;
 pub enum PauseKind {
     Continue,
     Confirm,
-    Triple,  // BLOCK-007: For blocklist prompts (Allow Once / Allow Session / Deny)
+    Triple, // BLOCK-007: For blocklist prompts (Allow Once / Allow Session / Deny)
 }
 
 /// Request to pause tool execution
@@ -67,8 +67,7 @@ impl From<PauseRequest> for PauseState {
 pub type PauseHandler = Arc<dyn Fn(PauseRequest) -> PauseResponse + Send + Sync>;
 
 /// Per-session handler storage (BUG-127: replaced global singleton).
-static PAUSE_HANDLERS: Lazy<SessionRegistry<PauseHandler>> =
-    Lazy::new(SessionRegistry::new);
+static PAUSE_HANDLERS: Lazy<SessionRegistry<PauseHandler>> = Lazy::new(SessionRegistry::new);
 
 /// Register or clear a pause handler for a specific session.
 pub fn set_pause_handler(session_id: Uuid, handler: Option<PauseHandler>) {
@@ -155,12 +154,15 @@ mod tests {
     #[serial]
     fn test_no_handler_returns_resumed() {
         with_clean_handler(|sid| {
-            let response = pause_for_user(sid, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "Test".to_string(),
-                message: "Test".to_string(),
-                details: None,
-            });
+            let response = pause_for_user(
+                sid,
+                PauseRequest {
+                    kind: PauseKind::Continue,
+                    tool_name: "Test".to_string(),
+                    message: "Test".to_string(),
+                    details: None,
+                },
+            );
             assert_eq!(response, PauseResponse::Resumed);
         });
     }
@@ -188,12 +190,15 @@ mod tests {
             set_pause_handler(sid, Some(handler));
             assert!(has_pause_handler(sid));
 
-            let response = pause_for_user(sid, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "WebSearch".to_string(),
-                message: "Page loaded".to_string(),
-                details: None,
-            });
+            let response = pause_for_user(
+                sid,
+                PauseRequest {
+                    kind: PauseKind::Continue,
+                    tool_name: "WebSearch".to_string(),
+                    message: "Page loaded".to_string(),
+                    details: None,
+                },
+            );
 
             assert_eq!(response, PauseResponse::Resumed);
             assert!(called.load(Ordering::SeqCst));
@@ -215,12 +220,15 @@ mod tests {
             });
 
             set_pause_handler(sid, Some(handler));
-            pause_for_user(sid, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "WebSearch".to_string(),
-                message: "Page loaded".to_string(),
-                details: None,
-            });
+            pause_for_user(
+                sid,
+                PauseRequest {
+                    kind: PauseKind::Continue,
+                    tool_name: "WebSearch".to_string(),
+                    message: "Page loaded".to_string(),
+                    details: None,
+                },
+            );
         });
     }
 
@@ -230,32 +238,41 @@ mod tests {
         with_clean_handler(|sid| {
             let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
             set_pause_handler(sid, Some(handler));
-            let response = pause_for_user(sid, PauseRequest {
-                kind: PauseKind::Confirm,
-                tool_name: "Test".to_string(),
-                message: "Test".to_string(),
-                details: None,
-            });
+            let response = pause_for_user(
+                sid,
+                PauseRequest {
+                    kind: PauseKind::Confirm,
+                    tool_name: "Test".to_string(),
+                    message: "Test".to_string(),
+                    details: None,
+                },
+            );
             assert_eq!(response, PauseResponse::Approved);
 
             let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
             set_pause_handler(sid, Some(handler));
-            let response = pause_for_user(sid, PauseRequest {
-                kind: PauseKind::Confirm,
-                tool_name: "Test".to_string(),
-                message: "Test".to_string(),
-                details: None,
-            });
+            let response = pause_for_user(
+                sid,
+                PauseRequest {
+                    kind: PauseKind::Confirm,
+                    tool_name: "Test".to_string(),
+                    message: "Test".to_string(),
+                    details: None,
+                },
+            );
             assert_eq!(response, PauseResponse::Denied);
 
             let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
             set_pause_handler(sid, Some(handler));
-            let response = pause_for_user(sid, PauseRequest {
-                kind: PauseKind::Continue,
-                tool_name: "Test".to_string(),
-                message: "Test".to_string(),
-                details: None,
-            });
+            let response = pause_for_user(
+                sid,
+                PauseRequest {
+                    kind: PauseKind::Continue,
+                    tool_name: "Test".to_string(),
+                    message: "Test".to_string(),
+                    details: None,
+                },
+            );
             assert_eq!(response, PauseResponse::Interrupted);
         });
     }

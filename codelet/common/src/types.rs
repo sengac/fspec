@@ -342,7 +342,10 @@ mod tool_result_structured_content_tests {
         let value = serde_json::to_value(&part).expect("serialize ToolResult");
 
         // @step Then the JSON type field is "tool_result"
-        assert_eq!(value.get("type").and_then(|v| v.as_str()), Some("tool_result"));
+        assert_eq!(
+            value.get("type").and_then(|v| v.as_str()),
+            Some("tool_result")
+        );
 
         // @step Then the JSON content field equals "file contents"
         assert_eq!(
@@ -351,10 +354,16 @@ mod tool_result_structured_content_tests {
         );
 
         // @step Then the JSON tool_use_id field equals "tu_1"
-        assert_eq!(value.get("tool_use_id").and_then(|v| v.as_str()), Some("tu_1"));
+        assert_eq!(
+            value.get("tool_use_id").and_then(|v| v.as_str()),
+            Some("tu_1")
+        );
 
         // @step Then the JSON is_error field equals false
-        assert_eq!(value.get("is_error").and_then(serde_json::Value::as_bool), Some(false));
+        assert_eq!(
+            value.get("is_error").and_then(serde_json::Value::as_bool),
+            Some(false)
+        );
     }
 
     /// Scenario: Serialise text-only ToolResult exposes a single text part
@@ -391,8 +400,7 @@ mod tool_result_structured_content_tests {
                 data: "AAA".to_string(),
             },
         };
-        let part =
-            ContentPart::tool_result_parts("tu_img", vec![image_part], false);
+        let part = ContentPart::tool_result_parts("tu_img", vec![image_part], false);
 
         // @step When I serialize the content part to JSON
         let value = serde_json::to_value(&part).expect("serialize ToolResult");
@@ -435,13 +443,11 @@ mod tool_result_structured_content_tests {
                 },
             },
         ];
-        let original =
-            ContentPart::tool_result_parts("tu_mixed", original_parts.clone(), false);
+        let original = ContentPart::tool_result_parts("tu_mixed", original_parts.clone(), false);
 
         // @step When I serialize it to JSON and deserialize the JSON back into a ContentPart
         let json = serde_json::to_string(&original).expect("serialize");
-        let round_tripped: ContentPart =
-            serde_json::from_str(&json).expect("deserialize");
+        let round_tripped: ContentPart = serde_json::from_str(&json).expect("deserialize");
 
         // @step Then the deserialized value's parts equal the original parts in order
         match &round_tripped {
@@ -482,14 +488,11 @@ mod tool_result_structured_content_tests {
         let legacy_json = r#"{"type":"tool_result","tool_use_id":"tu_x","content":"old output","is_error":false}"#;
 
         // @step When I deserialize the JSON into a ContentPart
-        let part: ContentPart =
-            serde_json::from_str(legacy_json).expect("legacy deserialize");
+        let part: ContentPart = serde_json::from_str(legacy_json).expect("legacy deserialize");
 
         // @step Then the deserialized ContentPart::ToolResult has content equal to "old output"
         match &part {
-            ContentPart::ToolResult {
-                content, parts, ..
-            } => {
+            ContentPart::ToolResult { content, parts, .. } => {
                 assert_eq!(content, "old output");
 
                 // @step Then the deserialized ContentPart::ToolResult has a parts vector containing exactly one ToolResultPart::Text whose text equals "old output"

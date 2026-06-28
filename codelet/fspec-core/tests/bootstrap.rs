@@ -194,7 +194,10 @@ fn config_test_command_placeholder_is_replaced() {
     assert!(result.success, "expected success=true; got {result:?}");
 
     // @step Then the rendered output contains the substring "cargo test"
-    assert!(result.data.contains("cargo test"), "test command not injected");
+    assert!(
+        result.data.contains("cargo test"),
+        "test command not injected"
+    );
 
     // @step Then the rendered output does not contain the substring "<test-command>"
     assert!(

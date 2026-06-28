@@ -66,8 +66,16 @@ fn dispatcher_error(result: &codelet_fspec_core::DispatchResult) -> String {
 fn scenario_dispatcher_formats_all_feature_files_in_a_workspace() {
     // @step Given a project root tempdir with two well-formed feature files under spec/features
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/one.feature", &messy_feature("One"));
-    write_feature(tmp.path(), "spec/features/two.feature", &messy_feature("Two"));
+    write_feature(
+        tmp.path(),
+        "spec/features/one.feature",
+        &messy_feature("One"),
+    );
+    write_feature(
+        tmp.path(),
+        "spec/features/two.feature",
+        &messy_feature("Two"),
+    );
 
     // @step When I dispatch format with no file argument
     let result = dispatch_command(req(tmp.path(), json!({})));
@@ -92,8 +100,16 @@ fn scenario_dispatcher_formats_all_feature_files_in_a_workspace() {
 fn scenario_dispatcher_formats_a_single_supplied_file() {
     // @step Given a project root tempdir with two feature files under spec/features
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/one.feature", &messy_feature("One"));
-    write_feature(tmp.path(), "spec/features/two.feature", &messy_feature("Two"));
+    write_feature(
+        tmp.path(),
+        "spec/features/one.feature",
+        &messy_feature("One"),
+    );
+    write_feature(
+        tmp.path(),
+        "spec/features/two.feature",
+        &messy_feature("Two"),
+    );
     let two_before = read_feature(tmp.path(), "spec/features/two.feature");
 
     // @step When I dispatch format with file=spec/features/one.feature
@@ -164,7 +180,11 @@ fn scenario_dispatcher_errors_when_the_supplied_file_does_not_exist() {
 fn scenario_dispatcher_output_is_idempotent() {
     // @step Given a project root tempdir with one feature file that is already canonically formatted
     let tmp = TempDir::new().expect("tempdir");
-    write_feature(tmp.path(), "spec/features/one.feature", &messy_feature("One"));
+    write_feature(
+        tmp.path(),
+        "spec/features/one.feature",
+        &messy_feature("One"),
+    );
     // Canonicalise once so the file is in formatter layout before the assertion run.
     let _ = dispatch_command(req(tmp.path(), json!({})));
     let after_first = read_feature(tmp.path(), "spec/features/one.feature");

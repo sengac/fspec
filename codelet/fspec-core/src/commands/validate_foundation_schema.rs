@@ -109,10 +109,7 @@ fn format_error(err: &SchemaError, foundation: &Value) -> String {
         .and_then(|rest| rest.strip_suffix(" items"))
     {
         // `arrayPath = path.replace(/^\//, '').replace(/\//g, '.')`
-        let dotted = err
-            .instance_path
-            .trim_start_matches('/')
-            .replace('/', ".");
+        let dotted = err.instance_path.trim_start_matches('/').replace('/', ".");
         let actual = resolve_instance(foundation, &err.instance_path)
             .and_then(Value::as_array)
             .map(Vec::len)

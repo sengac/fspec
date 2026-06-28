@@ -105,7 +105,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     }
 
     // Resolve the coverage sidecar path (tolerate a trailing `.feature`).
-    let stripped = feature_name.strip_suffix(".feature").unwrap_or(feature_name);
+    let stripped = feature_name
+        .strip_suffix(".feature")
+        .unwrap_or(feature_name);
     let file_name = format!("{stripped}.feature");
     let coverage_path = project_root
         .join("spec")
@@ -137,9 +139,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         .and_then(Value::as_array)
         .cloned()
         .unwrap_or_default();
-    let scenario_idx = scenarios.iter().position(|s| {
-        s.get("name").and_then(Value::as_str) == Some(scenario)
-    });
+    let scenario_idx = scenarios
+        .iter()
+        .position(|s| s.get("name").and_then(Value::as_str) == Some(scenario));
     let scenario_idx = match scenario_idx {
         Some(i) => i,
         None => {

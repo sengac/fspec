@@ -139,7 +139,10 @@ pub fn generate_tags_md(tags: &Value) -> String {
         sections.push(String::new());
 
         // Required Combinations.
-        if let Some(req) = guidelines.get("requiredCombinations").filter(|v| truthy(Some(*v))) {
+        if let Some(req) = guidelines
+            .get("requiredCombinations")
+            .filter(|v| truthy(Some(*v)))
+        {
             if has(req, "title") {
                 sections.push(format!("### {}", field(req, "title")));
                 sections.push(String::new());
@@ -161,7 +164,10 @@ pub fn generate_tags_md(tags: &Value) -> String {
         }
 
         // Recommended Combinations.
-        if let Some(rec) = guidelines.get("recommendedCombinations").filter(|v| truthy(Some(*v))) {
+        if let Some(rec) = guidelines
+            .get("recommendedCombinations")
+            .filter(|v| truthy(Some(*v)))
+        {
             if has(rec, "title") {
                 sections.push(format!("### {}", field(rec, "title")));
                 sections.push(String::new());
@@ -183,7 +189,10 @@ pub fn generate_tags_md(tags: &Value) -> String {
         }
 
         // Ordering Convention.
-        if let Some(ord) = guidelines.get("orderingConvention").filter(|v| truthy(Some(*v))) {
+        if let Some(ord) = guidelines
+            .get("orderingConvention")
+            .filter(|v| truthy(Some(*v)))
+        {
             if has(ord, "title") {
                 sections.push(format!("### {}", field(ord, "title")));
                 sections.push(String::new());
@@ -315,8 +324,10 @@ pub fn generate_tags_md(tags: &Value) -> String {
         if let Some(phase_stats) = arr(stats, "phaseStats") {
             sections.push("### By Phase".to_string());
             sections.push(String::new());
-            sections.push("| Phase | Total Features | Complete | In Progress | Planned |".to_string());
-            sections.push("|-------|----------------|----------|-------------|---------|".to_string());
+            sections
+                .push("| Phase | Total Features | Complete | In Progress | Planned |".to_string());
+            sections
+                .push("|-------|----------------|----------|-------------|---------|".to_string());
 
             for stat in phase_stats {
                 sections.push(format!(
@@ -375,7 +386,10 @@ pub fn generate_tags_md(tags: &Value) -> String {
 
         // Update Command.
         if has(stats, "updateCommand") {
-            sections.push(format!("**Update Command**: `{}`", field(stats, "updateCommand")));
+            sections.push(format!(
+                "**Update Command**: `{}`",
+                field(stats, "updateCommand")
+            ));
             sections.push(String::new());
         }
 

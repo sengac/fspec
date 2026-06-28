@@ -16,8 +16,8 @@
 //! lines at lines 37, 44, 51.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const ARGS: &[CommandArgument] = &[

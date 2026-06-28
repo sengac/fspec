@@ -34,24 +34,30 @@ fn test_per_session_pause_handler_isolation() {
     set_pause_handler(session_b, Some(handler_b));
 
     // @step When pause_for_user is called with session A's ID
-    let response = pause_for_user(session_a, PauseRequest {
-        kind: PauseKind::Confirm,
-        tool_name: "Test".to_string(),
-        message: "test".to_string(),
-        details: None,
-    });
+    let response = pause_for_user(
+        session_a,
+        PauseRequest {
+            kind: PauseKind::Confirm,
+            tool_name: "Test".to_string(),
+            message: "test".to_string(),
+            details: None,
+        },
+    );
 
     // @step Then only session A's handler is invoked
     // @step And the response is Approved
     assert_eq!(response, PauseResponse::Approved);
 
     // Verify session B returns Denied (its own handler)
-    let response_b = pause_for_user(session_b, PauseRequest {
-        kind: PauseKind::Confirm,
-        tool_name: "Test".to_string(),
-        message: "test".to_string(),
-        details: None,
-    });
+    let response_b = pause_for_user(
+        session_b,
+        PauseRequest {
+            kind: PauseKind::Confirm,
+            tool_name: "Test".to_string(),
+            message: "test".to_string(),
+            details: None,
+        },
+    );
     assert_eq!(response_b, PauseResponse::Denied);
 
     // Cleanup
@@ -81,23 +87,29 @@ fn test_clearing_one_session_pause_handler_does_not_affect_another() {
     set_pause_handler(session_b, None);
 
     // @step And pause_for_user is called with session A's ID
-    let response = pause_for_user(session_a, PauseRequest {
-        kind: PauseKind::Continue,
-        tool_name: "Test".to_string(),
-        message: "test".to_string(),
-        details: None,
-    });
+    let response = pause_for_user(
+        session_a,
+        PauseRequest {
+            kind: PauseKind::Continue,
+            tool_name: "Test".to_string(),
+            message: "test".to_string(),
+            details: None,
+        },
+    );
 
     // @step Then session A's handler is invoked normally
     assert_eq!(response, PauseResponse::Approved);
 
     // @step And pause_for_user with session B's ID returns Resumed
-    let response_b = pause_for_user(session_b, PauseRequest {
-        kind: PauseKind::Continue,
-        tool_name: "Test".to_string(),
-        message: "test".to_string(),
-        details: None,
-    });
+    let response_b = pause_for_user(
+        session_b,
+        PauseRequest {
+            kind: PauseKind::Continue,
+            tool_name: "Test".to_string(),
+            message: "test".to_string(),
+            details: None,
+        },
+    );
     assert_eq!(response_b, PauseResponse::Resumed);
 
     // Cleanup
@@ -115,12 +127,15 @@ fn test_pause_for_unregistered_session_returns_resumed() {
     let session_c = Uuid::new_v4();
 
     // @step When pause_for_user is called with session C's ID
-    let response = pause_for_user(session_c, PauseRequest {
-        kind: PauseKind::Continue,
-        tool_name: "Test".to_string(),
-        message: "test".to_string(),
-        details: None,
-    });
+    let response = pause_for_user(
+        session_c,
+        PauseRequest {
+            kind: PauseKind::Continue,
+            tool_name: "Test".to_string(),
+            message: "test".to_string(),
+            details: None,
+        },
+    );
 
     // @step Then the response is Resumed
     assert_eq!(response, PauseResponse::Resumed);

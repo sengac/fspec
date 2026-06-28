@@ -5,7 +5,9 @@
 //! non-TTY. Field order and content mirror the TS `config` object verbatim so
 //! `format_command_help` reproduces the documented output.
 
-use super::super::{CommonError, CommandExample, CommandHelpConfig, CommandOption, CommonPatternEntry};
+use super::super::{
+    CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPatternEntry,
+};
 
 const OPTIONS: &[CommandOption] = &[
     CommandOption {

@@ -3,9 +3,9 @@
 //! Handles the creation of child processes with stdin forwarding,
 //! stdout/stderr reading into a shared output buffer, and buffer capping.
 
+use super::types::ExecCommand;
 use super::UNIFIED_EXEC_OUTPUT_MAX_BYTES;
 use crate::error::ToolError;
-use super::types::ExecCommand;
 use std::process::Stdio;
 use std::sync::Arc;
 use tokio::io::AsyncWriteExt;
@@ -13,7 +13,12 @@ use tokio::process::{Child, Command};
 use tokio::sync::{mpsc, Mutex, Notify};
 
 /// Return type for spawned processes: child handle, stdin sender, output buffer, notify.
-pub type SpawnResult = (Child, mpsc::Sender<Vec<u8>>, Arc<Mutex<Vec<u8>>>, Arc<Notify>);
+pub type SpawnResult = (
+    Child,
+    mpsc::Sender<Vec<u8>>,
+    Arc<Mutex<Vec<u8>>>,
+    Arc<Notify>,
+);
 
 /// Cap the output buffer to `UNIFIED_EXEC_OUTPUT_MAX_BYTES`, discarding oldest bytes.
 fn cap_output_buffer(buf: &mut Vec<u8>) {

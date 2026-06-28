@@ -49,6 +49,10 @@ impl BashToolFacade for GeminiRunShellCommandFacade {
             })?
             .to_string();
 
-        Ok(InternalBashParams::Execute { command, cwd: None, timeout_ms: None })
+        Ok(InternalBashParams::Execute {
+            command,
+            cwd: None,
+            timeout_ms: None,
+        })
     }
 }

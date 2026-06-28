@@ -20,7 +20,9 @@ mod common;
 
 use codelet_rpc_server::{ws_client_connect, Envelope};
 use codelet_rpc_types::WorkUnitInfo;
-use common::{connect_with_retry, make_workspace, spawn_rpc_server_with_workspace, write_workspace};
+use common::{
+    connect_with_retry, make_workspace, spawn_rpc_server_with_workspace, write_workspace,
+};
 use futures::StreamExt;
 use std::time::Duration;
 use tokio::time::timeout;
@@ -59,10 +61,7 @@ async fn scenario_websocket_client_receives_an_initial_work_units_update_frame_o
     };
     let mut ids: Vec<String> = payload.into_iter().map(|wu| wu.id).collect();
     ids.sort();
-    assert_eq!(
-        ids,
-        vec!["AUTH-001".to_string(), "AUTH-002".to_string()],
-    );
+    assert_eq!(ids, vec!["AUTH-001".to_string(), "AUTH-002".to_string()],);
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

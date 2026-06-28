@@ -69,9 +69,7 @@ impl ProfileRegistry {
     /// Record that a guard finished for `label`, accumulating elapsed nanos. Called on Drop.
     pub fn record_exit(&self, label: &'static str, elapsed_ns: u64) {
         if let Some(entry) = self.scopes.get(label) {
-            entry
-                .total_self_ns
-                .fetch_add(elapsed_ns, Ordering::Relaxed);
+            entry.total_self_ns.fetch_add(elapsed_ns, Ordering::Relaxed);
             entry.currently_executing.fetch_sub(1, Ordering::Relaxed);
             let prev_max = entry.max_iter_ns.load(Ordering::Relaxed);
             if elapsed_ns > prev_max {

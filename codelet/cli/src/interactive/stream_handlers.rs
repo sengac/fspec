@@ -49,15 +49,15 @@ pub(super) fn detect_tool_error(raw_result: &str) -> bool {
     // IMPORTANT: We check for SPECIFIC patterns, not generic "error" strings,
     // to avoid false positives from file content.
     let error_patterns = [
-        "Command failed with exit code",  // Bash execution failure
-        "Operation timed out",             // Timeout errors
-        "Token limit exceeded:",           // Token limit errors
-        "Invalid pattern:",                // Pattern errors (grep, glob)
-        "Unsupported language:",           // AstGrep language errors
-        "Tool not found:",                 // ToolSet errors
-        "Toolset error:",                  // ToolServerError wrapper
-        "ToolCallError:",                  // ToolSetError wrapper
-        "ToolServerError:",                // RequestError wrapper
+        "Command failed with exit code", // Bash execution failure
+        "Operation timed out",           // Timeout errors
+        "Token limit exceeded:",         // Token limit errors
+        "Invalid pattern:",              // Pattern errors (grep, glob)
+        "Unsupported language:",         // AstGrep language errors
+        "Tool not found:",               // ToolSet errors
+        "Toolset error:",                // ToolServerError wrapper
+        "ToolCallError:",                // ToolSetError wrapper
+        "ToolServerError:",              // RequestError wrapper
     ];
 
     for pattern in error_patterns {

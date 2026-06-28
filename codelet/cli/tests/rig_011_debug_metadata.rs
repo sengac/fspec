@@ -57,9 +57,7 @@ fn test_debug_api_request_event_should_use_model_id_not_provider_name() {
 
     // @step Then the event data should have model "gpt-5.3-codex"
     // Build the event JSON the way the FIXED code should build it
-    let correct_model = model_id
-        
-        .unwrap_or_else(|| provider_name.clone());
+    let correct_model = model_id.unwrap_or_else(|| provider_name.clone());
     let event_data = serde_json::json!({
         "provider": &provider_name,
         "model": &correct_model,

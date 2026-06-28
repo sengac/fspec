@@ -14,9 +14,7 @@
 
 mod common;
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
@@ -33,17 +31,16 @@ async fn scenario_cmd_req_and_cmd_res_still_rejected_event_and_log_event_legitim
     let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
     ));
-    let (addr, stats, _join) =
-        bind_and_serve("127.0.0.1:0", Arc::clone(&service))
-            .await
-            .expect("bind_and_serve");
+    let (addr, stats, _join) = bind_and_serve("127.0.0.1:0", Arc::clone(&service))
+        .await
+        .expect("bind_and_serve");
 
     let ws = connect_with_retry(addr.port()).await;
     let (mut sink, _stream) = futures::StreamExt::split(ws);

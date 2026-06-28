@@ -9,11 +9,13 @@
 //! - `additionalProperties: false` to prevent extra fields
 //! - Clear, concise descriptions
 
+use super::param_extract::{
+    extract_optional_string, extract_optional_uint, extract_required_string,
+};
 use super::traits::{
     BashToolFacade, FileToolFacade, InternalBashParams, InternalFileParams, InternalLsParams,
     InternalSearchParams, LsToolFacade, SearchToolFacade, ToolDefinition,
 };
-use super::param_extract::{extract_optional_string, extract_optional_uint, extract_required_string};
 use crate::ToolError;
 use serde_json::{json, Value};
 
@@ -56,7 +58,12 @@ impl LsToolFacade for ZAIListDirFacade {
 
     fn map_params(&self, input: Value) -> Result<InternalLsParams, ToolError> {
         let path = extract_optional_string(&input, "path");
-        Ok(InternalLsParams::List { path, offset: None, limit: None, depth: None })
+        Ok(InternalLsParams::List {
+            path,
+            offset: None,
+            limit: None,
+            depth: None,
+        })
     }
 }
 
@@ -254,7 +261,11 @@ impl BashToolFacade for ZAIRunCommandFacade {
 
     fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {
         let command = extract_required_string(&input, "command", "run_command")?;
-        Ok(InternalBashParams::Execute { command, cwd: None, timeout_ms: None })
+        Ok(InternalBashParams::Execute {
+            command,
+            cwd: None,
+            timeout_ms: None,
+        })
     }
 }
 
@@ -303,7 +314,12 @@ impl SearchToolFacade for ZAIGrepFilesFacade {
         let pattern = extract_required_string(&input, "pattern", "grep_files")?;
         let path = extract_optional_string(&input, "path");
 
-        Ok(InternalSearchParams::Grep { pattern, path, include: None, limit: None })
+        Ok(InternalSearchParams::Grep {
+            pattern,
+            path,
+            include: None,
+            limit: None,
+        })
     }
 }
 
@@ -324,7 +340,8 @@ impl SearchToolFacade for ZAIFindFilesFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "find_files".to_string(),
-            description: "Find files matching a glob pattern. Returns list of matching file paths.".to_string(),
+            description: "Find files matching a glob pattern. Returns list of matching file paths."
+                .to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
@@ -386,7 +403,15 @@ mod tests {
         let input = json!({});
 
         let result = facade.map_params(input).unwrap();
-        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
+        assert_eq!(
+            result,
+            InternalLsParams::List {
+                path: None,
+                offset: None,
+                limit: None,
+                depth: None
+            }
+        );
     }
 
     #[test]
@@ -398,7 +423,15 @@ mod tests {
 
         let result = facade.map_params(input).unwrap();
         // Empty path should be treated as None (use default)
-        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
+        assert_eq!(
+            result,
+            InternalLsParams::List {
+                path: None,
+                offset: None,
+                limit: None,
+                depth: None
+            }
+        );
     }
 
     #[test]
@@ -409,7 +442,15 @@ mod tests {
         });
 
         let result = facade.map_params(input).unwrap();
-        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
+        assert_eq!(
+            result,
+            InternalLsParams::List {
+                path: None,
+                offset: None,
+                limit: None,
+                depth: None
+            }
+        );
     }
 
     #[test]

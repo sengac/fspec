@@ -203,8 +203,7 @@ pub fn apply_session_changes(repo_path: impl AsRef<Path>, session_id: &str) -> R
         apply_worktree_to_main(&base_tree_files, &resolved_worktree_files, &main_workdir)?;
     } else {
         // FIRST-MERGE PATH: No pending state → run normal conflict detection.
-        let potential_conflicts =
-            detect_conflicts(&base_tree_files, &worktree_files, &main_files);
+        let potential_conflicts = detect_conflicts(&base_tree_files, &worktree_files, &main_files);
 
         if !potential_conflicts.is_empty() {
             // BUG-098: Perform three-way merge and write conflict markers into
@@ -266,9 +265,7 @@ const PENDING_CONFLICTS_FILE: &str = ".fspec-pending-conflicts";
 /// Check if file content contains conflict markers
 fn has_conflict_markers(content: &[u8]) -> bool {
     // Look for "<<<<<<< " at the start of a line
-    content
-        .windows(8)
-        .any(|w| w == b"<<<<<<< ")
+    content.windows(8).any(|w| w == b"<<<<<<< ")
 }
 
 /// Read pending conflicts state from worktree
@@ -301,8 +298,9 @@ fn write_pending_conflicts(worktree_path: &Path, files: &[String]) -> Result<()>
     });
     fs::write(
         &state_path,
-        serde_json::to_string_pretty(&value)
-            .map_err(|e| GitError::Other(format!("Failed to serialize pending conflicts: {}", e)))?,
+        serde_json::to_string_pretty(&value).map_err(|e| {
+            GitError::Other(format!("Failed to serialize pending conflicts: {}", e))
+        })?,
     )?;
     Ok(())
 }

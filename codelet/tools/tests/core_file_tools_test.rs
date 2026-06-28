@@ -1,10 +1,8 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/core-file-tools-implementation.feature
 //!
 //! Tests for Core File Tools (Read, Write, Edit) - CORE-002
 
-use uuid::Uuid;
 use codelet_tools::{
     edit::EditTool,
     limits::OutputLimits,
@@ -15,6 +13,7 @@ use codelet_tools::{
 use rig::tool::Tool;
 use std::fs;
 use tempfile::TempDir;
+use uuid::Uuid;
 
 // ==========================================
 // READ TOOL TESTS
@@ -163,9 +162,7 @@ async fn test_read_file_truncates_long_lines() {
     // @step Then lines exceeding 2000 characters should be truncated or omitted
     // The behavior may vary - either truncated with "..." or replaced with "[Omitted long line]"
     assert!(
-        result.contains("...")
-            || result.contains("[Omitted")
-            || result.len() < 3000  // Some form of truncation occurred
+        result.contains("...") || result.contains("[Omitted") || result.len() < 3000 // Some form of truncation occurred
     );
 }
 

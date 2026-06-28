@@ -31,7 +31,9 @@ const EXAMPLES: &[CommandExample] = &[
     CommandExample {
         command: "fspec checkpoint AUTH-001 before-refactor",
         description: Some("Create checkpoint before refactoring"),
-        output: Some("\u{2713} Created checkpoint \"before-refactor\" for AUTH-001\n  Captured 3 file(s)"),
+        output: Some(
+            "\u{2713} Created checkpoint \"before-refactor\" for AUTH-001\n  Captured 3 file(s)",
+        ),
     },
     CommandExample {
         command: "fspec checkpoint UI-002 baseline",
@@ -41,7 +43,9 @@ const EXAMPLES: &[CommandExample] = &[
     CommandExample {
         command: "fspec checkpoint BUG-003 working-version",
         description: Some("Create checkpoint before risky change"),
-        output: Some("\u{2713} Created checkpoint \"working-version\" for BUG-003\n  Captured 2 file(s)"),
+        output: Some(
+            "\u{2713} Created checkpoint \"working-version\" for BUG-003\n  Captured 2 file(s)",
+        ),
     },
 ];
 

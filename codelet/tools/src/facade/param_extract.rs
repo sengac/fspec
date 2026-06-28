@@ -37,7 +37,11 @@ pub fn value_as_bool_lenient(v: &Value) -> Option<bool> {
 
 /// Extract a required non-empty string field from JSON input.
 /// Returns an error if the field is missing, null, or empty.
-pub fn extract_required_string(input: &Value, field: &str, tool: &'static str) -> Result<String, ToolError> {
+pub fn extract_required_string(
+    input: &Value,
+    field: &str,
+    tool: &'static str,
+) -> Result<String, ToolError> {
     let value = input
         .get(field)
         .and_then(|v| v.as_str())
@@ -143,7 +147,10 @@ mod tests {
     #[test]
     fn test_extract_optional_string_present() {
         let input = json!({"path": "/src"});
-        assert_eq!(extract_optional_string(&input, "path"), Some("/src".to_string()));
+        assert_eq!(
+            extract_optional_string(&input, "path"),
+            Some("/src".to_string())
+        );
     }
 
     #[test]

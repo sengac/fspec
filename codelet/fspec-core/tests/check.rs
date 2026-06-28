@@ -71,7 +71,11 @@ fn parse_data(result: &codelet_fspec_core::DispatchResult) -> Value {
 fn all_error_strings(data: &Value) -> Vec<String> {
     data["errors"]
         .as_array()
-        .map(|a| a.iter().filter_map(|e| e.as_str().map(str::to_string)).collect())
+        .map(|a| {
+            a.iter()
+                .filter_map(|e| e.as_str().map(str::to_string))
+                .collect()
+        })
         .unwrap_or_default()
 }
 
@@ -110,7 +114,11 @@ fn gherkin_syntax_failure_fails_the_check() {
     // @step Given spec/features contains a feature file with invalid Gherkin syntax
     let tmp = TempDir::new().expect("tempdir");
     write_tags(tmp.path(), &["@comp"], &["@grp"], &[]);
-    write_file(tmp.path(), "spec/features/broken.feature", "this is not gherkin");
+    write_file(
+        tmp.path(),
+        "spec/features/broken.feature",
+        "this is not gherkin",
+    );
 
     // @step When I dispatch the check command against that project root
     let result = dispatch_command(req(tmp.path()));
@@ -124,7 +132,9 @@ fn gherkin_syntax_failure_fails_the_check() {
 
     // @step Then the errors list contains an entry mentioning that file
     assert!(
-        all_error_strings(&data).iter().any(|e| e.contains("broken.feature")),
+        all_error_strings(&data)
+            .iter()
+            .any(|e| e.contains("broken.feature")),
         "errors must mention broken.feature; got {:?}",
         all_error_strings(&data)
     );
@@ -155,7 +165,9 @@ fn an_unregistered_tag_fails_the_check() {
 
     // @step Then the errors list mentions '@unknown-tag'
     assert!(
-        all_error_strings(&data).iter().any(|e| e.contains("@unknown-tag")),
+        all_error_strings(&data)
+            .iter()
+            .any(|e| e.contains("@unknown-tag")),
         "errors must mention @unknown-tag; got {:?}",
         all_error_strings(&data)
     );

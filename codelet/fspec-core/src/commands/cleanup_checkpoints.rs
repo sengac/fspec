@@ -229,7 +229,10 @@ fn render_text(result: &CleanupResult) -> String {
     out.push('\n');
 
     if result.deleted_count > 0 {
-        out.push_str(&format!("Deleted {} checkpoint(s):\n", result.deleted_count));
+        out.push_str(&format!(
+            "Deleted {} checkpoint(s):\n",
+            result.deleted_count
+        ));
         for cp in &result.deleted {
             out.push_str(&format!("  - {} ({})\n", cp.name, cp.timestamp));
         }
@@ -325,7 +328,12 @@ mod tests {
             keep_last: 5,
         };
         let data: Value = serde_json::from_str(&render_json(&result).unwrap()).unwrap();
-        let keys: Vec<&str> = data.as_object().unwrap().keys().map(String::as_str).collect();
+        let keys: Vec<&str> = data
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect();
         assert_eq!(
             keys,
             vec![

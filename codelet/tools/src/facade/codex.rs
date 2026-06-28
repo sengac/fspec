@@ -12,12 +12,14 @@
 //!
 //! Feature: spec/features/codex-native-tool-facades.feature
 
+use super::param_extract::{
+    extract_optional_bool, extract_optional_string, extract_optional_uint, extract_required_string,
+};
 use super::traits::{
     BashToolFacade, ExecToolFacade, FileToolFacade, HitlToolFacade, InternalBashParams,
     InternalExecParams, InternalFileParams, InternalHitlParams, InternalIndentationParams,
     InternalLsParams, InternalSearchParams, LsToolFacade, SearchToolFacade, ToolDefinition,
 };
-use super::param_extract::{extract_optional_bool, extract_optional_string, extract_optional_uint, extract_required_string};
 use crate::ToolError;
 use serde_json::{json, Value};
 
@@ -96,8 +98,14 @@ impl BashToolFacade for CodexShellCommandFacade {
     fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {
         let command = extract_required_string(&input, "command", "shell_command")?;
         let cwd = extract_optional_string(&input, "workdir");
-        let timeout_ms = input.get("timeout_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
-        Ok(InternalBashParams::Execute { command, cwd, timeout_ms })
+        let timeout_ms = input
+            .get("timeout_ms")
+            .and_then(crate::facade::param_extract::value_as_u64_lenient);
+        Ok(InternalBashParams::Execute {
+            command,
+            cwd,
+            timeout_ms,
+        })
     }
 }
 
@@ -273,7 +281,12 @@ impl LsToolFacade for CodexListDirFacade {
         let offset = extract_optional_uint(&input, "offset");
         let limit = extract_optional_uint(&input, "limit");
         let depth = extract_optional_uint(&input, "depth");
-        Ok(InternalLsParams::List { path: dir_path, offset, limit, depth })
+        Ok(InternalLsParams::List {
+            path: dir_path,
+            offset,
+            limit,
+            depth,
+        })
     }
 }
 
@@ -307,9 +320,11 @@ impl FileToolFacade for CodexViewImageFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "view_image".to_string(),
-            description: "View a local image from the filesystem (only use if given a full filepath \
+            description:
+                "View a local image from the filesystem (only use if given a full filepath \
                 by the user, and the image isn't already attached to the thread context \
-                within <image ...> tags).".to_string(),
+                within <image ...> tags)."
+                    .to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
@@ -401,7 +416,12 @@ impl SearchToolFacade for CodexGrepFilesFacade {
         let include = extract_optional_string(&input, "include");
         let limit = extract_optional_uint(&input, "limit");
 
-        Ok(InternalSearchParams::Grep { pattern, path, include, limit })
+        Ok(InternalSearchParams::Grep {
+            pattern,
+            path,
+            include,
+            limit,
+        })
     }
 }
 
@@ -482,7 +502,9 @@ impl ExecToolFacade for CodexShellFacade {
         }
 
         let workdir = extract_optional_string(&input, "workdir");
-        let timeout_ms = input.get("timeout_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
+        let timeout_ms = input
+            .get("timeout_ms")
+            .and_then(crate::facade::param_extract::value_as_u64_lenient);
         let timeout_secs = timeout_ms.map(|ms| ms / 1000);
 
         Ok(InternalExecParams::Run {
@@ -573,8 +595,12 @@ impl ExecToolFacade for CodexExecCommandFacade {
         let cmd = extract_required_string(&input, "cmd", "exec_command")?;
         let workdir = extract_optional_string(&input, "workdir");
         let tty = extract_optional_bool(&input, "tty").unwrap_or(false);
-        let yield_time_ms = input.get("yield_time_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
-        let max_output_tokens = input.get("max_output_tokens").and_then(crate::facade::param_extract::value_as_u64_lenient);
+        let yield_time_ms = input
+            .get("yield_time_ms")
+            .and_then(crate::facade::param_extract::value_as_u64_lenient);
+        let max_output_tokens = input
+            .get("max_output_tokens")
+            .and_then(crate::facade::param_extract::value_as_u64_lenient);
         // shell and login params are silently ignored
 
         Ok(InternalExecParams::Run {
@@ -649,10 +675,12 @@ impl ExecToolFacade for CodexWriteStdinFacade {
 
     fn map_params(&self, input: Value) -> Result<InternalExecParams, ToolError> {
         // session_id is required and must be a string (hex UUID segment from exec_command)
-        let session_id_val = input.get("session_id").ok_or_else(|| ToolError::Validation {
-            tool: "write_stdin",
-            message: "Missing required parameter: session_id".to_string(),
-        })?;
+        let session_id_val = input
+            .get("session_id")
+            .ok_or_else(|| ToolError::Validation {
+                tool: "write_stdin",
+                message: "Missing required parameter: session_id".to_string(),
+            })?;
         let session_id = match session_id_val {
             Value::String(s) => {
                 if s.is_empty() {
@@ -678,8 +706,12 @@ impl ExecToolFacade for CodexWriteStdinFacade {
         };
 
         let chars = extract_optional_string(&input, "chars").unwrap_or_default();
-        let yield_time_ms = input.get("yield_time_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
-        let max_output_tokens = input.get("max_output_tokens").and_then(crate::facade::param_extract::value_as_u64_lenient);
+        let yield_time_ms = input
+            .get("yield_time_ms")
+            .and_then(crate::facade::param_extract::value_as_u64_lenient);
+        let max_output_tokens = input
+            .get("max_output_tokens")
+            .and_then(crate::facade::param_extract::value_as_u64_lenient);
 
         // Empty chars = poll, non-empty chars = write
         if chars.is_empty() {
@@ -791,45 +823,55 @@ impl HitlToolFacade for CodexRequestUserInputFacade {
     fn map_params(&self, input: Value) -> Result<InternalHitlParams, ToolError> {
         use crate::request_user_input::{HitlOption, HitlQuestion};
 
-        let questions_val = input.get("questions").ok_or_else(|| ToolError::Validation {
-            tool: "request_user_input",
-            message: "Missing required parameter: questions".to_string(),
-        })?;
+        let questions_val = input
+            .get("questions")
+            .ok_or_else(|| ToolError::Validation {
+                tool: "request_user_input",
+                message: "Missing required parameter: questions".to_string(),
+            })?;
 
-        let questions_arr = questions_val.as_array().ok_or_else(|| ToolError::Validation {
-            tool: "request_user_input",
-            message: "questions must be an array".to_string(),
-        })?;
+        let questions_arr = questions_val
+            .as_array()
+            .ok_or_else(|| ToolError::Validation {
+                tool: "request_user_input",
+                message: "questions must be an array".to_string(),
+            })?;
 
         let mut questions = Vec::new();
         for q in questions_arr {
-            let id = q.get("id")
+            let id = q
+                .get("id")
                 .and_then(Value::as_str)
                 .unwrap_or("")
                 .to_string();
-            let header = q.get("header")
+            let header = q
+                .get("header")
                 .and_then(Value::as_str)
                 .unwrap_or("")
                 .to_string();
-            let question = q.get("question")
+            let question = q
+                .get("question")
                 .and_then(Value::as_str)
                 .unwrap_or("")
                 .to_string();
 
             let options = q.get("options").and_then(|opts_val| {
                 opts_val.as_array().map(|opts_arr| {
-                    opts_arr.iter().map(|o| {
-                        HitlOption {
-                            label: o.get("label")
+                    opts_arr
+                        .iter()
+                        .map(|o| HitlOption {
+                            label: o
+                                .get("label")
                                 .and_then(Value::as_str)
                                 .unwrap_or("")
                                 .to_string(),
-                            description: o.get("description")
+                            description: o
+                                .get("description")
                                 .and_then(Value::as_str)
                                 .unwrap_or("")
                                 .to_string(),
-                        }
-                    }).collect::<Vec<_>>()
+                        })
+                        .collect::<Vec<_>>()
                 })
             });
 
@@ -1031,7 +1073,9 @@ mod tests {
 
         // @step And cwd is None
         // @step And timeout_ms is None
-        let InternalBashParams::Execute { cwd, timeout_ms, .. } = &result;
+        let InternalBashParams::Execute {
+            cwd, timeout_ms, ..
+        } = &result;
         assert_eq!(*cwd, None);
         assert_eq!(*timeout_ms, None);
     }
@@ -1061,10 +1105,7 @@ mod tests {
         );
 
         // @step And the schema has a "prefix_rule" property of type "array"
-        assert_eq!(
-            def.parameters["properties"]["prefix_rule"]["type"],
-            "array"
-        );
+        assert_eq!(def.parameters["properties"]["prefix_rule"]["type"], "array");
     }
 
     /// Scenario: Codex-native approval params are silently ignored in map_params
@@ -1250,7 +1291,15 @@ mod tests {
 
         let result = facade.map_params(input).unwrap();
         // Empty dir_path is treated as None (use default)
-        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
+        assert_eq!(
+            result,
+            InternalLsParams::List {
+                path: None,
+                offset: None,
+                limit: None,
+                depth: None
+            }
+        );
     }
 
     #[test]
@@ -1261,7 +1310,15 @@ mod tests {
         });
 
         let result = facade.map_params(input).unwrap();
-        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
+        assert_eq!(
+            result,
+            InternalLsParams::List {
+                path: None,
+                offset: None,
+                limit: None,
+                depth: None
+            }
+        );
     }
 
     // =========================================================================
@@ -1411,7 +1468,15 @@ mod tests {
             "path": "/src"
         });
         let result = facade.map_params(input).unwrap();
-        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
+        assert_eq!(
+            result,
+            InternalLsParams::List {
+                path: None,
+                offset: None,
+                limit: None,
+                depth: None
+            }
+        );
 
         // But `dir_path` should work
         let input = json!({
@@ -1645,11 +1710,13 @@ mod tests {
     fn test_codex_does_not_expose_non_native_glob() {
         // @step Given a Codex agent built with create_rig_agent
         // Collect all facade tool names that would be registered
-        let codex_facade_names = [CodexShellCommandFacade.tool_name(),
+        let codex_facade_names = [
+            CodexShellCommandFacade.tool_name(),
             CodexReadFileFacade.tool_name(),
             CodexListDirFacade.tool_name(),
             CodexGrepFilesFacade.tool_name(),
-            CodexViewImageFacade.tool_name()];
+            CodexViewImageFacade.tool_name(),
+        ];
 
         // @step When the agent tool definitions are inspected
         // @step Then the tool list does not contain "glob"
@@ -1697,7 +1764,10 @@ mod tests {
     fn test_all_codex_schemas_have_additional_properties_false() {
         // @step Given all Codex facade instances
         let facades: Vec<(&str, serde_json::Value)> = vec![
-            ("shell_command", CodexShellCommandFacade.definition().parameters),
+            (
+                "shell_command",
+                CodexShellCommandFacade.definition().parameters,
+            ),
             ("read_file", CodexReadFileFacade.definition().parameters),
             ("list_dir", CodexListDirFacade.definition().parameters),
             ("grep_files", CodexGrepFilesFacade.definition().parameters),
@@ -1803,7 +1873,13 @@ mod tests {
 
         // @step Then the wrapper passes "glob" = "*.rs" in the GrepTool execute args
         // Verify the internal params carry include, and show how wrapper would construct GrepArgs
-        if let InternalSearchParams::Grep { pattern, path, include, limit } = params {
+        if let InternalSearchParams::Grep {
+            pattern,
+            path,
+            include,
+            limit,
+        } = params
+        {
             let grep_args = GrepArgs {
                 pattern,
                 path,
@@ -1834,7 +1910,13 @@ mod tests {
 
         // @step Then the wrapper caps the grep output to at most 10 result lines
         // Verify the internal params carry limit, and show how wrapper would construct GrepArgs
-        if let InternalSearchParams::Grep { pattern, path, include, limit } = params {
+        if let InternalSearchParams::Grep {
+            pattern,
+            path,
+            include,
+            limit,
+        } = params
+        {
             let grep_args = GrepArgs {
                 pattern,
                 path,
@@ -2614,7 +2696,10 @@ mod tests {
 
         // @step Then "shell" is present and maps command as array type
         assert_eq!(shell_def.name, "shell");
-        assert_eq!(shell_def.parameters["properties"]["command"]["type"], "array");
+        assert_eq!(
+            shell_def.parameters["properties"]["command"]["type"],
+            "array"
+        );
 
         // @step And "exec_command" is present and maps cmd as string type
         assert_eq!(exec_def.name, "exec_command");

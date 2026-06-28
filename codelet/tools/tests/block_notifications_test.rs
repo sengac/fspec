@@ -8,8 +8,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use codelet_tools::blocklist::{
-    BlocklistAction, BlocklistConfig, BlocklistRule,
-    check_bash_command, clear_session_allowances, init_blocklist,
+    check_bash_command, clear_session_allowances, init_blocklist, BlocklistAction, BlocklistConfig,
+    BlocklistRule,
 };
 use codelet_tools::stage_permissions::{check_write_permission, init_stage_permissions};
 use serial_test::serial;
@@ -45,7 +45,8 @@ fn test_notify_user_when_ai_command_is_blocked() {
     let path = fspec_dir.join("blocklist.json");
     let mut file = std::fs::File::create(&path).expect("create blocklist.json");
     let json = serde_json::to_string_pretty(&config).expect("serialize config");
-    file.write_all(json.as_bytes()).expect("write blocklist.json");
+    file.write_all(json.as_bytes())
+        .expect("write blocklist.json");
 
     // Initialize blocklist with the temp project root
     init_blocklist(Some(tmp.path()));
@@ -173,7 +174,8 @@ fn test_block_notification_message_format() {
     let path = fspec_dir.join("blocklist.json");
     let mut file = std::fs::File::create(&path).expect("create blocklist.json");
     let json = serde_json::to_string_pretty(&config).expect("serialize config");
-    file.write_all(json.as_bytes()).expect("write blocklist.json");
+    file.write_all(json.as_bytes())
+        .expect("write blocklist.json");
 
     init_blocklist(Some(tmp.path()));
 

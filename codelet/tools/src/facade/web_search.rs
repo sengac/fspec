@@ -383,7 +383,8 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: true, pause: false,
+                headless: true,
+                pause: false,
             }
         );
     }
@@ -416,7 +417,8 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: true, pause: false,
+                headless: true,
+                pause: false,
             }
         );
     }
@@ -434,7 +436,8 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: true, pause: false,
+                headless: true,
+                pause: false,
             }
         );
     }
@@ -474,7 +477,8 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: false, pause: false,
+                headless: false,
+                pause: false,
             }
         );
     }
@@ -496,7 +500,8 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: Some("/tmp/screenshot.png".to_string()),
                 full_page: true,
-                headless: true, pause: false,
+                headless: true,
+                pause: false,
             }
         );
     }
@@ -516,7 +521,8 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: None,
                 full_page: false,
-                headless: true, pause: false,
+                headless: true,
+                pause: false,
             }
         );
     }
@@ -537,7 +543,8 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: None,
                 full_page: false,
-                headless: false, pause: false,
+                headless: false,
+                pause: false,
             }
         );
     }
@@ -558,7 +565,8 @@ mod tests {
             InternalWebSearchParams::FindInPage {
                 url: "https://example.com".to_string(),
                 pattern: "search term".to_string(),
-                headless: false, pause: false,
+                headless: false,
+                pause: false,
             }
         );
     }
@@ -587,7 +595,8 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: false, pause: false,
+                headless: false,
+                pause: false,
             }
         );
     }
@@ -643,12 +652,15 @@ mod tests {
             "url": "https://example.com",
             "headless": false
         });
-        let result = ClaudeWebSearchFacade.map_params(input_non_headless).unwrap();
+        let result = ClaudeWebSearchFacade
+            .map_params(input_non_headless)
+            .unwrap();
         assert_eq!(
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: false, pause: false,
+                headless: false,
+                pause: false,
             }
         );
     }
@@ -669,7 +681,8 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: Some("/tmp/screenshot.png".to_string()),
                 full_page: true,
-                headless: true, pause: false,
+                headless: true,
+                pause: false,
             }
         );
     }

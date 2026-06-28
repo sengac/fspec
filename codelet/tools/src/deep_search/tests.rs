@@ -5,7 +5,14 @@
 //! This test file validates the acceptance criteria defined in the feature file.
 //! Scenarios map directly to Gherkin scenarios.
 
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::module_inception, clippy::assertions_on_constants)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect,
+    clippy::module_inception,
+    clippy::assertions_on_constants
+)]
 mod tests {
     use super::super::*;
     use serial_test::serial;
@@ -285,7 +292,15 @@ mod tests {
         // @step When the sub-agent is constructed for a DeepSearch call
         // @step Then the sub-agent has these tools: Read, Grep, AstGrep, Glob, Ls, Bash, SessionSearch
         let tools = sub_agent_tool_names();
-        let expected_present = ["Read", "Grep", "AstGrep", "Glob", "Ls", "Bash", "SessionSearch"];
+        let expected_present = [
+            "Read",
+            "Grep",
+            "AstGrep",
+            "Glob",
+            "Ls",
+            "Bash",
+            "SessionSearch",
+        ];
         for name in &expected_present {
             assert!(tools.contains(name), "should include {name}");
         }
@@ -320,11 +335,11 @@ mod tests {
     #[test]
     #[serial]
     fn test_session_search_handler_lifecycle() {
+        use crate::session_search::types::SessionSearchResult;
         use crate::session_search::{
             clear_all_session_search_handlers, has_session_search_handler,
             set_session_search_handler, SessionSearchHandler,
         };
-        use crate::session_search::types::SessionSearchResult;
 
         clear_all_session_search_handlers();
 
@@ -341,11 +356,10 @@ mod tests {
         // @step And the handler is registered via set_session_search_handler(ephemeral_session_id, handler)
         assert!(!has_session_search_handler(ephemeral_session_id));
 
-        let mock_handler: SessionSearchHandler = std::sync::Arc::new(|_action, _sid| {
-            SessionSearchResult::Error {
+        let mock_handler: SessionSearchHandler =
+            std::sync::Arc::new(|_action, _sid| SessionSearchResult::Error {
                 message: "mock".to_string(),
-            }
-        });
+            });
         set_session_search_handler(ephemeral_session_id, Some(mock_handler));
         assert!(has_session_search_handler(ephemeral_session_id));
 
@@ -392,9 +406,7 @@ mod tests {
             *cq.lock().unwrap() = query.clone();
             *cs.lock().unwrap() = scope;
             cd.store(max_depth, Ordering::SeqCst);
-            Box::pin(async move {
-                Ok(format!("Answer about: {query}"))
-            })
+            Box::pin(async move { Ok(format!("Answer about: {query}")) })
         });
         set_deep_search_handler(session_id, Some(handler));
 
@@ -459,9 +471,7 @@ mod tests {
         let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth, _max_rec| {
             *cs.lock().unwrap() = scope;
             cd.store(max_depth, Ordering::SeqCst);
-            Box::pin(async move {
-                Ok(format!("Session answer: {query}"))
-            })
+            Box::pin(async move { Ok(format!("Session answer: {query}")) })
         });
         set_deep_search_handler(session_id, Some(handler));
 
@@ -491,7 +501,10 @@ mod tests {
         assert_eq!(*captured_scope.lock().unwrap(), None);
 
         // Default max_depth (50) was used
-        assert_eq!(captured_depth.load(Ordering::SeqCst), DEFAULT_DEEP_SEARCH_MAX_DEPTH);
+        assert_eq!(
+            captured_depth.load(Ordering::SeqCst),
+            DEFAULT_DEEP_SEARCH_MAX_DEPTH
+        );
 
         clear_all_deep_search_handlers();
     }
@@ -553,9 +566,7 @@ mod tests {
         // @step When the DeepSearch tool creates a ProviderManager
         // (simulated: handler returns error as if provider creation failed)
         let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth, _max_rec| {
-            Box::pin(async move {
-                Err("Sub-agent failed: model rate limited".to_string())
-            })
+            Box::pin(async move { Err("Sub-agent failed: model rate limited".to_string()) })
         });
         set_deep_search_handler(session_id, Some(handler));
 
@@ -723,9 +734,8 @@ mod tests {
         let session_id = Uuid::new_v4();
         assert!(!has_deep_search_handler(session_id));
 
-        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d, _r| {
-            Box::pin(async { Ok("ok".to_string()) })
-        });
+        let handler: DeepSearchHandler =
+            Arc::new(|_q, _s, _d, _r| Box::pin(async { Ok("ok".to_string()) }));
         set_deep_search_handler(session_id, Some(handler));
         assert!(has_deep_search_handler(session_id));
 
@@ -744,9 +754,8 @@ mod tests {
         let id1 = Uuid::new_v4();
         let id2 = Uuid::new_v4();
 
-        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d, _r| {
-            Box::pin(async { Ok("ok".to_string()) })
-        });
+        let handler: DeepSearchHandler =
+            Arc::new(|_q, _s, _d, _r| Box::pin(async { Ok("ok".to_string()) }));
         set_deep_search_handler(id1, Some(handler.clone()));
         set_deep_search_handler(id2, Some(handler));
         assert!(has_deep_search_handler(id1));
@@ -888,10 +897,7 @@ mod tests {
         assert_eq!(*captured_provider.lock().unwrap(), "openai");
 
         // @step And the handler closure captures the model id "gpt-4o"
-        assert_eq!(
-            *captured_model.lock().unwrap(),
-            Some("gpt-4o".to_string())
-        );
+        assert_eq!(*captured_model.lock().unwrap(), Some("gpt-4o".to_string()));
 
         // @step And the sub-agent creates a ProviderManager with provider "openai" and model "gpt-4o"
         // (verified by deep_search_handler.rs using with_provider_and_model —
@@ -1001,10 +1007,7 @@ mod tests {
         assert_eq!(*captured_provider.lock().unwrap(), "zai");
 
         // @step And the handler closure captures the model id "glm-4.7"
-        assert_eq!(
-            *captured_model.lock().unwrap(),
-            Some("glm-4.7".to_string())
-        );
+        assert_eq!(*captured_model.lock().unwrap(), Some("glm-4.7".to_string()));
 
         // @step And the sub-agent creates a ProviderManager with provider "zai" and model "glm-4.7"
         clear_all_deep_search_handlers();
@@ -1061,7 +1064,10 @@ mod tests {
         // Verified by the handler having access to provider_name and model_id
         // (in real code: ProviderManager::with_provider_and_model(&provider, model.as_deref()))
         let provider = captured_provider.lock().unwrap().clone();
-        assert!(!provider.is_empty(), "provider must be captured for with_provider_and_model");
+        assert!(
+            !provider.is_empty(),
+            "provider must be captured for with_provider_and_model"
+        );
 
         // @step And select_model is not called
         // with_provider_and_model() sets selected_model directly — no select_model() needed

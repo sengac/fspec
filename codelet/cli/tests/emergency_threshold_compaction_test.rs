@@ -6,7 +6,9 @@
 
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_cli::session::system_reminders::partition_for_compaction;
-use codelet_core::compaction::annotation_detector::{detect_annotations, ToolCallInfo, TurnContext};
+use codelet_core::compaction::annotation_detector::{
+    detect_annotations, ToolCallInfo, TurnContext,
+};
 use codelet_core::compaction::{FileOp, StructuralAnnotation};
 use rig::message::{AssistantContent, Message, Text, UserContent};
 use rig::one_or_many::OneOrMany;
@@ -141,7 +143,8 @@ async fn test_post_loop_compaction_uses_in_view_dag_flow() {
     let compaction_flag = Arc::new(AtomicBool::new(false));
     let original_prompt = "Fix the failing tests in auth module";
     // Post-loop passes Some(original_prompt) to embed in compaction instruction
-    let result = execute_compaction(&mut session, compaction_flag.clone(), Some(original_prompt)).await;
+    let result =
+        execute_compaction(&mut session, compaction_flag.clone(), Some(original_prompt)).await;
     assert!(result.is_ok(), "execute_compaction should succeed");
 
     // @step Then execute_compaction is called with the session and compaction_in_progress flag
@@ -532,7 +535,11 @@ fn test_compaction_hook_threshold_detection_unchanged() {
     // @step When context usage exceeds the 85-90 percent threshold
     // Verify the hook's threshold is correctly set (the on_completion_call logic
     // uses this threshold to set compaction_needed — tested in compaction_hook.rs unit tests)
-    assert_eq!(hook.threshold(), 180_000, "Threshold should be set correctly");
+    assert_eq!(
+        hook.threshold(),
+        180_000,
+        "Threshold should be set correctly"
+    );
 
     // Simulate what the hook does internally: total > threshold => compaction_needed = true
     let total = state.lock().unwrap().total();

@@ -23,9 +23,7 @@
 //! `scopes_by_calls` list, prefixed with `scope::` so it's visually distinct from the
 //! pprof stack frames.
 
-use crate::profile::attribution::{
-    attribute_samples, AttributionOutput, FrameInfo, SampleStack,
-};
+use crate::profile::attribution::{attribute_samples, AttributionOutput, FrameInfo, SampleStack};
 use crate::profile::channels::ChannelRegistry;
 use crate::profile::registry::{ProfileRegistry, PROFILING_ACTIVE};
 use crate::profile::result::{
@@ -321,13 +319,7 @@ fn run_pprof_window(
         );
     }
 
-    attribute_samples(
-        &stacks,
-        duration_secs_f,
-        SAMPLE_FREQUENCY_HZ,
-        top_n,
-        focus,
-    )
+    attribute_samples(&stacks, duration_secs_f, SAMPLE_FREQUENCY_HZ, top_n, focus)
 }
 
 /// Windows build: pprof is Unix-only, so we can't sample. Return an empty
@@ -405,7 +397,11 @@ fn capture_process_metrics() -> ProcessMetricsSnapshot {
 
 fn capture_runtime_metrics() -> RuntimeMetricsSnapshot {
     let worker_threads = tokio::runtime::Handle::try_current()
-        .map(|_| std::thread::available_parallelism().map(|n| n.get() as u32).unwrap_or(1))
+        .map(|_| {
+            std::thread::available_parallelism()
+                .map(|n| n.get() as u32)
+                .unwrap_or(1)
+        })
         .unwrap_or(1);
     // `alive_tokio_tasks` requires the `tokio_unstable` cfg flag which is not enabled in this
     // workspace. Degrade gracefully to None.

@@ -101,7 +101,12 @@ fn dispatch_with_multiple_tags_applies_and_logic_against_the_feature_plus_scenar
 
     // @step Then the returned scenarios array contains only the scenario whose tag union includes both @auth and @smoke
     let scenarios = data["scenarios"].as_array().expect("scenarios array");
-    assert_eq!(scenarios.len(), 1, "expected one match; got:\n{}", result.data);
+    assert_eq!(
+        scenarios.len(),
+        1,
+        "expected one match; got:\n{}",
+        result.data
+    );
     assert_eq!(scenarios[0]["name"].as_str(), Some("Smoke login"));
 }
 
@@ -153,7 +158,12 @@ fn scenario_level_tags_are_emitted_while_a_scenario_with_no_own_tags_omits_the_t
     assert!(result.success, "expected success=true, got {result:?}");
     let data = parse_data(&result.data);
     let scenarios = data["scenarios"].as_array().expect("scenarios array");
-    assert_eq!(scenarios.len(), 2, "expected two scenarios; got:\n{}", result.data);
+    assert_eq!(
+        scenarios.len(),
+        2,
+        "expected two scenarios; got:\n{}",
+        result.data
+    );
 
     // @step Then the first scenario's tags field equals ['@smoke','@critical']
     assert_eq!(

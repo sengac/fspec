@@ -15,17 +15,13 @@
 
 mod common;
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_server::{bind_and_serve, ws_client_connect};
-use codelet_rpc_types::{
-    SessionId, SessionInfo, SessionStatus, StreamChunk,
-};
+use codelet_rpc_types::{SessionId, SessionInfo, SessionStatus, StreamChunk};
 use common::{connect_with_retry, make_workspace};
 use std::sync::Arc;
 use std::time::Duration;
@@ -40,19 +36,17 @@ async fn build_ws() -> (
     let (dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
     ));
-    let embedded =
-        EmbeddedTransport::new(tokio::runtime::Handle::current(), Arc::clone(&service));
-    let (addr, _stats, _join) =
-        bind_and_serve("127.0.0.1:0", Arc::clone(&service))
-            .await
-            .expect("bind_and_serve");
+    let embedded = EmbeddedTransport::new(tokio::runtime::Handle::current(), Arc::clone(&service));
+    let (addr, _stats, _join) = bind_and_serve("127.0.0.1:0", Arc::clone(&service))
+        .await
+        .expect("bind_and_serve");
     let ws = connect_with_retry(addr.port()).await;
     let ws_client = ws_client_connect(ws)
         .await
@@ -87,10 +81,8 @@ async fn scenario_ws_list_sessions_matches_embedded() {
     // SessionInfo.id is a flat String (TS-shape compatibility — see
     // codelet/rpc-types/src/lib.rs:111). The seeded session ID is a
     // SessionId newtype; compare against its String form.
-    let mut ws_ids: Vec<String> =
-        ws_listed.iter().map(|s| s.id.clone()).collect();
-    let mut em_ids: Vec<String> =
-        embedded_listed.iter().map(|s| s.id.clone()).collect();
+    let mut ws_ids: Vec<String> = ws_listed.iter().map(|s| s.id.clone()).collect();
+    let mut em_ids: Vec<String> = embedded_listed.iter().map(|s| s.id.clone()).collect();
     ws_ids.sort();
     em_ids.sort();
     assert_eq!(
@@ -101,8 +93,7 @@ async fn scenario_ws_list_sessions_matches_embedded() {
 
     // @step And the SessionInfo entries serialize/deserialize via bincode-of-Envelope without shape mismatch
     let bytes = bincode::serialize(&ws_listed).expect("bincode encode SessionInfo");
-    let round: Vec<SessionInfo> =
-        bincode::deserialize(&bytes).expect("bincode decode SessionInfo");
+    let round: Vec<SessionInfo> = bincode::deserialize(&bytes).expect("bincode decode SessionInfo");
     assert_eq!(
         round.len(),
         ws_listed.len(),

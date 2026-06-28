@@ -47,7 +47,12 @@ const EXAMPLES: &[CommandExample] = &[
 
 const PREREQS: &[&str] = &["Project should have package.json or be a git repository"];
 
-const RELATED: &[&str] = &["create-feature", "create-story", "create-bug", "create-task"];
+const RELATED: &[&str] = &[
+    "create-feature",
+    "create-story",
+    "create-bug",
+    "create-task",
+];
 
 const NOTES: &[&str] = &[
     "Supports 18 AI agents: Claude Code, Cursor, Windsurf, Cline, Aider, and more",

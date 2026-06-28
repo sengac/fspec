@@ -95,13 +95,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     };
 
     // Validate the schedule exists (parity with resume-schedule.ts:62-64).
-    let schedule = data
-        .schedules
-        .get_mut(&args.name)
-        .ok_or_else(|| FspecCoreError::InvalidArgs {
-            command: "resume-schedule",
-            reason: format!("Schedule '{}' does not exist", args.name),
-        })?;
+    let schedule =
+        data.schedules
+            .get_mut(&args.name)
+            .ok_or_else(|| FspecCoreError::InvalidArgs {
+                command: "resume-schedule",
+                reason: format!("Schedule '{}' does not exist", args.name),
+            })?;
 
     // Validate it is not already active (parity with resume-schedule.ts:66-68).
     let current_status = schedule.get("status").and_then(Value::as_str).unwrap_or("");
@@ -147,7 +147,8 @@ mod tests {
 
     #[test]
     fn schedules_data_roundtrips_version_and_order() {
-        let raw = r#"{"version":"1.0.0","schedules":{"b":{"status":"active"},"a":{"status":"active"}}}"#;
+        let raw =
+            r#"{"version":"1.0.0","schedules":{"b":{"status":"active"},"a":{"status":"active"}}}"#;
         let data: SchedulesData = serde_json::from_str(raw).unwrap();
         // Insertion order preserved: b before a.
         let keys: Vec<&String> = data.schedules.keys().collect();

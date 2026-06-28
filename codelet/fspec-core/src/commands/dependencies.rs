@@ -63,10 +63,12 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("failed to parse args: {e}"),
         })?;
 
-    let work_unit_id = args.work_unit_id.ok_or_else(|| FspecCoreError::InvalidArgs {
-        command: "dependencies",
-        reason: "missing required argument: workUnitId".to_string(),
-    })?;
+    let work_unit_id = args
+        .work_unit_id
+        .ok_or_else(|| FspecCoreError::InvalidArgs {
+            command: "dependencies",
+            reason: "missing required argument: workUnitId".to_string(),
+        })?;
 
     let data = load_work_units(project_root)?;
 

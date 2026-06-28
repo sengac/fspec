@@ -1,0 +1,317 @@
+{
+  "scenarios": [
+    {
+      "name": "Render heading with a single-word title",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "11-22",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Render heading with a multi-word title",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "25-43",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/slug.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Strip special characters from the slug",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "46-58",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/slug.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "De-duplicate repeated heading slugs with numeric suffixes",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "61-76",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/slug.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anchor link round-trips to a heading id",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "79-91",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Soft line break renders as a hard break",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "94-107",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Smart punctuation is not applied",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "104-122",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Code and mermaid blocks remain unaffected by heading ids",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_heading_anchors.rs",
+          "lines": "125-141",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/attachment-viewer/tests/markdown_heading_anchors.rs"
+    ],
+    "implFiles": [
+      "codelet/attachment-viewer/src/markdown/render.rs",
+      "codelet/attachment-viewer/src/markdown/slug.rs"
+    ],
+    "totalLinesCovered": 295
+  }
+}

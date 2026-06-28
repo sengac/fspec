@@ -63,8 +63,7 @@ impl DebugCaptureManager {
     /// Create a new manager
     pub fn new() -> Result<Self, DebugCaptureError> {
         // Derive debug directory from global data directory
-        let data_dir = crate::get_data_dir()
-            .map_err(|_| DebugCaptureError::NoHomeDirectory)?;
+        let data_dir = crate::get_data_dir().map_err(|_| DebugCaptureError::NoHomeDirectory)?;
         let debug_dir = data_dir.join("debug");
 
         Ok(Self {

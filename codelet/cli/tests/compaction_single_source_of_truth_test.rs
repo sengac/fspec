@@ -55,12 +55,7 @@ fn prompt_cancelled_with_flag_true_routes_to_recovery() {
 
     // @step Then the loop breaks into the compaction recovery path
     assert!(
-        matches!(
-            branch,
-            CompactionBranch::Recover {
-                disagreement: None
-            }
-        ),
+        matches!(branch, CompactionBranch::Recover { disagreement: None }),
         "PromptCancelled + flag=true must route to Recover with no disagreement, got {branch:?}"
     );
 

@@ -85,8 +85,18 @@ fn scenario_remove_existing_schedule_deletes_only_that_entry() {
     let tmp = TempDir::new().expect("tempdir");
     let raw = format!(
         "{{\n  \"version\": \"1.0.0\",\n  \"schedules\": {{\n{},\n{}\n  }}\n}}",
-        shell_entry("nightly-review", "0 2 * * *", "echo n", "2026-01-01T00:00:00.000Z"),
-        shell_entry("daily-tests", "30 6 * * 1-5", "echo d", "2026-01-02T00:00:00.000Z"),
+        shell_entry(
+            "nightly-review",
+            "0 2 * * *",
+            "echo n",
+            "2026-01-01T00:00:00.000Z"
+        ),
+        shell_entry(
+            "daily-tests",
+            "30 6 * * 1-5",
+            "echo d",
+            "2026-01-02T00:00:00.000Z"
+        ),
     );
     write_schedules(tmp.path(), &raw);
 
@@ -117,7 +127,12 @@ fn scenario_removing_nonexistent_schedule_errors_and_leaves_file_unchanged() {
     let tmp = TempDir::new().expect("tempdir");
     let raw = format!(
         "{{\n  \"version\": \"1.0.0\",\n  \"schedules\": {{\n{}\n  }}\n}}",
-        shell_entry("daily-tests", "30 6 * * 1-5", "echo d", "2026-01-02T00:00:00.000Z"),
+        shell_entry(
+            "daily-tests",
+            "30 6 * * 1-5",
+            "echo d",
+            "2026-01-02T00:00:00.000Z"
+        ),
     );
     write_schedules(tmp.path(), &raw);
 

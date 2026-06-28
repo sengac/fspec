@@ -7,6 +7,10 @@ members = [
     # binary actually drives an LLM (RPC-072 supersedes RPC-030's
     # planning-only scope).
     "agent-loop",
+    # RPC-372: axum HTTP attachment viewer server + markdown→HTML renderer.
+    # Mirrors the fspec.pro relay-core layout (lib.rs factory + state.rs +
+    # handlers/ + config). Started/stopped by the TUI (RPC-373/374 wire keys).
+    "attachment-viewer",
     "cli",
     "common",
     "core",
@@ -52,6 +56,8 @@ repository = "https://github.com/rquast/codelet"
 codelet-cli = { path = "cli" }
 # RPC-072: NAPI-free hooks impl + agent_loop. Consumed by codelet-fspec.
 codelet-agent-loop = { path = "agent-loop" }
+# RPC-372: axum attachment viewer server crate.
+codelet-attachment-viewer = { path = "attachment-viewer" }
 codelet-common = { path = "common" }
 codelet-core = { path = "core" }
 # TOOL-019 / RPC-003: pure-Rust home for the future port of the TypeScript
@@ -94,6 +100,17 @@ rig-core = { version = "0.28.0", default-features = false }
 
 # === HTTP & Networking ===
 reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls", "blocking"] }
+
+# === Axum HTTP Server (RPC-372) ===
+# Local attachment viewer server. Mirrors the fspec.pro axum architecture:
+# build_router(_with_config) factory + Clone-state-newtype-over-Arc + State
+# extractor + CorsLayer/TraceLayer. pulldown-cmark renders markdown→HTML
+# (GFM); urlencoding percent-decodes the /view/{*path} wildcard.
+axum = "0.8"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+pulldown-cmark = { version = "0.12", default-features = false, features = ["html"] }
+urlencoding = "2"
 
 # === Serialization ===
 serde = { version = "1", features = ["derive"] }
@@ -183,6 +200,11 @@ sha2 = "0.10"
 # === Chrome DevTools (WEB-002) ===
 # Note: WITHOUT "fetch" feature to avoid auto-downloading Chrome
 headless_chrome = "1.0"
+
+# === Browser Launcher (RPC-373) ===
+# Opens URLs/files in the user's default browser. Used by codelet-providers
+# (OAuth callback flows) and codelet-fspec-tui (board D key → FOUNDATION.md).
+open = "5"
 
 # === WebSocket (BRIDGE-001) ===
 tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }

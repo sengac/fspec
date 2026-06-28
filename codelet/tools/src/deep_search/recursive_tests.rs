@@ -6,7 +6,13 @@
 //! truly recursive with self-invocation and an RLM-aligned system prompt.
 //! Scenarios map directly to Gherkin scenarios.
 
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::module_inception)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect,
+    clippy::module_inception
+)]
 mod recursive_tests {
     use crate::deep_search::{
         build_system_prompt, clear_all_deep_search_handlers, has_deep_search_handler,
@@ -63,8 +69,19 @@ mod recursive_tests {
 
         // @step And the sub-agent still has Read, Grep, AstGrep, Glob, Ls, Bash, and SessionSearch
         let base_tools = sub_agent_tool_names();
-        for tool in &["Read", "Grep", "AstGrep", "Glob", "Ls", "Bash", "SessionSearch"] {
-            assert!(base_tools.contains(tool), "base tools should include {tool}");
+        for tool in &[
+            "Read",
+            "Grep",
+            "AstGrep",
+            "Glob",
+            "Ls",
+            "Bash",
+            "SessionSearch",
+        ] {
+            assert!(
+                base_tools.contains(tool),
+                "base tools should include {tool}"
+            );
         }
     }
 
@@ -186,9 +203,8 @@ mod recursive_tests {
 
         // @step And a DeepSearch handler is registered for the child UUID
         assert!(!has_deep_search_handler(child_session_id));
-        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d, _r| {
-            Box::pin(async { Ok("child answer".to_string()) })
-        });
+        let handler: DeepSearchHandler =
+            Arc::new(|_q, _s, _d, _r| Box::pin(async { Ok("child answer".to_string()) }));
         set_deep_search_handler(child_session_id, Some(handler));
         assert!(has_deep_search_handler(child_session_id));
 
@@ -213,9 +229,8 @@ mod recursive_tests {
         let depth1_id = Uuid::new_v4();
         let depth2_id = Uuid::new_v4();
 
-        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d, _r| {
-            Box::pin(async { Ok("ok".to_string()) })
-        });
+        let handler: DeepSearchHandler =
+            Arc::new(|_q, _s, _d, _r| Box::pin(async { Ok("ok".to_string()) }));
 
         set_deep_search_handler(depth0_id, Some(handler.clone()));
         set_deep_search_handler(depth1_id, Some(handler.clone()));
@@ -289,7 +304,10 @@ mod recursive_tests {
 
         // @step And the prompt describes the decompose-delegate-aggregate strategy
         assert!(
-            prompt.contains("DECOMPOSE") || prompt.contains("decompose") || prompt.contains("DELEGATE") || prompt.contains("delegate"),
+            prompt.contains("DECOMPOSE")
+                || prompt.contains("decompose")
+                || prompt.contains("DELEGATE")
+                || prompt.contains("delegate"),
             "prompt should describe decompose-delegate-aggregate strategy"
         );
         assert!(
@@ -299,7 +317,10 @@ mod recursive_tests {
 
         // @step And the prompt explains that DeepSearch with no scope is a lightweight LLM call
         assert!(
-            prompt.contains("lightweight") || prompt.contains("plain LLM") || prompt.contains("single LLM") || prompt.contains("one-shot"),
+            prompt.contains("lightweight")
+                || prompt.contains("plain LLM")
+                || prompt.contains("single LLM")
+                || prompt.contains("one-shot"),
             "prompt should explain DeepSearch without scope is a lightweight call"
         );
 

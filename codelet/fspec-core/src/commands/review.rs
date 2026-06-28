@@ -38,25 +38,101 @@ use Category::{Cli, Extension, Ide};
 
 /// Faithful port of the TS AGENT_REGISTRY capability flags (all 19 agents).
 const AGENT_REGISTRY: &[Agent] = &[
-    Agent { id: "claude", supports_system_reminders: true, category: Cli },
-    Agent { id: "cursor", supports_system_reminders: false, category: Ide },
-    Agent { id: "cline", supports_system_reminders: false, category: Extension },
-    Agent { id: "aider", supports_system_reminders: false, category: Cli },
-    Agent { id: "windsurf", supports_system_reminders: false, category: Ide },
-    Agent { id: "copilot", supports_system_reminders: false, category: Extension },
-    Agent { id: "gemini", supports_system_reminders: false, category: Cli },
-    Agent { id: "qwen", supports_system_reminders: false, category: Cli },
-    Agent { id: "kilocode", supports_system_reminders: false, category: Ide },
-    Agent { id: "roo", supports_system_reminders: false, category: Ide },
-    Agent { id: "codebuddy", supports_system_reminders: false, category: Cli },
-    Agent { id: "amazonq", supports_system_reminders: false, category: Extension },
-    Agent { id: "auggie", supports_system_reminders: false, category: Cli },
-    Agent { id: "opencode", supports_system_reminders: false, category: Cli },
-    Agent { id: "codex", supports_system_reminders: false, category: Cli },
-    Agent { id: "factory", supports_system_reminders: false, category: Cli },
-    Agent { id: "crush", supports_system_reminders: false, category: Cli },
-    Agent { id: "codex-cli", supports_system_reminders: false, category: Cli },
-    Agent { id: "antigravity", supports_system_reminders: true, category: Cli },
+    Agent {
+        id: "claude",
+        supports_system_reminders: true,
+        category: Cli,
+    },
+    Agent {
+        id: "cursor",
+        supports_system_reminders: false,
+        category: Ide,
+    },
+    Agent {
+        id: "cline",
+        supports_system_reminders: false,
+        category: Extension,
+    },
+    Agent {
+        id: "aider",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "windsurf",
+        supports_system_reminders: false,
+        category: Ide,
+    },
+    Agent {
+        id: "copilot",
+        supports_system_reminders: false,
+        category: Extension,
+    },
+    Agent {
+        id: "gemini",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "qwen",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "kilocode",
+        supports_system_reminders: false,
+        category: Ide,
+    },
+    Agent {
+        id: "roo",
+        supports_system_reminders: false,
+        category: Ide,
+    },
+    Agent {
+        id: "codebuddy",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "amazonq",
+        supports_system_reminders: false,
+        category: Extension,
+    },
+    Agent {
+        id: "auggie",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "opencode",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "codex",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "factory",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "crush",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "codex-cli",
+        supports_system_reminders: false,
+        category: Cli,
+    },
+    Agent {
+        id: "antigravity",
+        supports_system_reminders: true,
+        category: Cli,
+    },
 ];
 
 fn get_agent_by_id(id: &str) -> Option<&'static Agent> {
@@ -194,8 +270,16 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             reason: format!("Work unit '{work_unit_id}' does not exist"),
         })?;
 
-    let title = wu.get("title").and_then(Value::as_str).unwrap_or("").to_string();
-    let status = wu.get("status").and_then(Value::as_str).unwrap_or("").to_string();
+    let title = wu
+        .get("title")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
+    let status = wu
+        .get("status")
+        .and_then(Value::as_str)
+        .unwrap_or("")
+        .to_string();
 
     let mut lines: Vec<String> = Vec::new();
     let mut critical_issues: Vec<CriticalIssue> = Vec::new();
@@ -422,7 +506,11 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         lines.push("**IMPORTANT:** ACDD COMPLIANCE REVIEW".to_string());
         lines.push(String::new());
         for (index, rec) in recommendations.iter().enumerate() {
-            lines.push(format!("{}. **Recommendation:** {}", index + 1, rec.recommendation));
+            lines.push(format!(
+                "{}. **Recommendation:** {}",
+                index + 1,
+                rec.recommendation
+            ));
             lines.push(format!("   - **Rationale:** {}", rec.rationale));
             lines.push(format!("   - **Action:** {}", rec.action));
             lines.push(String::new());
@@ -451,9 +539,18 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     lines.push("## Coverage Analysis".to_string());
     lines.push(String::new());
     if let Some(stats) = coverage_data.as_ref().and_then(|c| c.get("stats")) {
-        let total = stats.get("totalScenarios").and_then(Value::as_f64).unwrap_or(0.0);
-        let covered = stats.get("coveredScenarios").and_then(Value::as_f64).unwrap_or(0.0);
-        let pct = stats.get("coveragePercent").and_then(Value::as_f64).unwrap_or(0.0);
+        let total = stats
+            .get("totalScenarios")
+            .and_then(Value::as_f64)
+            .unwrap_or(0.0);
+        let covered = stats
+            .get("coveredScenarios")
+            .and_then(Value::as_f64)
+            .unwrap_or(0.0);
+        let pct = stats
+            .get("coveragePercent")
+            .and_then(Value::as_f64)
+            .unwrap_or(0.0);
         lines.push(format!("- **Total Scenarios:** {}", fmt_num(total)));
         lines.push(format!(
             "- **Covered Scenarios:** {} ({}%)",
@@ -656,11 +753,10 @@ fn feature_references_work_unit(feature: &Feature, work_unit_id: &str) -> bool {
     if feature_level {
         // Feature-level tag: a scenario counts only when it has NO work-unit
         // tag of its own (matching the `scenarioWorkUnits.length === 0` gate).
-        let has_unclaimed_scenario = feature.scenarios.iter().any(|s| {
-            !s.tags
-                .iter()
-                .any(|t| extract_work_unit_id(t).is_some())
-        });
+        let has_unclaimed_scenario = feature
+            .scenarios
+            .iter()
+            .any(|s| !s.tags.iter().any(|t| extract_work_unit_id(t).is_some()));
         if has_unclaimed_scenario {
             return true;
         }
@@ -707,7 +803,11 @@ fn build_ai_analysis_reminder(
         lines.push("ACDD COMPLIANCE REVIEW".to_string());
         lines.push(String::new());
         for (index, rec) in recommendations.iter().enumerate() {
-            lines.push(format!("{}. **Recommendation:** {}", index + 1, rec.recommendation));
+            lines.push(format!(
+                "{}. **Recommendation:** {}",
+                index + 1,
+                rec.recommendation
+            ));
             lines.push(format!("   - **Rationale:** {}", rec.rationale));
             lines.push(format!("   - **Action:** {}", rec.action));
             lines.push(String::new());
@@ -770,7 +870,9 @@ fn build_ai_analysis_reminder(
     lines.push("    - Concurrent access to shared resources".to_string());
     lines.push(String::new());
     lines.push("  • Anti-Patterns:".to_string());
-    lines.push("    - God functions (>100 lines, large functions that need refactoring)".to_string());
+    lines.push(
+        "    - God functions (>100 lines, large functions that need refactoring)".to_string(),
+    );
     lines.push("    - duplicated code across multiple files".to_string());
     lines.push("    - Tight coupling between modules".to_string());
     lines.push("    - Magic numbers without constants".to_string());
@@ -783,9 +885,14 @@ fn build_ai_analysis_reminder(
 
     lines.push("STEP 3: Check FOUNDATION.md Alignment".to_string());
     lines.push(String::new());
-    lines.push("Read FOUNDATION.md or CLAUDE.md and verify code follows project principles:".to_string());
+    lines.push(
+        "Read FOUNDATION.md or CLAUDE.md and verify code follows project principles:".to_string(),
+    );
     lines.push("  - File size limits (e.g., keep files under 300 lines)".to_string());
-    lines.push("  - Architectural patterns (e.g., use gitoxide NAPI-RS bindings not child_process)".to_string());
+    lines.push(
+        "  - Architectural patterns (e.g., use gitoxide NAPI-RS bindings not child_process)"
+            .to_string(),
+    );
     lines.push("  - Coding standards (e.g., no any types, use ES6 imports)".to_string());
     lines.push("  - Project-specific conventions".to_string());
     lines.push(String::new());
@@ -800,13 +907,23 @@ fn build_ai_analysis_reminder(
     lines.push(String::new());
     lines.push("Example:".to_string());
     lines.push("  \"I found a potential race condition in src/file-ops/save.ts:15-20.".to_string());
-    lines.push("   Two async writeFile calls happen without synchronization, which could".to_string());
+    lines.push(
+        "   Two async writeFile calls happen without synchronization, which could".to_string(),
+    );
     lines.push("   corrupt the file if both execute simultaneously. Consider using a".to_string());
-    lines.push("   file locking pattern or atomic writes as mentioned in FOUNDATION.md.\"".to_string());
+    lines.push(
+        "   file locking pattern or atomic writes as mentioned in FOUNDATION.md.\"".to_string(),
+    );
     lines.push(String::new());
 
-    lines.push("NOTE: The static analysis above already caught basic issues (any types, etc.).".to_string());
-    lines.push("Focus your analysis on deeper issues that require understanding context and logic.".to_string());
+    lines.push(
+        "NOTE: The static analysis above already caught basic issues (any types, etc.)."
+            .to_string(),
+    );
+    lines.push(
+        "Focus your analysis on deeper issues that require understanding context and logic."
+            .to_string(),
+    );
 
     lines.join("\n")
 }
@@ -822,8 +939,14 @@ mod tests {
 
     #[test]
     fn extract_work_unit_id_accepts_canonical_and_rejects_malformed() {
-        assert_eq!(extract_work_unit_id("AUTH-001").as_deref(), Some("AUTH-001"));
-        assert_eq!(extract_work_unit_id("@AUTH-001").as_deref(), Some("AUTH-001"));
+        assert_eq!(
+            extract_work_unit_id("AUTH-001").as_deref(),
+            Some("AUTH-001")
+        );
+        assert_eq!(
+            extract_work_unit_id("@AUTH-001").as_deref(),
+            Some("AUTH-001")
+        );
         // Lowercase prefix rejected (TS pattern is [A-Z]{2,6}).
         assert_eq!(extract_work_unit_id("auth-001"), None);
         // Prefix too short / too long.
@@ -836,9 +959,8 @@ mod tests {
 
     #[test]
     fn feature_level_tag_with_scenarios_links() {
-        let f = parse(
-            "@AUTH-001\nFeature: F\n  Scenario: s\n    Given a\n    When b\n    Then c\n",
-        );
+        let f =
+            parse("@AUTH-001\nFeature: F\n  Scenario: s\n    Given a\n    When b\n    Then c\n");
         assert!(feature_references_work_unit(&f, "AUTH-001"));
     }
 
@@ -863,17 +985,15 @@ mod tests {
 
     #[test]
     fn scenario_level_tag_links_even_without_feature_tag() {
-        let f = parse(
-            "Feature: F\n  @AUTH-001\n  Scenario: s\n    Given a\n    When b\n    Then c\n",
-        );
+        let f =
+            parse("Feature: F\n  @AUTH-001\n  Scenario: s\n    Given a\n    When b\n    Then c\n");
         assert!(feature_references_work_unit(&f, "AUTH-001"));
     }
 
     #[test]
     fn unrelated_work_unit_does_not_link() {
-        let f = parse(
-            "@AUTH-001\nFeature: F\n  Scenario: s\n    Given a\n    When b\n    Then c\n",
-        );
+        let f =
+            parse("@AUTH-001\nFeature: F\n  Scenario: s\n    Given a\n    When b\n    Then c\n");
         assert!(!feature_references_work_unit(&f, "NOPE-999"));
     }
 }

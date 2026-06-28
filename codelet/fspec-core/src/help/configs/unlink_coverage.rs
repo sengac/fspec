@@ -11,8 +11,8 @@
 //! renders as the literal text `undefined`. Reproduced verbatim.
 
 use super::super::{
-    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError,
-    CommonPattern, CommonPatternEntry,
+    CommandArgument, CommandExample, CommandHelpConfig, CommandOption, CommonError, CommonPattern,
+    CommonPatternEntry,
 };
 
 const PATTERN_1_EXAMPLE: &str = r#"# Remove all mappings to start fresh
@@ -31,13 +31,11 @@ fspec unlink-coverage user-auth --scenario "Login" --test-file src/__tests__/old
 # Or use audit-coverage --fix
 fspec audit-coverage user-auth --fix"#;
 
-const ARGUMENTS: &[CommandArgument] = &[
-    CommandArgument {
-        name: "feature-name",
-        description: "Feature file name (without path or extension), e.g., \"user-authentication\"",
-        required: true,
-    },
-];
+const ARGUMENTS: &[CommandArgument] = &[CommandArgument {
+    name: "feature-name",
+    description: "Feature file name (without path or extension), e.g., \"user-authentication\"",
+    required: true,
+}];
 
 const OPTIONS: &[CommandOption] = &[
     CommandOption {
@@ -47,12 +45,14 @@ const OPTIONS: &[CommandOption] = &[
     },
     CommandOption {
         flag: "--test-file <path>",
-        description: "Test file path to remove. If specified with --impl-file, removes only impl mapping.",
+        description:
+            "Test file path to remove. If specified with --impl-file, removes only impl mapping.",
         default_value: None,
     },
     CommandOption {
         flag: "--impl-file <path>",
-        description: "Implementation file path to remove. Removes implementation mapping from test.",
+        description:
+            "Implementation file path to remove. Removes implementation mapping from test.",
         default_value: None,
     },
     CommandOption {
@@ -105,7 +105,8 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
     CommonError {
         error: "Error: Test file src/__tests__/auth.test.ts not found in scenario mappings",
-        fix: "This test is not linked to the scenario. Run: fspec show-coverage user-authentication",
+        fix:
+            "This test is not linked to the scenario. Run: fspec show-coverage user-authentication",
     },
     CommonError {
         error: "Error: Must specify --scenario with --test-file or --impl-file",
@@ -113,11 +114,7 @@ const COMMON_ERRORS: &[CommonError] = &[
     },
 ];
 
-const RELATED: &[&str] = &[
-    "link-coverage",
-    "show-coverage",
-    "audit-coverage",
-];
+const RELATED: &[&str] = &["link-coverage", "show-coverage", "audit-coverage"];
 
 const NOTES: &[&str] = &[
     "Use --all to completely reset scenario coverage (makes it uncovered)",

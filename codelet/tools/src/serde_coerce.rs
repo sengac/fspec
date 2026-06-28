@@ -84,10 +84,9 @@ pub fn deser_usize<'de, D: Deserializer<'de>>(d: D) -> Result<usize, D::Error> {
             .as_u64()
             .map(|n| n as usize)
             .ok_or_else(|| serde::de::Error::custom("expected non-negative integer")),
-        Value::String(s) => s
-            .trim()
-            .parse::<usize>()
-            .map_err(|_| serde::de::Error::custom(format!("cannot parse \"{s}\" as an unsigned integer"))),
+        Value::String(s) => s.trim().parse::<usize>().map_err(|_| {
+            serde::de::Error::custom(format!("cannot parse \"{s}\" as an unsigned integer"))
+        }),
         _ => Err(serde::de::Error::custom(format!(
             "expected number or numeric string, got {v}"
         ))),
@@ -125,14 +124,16 @@ pub fn deser_vec_usize<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<usize>, D:
             let mut result = Vec::with_capacity(arr.len());
             for (i, item) in arr.iter().enumerate() {
                 let n = match item {
-                    Value::Number(n) => n
-                        .as_u64()
-                        .map(|n| n as usize)
-                        .ok_or_else(|| serde::de::Error::custom(format!("element [{i}]: expected non-negative integer"))),
-                    Value::String(s) => s
-                        .trim()
-                        .parse::<usize>()
-                        .map_err(|_| serde::de::Error::custom(format!("element [{i}]: cannot parse \"{s}\" as unsigned integer"))),
+                    Value::Number(n) => n.as_u64().map(|n| n as usize).ok_or_else(|| {
+                        serde::de::Error::custom(format!(
+                            "element [{i}]: expected non-negative integer"
+                        ))
+                    }),
+                    Value::String(s) => s.trim().parse::<usize>().map_err(|_| {
+                        serde::de::Error::custom(format!(
+                            "element [{i}]: cannot parse \"{s}\" as unsigned integer"
+                        ))
+                    }),
                     _ => Err(serde::de::Error::custom(format!(
                         "element [{i}]: expected number or numeric string, got {item}"
                     ))),
@@ -141,9 +142,7 @@ pub fn deser_vec_usize<'de, D: Deserializer<'de>>(d: D) -> Result<Vec<usize>, D:
             }
             Ok(result)
         }
-        _ => Err(serde::de::Error::custom(format!(
-            "expected array, got {v}"
-        ))),
+        _ => Err(serde::de::Error::custom(format!("expected array, got {v}"))),
     }
 }
 

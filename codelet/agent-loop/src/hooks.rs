@@ -71,9 +71,7 @@ impl SessionManagerHooks for FspecAgentHooks {
                 .map(|g| g.clone())
                 .unwrap_or_default();
             let mut manifest = codelet_core::persistence::SessionManifest::with_provider(
-                &name,
-                project,
-                &provider,
+                &name, project, &provider,
             );
             // Override the auto-generated UUID with the BackgroundSession UUID
             // so persist_user_message / load_session can find it.
@@ -119,12 +117,7 @@ impl SessionManagerHooks for FspecAgentHooks {
         // without a scheduler attached.
     }
 
-    fn ensure_scheduler_running_for_loop(
-        &self,
-        _project: String,
-        _rt: tokio::runtime::Handle,
-    ) {
-    }
+    fn ensure_scheduler_running_for_loop(&self, _project: String, _rt: tokio::runtime::Handle) {}
 
     fn spawn_footer_poller(
         &self,

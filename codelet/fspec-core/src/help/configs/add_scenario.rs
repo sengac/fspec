@@ -23,9 +23,7 @@ const ARGUMENTS: &[CommandArgument] = &[
 const EXAMPLES: &[CommandExample] = &[CommandExample {
     command: "fspec add-scenario spec/features/login.feature \"Login with invalid password\"",
     description: Some("Add new scenario"),
-    output: Some(
-        "✓ Added scenario \"Login with invalid password\" to spec/features/login.feature",
-    ),
+    output: Some("✓ Added scenario \"Login with invalid password\" to spec/features/login.feature"),
 }];
 
 const RELATED: &[&str] = &["add-step", "create-feature", "delete-scenario"];

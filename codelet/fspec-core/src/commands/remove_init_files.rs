@@ -62,25 +62,139 @@ struct Agent {
 /// Local agent registry, in the same order as the TS `AGENT_REGISTRY` so that
 /// detection picks the same first-match.
 const AGENTS: &[Agent] = &[
-    Agent { id: "claude", doc_template: "CLAUDE.md", slash_command_path: ".claude/commands/", slash_command_toml: false, detection_paths: &[".claude/", ".claude/commands/"] },
-    Agent { id: "cursor", doc_template: "CURSOR.md", slash_command_path: ".cursor/commands/", slash_command_toml: false, detection_paths: &[".cursor/", ".cursor/commands/"] },
-    Agent { id: "cline", doc_template: "CLINE.md", slash_command_path: ".cline/commands/", slash_command_toml: false, detection_paths: &[".cline/", ".continue/"] },
-    Agent { id: "aider", doc_template: "AIDER.md", slash_command_path: ".aider/", slash_command_toml: false, detection_paths: &[".aider/"] },
-    Agent { id: "windsurf", doc_template: "WINDSURF.md", slash_command_path: ".windsurf/workflows/", slash_command_toml: false, detection_paths: &[".windsurf/"] },
-    Agent { id: "copilot", doc_template: "COPILOT.md", slash_command_path: ".github/prompts/", slash_command_toml: false, detection_paths: &[".github/prompts/"] },
-    Agent { id: "gemini", doc_template: "GEMINI.md", slash_command_path: ".gemini/commands/", slash_command_toml: true, detection_paths: &[".gemini/"] },
-    Agent { id: "qwen", doc_template: "QWEN.md", slash_command_path: ".qwen/commands/", slash_command_toml: true, detection_paths: &[".qwen/"] },
-    Agent { id: "kilocode", doc_template: "KILOCODE.md", slash_command_path: ".kilocode/rules/", slash_command_toml: false, detection_paths: &[".kilocode/"] },
-    Agent { id: "roo", doc_template: "ROO.md", slash_command_path: ".roo/rules/", slash_command_toml: false, detection_paths: &[".roo/"] },
-    Agent { id: "codebuddy", doc_template: "CODEBUDDY.md", slash_command_path: ".codebuddy/commands/", slash_command_toml: false, detection_paths: &[".codebuddy/"] },
-    Agent { id: "amazonq", doc_template: "AMAZONQ.md", slash_command_path: ".amazonq/prompts/", slash_command_toml: false, detection_paths: &[".amazonq/"] },
-    Agent { id: "auggie", doc_template: "AUGGIE.md", slash_command_path: ".auggie/", slash_command_toml: false, detection_paths: &[".auggie/"] },
-    Agent { id: "opencode", doc_template: "OPENCODE.md", slash_command_path: ".opencode/command/", slash_command_toml: false, detection_paths: &[".opencode/"] },
-    Agent { id: "codex", doc_template: "AGENTS.md", slash_command_path: ".codex/prompts/", slash_command_toml: false, detection_paths: &[".codex/"] },
-    Agent { id: "factory", doc_template: "FACTORY.md", slash_command_path: ".factory/commands/", slash_command_toml: false, detection_paths: &[".factory/"] },
-    Agent { id: "crush", doc_template: "CRUSH.md", slash_command_path: ".crush/commands/", slash_command_toml: false, detection_paths: &[".crush/"] },
-    Agent { id: "codex-cli", doc_template: "AGENTS.md", slash_command_path: ".codex/prompts/", slash_command_toml: false, detection_paths: &[".codex-cli/"] },
-    Agent { id: "antigravity", doc_template: "ANTIGRAVITY.md", slash_command_path: ".antigravity/commands/", slash_command_toml: false, detection_paths: &[".antigravity/"] },
+    Agent {
+        id: "claude",
+        doc_template: "CLAUDE.md",
+        slash_command_path: ".claude/commands/",
+        slash_command_toml: false,
+        detection_paths: &[".claude/", ".claude/commands/"],
+    },
+    Agent {
+        id: "cursor",
+        doc_template: "CURSOR.md",
+        slash_command_path: ".cursor/commands/",
+        slash_command_toml: false,
+        detection_paths: &[".cursor/", ".cursor/commands/"],
+    },
+    Agent {
+        id: "cline",
+        doc_template: "CLINE.md",
+        slash_command_path: ".cline/commands/",
+        slash_command_toml: false,
+        detection_paths: &[".cline/", ".continue/"],
+    },
+    Agent {
+        id: "aider",
+        doc_template: "AIDER.md",
+        slash_command_path: ".aider/",
+        slash_command_toml: false,
+        detection_paths: &[".aider/"],
+    },
+    Agent {
+        id: "windsurf",
+        doc_template: "WINDSURF.md",
+        slash_command_path: ".windsurf/workflows/",
+        slash_command_toml: false,
+        detection_paths: &[".windsurf/"],
+    },
+    Agent {
+        id: "copilot",
+        doc_template: "COPILOT.md",
+        slash_command_path: ".github/prompts/",
+        slash_command_toml: false,
+        detection_paths: &[".github/prompts/"],
+    },
+    Agent {
+        id: "gemini",
+        doc_template: "GEMINI.md",
+        slash_command_path: ".gemini/commands/",
+        slash_command_toml: true,
+        detection_paths: &[".gemini/"],
+    },
+    Agent {
+        id: "qwen",
+        doc_template: "QWEN.md",
+        slash_command_path: ".qwen/commands/",
+        slash_command_toml: true,
+        detection_paths: &[".qwen/"],
+    },
+    Agent {
+        id: "kilocode",
+        doc_template: "KILOCODE.md",
+        slash_command_path: ".kilocode/rules/",
+        slash_command_toml: false,
+        detection_paths: &[".kilocode/"],
+    },
+    Agent {
+        id: "roo",
+        doc_template: "ROO.md",
+        slash_command_path: ".roo/rules/",
+        slash_command_toml: false,
+        detection_paths: &[".roo/"],
+    },
+    Agent {
+        id: "codebuddy",
+        doc_template: "CODEBUDDY.md",
+        slash_command_path: ".codebuddy/commands/",
+        slash_command_toml: false,
+        detection_paths: &[".codebuddy/"],
+    },
+    Agent {
+        id: "amazonq",
+        doc_template: "AMAZONQ.md",
+        slash_command_path: ".amazonq/prompts/",
+        slash_command_toml: false,
+        detection_paths: &[".amazonq/"],
+    },
+    Agent {
+        id: "auggie",
+        doc_template: "AUGGIE.md",
+        slash_command_path: ".auggie/",
+        slash_command_toml: false,
+        detection_paths: &[".auggie/"],
+    },
+    Agent {
+        id: "opencode",
+        doc_template: "OPENCODE.md",
+        slash_command_path: ".opencode/command/",
+        slash_command_toml: false,
+        detection_paths: &[".opencode/"],
+    },
+    Agent {
+        id: "codex",
+        doc_template: "AGENTS.md",
+        slash_command_path: ".codex/prompts/",
+        slash_command_toml: false,
+        detection_paths: &[".codex/"],
+    },
+    Agent {
+        id: "factory",
+        doc_template: "FACTORY.md",
+        slash_command_path: ".factory/commands/",
+        slash_command_toml: false,
+        detection_paths: &[".factory/"],
+    },
+    Agent {
+        id: "crush",
+        doc_template: "CRUSH.md",
+        slash_command_path: ".crush/commands/",
+        slash_command_toml: false,
+        detection_paths: &[".crush/"],
+    },
+    Agent {
+        id: "codex-cli",
+        doc_template: "AGENTS.md",
+        slash_command_path: ".codex/prompts/",
+        slash_command_toml: false,
+        detection_paths: &[".codex-cli/"],
+    },
+    Agent {
+        id: "antigravity",
+        doc_template: "ANTIGRAVITY.md",
+        slash_command_path: ".antigravity/commands/",
+        slash_command_toml: false,
+        detection_paths: &[".antigravity/"],
+    },
 ];
 
 fn agent_by_id(id: &str) -> Option<&'static Agent> {
@@ -219,8 +333,11 @@ mod tests {
     fn write_config(root: &Path, agent: &str) {
         let spec = root.join("spec");
         std::fs::create_dir_all(&spec).unwrap();
-        std::fs::write(spec.join("fspec-config.json"), json!({ "agent": agent }).to_string())
-            .unwrap();
+        std::fs::write(
+            spec.join("fspec-config.json"),
+            json!({ "agent": agent }).to_string(),
+        )
+        .unwrap();
     }
 
     fn touch(root: &Path, rel: &str) {

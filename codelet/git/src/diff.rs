@@ -170,9 +170,7 @@ pub fn get_checkpoint_file_diff(
 
     match (&head_content, &checkpoint_content) {
         // File not in checkpoint — restoring would delete it
-        (Ok(_), Err(_)) => {
-            Ok(Some("[File will be deleted on restore]".to_string()))
-        }
+        (Ok(_), Err(_)) => Ok(Some("[File will be deleted on restore]".to_string())),
         // File not in HEAD but exists in checkpoint — restoring would create it
         (Err(_), Ok(cp_str)) => {
             if is_binary_content(cp_str.as_bytes()) {
@@ -182,9 +180,7 @@ pub fn get_checkpoint_file_diff(
             Ok(Some(diff))
         }
         // File exists in neither — shouldn't happen, but handle gracefully
-        (Err(_), Err(_)) => {
-            Ok(Some("[File will be deleted on restore]".to_string()))
-        }
+        (Err(_), Err(_)) => Ok(Some("[File will be deleted on restore]".to_string())),
         // File exists in both — compare contents
         (Ok(head_str), Ok(cp_str)) => {
             // Check for binary content

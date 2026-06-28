@@ -107,8 +107,14 @@ mod tests {
             "{\n  \"version\": \"0.7.1\",\n  \"workUnits\": {\n    \"AUTH-001\": { \"id\": \"x\", status: \"done\" }\n  }\n}";
         let err = json_err(input);
         let reason = parse_json_reason(input, &err);
-        assert!(reason.contains("4 |"), "missing numbered error line: {reason}");
-        assert!(reason.contains("status:"), "missing offending content: {reason}");
+        assert!(
+            reason.contains("4 |"),
+            "missing numbered error line: {reason}"
+        );
+        assert!(
+            reason.contains("status:"),
+            "missing offending content: {reason}"
+        );
         assert!(
             reason.contains("key must be a string at line 4 column"),
             "missing serde position: {reason}"

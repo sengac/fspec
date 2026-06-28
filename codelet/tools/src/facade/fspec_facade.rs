@@ -4,9 +4,9 @@
 //! tool naming and parameter schemas.
 
 use super::traits::ToolDefinition;
+use crate::fspec::FspecArgs;
 use crate::ToolError;
 use serde_json::{json, Value};
-use crate::fspec::FspecArgs;
 
 /// Internal parameters for fspec operations.
 /// All provider-specific parameters are mapped to these internal types.
@@ -68,12 +68,11 @@ impl FspecToolFacade for ClaudeFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
-        let fspec_args: FspecArgs = serde_json::from_value(input).map_err(|e| {
-            ToolError::Validation {
+        let fspec_args: FspecArgs =
+            serde_json::from_value(input).map_err(|e| ToolError::Validation {
                 tool: "fspec",
                 message: format!("Invalid arguments: {e}"),
-            }
-        })?;
+            })?;
 
         Ok(InternalFspecParams {
             command: fspec_args.command,
@@ -131,7 +130,8 @@ impl FspecToolFacade for GeminiFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
-        let command = input.get("command")
+        let command = input
+            .get("command")
             .and_then(|v| v.as_str())
             .ok_or_else(|| ToolError::Validation {
                 tool: "fspec_command",
@@ -139,12 +139,14 @@ impl FspecToolFacade for GeminiFspecFacade {
             })?
             .to_string();
 
-        let args = input.get("args")
+        let args = input
+            .get("args")
             .and_then(|v| v.as_str())
             .unwrap_or("{}")
             .to_string();
 
-        let project_root = input.get("project_root")
+        let project_root = input
+            .get("project_root")
             .and_then(|v| v.as_str())
             .unwrap_or(".")
             .to_string();
@@ -186,12 +188,11 @@ impl FspecToolFacade for OpenAIFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
-        let fspec_args: FspecArgs = serde_json::from_value(input).map_err(|e| {
-            ToolError::Validation {
+        let fspec_args: FspecArgs =
+            serde_json::from_value(input).map_err(|e| ToolError::Validation {
                 tool: "fspec",
                 message: format!("Invalid arguments: {e}"),
-            }
-        })?;
+            })?;
 
         Ok(InternalFspecParams {
             command: fspec_args.command,
@@ -247,7 +248,8 @@ impl FspecToolFacade for ZAIFspecFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError> {
-        let command = input.get("command")
+        let command = input
+            .get("command")
             .and_then(|v| v.as_str())
             .ok_or_else(|| ToolError::Validation {
                 tool: "run_fspec",
@@ -255,12 +257,14 @@ impl FspecToolFacade for ZAIFspecFacade {
             })?
             .to_string();
 
-        let args = input.get("arguments")
+        let args = input
+            .get("arguments")
             .and_then(|v| v.as_str())
             .unwrap_or("{}")
             .to_string();
 
-        let project_root = input.get("root_dir")
+        let project_root = input
+            .get("root_dir")
             .and_then(|v| v.as_str())
             .unwrap_or(".")
             .to_string();

@@ -10,9 +10,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_core::session_manager_handle::{
-    SessionManagerHandle, StubSessionManagerHandle,
-};
+use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_providers::stub_provider::StubProvider;
 use codelet_rpc::SharedFspecService;
@@ -34,9 +32,9 @@ fn build_transport_with_layer() -> (TempDir, EmbeddedTransport) {
     )
     .expect("seed work-units.json");
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),
@@ -44,10 +42,7 @@ fn build_transport_with_layer() -> (TempDir, EmbeddedTransport) {
     // RPC-007: EmbeddedTransport::with_log_layer registers the broadcast
     // tracing layer for the embedded host (sibling of rpc-server's main.rs
     // registration). Without it logs_rx must still exist but observe nothing.
-    let transport = EmbeddedTransport::with_log_layer(
-        tokio::runtime::Handle::current(),
-        service,
-    );
+    let transport = EmbeddedTransport::with_log_layer(tokio::runtime::Handle::current(), service);
     (dir, transport)
 }
 

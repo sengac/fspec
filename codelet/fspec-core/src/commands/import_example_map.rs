@@ -95,8 +95,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     let import_path = resolve_input(project_root, &file);
     let import_raw = std::fs::read_to_string(&import_path)
         .map_err(|source| FspecCoreError::Message(format_io_error(&source, &file)))?;
-    let import_data: Value = serde_json::from_str(&import_raw)
-        .map_err(|e| FspecCoreError::Message(crate::io::json_error::parse_json_reason(&import_raw, &e)))?;
+    let import_data: Value = serde_json::from_str(&import_raw).map_err(|e| {
+        FspecCoreError::Message(crate::io::json_error::parse_json_reason(&import_raw, &e))
+    })?;
 
     // Append each present array onto the matching work-unit field.
     let rules = append_field(wu, &import_data, "rules");

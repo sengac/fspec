@@ -78,7 +78,10 @@ async fn fspec_service_health_returns_health_info_via_tarpc() {
 #[test]
 fn health_info_is_a_lifted_type_with_cfg_gated_napi_object() {
     // @step Given the codelet-rpc-types crate
-    let lib_rs_path = workspace_root().join("rpc-types").join("src").join("lib.rs");
+    let lib_rs_path = workspace_root()
+        .join("rpc-types")
+        .join("src")
+        .join("lib.rs");
     let body = std::fs::read_to_string(&lib_rs_path)
         .unwrap_or_else(|e| panic!("read {}: {}", lib_rs_path.display(), e));
 
@@ -106,8 +109,14 @@ fn health_info_is_a_lifted_type_with_cfg_gated_napi_object() {
         prelude.contains("Serialize") && prelude.contains("Deserialize"),
         "HealthInfo derive list must include Serialize + Deserialize"
     );
-    assert!(prelude.contains("Clone"), "HealthInfo derive must include Clone");
-    assert!(prelude.contains("Debug"), "HealthInfo derive must include Debug");
+    assert!(
+        prelude.contains("Clone"),
+        "HealthInfo derive must include Clone"
+    );
+    assert!(
+        prelude.contains("Debug"),
+        "HealthInfo derive must include Debug"
+    );
 
     // @step And it lives in codelet/rpc-types/src/lib.rs alongside WorkUnitInfo / SessionInfo
     assert!(body.contains("pub struct WorkUnitInfo"));
@@ -128,17 +137,20 @@ fn workspace_root() -> PathBuf {
 
 #[test]
 fn fspec_backend_trait_gains_health_on_both_transports() {
-    let tui_src = workspace_root().join("fspec-tui").join("src").join("transport");
+    let tui_src = workspace_root()
+        .join("fspec-tui")
+        .join("src")
+        .join("transport");
     let trait_body = std::fs::read_to_string(tui_src.join("mod.rs")).expect("read mod.rs");
-    let embedded_body = std::fs::read_to_string(tui_src.join("embedded.rs")).expect("read embedded.rs");
+    let embedded_body =
+        std::fs::read_to_string(tui_src.join("embedded.rs")).expect("read embedded.rs");
     let ws_body = std::fs::read_to_string(tui_src.join("websocket.rs")).expect("read websocket.rs");
 
     // @step Given the FspecBackend trait
     // @step When inspecting its method surface
     // @step Then it has an `async fn health(&self) -> Result<HealthInfo>` method
     assert!(
-        trait_body.contains("async fn health(&self)")
-            && trait_body.contains("HealthInfo"),
+        trait_body.contains("async fn health(&self)") && trait_body.contains("HealthInfo"),
         "FspecBackend trait must declare async fn health(&self) -> Result<HealthInfo>"
     );
 
@@ -161,9 +173,7 @@ fn fspec_backend_trait_gains_health_on_both_transports() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn server_stats_lag_counters_fire_when_broadcast_subscribers_lag() {
-    use codelet_core::session_manager_handle::{
-        SessionManagerHandle, StubSessionManagerHandle,
-    };
+    use codelet_core::session_manager_handle::{SessionManagerHandle, StubSessionManagerHandle};
     use codelet_providers::stub_provider::StubProvider;
     use codelet_rpc_types::{SessionId, StreamChunk};
 
@@ -171,9 +181,9 @@ async fn server_stats_lag_counters_fire_when_broadcast_subscribers_lag() {
     let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);
     let workspace = path.parent().unwrap().parent().unwrap();
     let watcher = Arc::new(WorkUnitsWatcher::new(workspace).expect("watcher"));
-    let manager: Arc<dyn SessionManagerHandle> = Arc::new(
-        StubSessionManagerHandle::with_provider(Arc::new(StubProvider::new())),
-    );
+    let manager: Arc<dyn SessionManagerHandle> = Arc::new(StubSessionManagerHandle::with_provider(
+        Arc::new(StubProvider::new()),
+    ));
     let service = Arc::new(SharedFspecService::with_session_manager(
         Arc::clone(&watcher),
         Arc::clone(&manager),

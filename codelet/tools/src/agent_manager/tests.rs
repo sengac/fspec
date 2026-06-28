@@ -53,11 +53,9 @@ fn mock_handler_with_messaging(
                     session_id: subordinate_id,
                 }
             }
-            AgentManagerAction::List => {
-                AgentManagerResult::Listed {
-                    sessions: (*sessions).clone(),
-                }
-            }
+            AgentManagerAction::List => AgentManagerResult::Listed {
+                sessions: (*sessions).clone(),
+            },
             AgentManagerAction::GetStatus { session_id } => {
                 if let Some(entry) = sessions.iter().find(|s| s.session_id == session_id) {
                     AgentManagerResult::Status(SessionStatus {
@@ -89,7 +87,11 @@ fn mock_handler_with_messaging(
                     AgentManagerResult::session_not_found(&session_id)
                 }
             }
-            AgentManagerAction::Message { session_id, message, context: _ } => {
+            AgentManagerAction::Message {
+                session_id,
+                message,
+                context: _,
+            } => {
                 // Check if target session exists
                 let target_exists = sessions.iter().any(|s| s.session_id == session_id)
                     || session_id == calling_session_id.to_string();
@@ -99,9 +101,9 @@ fn mock_handler_with_messaging(
                 }
 
                 if channel_full {
-                    return AgentManagerResult::delivery_failed(
-                        &format!("Incoming message channel full for session {session_id}"),
-                    );
+                    return AgentManagerResult::delivery_failed(&format!(
+                        "Incoming message channel full for session {session_id}"
+                    ));
                 }
 
                 // Find sender's role from sessions list
@@ -123,8 +125,7 @@ fn mock_handler_with_messaging(
                 }
             }
             AgentManagerAction::SetRole { session_id, role } => {
-                let target_id = session_id
-                    .unwrap_or_else(|| calling_session_id.to_string());
+                let target_id = session_id.unwrap_or_else(|| calling_session_id.to_string());
 
                 let target_exists = sessions.iter().any(|s| s.session_id == target_id)
                     || target_id == calling_session_id.to_string();
@@ -145,16 +146,12 @@ fn mock_handler_with_messaging(
                     }
                 }
             }
-            AgentManagerAction::AwaitIdle { .. } => {
-                AgentManagerResult::invalid_parameter(
-                    "await_idle must be dispatched through async handler",
-                )
-            }
-            AgentManagerAction::Profile { .. } => {
-                AgentManagerResult::invalid_parameter(
-                    "profile must be dispatched through async handler",
-                )
-            }
+            AgentManagerAction::AwaitIdle { .. } => AgentManagerResult::invalid_parameter(
+                "await_idle must be dispatched through async handler",
+            ),
+            AgentManagerAction::Profile { .. } => AgentManagerResult::invalid_parameter(
+                "profile must be dispatched through async handler",
+            ),
         }
     });
 
@@ -163,9 +160,7 @@ fn mock_handler_with_messaging(
 
 /// Backward-compatible mock_handler that wraps mock_handler_with_messaging
 /// for existing core tests
-fn mock_handler(
-    sessions: Vec<SessionEntry>,
-) -> (AgentManagerHandler, Arc<AtomicBool>) {
+fn mock_handler(sessions: Vec<SessionEntry>) -> (AgentManagerHandler, Arc<AtomicBool>) {
     let message_log = Arc::new(std::sync::Mutex::new(Vec::new()));
     mock_handler_with_messaging(sessions, message_log, false)
 }
@@ -188,14 +183,13 @@ fn test_spawn_without_role() {
         let (handler, called) = mock_handler(vec![]);
         set_agent_manager_handler(session_id, Some(handler));
 
-        let result = execute_agent_manager(
-            session_id,
-            AgentManagerAction::Spawn { role: None },
-        );
+        let result = execute_agent_manager(session_id, AgentManagerAction::Spawn { role: None });
 
         assert!(called.load(Ordering::SeqCst));
         match result {
-            AgentManagerResult::Spawned { session_id: spawned_id } => {
+            AgentManagerResult::Spawned {
+                session_id: spawned_id,
+            } => {
                 // Validate it returned a UUID-like string
                 assert!(!spawned_id.is_empty());
                 assert!(Uuid::parse_str(&spawned_id).is_ok());
@@ -222,16 +216,14 @@ fn test_spawn_with_role() {
         let role_received = Arc::new(std::sync::Mutex::new(None::<String>));
         let role_received_clone = role_received.clone();
 
-        let handler: AgentManagerHandler = Arc::new(move |action, _sid| {
-            match action {
-                AgentManagerAction::Spawn { role } => {
-                    *role_received_clone.lock().unwrap() = role;
-                    AgentManagerResult::Spawned {
-                        session_id: Uuid::new_v4().to_string(),
-                    }
+        let handler: AgentManagerHandler = Arc::new(move |action, _sid| match action {
+            AgentManagerAction::Spawn { role } => {
+                *role_received_clone.lock().unwrap() = role;
+                AgentManagerResult::Spawned {
+                    session_id: Uuid::new_v4().to_string(),
                 }
-                _ => AgentManagerResult::invalid_parameter("unexpected action"),
             }
+            _ => AgentManagerResult::invalid_parameter("unexpected action"),
         });
 
         set_agent_manager_handler(session_id, Some(handler));
@@ -244,7 +236,9 @@ fn test_spawn_with_role() {
         );
 
         match result {
-            AgentManagerResult::Spawned { session_id: spawned_id } => {
+            AgentManagerResult::Spawned {
+                session_id: spawned_id,
+            } => {
                 assert!(Uuid::parse_str(&spawned_id).is_ok());
             }
             other => panic!("Expected Spawned result, got: {other:?}"),
@@ -311,17 +305,26 @@ fn test_list_sessions_with_relationships() {
                 assert_eq!(sessions.len(), 3);
 
                 // Find the spawner entry
-                let spawner = sessions.iter().find(|s| s.session_id == spawner_id.to_string()).unwrap();
+                let spawner = sessions
+                    .iter()
+                    .find(|s| s.session_id == spawner_id.to_string())
+                    .unwrap();
                 assert_eq!(spawner.subordinate_ids.len(), 2);
                 assert!(spawner.spawner_id.is_none());
 
                 // Check subordinates point back to spawner
                 let sub1 = sessions.iter().find(|s| s.session_id == sub1_id).unwrap();
-                assert_eq!(sub1.spawner_id.as_deref(), Some(spawner_id.to_string().as_str()));
+                assert_eq!(
+                    sub1.spawner_id.as_deref(),
+                    Some(spawner_id.to_string().as_str())
+                );
                 assert_eq!(sub1.role.as_deref(), Some("security reviewer"));
 
                 let sub2 = sessions.iter().find(|s| s.session_id == sub2_id).unwrap();
-                assert_eq!(sub2.spawner_id.as_deref(), Some(spawner_id.to_string().as_str()));
+                assert_eq!(
+                    sub2.spawner_id.as_deref(),
+                    Some(spawner_id.to_string().as_str())
+                );
             }
             other => panic!("Expected Listed result, got: {other:?}"),
         }
@@ -342,23 +345,23 @@ fn test_get_status_existing_session() {
         let spawner_id = Uuid::new_v4();
         let sub_id = Uuid::new_v4().to_string();
 
-        let sessions = vec![
-            SessionEntry {
-                session_id: sub_id.clone(),
-                name: "Worker".to_string(),
-                role: Some("security reviewer".to_string()),
-                status: "idle".to_string(),
-                spawner_id: Some(spawner_id.to_string()),
-                subordinate_ids: vec![],
-            },
-        ];
+        let sessions = vec![SessionEntry {
+            session_id: sub_id.clone(),
+            name: "Worker".to_string(),
+            role: Some("security reviewer".to_string()),
+            status: "idle".to_string(),
+            spawner_id: Some(spawner_id.to_string()),
+            subordinate_ids: vec![],
+        }];
 
         let (handler, _) = mock_handler(sessions);
         set_agent_manager_handler(spawner_id, Some(handler));
 
         let result = execute_agent_manager(
             spawner_id,
-            AgentManagerAction::GetStatus { session_id: sub_id.clone() },
+            AgentManagerAction::GetStatus {
+                session_id: sub_id.clone(),
+            },
         );
 
         match result {
@@ -367,7 +370,10 @@ fn test_get_status_existing_session() {
                 assert_eq!(status.role.as_deref(), Some("security reviewer"));
                 assert_eq!(status.status, "idle");
                 assert!(status.model.is_some());
-                assert_eq!(status.spawner_id.as_deref(), Some(spawner_id.to_string().as_str()));
+                assert_eq!(
+                    status.spawner_id.as_deref(),
+                    Some(spawner_id.to_string().as_str())
+                );
                 assert!(status.subordinate_ids.is_empty());
                 assert_eq!(status.pending_messages, 0);
             }
@@ -398,7 +404,11 @@ fn test_get_status_nonexistent_session() {
         );
 
         match result {
-            AgentManagerResult::Error { error, code, message } => {
+            AgentManagerResult::Error {
+                error,
+                code,
+                message,
+            } => {
                 assert!(error);
                 assert_eq!(code, "session_not_found");
                 assert!(message.contains("nonexistent-uuid"));
@@ -424,23 +434,23 @@ fn test_close_as_spawner() {
         let spawner_id = Uuid::new_v4();
         let sub_id = Uuid::new_v4().to_string();
 
-        let sessions = vec![
-            SessionEntry {
-                session_id: sub_id.clone(),
-                name: "Worker".to_string(),
-                role: None,
-                status: "idle".to_string(),
-                spawner_id: Some(spawner_id.to_string()),
-                subordinate_ids: vec![],
-            },
-        ];
+        let sessions = vec![SessionEntry {
+            session_id: sub_id.clone(),
+            name: "Worker".to_string(),
+            role: None,
+            status: "idle".to_string(),
+            spawner_id: Some(spawner_id.to_string()),
+            subordinate_ids: vec![],
+        }];
 
         let (handler, _) = mock_handler(sessions);
         set_agent_manager_handler(spawner_id, Some(handler));
 
         let result = execute_agent_manager(
             spawner_id,
-            AgentManagerAction::Close { session_id: sub_id.clone() },
+            AgentManagerAction::Close {
+                session_id: sub_id.clone(),
+            },
         );
 
         match result {
@@ -470,16 +480,14 @@ fn test_close_without_permission() {
         let sub_id = Uuid::new_v4().to_string();
 
         // The subordinate's spawner is actual_spawner_id, not calling_session_id
-        let sessions = vec![
-            SessionEntry {
-                session_id: sub_id.clone(),
-                name: "Worker".to_string(),
-                role: None,
-                status: "idle".to_string(),
-                spawner_id: Some(actual_spawner_id.to_string()),
-                subordinate_ids: vec![],
-            },
-        ];
+        let sessions = vec![SessionEntry {
+            session_id: sub_id.clone(),
+            name: "Worker".to_string(),
+            role: None,
+            status: "idle".to_string(),
+            spawner_id: Some(actual_spawner_id.to_string()),
+            subordinate_ids: vec![],
+        }];
 
         let (handler, _) = mock_handler(sessions);
         set_agent_manager_handler(calling_session_id, Some(handler));
@@ -520,10 +528,8 @@ fn test_spawn_multiple_and_list() {
         // Spawn 3 times and collect IDs
         let mut spawned_ids = Vec::new();
         for _ in 0..3 {
-            let result = execute_agent_manager(
-                spawner_id,
-                AgentManagerAction::Spawn { role: None },
-            );
+            let result =
+                execute_agent_manager(spawner_id, AgentManagerAction::Spawn { role: None });
             match result {
                 AgentManagerResult::Spawned { session_id } => {
                     spawned_ids.push(session_id);
@@ -552,7 +558,10 @@ fn test_invalid_action_deserialization() {
     // Invalid action should fail at deserialization level
     let json = r#"{"action": "invalid_action"}"#;
     let result: Result<AgentManagerArgs, _> = serde_json::from_str(json);
-    assert!(result.is_err(), "Unknown action should fail deserialization");
+    assert!(
+        result.is_err(),
+        "Unknown action should fail deserialization"
+    );
     let err_msg = result.unwrap_err().to_string();
     assert!(
         err_msg.contains("invalid_action") || err_msg.contains("unknown variant"),
@@ -578,9 +587,8 @@ fn test_handler_lifecycle() {
         assert!(!has_agent_manager_handler(session_id));
 
         // Register handler (simulating agent_loop start)
-        let handler: AgentManagerHandler = Arc::new(|_, _| {
-            AgentManagerResult::Listed { sessions: vec![] }
-        });
+        let handler: AgentManagerHandler =
+            Arc::new(|_, _| AgentManagerResult::Listed { sessions: vec![] });
         set_agent_manager_handler(session_id, Some(handler));
 
         // Should be available
@@ -622,30 +630,26 @@ fn test_concurrent_sessions_isolated() {
         let session_a = Uuid::new_v4();
         let session_b = Uuid::new_v4();
 
-        let handler_a: AgentManagerHandler = Arc::new(|_, _| {
-            AgentManagerResult::Listed {
-                sessions: vec![SessionEntry {
-                    session_id: "from-a".to_string(),
-                    name: "A".to_string(),
-                    role: None,
-                    status: "idle".to_string(),
-                    spawner_id: None,
-                    subordinate_ids: vec![],
-                }],
-            }
+        let handler_a: AgentManagerHandler = Arc::new(|_, _| AgentManagerResult::Listed {
+            sessions: vec![SessionEntry {
+                session_id: "from-a".to_string(),
+                name: "A".to_string(),
+                role: None,
+                status: "idle".to_string(),
+                spawner_id: None,
+                subordinate_ids: vec![],
+            }],
         });
 
-        let handler_b: AgentManagerHandler = Arc::new(|_, _| {
-            AgentManagerResult::Listed {
-                sessions: vec![SessionEntry {
-                    session_id: "from-b".to_string(),
-                    name: "B".to_string(),
-                    role: None,
-                    status: "idle".to_string(),
-                    spawner_id: None,
-                    subordinate_ids: vec![],
-                }],
-            }
+        let handler_b: AgentManagerHandler = Arc::new(|_, _| AgentManagerResult::Listed {
+            sessions: vec![SessionEntry {
+                session_id: "from-b".to_string(),
+                name: "B".to_string(),
+                role: None,
+                status: "idle".to_string(),
+                spawner_id: None,
+                subordinate_ids: vec![],
+            }],
         });
 
         set_agent_manager_handler(session_a, Some(handler_a));
@@ -690,8 +694,8 @@ fn test_concurrent_sessions_isolated() {
 // @step And the tool should accept the session_id parameter
 #[tokio::test]
 async fn test_tool_definition_and_construction() {
-    use rig::tool::Tool;
     use super::super::AgentManagerTool;
+    use rig::tool::Tool;
 
     let session_id = Uuid::new_v4();
     let tool = AgentManagerTool::new(session_id);
@@ -817,7 +821,11 @@ fn test_result_serialization_closed() {
 fn test_error_helpers() {
     let perm = AgentManagerResult::permission_denied("no access");
     match perm {
-        AgentManagerResult::Error { error, code, message } => {
+        AgentManagerResult::Error {
+            error,
+            code,
+            message,
+        } => {
             assert!(error);
             assert_eq!(code, "permission_denied");
             assert_eq!(message, "no access");
@@ -827,7 +835,11 @@ fn test_error_helpers() {
 
     let invalid = AgentManagerResult::invalid_parameter("bad param");
     match invalid {
-        AgentManagerResult::Error { error, code, message } => {
+        AgentManagerResult::Error {
+            error,
+            code,
+            message,
+        } => {
             assert!(error);
             assert_eq!(code, "invalid_parameter");
             assert_eq!(message, "bad param");
@@ -889,7 +901,10 @@ fn test_message_supervisor_to_subordinate() {
         );
 
         match result {
-            AgentManagerResult::MessageDelivered { delivered, session_id } => {
+            AgentManagerResult::MessageDelivered {
+                delivered,
+                session_id,
+            } => {
                 assert!(delivered);
                 assert_eq!(session_id, subordinate_id);
             }
@@ -951,7 +966,10 @@ fn test_message_subordinate_to_supervisor() {
         );
 
         match result {
-            AgentManagerResult::MessageDelivered { delivered, session_id } => {
+            AgentManagerResult::MessageDelivered {
+                delivered,
+                session_id,
+            } => {
                 assert!(delivered);
                 assert_eq!(session_id, supervisor_id.to_string());
             }
@@ -994,7 +1012,11 @@ fn test_message_nonexistent_session() {
         );
 
         match result {
-            AgentManagerResult::Error { error, code, message } => {
+            AgentManagerResult::Error {
+                error,
+                code,
+                message,
+            } => {
                 assert!(error);
                 assert_eq!(code, "session_not_found");
                 assert!(message.contains("nonexistent-uuid"));
@@ -1020,16 +1042,14 @@ fn test_message_channel_full() {
         let target_id = Uuid::new_v4().to_string();
         let message_log = Arc::new(std::sync::Mutex::new(Vec::new()));
 
-        let sessions = vec![
-            SessionEntry {
-                session_id: target_id.clone(),
-                name: "Busy Worker".to_string(),
-                role: None,
-                status: "running".to_string(),
-                spawner_id: None,
-                subordinate_ids: vec![],
-            },
-        ];
+        let sessions = vec![SessionEntry {
+            session_id: target_id.clone(),
+            name: "Busy Worker".to_string(),
+            role: None,
+            status: "running".to_string(),
+            spawner_id: None,
+            subordinate_ids: vec![],
+        }];
 
         // channel_full = true simulates a full mpsc channel
         let (handler, _) = mock_handler_with_messaging(sessions, message_log, true);
@@ -1045,7 +1065,11 @@ fn test_message_channel_full() {
         );
 
         match result {
-            AgentManagerResult::Error { error, code, message } => {
+            AgentManagerResult::Error {
+                error,
+                code,
+                message,
+            } => {
                 assert!(error);
                 assert_eq!(code, "delivery_failed");
                 assert!(!message.is_empty());
@@ -1112,7 +1136,10 @@ fn test_message_peer_to_peer() {
         );
 
         match result {
-            AgentManagerResult::MessageDelivered { delivered, session_id } => {
+            AgentManagerResult::MessageDelivered {
+                delivered,
+                session_id,
+            } => {
                 assert!(delivered);
                 assert_eq!(session_id, sub_b_id);
             }
@@ -1285,16 +1312,14 @@ fn test_message_self_messaging() {
         let message_log = Arc::new(std::sync::Mutex::new(Vec::new()));
 
         // Session is both sender and target — self-messaging
-        let sessions = vec![
-            SessionEntry {
-                session_id: session_id.to_string(),
-                name: "Solo Agent".to_string(),
-                role: Some("thinker".to_string()),
-                status: "running".to_string(),
-                spawner_id: None,
-                subordinate_ids: vec![],
-            },
-        ];
+        let sessions = vec![SessionEntry {
+            session_id: session_id.to_string(),
+            name: "Solo Agent".to_string(),
+            role: Some("thinker".to_string()),
+            status: "running".to_string(),
+            spawner_id: None,
+            subordinate_ids: vec![],
+        }];
 
         let (handler, _) = mock_handler_with_messaging(sessions, message_log.clone(), false);
         set_agent_manager_handler(session_id, Some(handler));
@@ -1309,7 +1334,10 @@ fn test_message_self_messaging() {
         );
 
         match result {
-            AgentManagerResult::MessageDelivered { delivered, session_id: target_id } => {
+            AgentManagerResult::MessageDelivered {
+                delivered,
+                session_id: target_id,
+            } => {
                 assert!(delivered);
                 assert_eq!(target_id, session_id.to_string());
             }
@@ -1335,7 +1363,11 @@ fn test_message_action_deserializes() {
     let json = r#"{"action": "message", "session_id": "target-123", "message": "hello world"}"#;
     let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
     match args.action {
-        AgentManagerAction::Message { session_id, message, .. } => {
+        AgentManagerAction::Message {
+            session_id,
+            message,
+            ..
+        } => {
             assert_eq!(session_id, "target-123");
             assert_eq!(message, "hello world");
         }
@@ -1364,7 +1396,11 @@ fn test_result_serialization_message_delivered() {
 fn test_delivery_failed_error_helper() {
     let result = AgentManagerResult::delivery_failed("channel full");
     match result {
-        AgentManagerResult::Error { error, code, message } => {
+        AgentManagerResult::Error {
+            error,
+            code,
+            message,
+        } => {
             assert!(error);
             assert_eq!(code, "delivery_failed");
             assert_eq!(message, "channel full");
@@ -1378,8 +1414,8 @@ fn test_delivery_failed_error_helper() {
 // ============================================================
 #[tokio::test]
 async fn test_tool_definition_includes_message_action() {
-    use rig::tool::Tool;
     use super::super::AgentManagerTool;
+    use rig::tool::Tool;
 
     let session_id = Uuid::new_v4();
     let tool = AgentManagerTool::new(session_id);
@@ -1456,14 +1492,19 @@ fn test_context_specific_turns() {
         ];
 
         // Use a handler that captures the context parameter
-        let context_received = Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
+        let context_received =
+            Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
         let context_clone = context_received.clone();
         let log_clone = message_log;
         let sessions_arc = Arc::new(sessions);
 
         let handler: AgentManagerHandler = Arc::new(move |action, calling_session_id| {
             match action {
-                AgentManagerAction::Message { session_id, message, context } => {
+                AgentManagerAction::Message {
+                    session_id,
+                    message,
+                    context,
+                } => {
                     *context_clone.lock().unwrap() = Some(context.clone());
 
                     // Log the message
@@ -1505,19 +1546,19 @@ fn test_context_specific_turns() {
             AgentManagerAction::Message {
                 session_id: target_id.to_string(),
                 message: "Check this analysis".to_string(),
-                context: Some(vec![
-                    ContextReference::Turns {
-                        session_id: source_session_id.to_string(),
-                        turns: vec![1, 2],
-                    },
-                ]),
+                context: Some(vec![ContextReference::Turns {
+                    session_id: source_session_id.to_string(),
+                    turns: vec![1, 2],
+                }]),
             },
         );
 
         // Verify the result includes context_resolved
         match result {
             AgentManagerResult::MessageDeliveredWithContext {
-                delivered, session_id: sid, context_resolved,
+                delivered,
+                session_id: sid,
+                context_resolved,
             } => {
                 assert!(delivered);
                 assert_eq!(sid, target_id.to_string());
@@ -1556,14 +1597,20 @@ fn test_context_turn_range() {
         let sender_id = Uuid::new_v4();
         let target_id = Uuid::new_v4();
         let source_session_id = Uuid::new_v4();
-        let _message_log: Arc<std::sync::Mutex<Vec<DeliveredMessage>>> = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let _message_log: Arc<std::sync::Mutex<Vec<DeliveredMessage>>> =
+            Arc::new(std::sync::Mutex::new(Vec::new()));
 
-        let context_received = Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
+        let context_received =
+            Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
         let context_clone = context_received.clone();
 
-        let handler: AgentManagerHandler = Arc::new(move |action, _calling_session_id| {
-            match action {
-                AgentManagerAction::Message { session_id, message: _, context } => {
+        let handler: AgentManagerHandler =
+            Arc::new(move |action, _calling_session_id| match action {
+                AgentManagerAction::Message {
+                    session_id,
+                    message: _,
+                    context,
+                } => {
                     *context_clone.lock().unwrap() = Some(context.clone());
                     match context {
                         Some(refs) if !refs.is_empty() => {
@@ -1580,8 +1627,7 @@ fn test_context_turn_range() {
                     }
                 }
                 _ => AgentManagerResult::invalid_parameter("unexpected action"),
-            }
-        });
+            });
 
         set_agent_manager_handler(sender_id, Some(handler));
 
@@ -1590,19 +1636,19 @@ fn test_context_turn_range() {
             AgentManagerAction::Message {
                 session_id: target_id.to_string(),
                 message: "Check the analysis from turns 0-5".to_string(),
-                context: Some(vec![
-                    ContextReference::TurnRange {
-                        session_id: source_session_id.to_string(),
-                        start_turn: 0,
-                        end_turn: 5,
-                    },
-                ]),
+                context: Some(vec![ContextReference::TurnRange {
+                    session_id: source_session_id.to_string(),
+                    start_turn: 0,
+                    end_turn: 5,
+                }]),
             },
         );
 
         match result {
             AgentManagerResult::MessageDeliveredWithContext {
-                delivered, context_resolved, ..
+                delivered,
+                context_resolved,
+                ..
             } => {
                 assert!(delivered);
                 assert_eq!(context_resolved, 1);
@@ -1614,7 +1660,11 @@ fn test_context_turn_range() {
         let received = context_received.lock().unwrap();
         let ctx = received.as_ref().unwrap().as_ref().unwrap();
         match &ctx[0] {
-            ContextReference::TurnRange { session_id, start_turn, end_turn } => {
+            ContextReference::TurnRange {
+                session_id,
+                start_turn,
+                end_turn,
+            } => {
                 assert_eq!(*session_id, source_session_id.to_string());
                 assert_eq!(*start_turn, 0);
                 assert_eq!(*end_turn, 5);
@@ -1641,12 +1691,17 @@ fn test_context_search_query() {
         let target_id = Uuid::new_v4();
         let source_session_id = Uuid::new_v4();
 
-        let context_received = Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
+        let context_received =
+            Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
         let context_clone = context_received.clone();
 
-        let handler: AgentManagerHandler = Arc::new(move |action, _calling_session_id| {
-            match action {
-                AgentManagerAction::Message { session_id, message: _, context } => {
+        let handler: AgentManagerHandler =
+            Arc::new(move |action, _calling_session_id| match action {
+                AgentManagerAction::Message {
+                    session_id,
+                    message: _,
+                    context,
+                } => {
                     *context_clone.lock().unwrap() = Some(context.clone());
                     match context {
                         Some(refs) if !refs.is_empty() => {
@@ -1663,8 +1718,7 @@ fn test_context_search_query() {
                     }
                 }
                 _ => AgentManagerResult::invalid_parameter("unexpected action"),
-            }
-        });
+            });
 
         set_agent_manager_handler(sender_id, Some(handler));
 
@@ -1673,18 +1727,18 @@ fn test_context_search_query() {
             AgentManagerAction::Message {
                 session_id: target_id.to_string(),
                 message: "See the SQL injection findings".to_string(),
-                context: Some(vec![
-                    ContextReference::Query {
-                        session_id: source_session_id.to_string(),
-                        query: "SQL injection".to_string(),
-                    },
-                ]),
+                context: Some(vec![ContextReference::Query {
+                    session_id: source_session_id.to_string(),
+                    query: "SQL injection".to_string(),
+                }]),
             },
         );
 
         match result {
             AgentManagerResult::MessageDeliveredWithContext {
-                delivered, context_resolved, ..
+                delivered,
+                context_resolved,
+                ..
             } => {
                 assert!(delivered);
                 assert_eq!(context_resolved, 1);
@@ -1725,7 +1779,11 @@ fn test_context_nonexistent_session_degrades() {
         // Handler that simulates degradation — context_resolved = 0
         let handler: AgentManagerHandler = Arc::new(move |action, _calling_session_id| {
             match action {
-                AgentManagerAction::Message { session_id, message: _, context } => {
+                AgentManagerAction::Message {
+                    session_id,
+                    message: _,
+                    context,
+                } => {
                     // In real handler, the non-existent session would cause 0 resolved
                     match context {
                         Some(refs) if !refs.is_empty() => {
@@ -1752,18 +1810,18 @@ fn test_context_nonexistent_session_degrades() {
             AgentManagerAction::Message {
                 session_id: target_id.to_string(),
                 message: "Check the old session".to_string(),
-                context: Some(vec![
-                    ContextReference::Turns {
-                        session_id: nonexistent_id.to_string(),
-                        turns: vec![0, 1],
-                    },
-                ]),
+                context: Some(vec![ContextReference::Turns {
+                    session_id: nonexistent_id.to_string(),
+                    turns: vec![0, 1],
+                }]),
             },
         );
 
         match result {
             AgentManagerResult::MessageDeliveredWithContext {
-                delivered, context_resolved, ..
+                delivered,
+                context_resolved,
+                ..
             } => {
                 assert!(delivered);
                 assert_eq!(context_resolved, 0); // Graceful degradation
@@ -1793,7 +1851,11 @@ fn test_context_zero_match_query_degrades() {
 
         let handler: AgentManagerHandler = Arc::new(move |action, _calling_session_id| {
             match action {
-                AgentManagerAction::Message { session_id, message: _, context } => {
+                AgentManagerAction::Message {
+                    session_id,
+                    message: _,
+                    context,
+                } => {
                     match context {
                         Some(refs) if !refs.is_empty() => {
                             AgentManagerResult::MessageDeliveredWithContext {
@@ -1819,18 +1881,18 @@ fn test_context_zero_match_query_degrades() {
             AgentManagerAction::Message {
                 session_id: target_id.to_string(),
                 message: "Did you discuss quantum computing?".to_string(),
-                context: Some(vec![
-                    ContextReference::Query {
-                        session_id: source_session_id.to_string(),
-                        query: "nonexistent phrase xyzzy".to_string(),
-                    },
-                ]),
+                context: Some(vec![ContextReference::Query {
+                    session_id: source_session_id.to_string(),
+                    query: "nonexistent phrase xyzzy".to_string(),
+                }]),
             },
         );
 
         match result {
             AgentManagerResult::MessageDeliveredWithContext {
-                delivered, context_resolved, ..
+                delivered,
+                context_resolved,
+                ..
             } => {
                 assert!(delivered);
                 assert_eq!(context_resolved, 0);
@@ -1858,12 +1920,17 @@ fn test_context_mixed_array() {
         let session_a = Uuid::new_v4();
         let session_b = Uuid::new_v4();
 
-        let context_received = Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
+        let context_received =
+            Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
         let context_clone = context_received.clone();
 
-        let handler: AgentManagerHandler = Arc::new(move |action, _calling_session_id| {
-            match action {
-                AgentManagerAction::Message { session_id, message: _, context } => {
+        let handler: AgentManagerHandler =
+            Arc::new(move |action, _calling_session_id| match action {
+                AgentManagerAction::Message {
+                    session_id,
+                    message: _,
+                    context,
+                } => {
                     *context_clone.lock().unwrap() = Some(context.clone());
                     match context {
                         Some(refs) if !refs.is_empty() => {
@@ -1880,8 +1947,7 @@ fn test_context_mixed_array() {
                     }
                 }
                 _ => AgentManagerResult::invalid_parameter("unexpected action"),
-            }
-        });
+            });
 
         set_agent_manager_handler(sender_id, Some(handler));
 
@@ -1905,7 +1971,9 @@ fn test_context_mixed_array() {
 
         match result {
             AgentManagerResult::MessageDeliveredWithContext {
-                delivered, context_resolved, ..
+                delivered,
+                context_resolved,
+                ..
             } => {
                 assert!(delivered);
                 assert_eq!(context_resolved, 2);
@@ -1935,16 +2003,14 @@ fn test_message_without_context_is_plain_delivery() {
         let target_id = Uuid::new_v4();
         let message_log = Arc::new(std::sync::Mutex::new(Vec::new()));
 
-        let sessions = vec![
-            SessionEntry {
-                session_id: target_id.to_string(),
-                name: "Target".to_string(),
-                role: None,
-                status: "idle".to_string(),
-                spawner_id: None,
-                subordinate_ids: vec![],
-            },
-        ];
+        let sessions = vec![SessionEntry {
+            session_id: target_id.to_string(),
+            name: "Target".to_string(),
+            role: None,
+            status: "idle".to_string(),
+            spawner_id: None,
+            subordinate_ids: vec![],
+        }];
 
         let (handler, _called) = mock_handler_with_messaging(sessions, message_log.clone(), false);
         set_agent_manager_handler(sender_id, Some(handler));
@@ -1960,7 +2026,10 @@ fn test_message_without_context_is_plain_delivery() {
 
         // Should be MessageDelivered, NOT MessageDeliveredWithContext
         match result {
-            AgentManagerResult::MessageDelivered { delivered, session_id: sid } => {
+            AgentManagerResult::MessageDelivered {
+                delivered,
+                session_id: sid,
+            } => {
                 assert!(delivered);
                 assert_eq!(sid, target_id.to_string());
             }
@@ -1998,7 +2067,11 @@ fn test_context_out_of_range_turns_skipped() {
 
     let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
     match args.action {
-        AgentManagerAction::Message { session_id, message, context } => {
+        AgentManagerAction::Message {
+            session_id,
+            message,
+            context,
+        } => {
             assert_eq!(session_id, "target-123");
             assert_eq!(message, "check this");
 
@@ -2054,7 +2127,11 @@ fn test_context_reference_deserialization() {
         AgentManagerAction::Message { context, .. } => {
             let ctx = context.unwrap();
             match &ctx[0] {
-                ContextReference::TurnRange { start_turn, end_turn, .. } => {
+                ContextReference::TurnRange {
+                    start_turn,
+                    end_turn,
+                    ..
+                } => {
                     assert_eq!(*start_turn, 10);
                     assert_eq!(*end_turn, 15);
                 }
@@ -2145,7 +2222,11 @@ fn test_message_without_context_field_backward_compat() {
     let json = r#"{"action": "message", "session_id": "target-123", "message": "hello"}"#;
     let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
     match args.action {
-        AgentManagerAction::Message { session_id, message, context } => {
+        AgentManagerAction::Message {
+            session_id,
+            message,
+            context,
+        } => {
             assert_eq!(session_id, "target-123");
             assert_eq!(message, "hello");
             assert!(context.is_none()); // Default to None when omitted
@@ -2187,8 +2268,8 @@ fn test_mixed_context_array_deserialization() {
 // ============================================================
 #[tokio::test]
 async fn test_tool_definition_includes_context_parameter() {
-    use rig::tool::Tool;
     use super::super::AgentManagerTool;
+    use rig::tool::Tool;
 
     let session_id = Uuid::new_v4();
     let tool = AgentManagerTool::new(session_id);
@@ -2216,7 +2297,10 @@ fn test_set_role_on_own_session_no_session_id() {
     let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
     match args.action {
         AgentManagerAction::SetRole { session_id, role } => {
-            assert!(session_id.is_none(), "session_id should be None when omitted");
+            assert!(
+                session_id.is_none(),
+                "session_id should be None when omitted"
+            );
             assert_eq!(role, "test-helper");
         }
         _ => panic!("Expected SetRole action"),
@@ -2359,7 +2443,10 @@ fn test_set_role_handler_dispatch() {
         };
         let result = execute_agent_manager(session_id, action);
 
-        assert!(called.load(Ordering::SeqCst), "Handler should have been called");
+        assert!(
+            called.load(Ordering::SeqCst),
+            "Handler should have been called"
+        );
 
         // Result should be valid (mock handler will route through match)
         let json = serde_json::to_string(&result).unwrap();
@@ -2370,14 +2457,15 @@ fn test_set_role_handler_dispatch() {
 // Tool definition includes set_role action
 #[tokio::test]
 async fn test_tool_definition_includes_set_role_action() {
-    use rig::tool::Tool;
     use super::super::AgentManagerTool;
+    use rig::tool::Tool;
 
     let session_id = Uuid::new_v4();
     let tool = AgentManagerTool::new(session_id);
 
     let definition = tool.definition(String::new()).await;
-    let action_prop = definition.parameters
+    let action_prop = definition
+        .parameters
         .get("properties")
         .and_then(|p| p.get("action"))
         .and_then(|a| a.get("enum"))
@@ -2395,37 +2483,48 @@ async fn test_tool_definition_includes_set_role_action() {
 // Feature: spec/features/agent-manager-await-idle.feature
 // ============================================================
 
+use super::handler::{
+    execute_agent_manager_async, set_agent_manager_async_handler, AgentManagerAsyncHandler,
+};
 use super::types::{AwaitOutcome, AwaitSessionResult, SessionIdParam};
-use super::handler::{set_agent_manager_async_handler, execute_agent_manager_async, AgentManagerAsyncHandler};
 
 fn mock_async_handler(
     session_outcomes: std::collections::HashMap<String, AwaitOutcome>,
 ) -> AgentManagerAsyncHandler {
     let outcomes = Arc::new(session_outcomes);
-    Arc::new(move |action: AgentManagerAction, _calling_session_id: Uuid| {
-        let outcomes = outcomes.clone();
-        Box::pin(async move {
-            match action {
-                AgentManagerAction::AwaitIdle { session_id, timeout: _ } => {
-                    let ids = session_id.into_vec();
-                    for id in &ids {
-                        if !outcomes.contains_key(id) {
-                            return AgentManagerResult::session_not_found(id);
+    Arc::new(
+        move |action: AgentManagerAction, _calling_session_id: Uuid| {
+            let outcomes = outcomes.clone();
+            Box::pin(async move {
+                match action {
+                    AgentManagerAction::AwaitIdle {
+                        session_id,
+                        timeout: _,
+                    } => {
+                        let ids = session_id.into_vec();
+                        for id in &ids {
+                            if !outcomes.contains_key(id) {
+                                return AgentManagerResult::session_not_found(id);
+                            }
                         }
+                        let results: Vec<AwaitSessionResult> = ids
+                            .into_iter()
+                            .map(|id| {
+                                let status =
+                                    outcomes.get(&id).cloned().unwrap_or(AwaitOutcome::TimedOut);
+                                AwaitSessionResult {
+                                    session_id: id,
+                                    status,
+                                }
+                            })
+                            .collect();
+                        AgentManagerResult::AwaitResult { results }
                     }
-                    let results: Vec<AwaitSessionResult> = ids
-                        .into_iter()
-                        .map(|id| {
-                            let status = outcomes.get(&id).cloned().unwrap_or(AwaitOutcome::TimedOut);
-                            AwaitSessionResult { session_id: id, status }
-                        })
-                        .collect();
-                    AgentManagerResult::AwaitResult { results }
+                    _ => AgentManagerResult::invalid_parameter("expected AwaitIdle"),
                 }
-                _ => AgentManagerResult::invalid_parameter("expected AwaitIdle"),
-            }
-        })
-    })
+            })
+        },
+    )
 }
 
 // @step Given I have spawned 3 subordinate agent sessions
@@ -2448,15 +2547,21 @@ async fn test_await_idle_all_complete() {
     outcomes.insert(sub3.clone(), AwaitOutcome::Idle);
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
 
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
-        timeout: Some(60),
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
+            timeout: Some(60),
+        },
+    )
+    .await;
 
     match result {
         AgentManagerResult::AwaitResult { results } => {
             assert_eq!(results.len(), 3);
-            for r in &results { assert_eq!(r.status, AwaitOutcome::Idle); }
+            for r in &results {
+                assert_eq!(r.status, AwaitOutcome::Idle);
+            }
         }
         other => panic!("Expected AwaitResult, got: {other:?}"),
     }
@@ -2479,10 +2584,14 @@ async fn test_await_idle_already_idle() {
     outcomes.insert(sub_id.clone(), AwaitOutcome::Idle);
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
 
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Single(sub_id.clone()),
-        timeout: None,
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Single(sub_id.clone()),
+            timeout: None,
+        },
+    )
+    .await;
 
     match result {
         AgentManagerResult::AwaitResult { results } => {
@@ -2510,10 +2619,14 @@ async fn test_await_idle_timeout() {
     outcomes.insert(sub_id.clone(), AwaitOutcome::TimedOut);
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
 
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Single(sub_id.clone()),
-        timeout: Some(10),
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Single(sub_id.clone()),
+            timeout: Some(10),
+        },
+    )
+    .await;
 
     match result {
         AgentManagerResult::AwaitResult { results } => {
@@ -2547,16 +2660,32 @@ async fn test_await_idle_mixed_results() {
     outcomes.insert(sub3.clone(), AwaitOutcome::TimedOut);
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
 
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
-        timeout: Some(10),
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
+            timeout: Some(10),
+        },
+    )
+    .await;
 
     match result {
         AgentManagerResult::AwaitResult { results } => {
             assert_eq!(results.len(), 3);
-            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::Idle).count(), 2);
-            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::TimedOut).count(), 1);
+            assert_eq!(
+                results
+                    .iter()
+                    .filter(|r| r.status == AwaitOutcome::Idle)
+                    .count(),
+                2
+            );
+            assert_eq!(
+                results
+                    .iter()
+                    .filter(|r| r.status == AwaitOutcome::TimedOut)
+                    .count(),
+                1
+            );
         }
         other => panic!("Expected AwaitResult, got: {other:?}"),
     }
@@ -2574,15 +2703,26 @@ async fn test_await_idle_nonexistent_session() {
     let session_id = Uuid::new_v4();
     let nonexistent_id = Uuid::new_v4().to_string();
 
-    set_agent_manager_async_handler(session_id, Some(mock_async_handler(std::collections::HashMap::new())));
+    set_agent_manager_async_handler(
+        session_id,
+        Some(mock_async_handler(std::collections::HashMap::new())),
+    );
 
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Single(nonexistent_id.clone()),
-        timeout: Some(10),
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Single(nonexistent_id.clone()),
+            timeout: Some(10),
+        },
+    )
+    .await;
 
     match result {
-        AgentManagerResult::Error { error, code, message } => {
+        AgentManagerResult::Error {
+            error,
+            code,
+            message,
+        } => {
             assert!(error);
             assert_eq!(code, "session_not_found");
             assert!(message.contains(&nonexistent_id));
@@ -2607,10 +2747,14 @@ async fn test_await_idle_session_destroyed() {
     outcomes.insert(sub_id.clone(), AwaitOutcome::Destroyed);
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
 
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Single(sub_id.clone()),
-        timeout: Some(30),
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Single(sub_id.clone()),
+            timeout: Some(30),
+        },
+    )
+    .await;
 
     match result {
         AgentManagerResult::AwaitResult { results } => {
@@ -2645,16 +2789,32 @@ async fn test_await_idle_interrupted() {
     outcomes.insert(sub3.clone(), AwaitOutcome::Interrupted);
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
 
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
-        timeout: Some(60),
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
+            timeout: Some(60),
+        },
+    )
+    .await;
 
     match result {
         AgentManagerResult::AwaitResult { results } => {
             assert_eq!(results.len(), 3);
-            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::Idle).count(), 1);
-            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::Interrupted).count(), 2);
+            assert_eq!(
+                results
+                    .iter()
+                    .filter(|r| r.status == AwaitOutcome::Idle)
+                    .count(),
+                1
+            );
+            assert_eq!(
+                results
+                    .iter()
+                    .filter(|r| r.status == AwaitOutcome::Interrupted)
+                    .count(),
+                2
+            );
         }
         other => panic!("Expected AwaitResult, got: {other:?}"),
     }
@@ -2682,7 +2842,10 @@ async fn test_await_idle_default_timeout() {
                 AgentManagerAction::AwaitIdle { timeout, .. } => {
                     *tc.lock().unwrap() = Some(timeout);
                     AgentManagerResult::AwaitResult {
-                        results: vec![AwaitSessionResult { session_id: sid, status: AwaitOutcome::Idle }],
+                        results: vec![AwaitSessionResult {
+                            session_id: sid,
+                            status: AwaitOutcome::Idle,
+                        }],
                     }
                 }
                 _ => AgentManagerResult::invalid_parameter("expected AwaitIdle"),
@@ -2691,13 +2854,21 @@ async fn test_await_idle_default_timeout() {
     });
     set_agent_manager_async_handler(session_id, Some(handler));
 
-    let _result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Single(sub_id),
-        timeout: None,
-    }).await;
+    let _result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Single(sub_id),
+            timeout: None,
+        },
+    )
+    .await;
 
     let received = timeout_received.lock().unwrap();
-    assert_eq!(*received, Some(None), "Timeout should be passed as None (waits indefinitely)");
+    assert_eq!(
+        *received,
+        Some(None),
+        "Timeout should be passed as None (waits indefinitely)"
+    );
     clear_all_agent_manager_handlers();
 }
 
@@ -2715,17 +2886,30 @@ async fn test_await_idle_single_string_vs_array() {
     outcomes.insert(sub_id.clone(), AwaitOutcome::Idle);
 
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes.clone())));
-    let r1 = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Single(sub_id.clone()), timeout: Some(10),
-    }).await;
+    let r1 = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Single(sub_id.clone()),
+            timeout: Some(10),
+        },
+    )
+    .await;
 
     set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
-    let r2 = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Multiple(vec![sub_id.clone()]), timeout: Some(10),
-    }).await;
+    let r2 = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Multiple(vec![sub_id.clone()]),
+            timeout: Some(10),
+        },
+    )
+    .await;
 
     match (&r1, &r2) {
-        (AgentManagerResult::AwaitResult { results: a }, AgentManagerResult::AwaitResult { results: b }) => {
+        (
+            AgentManagerResult::AwaitResult { results: a },
+            AgentManagerResult::AwaitResult { results: b },
+        ) => {
             assert_eq!(a.len(), b.len());
             assert_eq!(a[0].session_id, b[0].session_id);
             assert_eq!(a[0].status, b[0].status);
@@ -2740,12 +2924,16 @@ async fn test_await_idle_single_string_vs_array() {
 // @step Then the tool should return a blocked error before any waiting occurs
 #[tokio::test]
 async fn test_await_idle_pre_tool_hook_blocks() {
-    use rig::tool::Tool;
     use super::super::AgentManagerTool;
+    use rig::tool::Tool;
     let tool = AgentManagerTool::new(Uuid::new_v4());
     let definition = tool.definition(String::new()).await;
-    let action_prop = definition.parameters.get("properties")
-        .and_then(|p| p.get("action")).and_then(|a| a.get("enum")).unwrap();
+    let action_prop = definition
+        .parameters
+        .get("properties")
+        .and_then(|p| p.get("action"))
+        .and_then(|a| a.get("enum"))
+        .unwrap();
     let actions: Vec<String> = serde_json::from_value(action_prop.clone()).unwrap();
     assert!(actions.contains(&"await_idle".to_string()));
 }
@@ -2759,7 +2947,10 @@ fn test_await_idle_single_session_deserializes() {
     let json = r#"{"action": "await_idle", "session_id": "abc-123"}"#;
     let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
     match args.action {
-        AgentManagerAction::AwaitIdle { session_id, timeout } => {
+        AgentManagerAction::AwaitIdle {
+            session_id,
+            timeout,
+        } => {
             assert_eq!(session_id.into_vec(), vec!["abc-123"]);
             assert!(timeout.is_none());
         }
@@ -2772,7 +2963,10 @@ fn test_await_idle_multiple_sessions_deserializes() {
     let json = r#"{"action": "await_idle", "session_id": ["abc-123", "def-456", "ghi-789"]}"#;
     let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
     match args.action {
-        AgentManagerAction::AwaitIdle { session_id, timeout } => {
+        AgentManagerAction::AwaitIdle {
+            session_id,
+            timeout,
+        } => {
             let ids = session_id.into_vec();
             assert_eq!(ids, vec!["abc-123", "def-456", "ghi-789"]);
             assert!(timeout.is_none());
@@ -2786,7 +2980,10 @@ fn test_await_idle_with_timeout_deserializes() {
     let json = r#"{"action": "await_idle", "session_id": "abc-123", "timeout": 120}"#;
     let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
     match args.action {
-        AgentManagerAction::AwaitIdle { session_id, timeout } => {
+        AgentManagerAction::AwaitIdle {
+            session_id,
+            timeout,
+        } => {
             assert_eq!(session_id.into_vec(), vec!["abc-123"]);
             assert_eq!(timeout, Some(120));
         }
@@ -2798,9 +2995,18 @@ fn test_await_idle_with_timeout_deserializes() {
 fn test_await_result_serialization() {
     let result = AgentManagerResult::AwaitResult {
         results: vec![
-            AwaitSessionResult { session_id: "abc".to_string(), status: AwaitOutcome::Idle },
-            AwaitSessionResult { session_id: "def".to_string(), status: AwaitOutcome::TimedOut },
-            AwaitSessionResult { session_id: "ghi".to_string(), status: AwaitOutcome::Destroyed },
+            AwaitSessionResult {
+                session_id: "abc".to_string(),
+                status: AwaitOutcome::Idle,
+            },
+            AwaitSessionResult {
+                session_id: "def".to_string(),
+                status: AwaitOutcome::TimedOut,
+            },
+            AwaitSessionResult {
+                session_id: "ghi".to_string(),
+                status: AwaitOutcome::Destroyed,
+            },
         ],
     };
     let json = serde_json::to_string(&result).unwrap();
@@ -2811,16 +3017,34 @@ fn test_await_result_serialization() {
 
 #[test]
 fn test_await_outcome_serialization() {
-    assert_eq!(serde_json::to_string(&AwaitOutcome::Idle).unwrap(), "\"idle\"");
-    assert_eq!(serde_json::to_string(&AwaitOutcome::TimedOut).unwrap(), "\"timed_out\"");
-    assert_eq!(serde_json::to_string(&AwaitOutcome::Destroyed).unwrap(), "\"destroyed\"");
-    assert_eq!(serde_json::to_string(&AwaitOutcome::Interrupted).unwrap(), "\"interrupted\"");
+    assert_eq!(
+        serde_json::to_string(&AwaitOutcome::Idle).unwrap(),
+        "\"idle\""
+    );
+    assert_eq!(
+        serde_json::to_string(&AwaitOutcome::TimedOut).unwrap(),
+        "\"timed_out\""
+    );
+    assert_eq!(
+        serde_json::to_string(&AwaitOutcome::Destroyed).unwrap(),
+        "\"destroyed\""
+    );
+    assert_eq!(
+        serde_json::to_string(&AwaitOutcome::Interrupted).unwrap(),
+        "\"interrupted\""
+    );
 }
 
 #[test]
 fn test_session_id_param_into_vec() {
-    assert_eq!(SessionIdParam::Single("a".to_string()).into_vec(), vec!["a"]);
-    assert_eq!(SessionIdParam::Multiple(vec!["a".to_string(), "b".to_string()]).into_vec(), vec!["a", "b"]);
+    assert_eq!(
+        SessionIdParam::Single("a".to_string()).into_vec(),
+        vec!["a"]
+    );
+    assert_eq!(
+        SessionIdParam::Multiple(vec!["a".to_string(), "b".to_string()]).into_vec(),
+        vec!["a", "b"]
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -2828,10 +3052,14 @@ fn test_session_id_param_into_vec() {
 async fn test_async_handler_not_configured_returns_error() {
     clear_all_agent_manager_handlers();
     let session_id = Uuid::new_v4();
-    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
-        session_id: SessionIdParam::Single(Uuid::new_v4().to_string()),
-        timeout: Some(10),
-    }).await;
+    let result = execute_agent_manager_async(
+        session_id,
+        AgentManagerAction::AwaitIdle {
+            session_id: SessionIdParam::Single(Uuid::new_v4().to_string()),
+            timeout: Some(10),
+        },
+    )
+    .await;
     match result {
         AgentManagerResult::Error { error, code, .. } => {
             assert!(error);
@@ -2844,14 +3072,27 @@ async fn test_async_handler_not_configured_returns_error() {
 
 #[tokio::test]
 async fn test_tool_definition_includes_await_idle() {
-    use rig::tool::Tool;
     use super::super::AgentManagerTool;
+    use rig::tool::Tool;
     let tool = AgentManagerTool::new(Uuid::new_v4());
     let def = tool.definition(String::new()).await;
     assert!(def.description.contains("await_idle"));
     let actions: Vec<String> = serde_json::from_value(
-        def.parameters.get("properties").unwrap().get("action").unwrap().get("enum").unwrap().clone()
-    ).unwrap();
+        def.parameters
+            .get("properties")
+            .unwrap()
+            .get("action")
+            .unwrap()
+            .get("enum")
+            .unwrap()
+            .clone(),
+    )
+    .unwrap();
     assert!(actions.contains(&"await_idle".to_string()));
-    assert!(def.parameters.get("properties").unwrap().get("timeout").is_some());
+    assert!(def
+        .parameters
+        .get("properties")
+        .unwrap()
+        .get("timeout")
+        .is_some());
 }

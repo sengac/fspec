@@ -2338,6 +2338,14 @@
           "description": "Work unit identifier tag for RPC-337 — full-screen Model Selector mode-view + shared full-screen shell extraction"
         },
         {
+          "name": "@rpc-376",
+          "description": "Work unit identifier for RPC-376 — heading anchor IDs and in-page anchor navigation in the Rust markdown viewer"
+        },
+        {
+          "name": "@rpc-377",
+          "description": "Work unit identifier for RPC-377 — client-side viewer parity (Prism, copy/badge, theme toggle, font controls) in the Rust markdown viewer"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
@@ -2798,7 +2806,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-06-26T03:54:54.530Z",
+    "lastUpdated": "2026-06-28T04:32:02.170Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

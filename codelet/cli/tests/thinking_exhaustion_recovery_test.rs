@@ -8,10 +8,10 @@
 //! from codelet_cli::interactive — no copies, no mocks.
 
 use codelet_cli::interactive::{
-    is_thinking_exhaustion, build_thinking_exhaustion_recovery_message,
     build_thinking_budget_exhausted_message as build_thinking_budget_exhausted_msg,
-    downgrade_thinking_level, MAX_THINKING_EXHAUSTION_RETRIES,
-    THINKING_EXHAUSTION_OUTPUT_THRESHOLD, THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
+    build_thinking_exhaustion_recovery_message, downgrade_thinking_level, is_thinking_exhaustion,
+    MAX_THINKING_EXHAUSTION_RETRIES, THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
+    THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
 };
 use codelet_tools::facade::ThinkingLevel;
 
@@ -104,7 +104,10 @@ fn test_openai_thinking_exhaustion_detected_and_recovered() {
         1500,
         THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
     );
-    assert!(!retry_detected, "Successful retry should not trigger detection");
+    assert!(
+        !retry_detected,
+        "Successful retry should not trigger detection"
+    );
 }
 
 // =============================================================================
@@ -146,7 +149,10 @@ fn test_gemini_thinking_exhaustion_detected_and_recovered() {
         5000,
         THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
     );
-    assert!(!retry_detected, "Successful retry should not trigger detection");
+    assert!(
+        !retry_detected,
+        "Successful retry should not trigger detection"
+    );
 }
 
 // =============================================================================
@@ -208,7 +214,10 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
 
     // First attempt: hits exhaustion
     assert!(is_thinking_exhaustion(
-        Some("max_tokens"), 8000, 10, THINKING_EXHAUSTION_OUTPUT_THRESHOLD
+        Some("max_tokens"),
+        8000,
+        10,
+        THINKING_EXHAUSTION_OUTPUT_THRESHOLD
     ));
     retry_count += 1;
     assert!(retry_count <= MAX_THINKING_EXHAUSTION_RETRIES);
@@ -217,7 +226,10 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
 
     // @step And the first retry with reduced budget also hits thinking exhaustion
     assert!(is_thinking_exhaustion(
-        Some("max_tokens"), 4000, 15, THINKING_EXHAUSTION_OUTPUT_THRESHOLD
+        Some("max_tokens"),
+        4000,
+        15,
+        THINKING_EXHAUSTION_OUTPUT_THRESHOLD
     ));
     retry_count += 1;
     assert!(retry_count <= MAX_THINKING_EXHAUSTION_RETRIES);
@@ -226,7 +238,10 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
 
     // @step And the second retry with further reduced budget also hits thinking exhaustion
     assert!(is_thinking_exhaustion(
-        Some("max_tokens"), 2000, 8, THINKING_EXHAUSTION_OUTPUT_THRESHOLD
+        Some("max_tokens"),
+        2000,
+        8,
+        THINKING_EXHAUSTION_OUTPUT_THRESHOLD
     ));
     retry_count += 1;
     assert!(retry_count > MAX_THINKING_EXHAUSTION_RETRIES);
@@ -237,9 +252,15 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
 
     // @step And the model produces a response without reasoning
     let final_detected = is_thinking_exhaustion(
-        Some("end_turn"), 0, 3000, THINKING_EXHAUSTION_OUTPUT_THRESHOLD
+        Some("end_turn"),
+        0,
+        3000,
+        THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
     );
-    assert!(!final_detected, "With thinking off, no exhaustion should occur");
+    assert!(
+        !final_detected,
+        "With thinking off, no exhaustion should occur"
+    );
     assert_eq!(current_level, ThinkingLevel::Off);
 
     // @step And a warning is shown to the user indicating thinking was disabled
@@ -384,11 +405,12 @@ fn test_session_level_reasoning_auto_downgrades_across_turns() {
 
     // @step And the user is notified that reasoning effort was automatically reduced
     // The recovery message for progressive degradation
-    let recovery_msg = build_thinking_exhaustion_recovery_message(
-        0, 0, None,
-    );
+    let recovery_msg = build_thinking_exhaustion_recovery_message(0, 0, None);
     // The recovery message exists and is not empty (exact format tested separately)
-    assert!(!recovery_msg.is_empty(), "Should generate a recovery message");
+    assert!(
+        !recovery_msg.is_empty(),
+        "Should generate a recovery message"
+    );
 
     // @step And subsequent turns use the downgraded Medium reasoning level
     assert_eq!(session_level, ThinkingLevel::Medium);
@@ -465,16 +487,31 @@ fn test_none_stop_reason_not_detected() {
 #[test]
 fn test_downgrade_chain() {
     // Test the full downgrade chain: High -> Medium -> Low -> Off -> Off
-    assert_eq!(downgrade_thinking_level(ThinkingLevel::High), ThinkingLevel::Medium);
-    assert_eq!(downgrade_thinking_level(ThinkingLevel::Medium), ThinkingLevel::Low);
-    assert_eq!(downgrade_thinking_level(ThinkingLevel::Low), ThinkingLevel::Off);
-    assert_eq!(downgrade_thinking_level(ThinkingLevel::Off), ThinkingLevel::Off);
+    assert_eq!(
+        downgrade_thinking_level(ThinkingLevel::High),
+        ThinkingLevel::Medium
+    );
+    assert_eq!(
+        downgrade_thinking_level(ThinkingLevel::Medium),
+        ThinkingLevel::Low
+    );
+    assert_eq!(
+        downgrade_thinking_level(ThinkingLevel::Low),
+        ThinkingLevel::Off
+    );
+    assert_eq!(
+        downgrade_thinking_level(ThinkingLevel::Off),
+        ThinkingLevel::Off
+    );
 }
 
 #[test]
 fn test_recovery_message_without_reasoning_content() {
     let msg = build_thinking_exhaustion_recovery_message(8000, 10, None);
-    assert!(!msg.is_empty(), "Recovery message should not be empty even without reasoning content");
+    assert!(
+        !msg.is_empty(),
+        "Recovery message should not be empty even without reasoning content"
+    );
     assert!(
         msg.contains("8000"),
         "Recovery message should include reasoning token count. Got: {msg}"

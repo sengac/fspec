@@ -71,7 +71,10 @@ fn validates_a_schema_valid_foundation_and_reports_success() {
     let result = dispatch_command(req(tmp.path(), json!({})));
 
     // @step Then the dispatcher returns success=true with the output '✓ foundation.json is valid according to the schema'
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_json(&result);
     assert_eq!(data["success"].as_bool(), Some(true), "got data: {data}");
     assert_eq!(
@@ -95,7 +98,10 @@ fn reports_a_friendly_error_when_foundation_json_is_missing() {
     // @step Then the dispatcher returns success=false with the error 'foundation.json not found in spec/ directory'
     // (Per the show_feature precedent: recoverable failures live inside the
     // structured `data` envelope; the outer dispatch envelope stays success=true.)
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_json(&result);
     assert_eq!(data["success"].as_bool(), Some(false), "got data: {data}");
     assert_eq!(
@@ -123,7 +129,10 @@ fn renders_the_min_items_special_case_error_for_an_empty_capabilities_array() {
     let result = dispatch_command(req(tmp.path(), json!({})));
 
     // @step Then the dispatcher returns success=false with the error 'Field solutionSpace.capabilities must have at least 1 items (found 0)'
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_json(&result);
     assert_eq!(data["success"].as_bool(), Some(false), "got data: {data}");
     assert_eq!(
@@ -151,7 +160,10 @@ fn renders_a_required_property_error_when_a_top_level_field_is_missing() {
     let result = dispatch_command(req(tmp.path(), json!({})));
 
     // @step Then the dispatcher returns success=false with the error "#/required: must have required property 'solutionSpace'"
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_json(&result);
     assert_eq!(data["success"].as_bool(), Some(false), "got data: {data}");
     assert_eq!(
@@ -176,7 +188,10 @@ fn reports_a_friendly_error_when_foundation_json_contains_malformed_json() {
     let result = dispatch_command(req(tmp.path(), json!({})));
 
     // @step Then the dispatcher returns success=false with an error beginning 'Failed to validate foundation schema:'
-    assert!(result.success, "expected dispatch envelope success; got {result:?}");
+    assert!(
+        result.success,
+        "expected dispatch envelope success; got {result:?}"
+    );
     let data = data_json(&result);
     assert_eq!(data["success"].as_bool(), Some(false), "got data: {data}");
     let err = data["error"].as_str().expect("error string");

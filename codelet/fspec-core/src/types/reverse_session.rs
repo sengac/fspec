@@ -134,8 +134,7 @@ pub fn load_session(project_root: &Path) -> Option<ReverseSession> {
 /// `saveSession` (`src/utils/reverse-session.ts:51-59`).
 pub fn save_session(project_root: &Path, session: &ReverseSession) -> std::io::Result<()> {
     let path = session_path(project_root);
-    let json = serde_json::to_string_pretty(session)
-        .unwrap_or_else(|_| "{}".to_string());
+    let json = serde_json::to_string_pretty(session).unwrap_or_else(|_| "{}".to_string());
     std::fs::write(path, json)
 }
 

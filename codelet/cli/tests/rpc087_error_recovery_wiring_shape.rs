@@ -28,8 +28,7 @@ fn workspace_root() -> PathBuf {
 
 fn read_source(rel: &str) -> String {
     let path = workspace_root().join(rel);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 // ====================================================================
@@ -255,7 +254,9 @@ fn stream_loop_guards_retry_with_max_network_retries() {
     // (already read above)
 
     // @step Then the body contains the substring "use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay}"
-    assert!(body.contains("use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay}"));
+    assert!(
+        body.contains("use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay}")
+    );
 
     // @step And the body contains the substring "network_retry_count <= MAX_NETWORK_RETRIES"
     assert!(body.contains("network_retry_count <= MAX_NETWORK_RETRIES"));

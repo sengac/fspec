@@ -425,11 +425,18 @@ async fn test_file_facades_available_for_gemini_provider() -> Result<()> {
     // @step When create_rig_agent() is called
     // The facades are wrapped with FileToolFacadeWrapper for rig integration
     // BLOCK-006: FileToolFacadeWrapper now requires session_id (use nil for tests)
-    let read_wrapper = FileToolFacadeWrapper::new(Arc::new(read_facade) as Arc<dyn FileToolFacade>, Uuid::nil());
-    let write_wrapper =
-        FileToolFacadeWrapper::new(Arc::new(write_facade) as Arc<dyn FileToolFacade>, Uuid::nil());
-    let replace_wrapper =
-        FileToolFacadeWrapper::new(Arc::new(replace_facade) as Arc<dyn FileToolFacade>, Uuid::nil());
+    let read_wrapper = FileToolFacadeWrapper::new(
+        Arc::new(read_facade) as Arc<dyn FileToolFacade>,
+        Uuid::nil(),
+    );
+    let write_wrapper = FileToolFacadeWrapper::new(
+        Arc::new(write_facade) as Arc<dyn FileToolFacade>,
+        Uuid::nil(),
+    );
+    let replace_wrapper = FileToolFacadeWrapper::new(
+        Arc::new(replace_facade) as Arc<dyn FileToolFacade>,
+        Uuid::nil(),
+    );
 
     // @step Then the agent has tool 'read_file' backed by GeminiReadFileFacade
     assert_eq!(read_wrapper.name(), "read_file");
@@ -717,7 +724,15 @@ async fn test_map_gemini_list_directory_with_empty_parameters() -> Result<()> {
 
     // @step Then the facade maps to InternalLsParams::List with path None
     let internal = facade.map_params(gemini_params)?;
-    assert_eq!(internal, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
+    assert_eq!(
+        internal,
+        InternalLsParams::List {
+            path: None,
+            offset: None,
+            limit: None,
+            depth: None
+        }
+    );
 
     // @step And the base LsTool lists the current directory
     // The base tool execution is handled by the existing LsTool

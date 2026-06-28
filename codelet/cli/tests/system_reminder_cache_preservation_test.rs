@@ -101,12 +101,7 @@ fn test_partition_extracts_only_latest_reminder_per_type() {
     let token_v2_content = "<system-reminder>\n<!-- type:tokenStatus -->\n75% used\nThis supersedes earlier tokenStatus reminder\n</system-reminder>";
     let token_v2 = create_test_message(token_v2_content);
 
-    let messages = vec![
-        msg1,
-        token_v1.clone(),
-        msg2,
-        token_v2.clone(),
-    ];
+    let messages = vec![msg1, token_v1.clone(), msg2, token_v2.clone()];
 
     // Verify both are detected as system reminders
     assert!(
@@ -172,12 +167,7 @@ fn test_compaction_preserves_latest_reminder_at_start() {
     let msg1 = create_test_message("User message 1");
     let msg2 = create_test_message("User message 2");
 
-    let messages = vec![
-        token_v1,
-        msg1,
-        token_v2,
-        msg2,
-    ];
+    let messages = vec![token_v1, msg1, token_v2, msg2];
 
     // @step And the session has conversation turns to compact
     // Simulated: the session would have turns that get compacted

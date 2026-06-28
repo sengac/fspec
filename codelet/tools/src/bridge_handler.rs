@@ -44,7 +44,8 @@ pub struct BridgeRequest {
 pub type BridgeHandler = Arc<dyn Fn(BridgeRequest) -> BridgeResult + Send + Sync>;
 
 /// Factory function to create a broadcast receiver
-pub type BroadcastReceiverFactory = Arc<dyn Fn() -> broadcast::Receiver<serde_json::Value> + Send + Sync>;
+pub type BroadcastReceiverFactory =
+    Arc<dyn Fn() -> broadcast::Receiver<serde_json::Value> + Send + Sync>;
 
 /// Session context for bridge relay tasks
 pub struct BridgeSessionContext {
@@ -148,17 +149,11 @@ pub async fn handle_bridge_action(
     let manager = get_or_create_bridge_manager(session_id).await;
 
     match action {
-        BridgeAction::Connect { url } => {
-            handle_connect(session_id, url, &manager).await
-        }
+        BridgeAction::Connect { url } => handle_connect(session_id, url, &manager).await,
 
-        BridgeAction::Disconnect { url } => {
-            handle_disconnect(url, &manager).await
-        }
+        BridgeAction::Disconnect { url } => handle_disconnect(url, &manager).await,
 
-        BridgeAction::List => {
-            handle_list(&manager).await
-        }
+        BridgeAction::List => handle_list(&manager).await,
     }
 }
 
@@ -183,7 +178,8 @@ async fn handle_connect(
         None => {
             return Ok(BridgeResult {
                 success: false,
-                message: "Bridge session context not configured - cannot spawn relay task".to_string(),
+                message: "Bridge session context not configured - cannot spawn relay task"
+                    .to_string(),
                 connections: None,
             });
         }
@@ -203,7 +199,16 @@ async fn handle_connect(
     let command_emitter = context.command_emitter.clone();
 
     // Spawn the relay task (BRIDGE-008: with control_handler, BRIDGE-017: with command_emitter)
-    match spawn_relay_task(session_id, url.clone(), broadcast_rx, input_injector, control_handler, command_emitter).await {
+    match spawn_relay_task(
+        session_id,
+        url.clone(),
+        broadcast_rx,
+        input_injector,
+        control_handler,
+        command_emitter,
+    )
+    .await
+    {
         Ok(handle) => {
             let mut mgr = manager.write().await;
             if let Some(conn) = mgr.get_connection_mut(&url) {
@@ -272,12 +277,7 @@ async fn handle_list(
     } else {
         let summary = connections
             .iter()
-            .map(|c| {
-                format!(
-                    "  - {} ({:?}, {} buffered)",
-                    c.url, c.state, c.buffered
-                )
-            })
+            .map(|c| format!("  - {} ({:?}, {} buffered)", c.url, c.state, c.buffered))
             .collect::<Vec<_>>()
             .join("\n");
 

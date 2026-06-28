@@ -1,0 +1,88 @@
+{
+  "scenarios": [
+    {
+      "name": "Footnote syntax does not produce footnote markup",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_footnotes.rs",
+          "lines": "10-35",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tables still render after footnotes are disabled",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_footnotes.rs",
+          "lines": "37-47",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Strikethrough still renders after footnotes are disabled",
+      "testMappings": [
+        {
+          "file": "codelet/attachment-viewer/tests/markdown_footnotes.rs",
+          "lines": "49-59",
+          "implMappings": [
+            {
+              "file": "codelet/attachment-viewer/src/markdown/render.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/attachment-viewer/tests/markdown_footnotes.rs"
+    ],
+    "implFiles": [
+      "codelet/attachment-viewer/src/markdown/render.rs"
+    ],
+    "totalLinesCovered": 72
+  }
+}

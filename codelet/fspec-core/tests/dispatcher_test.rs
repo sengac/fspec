@@ -39,7 +39,10 @@ fn notyetported_error_renders_full_agent_facing_contract_when_constructed_direct
     let msg = err.to_string();
 
     // @step Then rendering the error yields a message containing the literal substring "some-cmd"
-    assert!(msg.contains("some-cmd"), "missing 'some-cmd' in error message: {msg}");
+    assert!(
+        msg.contains("some-cmd"),
+        "missing 'some-cmd' in error message: {msg}"
+    );
 
     // @step And the error message contains the literal substring "not yet ported"
     assert!(
@@ -48,7 +51,10 @@ fn notyetported_error_renders_full_agent_facing_contract_when_constructed_direct
     );
 
     // @step And the error message contains the porting work unit ID "RPC-999"
-    assert!(msg.contains("RPC-999"), "missing 'RPC-999' in error message: {msg}");
+    assert!(
+        msg.contains("RPC-999"),
+        "missing 'RPC-999' in error message: {msg}"
+    );
 
     // @step And the error message contains the substring "standalone fspec binary"
     assert!(

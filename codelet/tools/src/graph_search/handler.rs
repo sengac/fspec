@@ -10,8 +10,7 @@ use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 /// Handler function type: takes an action + session_id, returns a JSON string result.
-pub type GraphSearchHandler =
-    Arc<dyn Fn(GraphSearchAction, Uuid) -> String + Send + Sync>;
+pub type GraphSearchHandler = Arc<dyn Fn(GraphSearchAction, Uuid) -> String + Send + Sync>;
 
 /// Global handler map: one handler per session.
 static GRAPH_SEARCH_HANDLERS: Lazy<RwLock<HashMap<Uuid, GraphSearchHandler>>> =
@@ -56,7 +55,10 @@ pub fn execute_graph_search(session_id: Uuid, action: GraphSearchAction) -> Stri
 
     match map.get(&session_id) {
         Some(handler) => handler(action, session_id),
-        None => r#"{"error":"No handler registered for this session. GraphSearch is not available."}"#.to_string(),
+        None => {
+            r#"{"error":"No handler registered for this session. GraphSearch is not available."}"#
+                .to_string()
+        }
     }
 }
 

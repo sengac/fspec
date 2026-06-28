@@ -20,8 +20,8 @@
 
 use codelet_cli::interactive::flush_partial_state_before_compaction;
 use codelet_cli::session::Session;
-use codelet_core::StreamingTokenDisplay;
 use codelet_core::compaction::TokenTracker;
+use codelet_core::StreamingTokenDisplay;
 
 fn fresh_session() -> Session {
     Session::new(None).expect("failed to create test session")
@@ -31,7 +31,10 @@ fn fresh_session() -> Session {
 /// `cumulative_output` by seeding the `prev_output` slot of the constructor.
 /// Input side carries the caller-supplied `input_tokens` through
 /// `cache_read` so `total_input()` is non-trivial, matching real streams.
-fn display_with_cumulative_output(cumulative_output: u64, total_input: u64) -> StreamingTokenDisplay {
+fn display_with_cumulative_output(
+    cumulative_output: u64,
+    total_input: u64,
+) -> StreamingTokenDisplay {
     StreamingTokenDisplay::new(total_input, cumulative_output, 0, 0)
 }
 

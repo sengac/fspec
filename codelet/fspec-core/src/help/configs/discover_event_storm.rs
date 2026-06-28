@@ -49,7 +49,9 @@ const PREREQUISITES: &[&str] = &[
 ];
 
 const COMMON_PATTERNS: &[CommonPatternEntry] = &[
-    CommonPatternEntry::Bullet("Run discover-event-storm BEFORE Example Mapping for complex domains"),
+    CommonPatternEntry::Bullet(
+        "Run discover-event-storm BEFORE Example Mapping for complex domains",
+    ),
     CommonPatternEntry::Bullet(
         "Follow free-form collaborative session (not field-by-field like discover-foundation)",
     ),

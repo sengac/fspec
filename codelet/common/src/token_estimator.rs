@@ -23,7 +23,10 @@ static ESTIMATOR: Lazy<TokenEstimator> = Lazy::new(|| {
     TokenEstimator::new().unwrap_or_else(|e| {
         // Fall back to a dummy estimator that uses byte-based estimation
         // This should never happen in practice, but we need a fallback
-        tracing::error!("Failed to initialize tiktoken encoder: {}. Using byte-based fallback.", e);
+        tracing::error!(
+            "Failed to initialize tiktoken encoder: {}. Using byte-based fallback.",
+            e
+        );
         TokenEstimator { encoder: None }
     })
 });
@@ -115,7 +118,10 @@ mod tests {
         let text = "Hello, world!";
         let tokens = count_tokens(text);
         assert!(tokens > 0, "Should count at least 1 token");
-        assert!(tokens < 10, "Simple phrase should have fewer than 10 tokens");
+        assert!(
+            tokens < 10,
+            "Simple phrase should have fewer than 10 tokens"
+        );
     }
 
     #[test]

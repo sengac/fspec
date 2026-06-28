@@ -21,22 +21,21 @@
 use std::future::Future;
 use std::path::Path;
 use std::pin::Pin;
-use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 
 use crate::deep_search_provider_config::request_config_for_provider;
-use codelet_tools::{
-    AstGrepTool, BashTool, GlobTool, GrepTool, LsTool, ReadTool,
-    SessionSearchTool, DeepSearchTool, GraphSearchTool, SUB_AGENT_TOOL_COUNT,
-    build_system_prompt, set_session_search_handler,
-    set_deep_search_handler, set_graph_search_handler,
-};
 use codelet_core::RigAgent;
+use codelet_providers::custom::CustomProvider;
+use codelet_providers::custom_provider_registered;
+use codelet_providers::LlmProvider;
+use codelet_tools::{
+    build_system_prompt, set_deep_search_handler, set_graph_search_handler,
+    set_session_search_handler, AstGrepTool, BashTool, DeepSearchTool, GlobTool, GraphSearchTool,
+    GrepTool, LsTool, ReadTool, SessionSearchTool, SUB_AGENT_TOOL_COUNT,
+};
 use futures::Stream;
 use futures::StreamExt;
-use codelet_providers::LlmProvider;
-use codelet_providers::custom_provider_registered;
-use codelet_providers::custom::CustomProvider;
 use rig::client::CompletionClient;
 use uuid::Uuid;
 
@@ -191,11 +190,11 @@ pub async fn execute_deep_search(
     };
 
     // KGRAPH-009: Register GraphSearch handler for ephemeral session when graph is available
-    let graph_available = codelet_graph::registry::is_graph_initialized(
-        codelet_graph::registry::LEARNINGS_GRAPH,
-    ) || codelet_graph::registry::is_graph_initialized(
-        codelet_graph::registry::AST_CODE_GRAPH,
-    );
+    let graph_available =
+        codelet_graph::registry::is_graph_initialized(codelet_graph::registry::LEARNINGS_GRAPH)
+            || codelet_graph::registry::is_graph_initialized(
+                codelet_graph::registry::AST_CODE_GRAPH,
+            );
     let _gs_cleanup = if graph_available {
         let gs_handler = crate::graph_search_handler::create_handler();
         set_graph_search_handler(ephemeral_session_id, Some(gs_handler));
@@ -233,19 +232,24 @@ pub async fn execute_deep_search(
     // AMGR-016: Wrap the entire sub-agent execution in a wall-clock timeout
     // to prevent stalled sub-agents from blocking the parent forever (Rule [6]).
     let wall_clock_timeout = codelet_cli::interactive::deep_search_wall_clock_timeout();
-    match tokio::time::timeout(wall_clock_timeout, build_and_run_agent(
-        ephemeral_session_id,
-        project_path,
-        &system_prompt,
-        query,
-        max_depth,
-        provider_name,
-        model_id,
-        can_recurse,
-        graph_available,
-        context_window,  // MODEL-005: Propagated from parent session
-        max_output_tokens, // MODEL-005: Propagated from parent session
-    )).await {
+    match tokio::time::timeout(
+        wall_clock_timeout,
+        build_and_run_agent(
+            ephemeral_session_id,
+            project_path,
+            &system_prompt,
+            query,
+            max_depth,
+            provider_name,
+            model_id,
+            can_recurse,
+            graph_available,
+            context_window,    // MODEL-005: Propagated from parent session
+            max_output_tokens, // MODEL-005: Propagated from parent session
+        ),
+    )
+    .await
+    {
         Ok(result) => result,
         Err(_elapsed) => {
             let timeout_msg = codelet_cli::interactive::build_deep_search_timeout_message(
@@ -315,7 +319,9 @@ macro_rules! build_and_run {
             if $graph_available {
                 let gs_tool = GraphSearchTool::new($session_id);
                 if let Err(e) = agent.tool_server_handle.add_tool(gs_tool).await {
-                    tracing::warn!("[KGRAPH] Failed to add GraphSearch to DeepSearch sub-agent: {e}");
+                    tracing::warn!(
+                        "[KGRAPH] Failed to add GraphSearch to DeepSearch sub-agent: {e}"
+                    );
                 }
             }
 
@@ -335,7 +341,9 @@ macro_rules! build_and_run {
             if $graph_available {
                 let gs_tool = GraphSearchTool::new($session_id);
                 if let Err(e) = agent.tool_server_handle.add_tool(gs_tool).await {
-                    tracing::warn!("[KGRAPH] Failed to add GraphSearch to DeepSearch sub-agent: {e}");
+                    tracing::warn!(
+                        "[KGRAPH] Failed to add GraphSearch to DeepSearch sub-agent: {e}"
+                    );
                 }
             }
 
@@ -353,7 +361,9 @@ where
     S: Stream<Item = Result<rig::agent::MultiTurnStreamItem<R>, anyhow::Error>>,
     R: Clone + Unpin + rig::completion::GetTokenUsage,
 {
-    use codelet_cli::interactive::{is_transient_network_error, MAX_NETWORK_RETRIES, network_retry_delay};
+    use codelet_cli::interactive::{
+        is_transient_network_error, network_retry_delay, MAX_NETWORK_RETRIES,
+    };
 
     let mut last_final_response: Option<String> = None;
     let mut network_retry_count: u32 = 0;
@@ -398,7 +408,10 @@ where
 
     match last_final_response {
         Some(response) => Ok(response),
-        None => Err("DeepSearch sub-agent failed: missing final response from streaming execution".to_string()),
+        None => Err(
+            "DeepSearch sub-agent failed: missing final response from streaming execution"
+                .to_string(),
+        ),
     }
 }
 
@@ -435,7 +448,10 @@ async fn build_and_run_agent(
     // Compile-time assertion: base tool count must be 7.
     // When can_recurse, we add DeepSearch as the 8th tool at runtime.
     // KGRAPH-009: GraphSearch is added dynamically via tool_server_handle when graph is available.
-    const _: () = assert!(SUB_AGENT_TOOL_COUNT == 7, "base tool count changed — update build_and_run_agent tool list");
+    const _: () = assert!(
+        SUB_AGENT_TOOL_COUNT == 7,
+        "base tool count changed — update build_and_run_agent tool list"
+    );
 
     tracing::warn!(
         "[deep-search-dispatch] ENTER provider={} model={:?} ephemeral_session={} project_path={} can_recurse={} graph_available={}",
@@ -487,9 +503,7 @@ async fn build_and_run_agent(
                 provider_name,
                 e,
             );
-            format!(
-                "Failed to build custom-provider sub-agent for '{provider_name}': {e}"
-            )
+            format!("Failed to build custom-provider sub-agent for '{provider_name}': {e}")
         })?;
         tracing::warn!(
             "[deep-search-dispatch] CustomProvider::create_rig_agent built agent for '{}' (tool_adapter_count={})",
@@ -500,16 +514,13 @@ async fn build_and_run_agent(
         let _ = max_output_tokens;
         let agent = handle.into_inner();
         let rig_agent = RigAgent::new(agent, max_depth);
-        let result = rig_agent
-            .prompt(query)
-            .await
-            .map_err(|e| {
-                tracing::warn!(
-                    "[deep-search-dispatch] custom-provider sub-agent prompt failed: {}",
-                    e,
-                );
-                format!("DeepSearch sub-agent failed: {e}")
-            });
+        let result = rig_agent.prompt(query).await.map_err(|e| {
+            tracing::warn!(
+                "[deep-search-dispatch] custom-provider sub-agent prompt failed: {}",
+                e,
+            );
+            format!("DeepSearch sub-agent failed: {e}")
+        });
         tracing::warn!(
             "[deep-search-dispatch] EXIT provider='{}' result_is_ok={}",
             provider_name,
@@ -526,14 +537,16 @@ async fn build_and_run_agent(
         model_id,
         context_window,
         max_output_tokens,
-    ).map_err(|e| format!("Failed to create ProviderManager: {e}"))?;
+    )
+    .map_err(|e| format!("Failed to create ProviderManager: {e}"))?;
 
     // BUG-102: Get provider dynamically based on the parent session's provider type.
     // Each provider returns a different generic Agent<T>, so we use a macro to
     // build and run the agent for each provider type.
     match provider_name {
         "claude" => {
-            let provider = manager.get_claude()
+            let provider = manager
+                .get_claude()
                 .map_err(|e| format!("Failed to get Claude provider: {e}"))?;
             let request_config = request_config_for_provider(
                 provider_name,
@@ -542,55 +555,88 @@ async fn build_and_run_agent(
                 provider.is_oauth_mode(),
             )
             .map_err(|e| format!("Failed to build Claude DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
+            build_and_run!(
+                provider,
+                request_config,
+                session_id,
+                query,
+                max_depth,
+                provider_name,
+                can_recurse,
+                graph_available
+            )
         }
         "openai" => {
-            let provider = manager.get_openai(session_id)
+            let provider = manager
+                .get_openai(session_id)
                 .map_err(|e| format!("Failed to get OpenAI provider: {e}"))?;
-            let request_config = request_config_for_provider(
+            let request_config =
+                request_config_for_provider(provider_name, provider.model(), system_prompt, false)
+                    .map_err(|e| format!("Failed to build OpenAI DeepSearch config: {e}"))?;
+            build_and_run!(
+                provider,
+                request_config,
+                session_id,
+                query,
+                max_depth,
                 provider_name,
-                provider.model(),
-                system_prompt,
-                false,
+                can_recurse,
+                graph_available
             )
-            .map_err(|e| format!("Failed to build OpenAI DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "gemini" => {
-            let provider = manager.get_gemini()
+            let provider = manager
+                .get_gemini()
                 .map_err(|e| format!("Failed to get Gemini provider: {e}"))?;
-            let request_config = request_config_for_provider(
+            let request_config =
+                request_config_for_provider(provider_name, provider.model(), system_prompt, false)
+                    .map_err(|e| format!("Failed to build Gemini DeepSearch config: {e}"))?;
+            build_and_run!(
+                provider,
+                request_config,
+                session_id,
+                query,
+                max_depth,
                 provider_name,
-                provider.model(),
-                system_prompt,
-                false,
+                can_recurse,
+                graph_available
             )
-            .map_err(|e| format!("Failed to build Gemini DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "codex" => {
-            let provider = manager.get_codex()
+            let provider = manager
+                .get_codex()
                 .map_err(|e| format!("Failed to get Codex provider: {e}"))?;
-            let request_config = request_config_for_provider(
+            let request_config =
+                request_config_for_provider(provider_name, provider.model(), system_prompt, false)
+                    .map_err(|e| format!("Failed to build Codex DeepSearch config: {e}"))?;
+            build_and_run!(
+                provider,
+                request_config,
+                session_id,
+                query,
+                max_depth,
                 provider_name,
-                provider.model(),
-                system_prompt,
-                false,
+                can_recurse,
+                graph_available
             )
-            .map_err(|e| format!("Failed to build Codex DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "zai" => {
-            let provider = manager.get_zai()
+            let provider = manager
+                .get_zai()
                 .map_err(|e| format!("Failed to get Z.AI provider: {e}"))?;
-            let request_config = request_config_for_provider(
+            let request_config =
+                request_config_for_provider(provider_name, provider.model(), system_prompt, false)
+                    .map_err(|e| format!("Failed to build Z.AI DeepSearch config: {e}"))?;
+            build_and_run!(
+                provider,
+                request_config,
+                session_id,
+                query,
+                max_depth,
                 provider_name,
-                provider.model(),
-                system_prompt,
-                false,
+                can_recurse,
+                graph_available
             )
-            .map_err(|e| format!("Failed to build Z.AI DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "github-copilot" | "copilot" => {
             // PROV-057 Layer 3 — DeepSearch sub-agent dispatch for GitHub
@@ -609,26 +655,23 @@ async fn build_and_run_agent(
             //
             // Scenario: DeepSearch sub-agents can use github-copilot as their provider
             // Feature: spec/features/github-copilot-end-to-end-integration.feature
-            let provider = manager.get_github_copilot()
+            let provider = manager
+                .get_github_copilot()
                 .map_err(|e| format!("Failed to get GitHub Copilot provider: {e}"))?;
-            let _request_config = request_config_for_provider(
-                provider_name,
-                provider.model(),
-                system_prompt,
-                false,
-            )
-            .map_err(|e| format!("Failed to build GitHub Copilot DeepSearch config: {e}"))?;
+            let _request_config =
+                request_config_for_provider(provider_name, provider.model(), system_prompt, false)
+                    .map_err(|e| {
+                        format!("Failed to build GitHub Copilot DeepSearch config: {e}")
+                    })?;
             Err(
                 "github-copilot DeepSearch agent builder pending: CopilotProvider::client accessor not yet implemented (PROV-057 Layer 2 in progress)"
                     .to_string(),
             )
         }
-        _ => {
-            Err(format!(
-                "Unsupported provider for DeepSearch sub-agent: {provider_name}. \
+        _ => Err(format!(
+            "Unsupported provider for DeepSearch sub-agent: {provider_name}. \
                  Supported: claude, openai, gemini, codex, zai, github-copilot"
-            ))
-        }
+        )),
     }
 }
 

@@ -8,7 +8,12 @@ fn test_open_page_with_pause_shows_visible_browser() -> anyhow::Result<()> {
         pause: true,
     };
 
-    let WebSearchAction::OpenPage { url, headless, pause } = &action else {
+    let WebSearchAction::OpenPage {
+        url,
+        headless,
+        pause,
+    } = &action
+    else {
         anyhow::bail!("Expected OpenPage action");
     };
 

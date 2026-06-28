@@ -70,11 +70,7 @@ pub fn spawn_stdout_reader(
                     let as_str = String::from_utf8_lossy(&line_buf);
                     match &mode {
                         StdoutStreamMode::ToolProgress => {
-                            crate::tool_progress::emit_tool_progress(
-                                session_id,
-                                &as_str,
-                                false,
-                            );
+                            crate::tool_progress::emit_tool_progress(session_id, &as_str, false);
                         }
                         StdoutStreamMode::Callback(cb) => {
                             cb(&as_str);
@@ -134,12 +130,7 @@ pub fn spawn_readers(
     stream_stderr_to_ui: bool,
     session_id: Uuid,
 ) -> (tokio::task::JoinHandle<()>, tokio::task::JoinHandle<()>) {
-    let stdout_task = spawn_stdout_reader(
-        stdout,
-        buffers.stdout_handle(),
-        stdout_mode,
-        session_id,
-    );
+    let stdout_task = spawn_stdout_reader(stdout, buffers.stdout_handle(), stdout_mode, session_id);
     let stderr_task = spawn_stderr_reader(
         stderr,
         buffers.stderr_handle(),

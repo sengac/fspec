@@ -41,11 +41,11 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use codelet_cli::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
+use codelet_cli::interactive::output::{StreamEvent, StreamOutput};
 use codelet_cli::interactive::{
     begin_compaction_recovery, classify_compaction_branch, compaction_retry_prompt,
     CompactionBranch, CompactionRecoveryPolicy,
 };
-use codelet_cli::interactive::output::{StreamEvent, StreamOutput};
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_cli::session::Session;
 use codelet_core::{CompactionHook, StreamingTokenDisplay, TokenState};
@@ -62,14 +62,9 @@ use rig::OneOrMany;
 /// Load the `stream_loop.rs` source once per test module so structural
 /// assertions can pin the production contract.
 fn stream_loop_source() -> String {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/interactive/stream_loop.rs");
-    std::fs::read_to_string(&path).unwrap_or_else(|e| {
-        panic!(
-            "stream_loop.rs must be readable at {}: {e}",
-            path.display()
-        )
-    })
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/interactive/stream_loop.rs");
+    std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("stream_loop.rs must be readable at {}: {e}", path.display()))
 }
 
 /// Recording StreamOutput that captures every emitted event for assertion.
@@ -552,16 +547,14 @@ async fn post_loop_safety_net_runs_recovery_when_loop_exits_via_break_with_flag_
     // entire post-loop compaction check in `#[cfg(debug_assertions)]`, so
     // release builds have no safety net.
     let post_loop_marker = "CMPCT-032: Production-mode post-loop safety net";
-    let post_loop_idx = src
-        .find(post_loop_marker)
-        .expect(
-            "stream_loop.rs must have a production-mode post-loop safety net \
+    let post_loop_idx = src.find(post_loop_marker).expect(
+        "stream_loop.rs must have a production-mode post-loop safety net \
              marked with 'CMPCT-032: Production-mode post-loop safety net'. \
              The buggy commit had a `#[cfg(debug_assertions)]`-gated \
              `CMPCT-027: The post-loop handle_compaction_retry call` block \
              that only emitted a debug! log. The fix must replace it with a \
              production-mode safety net that actually invokes recovery.",
-        );
+    );
     // Take the window from the post-loop marker through the end of the file.
     let post_loop_window = &src[post_loop_idx..];
 
@@ -689,7 +682,8 @@ fn user_interrupt_takes_priority_over_compaction_recovery() {
 
     assert!(
         post_loop_window.contains("!is_interrupted.load(Acquire)")
-            || post_loop_window.contains("!is_interrupted.load(std::sync::atomic::Ordering::Acquire)"),
+            || post_loop_window
+                .contains("!is_interrupted.load(std::sync::atomic::Ordering::Acquire)"),
         "REGRESSION (CMPCT-032): post-loop safety net must guard on \
          `!is_interrupted.load(Acquire)` so user interrupts take priority over \
          compaction recovery. Running recovery on an interrupted session would \
@@ -749,7 +743,8 @@ fn gemini_session_triggers_compaction_at_80_percent_of_context_window() {
     assert!(
         cancel_sig.is_cancelled(),
         "Hook must cancel when total_tokens ({}) > threshold ({})",
-        800_500, threshold
+        800_500,
+        threshold
     );
 
     // @step And token_state.compaction_needed becomes true
@@ -781,12 +776,8 @@ fn claude_session_honours_user_threshold_override() {
     let user_override = CompactionThresholdConfig::Tokens(150_000);
 
     // @step And resolve_compaction_threshold returns the override value
-    let threshold = resolve_compaction_threshold(
-        context_window,
-        max_output,
-        model_id,
-        Some(&user_override),
-    );
+    let threshold =
+        resolve_compaction_threshold(context_window, max_output, model_id, Some(&user_override));
     assert_eq!(
         threshold, 150_000,
         "User override must take priority over Claude base formula (CTX-007)"
@@ -794,12 +785,8 @@ fn claude_session_honours_user_threshold_override() {
 
     // Without override, Claude uses the base formula (200k - 8k = 191,808),
     // proving the override actually changed behaviour.
-    let default_threshold = resolve_compaction_threshold(
-        context_window,
-        max_output,
-        model_id,
-        None,
-    );
+    let default_threshold =
+        resolve_compaction_threshold(context_window, max_output, model_id, None);
     assert_eq!(
         default_threshold, 191_808,
         "Claude default must be base formula (200k - min(8k, 32k) = 191,808)"

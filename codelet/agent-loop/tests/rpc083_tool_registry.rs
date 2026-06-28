@@ -36,8 +36,7 @@ fn agent_loop_src(file: &str) -> PathBuf {
 
 fn read_source(file: &str) -> String {
     let path = agent_loop_src(file);
-    fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
+    fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))
 }
 
 /// Extract the body of the `run_with_provider!` macro_rules! macro from
@@ -147,7 +146,6 @@ fn find_pos(haystack: &str, needle: &str) -> Option<usize> {
     haystack.find(needle)
 }
 
-
 // ===========================================================================
 // Scenario: run_with_provider! macro body contains the five canonical
 //           tool-registry calls in order
@@ -163,16 +161,11 @@ fn run_with_provider_macro_contains_five_canonical_calls_in_order() {
 
     // @step Then the body contains `codelet_tools::gather_mcp_tool_wrappers($session.id)`
     let gather_pos = find_pos(body, "codelet_tools::gather_mcp_tool_wrappers($session.id)")
-        .expect(
-            "macro body must call `codelet_tools::gather_mcp_tool_wrappers($session.id)`",
-        );
+        .expect("macro body must call `codelet_tools::gather_mcp_tool_wrappers($session.id)`");
 
     // @step And the body contains `provider.create_rig_agent($session.id, role_preamble.as_deref(), $thinking.clone())`
-    let create_pos = find_pos(
-        body,
-        "provider.create_rig_agent(",
-    )
-    .expect("macro body must invoke `provider.create_rig_agent(`");
+    let create_pos = find_pos(body, "provider.create_rig_agent(")
+        .expect("macro body must invoke `provider.create_rig_agent(`");
     assert!(
         body[create_pos..].contains("$session.id"),
         "create_rig_agent first arg must be `$session.id`; body=\n{body}"
@@ -201,11 +194,8 @@ fn run_with_provider_macro_contains_five_canonical_calls_in_order() {
     );
 
     // @step And the body contains `codelet_tools::set_mcp_tool_server_handle($session.id, agent.tool_server_handle.clone())`
-    let set_handle_pos = find_pos(
-        body,
-        "codelet_tools::set_mcp_tool_server_handle(",
-    )
-    .expect("macro body must call `codelet_tools::set_mcp_tool_server_handle(`");
+    let set_handle_pos = find_pos(body, "codelet_tools::set_mcp_tool_server_handle(")
+        .expect("macro body must call `codelet_tools::set_mcp_tool_server_handle(`");
     assert!(
         body[set_handle_pos..].contains("$session.id"),
         "set_mcp_tool_server_handle first arg must be `$session.id`"
@@ -240,7 +230,6 @@ fn run_with_provider_macro_contains_five_canonical_calls_in_order() {
         "set_mcp_tool_server_handle must precede with_default_depth"
     );
 }
-
 
 // ===========================================================================
 // Scenario: OpenAI inlined arm in agent_loop.rs mirrors the macro body
@@ -299,12 +288,23 @@ fn openai_inlined_arm_contains_five_canonical_calls() {
         );
 
     // Pin ordering of all five canonical calls.
-    assert!(gather_pos < create_pos, "gather must precede create_rig_agent");
-    assert!(create_pos < add_tool_pos, "create_rig_agent must precede add_tool");
-    assert!(add_tool_pos < set_handle_pos, "add_tool must precede set_handle");
-    assert!(set_handle_pos < with_depth_pos, "set_handle must precede with_default_depth");
+    assert!(
+        gather_pos < create_pos,
+        "gather must precede create_rig_agent"
+    );
+    assert!(
+        create_pos < add_tool_pos,
+        "create_rig_agent must precede add_tool"
+    );
+    assert!(
+        add_tool_pos < set_handle_pos,
+        "add_tool must precede set_handle"
+    );
+    assert!(
+        set_handle_pos < with_depth_pos,
+        "set_handle must precede with_default_depth"
+    );
 }
-
 
 // ===========================================================================
 // Scenario: Custom-provider fallthrough arm wraps
@@ -364,14 +364,19 @@ fn custom_provider_fallthrough_arm_contains_four_follow_up_calls() {
         create_pos < gather_pos,
         "CustomProvider::create_rig_agent must precede gather_mcp_tool_wrappers in custom arm"
     );
-    assert!(gather_pos < add_tool_pos, "gather must precede add_tool in custom arm");
-    assert!(add_tool_pos < set_handle_pos, "add_tool must precede set_handle in custom arm");
+    assert!(
+        gather_pos < add_tool_pos,
+        "gather must precede add_tool in custom arm"
+    );
+    assert!(
+        add_tool_pos < set_handle_pos,
+        "add_tool must precede set_handle in custom arm"
+    );
     assert!(
         set_handle_pos < with_depth_pos,
         "set_handle must precede with_default_depth in custom arm"
     );
 }
-
 
 // ===========================================================================
 // Scenario: Every provider's create_rig_agent accepts the
@@ -456,7 +461,6 @@ fn every_provider_create_rig_agent_has_uniform_signature() {
     }
 }
 
-
 // ===========================================================================
 // Scenario: RigAgent::with_default_depth accepts any rig Agent built by
 //           create_rig_agent
@@ -483,9 +487,10 @@ fn rig_agent_with_default_depth_accepts_provider_built_agents() {
     // `create_rig_agent` returns exactly such an `Agent<M>` (verified by
     // the prior scenario's closure witnesses), so the contract holds for
     // every dispatched provider in turn.
-    let _witness: fn(Agent<rig::providers::openai::CompletionModel>) -> codelet_core::RigAgent<rig::providers::openai::CompletionModel> = typecheck;
+    let _witness: fn(
+        Agent<rig::providers::openai::CompletionModel>,
+    ) -> codelet_core::RigAgent<rig::providers::openai::CompletionModel> = typecheck;
 }
-
 
 // ===========================================================================
 // Scenario: gather_mcp_tool_wrappers and set_mcp_tool_server_handle have

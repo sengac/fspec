@@ -139,7 +139,10 @@ fn updating_problem_impact_with_invalid_enum_fails_fast_and_leaves_file_unchange
 
     // @step And spec/foundation.json on disk is byte-equal to its pre-call contents
     let post = fs::read(tmp.path().join("spec/foundation.json")).unwrap();
-    assert_eq!(pre, post, "foundation.json must NOT change on validation failure");
+    assert_eq!(
+        pre, post,
+        "foundation.json must NOT change on validation failure"
+    );
 }
 
 #[test]
