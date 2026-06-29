@@ -616,35 +616,16 @@ async fn key_shift_up_loads_most_recent_history_entry_into_input() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Tab — turn-selection mode (placeholder, ignored)
+// Tab — turn-selection mode (LANDED in RPC-381)
 // ─────────────────────────────────────────────────────────────────────────
-
-/// TS-REF: src/tui/views/AgentView.tsx (Tab → turn-selection-mode)
-/// DEEP-REF: (none — Rust AgentView has no Tab handler today)
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-#[ignore = "Tab turn-selection mode pending future RPC card — placeholder behaviour-parity assertion documented but not yet wired in the Rust AgentView"]
-async fn key_tab_enters_turn_selection_mode() {
-    // @step Given a fresh AppTestHarness with focused session s-1 seeded with 3 scrollback chunks
-    let mut h = AppTestHarness::new();
-    h.seed_chunks(&seed_sid(), 3);
-
-    // @step When I press Tab
-    h.press_key(AppTestHarness::key(KeyCode::Tab));
-
-    // @step Then the AgentView is in turn-selection mode
-    // @step And a turn-selection cursor is visible
-    //
-    // Placeholder — the Rust AgentView has no `turn_selection_mode`
-    // store field today. When the future RPC card lands the assertion
-    // becomes:
-    //
-    //     assert!(h.app.agent_view_store().turn_selection_mode());
-    //     assert!(h.app.agent_view_store().turn_selection_cursor().is_some());
-    //
-    // Until then this test is `#[ignore]`d so the matrix entry stays
-    // breadcrumb-tracked.
-    panic!("placeholder test — remove #[ignore] when Tab turn-selection lands");
-}
+//
+// Tab turn-selection mode is now implemented on `AgentView.turn_select_mode`
+// (the flag lives on the view, NOT on a store API). The full behaviour-parity
+// coverage — Tab entering SELECT mode, Up/Down turn navigation, Enter/Esc
+// exit, and the [SELECT] header badge — lives in
+// `tests/turn_select_mode_rpc381.rs`. The earlier `#[ignore]`d placeholder
+// (which referenced a non-existent `agent_view_store().turn_selection_mode()`)
+// was removed once RPC-381 landed.
 
 // ─────────────────────────────────────────────────────────────────────────
 // Ctrl+R — opens SearchHistoryView with no backend call

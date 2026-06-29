@@ -22,6 +22,7 @@ pub mod chrome_paint;
 pub mod confirm_dialog;
 pub mod dispatch;
 pub mod dispatch_mode_views;
+pub mod dispatch_select;
 pub mod file_search_popup;
 pub mod file_search_popup_rows;
 pub mod footer;
@@ -46,6 +47,7 @@ pub mod slash_commands;
 pub mod spinner;
 pub mod text_wrap;
 pub mod transition_driver;
+pub mod turn_modal;
 
 pub use confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 pub use file_search_popup::{FilePopupOutcome, FileSearchPopup};
@@ -59,10 +61,11 @@ pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
 pub use rendered_chunk::{ChunkKind, ChunkSource, RenderedChunk};
 pub use resume_session_view::{ResumeSessionView, ResumeSessionViewOutcome};
 pub use role_banner::RoleBanner;
-pub use scrollback::{ScrollState, ScrollbackList};
+pub use scrollback::{ScrollState, ScrollbackList, SelectionMode, TurnDir};
 pub use search_history_view::{SearchHistoryView, SearchHistoryViewOutcome};
 pub use slash_command_popup::{PopupOutcome, SlashCommandPopup};
 pub use slash_commands::{SlashCommand, SlashCommandAction, SLASH_COMMANDS};
+pub use turn_modal::TurnContentModal;
 
 /// RPC-013 placeholder footer hints.
 pub const PLACEHOLDER_FOOTER_HINTS: &str = "Enter=send  Ctrl+C=interrupt  ESC=back";
@@ -91,6 +94,17 @@ pub struct AgentView {
     pub file_popup: Option<FileSearchPopup>,
     pub resume_view: Option<ResumeSessionView>,
     pub search_view: Option<SearchHistoryView>,
+    /// RPC-381: turn-selection (SELECT) mode toggle. Mirrors the TS
+    /// component-level `isTurnSelectMode`; when true, ↑/↓ navigate
+    /// turn-to-turn, Enter is suppressed, Esc exits the mode locally,
+    /// and the SessionHeader paints the `[SELECT]` badge.
+    pub turn_select_mode: bool,
+    /// RPC-382: turn content modal — `Some(seq)` ⇒ open for that turn.
+    pub turn_modal_seq: Option<u64>,
+    /// RPC-383: turn content modal scroll offset (first visible visual
+    /// row of the modal body). Reset to 0 on open; mutated (clamped) by
+    /// the `Action::TurnModal*` reducers; read via `with_offset`.
+    pub turn_modal_offset: usize,
     pub(crate) last_render_area: Option<Rect>,
     pub(crate) last_scrollback_area: Option<Rect>,
     pub(crate) scrollback_wheel: WheelVelocity,
@@ -238,7 +252,14 @@ impl AgentView {
 
         let (session_status, is_loading) = self.tick_animation(store, sid.as_ref());
         self.last_is_compacting = matches!(session_status, Some(SessionStatus::Compacting));
-        chrome_paint::paint_header_and_role(&areas, buf, store, sid.as_ref(), is_loading);
+        chrome_paint::paint_header_and_role(
+            &areas,
+            buf,
+            store,
+            sid.as_ref(),
+            is_loading,
+            self.turn_select_mode,
+        );
 
         self.last_scrollback_viewport = areas.scrollback.height;
         self.last_scrollback_area = Some(areas.scrollback);
@@ -269,5 +290,8 @@ impl AgentView {
         } else if let Some(p) = self.file_popup.as_ref() {
             p.render(area, buf);
         }
+        // RPC-382/383: turn content modal overlays the normal chrome.
+        let off = self.turn_modal_offset;
+        turn_modal::render_turn_modal(area, buf, self.turn_modal_seq, off, store);
     }
 }

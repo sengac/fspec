@@ -14,10 +14,13 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
 use ratatui::widgets::{Block, BorderType, Borders, Clear, Widget};
 
+use super::dialog_theme_rows::{paint_left_aligned, paint_text};
+
 /// One canonical accent color per dialog kind. The accent drives the
 /// border, the inner title, and the selection-row inverse highlight.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Accent {
+    #[default]
     Cyan,
     Yellow,
     Red,
@@ -47,6 +50,7 @@ pub struct DialogRow {
 
 /// Per-render dialog input. `min_width` is the minimum body width in
 /// columns (before border + padding). Pass 0 for "shrink-to-content".
+#[derive(Default)]
 pub struct FspecDialog<'a> {
     pub accent: Accent,
     pub title: &'a str,
@@ -129,6 +133,15 @@ pub fn dialog_rect(area: Rect, dialog: &FspecDialog<'_>) -> Rect {
 ///   6. one blank gap row + dim centered footer.
 pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
     let rect = dialog_rect(area, dialog);
+    render_dialog_at(rect, buf, dialog);
+}
+
+/// RPC-383: paint `dialog` at an explicit, caller-computed `rect`
+/// instead of the shrink-to-content [`dialog_rect`]. Used by the
+/// full-screen `TurnContentModal` (with [`fixed_dialog_rect`]); the body
+/// painting / title / footer logic is shared so there is exactly one
+/// implementation of the visual contract.
+pub fn render_dialog_at(rect: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
     if rect.width < 2 || rect.height < 2 {
         return;
     }
@@ -182,18 +195,44 @@ pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
         bg_style,
     );
 
-    // Body rows start at body.y + 2 (title + blank gap)
+    // Body rows. The DEFAULT (spacious) layout has a blank gap row
+    // between the title and the first content row (title at body.y, gap
+    // at body.y+1, content from body.y+2) plus a gap before the footer —
+    // unchanged for every shrink-to-content dialog. Only when the body is
+    // too short for the spacious layout to show even ONE content row does
+    // it fall back to a COMPACT layout (drop the gaps; then, if still too
+    // short, drop the footer). This keeps the full-screen
+    // `TurnContentModal` showing content on small terminals without
+    // regressing the canonical dialog spacing.
     let inverse = Style::default()
         .bg(accent)
         .fg(Color::Black)
         .add_modifier(Modifier::BOLD);
-    let footer_h = footer_line_count(dialog.footer);
+    let raw_footer_h = footer_line_count(dialog.footer);
+    // Spacious needs: title(1) + gap(1) + >=1 content + (gap(1)+footer if
+    // any). Use it whenever it yields at least one visible content row.
+    let spacious_min = 3 + if raw_footer_h > 0 {
+        raw_footer_h + 1
+    } else {
+        0
+    };
+    let spacious = body.height >= spacious_min;
+    // Compact drops the gaps; drop the footer too if it still won't fit.
+    let footer_h = if raw_footer_h == 0 {
+        0
+    } else if spacious || body.height >= 2 + raw_footer_h {
+        raw_footer_h
+    } else {
+        0
+    };
+    let content_start = body.y + if spacious { 2 } else { 1 };
     let body_row_end = if footer_h > 0 {
-        body.y + body.height.saturating_sub(footer_h + 1)
+        let reserved = if spacious { footer_h + 1 } else { footer_h };
+        body.y + body.height.saturating_sub(reserved)
     } else {
         body.y + body.height
     };
-    for (y, row) in (body.y + 2..).zip(dialog.rows.iter()) {
+    for (y, row) in (content_start..).zip(dialog.rows.iter()) {
         if y >= body_row_end {
             break;
         }
@@ -256,37 +295,5 @@ pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
                 dim_style,
             );
         }
-    }
-}
-
-/// Paint a left-aligned sequence of spans into `rect`. Cells before
-/// the spans are left as already painted (caller is responsible for
-/// background). Cells after are painted with `tail_style` as spaces.
-fn paint_left_aligned(buf: &mut Buffer, rect: Rect, spans: &[Span<'_>], tail_style: Style) {
-    let mut x = rect.x;
-    for span in spans {
-        for ch in span.content.chars() {
-            if x >= rect.x + rect.width {
-                return;
-            }
-            buf[(x, rect.y)].set_style(span.style);
-            buf[(x, rect.y)].set_symbol(&ch.to_string());
-            x += 1;
-        }
-    }
-    while x < rect.x + rect.width {
-        buf[(x, rect.y)].set_style(tail_style);
-        buf[(x, rect.y)].set_symbol(" ");
-        x += 1;
-    }
-}
-
-/// Paint a plain text string at (x, y) with the given style, capped at
-/// `max_width` cells.
-fn paint_text(buf: &mut Buffer, x: u16, y: u16, max_width: u16, text: &str, style: Style) {
-    let end = x + max_width;
-    for (cx, ch) in (x..end).zip(text.chars()) {
-        buf[(cx, y)].set_style(style);
-        buf[(cx, y)].set_symbol(&ch.to_string());
     }
 }

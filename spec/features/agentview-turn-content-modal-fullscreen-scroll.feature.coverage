@@ -1,0 +1,379 @@
+{
+  "scenarios": [
+    {
+      "name": "The modal fills the screen regardless of short content",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "262-313",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A scrollbar appears when content overflows the viewport",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "314-356",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Down scrolls the body without moving the selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "357-404",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing End scrolls to the bottom of the content",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "405-432",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The mouse wheel scrolls the modal body",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "529-557",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The modal shows the scroll/close footer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "558-578",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Re-opening the modal resets the scroll offset to the top",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "579-616",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing PageDown advances the body by a page",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "433-458",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing PageUp moves the body back by a page",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "459-491",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Home jumps to the top of the content",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs",
+          "lines": "492-528",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/turn_content_modal_fullscreen_scroll_parity_rpc383.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+      "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+      "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+      "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs"
+    ],
+    "totalLinesCovered": 555
+  }
+}

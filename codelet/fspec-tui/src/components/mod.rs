@@ -1058,6 +1058,24 @@ pub enum Action {
         /// `None` on success, `Some(message)` on failure.
         error: Option<String>,
     },
+
+    /// RPC-381 SELECT mode (Tab toggle + ↑/↓ turn nav).
+    ToggleTurnSelectMode,
+    TurnNavUp,
+    TurnNavDown,
+    /// RPC-382: open/close the turn content modal (Enter on the selected
+    /// turn opens it; Esc closes it). Parameterless — the App reducer
+    /// resolves the turn `seq` from the focused scrollback's selection.
+    OpenTurnModal,
+    CloseTurnModal,
+    /// RPC-383: scroll the OPEN turn content modal's body (offset clamped;
+    /// selection untouched). Up/Down 1 row, Page* a page, Home/End ends.
+    TurnModalScrollUp,
+    TurnModalScrollDown,
+    TurnModalPageUp,
+    TurnModalPageDown,
+    TurnModalHome,
+    TurnModalEnd,
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

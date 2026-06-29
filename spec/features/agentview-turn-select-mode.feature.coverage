@@ -1,0 +1,442 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing Tab enters turn-selection mode and selects the last turn",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "142-179",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Tab again exits turn-selection mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "185-210",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up arrow selects the previous turn",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "216-254",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_arrows.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up arrow on the first turn clamps the selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "260-284",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Down arrow on the last turn clamps the selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "290-309",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter does not submit input while in turn-selection mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "315-343",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "lines": [
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc exits turn-selection mode without triggering the exit cascade",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "350-382",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch_select.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selection stays pinned to the same turn when new content streams in",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "389-421",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab is consumed by an open slash-command popup",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs",
+          "lines": "427-463",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/turn_select_mode_rpc381.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/dispatch.rs",
+      "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+      "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+      "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+      "codelet/fspec-tui/src/views/agent/scrollback_arrows.rs",
+      "codelet/fspec-tui/src/views/agent/dispatch_select.rs"
+    ],
+    "totalLinesCovered": 537
+  }
+}

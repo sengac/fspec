@@ -99,6 +99,11 @@ pub(super) fn paint_chunk_rows(
     visited
 }
 
+#[path = "scrollback_arrows.rs"]
+mod arrows;
+
+pub(in crate::views::agent) use arrows::paint_selection_arrow_bars;
+
 #[cfg(test)]
 mod tests {
     use super::*;

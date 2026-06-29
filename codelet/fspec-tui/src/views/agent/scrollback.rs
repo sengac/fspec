@@ -7,8 +7,8 @@
 //!
 //! Tracks a [`ScrollState`] (offset + `stick_to_bottom`) and paints
 //! only the slice of chunks that fit in the visible viewport. RPC-078:
-//! `offset` is expressed in VISUAL ROWS (wrapped Lines) so a multi-row
-//! chunk cannot push the most-recent line out of view.
+//! `offset` is in VISUAL ROWS (wrapped Lines). RPC-381: the SELECT-mode
+//! selection logic lives in the sibling `scrollback_select` module.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -17,6 +17,8 @@ use ratatui::widgets::Widget;
 use super::scrollback_paint::paint_scrollbar;
 use super::RenderedChunk;
 use crate::store::agent_view::chunk_wrap::wrap_source;
+
+pub use select::{SelectionMode, TurnDir};
 
 /// Scroll state for `ScrollbackList`. `stick_to_bottom = true` is the
 /// chat-log default; PageUp drops out, End/PageDown re-enters.
@@ -50,6 +52,10 @@ pub struct ScrollbackList {
     /// RPC-094: cached layout rect from `render_count_visited`.
     /// `mouse_dispatch::handle_scrollback_mouse` hit-tests this.
     last_rect: Option<Rect>,
+    // RPC-381 SELECT-mode state; logic lives in `scrollback_select`.
+    selection_mode: SelectionMode,
+    selected: Option<usize>,
+    selected_seq: Option<u64>,
 }
 
 impl ScrollbackList {
@@ -64,18 +70,15 @@ impl ScrollbackList {
         self.rewrap_after_mutation(idx);
     }
 
-    /// Insert at `idx`, shifting subsequent chunks right. Mirrors
-    /// [`Vec::insert`]. **RPC-093**: used by
-    /// `chunk_processor::append_thinking` to splice a new thinking
-    /// block BEFORE an in-flight assistant chunk.
+    /// Insert at `idx`, shifting subsequent chunks right (RPC-093:
+    /// `chunk_processor::append_thinking` splices a thinking block).
     pub fn insert(&mut self, idx: usize, chunk: RenderedChunk) {
         self.chunks.insert(idx, chunk);
         self.rewrap_after_mutation(idx);
     }
 
     /// Shared post-mutation hook for `push` / `insert`: rewrap the
-    /// touched chunk if viewport width is known, then re-anchor
-    /// stick-to-bottom.
+    /// touched chunk if width is known, re-anchor stick, re-pin select.
     fn rewrap_after_mutation(&mut self, idx: usize) {
         if self.viewport_width != 0 {
             if let Some(c) = self.chunks.get_mut(idx) {
@@ -85,6 +88,7 @@ impl ScrollbackList {
         if self.scroll_state.stick_to_bottom {
             self.recompute_offset_for_stick();
         }
+        self.resolve_selection_from_seq(); // RPC-381: re-pin selection.
     }
 
     pub fn chunk_count(&self) -> usize {
@@ -96,8 +100,7 @@ impl ScrollbackList {
         &self.chunks
     }
 
-    /// Mutable access to the underlying chunks vector. **RPC-091**:
-    /// in-place accumulation of streaming Text + ToolResult attach.
+    /// Mutable access to the underlying chunks vector. **RPC-091**.
     pub fn chunks_mut(&mut self) -> &mut Vec<RenderedChunk> {
         &mut self.chunks
     }
@@ -117,6 +120,7 @@ impl ScrollbackList {
             self.recompute_offset_for_stick();
         }
     }
+
     /// Visible window from `offset` outward, capped by `viewport_lines`.
     pub fn visible_window(&self, viewport_lines: u16) -> Vec<RenderedChunk> {
         let off = self.scroll_state.offset;
@@ -200,15 +204,12 @@ impl ScrollbackList {
         self.scroll_state = ScrollState::default();
         self.viewport_height = 0;
         self.viewport_width = 0;
+        self.clear_selection(); // RPC-381.
     }
 
-    /// Render the visible window into `area`. Returns the number of
-    /// chunks visited during layout. RPC-078: scrollback fills from
-    /// the TOP; stick-to-bottom only kicks in when content overflows.
-    /// RPC-094 + TS parity (`src/tui/components/VirtualList.tsx`
-    /// lines 17-88): when content overflows we reserve a 2-col gutter
-    /// (1-col gap + 1-col scrollbar), rewrap content narrower, then
-    /// paint the scrollbar via [`paint_scrollbar`].
+    /// Render the visible window into `area`. Returns chunks visited.
+    /// RPC-078: fills from the TOP; stick-to-bottom kicks in on overflow.
+    /// RPC-094: on overflow reserve a 2-col gutter, rewrap, paint scrollbar.
     pub fn render_count_visited(&mut self, area: Rect, buf: &mut Buffer) -> usize {
         // Pass 1: wrap at full width to detect overflow.
         self.set_viewport_width(area.width);
@@ -242,6 +243,8 @@ impl ScrollbackList {
             content_width,
             skip_rows,
         );
+        // RPC-381: in Item mode, frame the selected turn with ▼/▲ bars.
+        self.paint_selection_overlay(area, buf, content_width, skip_rows);
         if reserve_gutter && total_rows > vh {
             paint_scrollbar(area, buf, vh, total_rows, self.scroll_state);
         }
@@ -288,6 +291,8 @@ impl Widget for &mut ScrollbackList {
     }
 }
 
+#[path = "scrollback_select.rs"]
+mod select;
 #[cfg(test)]
 #[path = "scrollback_tests.rs"]
 mod tests;

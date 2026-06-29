@@ -232,6 +232,14 @@ impl App {
             }
             Action::ScrollbackLineUp => self.scroll_focused(-1),
             Action::ScrollbackLineDown => self.scroll_focused(1),
+            // RPC-381: turn-selection (SELECT) mode reducers.
+            Action::ToggleTurnSelectMode => self.handle_toggle_turn_select_mode(),
+            Action::TurnNavUp => self.handle_turn_nav(crate::views::agent::TurnDir::Up),
+            Action::TurnNavDown => self.handle_turn_nav(crate::views::agent::TurnDir::Down),
+            Action::OpenTurnModal => self.handle_open_turn_modal(),
+            Action::CloseTurnModal => self.handle_close_turn_modal(),
+            // RPC-383: one arm routes all six TurnModal* scroll variants.
+            a if App::is_turn_modal_scroll(a) => self.dispatch_turn_modal_scroll(a),
             Action::ScrollbackHome => {
                 if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
                     ctx.scrollback.jump_to_top();
@@ -240,15 +248,12 @@ impl App {
             Action::ScrollbackMouseWheelUp(velocity) => self.scroll_focused(-(*velocity as i64)),
             Action::ScrollbackMouseWheelDown(velocity) => self.scroll_focused(*velocity as i64),
             Action::HistoryPrev => {
-                // RPC-025: load or step into per-session history recall.
                 self.handle_history_prev();
             }
             Action::HistoryNext => {
-                // RPC-025: walk forward / exit recall and restore draft.
                 self.handle_history_next();
             }
             Action::HistorySnapshotLoaded(session, snapshot) => {
-                // RPC-025: apply a freshly loaded history snapshot.
                 self.handle_history_snapshot_loaded(session.clone(), snapshot.clone());
             }
             // RPC-026 /resume + /search wiring → helpers in app/dispatch_resume_search_views.rs.

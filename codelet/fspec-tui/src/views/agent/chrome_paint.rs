@@ -22,12 +22,17 @@ pub struct ChromeAreas {
 }
 
 /// Build + paint the SessionHeader + optional RoleBanner.
+///
+/// RPC-381: `is_select_mode` is threaded in from
+/// `AgentView.turn_select_mode` so the `[SELECT]` badge reflects the
+/// real toggle (no presentation flag added to the store).
 pub fn paint_header_and_role(
     areas: &ChromeAreas,
     buf: &mut Buffer,
     store: &AgentViewStore,
     sid: Option<&codelet_rpc_types::SessionId>,
     is_loading: bool,
+    is_select_mode: bool,
 ) {
     let model = sid.and_then(|s| store.model_info_for(s));
     let thinking = sid
@@ -57,7 +62,7 @@ pub fn paint_header_and_role(
         work_unit_status,
         is_isolated: false,
         is_debug_enabled,
-        is_select_mode: false,
+        is_select_mode,
         // RPC-099 — source these from the per-session TokenState so
         // Shift+Left/Right cycling displays the FOCUSED session's
         // accumulated metrics instead of hardcoded defaults. Mirrors

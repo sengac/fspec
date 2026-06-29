@@ -70,6 +70,27 @@ impl AgentView {
         None
     }
 
+    /// RPC-383: while the turn content modal is open, route mouse-wheel
+    /// ScrollUp/ScrollDown into the modal's scroll offset (mirroring the
+    /// scrollback wheel handling) via `Action::TurnModalScroll{Up,Down}`.
+    /// Returns `None` (so the event bubbles to the scrollback) when the
+    /// modal is closed or the event is not a vertical wheel. The modal is
+    /// a full-screen overlay, so no rect hit-test is needed.
+    pub(super) fn handle_turn_modal_mouse(&mut self, ev: MouseEvent) -> Option<EventResult> {
+        self.turn_modal_seq?;
+        match ev.kind {
+            MouseEventKind::ScrollUp => {
+                self.emit(Action::TurnModalScrollUp);
+                Some(EventResult::consumed())
+            }
+            MouseEventKind::ScrollDown => {
+                self.emit(Action::TurnModalScrollDown);
+                Some(EventResult::consumed())
+            }
+            _ => None,
+        }
+    }
+
     /// RPC-094: route mouse wheel events that fall inside the
     /// scrollback rect into the focused SessionContext via the new
     /// `Action::ScrollbackMouseWheel{Up,Down}(velocity)` variants.

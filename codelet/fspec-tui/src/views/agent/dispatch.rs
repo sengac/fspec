@@ -144,14 +144,18 @@ impl AgentView {
     }
 
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
-        // RPC-028: route mouse events to popups / mode views before
-        // anything else. Implementation lives in `mouse_dispatch.rs`
-        // so this file stays under the 300-LoC source-shape budget.
+        // RPC-028: route mouse events to popups / mode views first
+        // (impl in `mouse_dispatch.rs` to keep this file under 300 LoC).
         if let Event::Mouse(m) = event {
             if let Some(result) = self.handle_mode_view_mouse(*m) {
                 return result;
             }
             if let Some(result) = self.handle_popup_mouse(*m) {
+                return result;
+            }
+            // RPC-383: while the turn modal is open, the wheel scrolls
+            // the modal body (NOT the scrollback).
+            if let Some(result) = self.handle_turn_modal_mouse(*m) {
                 return result;
             }
             // RPC-094: wheel events that hit the scrollback rect.
@@ -178,6 +182,20 @@ impl AgentView {
             }
             if let Some(result) = self.handle_popup_key(key) {
                 return result;
+            }
+            // RPC-381: Tab toggles turn-selection (SELECT) mode. Placed
+            // AFTER mode-view + popup routing so an open popup consumes
+            // Tab first. The view-local flag flips here; the App reducer
+            // mirrors it onto the per-session scrollback selection.
+            if key.code == KeyCode::Tab && key.modifiers.is_empty() {
+                return self.handle_tab_toggle();
+            }
+            // RPC-381: in SELECT mode, ↑/↓ navigate turn-to-turn (not
+            // line scroll), Enter is suppressed, Esc exits locally.
+            if self.turn_select_mode {
+                if let Some(result) = self.handle_turn_select_key(key) {
+                    return result;
+                }
             }
             if key.code == KeyCode::Esc && key.modifiers.is_empty() {
                 // RPC-051 Esc-cascade: levels 1-3 consumed above;

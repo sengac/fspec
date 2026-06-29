@@ -611,10 +611,17 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     + a multi-line group comment)
     //   - RPC-366 added ≤25 lines (DeleteCheckpoint / DeleteAllCheckpoints /
     //     DeleteCheckpointResult delete variants + a multi-line group comment)
-    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 = 1100
+    //   - RPC-381 added ≤5 lines (ToggleTurnSelectMode / TurnNavUp /
+    //     TurnNavDown turn-select variants + a 1-line doc comment)
+    //   - RPC-382 added ≤5 lines (OpenTurnModal / CloseTurnModal turn-modal
+    //     variants + a 3-line doc comment)
+    //   - RPC-383 added ≤8 lines (TurnModalScrollUp / TurnModalScrollDown /
+    //     TurnModalPageUp / TurnModalPageDown / TurnModalHome / TurnModalEnd
+    //     modal-scroll variants + a 2-line doc comment)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 + 5 + 5 + 8 = 1118
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1100,
-        "components/mod.rs has {n_components} lines — RPC-094+RPC-098+RPC-337+RPC-347+PROV-109+PROV-113+PROV-116+RPC-356+RPC-364+RPC-365+RPC-366 budget is +298 over baseline 802"
+        n_components <= 1118,
+        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381 + RPC-382 + RPC-383 budget is +316 over baseline 802"
     );
 }
