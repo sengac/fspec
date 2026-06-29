@@ -864,6 +864,22 @@ impl SharedFspecService {
     pub fn session_manager(&self) -> Option<&Arc<dyn SessionManagerHandle>> {
         self.session_manager.as_ref()
     }
+
+    /// RPC-385: subscribe to session-created events. When a session manager is
+    /// attached, delegates to its per-process broadcast so the embedded TUI
+    /// sees every newly-created session (including spawned subordinates).
+    /// Without a session manager, returns a degenerate receiver whose sender
+    /// has been dropped (subscribers immediately observe `RecvError::Closed`).
+    pub fn session_created_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionInfo> {
+        match &self.session_manager {
+            Some(handle) => handle.session_created_rx(),
+            None => {
+                let (tx, rx) = broadcast::channel(1);
+                drop(tx);
+                rx
+            }
+        }
+    }
 }
 
 /// Cloneable adapter that lets tarpc serve `FspecService` against a single

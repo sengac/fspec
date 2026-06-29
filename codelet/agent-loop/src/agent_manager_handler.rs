@@ -22,17 +22,22 @@ use codelet_sessions::session_manager::SessionManager;
 
 /// Create an AgentManagerHandler closure for a specific session.
 ///
-/// The handler has access to the SessionManager singleton for session
+/// The handler operates on the owning `SessionManager` for session
 /// creation, destruction, ChainOfCommand queries, status reporting,
 /// and inter-session messaging.
 ///
 /// # Arguments
+/// * `owning_manager` - RPC-386: the daemon-owned `SessionManager` that created
+///   the spawner session. When `Some(M)`, the handler operates on `M`; when
+///   `None`, it falls back to `SessionManager::instance()` (NAPI parity), so the
+///   legacy singleton path is preserved byte-for-byte.
 /// * `project` - Project path for spawned sessions
 /// * `spawner_model_string` - Full model string in registry format (e.g. "anthropic/claude-opus-4-6")
 ///   from ProviderManager::selected_model_string(). Passed directly to create_session_with_id.
 /// * `spawner_context_window` - MODEL-005: Per-model context window from spawner session
 /// * `spawner_max_output_tokens` - MODEL-005: Per-model max output tokens from spawner session
 pub fn create_handler(
+    owning_manager: Option<Arc<SessionManager>>,
     project: String,
     spawner_model_string: Option<String>,
     spawner_context_window: Option<usize>,
@@ -40,7 +45,13 @@ pub fn create_handler(
 ) -> AgentManagerHandler {
     Arc::new(
         move |action: AgentManagerAction, calling_session_id: Uuid| {
-            let session_manager = SessionManager::instance();
+            // RPC-386: resolve the owning manager (Some → bound manager, None →
+            // global singleton). The reference is held for the duration of this
+            // single synchronous dispatch.
+            let session_manager: &SessionManager = match owning_manager.as_ref() {
+                Some(manager) => manager.as_ref(),
+                None => SessionManager::instance(),
+            };
 
             match action {
                 AgentManagerAction::Spawn { role } => handle_spawn(
@@ -821,16 +832,29 @@ fn format_turns_label(turns: &[usize]) -> String {
 /// The async handler subscribes to each target session's `supervisor_broadcast`
 /// channel and uses `tokio::select!` to wait for `SessionStateChange(Idle)`
 /// events — zero polling, notification-based waiting.
-pub fn create_async_handler() -> AgentManagerAsyncHandler {
+///
+/// RPC-386: `owning_manager` injects the daemon-owned `SessionManager` that
+/// created the spawner. When `Some(M)`, `await_idle`/`profile` resolve sessions
+/// on `M`; when `None`, they fall back to `SessionManager::instance()`.
+pub fn create_async_handler(
+    owning_manager: Option<Arc<SessionManager>>,
+) -> AgentManagerAsyncHandler {
     Arc::new(
         move |action: AgentManagerAction, calling_session_id: Uuid| {
+            let owning_manager = owning_manager.clone();
             Box::pin(async move {
                 match action {
                     AgentManagerAction::AwaitIdle {
                         session_id,
                         timeout,
                     } => {
-                        handle_await_idle(calling_session_id, session_id.into_vec(), timeout).await
+                        handle_await_idle(
+                            owning_manager,
+                            calling_session_id,
+                            session_id.into_vec(),
+                            timeout,
+                        )
+                        .await
                     }
                     AgentManagerAction::Profile {
                         duration_secs,
@@ -898,6 +922,7 @@ async fn handle_profile(
 /// an optional deadline for timeout, and the calling session's `interrupt_notify`
 /// for cancellation. If `timeout` is `None`, waits indefinitely.
 async fn handle_await_idle(
+    owning_manager: Option<Arc<SessionManager>>,
     calling_session_id: Uuid,
     session_ids: Vec<String>,
     timeout: Option<u64>,
@@ -906,7 +931,12 @@ async fn handle_await_idle(
     use std::time::Duration;
     use tokio::time::Instant;
 
-    let session_manager = SessionManager::instance();
+    // RPC-386: resolve the owning manager (Some → bound manager, None → global
+    // singleton). The Arc is held in `owning_manager` for the whole await.
+    let session_manager: &SessionManager = match owning_manager.as_ref() {
+        Some(manager) => manager.as_ref(),
+        None => SessionManager::instance(),
+    };
 
     // Phase 1: Validate all sessions exist and check which are already idle
     let mut results: Vec<AwaitSessionResult> = Vec::new();

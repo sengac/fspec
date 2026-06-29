@@ -268,6 +268,15 @@ impl FspecBackend for WebSocketFspecBackend {
         }
     }
 
+    /// RPC-385: the remote/WebSocket transport has no session-created push
+    /// frame yet, so return a never-firing (closed) receiver. Full remote
+    /// parity — surfacing spawned-subordinate visibility over the wire — is an
+    /// explicit OUT-OF-SCOPE RPC follow-up; spawned subordinates are only
+    /// visible on the embedded transport for now.
+    fn session_created_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionInfo> {
+        empty_broadcast_rx()
+    }
+
     async fn health(&self) -> Result<HealthInfo> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;

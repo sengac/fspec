@@ -864,4 +864,18 @@ pub trait FspecBackend: Send + Sync {
         drop(tx);
         rx
     }
+
+    /// RPC-385: subscribe to session-created events so the embedded TUI can
+    /// append a tab for sessions it did not itself initiate (spawned
+    /// subordinates via AgentManager). The payload is the new session's
+    /// [`SessionInfo`] (its `.id` carries the SessionId). The embedded
+    /// backend forwards the SessionManager's `session_created_tx().subscribe()`;
+    /// the default returns a closed receiver so transports that do not yet
+    /// wire the channel compile unchanged and gracefully degrade. Full remote
+    /// (tarpc/websocket) parity is an explicit OUT-OF-SCOPE RPC follow-up.
+    fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
+        let (tx, rx) = broadcast::channel(1);
+        drop(tx);
+        rx
+    }
 }

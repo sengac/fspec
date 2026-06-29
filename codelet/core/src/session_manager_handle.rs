@@ -612,6 +612,18 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         tx
     }
 
+    /// RPC-385: subscribe to session-created events. Each event carries the
+    /// new session's [`SessionInfo`] (its `.id` is the SessionId). The
+    /// default returns a degenerate receiver whose sender has been dropped
+    /// (subscribers observe `RecvError::Closed`) so handles that do not push
+    /// session-created events degrade gracefully. The real `SessionManager`
+    /// handle overrides this to forward `session_created_tx().subscribe()`.
+    fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
+        let (tx, rx) = broadcast::channel(DEFAULT_STATUS_CHANGES_CAPACITY);
+        drop(tx);
+        rx
+    }
+
     /// RPC-037: destroy a session, removing it from `list_sessions`.
     fn destroy_session(&self, session_id: &SessionId) -> Result<(), String> {
         let _ = session_id;

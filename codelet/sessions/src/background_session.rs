@@ -430,6 +430,14 @@ pub struct BackgroundSession {
 
     /// HOOK-013: Compiled lifecycle hooks (None = no agent hooks configured → zero overhead)
     pub lifecycle_hooks: Option<Arc<CompiledLifecycleHooks>>,
+
+    /// RPC-386: Weak back-reference to the `SessionManager` that created this
+    /// session. Stamped by `create_session_with_id` /
+    /// `create_isolated_session_with_id` from the manager's own self-weak.
+    /// Defaults to an empty `Weak` (e.g. the global singleton never stamps a
+    /// self-weak), in which case `owning_manager()` returns `None` and callers
+    /// fall back to `SessionManager::instance()` — preserving the NAPI path.
+    owning_manager: RwLock<std::sync::Weak<crate::session_manager::SessionManager>>,
 }
 
 impl BackgroundSession {
@@ -520,6 +528,9 @@ impl BackgroundSession {
             schedule_name: RwLock::new(None),
             // HOOK-013: Lifecycle hooks (compiled once at session creation)
             lifecycle_hooks,
+            // RPC-386: no owning manager by default (empty Weak). Stamped by
+            // the SessionManager creation paths when a self-weak is present.
+            owning_manager: RwLock::new(std::sync::Weak::new()),
             // BUG-134: Per-session debug capture manager
             debug_capture: {
                 let mgr = DebugCaptureManager::new().unwrap_or_else(|e| {
@@ -531,6 +542,32 @@ impl BackgroundSession {
                 Arc::new(PoisonRecoveryMutex::new(mgr))
             },
         }
+    }
+
+    /// RPC-386: Stamp the owning-manager weak back-reference.
+    ///
+    /// Called by `SessionManager::create_session_with_id` /
+    /// `create_isolated_session_with_id` immediately after the session is built
+    /// (before the agent loop is spawned) so the AgentManager handler the loop
+    /// registers binds to the creating manager rather than the global singleton.
+    pub fn set_owning_manager(
+        &self,
+        manager: std::sync::Weak<crate::session_manager::SessionManager>,
+    ) {
+        if let Ok(mut guard) = self.owning_manager.write() {
+            *guard = manager;
+        }
+    }
+
+    /// RPC-386: Resolve the owning `SessionManager`, if one was stamped and is
+    /// still alive. Returns `None` for sessions created by the global singleton
+    /// (which never stamps a self-weak), so callers fall back to
+    /// `SessionManager::instance()`.
+    pub fn owning_manager(&self) -> Option<Arc<crate::session_manager::SessionManager>> {
+        self.owning_manager
+            .read()
+            .ok()
+            .and_then(|guard| guard.upgrade())
     }
 
     /// GIT-019: Returns the effective working directory for this session

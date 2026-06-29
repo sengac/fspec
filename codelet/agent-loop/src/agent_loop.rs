@@ -667,11 +667,17 @@ pub async fn agent_loop(
             // session so subordinate agents inherit per-model limits.
             // BUG-132: Extracted into register_agent_manager_handler() so it can be
             // called again after model changes.
-            register_agent_manager_handler(session.id, &inner_session, session.project.clone());
+            register_agent_manager_handler(
+                session.id,
+                &inner_session,
+                session.project.clone(),
+                session.owning_manager(),
+            );
 
             // AMGR-015: Register async handler for await_idle action
             {
-                let async_handler = crate::agent_manager_handler::create_async_handler();
+                let async_handler =
+                    crate::agent_manager_handler::create_async_handler(session.owning_manager());
                 codelet_tools::set_agent_manager_async_handler(session.id, Some(async_handler));
             }
 

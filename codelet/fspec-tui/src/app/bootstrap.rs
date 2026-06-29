@@ -215,5 +215,31 @@ impl App {
             }
         });
         self.subscriber_tasks.push(status_task);
+
+        // (e) RPC-385: session_created_rx → Action::SessionCreated(id).
+        //     Push-driven notification for sessions the TUI did NOT itself
+        //     initiate (spawned subordinates via AgentManager). Each event
+        //     carries the new session's SessionInfo; we fold its id into
+        //     Action::SessionCreated, whose handler is idempotent so an id
+        //     that already has a tab is a no-op. Mirrors the work_units_rx
+        //     lag-recovery shape: Lagged → debug + continue, Closed → break.
+        let tx = self.action_tx.clone();
+        let mut rx = self.backend.session_created_rx();
+        let session_created_task = tokio::spawn(async move {
+            loop {
+                match rx.recv().await {
+                    Ok(info) => {
+                        let _ = tx.send(Action::SessionCreated(codelet_rpc_types::SessionId::new(
+                            info.id,
+                        )));
+                    }
+                    Err(broadcast::error::RecvError::Lagged(n)) => {
+                        debug!("session_created subscriber lagged by {n}; continuing");
+                    }
+                    Err(broadcast::error::RecvError::Closed) => break,
+                }
+            }
+        });
+        self.subscriber_tasks.push(session_created_task);
     }
 }

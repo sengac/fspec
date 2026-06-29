@@ -943,4 +943,21 @@ impl FspecBackend for EmbeddedFspecBackend {
             }
         }
     }
+
+    /// RPC-385: subscribe to the session manager's session-created broadcast.
+    /// Read directly from the `SharedFspecService`'s attached
+    /// `SessionManagerHandle` so the embedded TUI is notified of every newly
+    /// created session — including spawned subordinates that bypass the
+    /// TUI-initiated creation paths — bypassing tarpc entirely (the same
+    /// zero-cost path `status_changes_rx` uses).
+    fn session_created_rx(&self) -> broadcast::Receiver<codelet_rpc_types::SessionInfo> {
+        match self.service.session_manager() {
+            Some(handle) => handle.session_created_rx(),
+            None => {
+                let (tx, rx) = broadcast::channel(1);
+                drop(tx);
+                rx
+            }
+        }
+    }
 }

@@ -1,0 +1,56 @@
+{
+  "scenarios": [
+    {
+      "name": "Creating a session broadcasts a session-created event",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/spawned_subordinate_session_registration_parity_rpc385.rs",
+          "lines": "66-90",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/spawned_subordinate_session_registration_parity_rpc385.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 49
+  }
+}

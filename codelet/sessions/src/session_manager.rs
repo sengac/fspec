@@ -46,7 +46,7 @@
 #![allow(clippy::redundant_closure_for_method_calls)]
 #![allow(dead_code)]
 
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, OnceLock, RwLock, Weak};
 
 use arc_swap::ArcSwap;
 use indexmap::IndexMap;
@@ -160,8 +160,21 @@ pub struct SessionManager {
     logs_tx: broadcast::Sender<LogRecord>,
     /// RPC-040: per-manager broadcast of session status changes.
     status_changes_tx: broadcast::Sender<(SessionId, SessionStatus)>,
+    /// RPC-385: per-manager broadcast of session-created events. Fires
+    /// whenever any session is created (TUI-initiated, scheduled, or a
+    /// spawned subordinate via AgentManager) so the embedded Rust TUI can
+    /// append a tab for sessions it did not itself initiate. The payload is
+    /// the new session's [`SessionInfo`] (its `.id` carries the SessionId).
+    session_created_tx: broadcast::Sender<SessionInfo>,
     /// RPC-040: NAPI-side subsystems injected via the hooks trait.
     hooks: ArcSwap<Arc<dyn SessionManagerHooks>>,
+    /// RPC-386: Weak self-reference, populated via [`SessionManager::init_self_weak`]
+    /// / [`SessionManager::new_arc`] once the manager is wrapped in an `Arc`. Used
+    /// to stamp each created session's owning-manager back-reference so the
+    /// AgentManager handler binds to this manager instead of the global
+    /// singleton. The singleton (`instance()`) never sets this, so its sessions
+    /// carry an empty back-reference and fall back to `instance()`.
+    self_weak: OnceLock<Weak<SessionManager>>,
 }
 
 impl Default for SessionManager {
@@ -176,6 +189,13 @@ impl SessionManager {
         let (chunks_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
         let (logs_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
         let (status_changes_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
+        // RPC-385: session-creation events use the supervisor broadcast
+        // capacity because subscribers must tolerate bursts (e.g. the
+        // lag-recovery path can flood many events at once). A lagged receiver
+        // recovers via RecvError::Lagged rather than losing correctness: the
+        // TUI's append is idempotent, so a dropped/replayed event never
+        // produces a duplicate or missing tab.
+        let (session_created_tx, _) = broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY);
         let default_hooks: Arc<dyn SessionManagerHooks> = Arc::new(NoopSessionManagerHooks);
         Self {
             sessions: RwLock::new(IndexMap::new()),
@@ -189,8 +209,27 @@ impl SessionManager {
             chunks_tx,
             logs_tx,
             status_changes_tx,
+            session_created_tx,
             hooks: ArcSwap::from_pointee(default_hooks),
+            self_weak: OnceLock::new(),
         }
+    }
+
+    /// RPC-386: Construct a `SessionManager` already wrapped in an `Arc` with its
+    /// self-weak populated, so created sessions can carry an owning-manager
+    /// back-reference. Prefer this (or [`SessionManager::init_self_weak`]) over
+    /// `Arc::new(SessionManager::new())` for daemon-owned managers.
+    pub fn new_arc() -> Arc<Self> {
+        let manager = Arc::new(Self::new());
+        manager.init_self_weak();
+        manager
+    }
+
+    /// RPC-386: Populate the self-weak back-reference. Idempotent — only the
+    /// first call wins (subsequent calls are ignored). Safe to call on an
+    /// already-`Arc`-wrapped manager built via `Arc::new(SessionManager::new())`.
+    pub fn init_self_weak(self: &Arc<Self>) {
+        let _ = self.self_weak.set(Arc::downgrade(self));
     }
 
     /// Replace the [`SessionManagerHooks`] implementation. Called by
@@ -217,6 +256,13 @@ impl SessionManager {
     /// Accessor for the status-changes broadcast sender.
     pub fn status_changes_tx(&self) -> &broadcast::Sender<(SessionId, SessionStatus)> {
         &self.status_changes_tx
+    }
+
+    /// RPC-385: accessor for the session-created broadcast sender. The
+    /// embedded TUI transport subscribes to this so spawned subordinate
+    /// sessions (created outside the TUI) become visible as tabs.
+    pub fn session_created_tx(&self) -> &broadcast::Sender<SessionInfo> {
+        &self.session_created_tx
     }
 
     /// SCHED-004: Set the default model for scheduled session spawning.
@@ -291,7 +337,6 @@ impl SessionManager {
 
     /// Get singleton instance
     pub fn instance() -> &'static SessionManager {
-        use std::sync::OnceLock;
         static INSTANCE: OnceLock<SessionManager> = OnceLock::new();
         INSTANCE.get_or_init(SessionManager::new)
     }
@@ -567,6 +612,12 @@ impl SessionManager {
             self.status_changes_tx.clone(),
         ));
 
+        // RPC-386: stamp the owning-manager back-reference BEFORE spawning the
+        // agent loop, so the AgentManager handler the loop registers binds to
+        // THIS manager. An empty self-weak (the singleton) leaves the session's
+        // back-reference empty, preserving the `instance()` fallback.
+        session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default());
+
         // TUI-002: re-apply the persisted default thinking level to every new
         // session so the first idle SessionHeader render shows `[T:<level>]`
         // (parity with the TS `useDefaultThinkingLevel` hook). A missing/invalid
@@ -642,10 +693,20 @@ impl SessionManager {
         self.hooks()
             .spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
 
+        // RPC-385: capture the SessionInfo BEFORE the insert moves `session`
+        // into the map, so the session-created broadcast can carry it.
+        let created_info = session.get_info();
+
         self.sessions
             .write()
             .expect("sessions lock poisoned")
             .insert(uuid, session);
+
+        // RPC-385: fire the session-created broadcast next to the existing
+        // metadata-update fan-out so the embedded TUI can append a tab for
+        // sessions it did not itself initiate (spawned subordinates). A send
+        // error (no subscribers) is benign and ignored.
+        let _ = self.session_created_tx.send(created_info);
 
         self.set_default_model(model);
         self.set_active_session(uuid);
@@ -852,6 +913,11 @@ impl SessionManager {
             self.status_changes_tx.clone(),
         ));
 
+        // RPC-386: stamp the owning-manager back-reference for isolated sessions
+        // too (before spawn_agent_loop), so spawned isolated subordinates bind
+        // their AgentManager handler to THIS manager rather than the singleton.
+        session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default());
+
         // TUI-002: re-apply the persisted default thinking level to isolated
         // sessions too, so spawned/isolated sessions match the same idle badge
         // behaviour as the primary session-creation path.
@@ -924,12 +990,19 @@ impl SessionManager {
         self.hooks()
             .spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
 
+        // RPC-385: capture the SessionInfo BEFORE the insert moves `session`.
+        let created_info = session.get_info();
+
         self.sessions
             .write()
             .expect("sessions lock poisoned")
             .insert(uuid, session);
 
         self.set_active_session(uuid);
+
+        // RPC-385: fire the session-created broadcast for isolated/worktree
+        // sessions too so spawned isolated subordinates are equally visible.
+        let _ = self.session_created_tx.send(created_info);
 
         // RPC-041: Emit IsolationStateChange directly on the manager-owned
         // chunks_tx (the previous `hooks().emit_isolation_state_change(...)`

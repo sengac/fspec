@@ -1,0 +1,301 @@
+{
+  "scenarios": [
+    {
+      "name": "Spawn creates the subordinate in the owning manager, not the global singleton",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "127-175",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Spawn fires the owning manager's session_created broadcast",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "180-219",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                709
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A subordinate spawned into a manager with real hooks runs its agent loop",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "237-324",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                693,
+                694
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Spawner can list, get status, and close the subordinate on the owning manager",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "330-413",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI path falls back to the global singleton when no owning manager is set",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "424-488",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "await_idle resolves the subordinate on the owning manager",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "501-561",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "lines": [
+                839,
+                840,
+                841,
+                842,
+                843,
+                844,
+                845,
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866,
+                867,
+                868,
+                869,
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_role and message resolve the subordinate on the owning manager",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc386_owning_session_manager.rs",
+          "lines": "566-717",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_manager_handler.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/agent-loop/tests/rpc386_owning_session_manager.rs"
+    ],
+    "implFiles": [
+      "codelet/agent-loop/src/agent_manager_handler.rs",
+      "codelet/sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 711
+  }
+}

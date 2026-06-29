@@ -203,15 +203,23 @@ impl SessionContext {
 }
 
 /// Parse a `StreamChunk::IncomingMessage` body of the form
-/// `"[SUPERVISOR: <role> | Session: <sid>]\n<body>"`.
+/// `"[SUPERVISOR: <role> | Session: <sid>]<sep><body>"` where `<sep>` is a
+/// space or a newline. The backend (`format_incoming_message`) uses a space;
+/// replay/legacy paths may use `\n`. Mirrors the TS reference
+/// (`src/tui/utils/chunkProcessor.ts`), which consumes the header up to `]`
+/// and an optional newline, so the body survives either separator.
 fn parse_supervisor_envelope(raw: &str) -> (String, String) {
-    let mut parts = raw.splitn(2, '\n');
-    let header = parts.next().unwrap_or("");
-    let body = parts.next().unwrap_or("").to_string();
-    if !header.starts_with('[') {
+    if !raw.starts_with('[') {
         return ("supervisor".to_string(), raw.to_string());
     }
-    let inner = header.trim_start_matches('[').trim_end_matches(']');
+    let Some(close_idx) = raw.find(']') else {
+        return ("supervisor".to_string(), raw.to_string());
+    };
+    let header = &raw[..close_idx]; // excludes ']'
+    let body = raw[close_idx + 1..]
+        .trim_start_matches(['\n', ' '])
+        .to_string();
+    let inner = header.trim_start_matches('[');
     let role_segment = inner.split('|').next().unwrap_or(inner).trim();
     let role = role_segment
         .strip_prefix("SUPERVISOR:")

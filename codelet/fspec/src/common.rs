@@ -109,7 +109,12 @@ pub fn build_service(workspace: &Path) -> Result<Arc<SharedFspecService>> {
     // behaviour that `FspecSessionManagerHooks::cleanup_session_loops`
     // used to provide is preserved 1:1 by
     // `FspecAgentHooks::cleanup_session_loops`.
-    let manager = SessionManager::new();
+    let manager = Arc::new(SessionManager::new());
+    // RPC-386: populate the self-weak so sessions this daemon manager creates
+    // carry an owning-manager back-reference. This makes the AgentManager
+    // handler bind to THIS manager (not the global singleton), so spawned
+    // subordinates land in the daemon-owned manager.
+    manager.init_self_weak();
     manager.set_hooks(Arc::new(FspecAgentHooks::new()));
 
     // RPC-066: under the `test-stub-provider` feature, install the
@@ -126,7 +131,7 @@ pub fn build_service(workspace: &Path) -> Result<Arc<SharedFspecService>> {
         manager.set_default_model("stub/canned");
     }
 
-    let session_manager: Arc<dyn SessionManagerHandle> = Arc::new(manager);
+    let session_manager: Arc<dyn SessionManagerHandle> = manager;
 
     Ok(Arc::new(
         SharedFspecService::with_session_manager(watcher, session_manager)

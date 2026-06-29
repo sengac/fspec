@@ -165,6 +165,10 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         SessionManager::status_changes_tx(self).clone()
     }
 
+    fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
+        SessionManager::session_created_tx(self).subscribe()
+    }
+
     fn get_session_tokens(&self, session_id: &SessionId) -> SessionTokens {
         let uuid = uuid_from(session_id);
         self.get_session(&uuid.to_string())

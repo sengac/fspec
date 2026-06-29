@@ -120,6 +120,26 @@ impl App {
     /// wire its chrome/attachments. Extracted from `App::dispatch` so the
     /// orchestrator file stays under the 300-LoC ceiling (PROV-101 FIX 3).
     pub(crate) fn handle_session_created(&mut self, session: codelet_rpc_types::SessionId) {
+        // RPC-385: idempotent guard. The session-created broadcast folds into
+        // Action::SessionCreated for EVERY creation path, so a tab the TUI
+        // already opened (create-session dialog, isolated dialog, enter-work-
+        // unit) must not be re-appended, must not steal focus, and must not
+        // re-fire the chrome/supervisor/pending-input fetches. A spawned
+        // subordinate (no pre-existing tab) falls through and is wired once.
+        //
+        // This early return is the SIDE-EFFECT-SUPPRESSION optimization: it
+        // exists to avoid re-firing the chrome/supervisor/pending-input work
+        // below for an already-open tab. The authoritative store-level dedup
+        // invariant lives in `AgentViewStore::append_session`
+        // (store/agent_view.rs); append remains a no-op even if this guard is
+        // bypassed.
+        if self
+            .agent_view_store
+            .session_context_for(&session)
+            .is_some()
+        {
+            return;
+        }
         self.agent_view_store
             .append_session(crate::store::SessionContext::new(session.clone()));
         let _ = self.active_session_tx.send(Some(session.clone()));

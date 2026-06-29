@@ -79,6 +79,7 @@ pub fn register_agent_manager_handler(
     session_id: Uuid,
     inner_session: &codelet_cli::session::Session,
     project: String,
+    owning_manager: Option<std::sync::Arc<codelet_sessions::session_manager::SessionManager>>,
 ) {
     let full_model_string = inner_session.provider_manager().selected_model_string();
     let spawner_context_window = inner_session.provider_manager().raw_model_context_window();
@@ -86,6 +87,7 @@ pub fn register_agent_manager_handler(
         .provider_manager()
         .raw_model_max_output_tokens();
     let agent_manager_handler = crate::agent_manager_handler::create_handler(
+        owning_manager,
         project,
         full_model_string,
         spawner_context_window,

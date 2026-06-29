@@ -224,6 +224,13 @@ pub struct MockBackend {
     /// Tests use `push_status_change` to drive synthetic transitions
     /// without going through a real SessionManager.
     status_changes_tx: broadcast::Sender<(SessionId, SessionStatus)>,
+    /// RPC-385: push-driven session-created broadcast Sender. Tests use
+    /// `push_session_created` to drive synthetic session-creation events
+    /// (e.g. an AgentManager-spawned subordinate) without a real
+    /// SessionManager. The capacity is intentionally small (matching the
+    /// other broadcast channels) so the lag-recovery scenario can overflow
+    /// it and force `RecvError::Lagged`.
+    session_created_tx: broadcast::Sender<SessionInfo>,
     list_work_units_calls: AtomicUsize,
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,
@@ -662,6 +669,7 @@ impl Default for MockBackend {
         let (chunks_tx, _) = broadcast::channel(64);
         let (logs_tx, _) = broadcast::channel(64);
         let (status_changes_tx, _) = broadcast::channel(64);
+        let (session_created_tx, _) = broadcast::channel(64);
         Self {
             work_units: Mutex::new(Vec::new()),
             sessions: Mutex::new(Vec::new()),
@@ -669,6 +677,7 @@ impl Default for MockBackend {
             chunks_tx: Mutex::new(Some(chunks_tx)),
             logs_tx,
             status_changes_tx,
+            session_created_tx,
             list_work_units_calls: AtomicUsize::new(0),
             create_session_calls: AtomicUsize::new(0),
             send_input_calls: AtomicUsize::new(0),
@@ -938,6 +947,25 @@ impl MockBackend {
     /// touching a real SessionManager.
     pub fn push_status_change(&self, id: SessionId, status: SessionStatus) {
         let _ = self.status_changes_tx.send((id, status));
+    }
+
+    /// RPC-385: push a session-created broadcast frame so the new
+    /// session-created subscriber task can be exercised (idempotent tab
+    /// append + lag recovery) without a real SessionManager spawn.
+    pub fn push_session_created(&self, id: SessionId) {
+        let info = SessionInfo {
+            id: id.value,
+            name: String::new(),
+            status: "idle".to_string(),
+            project: String::new(),
+            message_count: 0,
+            provider_id: None,
+            model_id: None,
+            is_isolated: false,
+            worktree_path: None,
+            role: None,
+        };
+        let _ = self.session_created_tx.send(info);
     }
 
     /// RPC-045: per-call counter for `send_fspec_result`.
@@ -2300,6 +2328,10 @@ impl FspecBackend for MockBackend {
 
     fn status_changes_rx(&self) -> broadcast::Receiver<(SessionId, SessionStatus)> {
         self.status_changes_tx.subscribe()
+    }
+
+    fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
+        self.session_created_tx.subscribe()
     }
 
     async fn health(&self) -> Result<codelet_rpc_types::HealthInfo> {

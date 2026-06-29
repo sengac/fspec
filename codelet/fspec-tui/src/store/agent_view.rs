@@ -141,7 +141,22 @@ impl AgentViewStore {
     }
 
     /// Append a fresh SessionContext to `open_sessions` and focus it.
+    ///
+    /// RPC-385: idempotent — if a SessionContext with the same `id` is already
+    /// open, this is a no-op (no duplicate tab, no focus change). This makes
+    /// the session-created broadcast safe for ALL creation paths: a
+    /// user-initiated tab that already exists is left untouched, while a
+    /// spawned subordinate is appended exactly once.
+    ///
+    /// This guard is the AUTHORITATIVE store-level dedup invariant. The
+    /// matching guard in `App::handle_session_created`
+    /// (app/dispatch_create_session_dialog.rs) is a side-effect-suppression
+    /// optimization layered on top of this one; correctness does not depend
+    /// on it.
     pub fn append_session(&mut self, ctx: SessionContext) {
+        if self.open_sessions.iter().any(|c| c.id == ctx.id) {
+            return;
+        }
         self.open_sessions.push(ctx);
         self.current_session_index = self.open_sessions.len().saturating_sub(1);
     }

@@ -78,6 +78,10 @@ async fn app_bootstrap_calls_list_work_units_and_seeds_the_left_pane() {
 /// contract by adding a fourth subscriber for `status_changes_rx`. The
 /// scenario name and assertion below were updated to assert the new
 /// task count.
+///
+/// RPC-385 supersedes it again: a FIFTH subscriber (`session_created_rx`)
+/// makes spawned subordinate sessions visible as tabs, so the live count
+/// is now 5 (work_units + chunks + logs + status_changes + session_created).
 #[tokio::test]
 async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host_runtime() {
     // @step Given an App constructed against a MockBackend on a `#[tokio::test]` runtime
@@ -87,8 +91,9 @@ async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host
     // @step When the App's bootstrap runs
     app.bootstrap().await.expect("bootstrap");
     // @step Then exactly four subscriber tasks are alive on the current tokio Handle
-    //         (RPC-045: work_units_rx + chunks_rx + logs_rx + status_changes_rx)
-    assert_eq!(app.subscriber_task_count(), 4);
+    //         (RPC-045: work_units_rx + chunks_rx + logs_rx + status_changes_rx;
+    //          RPC-385 added a fifth: session_created_rx)
+    assert_eq!(app.subscriber_task_count(), 5);
     // RPC-012 lazy-session: prime the chunks filter with a session id
     // so the chunks subscriber forwards.
     app.dispatch(Action::SessionCreated(SessionId::new("s-mock-1")));
@@ -250,8 +255,9 @@ async fn subscriber_tasks_honour_recverror_lagged_by_logging_at_debug_and_contin
     // @step When the work_units subscriber task observes `RecvError::Lagged(n)`
     // @step Then the task does NOT panic
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-    // RPC-045 added a 4th subscriber (status_changes_rx) so the count is now 4.
-    assert_eq!(app.subscriber_task_count(), 4);
+    // RPC-045 added a 4th subscriber (status_changes_rx); RPC-385 added a
+    // 5th (session_created_rx) so the count is now 5.
+    assert_eq!(app.subscriber_task_count(), 5);
     // @step And the task subsequently re-fetches a snapshot via `backend.list_work_units()` and emits a fresh `Action::WorkUnitsLoaded`
     mock.seed_work_units(vec![wu("FRESH-001", "done")]);
     let action = wait_for_action(&mut app, |a| matches!(a, Action::WorkUnitsLoaded(_)))
