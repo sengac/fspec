@@ -129,6 +129,8 @@ flowchart LR
 | **Reliability** | More can go wrong | ✅ Simpler = fewer problems |
 | **Memory** | Multiple programs running | ✅ Single program |
 
+> **In short:** fewer moving parts means fspec is faster, more reliable, and easier to set up than the traditional middleman approach.
+
 ---
 
 ## Technical Details (For Developers)

@@ -113,6 +113,11 @@ impl ScrollbackList {
     pub fn full_text_for_seq(&self, seq: u64) -> Option<String> {
         let chunk = self.chunks().iter().find(|c| c.seq == seq)?;
         if let Some(src) = chunk.source.as_ref() {
+            // RPC-391: a diff card keeps the FULL (uncollapsed) diff in
+            // `full_text`; prefer it so the modal shows every line.
+            if let Some(full) = src.full_text.as_ref() {
+                return Some(full.clone());
+            }
             return Some(src.text.clone());
         }
         let joined = chunk

@@ -23,8 +23,10 @@
 
 #![allow(clippy::panic, clippy::unwrap_used, clippy::expect_used)]
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
+
+use tokio::sync::Mutex;
 
 use codelet_sessions::SessionManager;
 use uuid::Uuid;
@@ -37,7 +39,7 @@ const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
 /// Serialises tests that swap the process-global data directory so a parallel
 /// test cannot observe a `SessionManager::new()` loading another test's
 /// persisted `default-model.json`. Mirrors the PROV-118/119 precedent.
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
 /// Set dummy creds so `ProviderCredentials::detect()` passes offline.
 fn set_dummy_credentials() {
@@ -64,9 +66,7 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn creating_a_session_broadcasts_a_session_created_event() -> Result<(), String> {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let _guard = DATA_DIR_GUARD.lock().await;
 
     // @step Given a SessionManager with a subscriber on the session-created broadcast
     let (_data_dir, manager) = manager_with_seeded_cache()?;

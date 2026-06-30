@@ -1349,6 +1349,7 @@ dependencies = [
  "regex",
  "serde_json",
  "serial_test",
+ "similar",
  "tarpc",
  "tempfile",
  "thiserror 1.0.69",

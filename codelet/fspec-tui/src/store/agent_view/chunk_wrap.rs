@@ -14,16 +14,33 @@
 //!
 //! **RPC-093**: `ChunkKind::Thinking` renders a `[Thinking]`
 //! header line on top of the wrapped body for the same reason.
+//!
+//! **RPC-389**: `ChunkKind::ToolCall` bodies are collapsed/windowed at
+//! this render layer (NOT in `ChunkSource::text`, which stays full for
+//! the `TurnContentModal`). Settled cards keep the header + first 8 body
+//! lines + a `... +N lines (Enter to view full)` indicator; streaming
+//! cards keep the header + the last 10 body lines (tail window). Mirrors
+//! `AgentView.tsx::formatCollapsedOutput` (8) + `createStreamingWindow`
+//! (10), counting hard `\n`-delimited body lines pre-wrap.
 
-use ratatui::style::{Color, Style};
+use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 
+use super::diff_decode::{decode_diff_line_padded, is_decoded_diff_line};
 use crate::views::agent::text_wrap::wrap_to_width;
 use crate::views::agent::{ChunkKind, ChunkSource};
 
 /// Default viewport width used when a chunk is recorded before the
 /// scrollback widget has observed its first render area.
 pub const DEFAULT_WRAP_WIDTH: u16 = 80;
+
+/// **RPC-389**: body lines kept inline when a tool-call card is settled.
+/// Mirrors TS `COLLAPSED_LINES` (`AgentView.tsx:534`).
+const COLLAPSED_LINES: usize = 8;
+
+/// **RPC-389**: tail-window size while a tool-call card is streaming.
+/// Mirrors TS `STREAMING_WINDOW_SIZE` (`AgentView.tsx:533`).
+const STREAMING_WINDOW_SIZE: usize = 10;
 
 pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
     let style = Style::default().fg(source.color);
@@ -47,6 +64,14 @@ pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
     if matches!(source.kind, ChunkKind::Thinking) {
         out.push(Line::from(Span::styled("[Thinking]".to_string(), style)));
     }
+
+    // **RPC-389**: ToolCall bodies are collapsed/windowed here (the
+    // header line — first `\n`-segment — is always kept). Returns early
+    // with the fully rendered lines including the dimmed indicator.
+    if matches!(source.kind, ChunkKind::ToolCall { .. }) {
+        return wrap_tool_call(source, width, style, body_style, prefix);
+    }
+
     let hard_lines: Vec<&str> = source.text.split('\n').collect();
     for (i, hard) in hard_lines.iter().enumerate() {
         let mut wrapped = wrap_to_width(hard, width as usize);
@@ -68,4 +93,176 @@ pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
     // parity with TS `conversationUtils.ts:88-90` is deferred per
     // `agentview-chunk-rendering-parity.feature`.
     out
+}
+
+/// **RPC-389**: render a `ChunkKind::ToolCall` source with its body
+/// collapsed (settled) or tail-windowed (streaming).
+///
+/// `source.text` is `"ToolName(args)\n<body...>"` — the header is the
+/// first `\n`-segment, the body is everything after it. The collapse
+/// threshold counts hard `\n`-delimited BODY lines (pre-wrap) to match
+/// the TS `content.split('\n')` semantics; the retained lines are then
+/// width-wrapped exactly as the default path does.
+fn wrap_tool_call(
+    source: &ChunkSource,
+    width: u16,
+    style: Style,
+    body_style: Style,
+    prefix: &str,
+) -> Vec<Line<'static>> {
+    let (header, body) = match source.text.split_once('\n') {
+        Some((h, b)) => (h, Some(b)),
+        None => (source.text.as_str(), None),
+    };
+
+    let mut out: Vec<Line<'static>> = Vec::new();
+    // Header line — always kept, carries the `● ` prefix.
+    for (j, w) in wrap_header(header, width, prefix).into_iter().enumerate() {
+        let needs_prefix = j == 0 && !prefix.is_empty();
+        if needs_prefix {
+            out.push(Line::from(Span::styled(format!("{prefix}{w}"), style)));
+        } else {
+            out.push(Line::from(Span::styled(w, style)));
+        }
+    }
+
+    let Some(body) = body else {
+        return out;
+    };
+
+    // **RPC-391**: diff cards decode `[R]`/`[A]`/context markers into
+    // colored spans and BYPASS the RPC-389 8-line collapse (the diff is
+    // already self-collapsed at 25 by `format_diff_for_display`).
+    if matches!(source.kind, ChunkKind::ToolCall { is_diff: true, .. }) {
+        for hard in body.split('\n') {
+            for w in wrap_diff_line(hard, width) {
+                if is_decoded_diff_line(&w) {
+                    // **RPC-392**: pad the [R]/[A] bar to the viewport width
+                    // so the background fills the row edge-to-edge.
+                    out.push(Line::from(decode_diff_line_padded(&w, width as usize)));
+                } else {
+                    out.push(Line::from(Span::styled(w, body_style)));
+                }
+            }
+        }
+        return out;
+    }
+
+    let body_lines: Vec<&str> = body.split('\n').collect();
+    let (visible, indicator) = collapse_tool_body(&body_lines, source.is_streaming);
+
+    for hard in visible {
+        let mut wrapped = wrap_to_width(hard, width as usize);
+        if wrapped.is_empty() {
+            wrapped.push(String::new());
+        }
+        for w in wrapped {
+            out.push(Line::from(Span::styled(w, body_style)));
+        }
+    }
+
+    if let Some(text) = indicator {
+        // Indicator renders dimmed — match the existing DIM convention
+        // used elsewhere in the AgentView (e.g. popup hint rows).
+        let dim = Style::default().add_modifier(Modifier::DIM);
+        out.push(Line::from(Span::styled(text, dim)));
+    }
+
+    out
+}
+
+/// Wrap a tool-call header line, accounting for the `● ` prefix width on
+/// the first visual row.
+fn wrap_header(header: &str, width: u16, prefix: &str) -> Vec<String> {
+    let first_width = (width as usize).saturating_sub(prefix.chars().count());
+    let mut wrapped = wrap_to_width(header, first_width.max(1));
+    if wrapped.is_empty() {
+        wrapped.push(String::new());
+    }
+    wrapped
+}
+
+/// **RPC-391**: width-wrap a single diff body line. Diff lines carry their
+/// own line-number gutter and are short; wrapping keeps very wide lines
+/// from overflowing the viewport. Empty lines are preserved as one row.
+fn wrap_diff_line(line: &str, width: u16) -> Vec<String> {
+    let mut wrapped = wrap_to_width(line, width as usize);
+    if wrapped.is_empty() {
+        wrapped.push(String::new());
+    }
+    wrapped
+}
+
+/// **RPC-389**: choose the visible body lines + optional indicator text.
+///
+/// - Streaming: last `STREAMING_WINDOW_SIZE` lines, no indicator.
+/// - Settled: if `> COLLAPSED_LINES`, first `COLLAPSED_LINES` lines + a
+///   `... +N lines (Enter to view full)` indicator (N = hidden count);
+///   else all lines, no indicator.
+fn collapse_tool_body<'a>(
+    body_lines: &[&'a str],
+    is_streaming: bool,
+) -> (Vec<&'a str>, Option<String>) {
+    let total = body_lines.len();
+    if is_streaming {
+        if total > STREAMING_WINDOW_SIZE {
+            let start = total - STREAMING_WINDOW_SIZE;
+            return (body_lines[start..].to_vec(), None);
+        }
+        return (body_lines.to_vec(), None);
+    }
+    if total > COLLAPSED_LINES {
+        let remaining = total - COLLAPSED_LINES;
+        let indicator = format!("... +{remaining} lines (Enter to view full)");
+        return (body_lines[..COLLAPSED_LINES].to_vec(), Some(indicator));
+    }
+    (body_lines.to_vec(), None)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+    use super::*;
+
+    /// **RPC-389** boundary: a SETTLED body of exactly `COLLAPSED_LINES`
+    /// (8) lines is the largest body that stays fully inline — the
+    /// `8 > 8 == false` branch returns all lines with no indicator.
+    #[test]
+    fn settled_body_of_exactly_eight_lines_keeps_all_with_no_indicator() {
+        let body: Vec<&str> = vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"];
+        let (visible, indicator) = collapse_tool_body(&body, false);
+        assert_eq!(visible, body);
+        assert_eq!(visible.len(), 8);
+        assert!(indicator.is_none());
+    }
+
+    /// **RPC-389** boundary: a STREAMING body of exactly
+    /// `STREAMING_WINDOW_SIZE` (10) lines is the largest tail that stays
+    /// fully visible — the `10 > 10 == false` branch returns all lines
+    /// with no indicator.
+    #[test]
+    fn streaming_body_of_exactly_ten_lines_keeps_all_with_no_indicator() {
+        let body: Vec<&str> = vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9", "l10"];
+        let (visible, indicator) = collapse_tool_body(&body, true);
+        assert_eq!(visible, body);
+        assert_eq!(visible.len(), 10);
+        assert!(indicator.is_none());
+    }
+
+    /// **RPC-389** boundary: a SETTLED body of 9 lines (one over the
+    /// threshold) collapses to the first 8 with a `... +1 lines` indicator.
+    #[test]
+    fn settled_body_of_nine_lines_collapses_to_first_eight_with_indicator() {
+        let body: Vec<&str> = vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9"];
+        let (visible, indicator) = collapse_tool_body(&body, false);
+        assert_eq!(
+            visible,
+            vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"]
+        );
+        assert_eq!(
+            indicator,
+            Some("... +1 lines (Enter to view full)".to_string())
+        );
+    }
 }

@@ -108,6 +108,7 @@ fn push_text_turn(app: &mut App, id: &SessionId, seq: u64, text: &str) {
             color: Color::White,
             kind: ChunkKind::AssistantText,
             is_streaming: false,
+            full_text: None,
         }),
     });
 }

@@ -600,8 +600,9 @@ fn extract_tool_args_display_collapses_bash_to_command() {
         "Bash",
         "{\"command\":\"ls -la\",\"timeout\":5000}",
     );
-    // @step Then the header text equals "ls -la"
-    assert_eq!(header, "ls -la");
+    // @step Then the header text equals "ls -la, { timeout: 5000 }"
+    // RPC-388: command-first branch now appends remaining params.
+    assert_eq!(header, "ls -la, { timeout: 5000 }");
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -616,8 +617,10 @@ fn extract_tool_args_display_collapses_fspec_to_command() {
         "Fspec",
         "{\"command\":\"show-work-unit\",\"args\":\"{\\\"_\\\":[\\\"AUTH-001\\\"]}\"}",
     );
-    // @step Then the header text equals "show-work-unit"
-    assert_eq!(header, "show-work-unit");
+    // @step Then the header text equals "show-work-unit, { args: '{\"_\":[\"AUTH-001\"]}' }"
+    // RPC-388: command-first branch now appends remaining params (the
+    // single-quoted string `args`).
+    assert_eq!(header, "show-work-unit, { args: '{\"_\":[\"AUTH-001\"]}' }");
 }
 
 // ─────────────────────────────────────────────────────────────────────────

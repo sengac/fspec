@@ -10,6 +10,7 @@ use codelet_rpc_types::{ToolCallInfo, ToolProgressInfo, ToolResultInfo};
 use ratatui::style::Color;
 
 use super::markdown_tables::format_markdown_tables;
+use super::pending_tool_diff::{capture_pending_diff, produce_diff_strings};
 use super::session_context::SessionContext;
 use super::tool_args::extract_tool_args_display;
 use crate::views::agent::{ChunkKind, ChunkSource};
@@ -31,6 +32,7 @@ pub fn append_assistant_text(ctx: &mut SessionContext, text: &str) {
         color: Color::White,
         kind: ChunkKind::AssistantText,
         is_streaming: true,
+        full_text: None,
     };
     let new_idx = ctx.scrollback.chunk_count();
     ctx.push_source(source);
@@ -72,6 +74,7 @@ pub fn append_thinking(ctx: &mut SessionContext, delta: &str) {
         color: Color::Yellow,
         kind: ChunkKind::Thinking,
         is_streaming: true,
+        full_text: None,
     };
 
     if let Some(assist_idx) = ctx.in_flight_assistant {
@@ -111,6 +114,12 @@ pub fn handle_tool_call(ctx: &mut SessionContext, info: &ToolCallInfo) {
     // `finalizeThinkingBlock` call site in chunkProcessor.ts:469.
     finalize_in_flight_thinking(ctx);
     flush_in_flight_drop_empty(ctx);
+    // RPC-391: capture Edit/Write inputs for the colored diff produced on
+    // the matching ToolResult. Non-diff tools / malformed input → no entry
+    // (the raw tool behaviour is preserved).
+    if let Some(pending) = capture_pending_diff(&info.name, &info.input) {
+        ctx.pending_tool_diffs.insert(info.id.clone(), pending);
+    }
     let args = extract_tool_args_display(&info.name, &info.input);
     ctx.push_chunk(ChunkSource {
         text: format!("{}({})", info.name, args),
@@ -118,8 +127,10 @@ pub fn handle_tool_call(ctx: &mut SessionContext, info: &ToolCallInfo) {
         kind: ChunkKind::ToolCall {
             tool_call_id: info.id.clone(),
             is_error: false,
+            is_diff: false,
         },
         is_streaming: false,
+        full_text: None,
     });
 }
 
@@ -137,13 +148,34 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                 _ => false,
             });
     if let Some(idx) = target_idx {
-        let sanitized = info.content.replace('\t', "  ");
+        // RPC-391: if an Edit/Write diff was captured at tool-call time,
+        // replace the raw body with the marker-encoded diff (collapsed
+        // inline + full for the modal) and tag the card as a diff.
+        let pending = ctx.pending_tool_diffs.remove(&info.tool_call_id);
         if let Some(chunk) = ctx.scrollback.chunks_mut().get_mut(idx) {
             if let Some(source) = chunk.source.as_mut() {
-                if !sanitized.trim().is_empty() {
-                    source.text.push('\n');
-                    source.text.push_str(&sanitized);
+                if let Some(pending) = pending.as_ref() {
+                    let (collapsed, full) = produce_diff_strings(pending);
+                    if let Some((header, _)) = source.text.split_once('\n') {
+                        source.text = format!("{header}\n{collapsed}");
+                    } else {
+                        source.text = format!("{}\n{collapsed}", source.text);
+                    }
+                    source.full_text = Some(full);
+                    if let ChunkKind::ToolCall { is_diff, .. } = &mut source.kind {
+                        *is_diff = true;
+                    }
+                } else {
+                    let sanitized = info.content.replace('\t', "  ");
+                    if !sanitized.trim().is_empty() {
+                        source.text.push('\n');
+                        source.text.push_str(&sanitized);
+                    }
                 }
+                // RPC-389: a ToolResult settles the card — clear the
+                // streaming flag so `wrap_source` switches the inline
+                // view from the tail window to the first-8 collapse.
+                source.is_streaming = false;
                 if let ChunkKind::ToolCall { is_error, .. } = &mut source.kind {
                     *is_error = info.is_error;
                 }
@@ -156,6 +188,7 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
         color: Color::White,
         kind: ChunkKind::AssistantText,
         is_streaming: true,
+        full_text: None,
     };
     let new_idx = ctx.scrollback.chunk_count();
     ctx.push_source(placeholder);
@@ -182,6 +215,10 @@ pub fn handle_tool_progress(ctx: &mut SessionContext, info: &ToolProgressInfo) {
                 }
                 let trimmed = info.output_chunk.trim_end_matches('\n');
                 source.text.push_str(trimmed);
+                // RPC-389: live progress means the card is still
+                // streaming — `wrap_source` shows the last-10 tail window
+                // until a ToolResult settles it.
+                source.is_streaming = true;
             }
         }
         ctx.scrollback.rewrap_at(idx);
@@ -230,6 +267,7 @@ pub fn handle_error(ctx: &mut SessionContext, error: &str) {
         color: Color::White,
         kind: ChunkKind::Error,
         is_streaming: false,
+        full_text: None,
     });
 }
 

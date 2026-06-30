@@ -15,7 +15,9 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+
+use tokio::sync::Mutex;
 
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{SessionId, ThinkingLevel};
@@ -25,7 +27,7 @@ mod common;
 use common::MockBackend;
 
 /// Serialises tests that mutate the process-global data directory.
-static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
 fn fresh_app() -> (App, Arc<MockBackend>) {
     let mock = Arc::new(MockBackend::new());
@@ -60,9 +62,7 @@ async fn drain_pending(app: &mut App) {
 /// Scenario: Pressing D persists the default and immediately repaints the badge
 #[tokio::test]
 async fn pressing_d_persists_the_default_and_immediately_repaints_the_badge() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given an active session and the thinking dialog is open on Medium
     let _tmp = data_dir_with_default(None);
     let (mut app, mock) = fresh_app();
@@ -104,9 +104,7 @@ async fn pressing_d_persists_the_default_and_immediately_repaints_the_badge() {
 /// Scenario: Persisted default is restored to the active session at startup
 #[tokio::test]
 async fn persisted_default_is_restored_to_the_active_session_at_startup() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given the persisted default thinking level is High
     let _tmp = data_dir_with_default(Some(ThinkingLevel::High));
     let (mut app, mock) = fresh_app();
@@ -133,9 +131,7 @@ async fn persisted_default_is_restored_to_the_active_session_at_startup() {
 /// Scenario: Resuming an older session applies the persisted default once
 #[tokio::test]
 async fn resuming_an_older_session_applies_the_persisted_default_once() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given the persisted default thinking level is High
     let _tmp = data_dir_with_default(Some(ThinkingLevel::High));
     let (mut app, mock) = fresh_app();
@@ -170,9 +166,7 @@ async fn resuming_an_older_session_applies_the_persisted_default_once() {
 /// Scenario: A manual thinking selection is not clobbered when the session regains focus
 #[tokio::test]
 async fn a_manual_thinking_selection_is_not_clobbered_on_refocus() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given the persisted default thinking level is High
     let _tmp = data_dir_with_default(Some(ThinkingLevel::High));
     let (mut app, mock) = fresh_app();
@@ -220,9 +214,7 @@ async fn a_manual_thinking_selection_is_not_clobbered_on_refocus() {
 /// Scenario: No persisted default yields Off and does not error at startup
 #[tokio::test]
 async fn no_persisted_default_yields_off_and_does_not_error_at_startup() {
-    let _guard = DATA_DIR_GUARD
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given no default thinking level key exists on disk
     let _tmp = data_dir_with_default(None);
     let (mut app, mock) = fresh_app();

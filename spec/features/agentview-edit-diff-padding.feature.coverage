@@ -1,0 +1,530 @@
+{
+  "scenarios": [
+    {
+      "name": "Removed line is padded to a full-width red bar",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "164-181",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "168-184",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Added line is padded to a full-width green bar",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "182-199",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "186-202",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Context line is not given a colored background bar",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "200-217",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "204-221",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gap-marker or plain line is unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "219-230",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "223-234",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Content already at or over width is not padded or truncated",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "232-248",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "236-252",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zero width does not panic and pads non-negatively",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "250-260",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "254-264",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scrollback diff branch emits full-width bars",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "90-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "110-154",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Modal diff rows emit full-width bars while non-diff rows do not",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "157-226",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs",
+          "lines": "281-347",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/edit_diff_padding_rpc392.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "codelet/fspec-tui/src/views/agent/turn_modal.rs"
+    ],
+    "totalLinesCovered": 710
+  }
+}

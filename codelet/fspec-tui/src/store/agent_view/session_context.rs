@@ -17,12 +17,14 @@
 
 use codelet_rpc_types::{SessionId, StreamChunk};
 use ratatui::style::Color;
+use std::collections::HashMap;
 
 use super::chunk_processor::{
     append_assistant_text, append_thinking, flush_in_flight_drop_empty, handle_done, handle_error,
     handle_tool_call, handle_tool_progress, handle_tool_result,
 };
 use super::chunk_wrap::{wrap_source, DEFAULT_WRAP_WIDTH};
+use super::pending_tool_diff::PendingToolDiff;
 use crate::views::agent::{ChunkKind, ChunkSource, RenderedChunk, ScrollbackList};
 
 #[derive(Debug)]
@@ -46,6 +48,10 @@ pub struct SessionContext {
     /// `src/tui/utils/thinkingBlockManager.ts`: "last streaming
     /// thinking with no `UserInput` after it".
     pub in_flight_thinking: Option<usize>,
+    /// **RPC-391**: Edit/Write tool inputs captured at tool-call time,
+    /// keyed by `ToolCallInfo.id`, consumed on the matching ToolResult to
+    /// build the colored diff. Mirrors TS `pendingToolDiffsRef`.
+    pub pending_tool_diffs: HashMap<String, PendingToolDiff>,
 }
 
 impl SessionContext {
@@ -58,6 +64,7 @@ impl SessionContext {
             input_draft: String::new(),
             in_flight_assistant: None,
             in_flight_thinking: None,
+            pending_tool_diffs: HashMap::new(),
         }
     }
 
@@ -86,6 +93,7 @@ impl SessionContext {
                     color: Color::Green,
                     kind: ChunkKind::UserInput,
                     is_streaming: false,
+                    full_text: None,
                 });
             }
             StreamChunk::Thinking { thinking, .. } => {
@@ -111,6 +119,7 @@ impl SessionContext {
                     color: Color::White,
                     kind: ChunkKind::Interrupted,
                     is_streaming: false,
+                    full_text: None,
                 });
             }
             StreamChunk::UserNotification { message, .. } => {
@@ -119,6 +128,7 @@ impl SessionContext {
                     color: Color::White,
                     kind: ChunkKind::Notification,
                     is_streaming: false,
+                    full_text: None,
                 });
             }
             StreamChunk::IncomingMessage { text, .. } => {
@@ -128,6 +138,7 @@ impl SessionContext {
                     color: Color::Magenta,
                     kind: ChunkKind::Incoming,
                     is_streaming: false,
+                    full_text: None,
                 });
             }
             // State-only chunks — consumed elsewhere.
@@ -151,6 +162,7 @@ impl SessionContext {
             color: Color::White,
             kind: ChunkKind::Notification,
             is_streaming: false,
+            full_text: None,
         };
         self.push_source(source);
     }
@@ -160,6 +172,7 @@ impl SessionContext {
         self.scrollback_next_seq = 0;
         self.in_flight_assistant = None;
         self.in_flight_thinking = None;
+        self.pending_tool_diffs.clear();
     }
 
     /// Push a chunk with whatever `is_streaming` the caller set.

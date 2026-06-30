@@ -2,12 +2,10 @@
 //! navigation state PLUS the per-session model/token/thinking chrome
 //! state introduced by RPC-018 and the multi-session container
 //! introduced by RPC-024. End-of-list navigation (RPC-096) lives in
-//! the `navigation` sibling module.
-//!
-//! Feature files: rpc012-board-agent-navigation, rpc018-agent-chrome,
+//! the `navigation` sibling module. Feature files:
+//! rpc012-board-agent-navigation, rpc018-agent-chrome,
 //! rpc018-app-bootstrap, rpc024-multi-session-store,
 //! rpc025-source-shape, agentview-shift-arrow-end-of-list-parity.
-
 use std::collections::HashMap;
 
 use codelet_rpc_types::{
@@ -19,11 +17,14 @@ pub mod blocklist_state;
 pub mod chrome_state;
 pub mod chunk_processor;
 pub mod chunk_wrap;
+pub mod diff_decode;
+pub mod diff_format;
 pub mod history_state;
 pub mod isolation_state;
 pub mod markdown_table_render;
 pub mod markdown_tables;
 pub mod navigation;
+pub mod pending_tool_diff;
 pub mod role_state;
 pub mod session_context;
 pub mod supervisor_state;

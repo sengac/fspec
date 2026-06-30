@@ -55,6 +55,10 @@ serde_json.workspace = true
 # RPC-059: `/loop` parser uses regex for leading/trailing interval matching.
 regex.workspace = true
 
+# RPC-390: Myers line diff for Edit/Write diff generation (workspace-pinned,
+# already used by codelet/git).
+similar = "2"
+
 # RPC-373: launch the default browser for the board D key (FOUNDATION.md).
 open.workspace = true
 

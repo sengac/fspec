@@ -1,0 +1,577 @@
+{
+  "scenarios": [
+    {
+      "name": "Edit replacing one line shows the old line on red and the new line on green",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "75-114",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Write of a new three-line file shows three green-background lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "115-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Bash tool result renders plain white with no diff coloring",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "136-159",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An Edit over the collapse limit shows 25 lines inline while the modal shows the full diff",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "160-203",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An Edit with uncaptured pending input falls back to raw text without panicking",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "204-228",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Context diff lines render with a gray line-number gutter and white content",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "229-264",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The marker characters are stripped before display",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "265-289",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Diff cards bypass the eight-line tool-output collapse",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs",
+          "lines": "290-326",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/edit_diff_rendering_rpc391.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+      "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "codelet/fspec-tui/src/views/agent/scrollback_select.rs"
+    ],
+    "totalLinesCovered": 661
+  }
+}

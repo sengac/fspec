@@ -1,0 +1,236 @@
+{
+  "scenarios": [
+    {
+      "name": "Settled tool card with a short body shows the full body",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "lines": "112-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Settled tool card with a long body collapses to the first 8 lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "lines": "151-189",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Streaming tool card shows only the last 10 lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "lines": "191-228",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A finished stream switches from the tail window to the collapsed view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "lines": "230-272",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The full body is preserved for the content modal",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "lines": "274-313",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_select.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "codelet/fspec-tui/src/views/agent/scrollback_select.rs"
+    ],
+    "totalLinesCovered": 326
+  }
+}

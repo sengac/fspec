@@ -26,7 +26,6 @@
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::text::Span;
 
 use crate::components::dialog_theme::{render_dialog_at, Accent, DialogRow};
 use crate::components::dialog_theme_rows::{build_dialog, fixed_dialog_rect, turn_modal_geometry};
@@ -114,7 +113,7 @@ impl TurnContentModal {
             .skip(offset)
             .take(viewport_rows)
             .map(|w| DialogRow {
-                spans: vec![Span::raw(w)],
+                spans: crate::store::agent_view::diff_decode::decode_modal_row(&w, content_width),
                 selectable: false,
                 selected: false,
             })

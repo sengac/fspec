@@ -33,6 +33,11 @@ pub enum ChunkKind {
         /// Mirrors the TS `isError` flag set by `ToolResult`. Controls
         /// the body's foreground colour at render time.
         is_error: bool,
+        /// **RPC-391**: true when the body is a marker-encoded Edit/Write
+        /// diff. The wrap layer decodes `[R]`/`[A]` markers into colored
+        /// spans AND bypasses the RPC-389 8-line collapse (the diff is
+        /// already self-collapsed at 25 by `format_diff_for_display`).
+        is_diff: bool,
     },
     /// `"API Error: …"` white status line.
     Error,
@@ -71,6 +76,11 @@ pub struct ChunkSource {
     /// **RPC-091** addition — mirrors TS
     /// `ConversationMessage.isStreaming`.
     pub is_streaming: bool,
+    /// **RPC-391**: for a diff tool card, the FULL (uncollapsed) marker
+    /// string shown by the `TurnContentModal`. `text` holds the inline
+    /// 25-line-collapsed body; `full_text` holds every diff line. `None`
+    /// for all non-diff chunks (the modal falls back to `text`).
+    pub full_text: Option<String>,
 }
 
 /// Pre-rendered chunk row keyed by chunk seq.

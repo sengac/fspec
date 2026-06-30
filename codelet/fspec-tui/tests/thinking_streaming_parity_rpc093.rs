@@ -253,9 +253,13 @@ fn tool_call_finalises_in_flight_thinking_and_pushes_card() {
 
     let visible = session_lines(&app, &sid("s-1"));
     // The thinking block renders as "[Thinking]" header + body line(s),
-    // then the tool-call card renders "● Read(/etc/hosts)".
+    // then the tool-call card renders the parity header. RPC-388: Read has
+    // no command/action_type key, so it falls into the default branch →
+    // "{ file_path: '/etc/hosts' }".
     assert_eq!(visible[0], "[Thinking]");
-    assert!(visible.iter().any(|l| l == "\u{25CF} Read(/etc/hosts)"));
+    assert!(visible
+        .iter()
+        .any(|l| l == "\u{25CF} Read({ file_path: '/etc/hosts' })"));
 
     // @step And the Thinking chunk at index 0 has is_streaming false
     assert!(
