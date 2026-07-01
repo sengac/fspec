@@ -1,0 +1,83 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing '.' with a selected work unit opens the AgentView for its session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_period_new_agent_rpc395.rs",
+          "lines": "62-92",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing '.' with no work unit selected still opens the AgentView with no attached session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_period_new_agent_rpc395.rs",
+          "lines": "94-119",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The board header hint row displays '. New Agent'",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_period_new_agent_rpc395.rs",
+          "lines": "121-139",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/keybinding_shortcuts.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/board_period_new_agent_rpc395.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board.rs",
+      "codelet/fspec-tui/src/views/board/keybinding_shortcuts.rs"
+    ],
+    "totalLinesCovered": 94
+  }
+}

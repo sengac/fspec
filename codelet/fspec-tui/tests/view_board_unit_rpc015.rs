@@ -125,10 +125,10 @@ fn keybinding_shortcuts_chord_row_is_painted_in_the_header() {
         joined.contains("D FOUNDATION.md"),
         "missing 'D FOUNDATION.md':\n{joined}"
     );
-    // @step And the rendered buffer contains the substring "/ New Agent"
+    // @step And the rendered buffer contains the substring ". New Agent"
     assert!(
-        joined.contains("/ New Agent"),
-        "missing '/ New Agent':\n{joined}"
+        joined.contains(". New Agent"),
+        "missing '. New Agent':\n{joined}"
     );
 }
 

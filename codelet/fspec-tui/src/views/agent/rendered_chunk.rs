@@ -33,10 +33,12 @@ pub enum ChunkKind {
         /// Mirrors the TS `isError` flag set by `ToolResult`. Controls
         /// the body's foreground colour at render time.
         is_error: bool,
-        /// **RPC-391**: true when the body is a marker-encoded Edit/Write
-        /// diff. The wrap layer decodes `[R]`/`[A]` markers into colored
-        /// spans AND bypasses the RPC-389 8-line collapse (the diff is
-        /// already self-collapsed at 25 by `format_diff_for_display`).
+        /// **RPC-391/393**: true when the body is an Edit/Write diff stored
+        /// as the canonical codec string (`diff_format::to_line`). The wrap
+        /// layer parses each fragment back to a typed `DiffDisplayRow` and
+        /// styles it via the shared `style_row`, AND bypasses the RPC-389
+        /// 8-line collapse (the diff is already self-collapsed at 25 by
+        /// `build_diff_rows`).
         is_diff: bool,
     },
     /// `"API Error: …"` white status line.

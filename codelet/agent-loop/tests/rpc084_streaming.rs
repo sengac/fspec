@@ -25,7 +25,9 @@
 //!      reachable.
 //!   5. A compile-time closure proving
 //!      `codelet_cli::interactive::run_agent_stream_with_images` keeps
-//!      the canonical 8-argument signature.
+//!      the canonical 9-argument signature (RPC-398 added the trailing
+//!      `session_id` so tool-progress registers under the real per-session
+//!      id BashTool emits with).
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -213,7 +215,7 @@ fn run_with_provider_macro_streams_via_run_agent_stream_with_images() {
          `run_agent_stream_with_images` call in the macro body"
     );
 
-    // @step And the call passes the 8 positional arguments in the canonical order: agent, $input, $images, $inner, $session.is_interrupted.clone(), $session.compaction_in_progress.clone(), $session.interrupt_notify.clone(), $output
+    // @step And the call passes the 9 positional arguments in the canonical order: agent, $input, $images, $inner, $session.is_interrupted.clone(), $session.compaction_in_progress.clone(), $session.interrupt_notify.clone(), $output, $session.id
     let call_tail = &body[stream_pos..];
     // Find the call's `(` and walk argument boundaries at paren depth 1.
     let open_paren = call_tail
@@ -254,12 +256,12 @@ fn run_with_provider_macro_streams_via_run_agent_stream_with_images() {
         .collect();
     assert_eq!(
         args.len(),
-        8,
-        "run_agent_stream_with_images must take 8 positional args; got {} non-empty segments. \
+        9,
+        "run_agent_stream_with_images must take 9 positional args; got {} non-empty segments. \
          call_tail:\n{call_tail}",
         args.len()
     );
-    let expected: [&str; 8] = [
+    let expected: [&str; 9] = [
         "agent",
         "$input",
         "$images",
@@ -268,6 +270,7 @@ fn run_with_provider_macro_streams_via_run_agent_stream_with_images() {
         "$session.compaction_in_progress.clone()",
         "$session.interrupt_notify.clone()",
         "$output",
+        "$session.id",
     ];
     for (idx, want) in expected.iter().enumerate() {
         assert_eq!(
@@ -317,7 +320,7 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
          run_agent_stream_with_images call in the OpenAI arm"
     );
 
-    // @step And the call is positioned between line 850 and line 950
+    // @step And the call is positioned between line 950 and line 1050
     //
     // RPC-327 follow-up: the fspec_handler closure earlier in this file
     // grew by ~25 lines (it now also emits FspecCommandRequest /
@@ -325,14 +328,21 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
     // so the TUI can render the tool call). The line-range upper bound
     // is widened accordingly — the invariant still locks the call to a
     // bounded vicinity within the OpenAI inlined arm.
+    //
+    // RPC-398: the window was refreshed to 950..=1050 because the code
+    // had already drifted (the OpenAI call sits at ~line 1006 on HEAD,
+    // outside the previous 850..=950 window). Threading the trailing
+    // `session_id` arg into each call site added +1 line per call. The
+    // invariant is unchanged: the call lives in a bounded vicinity of
+    // the OpenAI inlined arm.
     let abs_offset = src
         .find("codelet_cli::interactive::run_agent_stream_with_images")
         .expect("agent_loop.rs must contain at least one run_agent_stream_with_images call");
     let line = line_number_of(&src, abs_offset);
     assert!(
-        (850..=950).contains(&line),
+        (950..=1050).contains(&line),
         "first run_agent_stream_with_images call (OpenAI inlined arm) must \
-         live between lines 850 and 950; got line {line}"
+         live between lines 950 and 1050; got line {line}"
     );
 }
 
@@ -373,7 +383,7 @@ fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
          run_agent_stream_with_images call in the custom-provider arm"
     );
 
-    // @step And the call is positioned between line 1000 and line 1100
+    // @step And the call is positioned between line 1000 and line 1260
     //
     // RPC-069 widened the previous 950..=1020 window because adding
     // the feature-gated `"stub" =>` arm (~50 LOC) before the `_ =>`
@@ -398,10 +408,16 @@ fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
     // chunks around the in-process Rust dispatch path (see the RPC-327
     // edit at agent_loop.rs:~500). The invariant still locks the call to
     // a bounded vicinity within the custom-provider fall-through arm.
+    // RPC-398: window refreshed to 1000..=1260. The code had already
+    // drifted (the custom-provider call sits at ~line 1209 on HEAD,
+    // near the old 1000..=1130 upper bound), and threading the trailing
+    // `session_id` arg into each earlier call site shifted this call
+    // down by +2 lines. The invariant still locks the call to a bounded
+    // vicinity within the custom-provider fall-through arm.
     assert!(
-        (1000..=1130).contains(&line),
+        (1000..=1260).contains(&line),
         "custom-provider run_agent_stream_with_images call must live between \
-         lines 1000 and 1130; got line {line}"
+         lines 1000 and 1260; got line {line}"
     );
 }
 
@@ -630,7 +646,7 @@ fn background_output_emits_eleven_canonical_stream_chunk_constructors() {
 
 // ===========================================================================
 // Scenario: run_agent_stream_with_images public signature accepts the
-//           canonical 8 positional arguments
+//           canonical 9 positional arguments
 // ===========================================================================
 
 #[test]
@@ -647,12 +663,16 @@ fn run_agent_stream_with_images_has_canonical_eight_argument_signature() {
     // @step Given the codelet_cli::interactive module exposes run_agent_stream_with_images
     // (proven by `use` line above)
 
-    // @step When I take a closure reference to the function with the canonical 8-argument signature
+    // @step When I take a closure reference to the function with the canonical 9-argument signature
     //
     // The closure body is never executed — it exists purely so that the
-    // type-checker enforces the canonical 8-argument signature. Each
+    // type-checker enforces the canonical 9-argument signature. Each
     // argument is annotated with its expected concrete or generic type so
     // any future drift in the public API breaks compilation.
+    //
+    // RPC-398: the trailing `session_id: uuid::Uuid` argument was added so
+    // the stream loop registers the tool-progress callback under the SAME
+    // per-session id that BashTool emits with (previously Uuid::nil()).
     #[allow(clippy::too_many_arguments)]
     fn typecheck<'a, 'b, 'c, M, O>(
         agent: RigAgent<M>,
@@ -663,6 +683,7 @@ fn run_agent_stream_with_images_has_canonical_eight_argument_signature() {
         compaction_in_progress: Arc<AtomicBool>,
         interrupt_notify: Arc<Notify>,
         output: &'c O,
+        session_id: uuid::Uuid,
     ) -> impl std::future::Future<Output = anyhow::Result<()>> + use<'a, 'b, 'c, M, O>
     where
         M: CompletionModel + 'static,
@@ -678,12 +699,13 @@ fn run_agent_stream_with_images_has_canonical_eight_argument_signature() {
             compaction_in_progress,
             interrupt_notify,
             output,
+            session_id,
         )
     }
 
     // @step Then the closure compiles
     // (proven by `typecheck` compiling above — its body invokes
-    // `run_agent_stream_with_images` with the canonical 8 positional
+    // `run_agent_stream_with_images` with the canonical 9 positional
     // arguments, so a type-checker drift breaks this test at compile
     // time)
     let _ =

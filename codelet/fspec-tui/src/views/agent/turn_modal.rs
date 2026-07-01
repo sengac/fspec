@@ -31,7 +31,6 @@ use crate::components::dialog_theme::{render_dialog_at, Accent, DialogRow};
 use crate::components::dialog_theme_rows::{build_dialog, fixed_dialog_rect, turn_modal_geometry};
 use crate::views::agent::scrollback::ScrollState;
 use crate::views::agent::scrollback_paint::paint_scrollbar;
-use crate::views::agent::text_wrap::wrap_to_width;
 use crate::views::agent::ChunkKind;
 
 /// Footer hint mirroring the TS reference (`TurnContentModal.tsx:171`).
@@ -45,6 +44,10 @@ pub struct TurnContentModal {
     body: String,
     /// RPC-383: first visible visual row of the wrapped body.
     offset: usize,
+    /// RPC-393 (WARNING #4): true only when this turn is an Edit/Write diff
+    /// card. Gates ALL diff styling so a plain turn whose body merely looks
+    /// line-numbered is never diff-styled.
+    is_diff: bool,
 }
 
 impl TurnContentModal {
@@ -53,11 +56,13 @@ impl TurnContentModal {
     /// to a neutral "Turn" title. The scroll offset starts at 0.
     pub fn new(text: impl Into<String>, kind: Option<ChunkKind>) -> Self {
         let (title, accent) = title_and_accent(kind.as_ref());
+        let is_diff = matches!(kind, Some(ChunkKind::ToolCall { is_diff: true, .. }));
         Self {
             title: title.to_string(),
             accent,
             body: text.into(),
             offset: 0,
+            is_diff,
         }
     }
 
@@ -104,7 +109,7 @@ impl TurnContentModal {
         let geom = turn_modal_geometry(area, &self.body);
         let viewport_rows = geom.viewport_rows;
         let content_width = geom.content_width;
-        let all = self.wrap_all(content_width);
+        let all = self.styled_rows(content_width);
         let total_rows = all.len();
         let offset = self.offset.min(Self::max_offset(total_rows, viewport_rows));
 
@@ -112,8 +117,8 @@ impl TurnContentModal {
             .into_iter()
             .skip(offset)
             .take(viewport_rows)
-            .map(|w| DialogRow {
-                spans: crate::store::agent_view::diff_decode::decode_modal_row(&w, content_width),
+            .map(|spans| DialogRow {
+                spans,
                 selectable: false,
                 selected: false,
             })
@@ -141,17 +146,17 @@ impl TurnContentModal {
         }
     }
 
-    /// Wrap the entire body to `width`, preserving hard breaks. Unlike
-    /// the pre-RPC-383 `wrapped_rows`, this NEVER clips — every visual
-    /// row is returned so scrolling can reach all of it.
-    fn wrap_all(&self, width: usize) -> Vec<String> {
-        let mut rows: Vec<String> = Vec::new();
+    /// RPC-393: wrap the entire body to `width` and style each visual row.
+    /// For a diff card every hard line is parsed ONCE and wrapped
+    /// continuation-safe (CRITICAL #3); for a non-diff card the body is plain
+    /// raw text (WARNING #4 — never diff-styled). Replaces the pre-RPC-393
+    /// `wrap_all` + per-row `style_modal_row`; NEVER clips, so scrolling can
+    /// reach every row.
+    fn styled_rows(&self, width: usize) -> Vec<Vec<ratatui::text::Span<'static>>> {
+        use crate::store::agent_view::diff_decode::style_modal_lines;
+        let mut rows: Vec<Vec<ratatui::text::Span<'static>>> = Vec::new();
         for hard in self.body.split('\n') {
-            let mut wrapped = wrap_to_width(hard, width);
-            if wrapped.is_empty() {
-                wrapped.push(String::new());
-            }
-            rows.append(&mut wrapped);
+            rows.extend(style_modal_lines(hard, width, self.is_diff));
         }
         rows
     }

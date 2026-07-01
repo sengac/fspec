@@ -14,8 +14,8 @@
 use serde_json::Value;
 
 use super::diff_format::{
-    calculate_start_line, format_diff_for_display, format_edit_diff, format_write_diff,
-    DIFF_COLLAPSED_LINES,
+    build_edit_diff_rows_with_context, calculate_start_line, format_diff_for_display,
+    format_write_diff, with_tree_connectors, DIFF_COLLAPSED_LINES,
 };
 
 /// Which side of the Edit/Write family produced this pending entry.
@@ -24,6 +24,10 @@ pub enum PendingDiffKind {
     Edit {
         old_string: String,
         new_string: String,
+        /// **RPC-394**: the post-edit file path, threaded through so
+        /// `produce_diff_strings` can read real surrounding context lines.
+        /// `None` when the tool input omitted `file_path` (graceful fallback).
+        file_path: Option<String>,
     },
     Write {
         content: String,
@@ -57,6 +61,7 @@ pub fn capture_pending_diff(tool_name: &str, input_json: &str) -> Option<Pending
                 kind: PendingDiffKind::Edit {
                     old_string,
                     new_string,
+                    file_path: file_path.map(str::to_string),
                 },
                 start_line,
             })
@@ -78,16 +83,37 @@ pub fn capture_pending_diff(tool_name: &str, input_json: &str) -> Option<Pending
 /// turn-content modal (parity with TS `toolResultContent` /
 /// `toolResultFullContent`).
 pub fn produce_diff_strings(pending: &PendingToolDiff) -> (String, String) {
-    let lines = match &pending.kind {
+    match &pending.kind {
         PendingDiffKind::Edit {
             old_string,
             new_string,
-        } => format_edit_diff(old_string, new_string),
-        PendingDiffKind::Write { content } => format_write_diff(content),
-    };
-    let collapsed = format_diff_for_display(&lines, DIFF_COLLAPSED_LINES, pending.start_line);
-    let full = format_diff_for_display(&lines, lines.len().max(1), pending.start_line);
-    (collapsed, full)
+            file_path,
+        } => {
+            // RPC-394: read the post-edit file and inject up to CONTEXT_LINES
+            // real unchanged file lines before/after the change; falls back to
+            // fragments-only when the file is missing/unreadable.
+            let path = file_path.as_deref();
+            let collapsed_rows = build_edit_diff_rows_with_context(
+                old_string,
+                new_string,
+                path,
+                DIFF_COLLAPSED_LINES,
+            );
+            let full_rows =
+                build_edit_diff_rows_with_context(old_string, new_string, path, usize::MAX);
+            (
+                with_tree_connectors(&collapsed_rows),
+                with_tree_connectors(&full_rows),
+            )
+        }
+        PendingDiffKind::Write { content } => {
+            let lines = format_write_diff(content);
+            let collapsed =
+                format_diff_for_display(&lines, DIFF_COLLAPSED_LINES, pending.start_line);
+            let full = format_diff_for_display(&lines, lines.len().max(1), pending.start_line);
+            (collapsed, full)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -103,7 +129,8 @@ mod tests {
             p.kind,
             PendingDiffKind::Edit {
                 old_string: "a".into(),
-                new_string: "b".into()
+                new_string: "b".into(),
+                file_path: None,
             }
         );
     }
@@ -137,6 +164,7 @@ mod tests {
             kind: PendingDiffKind::Edit {
                 old_string: old,
                 new_string: new,
+                file_path: None,
             },
             start_line: 1,
         };

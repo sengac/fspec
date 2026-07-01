@@ -1,0 +1,384 @@
+{
+  "scenarios": [
+    {
+      "name": "A mid-file edit shows three unchanged lines above and below the change",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "lines": "71-136",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An edit on the first line shows no before-context and trailing context",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "lines": "138-189",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An edit on the last line shows leading context and no after-context",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "lines": "191-247",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A missing or unreadable file falls back to fragments-only with no panic",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "lines": "249-277",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Write of a new file shows only added lines and no context rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "lines": "279-299",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A shared boundary line is shown once and never duplicated by injected context",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs",
+          "lines": "301-355",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/edit_diff_context_rpc394.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/diff_context.rs",
+      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+      "codelet/fspec-tui/src/store/agent_view/pending_tool_diff.rs"
+    ],
+    "totalLinesCovered": 545
+  }
+}

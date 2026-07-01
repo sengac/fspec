@@ -1,0 +1,311 @@
+{
+  "scenarios": [
+    {
+      "name": "Progress emitted during tool execution carries the active tool_call_id",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "54-115",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "54-115",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Active tool_call_id is set on ToolCall and cleared on ToolResult",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "125-178",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967,
+                968,
+                969,
+                970,
+                971,
+                972,
+                973,
+                974,
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982,
+                983,
+                984,
+                985,
+                986,
+                987,
+                988
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "125-178",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967,
+                968,
+                969,
+                970,
+                971,
+                972,
+                973,
+                974,
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982,
+                983,
+                984,
+                985,
+                986,
+                987,
+                988
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stray progress with no active tool call is dropped without panic",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "190-229",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/tool_progress_tool_call_id_bug149.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 497
+  }
+}

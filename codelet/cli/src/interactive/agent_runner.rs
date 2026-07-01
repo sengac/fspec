@@ -50,6 +50,7 @@ pub(super) async fn run_agent_with_interruption(
                 is_interrupted,
                 compaction_in_progress.clone(),
                 &output,
+                session_id,
             )
             .await
         }};
@@ -74,6 +75,7 @@ pub(super) async fn run_agent_with_interruption(
                 is_interrupted,
                 compaction_in_progress.clone(),
                 &output,
+                session_id,
             )
             .await
         }

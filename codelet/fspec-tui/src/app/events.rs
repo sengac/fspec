@@ -124,7 +124,7 @@ impl App {
 
     fn handle_app_shortcut(&mut self, key: &KeyEvent) -> Option<EventResult> {
         if key.code == KeyCode::Char('?') && key.modifiers == KeyModifiers::NONE {
-            self.compositor.push(Box::new(HelpDialog::new()));
+            self.compositor.push(Box::new(HelpDialog::for_board()));
             self.should_render = true;
             return Some(EventResult::consumed());
         }

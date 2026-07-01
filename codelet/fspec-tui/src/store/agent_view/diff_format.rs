@@ -1,26 +1,24 @@
-//! RPC-390 — Edit/Write diff generation + `[R]-`/`[A]+` marker encoding.
+//! RPC-390/393 — Edit/Write diff generation + typed display-row building.
 //!
 //! Feature: spec/features/agentview-edit-diff-generation.feature
+//!          spec/features/agentview-edit-diff-structured-rows.feature
 //!
-//! Pure port of the TS diff pipeline:
-//!   - `computeLineDiff` / `changesToDiffLines` (src/git/diff-parser.ts)
-//!   - `formatEditDiff` / `formatWriteDiff` / `formatDiffForDisplay` /
-//!     `formatWithTreeConnectors` / `calculateStartLine`
-//!     (src/tui/components/AgentView.tsx:530-817)
-//!
-//! No rendering / coloring / wire-up here — that is RPC-391. This module only
-//! produces the marker-encoded display string byte-for-byte identical to the
-//! TS reference for the same inputs.
+//! **RPC-393**: the display layer is a typed [`DiffDisplayRow`] model;
+//! [`build_diff_rows`] does windowing/collapse and the single codec
+//! ([`super::diff_codec`]) serializes/parses the canonical line stored on
+//! `ChunkSource::text` (re-wrapped on resize).
 
 use similar::{ChangeTag, TextDiff};
 
 /// Number of display lines kept before collapsing a diff (TS
-/// `DIFF_COLLAPSED_LINES`, AgentView.tsx:535).
+/// `DIFF_COLLAPSED_LINES`).
 pub const DIFF_COLLAPSED_LINES: usize = 25;
 
-/// Lines of surrounding context shown around each change (TS `CONTEXT_LINES`,
-/// AgentView.tsx:703).
-const CONTEXT_LINES: usize = 3;
+/// Lines of surrounding context shown around each change (TS `CONTEXT_LINES`).
+pub(super) const CONTEXT_LINES: usize = 3;
+
+/// Minimum line-number gutter width (right-aligned). Shared with the codec.
+pub const GUTTER_MIN_WIDTH: usize = 3;
 
 /// Kind of a single encoded diff line.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -30,18 +28,22 @@ pub enum DiffOutputKind {
     Removed,
 }
 
-/// A single diff line: `content` carries the TS prefix character (` `, `+`,
-/// `-`) as its first byte, exactly like the TS `DiffOutputLine.content`.
+/// **RPC-393**: the typed diff DISPLAY row model + its single codec.
+pub use super::diff_codec::{parse_line, to_line, DiffDisplayRow};
+
+/// **RPC-394**: the context-aware Edit-diff builder (injects real surrounding
+/// file lines). Lives in a sibling module to keep this file < 300 LoC.
+pub use super::diff_context::{build_edit_diff_rows_with_context, with_tree_connectors};
+
+/// A single diff line: `content` carries the TS prefix char (` `/`+`/`-`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DiffOutputLine {
     pub content: String,
     pub kind: DiffOutputKind,
 }
 
-/// Port of `changesToDiffLines`: turn the Myers line diff of `(old, new)` into
-/// prefixed `DiffOutputLine`s. Context → `" {line}"`, removed → `"-{line}"`,
-/// added → `"+{line}"`. Empty line fragments are dropped (parity with the TS
-/// `split('\n').filter(line => line.length > 0)`).
+/// Port of `changesToDiffLines`: Myers line diff of `(old, new)` →
+/// prefixed `DiffOutputLine`s. Empty fragments dropped (TS parity).
 pub fn format_edit_diff(old_string: &str, new_string: &str) -> Vec<DiffOutputLine> {
     let diff = TextDiff::from_lines(old_string, new_string);
     let mut result: Vec<DiffOutputLine> = Vec::new();
@@ -66,8 +68,7 @@ pub fn format_edit_diff(old_string: &str, new_string: &str) -> Vec<DiffOutputLin
 }
 
 /// Port of `formatWriteDiff`: every line of `content` becomes an addition
-/// (`"+{line}"`). Splits on `\n` WITHOUT filtering empties (parity with the TS
-/// `content.split('\n')`).
+/// (`"+{line}"`). Splits on `\n` without filtering empties (TS parity).
 pub fn format_write_diff(content: &str) -> Vec<DiffOutputLine> {
     content
         .split('\n')
@@ -78,9 +79,8 @@ pub fn format_write_diff(content: &str) -> Vec<DiffOutputLine> {
         .collect()
 }
 
-/// Port of `formatWithTreeConnectors`: empty/whitespace-only → `""`; otherwise
-/// the first line is prefixed `"L "` and every subsequent line indented two
-/// spaces.
+/// Port of `formatWithTreeConnectors`: empty/whitespace-only → `""`; else the
+/// first line is prefixed `"L "` and every subsequent line indented two spaces.
 pub fn format_with_tree_connectors(content: &str) -> String {
     if content.trim().is_empty() {
         return String::new();
@@ -99,14 +99,24 @@ pub fn format_with_tree_connectors(content: &str) -> String {
         .join("\n")
 }
 
-/// Port of `formatDiffForDisplay` (AgentView.tsx:670-771): turn the encoded
-/// diff lines into the marker-encoded, context-windowed, collapse-truncated
-/// display string with tree connectors applied.
+/// Port of `formatDiffForDisplay`: the canonical display string. **RPC-393**:
+/// a THIN wrapper over [`build_diff_rows`] + [`to_line`] (RPC-390 golden).
 pub fn format_diff_for_display(
     diff_lines: &[DiffOutputLine],
     visible_lines: usize,
     start_line: usize,
 ) -> String {
+    with_tree_connectors(&build_diff_rows(diff_lines, visible_lines, start_line))
+}
+
+/// **RPC-393**: build the typed, context-windowed, collapse-truncated diff
+/// DISPLAY rows. Same windowing/collapse as the legacy formatter, but emits
+/// [`DiffDisplayRow`]s.
+pub fn build_diff_rows(
+    diff_lines: &[DiffOutputLine],
+    visible_lines: usize,
+    start_line: usize,
+) -> Vec<DiffDisplayRow> {
     let changed_indices: Vec<usize> = diff_lines
         .iter()
         .enumerate()
@@ -115,129 +125,137 @@ pub fn format_diff_for_display(
         .collect();
 
     let max_line_num = start_line + diff_lines.len().saturating_sub(1);
-    let line_num_width = max_line_num.to_string().len().max(3);
+    let gutter_width = gutter_width_for(max_line_num);
 
     if changed_indices.is_empty() {
-        return format_no_changes(diff_lines, visible_lines, start_line, line_num_width);
+        return build_no_change_rows(diff_lines, visible_lines, start_line, gutter_width);
     }
-
     let sorted_indices = indices_to_show(&changed_indices, diff_lines.len());
-    let output_lines = build_output_lines(diff_lines, &sorted_indices, start_line, line_num_width);
+    let rows = build_change_rows(diff_lines, &sorted_indices, start_line, gutter_width);
 
-    if output_lines.len() <= visible_lines {
-        return format_with_tree_connectors(&output_lines.join("\n"));
+    if rows.len() <= visible_lines {
+        return rows;
     }
 
-    let mut visible: Vec<String> = output_lines[..visible_lines].to_vec();
-    let remaining = output_lines.len() - visible_lines;
-    visible.push(format!("... +{remaining} lines (select turn to /expand)"));
-    format_with_tree_connectors(&visible.join("\n"))
+    let mut visible: Vec<DiffDisplayRow> = rows[..visible_lines].to_vec();
+    visible.push(collapse_hint(rows.len() - visible_lines, gutter_width));
+    visible
 }
 
-/// No-changes branch: show the first `visible_lines` lines as context, with a
-/// trailing collapse indicator when truncated.
-fn format_no_changes(
+/// **RPC-393 (C1 + W6)**: the SINGLE gutter-column width for a diff whose
+/// largest line number is `max_line_num`. The line-number gutter AND every
+/// elision row's leading indent derive from this so columns line up at any
+/// file size (incl. 1000+ line edits).
+pub fn gutter_width_for(max_line_num: usize) -> usize {
+    max_line_num.to_string().len().max(GUTTER_MIN_WIDTH)
+}
+
+/// **RPC-393 (C1 + W6)**: the ONE helper deciding elision leading indent; gap
+/// markers AND the collapse hint both use it.
+fn elision_indent(gutter_width: usize) -> String {
+    " ".repeat(gutter_width)
+}
+
+/// The single collapse-hint Elision row, indented via [`elision_indent`] like
+/// gap markers (C1).
+fn collapse_hint(remaining: usize, gutter_width: usize) -> DiffDisplayRow {
+    let indent = elision_indent(gutter_width);
+    DiffDisplayRow::Elision {
+        text: format!("{indent} ... +{remaining} lines (select turn to /expand)"),
+    }
+}
+
+/// No-changes branch: the first `visible_lines` diff lines become Context
+/// rows; a trailing collapse Elision row is appended when truncated.
+fn build_no_change_rows(
     diff_lines: &[DiffOutputLine],
     visible_lines: usize,
     start_line: usize,
-    line_num_width: usize,
-) -> String {
+    gutter_width: usize,
+) -> Vec<DiffDisplayRow> {
     let take = diff_lines.len().min(visible_lines);
-    let mut formatted: Vec<String> = diff_lines[..take]
+    let mut rows: Vec<DiffDisplayRow> = diff_lines[..take]
         .iter()
         .enumerate()
-        .map(|(idx, line)| {
-            let line_num = pad_left(start_line + idx, line_num_width);
-            let rest = strip_prefix(&line.content);
-            format!("{line_num}   {rest}")
+        .map(|(idx, line)| DiffDisplayRow::Context {
+            line_no: start_line + idx,
+            text: strip_prefix(&line.content).to_string(),
         })
         .collect();
     if diff_lines.len() > visible_lines {
-        let remaining = diff_lines.len() - visible_lines;
-        formatted.push(format!("... +{remaining} lines (select turn to /expand)"));
+        rows.push(collapse_hint(
+            diff_lines.len() - visible_lines,
+            gutter_width,
+        ));
     }
-    format_with_tree_connectors(&formatted.join("\n"))
+    rows
 }
 
-/// Build the sorted, deduplicated set of indices to show: each changed index
-/// plus up to `CONTEXT_LINES` before/after, clamped to the diff bounds.
+/// Build the indices to show: each changed index plus up to `CONTEXT_LINES`
+/// before/after, clamped to the diff bounds.
 fn indices_to_show(changed_indices: &[usize], len: usize) -> Vec<usize> {
     let mut set: std::collections::BTreeSet<usize> = std::collections::BTreeSet::new();
     for &idx in changed_indices {
-        set.insert(idx);
         let from = idx.saturating_sub(CONTEXT_LINES);
-        for i in from..idx {
-            set.insert(i);
-        }
         let to = (idx + CONTEXT_LINES).min(len.saturating_sub(1));
-        for i in (idx + 1)..=to {
+        for i in from..=to {
             set.insert(i);
         }
     }
     set.into_iter().collect()
 }
 
-/// Walk the shown indices, emitting gap markers for skipped regions and a
-/// trailing gap marker if the diff continues past the last shown index.
-fn build_output_lines(
+/// Walk the shown indices, emitting typed rows plus uniform Elision rows for
+/// skipped/trailing regions, indented through [`elision_indent`] (C1/W6).
+fn build_change_rows(
     diff_lines: &[DiffOutputLine],
     sorted_indices: &[usize],
     start_line: usize,
-    line_num_width: usize,
-) -> Vec<String> {
-    let mut output: Vec<String> = Vec::new();
-    let pad = " ".repeat(line_num_width);
+    gutter_width: usize,
+) -> Vec<DiffDisplayRow> {
+    let mut rows: Vec<DiffDisplayRow> = Vec::new();
+    let pad = elision_indent(gutter_width);
     let mut last_shown: Option<usize> = None;
 
     for &idx in sorted_indices {
         if let Some(last) = last_shown {
             if idx > last + 1 {
                 let skipped = idx - last - 1;
-                output.push(format!("{pad} ... ({skipped} lines)"));
+                rows.push(DiffDisplayRow::Elision {
+                    text: format!("{pad} ... ({skipped} lines)"),
+                });
             }
         }
         let line = &diff_lines[idx];
-        let line_num = pad_left(start_line + idx, line_num_width);
-        let rest = strip_prefix(&line.content);
-        let formatted = match line.kind {
-            DiffOutputKind::Removed => format!("{line_num} [R]- {rest}"),
-            DiffOutputKind::Added => format!("{line_num} [A]+ {rest}"),
-            DiffOutputKind::Context => format!("{line_num}   {rest}"),
-        };
-        output.push(formatted);
+        let line_no = start_line + idx;
+        let text = strip_prefix(&line.content).to_string();
+        rows.push(match line.kind {
+            DiffOutputKind::Removed => DiffDisplayRow::Removed { line_no, text },
+            DiffOutputKind::Added => DiffDisplayRow::Added { line_no, text },
+            DiffOutputKind::Context => DiffDisplayRow::Context { line_no, text },
+        });
         last_shown = Some(idx);
     }
 
     if let Some(last) = last_shown {
         if last < diff_lines.len().saturating_sub(1) {
             let remaining = diff_lines.len() - 1 - last;
-            output.push(format!("{pad} ... ({remaining} lines)"));
+            rows.push(DiffDisplayRow::Elision {
+                text: format!("{pad} ... ({remaining} lines)"),
+            });
         }
     }
 
-    output
+    rows
 }
 
-/// Strip the leading prefix char (` `/`+`/`-`) from an encoded content string,
-/// mirroring TS `content.slice(1)`.
-fn strip_prefix(content: &str) -> &str {
+/// Strip the leading prefix char (` `/`+`/`-`), mirroring TS `content.slice(1)`.
+pub(super) fn strip_prefix(content: &str) -> &str {
     let mut chars = content.char_indices();
+    chars.next();
     match chars.next() {
-        Some(_) => match chars.next() {
-            Some((i, _)) => &content[i..],
-            None => "",
-        },
+        Some((i, _)) => &content[i..],
         None => "",
-    }
-}
-
-/// Left-pad a line number to at least `width` columns with spaces.
-fn pad_left(value: usize, width: usize) -> String {
-    let s = value.to_string();
-    if s.len() >= width {
-        s
-    } else {
-        format!("{}{}", " ".repeat(width - s.len()), s)
     }
 }
 

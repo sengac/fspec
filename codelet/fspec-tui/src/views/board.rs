@@ -203,6 +203,13 @@ impl BoardView {
                 }
                 return EventResult::consumed();
             }
+            // RPC-395: '.' starts a new agent — mirror of the Shift+Right
+            // handler above. Modifier-free so Ctrl-chorded keys fall through.
+            KeyCode::Char('.') if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                let target = self.selected_session(store);
+                self.emit(Action::OpenAgentView(target));
+                return EventResult::consumed();
+            }
             _ => {}
         }
 

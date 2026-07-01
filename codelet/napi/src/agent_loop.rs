@@ -131,6 +131,7 @@ macro_rules! run_with_provider {
                     $session.compaction_in_progress.clone(),
                     $session.interrupt_notify.clone(),
                     $output,
+                    $session.id,
                 )
                 .await
             }
@@ -1070,6 +1071,7 @@ pub(crate) async fn agent_loop(
                                 session.compaction_in_progress.clone(),
                                 session.interrupt_notify.clone(),
                                 &output,
+                                session.id,
                             )
                             .await
                         }
@@ -1193,6 +1195,7 @@ pub(crate) async fn agent_loop(
                                 session.compaction_in_progress.clone(),
                                 session.interrupt_notify.clone(),
                                 &output,
+                                session.id,
                             )
                             .await
                         }

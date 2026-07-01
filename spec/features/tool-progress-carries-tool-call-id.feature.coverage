@@ -1,0 +1,148 @@
+{
+  "scenarios": [
+    {
+      "name": "Progress with a matching tool_call_id folds into the streaming card",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "97-125",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Progress with an empty tool_call_id matches no card and is dropped",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "131-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Progress for another session's card does not alter this card",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_progress_tool_call_id_bug149.rs",
+          "lines": "158-191",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/tool_progress_tool_call_id_bug149.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs"
+    ],
+    "totalLinesCovered": 169
+  }
+}

@@ -156,6 +156,7 @@ pub(super) async fn run_agent_stream_with_interruption<M, O>(
     is_interrupted: Arc<AtomicBool>,
     compaction_in_progress: Arc<AtomicBool>,
     output: &O,
+    session_id: uuid::Uuid,
 ) -> Result<()>
 where
     M: CompletionModel,
@@ -173,6 +174,7 @@ where
         compaction_in_progress,
         None, // CLI mode doesn't use Notify - uses keyboard event stream
         output,
+        session_id,
     )
     .await
 }
@@ -193,6 +195,7 @@ pub async fn run_agent_stream<M, O>(
     compaction_in_progress: Arc<AtomicBool>,
     interrupt_notify: Arc<Notify>,
     output: &O,
+    session_id: uuid::Uuid,
 ) -> Result<()>
 where
     M: CompletionModel,
@@ -210,6 +213,7 @@ where
         compaction_in_progress,
         Some(interrupt_notify),
         output,
+        session_id,
     )
     .await
 }
@@ -228,6 +232,7 @@ pub async fn run_agent_stream_with_images<M, O>(
     compaction_in_progress: Arc<AtomicBool>,
     interrupt_notify: Arc<Notify>,
     output: &O,
+    session_id: uuid::Uuid,
 ) -> Result<()>
 where
     M: CompletionModel,
@@ -245,6 +250,7 @@ where
         compaction_in_progress,
         Some(interrupt_notify),
         output,
+        session_id,
     )
     .await
 }
@@ -271,6 +277,7 @@ async fn run_agent_stream_internal<M, O, E>(
     compaction_in_progress: Arc<AtomicBool>,
     interrupt_notify: Option<Arc<Notify>>,
     output: &O,
+    session_id: uuid::Uuid,
 ) -> Result<()>
 where
     M: CompletionModel,
@@ -455,13 +462,33 @@ where
     // This works because the callback is called from a spawned tokio task inside the tool,
     // which runs on the tokio runtime and can make I/O calls (print for CLI, or
     // ThreadsafeFunction::call for NAPI which is NonBlocking).
+    // BUG-149: Track the active tool_call_id so the progress callback can emit
+    // the REAL provider id instead of an empty string. The TUI folds progress
+    // into a card by EXACT tool_call_id match; an empty id matches no card and
+    // is silently dropped, so live output never streams. Tool execution is
+    // serial within a turn (tool_execution_in_progress flag), so a single
+    // active id is unambiguous. Set on ToolCall, cleared on ToolResult.
+    let active_tool_call_id: std::sync::Arc<std::sync::Mutex<Option<String>>> =
+        std::sync::Arc::new(std::sync::Mutex::new(None));
     if let Some(emitter) = output.progress_emitter() {
-        // BUG-126: Use Uuid::nil() for CLI mode (single-session; no cross-session risk)
-        let cli_session_id = Uuid::nil();
+        // RPC-398: Register under the REAL per-session id that BashTool emits
+        // with (threaded down from the caller that built create_rig_agent /
+        // BashTool::new). Previously this used Uuid::nil() (BUG-126 CLI mode)
+        // which never matched the emit key, so nothing streamed. Preserves
+        // BUG-126 exact-match isolation — no global fallback.
+        let active_tool_call_id_cb = active_tool_call_id.clone();
         set_tool_progress_callback(
-            cli_session_id,
+            session_id,
             Some(Arc::new(move |chunk: &str, is_stderr: bool| {
-                emitter.emit_tool_progress("", "bash", chunk, is_stderr);
+                // BUG-149: emit the active tool_call_id. Falls back to the empty
+                // string if no tool is active (stray emit) — the TUI drops that,
+                // preserving prior behaviour without panicking.
+                let id = active_tool_call_id_cb
+                    .lock()
+                    .ok()
+                    .and_then(|g| g.clone())
+                    .unwrap_or_default();
+                emitter.emit_tool_progress(&id, "bash", chunk, is_stderr);
             })),
         );
     }
@@ -883,6 +910,11 @@ where
                     // AMGR-016-FIX: Mark tool execution in progress — the next stream.next()
                     // will block on tool execution. Stall timeout must be disabled until
                     // the ToolResult chunk arrives.
+                    // BUG-149: set the active tool_call_id so live progress emitted during
+                    // this tool's execution carries the real id and folds into its card.
+                    if let Ok(mut g) = active_tool_call_id.lock() {
+                        *g = Some(tool_call.id.clone());
+                    }
                     tool_execution_in_progress = true;
                 }
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
@@ -948,6 +980,11 @@ where
                     // AMGR-016-FIX: Tool execution completed — re-enable stall timeout.
                     // The next stream.next() will be waiting for the LLM's next API response,
                     // where the 600s stall timeout is appropriate again.
+                    // BUG-149: clear the active tool_call_id so a later stray progress emit
+                    // does not carry a stale id.
+                    if let Ok(mut g) = active_tool_call_id.lock() {
+                        *g = None;
+                    }
                     tool_execution_in_progress = false;
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
@@ -1874,8 +1911,9 @@ where
         }
     }
 
-    // TOOL-011/BUG-126: Clear the tool progress callback
-    set_tool_progress_callback(Uuid::nil(), None);
+    // TOOL-011/BUG-126/RPC-398: Clear the tool progress callback using the
+    // same session id it was registered under.
+    set_tool_progress_callback(session_id, None);
 
     // CMPCT-032: Production-mode post-loop safety net.
     //

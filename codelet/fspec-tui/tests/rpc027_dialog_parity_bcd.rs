@@ -138,7 +138,7 @@ fn help_dialog_renders_with_cyan_accent_and_inner_title_body() {
     );
 }
 
-/// Scenario: HelpDialog body lists every RPC-009 keybinding
+/// Scenario: HelpDialog body lists the board keybindings
 #[test]
 fn help_dialog_body_lists_every_rpc009_keybinding() {
     // @step Given an isolated HelpDialog component
@@ -147,20 +147,23 @@ fn help_dialog_body_lists_every_rpc009_keybinding() {
     let buf = render_component_80x24(&mut dialog);
     let text = buffer_text(&buf);
 
-    // @step Then the rendered buffer contains "j/k"
-    assert!(text.contains("j/k"));
-    // @step And the rendered buffer contains "Tab"
-    assert!(text.contains("Tab"));
-    // @step And the rendered buffer contains "?"
-    assert!(text.contains('?'));
-    // @step And the rendered buffer contains "q"
-    assert!(text.contains('q'));
+    // RPC-397: the default (board) HelpDialog lists accurate board
+    // keybindings rendered via the shared dialog theme. The old
+    // generic "j/k / Tab / q / Ctrl+C" list is gone by design. At
+    // 80x24 only the top of the (scrollable — RPC-396) list is
+    // visible, so we assert the top-of-list board hints here; the
+    // full list (incl. the Ctrl+D quit line) is pinned against a
+    // 200x60 backend in tests/help_dialog_content_rpc397.rs.
+    // @step Then the rendered buffer contains "Navigate"
+    assert!(text.contains("Navigate"));
+    // @step And the rendered buffer contains "New Agent"
+    assert!(text.contains("New Agent"));
+    // @step And the rendered buffer contains "Reorder"
+    assert!(text.contains("Reorder"));
     // @step And the rendered buffer contains "Enter"
     assert!(text.contains("Enter"));
-    // @step And the rendered buffer contains "Ctrl+C"
-    assert!(text.contains("Ctrl+C"));
-    // @step And the rendered buffer contains "ESC"
-    assert!(text.contains("ESC"));
+    // @step And the rendered buffer does NOT contain the old "q       Quit" line
+    assert!(!text.contains("q       Quit"));
 }
 
 /// Scenario: HelpDialog no longer imports tui_popup

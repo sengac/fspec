@@ -1012,6 +1012,7 @@ pub async fn agent_loop(
                                 session.compaction_in_progress.clone(),
                                 session.interrupt_notify.clone(),
                                 &output,
+                                session.id,
                             )
                             .await
                         }
@@ -1150,6 +1151,7 @@ pub async fn agent_loop(
                             session.compaction_in_progress.clone(),
                             session.interrupt_notify.clone(),
                             &output,
+                            session.id,
                         )
                         .await
                     } else {
@@ -1215,6 +1217,7 @@ pub async fn agent_loop(
                                 session.compaction_in_progress.clone(),
                                 session.interrupt_notify.clone(),
                                 &output,
+                                session.id,
                             )
                             .await
                         }

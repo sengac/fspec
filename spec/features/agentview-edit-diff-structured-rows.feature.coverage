@@ -1,0 +1,1157 @@
+{
+  "scenarios": [
+    {
+      "name": "A single-line replacement builds typed Context/Removed/Added rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "328-347",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A mid-file change drops the leading region and marks the trailing skipped region with one uniform Elision",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "349-365",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "lines": [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "398-444",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "lines": [
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A diff exceeding the collapse limit yields a collapse Elision hint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "367-383",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "style_row on changed rows fills a full-width colored bar",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "385-403",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "464-492",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "style_row on a context row has a gray gutter and no background",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "405-419",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "494-511",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "style_row on elision rows uses one uniform dim indentation",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "421-436",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "513-567",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The gutter style is consistent across all row types",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "437-453",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The row codec round-trips every variant exactly",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "454-472",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_codec.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "593-648",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_codec.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "style_row at zero width does not panic",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "473-482",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "648-660",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scrollback renders a wrapped diff with consistent gutter and no markers",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "114-173",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The diff body survives a terminal-width re-wrap on resize",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "175-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "175-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The modal shows the full diff styled identically",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "239-275",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "235-310",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-diff tool output renders plain with no diff styling",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs",
+          "lines": "277-310",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/edit_diff_structured_rows_rpc393.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/diff_format.rs",
+      "codelet/fspec-tui/src/store/agent_view/diff_decode.rs",
+      "codelet/fspec-tui/src/store/agent_view/diff_codec.rs",
+      "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+      "codelet/fspec-tui/src/views/agent/turn_modal.rs"
+    ],
+    "totalLinesCovered": 1512
+  }
+}

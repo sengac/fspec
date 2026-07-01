@@ -26,7 +26,8 @@
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 
-use super::diff_decode::{decode_diff_line_padded, is_decoded_diff_line};
+use super::diff_codec::parse_line;
+use super::diff_decode::style_row_lines;
 use crate::views::agent::text_wrap::wrap_to_width;
 use crate::views::agent::{ChunkKind, ChunkSource};
 
@@ -130,19 +131,18 @@ fn wrap_tool_call(
         return out;
     };
 
-    // **RPC-391**: diff cards decode `[R]`/`[A]`/context markers into
-    // colored spans and BYPASS the RPC-389 8-line collapse (the diff is
-    // already self-collapsed at 25 by `format_diff_for_display`).
+    // **RPC-393 (CRITICAL #3)**: diff cards parse each HARD canonical line back
+    // to a typed `DiffDisplayRow` ONCE (via the single codec) and wrap it
+    // continuation-safe through `style_row_lines` — the gutter/marker/bar is
+    // styled only on the first visual row, so a long content-wrapping diff line
+    // can never resurrect a phantom colored/context row on resize. The diff is
+    // already self-collapsed at 25 by `build_diff_rows`, so it BYPASSES the
+    // RPC-389 8-line collapse.
     if matches!(source.kind, ChunkKind::ToolCall { is_diff: true, .. }) {
         for hard in body.split('\n') {
-            for w in wrap_diff_line(hard, width) {
-                if is_decoded_diff_line(&w) {
-                    // **RPC-392**: pad the [R]/[A] bar to the viewport width
-                    // so the background fills the row edge-to-edge.
-                    out.push(Line::from(decode_diff_line_padded(&w, width as usize)));
-                } else {
-                    out.push(Line::from(Span::styled(w, body_style)));
-                }
+            let row = parse_line(hard);
+            for spans in style_row_lines(&row, width as usize) {
+                out.push(Line::from(spans));
             }
         }
         return out;
@@ -176,17 +176,6 @@ fn wrap_tool_call(
 fn wrap_header(header: &str, width: u16, prefix: &str) -> Vec<String> {
     let first_width = (width as usize).saturating_sub(prefix.chars().count());
     let mut wrapped = wrap_to_width(header, first_width.max(1));
-    if wrapped.is_empty() {
-        wrapped.push(String::new());
-    }
-    wrapped
-}
-
-/// **RPC-391**: width-wrap a single diff body line. Diff lines carry their
-/// own line-number gutter and are short; wrapping keeps very wide lines
-/// from overflowing the viewport. Empty lines are preserved as one row.
-fn wrap_diff_line(line: &str, width: u16) -> Vec<String> {
-    let mut wrapped = wrap_to_width(line, width as usize);
     if wrapped.is_empty() {
         wrapped.push(String::new());
     }

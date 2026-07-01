@@ -6,17 +6,18 @@
 //! rpc012-board-agent-navigation, rpc018-agent-chrome,
 //! rpc018-app-bootstrap, rpc024-multi-session-store,
 //! rpc025-source-shape, agentview-shift-arrow-end-of-list-parity.
-use std::collections::HashMap;
-
 use codelet_rpc_types::{
     CompactionProgress, ModelInfo, SessionId, SessionStatus, ThinkingLevel, WorkUnitContext,
     WorkspaceInfo,
 };
+use std::collections::HashMap;
 
 pub mod blocklist_state;
 pub mod chrome_state;
 pub mod chunk_processor;
 pub mod chunk_wrap;
+pub mod diff_codec;
+pub mod diff_context;
 pub mod diff_decode;
 pub mod diff_format;
 pub mod history_state;
@@ -295,5 +296,4 @@ impl AgentViewStore {
         self.cached_history_snapshot.remove(session);
     }
 }
-
 // Other accessors live in store/agent_view/{chrome,role,work_unit,blocklist,supervisor}_state.rs.

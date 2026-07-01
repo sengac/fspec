@@ -1,79 +1,271 @@
-//! RPC-391 — decode marker-encoded diff lines into colored ratatui spans.
+//! RPC-393 — style typed `DiffDisplayRow`s into colored ratatui spans.
 //!
-//! Feature: spec/features/agentview-edit-diff-rendering.feature
+//! Feature: spec/features/agentview-edit-diff-structured-rows.feature
+//!          spec/features/agentview-edit-diff-rendering.feature
+//!          spec/features/agentview-edit-diff-padding.feature
 //!
-//! Mirrors the TS `VirtualList renderItem` decode (`AgentView.tsx:5345-5391`)
-//! and the `TurnContentModal` decode (`TurnContentModal.tsx:71-96`):
-//!   - line containing `[R]` → strip the 3-char marker, whole line gets the
-//!     dark-red background + white fg.
-//!   - line containing `[A]` → strip `[A]`, dark-green background + white fg.
-//!   - context line matching `^[L ]?\s*\d+\s{3}` → gray line-number gutter +
-//!     default-white content (split at the 3 spaces after the number).
-//!   - otherwise → a single default-styled span.
+//! Replaces the RPC-391 marker-decode (`[R]`/`[A]` `line.find` + the
+//! hand-rolled `context_gutter_len` byte-scanner + `strip_marker`) with a
+//! single typed styling function. The formatter ([`diff_format::build_diff_rows`])
+//! emits typed rows; the canonical-string codec
+//! ([`diff_format::to_line`]/[`diff_format::parse_line`]) carries them through
+//! the stored `ChunkSource::text` (re-wrapped on resize); the renderer parses
+//! a wrapped line back to a typed row and calls [`style_row`] — ONE styling
+//! function shared by the scrollback (`chunk_wrap`) and the modal
+//! (`turn_modal`). No `[R]`/`[A]` ever reaches the screen.
 //!
-//! Shared by `chunk_wrap` (scrollback) and `turn_modal` (the full-diff
-//! modal) so both decode identically and neither shows literal markers.
+//! **Gutter consistency (RPC-393 fix A)**: the line-number gutter is ALWAYS
+//! rendered dim/gray and OUTSIDE the colored bar; the red/green background
+//! fills from the marker column to the right edge. This makes the gutter
+//! column uniform top-to-bottom (no per-row-type flip) while preserving the
+//! RPC-392 full-width bars.
 
-use ratatui::style::{Color, Style};
+use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
+
+use super::diff_codec::{pad_left, parse_line};
+use super::diff_format::DiffDisplayRow;
+use crate::views::agent::text_wrap::wrap_to_width;
 
 /// Removed-line background `#8B0000` (TS `DIFF_COLORS.removed`).
 pub const DIFF_BG_REMOVED: Color = Color::Rgb(139, 0, 0);
 /// Added-line background `#006400` (TS `DIFF_COLORS.added`).
 pub const DIFF_BG_ADDED: Color = Color::Rgb(0, 100, 0);
 
-/// Decode a single marker-encoded diff line into styled spans.
+/// **RPC-393 (WARNING #1)**: the single-line styler, now derived from the ONE
+/// styling core. Both `style_row` and `style_row_lines` build their colored
+/// bars / gutters / elision spans through the SAME private helpers
+/// ([`changed_bar_row`], [`context_row`], [`elision_row`]) so the gutter / bar
+/// / elision rule lives in exactly one place.
 ///
-/// Returns the spans for the line (one or two). Markers are stripped so
-/// they never render literally.
-///
-/// **RPC-391**: width-agnostic decode (no padding). Equivalent to
-/// [`decode_diff_line_padded`] with `width == 0`. Kept as the
-/// no-width entry point so call sites that don't have a render width
-/// (and the modal's `is_decoded_diff_line` checks) stay clear.
-pub fn decode_diff_line(line: &str) -> Vec<Span<'static>> {
-    decode_diff_line_padded(line, 0)
+/// `style_row` styles the row as a SINGLE visual line at the real render
+/// `width`: a Removed/Added row is the dim gutter + ONE contiguous bar padded
+/// to `width - gutter_w` (so the spans total exactly `width` when content is
+/// shorter, and the content rides through unpadded — no trailing space — when
+/// it is already ≥ that room). This is the wrapped-fragment entry point
+/// (`style_wrapped_line` hands it ONE already-width-fit fragment), so it does
+/// not re-wrap. Saturating arithmetic — `width == 0` adds no padding and never
+/// panics. Display-width is the `chars().count()` proxy shared with
+/// `wrap_to_width` (DRY).
+pub fn style_row(row: &DiffDisplayRow, width: usize) -> Vec<Span<'static>> {
+    match row {
+        DiffDisplayRow::Removed { line_no, text } => {
+            changed_bar_row(*line_no, '-', text, DIFF_BG_REMOVED, width)
+        }
+        DiffDisplayRow::Added { line_no, text } => {
+            changed_bar_row(*line_no, '+', text, DIFF_BG_ADDED, width)
+        }
+        DiffDisplayRow::Context { line_no, text } => context_row(*line_no, text),
+        DiffDisplayRow::Elision { text } => elision_row(text),
+    }
 }
 
-/// **RPC-392**: decode a marker-encoded diff line, right-padding the
-/// `[R]`/`[A]` bar with spaces to `width` display columns so the
-/// background fills the row (parity with the TS `<Box flexGrow={1}>`).
+/// **RPC-393**: style a single WRAPPED diff body line (a fragment produced by
+/// `wrap_to_width` over a canonical [`to_line`] string). The first fragment of
+/// a row parses to its typed kind via [`parse_line`]; continuation fragments
+/// (which lost their gutter prefix on wrap) fall through to [`parse_line`]'s
+/// Elision branch and render as plain dim text — never as a leaked marker.
+/// `width` is the render width used to pad changed bars full-width.
+pub fn style_wrapped_line(line: &str, width: usize) -> Vec<Span<'static>> {
+    style_row(&parse_line(line), width)
+}
+
+/// **RPC-393 (WARNING #4)**: style one wrapped MODAL hard line, returning ONE
+/// styled `Vec<Span>` per visual row. `is_diff` gates ALL diff styling: when
+/// the turn is NOT a diff card the line is returned as a single raw span so a
+/// plain body line that merely LOOKS line-numbered (e.g. `"42   indented log"`)
+/// is never diff-styled. When it IS a diff card the line is parsed ONCE and
+/// wrapped continuation-safe via [`style_row_lines`] (CRITICAL #3) — no
+/// per-fragment re-parse, no phantom rows.
+pub fn style_modal_lines(line: &str, width: usize, is_diff: bool) -> Vec<Vec<Span<'static>>> {
+    if !is_diff {
+        let mut frags = wrap_to_width(line, width.max(1));
+        if frags.is_empty() {
+            frags.push(String::new());
+        }
+        return frags.into_iter().map(|f| vec![Span::raw(f)]).collect();
+    }
+    let parsed = parse_line(line);
+    if let DiffDisplayRow::Elision { text } = &parsed {
+        // Plain elision text (sentinel already stripped by parse_line): keep
+        // it as raw modal text so non-diff-looking gaps stay verbatim.
+        let mut frags = wrap_to_width(text, width.max(1));
+        if frags.is_empty() {
+            frags.push(String::new());
+        }
+        return frags.into_iter().map(|f| vec![Span::raw(f)]).collect();
+    }
+    style_row_lines(&parsed, width)
+}
+
+/// **RPC-393 (CRITICAL #3)**: style a typed [`DiffDisplayRow`] across a
+/// width-based wrap, returning ONE styled `Vec<Span>` per visual row. The
+/// gutter/marker/bar styling is applied only to the FIRST visual row; every
+/// continuation fragment is plain content of the SAME row (same background for
+/// changed bars, NO gutter, NO marker glyph) and is NEVER re-parsed as a fresh
+/// row — so a content fragment shaped like `"999 [A]+ …"` can never resurrect a
+/// phantom colored/context row on resize. Saturating at `width == 0`.
+pub fn style_row_lines(row: &DiffDisplayRow, width: usize) -> Vec<Vec<Span<'static>>> {
+    match row {
+        DiffDisplayRow::Removed { line_no, text } => {
+            changed_lines(*line_no, '-', text, DIFF_BG_REMOVED, width)
+        }
+        DiffDisplayRow::Added { line_no, text } => {
+            changed_lines(*line_no, '+', text, DIFF_BG_ADDED, width)
+        }
+        DiffDisplayRow::Context { line_no, text } => context_lines(*line_no, text, width),
+        DiffDisplayRow::Elision { text } => elision_lines(text, width),
+    }
+}
+
+/// Build the spans for ONE Removed/Added visual row: dim gray gutter (line
+/// number + space) OUTSIDE the bar, then a single colored bar span of
+/// `"{glyph} {text}"` padded to fill `width - gutter_w` on `bg` (white fg).
+/// Already-wide content rides through unpadded (no trailing space). Saturating
+/// — `width <= gutter_w` (incl. `width == 0`) pads nothing. This is the ONE
+/// place a changed bar is built; both `style_row` and `changed_lines` use it.
+fn changed_bar_row(
+    line_no: usize,
+    glyph: char,
+    text: &str,
+    bg: Color,
+    width: usize,
+) -> Vec<Span<'static>> {
+    let gutter = format!("{} ", gutter_num(line_no));
+    let gutter_w = gutter.chars().count();
+    let bar = pad_to_width(format!("{glyph} {text}"), width.saturating_sub(gutter_w));
+    vec![
+        Span::styled(gutter, gutter_style()),
+        Span::styled(bar, Style::default().bg(bg).fg(Color::White)),
+    ]
+}
+
+/// Build the spans for ONE Context visual row: dim gray gutter (line number +
+/// three separating spaces) + white content, NO background, NOT padded. The
+/// ONE place a context row is built.
+fn context_row(line_no: usize, text: &str) -> Vec<Span<'static>> {
+    vec![
+        Span::styled(format!("{}   ", gutter_num(line_no)), gutter_style()),
+        Span::styled(text.to_string(), Style::default().fg(Color::White)),
+    ]
+}
+
+/// Build the span for ONE Elision visual row: a single dim span carrying the
+/// already-indented text. Gap markers and collapse hints share this helper.
+fn elision_row(text: &str) -> Vec<Span<'static>> {
+    vec![Span::styled(
+        text.to_string(),
+        Style::default().add_modifier(Modifier::DIM),
+    )]
+}
+
+/// Wrap a Removed/Added row's content into one contiguous colored bar across a
+/// width-based wrap. The first visual row is built by [`changed_bar_row`] (dim
+/// gutter OUTSIDE the bar). Continuation rows are bar-bg content padded full
+/// width with NO gutter and NO marker — keeping the bar contiguous and never
+/// re-parsing a fragment as a fresh row.
+fn changed_lines(
+    line_no: usize,
+    glyph: char,
+    text: &str,
+    bg: Color,
+    width: usize,
+) -> Vec<Vec<Span<'static>>> {
+    let gutter_w = format!("{} ", gutter_num(line_no)).chars().count();
+    let content = format!("{glyph} {text}");
+    // The bar occupies the columns after the gutter. When the viewport is too
+    // narrow to hold even the gutter (`width <= gutter_w`, incl. `width == 0`)
+    // there is no room to wrap, so the content rides through unsliced on a
+    // single row — keeping the zero-width path panic-free with content intact.
+    let bar_room = width.saturating_sub(gutter_w);
+    if bar_room == 0 {
+        return vec![changed_bar_row(line_no, glyph, text, bg, width)];
+    }
+    let bar_style = Style::default().bg(bg).fg(Color::White);
+    let mut frags = wrap_to_width(&content, bar_room);
+    if frags.is_empty() {
+        frags.push(String::new());
+    }
+    let gutter = format!("{} ", gutter_num(line_no));
+    let indent = " ".repeat(gutter_w);
+    frags
+        .into_iter()
+        .enumerate()
+        .map(|(i, frag)| {
+            // First row: dim gutter OUTSIDE the bar. Continuation rows: blank
+            // bar-bg indent (NO gutter, NO marker) so the colored column stays
+            // contiguous and a fragment is never re-parsed as a fresh row.
+            let lead = if i == 0 {
+                Span::styled(gutter.clone(), gutter_style())
+            } else {
+                Span::styled(indent.clone(), bar_style)
+            };
+            vec![lead, Span::styled(pad_to_width(frag, bar_room), bar_style)]
+        })
+        .collect()
+}
+
+/// Wrap a Context row's content; the first visual row is built by
+/// [`context_row`]'s gutter rule, continuation rows are plain white content
+/// (no background, no gutter).
+fn context_lines(line_no: usize, text: &str, width: usize) -> Vec<Vec<Span<'static>>> {
+    let gutter = format!("{}   ", gutter_num(line_no));
+    let gutter_w = gutter.chars().count();
+    let content_width = width.saturating_sub(gutter_w).max(1);
+    let mut frags = wrap_to_width(text, content_width);
+    if frags.is_empty() {
+        frags.push(String::new());
+    }
+    let white = Style::default().fg(Color::White);
+    let mut out: Vec<Vec<Span<'static>>> = Vec::with_capacity(frags.len());
+    for (i, frag) in frags.into_iter().enumerate() {
+        if i == 0 {
+            out.push(vec![
+                Span::styled(gutter.clone(), gutter_style()),
+                Span::styled(frag, white),
+            ]);
+        } else {
+            out.push(vec![Span::styled(frag, white)]);
+        }
+    }
+    out
+}
+
+/// Wrap an Elision row's (sentinel-stripped) text into dim continuation rows.
 ///
-/// Context-gutter and plain lines are returned UNCHANGED (no padding, no
-/// background) — only the removed/added bars are padded. `width == 0`
-/// (or content already ≥ `width`) adds no padding and never panics
-/// (saturating arithmetic). The display-width metric is the same
-/// `chars().count()` proxy `wrap_to_width` uses (DRY).
-pub fn decode_diff_line_padded(line: &str, width: usize) -> Vec<Span<'static>> {
-    if let Some(idx) = line.find("[R]") {
-        return vec![colored_span(
-            pad_to_width(strip_marker(line, idx), width),
-            DIFF_BG_REMOVED,
-        )];
+/// The leading indent (gutter-width spaces decided by `elision_indent`) is
+/// preserved on every visual row: `wrap_to_width` word-wraps over-width
+/// paragraphs via `split_whitespace`, which would otherwise drop the leading
+/// spaces. We split the indent off, wrap only the trailing content against the
+/// reduced width, then re-apply the indent to each fragment via [`elision_row`]
+/// so a gap marker and a collapse hint keep ONE uniform indentation whether or
+/// not they wrap.
+fn elision_lines(text: &str, width: usize) -> Vec<Vec<Span<'static>>> {
+    let indent_len = text.chars().take_while(|c| *c == ' ').count();
+    let indent: String = " ".repeat(indent_len);
+    let content: String = text.chars().skip(indent_len).collect();
+    let content_width = width.saturating_sub(indent_len).max(1);
+    let mut frags = wrap_to_width(&content, content_width);
+    if frags.is_empty() {
+        frags.push(String::new());
     }
-    if let Some(idx) = line.find("[A]") {
-        return vec![colored_span(
-            pad_to_width(strip_marker(line, idx), width),
-            DIFF_BG_ADDED,
-        )];
-    }
-    if let Some(split) = context_gutter_len(line) {
-        let (gutter, content) = line.split_at(split);
-        return vec![
-            Span::styled(gutter.to_string(), Style::default().fg(Color::Gray)),
-            Span::styled(content.to_string(), Style::default().fg(Color::White)),
-        ];
-    }
-    vec![Span::raw(line.to_string())]
+    frags
+        .into_iter()
+        .map(|f| elision_row(&format!("{indent}{f}")))
+        .collect()
+}
+
+/// The uniform gutter style: dim/gray, no background. Applied identically to
+/// every row type so the line-number column never flips styling vertically.
+fn gutter_style() -> Style {
+    Style::default().fg(Color::Gray).add_modifier(Modifier::DIM)
 }
 
 /// Right-pad `text` with spaces to `width` DISPLAY columns (the
-/// `chars().count()` proxy shared with `wrap_to_width`). If the content
-/// is already as wide as / wider than `width`, it is returned unchanged
-/// (no truncation). Saturating arithmetic — `width == 0` adds nothing.
+/// `chars().count()` proxy shared with `wrap_to_width`). Already-wide content
+/// is returned unchanged; saturating — `width == 0` adds nothing.
 fn pad_to_width(text: String, width: usize) -> String {
-    let display = text.chars().count();
-    let pad = width.saturating_sub(display);
+    let pad = width.saturating_sub(text.chars().count());
     if pad == 0 {
         return text;
     }
@@ -82,106 +274,25 @@ fn pad_to_width(text: String, width: usize) -> String {
     out
 }
 
-/// Whether `line` is a marker/diff-context line that `decode_diff_line`
-/// will style (vs. a plain header/indicator line rendered as-is).
-pub fn is_decoded_diff_line(line: &str) -> bool {
-    line.contains("[R]") || line.contains("[A]") || context_gutter_len(line).is_some()
-}
-
-/// **RPC-391/392**: decode a single wrapped modal row into styled spans.
-/// Diff rows (markers / context gutter) get colored exactly like the
-/// scrollback; `[R]`/`[A]` bars are right-padded to `width` columns so the
-/// background fills the row. Non-diff rows render as a single raw span
-/// (parity with the previous plain-text modal). Shared so the modal never
-/// shows literal `[R]`/`[A]`.
-pub fn decode_modal_row(row: &str, width: usize) -> Vec<Span<'static>> {
-    if is_decoded_diff_line(row) {
-        decode_diff_line_padded(row, width)
-    } else {
-        vec![Span::raw(row.to_string())]
-    }
-}
-
-fn colored_span(text: String, bg: Color) -> Span<'static> {
-    Span::styled(text, Style::default().bg(bg).fg(Color::White))
-}
-
-/// Remove the 3-char marker (`[R]`/`[A]`) at byte `idx`, keeping the rest.
-fn strip_marker(line: &str, idx: usize) -> String {
-    let mut out = String::with_capacity(line.len().saturating_sub(3));
-    out.push_str(&line[..idx]);
-    out.push_str(&line[idx + 3..]);
-    out
-}
-
-/// If `line` matches `^[L ]?\s*\d+\s{3}` (optional tree connector / leading
-/// space, digits, then exactly three spaces), return the byte length of the
-/// gutter prefix (number + the 3 trailing spaces). Otherwise `None`.
-fn context_gutter_len(line: &str) -> Option<usize> {
-    let bytes = line.as_bytes();
-    let mut i = 0;
-    // Optional leading 'L' or ' ' (the tree connector slot).
-    if i < bytes.len() && (bytes[i] == b'L' || bytes[i] == b' ') {
-        i += 1;
-    }
-    // Any further leading spaces (line-number left padding).
-    while i < bytes.len() && bytes[i] == b' ' {
-        i += 1;
-    }
-    // At least one digit.
-    let digit_start = i;
-    while i < bytes.len() && bytes[i].is_ascii_digit() {
-        i += 1;
-    }
-    if i == digit_start {
-        return None;
-    }
-    // Exactly three spaces follow the number.
-    if line.get(i..i + 3) == Some("   ") {
-        Some(i + 3)
-    } else {
-        None
-    }
+/// Left-pad a line number to at least the minimum gutter width with spaces,
+/// matching the canonical codec column layout. Delegates to the codec's
+/// [`pad_left`] (DRY — one padding rule).
+fn gutter_num(value: usize) -> String {
+    pad_left(value)
 }
 
 #[cfg(test)]
 mod tests {
-    //! Feature: spec/features/agentview-edit-diff-rendering.feature
+    //! Feature: spec/features/agentview-edit-diff-structured-rows.feature
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
     use super::*;
 
     #[test]
-    fn removed_line_strips_marker_and_colors_red() {
-        let spans = decode_diff_line("  2 [R]- line2");
-        assert_eq!(spans.len(), 1);
-        assert_eq!(spans[0].style.bg, Some(DIFF_BG_REMOVED));
-        assert_eq!(spans[0].style.fg, Some(Color::White));
-        assert!(!spans[0].content.contains("[R]"));
-        assert!(spans[0].content.contains("line2"));
-    }
-
-    #[test]
-    fn added_line_strips_marker_and_colors_green() {
-        let spans = decode_diff_line("  3 [A]+ CHANGED");
-        assert_eq!(spans[0].style.bg, Some(DIFF_BG_ADDED));
-        assert!(!spans[0].content.contains("[A]"));
-    }
-
-    #[test]
-    fn context_line_splits_gray_gutter_and_white_content() {
-        let spans = decode_diff_line("L 250   foo");
-        assert_eq!(spans.len(), 2);
-        assert_eq!(spans[0].style.fg, Some(Color::Gray));
-        assert!(spans[0].content.contains("250"));
-        assert_eq!(spans[1].style.fg, Some(Color::White));
-        assert_eq!(spans[1].content.as_ref(), "foo");
-    }
-
-    #[test]
-    fn plain_line_is_a_single_raw_span() {
-        let spans = decode_diff_line("... +5 lines (select turn to /expand)");
-        assert_eq!(spans.len(), 1);
-        assert!(spans[0].style.bg.is_none());
+    fn wrapped_line_with_no_width_does_not_panic() {
+        let spans = style_wrapped_line("  2 [R]- line2", 0);
+        let text: String = spans.iter().map(|s| s.content.as_ref()).collect();
+        assert!(text.contains("line2"));
+        assert!(!text.contains("[R]"));
     }
 }

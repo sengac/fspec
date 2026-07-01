@@ -30,7 +30,7 @@ impl App {
         match action {
             SlashCommandAction::Help => {
                 if !self.compositor.contains("help-dialog") {
-                    self.compositor.push(Box::new(HelpDialog::new()));
+                    self.compositor.push(Box::new(HelpDialog::for_agent()));
                 }
             }
             SlashCommandAction::Clear => {

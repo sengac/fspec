@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use codelet_fspec_tui::store::agent_view::chunk_wrap::wrap_source;
 use codelet_fspec_tui::store::agent_view::diff_decode::{
-    decode_diff_line_padded, DIFF_BG_ADDED as DECODE_BG_ADDED, DIFF_BG_REMOVED as DECODE_BG_REMOVED,
+    style_wrapped_line, DIFF_BG_ADDED as DECODE_BG_ADDED, DIFF_BG_REMOVED as DECODE_BG_REMOVED,
 };
 use codelet_fspec_tui::views::agent::rendered_chunk::ChunkSource;
 use codelet_fspec_tui::views::agent::turn_modal::TurnContentModal;
@@ -171,16 +171,21 @@ fn removed_line_is_padded_to_a_full_width_red_bar() {
     let line = "  2 [R]- line2";
     let width = 40;
     // @step When it is decoded with that render width
-    let spans = decode_diff_line_padded(line, width);
+    let spans = style_wrapped_line(line, width);
     // @step Then the resulting span content display-width equals the render width
-    assert_eq!(spans.len(), 1);
-    assert_eq!(span_width(&spans[0]), width);
+    let total: usize = spans.iter().map(span_width).sum();
+    assert_eq!(total, width);
     // @step And the span background is rgb 139,0,0 and the foreground is white
-    assert_eq!(spans[0].style.bg, Some(DECODE_BG_REMOVED));
-    assert_eq!(spans[0].style.bg, Some(DIFF_BG_REMOVED));
-    assert_eq!(spans[0].style.fg, Some(Color::White));
+    // RPC-393: the gutter is now a dim/gray span OUTSIDE the bar; the bar span
+    // carries the background. The line still totals the render width.
+    let bar = spans
+        .iter()
+        .find(|s| s.style.bg == Some(DECODE_BG_REMOVED))
+        .expect("red bar span");
+    assert_eq!(bar.style.bg, Some(DIFF_BG_REMOVED));
+    assert_eq!(bar.style.fg, Some(Color::White));
     // @step And the span content contains no removed marker
-    assert!(!spans[0].content.contains("[R]"));
+    assert!(spans.iter().all(|s| !s.content.contains("[R]")));
 }
 
 #[test]
@@ -189,16 +194,19 @@ fn added_line_is_padded_to_a_full_width_green_bar() {
     let line = "  3 [A]+ CHANGED";
     let width = 40;
     // @step When it is decoded with that render width
-    let spans = decode_diff_line_padded(line, width);
+    let spans = style_wrapped_line(line, width);
     // @step Then the resulting span content display-width equals the render width
-    assert_eq!(spans.len(), 1);
-    assert_eq!(span_width(&spans[0]), width);
+    let total: usize = spans.iter().map(span_width).sum();
+    assert_eq!(total, width);
     // @step And the span background is rgb 0,100,0 and the foreground is white
-    assert_eq!(spans[0].style.bg, Some(DECODE_BG_ADDED));
-    assert_eq!(spans[0].style.bg, Some(DIFF_BG_ADDED));
-    assert_eq!(spans[0].style.fg, Some(Color::White));
+    let bar = spans
+        .iter()
+        .find(|s| s.style.bg == Some(DECODE_BG_ADDED))
+        .expect("green bar span");
+    assert_eq!(bar.style.bg, Some(DIFF_BG_ADDED));
+    assert_eq!(bar.style.fg, Some(Color::White));
     // @step And the span content contains no added marker
-    assert!(!spans[0].content.contains("[A]"));
+    assert!(spans.iter().all(|s| !s.content.contains("[A]")));
 }
 
 #[test]
@@ -207,7 +215,7 @@ fn context_line_is_not_given_a_colored_background_bar() {
     let line = "L 250   foo";
     let width = 40;
     // @step When it is decoded with a render width wider than the line
-    let spans = decode_diff_line_padded(line, width);
+    let spans = style_wrapped_line(line, width);
     // @step Then it produces a gray-gutter span and a white-content span
     assert_eq!(spans.len(), 2);
     assert_eq!(spans[0].style.fg, Some(Color::Gray));
@@ -226,7 +234,7 @@ fn gap_marker_or_plain_line_is_unchanged() {
     let line = "    ... (5 lines)";
     let width = 40;
     // @step When it is decoded with a render width
-    let spans = decode_diff_line_padded(line, width);
+    let spans = style_wrapped_line(line, width);
     // @step Then it is a single span with no background and no extra padding bar
     assert_eq!(spans.len(), 1);
     assert!(spans[0].style.bg.is_none());
@@ -236,19 +244,19 @@ fn gap_marker_or_plain_line_is_unchanged() {
 #[test]
 fn content_already_at_or_over_width_is_not_padded_or_truncated() {
     // @step Given a decoded added diff line whose stripped content display-width is at least the render width
-    let content_after_strip = format!("12 + {}", "x".repeat(40));
     let line = format!("12 [A]+ {}", "x".repeat(40));
-    let stripped_width = content_after_strip.chars().count();
     let width = 10;
-    assert!(stripped_width >= width);
     // @step When it is decoded with that render width
-    let spans = decode_diff_line_padded(&line, width);
+    let spans = style_wrapped_line(&line, width);
     // @step Then the content is returned unchanged with no added spaces and no truncation
-    assert_eq!(spans.len(), 1);
-    assert_eq!(span_width(&spans[0]), stripped_width);
-    assert!(!spans[0].content.ends_with(' '));
+    let bar = spans
+        .iter()
+        .find(|s| s.style.bg == Some(DIFF_BG_ADDED))
+        .expect("green bar span");
+    assert!(!bar.content.ends_with(' '));
+    assert!(bar.content.contains(&"x".repeat(40)));
     // @step And the span background is rgb 0,100,0
-    assert_eq!(spans[0].style.bg, Some(DIFF_BG_ADDED));
+    assert_eq!(bar.style.bg, Some(DIFF_BG_ADDED));
 }
 
 #[test]
@@ -256,11 +264,11 @@ fn zero_width_does_not_panic_and_pads_non_negatively() {
     // @step Given a decoded removed diff line
     let line = "  2 [R]- line2";
     // @step When it is decoded with width zero
-    let spans = decode_diff_line_padded(line, 0);
+    let spans = style_wrapped_line(line, 0);
     // @step Then it does not panic and no padding is added
-    assert_eq!(spans.len(), 1);
-    assert!(!spans[0].content.ends_with(' '));
-    assert!(spans[0].content.contains("line2"));
+    let text: String = spans.iter().map(|s| s.content.as_ref()).collect();
+    assert!(!text.ends_with("  "));
+    assert!(text.contains("line2"));
 }
 
 fn render_rows(modal: &TurnContentModal, w: u16, h: u16) -> Vec<Vec<ratatui::buffer::Cell>> {
