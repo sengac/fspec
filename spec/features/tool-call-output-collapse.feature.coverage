@@ -54,47 +54,6 @@
       ]
     },
     {
-      "name": "Settled tool card with a long body collapses to the first 8 lines",
-      "testMappings": [
-        {
-          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
-          "lines": "151-189",
-          "implMappings": [
-            {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
-              "lines": [
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Streaming tool card shows only the last 10 lines",
       "testMappings": [
         {
@@ -134,57 +93,6 @@
       ]
     },
     {
-      "name": "A finished stream switches from the tail window to the collapsed view",
-      "testMappings": [
-        {
-          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
-          "lines": "230-272",
-          "implMappings": [
-            {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
-              "lines": [
-                146,
-                147,
-                148,
-                149,
-                150
-              ]
-            },
-            {
-              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
-              "lines": [
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "The full body is preserved for the content modal",
       "testMappings": [
         {
@@ -217,6 +125,64 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Settled tool card with a long body collapses to the last 8 lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "lines": "145-179",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A finished stream stays pinned to the end of output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tool_call_output_collapse_rpc389.rs",
+          "lines": "226-268",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+              "lines": [
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
@@ -231,6 +197,6 @@
       "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
       "codelet/fspec-tui/src/views/agent/scrollback_select.rs"
     ],
-    "totalLinesCovered": 326
+    "totalLinesCovered": 293
   }
 }

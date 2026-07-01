@@ -17,16 +17,16 @@ Feature: Tool Call Output Collapse
   #
   # BUSINESS RULES:
   #   1. A settled tool-call card whose body is 8 or fewer lines shows the full body with no truncation indicator
-  #   2. A settled tool-call card whose body exceeds 8 lines shows the first 8 body lines followed by an indicator line '... +N lines (Enter to view full)' where N is the number of hidden body lines
+  #   2. A settled tool-call card whose body exceeds 8 lines shows the LAST 8 body lines (end-pinned, RPC-399) followed by an indicator line '... +N lines (Enter to view full)' where N is the number of hidden body lines above the window
   #   3. While a tool-call card is still streaming, its body shows only the last 10 lines (tail window) with no indicator line
   #   4. The collapse/window applies only to ToolCall chunks; the '● ToolName(args)' header line is always kept and the line threshold counts hard newline-delimited body lines (pre-wrap), not other chunk kinds
   #   5. The full untruncated body is preserved in ChunkSource.text so the existing TurnContentModal (Enter in SELECT mode) still shows every line
   #
   # EXAMPLES:
   #   1. A settled tool card with a 5-line body renders all 5 lines and no '... +N lines' indicator
-  #   2. A settled tool card with a 20-line body renders the first 8 body lines then '... +12 lines (Enter to view full)'
+  #   2. A settled tool card with a 20-line body renders the last 8 body lines then '... +12 lines (Enter to view full)'
   #   3. A streaming tool card with a 25-line body renders only the last 10 body lines and no indicator
-  #   4. A tool card that finishes streaming with a 25-line body switches from the last-10 tail window to first-8 plus '... +17 lines (Enter to view full)'
+  #   4. A tool card that finishes streaming with a 25-line body stays end-pinned: it keeps the last body lines (last-8 window plus '... +17 lines (Enter to view full)') rather than jumping to the first lines
   #   5. Selecting a collapsed 20-line tool card and pressing Enter opens the TurnContentModal showing all 20 lines
   #
   # ========================================
@@ -42,10 +42,10 @@ Feature: Tool Call Output Collapse
     Then the rendered lines show all 5 body lines
     And no "... +N lines" indicator line is shown
 
-  Scenario: Settled tool card with a long body collapses to the first 8 lines
+  Scenario: Settled tool card with a long body collapses to the last 8 lines
     Given a settled tool-call card whose body has 20 lines
     When the tool-call card is rendered into scrollback lines
-    Then the rendered lines show the first 8 body lines
+    Then the rendered lines show the last 8 body lines
     And the next rendered line is "... +12 lines (Enter to view full)"
 
   Scenario: Streaming tool card shows only the last 10 lines
@@ -54,11 +54,11 @@ Feature: Tool Call Output Collapse
     Then the rendered lines show only the last 10 body lines
     And no "... +N lines" indicator line is shown
 
-  Scenario: A finished stream switches from the tail window to the collapsed view
+  Scenario: A finished stream stays pinned to the end of output
     Given a streaming tool-call card whose body has 25 lines
     When the tool-call card finishes streaming
     And the tool-call card is rendered into scrollback lines
-    Then the rendered lines show the first 8 body lines
+    Then the rendered lines show the last 8 body lines
     And the next rendered line is "... +17 lines (Enter to view full)"
 
   Scenario: The full body is preserved for the content modal

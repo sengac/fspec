@@ -17,17 +17,24 @@
 //!
 //! **RPC-389**: `ChunkKind::ToolCall` bodies are collapsed/windowed at
 //! this render layer (NOT in `ChunkSource::text`, which stays full for
-//! the `TurnContentModal`). Settled cards keep the header + first 8 body
-//! lines + a `... +N lines (Enter to view full)` indicator; streaming
-//! cards keep the header + the last 10 body lines (tail window). Mirrors
-//! `AgentView.tsx::formatCollapsedOutput` (8) + `createStreamingWindow`
-//! (10), counting hard `\n`-delimited body lines pre-wrap.
+//! the `TurnContentModal`). Streaming cards keep the header + the last 10
+//! body lines (tail window). Mirrors `AgentView.tsx::formatCollapsedOutput`
+//! (8) + `createStreamingWindow` (10), counting hard `\n`-delimited body
+//! lines pre-wrap.
+//!
+//! **RPC-399**: settled tool-call cards are END-pinned — they keep the
+//! header + the LAST 8 body lines + a `... +N lines (Enter to view full)`
+//! indicator (N = lines hidden ABOVE the window). This supersedes the
+//! original RPC-389 first-8 behavior so a card that finishes streaming
+//! stays anchored to the last lines the user was watching instead of
+//! jumping back to the start.
 
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 
 use super::diff_codec::parse_line;
 use super::diff_decode::style_row_lines;
+use super::stderr::{strip_marker, STDERR_MARKER};
 use crate::views::agent::text_wrap::wrap_to_width;
 use crate::views::agent::{ChunkKind, ChunkSource};
 
@@ -70,7 +77,8 @@ pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
     // header line — first `\n`-segment — is always kept). Returns early
     // with the fully rendered lines including the dimmed indicator.
     if matches!(source.kind, ChunkKind::ToolCall { .. }) {
-        return wrap_tool_call(source, width, style, body_style, prefix);
+        let is_error = matches!(source.kind, ChunkKind::ToolCall { is_error: true, .. });
+        return wrap_tool_call(source, width, style, body_style, prefix, is_error);
     }
 
     let hard_lines: Vec<&str> = source.text.split('\n').collect();
@@ -110,6 +118,7 @@ fn wrap_tool_call(
     style: Style,
     body_style: Style,
     prefix: &str,
+    is_error: bool,
 ) -> Vec<Line<'static>> {
     let (header, body) = match source.text.split_once('\n') {
         Some((h, b)) => (h, Some(b)),
@@ -152,12 +161,22 @@ fn wrap_tool_call(
     let (visible, indicator) = collapse_tool_body(&body_lines, source.is_streaming);
 
     for hard in visible {
-        let mut wrapped = wrap_to_width(hard, width as usize);
+        // RPC-400: a body line is red when the whole card is an error OR the
+        // line carries the stderr marker; the marker is stripped BEFORE wrap
+        // so it never reaches the screen (parity with AgentView.tsx:5393-5422).
+        let red = is_error || hard.contains(STDERR_MARKER);
+        let stripped = strip_marker(hard);
+        let line_style = if red {
+            Style::default().fg(Color::Red)
+        } else {
+            body_style
+        };
+        let mut wrapped = wrap_to_width(&stripped, width as usize);
         if wrapped.is_empty() {
             wrapped.push(String::new());
         }
         for w in wrapped {
-            out.push(Line::from(Span::styled(w, body_style)));
+            out.push(Line::from(Span::styled(w, line_style)));
         }
     }
 
@@ -182,11 +201,12 @@ fn wrap_header(header: &str, width: u16, prefix: &str) -> Vec<String> {
     wrapped
 }
 
-/// **RPC-389**: choose the visible body lines + optional indicator text.
+/// **RPC-389/RPC-399**: choose the visible body lines + optional indicator.
 ///
 /// - Streaming: last `STREAMING_WINDOW_SIZE` lines, no indicator.
-/// - Settled: if `> COLLAPSED_LINES`, first `COLLAPSED_LINES` lines + a
-///   `... +N lines (Enter to view full)` indicator (N = hidden count);
+/// - Settled: if `> COLLAPSED_LINES`, the LAST `COLLAPSED_LINES` lines
+///   (end-pinned) + a `... +N lines (Enter to view full)` indicator, where
+///   N is the number of lines hidden ABOVE the window (N = total - 8);
 ///   else all lines, no indicator.
 fn collapse_tool_body<'a>(
     body_lines: &[&'a str],
@@ -203,7 +223,8 @@ fn collapse_tool_body<'a>(
     if total > COLLAPSED_LINES {
         let remaining = total - COLLAPSED_LINES;
         let indicator = format!("... +{remaining} lines (Enter to view full)");
-        return (body_lines[..COLLAPSED_LINES].to_vec(), Some(indicator));
+        let start = total - COLLAPSED_LINES;
+        return (body_lines[start..].to_vec(), Some(indicator));
     }
     (body_lines.to_vec(), None)
 }
@@ -239,15 +260,16 @@ mod tests {
         assert!(indicator.is_none());
     }
 
-    /// **RPC-389** boundary: a SETTLED body of 9 lines (one over the
-    /// threshold) collapses to the first 8 with a `... +1 lines` indicator.
+    /// **RPC-399** boundary: a SETTLED body of 9 lines (one over the
+    /// threshold) collapses to the LAST 8 (end-pinned) with a `... +1 lines`
+    /// indicator (the single hidden line is ABOVE the window).
     #[test]
-    fn settled_body_of_nine_lines_collapses_to_first_eight_with_indicator() {
+    fn settled_body_of_nine_lines_collapses_to_last_eight_with_indicator() {
         let body: Vec<&str> = vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9"];
         let (visible, indicator) = collapse_tool_body(&body, false);
         assert_eq!(
             visible,
-            vec!["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"]
+            vec!["l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9"]
         );
         assert_eq!(
             indicator,

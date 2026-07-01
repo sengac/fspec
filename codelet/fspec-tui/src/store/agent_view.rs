@@ -4,8 +4,7 @@
 //! introduced by RPC-024. End-of-list navigation (RPC-096) lives in
 //! the `navigation` sibling module. Feature files:
 //! rpc012-board-agent-navigation, rpc018-agent-chrome,
-//! rpc018-app-bootstrap, rpc024-multi-session-store,
-//! rpc025-source-shape, agentview-shift-arrow-end-of-list-parity.
+//! rpc018-app-bootstrap, rpc024-multi-session-store, rpc025-source-shape.
 use codelet_rpc_types::{
     CompactionProgress, ModelInfo, SessionId, SessionStatus, ThinkingLevel, WorkUnitContext,
     WorkspaceInfo,
@@ -28,6 +27,7 @@ pub mod navigation;
 pub mod pending_tool_diff;
 pub mod role_state;
 pub mod session_context;
+pub mod stderr;
 pub mod supervisor_state;
 pub mod token_state;
 pub mod tool_args;

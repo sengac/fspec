@@ -25,6 +25,7 @@ use ratatui::text::Span;
 
 use super::diff_codec::{pad_left, parse_line};
 use super::diff_format::DiffDisplayRow;
+use super::stderr::style_modal_raw_line;
 use crate::views::agent::text_wrap::wrap_to_width;
 
 /// Removed-line background `#8B0000` (TS `DIFF_COLORS.removed`).
@@ -79,11 +80,7 @@ pub fn style_wrapped_line(line: &str, width: usize) -> Vec<Span<'static>> {
 /// per-fragment re-parse, no phantom rows.
 pub fn style_modal_lines(line: &str, width: usize, is_diff: bool) -> Vec<Vec<Span<'static>>> {
     if !is_diff {
-        let mut frags = wrap_to_width(line, width.max(1));
-        if frags.is_empty() {
-            frags.push(String::new());
-        }
-        return frags.into_iter().map(|f| vec![Span::raw(f)]).collect();
+        return style_modal_raw_line(line, |l| wrap_to_width(l, width.max(1)));
     }
     let parsed = parse_line(line);
     if let DiffDisplayRow::Elision { text } = &parsed {

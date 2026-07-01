@@ -12,6 +12,7 @@ use ratatui::style::Color;
 use super::markdown_tables::format_markdown_tables;
 use super::pending_tool_diff::{capture_pending_diff, produce_diff_strings};
 use super::session_context::SessionContext;
+use super::stderr::maybe_mark;
 use super::tool_args::extract_tool_args_display;
 use crate::views::agent::{ChunkKind, ChunkSource};
 
@@ -172,9 +173,10 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                         source.text.push_str(&sanitized);
                     }
                 }
-                // RPC-389: a ToolResult settles the card — clear the
-                // streaming flag so `wrap_source` switches the inline
-                // view from the tail window to the first-8 collapse.
+                // RPC-389/RPC-399: a ToolResult settles the card — clear the
+                // streaming flag so `wrap_source` switches the inline view from
+                // the streaming tail window to the settled end-pinned (last-8)
+                // collapse, keeping the last output lines the user was watching.
                 source.is_streaming = false;
                 if let ChunkKind::ToolCall { is_error, .. } = &mut source.kind {
                     *is_error = info.is_error;
@@ -213,11 +215,12 @@ pub fn handle_tool_progress(ctx: &mut SessionContext, info: &ToolProgressInfo) {
                 if !source.text.ends_with('\n') {
                     source.text.push('\n');
                 }
-                let trimmed = info.output_chunk.trim_end_matches('\n');
-                source.text.push_str(trimmed);
-                // RPC-389: live progress means the card is still
-                // streaming — `wrap_source` shows the last-10 tail window
-                // until a ToolResult settles it.
+                // RPC-400: an is_stderr chunk is prefixed per line with
+                // STDERR_MARKER so it renders red; is_stderr=false verbatim.
+                let marked = maybe_mark(&info.output_chunk, info.is_stderr);
+                source.text.push_str(marked.trim_end_matches('\n'));
+                // RPC-389: live progress keeps the card streaming (last-10
+                // tail window) until a ToolResult settles it.
                 source.is_streaming = true;
             }
         }

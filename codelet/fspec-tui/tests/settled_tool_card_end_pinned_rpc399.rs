@@ -1,17 +1,15 @@
-//! RPC-389 — tool-call output collapse + streaming window parity.
+//! RPC-399 — settled tool card must stay pinned to the END of output.
 //!
-//! Feature: spec/features/tool-call-output-collapse.feature
+//! Feature: spec/features/settled-tool-card-pinned-to-end.feature
 //!
-//! Authoritative TS reference:
-//!   src/tui/components/AgentView.tsx:533-605
-//!     (formatCollapsedOutput COLLAPSED_LINES=8 + createStreamingWindow
-//!      STREAMING_WINDOW_SIZE=10)
-//!
-//! These tests drive the REAL render path: push a ToolCall chunk, then a
-//! ToolProgress (streaming) and/or ToolResult (settled) via the store, and
-//! assert the rendered (wrapped) `lines` of the tool-call card. They MUST
-//! fail (red phase) against the current verbatim `wrap_source` which dumps
-//! every body line with no cap.
+//! These tests drive the REAL render path (mirroring RPC-389 helpers):
+//! push a ToolCall chunk, then ToolProgress (streaming) and/or ToolResult
+//! (settle) via the store, and assert the rendered (wrapped) `lines` of the
+//! tool-call card. They encode the NEW end-pinned contract: a settled
+//! overflowing body shows the LAST 8 lines (not the first 8), with a
+//! `... +N lines (Enter to view full)` indicator where N lines are hidden
+//! ABOVE the window. They MUST fail (red phase) against the current
+//! first-8 `collapse_tool_body`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -60,8 +58,7 @@ fn tool_progress_chunk(tool_call_id: &str, name: &str, chunk: &str) -> StreamChu
     })
 }
 
-/// All rendered lines (one String per `Line`, spans concatenated) of the
-/// FIRST chunk (the tool-call card) in s-1's scrollback.
+/// All rendered lines of the FIRST chunk (the tool-call card) in s-1.
 fn first_chunk_lines(app: &App, id: &SessionId) -> Vec<String> {
     let ctx = app
         .agent_view_store()
@@ -103,6 +100,12 @@ fn numbered_body(n: usize) -> String {
 
 const INDICATOR_PREFIX: &str = "... +";
 
+fn has_line(lines: &[String], token: &str) -> bool {
+    // Exact body-line match: a rendered line equal to the token (a
+    // whole numbered body line), so "line-1" does not match "line-12".
+    lines.iter().any(|l| l == token)
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Settled tool card with a short body shows the full body
 // ─────────────────────────────────────────────────────────────────────────
@@ -126,7 +129,7 @@ fn settled_short_body_shows_full_body() {
     // @step Then the rendered lines show all 5 body lines
     for i in 1..=5 {
         assert!(
-            lines.iter().any(|l| l.contains(&format!("line-{i}"))),
+            has_line(&lines, &format!("line-{i}")),
             "expected body line-{i}; got {lines:?}"
         );
     }
@@ -139,7 +142,6 @@ fn settled_short_body_shows_full_body() {
 
 // ─────────────────────────────────────────────────────────────────────────
 // Scenario: Settled tool card with a long body collapses to the last 8 lines
-// (RPC-399: end-pinned contract supersedes the original first-8 behavior)
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
@@ -161,15 +163,16 @@ fn settled_long_body_collapses_to_last_8() {
     // @step Then the rendered lines show the last 8 body lines
     for i in 13..=20 {
         assert!(
-            lines.iter().any(|l| l == &format!("line-{i}")),
+            has_line(&lines, &format!("line-{i}")),
             "expected last-8 body line-{i}; got {lines:?}"
         );
     }
+    // @step And the earlier body lines are hidden
     assert!(
-        !lines.iter().any(|l| l == "line-12"),
-        "line-12 must be hidden (above last-8 window); got {lines:?}"
+        !has_line(&lines, "line-12"),
+        "line-12 must be hidden (above the last-8 window); got {lines:?}"
     );
-    // @step And the next rendered line is "... +12 lines (Enter to view full)"
+    // @step And the rendered lines include "... +12 lines (Enter to view full)"
     assert!(
         lines
             .iter()
@@ -203,12 +206,12 @@ fn streaming_body_shows_last_10() {
     // @step Then the rendered lines show only the last 10 body lines
     for i in 16..=25 {
         assert!(
-            lines.iter().any(|l| l.contains(&format!("line-{i}"))),
+            has_line(&lines, &format!("line-{i}")),
             "expected tail body line-{i}; got {lines:?}"
         );
     }
     assert!(
-        !lines.iter().any(|l| l.contains("line-15")),
+        !has_line(&lines, "line-15"),
         "line-15 must be outside the tail window; got {lines:?}"
     );
     // @step And no "... +N lines" indicator line is shown
@@ -219,12 +222,11 @@ fn streaming_body_shows_last_10() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: A finished stream stays pinned to the END of output
-// (RPC-399: end-pinned contract supersedes the original first-8 behavior)
+// Scenario: A finished stream stays pinned to the end of output
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn finished_stream_switches_to_collapsed_view() {
+fn finished_stream_stays_pinned_to_end() {
     let mut app = app_with_session();
     // @step Given a streaming tool-call card whose body has 25 lines
     app.dispatch(Action::ChunkReceived(
@@ -250,15 +252,16 @@ fn finished_stream_switches_to_collapsed_view() {
     // @step Then the rendered lines show the last 8 body lines
     for i in 18..=25 {
         assert!(
-            lines.iter().any(|l| l == &format!("line-{i}")),
+            has_line(&lines, &format!("line-{i}")),
             "expected last-8 body line-{i}; got {lines:?}"
         );
     }
+    // @step And the first body line is hidden
     assert!(
-        !lines.iter().any(|l| l == "line-1"),
+        !has_line(&lines, "line-1"),
         "line-1 must be hidden after settle (end-pinned); got {lines:?}"
     );
-    // @step And the next rendered line is "... +17 lines (Enter to view full)"
+    // @step And the rendered lines include "... +17 lines (Enter to view full)"
     assert!(
         lines
             .iter()
