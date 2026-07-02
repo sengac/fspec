@@ -154,7 +154,11 @@ impl App {
         None
     }
 
-    /// Forward a paste payload to the Compositor's stub paste handler.
+    /// RPC-403: paste routing mirrors the `Event::Key` stage order —
+    /// the Compositor's modal layers get first crack at the intact
+    /// `Event::Paste` (Stage 2); when no layer consumes it the paste
+    /// falls back through the Navigator → AgentView → MultiLineInput
+    /// (Stage 3), whose gated paste branch inserts the text verbatim.
     pub fn handle_paste(&mut self, text: &str) -> EventResult {
         let result = self.compositor.handle_paste(text);
         if let EventResult::Consumed(Some(callback)) = result {
@@ -162,8 +166,14 @@ impl App {
             self.should_render = true;
             return EventResult::consumed();
         }
+        if result.is_consumed() {
+            self.should_render = true;
+            return result;
+        }
+        let event = Event::Paste(text.to_string());
+        let nav_result = self.navigator.handle_event(&event, &self.board_store);
         self.should_render = true;
-        result
+        nav_result
     }
 
     /// Paint the Navigator (Board or Agent + footer) first, then the

@@ -3,7 +3,6 @@
 @cli
 @RPC-212
 Feature: Port create-feature command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/create_feature.rs: run(args_json,&Path) with args {name}. Helpers to_kebab_case + feature_template (verbatim TS template incl. trailing newline). Coverage written via crate::types::coverage::{CoverageFile,CoverageScenario,CoverageStats}; scenario names line-scanned for 'Scenario:'/'Scenario Outline:'. JSON.stringify(null,2) parity = serde_json::to_string_pretty.
   Prefill detection + file-naming reminder ported inline (no shared io util exists in fspec-core). Reminders honour FSPEC_DISABLE_REMINDERS=1 (suppressed). Response envelope mirrors TS CreateFeatureResult {filePath, prefillDetection{hasPrefill,matches,systemReminder?}, coverageFile{created,path?,status,message}, fileNamingReminder?}; CLI bridge prints ✓ lines + reminders.
@@ -30,7 +29,6 @@ Feature: Port create-feature command to Rust
   #   4. CLI 'fspec create-feature "Payment Processing"' prints '✓ Created spec/features/payment-processing.feature', the coverage '✓ Created ...' line, exits 0, and the prefill system-reminder appears on stdout
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to create a new Gherkin feature file with the standard template from a capability name

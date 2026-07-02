@@ -4,7 +4,6 @@
 @tui
 @RPC-352
 Feature: Provider settings list-mode has no scrollbar (TS + /model parity)
-
   """
   The /provider List view renders via body_render.rs -> list::render_list -> list_nav_render::render_nav_items. A shared scrollbar painter (components::list_scrollbar::render_list_scrollbar) is reused by both /provider and /model (model_selector/rows_render.rs). Render-only change: scroll-state logic (adjust_scroll/ensure_visible) is unchanged.
   """
@@ -27,7 +26,6 @@ Feature: Provider settings list-mode has no scrollbar (TS + /model parity)
   #   4. Scrolling the provider list down moves the ■ thumb to a lower row than at scroll_offset 0
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user on the /provider list view
     I want to see a proportional scrollbar when the provider list overflows

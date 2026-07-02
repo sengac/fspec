@@ -7,7 +7,6 @@
 @tui
 @slash-command
 Feature: RPC-074 — /clear E2E (real fspec binary) emits no TS-divergent notice
-
   """
   E2E regression net for RPC-074 — the real `fspec` binary (built with
   --features test-stub-provider) is launched under @microsoft/tui-test

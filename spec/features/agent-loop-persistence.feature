@@ -34,9 +34,9 @@ Feature: Agent loop persists user, assistant, tool_result, and token state per t
     """
     As a fspec user
     I want every turn's user/assistant/tool-result/token state persisted to disk
-       at the canonical NAPI call sites
+    at the canonical NAPI call sites
     So that /resume after a binary restart replays the exact scrollback I left,
-       not an empty session
+    not an empty session
     """
 
   Scenario: persist_user_message writes a User MessageEnvelope before the LLM stream begins

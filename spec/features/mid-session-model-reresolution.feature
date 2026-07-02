@@ -4,7 +4,6 @@
 @session
 @RPC-343
 Feature: Model selector model-change re-resolves nothing server-side (drops rich metadata)
-
   """
   Extract creation-time resolution (model-type detect plus select_model/set_model_direct plus limits compute) into a shared helper (model_resolution::apply_model_selection) so create_session_with_id and set_model call the same code, avoiding drift. The inner provider_manager is reached via codelet_cli Session::provider_manager_mut() (session/mod.rs:148).
   Offline-testable via a CROSS-FAMILY switch (same-provider switches are not observable because the Claude limits resolver clamps every anthropic model to ctx 200000 / out 8192): a session created on anthropic/claude-opus-4-5 (ctx 200000, out 8192) switched to google/gemini-2.5-pro (ctx 1048576, out 65536, 80% compaction) changes all three cached limit fields without network. Dummy ANTHROPIC_API_KEY + GOOGLE_GENERATIVE_AI_API_KEY env vars satisfy credential detection. Test via SessionManagerHandle create_session then set_model then get_session_model, mirroring rpc081_restore_session_messages.rs setup.
@@ -47,7 +46,6 @@ Feature: Model selector model-change re-resolves nothing server-side (drops rich
   #   1. Out of scope for RPC-343. This card implements deep-dive Fix (A): re-resolve all registry-derivable fields (limits, selected model, facade, reasoning) server-side from provider_id + model_id with no wire change. Genuinely-lost profile_config (base_url/api_style/key) and per-selection custom overrides are the fallback (B) follow-up requiring an action-signature widening.
   #
   # ========================================
-
   Background: User Story
     As a developer who switches the model mid-session
     I want to change the active model on a running session

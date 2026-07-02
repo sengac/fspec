@@ -4,7 +4,6 @@
 @cli
 @RPC-285
 Feature: Report-bug-to-github CLI subcommand
-
   """
   CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003
   §7/§11. The action arm delegates to codelet_fspec_core::commands::report_bug_to_github::run(args_json, &cwd)
@@ -12,9 +11,9 @@ Feature: Report-bug-to-github CLI subcommand
   shell-facing CLI.
 
   TS Commander.js registration (src/commands/report-bug-to-github.ts:359-413) declares:
-    .command('report-bug-to-github')
-    .option('--project-root <path>') .option('--bug-description <text>')
-    .option('--expected-behavior <text>') .option('--actual-behavior <text>') .option('--interactive')
+  .command('report-bug-to-github')
+  .option('--project-root <path>') .option('--bug-description <text>')
+  .option('--expected-behavior <text>') .option('--actual-behavior <text>') .option('--interactive')
   The clap variant exposes the matching flags. The action handler prints 'Gathering system context...' before
   the report and, on success, prints the success banner; this port prints the constructed GitHub URL so the
   user can open it manually.

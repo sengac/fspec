@@ -26,6 +26,11 @@ mod clear_dependencies;
 mod client;
 mod combined;
 mod common;
+// RPC-407: in-crate regression tests proving build_service initializes
+// the process-global project blocklist root. Lives in src/ (not tests/)
+// because it needs the binary-crate-private `common::build_service`.
+#[cfg(test)]
+mod blocklist_init_tests;
 mod create_epic;
 mod create_prefix;
 mod daemon;

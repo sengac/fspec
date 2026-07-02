@@ -1,7 +1,6 @@
 @wip
 @RPC-236
 Feature: fspec generate-tags-md CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/generate_tags_md.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/generate-tags-md.ts:96-102). Surface:

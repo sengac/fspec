@@ -53,4 +53,3 @@ Feature: List Virtual Hooks Cli Subcommand
     And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-virtual-hooks.txt
     And stdout starts with a blank line followed by 'LIST-VIRTUAL-HOOKS'
     And stdout contains the section header 'COMMON PATTERNS'
-

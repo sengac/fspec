@@ -3,7 +3,6 @@
 @cli
 @RPC-235
 Feature: Port generate-summary-report command to Rust
-
   """
   Core: codelet/fspec-core/src/commands/generate_summary_report.rs — pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>. Args: { format: Option<String> (markdown|json, default markdown), output: Option<String> }. Reads spec/work-units.json directly via std::fs::read_to_string (NOT ensure — missing file is an error). Aggregates: totalWorkUnits, byStatus (insertion-order counts; status default "unknown"), totalStoryPoints (sum estimate||0), velocity { completedPoints, completedWorkUnits } over status=="done". Default output path spec/summary-report.<md|json>. json => JSON.stringify(report,null,2); markdown => generateMarkdownReport. Writes report to file. Returns the message "✓ Report generated: <outputFile>" (outputFile is the relative path). Any error wrapped as "Failed to generate summary report: <message>".
   CLI bridge: codelet/fspec/src/generate_summary_report.rs (CliArgs { format: Option<String>, output: Option<String> }). clap variant Mode::GenerateSummaryReport with --format and --output. Success: println! the returned message; Error: eprintln! ✗ Failed to generate report: <msg>, exit 1. Help intercept + help config + fixture generate-summary-report.txt.
@@ -33,7 +32,6 @@ Feature: Port generate-summary-report command to Rust
   #   6. A missing spec/work-units.json fails with "Failed to generate summary report:"
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run generate-summary-report in the Rust binary and via the LLM dispatcher

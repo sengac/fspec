@@ -3,7 +3,6 @@
 @done
 @RPC-302
 Feature: Port show-epic command to Rust
-
   """
   show-epic is the single-epic variant of list-epics (already ported under RPC-243). The Rust port reuses the existing typed `Epic` struct at codelet/fspec-core/src/types/epic.rs and the bare-catch helper `io::ensure::read_work_units_or_empty`. The epics.json read path differs from list-epics: show-epic must surface ENOENT as the canonical 'Epic <id> not found' error (NOT the empty-list fallback), so the implementation calls std::fs::read_to_string directly with explicit ErrorKind::NotFound handling.
 
@@ -29,7 +28,6 @@ Feature: Port show-epic command to Rust
   #   10. show-epic --help is byte-for-byte identical to the captured TS reference fixture
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch show-epic against an epic id and see that epic's details and progress

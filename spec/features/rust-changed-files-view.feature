@@ -6,7 +6,6 @@
 @tui
 @RPC-356
 Feature: Dual-pane ChangedFilesView with F-key board wiring and Navigator integration
-
   """
   ChangedFilesView lives in views/changed_files/ split into mod.rs (state + event handling), render.rs (panes), row.rs (file-row formatting), diff_render.rs (colored diff lines), each under 300 lines.
   Wiring follows the Navigator/Action pattern: BoardView::handle_event emits Action::OpenChangedFilesView; Navigator gains ViewMode::ChangedFiles + owned ChangedFilesView; App::dispatch loads data via backend.changed_files()/file_diff() mirroring the checkpoint_counts -> CheckpointCountsLoaded flow. Reuses scroll_viewport WheelVelocity + ensure_visible for scroll math.
@@ -38,7 +37,6 @@ Feature: Dual-pane ChangedFilesView with F-key board wiring and Navigator integr
   #   8. A mouse wheel ScrollDown over the focused diff pane scrolls it by the WheelVelocity step
   #
   # ========================================
-
   Background: User Story
     As a fspec user on the Kanban board
     I want to open a dual-pane Changed Files view from the board and browse file diffs

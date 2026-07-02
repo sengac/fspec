@@ -1,7 +1,12 @@
 @done
-@RPC-081 @rpc @rust @agent-loop @session-management @history @wip
+@RPC-081
+@rpc
+@rust
+@agent-loop
+@session-management
+@history
+@wip
 Feature: Agent loop: conversation history (session.inner.messages round-trip + session_restore_messages parity)
-
   """
   Implementation home for restoration: port the body of codelet/napi/src/session_bindings.rs:2401-2567 (session_restore_messages) into codelet/sessions/src/handle_impl.rs::restore_session_messages, replacing the current 5-line stub. The handler walks each envelope's message.content blocks, builds parallel rig::message::Message + StreamChunk vectors, then pushes rig messages into session.inner.lock().await.messages and dispatches StreamChunks via session.handle_output. Skip-rule for system-reminder envelopes (joined text contains both '<system-reminder>' and '<!-- type:') is preserved verbatim from the NAPI source.
 

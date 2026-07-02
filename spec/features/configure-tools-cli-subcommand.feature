@@ -3,7 +3,6 @@
 @cli
 @RPC-208
 Feature: fspec configure-tools CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/configure_tools.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/configure-tools.ts:193-243). Surface:

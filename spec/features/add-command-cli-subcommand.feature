@@ -1,7 +1,6 @@
 @wip
 @RPC-174
 Feature: fspec add-command CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_command.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-command.ts:149-185). Surface:

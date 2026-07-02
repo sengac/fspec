@@ -3,7 +3,6 @@
 @cli
 @RPC-238
 Feature: import-example-map CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/import_example_map.rs (CliArgs { work_unit_id, file }). clap variant Mode::ImportExampleMap with two required positionals <workUnitId> <file>. Resolves project_root from CWD (parity with TS process.cwd()). Success: println! the returned "✓ Imported <total> items: ..." message and exit 0; Error: eprintln! "✗ Failed to import example map: <msg>" and exit 1. Help intercept renders help/configs/import_example_map.rs; fixture codelet/fspec/tests/fixtures/help/import-example-map.txt.
   """
@@ -27,7 +26,6 @@ Feature: import-example-map CLI subcommand
   #   5. CLI and dispatcher append identical data for the same store and file
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run import-example-map in the Rust binary and via the LLM dispatcher

@@ -4,7 +4,6 @@
 @rust
 @RPC-277
 Feature: fspec remove-persona CLI subcommand
-
   """
   File layout: rewrite stub codelet/fspec-core/src/commands/remove_persona.rs; add CLI bridge codelet/fspec/src/remove_persona.rs; help config codelet/fspec-core/src/help/configs/remove_persona.rs; dispatcher test codelet/fspec-core/tests/remove_persona.rs; CLI test codelet/fspec/tests/cli_remove_persona.rs; help fixture codelet/fspec/tests/fixtures/help/remove-persona.txt
   Core signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> (2-arg form). Args (camelCase): { name: String }. Does NOT use ensure_foundation_file — inline draft-precedence read, errors on ENOENT (no auto-create). Returns JSON { success: true, fileName, name }.
@@ -36,7 +35,6 @@ Feature: fspec remove-persona CLI subcommand
   #   7. foundation.json has two personas both named 'Dup'; remove-persona 'Dup' removes only the first occurrence, leaving one 'Dup' persona
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to remove a persona from spec/foundation.json (or its draft) by name via the Rust fspec-core remove-persona command

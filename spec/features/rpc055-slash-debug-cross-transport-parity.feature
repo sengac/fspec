@@ -4,7 +4,6 @@
 @rpc
 @rust
 Feature: /debug debug-capture cross-transport parity
-
   """
   Both EmbeddedFspecBackend (in-process embedded transport) and
   WebSocketFspecBackend (tarpc over WebSocket) must land identically on

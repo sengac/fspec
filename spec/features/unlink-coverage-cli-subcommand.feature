@@ -4,7 +4,6 @@
 @wip
 @RPC-311
 Feature: Port unlink-coverage command to Rust
-
   """
   Core impl: codelet/fspec-core/src/commands/unlink_coverage.rs rewrites stub; signature run(args_json, project_root). Reuses types/coverage.rs (CoverageFile/CoverageScenario/TestMapping/ImplMapping/CoverageStats). Reads sidecar via std::fs::read_to_string + serde_json; mutates in memory; LOCAL update_stats (NOT shared calculate_stats — totalLinesCovered must sum test ranges + impl line counts). Writes back via io::locked_file::write_json_atomic (no trailing newline). extra-flatten preserves unknown fields.
   Two-front-doors: dispatcher and clap CLI both call unlink_coverage::run. CLI bridge codelet/fspec/src/unlink_coverage.rs marshals positional feature-name + --scenario/--test-file/--impl-file/--all into JSON only. Help config codelet/fspec-core/src/help/configs/unlink_coverage.rs (unlink-coverage-help.ts rich help exists; help-config common_errors use CommonError type) + intercept arm + Mode::UnlinkCoverage variant wired by supervisor. SHARED-FILE REQUEST: dispatch arm must pass project_root (signature changes from run(args_json) to run(args_json, project_root)).
@@ -28,7 +27,6 @@ Feature: Port unlink-coverage command to Rust
   #   3. Running unlink-coverage user-login --scenario "Login" --test-file src/auth.test.ts --impl-file src/old.ts removes only the impl mapping, keeping the test mapping
   #
   # ========================================
-
   Background: User Story
     As a developer managing coverage tracking via the standalone fspec Rust binary
     I want to remove test or implementation mappings from a scenario's coverage sidecar and recalculate stats, sharing one Rust source of truth between the LLM dispatcher and the CLI

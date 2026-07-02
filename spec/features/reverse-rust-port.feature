@@ -4,7 +4,6 @@
 @rust
 @RPC-294
 Feature: Port reverse command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/reverse.rs (rewrite stub); new type module codelet/fspec-core/src/types/reverse_session.rs (ReverseSession, GapAnalysis, AnalysisResult); help config codelet/fspec-core/src/help/configs/reverse.rs; CLI bridge codelet/fspec/src/reverse.rs; integration tests codelet/fspec/tests/cli_reverse.rs + core tests codelet/fspec-core/tests/reverse.rs; help fixture codelet/fspec/tests/fixtures/help/reverse.txt. Two feature files: reverse-rust-port.feature (dispatcher contract) + reverse-cli-subcommand.feature (clap surface).
   SHARED-FILE CHANGE (supervisor) #1: dispatch.rs reverse arm must change commands::reverse::run(args_json).await to commands::reverse::run(args_json, project_root).await — the ported signature adds project_root (parity: session hash + analysis need the project root, never env::current_dir()).
@@ -52,7 +51,6 @@ Feature: Port reverse command to Rust
   #   12. Running `fspec reverse` when a session already exists prints 'Existing reverse session detected' with four next-step suggestions and exit 1
   #
   # ========================================
-
   Background: User Story
     As a AI agent maintaining an existing codebase
     I want to run fspec reverse to analyze gaps and be guided step-by-step through a reverse ACDD session
@@ -65,13 +63,11 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "Session reset"
     Then the session file no longer exists on disk
 
-
   Scenario: Status with no session reports no active session
     Given a project root tempdir with no reverse session file
     When I dispatch reverse with status=true
     Then the dispatcher returns success=true
     Then the rendered output contains the substring "No active reverse session"
-
 
   Scenario: Status with an active executing session emits an empty rendered body
     Given a project root tempdir with an executing session having strategy=A strategyName='Spec Gap Filling' currentStep=2 totalSteps=3 and three gap files
@@ -80,13 +76,11 @@ Feature: Port reverse command to Rust
     Then the rendered output is empty because the CLI wrapper logs none of the structured status fields
     Then the session file is left untouched by the read-only status query
 
-
   Scenario: Complete with no session fails with exit 1
     Given a project root tempdir with no reverse session file
     When I dispatch reverse with complete=true
     Then the dispatcher returns success=false
     Then the error message contains the substring "No active reverse session to complete"
-
 
   Scenario: Complete on an unfinished session is rejected
     Given a project root tempdir with an executing session having currentStep=1 and totalSteps=3
@@ -94,7 +88,6 @@ Feature: Port reverse command to Rust
     Then the dispatcher returns success=false
     Then the error message contains the substring "Cannot complete: not all steps are finished"
     Then the session file still exists on disk
-
 
   Scenario: Complete on a finished session deletes it and returns success
     Given a project root tempdir with an executing session having currentStep=3 and totalSteps=3
@@ -104,13 +97,11 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "✓ Reverse ACDD session complete"
     Then the session file no longer exists on disk
 
-
   Scenario: Continue with no session fails with exit 1
     Given a project root tempdir with no reverse session file
     When I dispatch reverse with continue=true
     Then the dispatcher returns success=false
     Then the error message contains the substring "No active reverse session"
-
 
   Scenario: Continue advances the step and emits next-file guidance
     Given a project root tempdir with an executing session having currentStep=1 totalSteps=3 and gap files [a.test.ts, b.test.ts, c.test.ts]
@@ -121,7 +112,6 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "run: fspec reverse --continue"
     Then the session file on disk shows currentStep=2
 
-
   Scenario: Continue into the final step instructs the agent to run complete
     Given a project root tempdir with an executing session having currentStep=2 totalSteps=3 and gap files [a.test.ts, b.test.ts, c.test.ts]
     When I dispatch reverse with continue=true
@@ -129,13 +119,11 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "Step 3 of 3"
     Then the rendered output contains the substring "run: fspec reverse --complete"
 
-
   Scenario: Strategy with no session fails with exit 1
     Given a project root tempdir with no reverse session file
     When I dispatch reverse with strategy='A'
     Then the dispatcher returns success=false
     Then the error message contains the substring "No active reverse session"
-
 
   Scenario: Strategy A on a gap-detection session moves it to executing at step 1
     Given a project root tempdir with a gap-detection session whose gaps.files are [a.test.ts, b.test.ts, c.test.ts]
@@ -146,7 +134,6 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "Read test file: a.test.ts"
     Then the session file on disk shows phase='executing' and currentStep=1 and totalSteps=3
 
-
   Scenario: Strategy D with implementationContext returns persona-driven guidance without a session
     Given a project root tempdir with no reverse session file and a spec/foundation.json containing a persona named 'Shopper' with goals
     When I dispatch reverse with strategy='D' and implementationContext='discount calculator'
@@ -155,7 +142,6 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "Shopper"
     Then no session file was created on disk
 
-
   Scenario: Existing session detected blocks a new analysis
     Given a project root tempdir with a parseable executing session having strategy=A strategyName='Spec Gap Filling' currentStep=2 totalSteps=3
     When I dispatch reverse with no flags
@@ -163,13 +149,11 @@ Feature: Port reverse command to Rust
     Then the error message contains the substring "Existing reverse session detected"
     Then the rendered output lists the four suggestions --continue, --status, --reset, --complete
 
-
   Scenario: Corrupt session file is reported as corrupted
     Given a project root tempdir with a reverse session file containing invalid JSON
     When I dispatch reverse with no flags
     Then the dispatcher returns success=false
     Then the error message contains the substring "Session file corrupted"
-
 
   Scenario: Initial analysis with tests and no features suggests Strategy A and creates a session
     Given a project root tempdir with three files under src/__tests__ matching *.test.ts and no spec/features directory and no session file
@@ -180,7 +164,6 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "Strategy A (Spec Gap Filling)"
     Then a session file was created on disk with phase='gap-detection'
 
-
   Scenario: Dry-run previews analysis without writing a session
     Given a project root tempdir with three files under src/__tests__ matching *.test.ts and no spec/features directory and no session file
     When I dispatch reverse with dryRun=true
@@ -189,7 +172,6 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "Dry-run mode - no session created"
     Then no session file was created on disk
 
-
   Scenario: Flag priority resets before evaluating status
     Given a project root tempdir with an active reverse session file on disk
     When I dispatch reverse with both reset=true and status=true
@@ -197,10 +179,8 @@ Feature: Port reverse command to Rust
     Then the rendered output contains the substring "Session reset"
     Then the session file no longer exists on disk
 
-
   Scenario: CLI and dispatcher converge on the same fspec_core run function
     Given a project root tempdir with no reverse session file
     When I dispatch reverse with reset=true and also run the CLI subcommand fspec reverse --reset against the same project root
     Then both paths produce output containing "Session reset"
     Then the CLI bridge module codelet/fspec/src/reverse.rs contains no analysis, gap-detection, or rendering logic — its only computation is JSON arg marshalling
-

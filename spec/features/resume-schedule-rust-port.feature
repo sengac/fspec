@@ -4,7 +4,6 @@
 @cli
 @RPC-292
 Feature: Port resume-schedule command to Rust
-
   """
   New impl file at codelet/fspec-core/src/commands/resume_schedule.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` — the single source of truth shared by the LLM dispatcher AND the standalone fspec Rust binary (RPC-003 §7/§11 two-front-doors). Twin of pause-schedule (RPC-254); differs only in target status ('active') and the already-X guard message.
   Args struct: { name: String } with `#[serde(rename_all = "camelCase")]`. The on-disk model is SchedulesData { version: Option<String>, schedules: IndexMap<String, serde_json::Value>, #[serde(flatten)] extra } so unknown top-level fields round-trip and each schedule entry's unknown fields are preserved verbatim (parity with the TS `fileManager.transaction<SchedulesData>` round-trip).
@@ -25,7 +24,6 @@ Feature: Port resume-schedule command to Rust
   #   6. Both invocation paths converge on fspec_core::commands::resume_schedule::run
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to resume a paused schedule by name

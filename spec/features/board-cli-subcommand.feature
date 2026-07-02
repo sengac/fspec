@@ -4,7 +4,6 @@
 @cli
 @RPC-199
 Feature: board CLI subcommand
-
   """
   Core impl: rewrite codelet/fspec-core/src/commands/board.rs to `pub async fn run(args_json, project_root)`; reuse io::ensure::{check_foundation_exists, ensure_work_units_file} and types::work_unit::{WorkUnitsData, WorkUnitStates}. WorkUnit.estimate is read from the `extra` map (no typed estimate field exists).
   columns/board are JSON objects keyed by status; emit in WorkUnitStates declaration order (backlog, specifying, testing, implementing, validating, done, blocked) to match TS Object.entries(states) on canonical files. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::Board{format,limit} + intercept + mod, help configs/mod.rs. OPEN QUESTION for supervisor: confirm headless text-mode rendering string OR make CLI default json (TS text mode is an Ink TUI with no stable fixture).
@@ -31,7 +30,6 @@ Feature: board CLI subcommand
   #   5. Given the binary is run with 'board --help', output is byte-for-byte identical to the captured bare Commander.js help fixture (board has no custom -help.ts in TS), exit 0
   #
   # ========================================
-
   Background: User Story
     As a developer porting fspec to Rust
     I want to run board through the LLM dispatcher and the standalone Rust CLI

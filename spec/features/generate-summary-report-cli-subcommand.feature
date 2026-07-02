@@ -3,7 +3,6 @@
 @cli
 @RPC-235
 Feature: generate-summary-report CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/generate_summary_report.rs (CliArgs { format: Option<String>, output: Option<String> }). clap variant Mode::GenerateSummaryReport with --format <format> and --output <file>. Resolves project_root from CWD (parity with TS process.cwd()). Success: println! the returned "✓ Report generated: <outputFile>" message and exit 0; Error: eprintln! "✗ Failed to generate report: <msg>" and exit 1. Help intercept renders help/configs/generate_summary_report.rs; fixture codelet/fspec/tests/fixtures/help/generate-summary-report.txt.
   """
@@ -28,7 +27,6 @@ Feature: generate-summary-report CLI subcommand
   #   5. CLI and dispatcher write identical report content for the same store
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run generate-summary-report in the Rust binary and via the LLM dispatcher

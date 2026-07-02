@@ -87,6 +87,19 @@ pub fn build_service(workspace: &Path) -> Result<Arc<SharedFspecService>> {
     codelet_common::set_data_directory(data_dir)
         .map_err(|e| anyhow!("codelet_common::set_data_directory: {e}"))?;
 
+    // RPC-407: initialise the process-global blocklist project root so
+    // that `<workspace>/.fspec/blocklist.json` rules are enforced. The
+    // `check_bash_command` / `check_file_path` middleware hot-reloads
+    // config on every check via the stored root, so setting the root
+    // ONCE at startup is sufficient for rule-edit hot-reload. Before
+    // RPC-407 only the legacy napi path (codelet/napi/src/blocklist.rs)
+    // called init_blocklist — the Rust binary silently ignored project
+    // blocklist rules and applied only ~/.fspec/blocklist.json.
+    // build_service is the shared chokepoint for `daemon` and
+    // `combined` modes, so neither entry point can skip it; `client`
+    // mode runs no tools locally (the daemon owns the sessions).
+    codelet_tools::blocklist::init_blocklist(Some(workspace));
+
     let watcher = Arc::new(
         WorkUnitsWatcher::new(workspace)
             .with_context(|| format!("WorkUnitsWatcher::new({})", workspace.display()))?,
@@ -608,10 +621,15 @@ fn pid_is_alive(_pid: u32) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    // RPC-407: build_service now mutates the process-global blocklist
+    // root (init_blocklist). Every test that calls build_service must be
+    // #[serial] so it can't race blocklist_init_tests (or each other).
+    use serial_test::serial;
 
     /// RPC-017 regression: production `build_service` MUST attach the
     /// workspace cwd to the SharedFspecService via `.with_cwd(...)`.
     #[test]
+    #[serial]
     fn build_service_attaches_workspace_cwd() {
         // @step Given the codelet-fspec binary crate after RPC-017 lands
         let tmp = tempfile::tempdir().expect("tempdir");
@@ -645,6 +663,7 @@ mod tests {
     /// though unit tests pass (because they call
     /// `set_data_directory(temp.path())` themselves).
     #[test]
+    #[serial]
     fn build_service_initializes_global_data_directory_for_persistence() {
         // @step Given the codelet/fspec binary crate after RPC-025 lands
         let tmp = tempfile::tempdir().expect("tempdir");
@@ -692,6 +711,7 @@ mod tests {
     /// through the NAPI-free `codelet-sessions` crate; the AgentView
     /// would observe an empty fallback `chunks_rx` and see no output.
     #[test]
+    #[serial]
     fn build_service_wires_session_manager_into_shared_service() {
         // @step Given the RPC-044 changes are applied to the codelet workspace
         let src = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/common.rs"))

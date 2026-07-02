@@ -4,7 +4,6 @@
 @wip
 @RPC-320
 Feature: Port validate command to Rust
-
   """
   RPC-329 PARSER-DIVERGENCE ADDENDUM (Group-A parity review 2026-06-14): two further symptoms of the cucumber-gherkin vs gherkin-0.16 mismatch are known divergences, NOT defects in this card. (a) Orphan scenario (no Feature keyword): TS emits 'Suggestion: Add Feature keyword...' on 'Line 0'; Rust drops the Suggestion (getSuggestion keys off message text that gherkin-0.16 does not produce) and reports 'Line 1'. (b) Unescaped triple quotes inside a DocString: cucumber parses OK so TS runs the checkForCommonIssues heuristic and emits the canonical 'Unescaped triple quotes ... found inside DocString' message; gherkin-0.16 fails to parse the same bytes, so Rust takes the error branch and the heuristic (Ok-branch only, parity with TS) never runs. Both deferred to RPC-329. No dedicated triple-quote scenario was ever written here, so this path was never test-driven.
   """
@@ -40,7 +39,6 @@ Feature: Port validate command to Rust
   #   1. Yes — tests assert structural facts (file path, valid/invalid marker, exit code, Line N presence, Suggestion presence) and matching substrings only, NOT the exact raw parser-error text. This follows the sibling-command precedent (add_scenario.rs) and is consistent with the open RPC-329 bug. Content-heuristic messages (Unescaped triple quotes / Excessive blank lines) and getSuggestion lines ARE asserted exactly since they are parser-independent.
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to validate Gherkin syntax across spec/features/**/*.feature (or a single file) from both the LLM dispatcher and the shell CLI

@@ -6,7 +6,6 @@
 @rust
 @RPC-349
 Feature: Provider Settings screen renders empty — rich RPC-103 nav tree never wired into live data path
-
   """
   Add a pure projection fn (e.g. views/provider_settings/projection.rs) mapping &[ProviderCredentialInfo] (+ openai profiles) -> Vec<ProviderDisplayInfo>; keep dispatch_provider_settings.rs under the 300-LoC ceiling (currently 282)
   handle_provider_credentials_loaded must call set_provider_display_infos(projection) so render_list takes the render_nav_items branch; keep set_providers() too if the legacy raw list is still consumed elsewhere (e.g. d/delete focus + visible_providers)
@@ -33,7 +32,6 @@ Feature: Provider Settings screen renders empty — rich RPC-103 nav tree never 
   #   1. OAuth login method labels have no Rust registry yet (TS uses getOauthProviderLabels/buildOauthLoginNavItems). Per-provider defaults: anthropic -> Browser + Headless; codex -> Browser + Device; github-copilot -> Device. Mirror TS labels in the projection helper.
   #
   # ========================================
-
   Background: User Story
     As a Codelet TUI user
     I want to open the Provider Settings (/provider) screen and see each provider expand into its real settings (API-key entry, OAuth login/logout, OpenAI profiles)

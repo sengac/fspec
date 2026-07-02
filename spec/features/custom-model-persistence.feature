@@ -3,7 +3,6 @@
 @persistence
 @RPC-346
 Feature: Backend custom-model persistence (save/delete on local-server profiles)
-
   """
   Extend CustomModelDef (profile_sections.rs:86-89) to full definition. Add serde rename_all = camelCase + skip_serializing_if = Option::is_none on every optional field; id stays required. Add a CompactionThreshold struct ({type: tokens|percentage, value}) mirroring TS CompactionThresholdConfig, also camelCase. Derive Serialize + Deserialize + Debug + Clone + PartialEq.
   save_custom_model(provider_id, profile_name, def, original_model_id: Option<&str>) -> io::Result<()> and delete_custom_model(provider_id, profile_name, model_id) -> io::Result<()> in profile_sections.rs. Sync std::fs read-modify-write of the WHOLE config as serde_json::Value (preserve unrelated keys via preserve_order), mutating only providers.openai.profiles.<name>.customModels. Reuse fspec_user_dir() for the path. Guard provider_id == openai (else no-op Ok). Missing profile = Ok no-op. Empty array after delete => remove the customModels key. Sync chosen to match the existing read path load_local_server_profiles; the async RPC bridge is RPC-347.
@@ -33,7 +32,6 @@ Feature: Backend custom-model persistence (save/delete on local-server profiles)
   #   7. Full round-trip: saving a definition with every field set (facade gemini, contextWindow, maxOutputTokens, compactionThreshold percentage 80, reasoning true, hasVision true) then reloading the profiles returns a matching definition
   #
   # ========================================
-
   Background: User Story
     As a Codelet TUI user managing local-server profiles
     I want to have the backend persist custom-model add/edit/delete to my fspec-config.json

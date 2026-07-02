@@ -9,7 +9,6 @@
 @source-shape
 @RPC-155
 Feature: Provider settings api-key edit: Delete key removes draft chars (in addition to Backspace)
-
   """
   Pattern mirrors RPC-152 / RPC-153 / RPC-156 / RPC-151 / RPC-149 regression-shape coverage: read source as string, brace-balance to scope assertions to a function body, byte-offset ORDER for sequencing invariants
   Implementation already exists from RPC-163 in detail.rs:134-146 — this card is coverage-only structural pinning so a regression breaks the test before reaching CI
@@ -33,7 +32,6 @@ Feature: Provider settings api-key edit: Delete key removes draft chars (in addi
   #   4. Source-shape test verifies byte-offset ORDER: the `KeyCode::Backspace | KeyCode::Delete =>` arm appears before the `KeyCode::Char(c) =>` arm inside the brace-balanced body of `handle_edit_key`
   #
   # ========================================
-
   Background: User Story
     As a agent maintainer
     I want to pin the structural shape of the merged `KeyCode::Backspace | KeyCode::Delete` arm in the API-key edit handler

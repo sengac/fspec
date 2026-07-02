@@ -7,7 +7,6 @@
 @tui
 @PROV-109
 Feature: Transport + app dispatch wiring for profile save/delete
-
   """
   Mirrors the RPC-054 provider-credentials dispatch pattern (dispatch_provider_settings.rs) and the RPC-347 custom-model transport pattern (transport mod/embedded/websocket). New handlers live in dispatch_provider_settings.rs (spawn write -> on Ok send a follow-up list_provider_credentials whose ProviderCredentialsLoaded fold reloads the openai profile slice). Transport trait gains save_profile/delete_profile default no-op bodies; embedded + websocket delegate to FspecService.save_profile/delete_profile (already wired in PROV-108). Tests use the MockBackend with new save_profile/delete_profile counters + error scripting, driven through App::dispatch like provider_settings_dispatch_rpc054.rs.
   """
@@ -31,7 +30,6 @@ Feature: Transport + app dispatch wiring for profile save/delete
   #   5. ConfirmDeleteProfile and the raw DeleteProfile both reach backend.delete_profile through the same handler, so a confirmed delete and a direct delete behave identically
   #
   # ========================================
-
   Background: User Story
     As a TUI user managing local-server openai profiles
     I want to have my profile create/edit/delete actions routed through the transport to the PROV-108 backend and see the list refresh

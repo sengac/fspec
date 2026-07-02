@@ -3,12 +3,11 @@
 @cli
 @RPC-237
 Feature: get-scenarios clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `get-scenarios` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern (architecture note on RPC-253, reused for RPC-237):
-    - Shell argv         → clap → codelet/fspec/src/get_scenarios.rs → fspec_core::commands::get_scenarios::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::get_scenarios::run
+  - Shell argv         → clap → codelet/fspec/src/get_scenarios.rs → fspec_core::commands::get_scenarios::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::get_scenarios::run
   Both call sites pass a JSON-encoded args shape ({tags, format}) and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS process.cwd() default).
   The clap subcommand exposes a repeatable --tag <tag> flag (collected into Vec<String>) and --format <format> defaulting to 'text' (parity with the TS Commander.js registration — note: registration does NOT register the --file flag the rich help advertises).

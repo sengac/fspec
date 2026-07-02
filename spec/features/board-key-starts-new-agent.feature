@@ -4,7 +4,6 @@
 @tui
 @RPC-395
 Feature: Board '.' key starts new agent
-
   """
   Uses crossterm KeyCode::Char('.') arm in board.rs handle_event, emitting Action::OpenAgentView(self.selected_session(store)) mirroring the Shift+Right handler at board.rs:114-117
   Update keybinding_shortcuts.rs line 32 string + doc comments (lines 8, 10-11), and update snapshot .snap files (help_dialog_dismissed, repl_bootstrap_rpc012, help_dialog_visible) plus view_board_unit_rpc015.rs assertion from '/ New Agent' to '. New Agent'
@@ -25,7 +24,6 @@ Feature: Board '.' key starts new agent
   #   3. User presses '.' while no work unit is selected, the AgentView still opens with no attached session (mirrors Shift+Right)
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user on the Kanban board
     I want to press the '.' (period) key to start a new agent

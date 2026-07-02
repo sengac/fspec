@@ -74,33 +74,47 @@ pub fn wrap_source(source: &ChunkSource, width: u16) -> Vec<Line<'static>> {
     }
 
     // **RPC-389**: ToolCall bodies are collapsed/windowed here (the
-    // header line — first `\n`-segment — is always kept). Returns early
-    // with the fully rendered lines including the dimmed indicator.
+    // header line — first `\n`-segment — is always kept). The fully
+    // rendered lines (including the dimmed indicator) are captured into
+    // `out` and fall through to the single trailing-separator append
+    // below (**RPC-401**), so tool-call cards get the same blank gutter
+    // as every other `ChunkKind`.
     if matches!(source.kind, ChunkKind::ToolCall { .. }) {
         let is_error = matches!(source.kind, ChunkKind::ToolCall { is_error: true, .. });
-        return wrap_tool_call(source, width, style, body_style, prefix, is_error);
-    }
-
-    let hard_lines: Vec<&str> = source.text.split('\n').collect();
-    for (i, hard) in hard_lines.iter().enumerate() {
-        let mut wrapped = wrap_to_width(hard, width as usize);
-        if wrapped.is_empty() {
-            wrapped.push(String::new());
-        }
-        for (j, w) in wrapped.into_iter().enumerate() {
-            let is_first = i == 0 && j == 0;
-            let needs_prefix = is_first && !prefix.is_empty();
-            let row_style = if i == 0 { style } else { body_style };
-            if needs_prefix {
-                out.push(Line::from(Span::styled(format!("{prefix}{w}"), style)));
-            } else {
-                out.push(Line::from(Span::styled(w, row_style)));
+        out = wrap_tool_call(source, width, style, body_style, prefix, is_error);
+    } else {
+        let hard_lines: Vec<&str> = source.text.split('\n').collect();
+        for (i, hard) in hard_lines.iter().enumerate() {
+            let mut wrapped = wrap_to_width(hard, width as usize);
+            if wrapped.is_empty() {
+                wrapped.push(String::new());
+            }
+            for (j, w) in wrapped.into_iter().enumerate() {
+                let is_first = i == 0 && j == 0;
+                let needs_prefix = is_first && !prefix.is_empty();
+                let row_style = if i == 0 { style } else { body_style };
+                if needs_prefix {
+                    out.push(Line::from(Span::styled(format!("{prefix}{w}"), style)));
+                } else {
+                    out.push(Line::from(Span::styled(w, row_style)));
+                }
             }
         }
     }
     // NOTE: streaming "..." suffix is intentionally NOT appended —
     // parity with TS `conversationUtils.ts:88-90` is deferred per
     // `agentview-chunk-rendering-parity.feature`.
+    //
+    // **RPC-401**: append exactly ONE blank separator line after every
+    // chunk's content — the single trailing gutter row that matches the
+    // TS `wrapMessageToLines` `addSeparator=true` default
+    // (`conversationUtils.ts:117-127`). Applied here (the sole entry
+    // point used by `push_source`, `insert_source_at` and `rewrap_chunk`)
+    // so it flows uniformly into `total_visual_rows`, resize rewrap,
+    // painting and the selection arrow-bar gutters — for EVERY
+    // `ChunkKind`. It does NOT leak into the `TurnContentModal`, which
+    // sources full text from `ChunkSource::text` / `full_text_for_seq`.
+    out.push(Line::default());
     out
 }
 

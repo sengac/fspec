@@ -3,7 +3,6 @@
 @cli
 @RPC-212
 Feature: create-feature CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/create_feature.rs (NEW CLI bridge); codelet/fspec/tests/cli_create_feature.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/create-feature.txt (captured help fixture from `node dist/index.js create-feature --help`).
   Bridge marshals positional <name> into JSON {name} and delegates to commands::create_feature::run. No logic in bridge — JSON marshalling + CWD resolution only.

@@ -7,7 +7,6 @@
 @rpc
 @RPC-060
 Feature: Isolated session creation + AgentView /new isolated flow
-
   """
   Phase 7.7 of the RPC-030 roadmap. Wires backend.create_isolated_session(role) (already implemented in RPC-042) through to the Rust ratatui frontend via a new CreateSessionDialog (Priority::Foreground) and the existing SlashCommandAction::Isolation entry. Mirrors src/components/CreateSessionDialog.tsx (TUI-090) — three flat options Yes / Yes - Isolated / Cancel with Left/Right cyclic navigation. Trait + backend + service plumbing already exist (RPC-036/037/042); this card adds ONLY the UI dialog + dispatch wiring. Out of scope: SessionFooter isolation badge (RPC-045), worktree merge (RPC-057), auto-creating isolated sessions per work-unit (future).
   """
@@ -37,14 +36,12 @@ Feature: Isolated session creation + AgentView /new isolated flow
   #   6. MockBackend's create_isolated_session returns Err('not a git repository') → after user picks 'Yes - Isolated' the dialog closes, then a `[error] create isolated session: not a git repository` notice appears in the focused session's scrollback.
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user with an open AgentView in a git repo
     I want to create a new isolated worktree-backed session via the CreateSessionDialog or /isolation slash command from the Rust ratatui frontend
     So that I can run experiments in an isolated git worktree without affecting my main checkout, with full parity with the TS Ink CreateSessionDialog
 
   # ---- Dialog component scenarios ----------------------------------
-
   Scenario: CreateSessionDialog defaults selection to "Yes" when opened without a preselection
     Given the CreateSessionDialog is constructed with preselect=None and no work_unit binding
     Then the selected option is "Yes"
@@ -100,7 +97,6 @@ Feature: Isolated session creation + AgentView /new isolated flow
     And the dialog requests removal from the compositor
 
   # ---- Slash command + dispatch scenarios --------------------------
-
   Scenario: /isolation slash command opens the CreateSessionDialog with "Yes - Isolated" preselected
     Given an App with open session s-1
     When SlashCommandSelected(SlashCommandAction::Isolation) is dispatched

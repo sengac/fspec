@@ -32,4 +32,3 @@ Feature: Stream loop threads active tool call id into progress
     When tool progress is emitted through the stream-loop progress callback
     Then no panic occurs
     Then the card "tc-1" body is unchanged
-

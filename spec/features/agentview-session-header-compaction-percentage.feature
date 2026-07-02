@@ -6,35 +6,34 @@
 @tui
 @RPC-100
 Feature: Session header compaction percentage not calculating/updating properly — clamp >100, missing COMPACTED suffix, no reset on session_state cleared
-
   """
   TS REFERENCE (DeepSearch confirmed):
-• Renderer: src/tui/components/SessionHeader.tsx:129-132 — `percentText = compactionReduction !== null ? `[${fp}%: COMPACTED ${Math.abs(reduction)}%]` : `[${fp}%]``
-• fillPercentage origin: live `StreamChunk::ContextFillUpdate{contextFill.fillPercentage}` → setContextFillPercentage; fallback `calculateContextFillPercentage(currentContextTokens, contextWindow, maxOutput)` = round((inputTokens / (contextWindow - min(maxOutput, 32_000))) * 100) on restore
-• compactionReduction origin: AgentView.tsx:959-979 — handleCompactionComplete → setCompactionReductionRef.current?.(Math.round(result.compressionRatio)) (TS bug: should be (1-ratio)*100; Rust will use the correct formula)
-• Reset on cleared: AgentView.tsx:992-1006 — SessionStateChange→Cleared resets contextFillPercentage and tokenUsage to 0
-• Color: src/tui/utils/sessionHeaderUtils.ts:37-42 — <50 green, <70 yellow, <85 magenta, >=85 red
+  • Renderer: src/tui/components/SessionHeader.tsx:129-132 — `percentText = compactionReduction !== null ? `[${fp}%: COMPACTED ${Math.abs(reduction)}%]` : `[${fp}%]``
+  • fillPercentage origin: live `StreamChunk::ContextFillUpdate{contextFill.fillPercentage}` → setContextFillPercentage; fallback `calculateContextFillPercentage(currentContextTokens, contextWindow, maxOutput)` = round((inputTokens / (contextWindow - min(maxOutput, 32_000))) * 100) on restore
+  • compactionReduction origin: AgentView.tsx:959-979 — handleCompactionComplete → setCompactionReductionRef.current?.(Math.round(result.compressionRatio)) (TS bug: should be (1-ratio)*100; Rust will use the correct formula)
+  • Reset on cleared: AgentView.tsx:992-1006 — SessionStateChange→Cleared resets contextFillPercentage and tokenUsage to 0
+  • Color: src/tui/utils/sessionHeaderUtils.ts:37-42 — <50 green, <70 yellow, <85 magenta, >=85 red
   RUST CURRENT GAPS (verified by AST read):
-• codelet/fspec-tui/src/store/agent_view/token_state.rs:63 — `self.context_fill_pct = info.fill_percentage.min(100) as u8;` ← CLAMP BUG, also drops u32→u8 range
-• codelet/fspec-tui/src/views/agent/chrome_paint.rs:65 — `compaction_reduction: None,` ← HARDCODED, never read from store
-• codelet/fspec-tui/src/app/dispatch_stream_chunks.rs:120-133 — CompactionComplete branch only formats scrollback notice, never persists per-session reduction
-• codelet/fspec-tui/src/app/dispatch_stream_chunks.rs:57-75 — SessionStateChange branch handles state→pause/resume but does NOT reset TokenState or compaction_reduction on `Cleared`
-• codelet/fspec-tui/src/store/agent_view/work_unit_state.rs:48 — `reset_token_state(session)` already exists; reuse it
-• codelet/fspec-tui/src/views/agent/header.rs:71 + header_build.rs:134 + header_build.rs:158-164 — render path already supports compaction_reduction Option<i32>; just needs to receive non-None
+  • codelet/fspec-tui/src/store/agent_view/token_state.rs:63 — `self.context_fill_pct = info.fill_percentage.min(100) as u8;` ← CLAMP BUG, also drops u32→u8 range
+  • codelet/fspec-tui/src/views/agent/chrome_paint.rs:65 — `compaction_reduction: None,` ← HARDCODED, never read from store
+  • codelet/fspec-tui/src/app/dispatch_stream_chunks.rs:120-133 — CompactionComplete branch only formats scrollback notice, never persists per-session reduction
+  • codelet/fspec-tui/src/app/dispatch_stream_chunks.rs:57-75 — SessionStateChange branch handles state→pause/resume but does NOT reset TokenState or compaction_reduction on `Cleared`
+  • codelet/fspec-tui/src/store/agent_view/work_unit_state.rs:48 — `reset_token_state(session)` already exists; reuse it
+  • codelet/fspec-tui/src/views/agent/header.rs:71 + header_build.rs:134 + header_build.rs:158-164 — render path already supports compaction_reduction Option<i32>; just needs to receive non-None
   IMPLEMENTATION PLAN:
-1. token_state.rs: change `context_fill_pct: u8` → `context_fill_pct: u16`; change apply_context_fill to `self.context_fill_pct = info.fill_percentage.min(u16::MAX as u32) as u16;`. Update header_build.rs build_right_line + context_fill_color signature to take u16 (color thresholds 50/70/85 still work).
-2. AgentViewStore (store/agent_view.rs): add field `compaction_reduction_by_session: HashMap<SessionId, i32>`. Add accessors `compaction_reduction_for(&SessionId) -> Option<i32>`, `set_compaction_reduction(SessionId, i32)`, `clear_compaction_reduction(&SessionId)`.
-3. dispatch_stream_chunks.rs CompactionComplete branch: compute `reduction = ((1.0 - compaction_result.compression_ratio) * 100.0).round() as i32;` and call `self.agent_view_store.set_compaction_reduction(session_id.clone(), reduction);` BEFORE the existing notice emit.
-4. dispatch_stream_chunks.rs SessionStateChange branch: on `SessionState::Cleared`, call `self.agent_view_store.reset_token_state(session_id);` and `self.agent_view_store.clear_compaction_reduction(session_id);` BEFORE the existing set_session_status call.
-5. chrome_paint.rs: replace hardcoded `compaction_reduction: None` with `compaction_reduction: sid.and_then(|s| store.compaction_reduction_for(s))`.
-6. Type changes propagate to header.rs SessionHeader.compaction_reduction field type stays Option<i32>; build_right_line ALREADY uses `r.abs()` so any i32 sign is safe.
+  1. token_state.rs: change `context_fill_pct: u8` → `context_fill_pct: u16`; change apply_context_fill to `self.context_fill_pct = info.fill_percentage.min(u16::MAX as u32) as u16;`. Update header_build.rs build_right_line + context_fill_color signature to take u16 (color thresholds 50/70/85 still work).
+  2. AgentViewStore (store/agent_view.rs): add field `compaction_reduction_by_session: HashMap<SessionId, i32>`. Add accessors `compaction_reduction_for(&SessionId) -> Option<i32>`, `set_compaction_reduction(SessionId, i32)`, `clear_compaction_reduction(&SessionId)`.
+  3. dispatch_stream_chunks.rs CompactionComplete branch: compute `reduction = ((1.0 - compaction_result.compression_ratio) * 100.0).round() as i32;` and call `self.agent_view_store.set_compaction_reduction(session_id.clone(), reduction);` BEFORE the existing notice emit.
+  4. dispatch_stream_chunks.rs SessionStateChange branch: on `SessionState::Cleared`, call `self.agent_view_store.reset_token_state(session_id);` and `self.agent_view_store.clear_compaction_reduction(session_id);` BEFORE the existing set_session_status call.
+  5. chrome_paint.rs: replace hardcoded `compaction_reduction: None` with `compaction_reduction: sid.and_then(|s| store.compaction_reduction_for(s))`.
+  6. Type changes propagate to header.rs SessionHeader.compaction_reduction field type stays Option<i32>; build_right_line ALREADY uses `r.abs()` so any i32 sign is safe.
   INTEGRATION TEST FIXTURE PLAN: spec file → spec/features/agentview-session-header-compaction-percentage.feature, test → codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs.
-Use the shared helpers in tests/common/mod.rs (sid, build_app, render_into 80x24 ratatui::TestBackend) — same pattern as agentview_session_header_per_session_tokens_rpc099.rs.
-Four scenarios:
-• (a) >100% fill renders raw value: dispatch ContextFillUpdate{105} on s-1, render, scrape header line, assert contains `[105%]` not `[100%]`, assert span style fg=Red.
-• (b) COMPACTED suffix renders after CompactionComplete: dispatch ContextFillUpdate{80} then CompactionComplete{ratio:0.4}, assert header contains `[80%: COMPACTED 60%]`.
-• (c) compaction_reduction does not leak across sessions: dispatch CompactionComplete on s-1, dispatch nothing on s-2, render s-1 (`COMPACTED N%` present), Action::SessionNext → render s-2 (no `COMPACTED`), Action::SessionPrev → render s-1 (`COMPACTED N%` present again).
-• (d) SessionStateChange→Cleared resets both: seed s-1 with tokens+fill+compaction, dispatch SessionStateChange{state:Cleared}, render, assert `[0%]`, no COMPACTED suffix, `tokens: 0↓ 0↑`.
+  Use the shared helpers in tests/common/mod.rs (sid, build_app, render_into 80x24 ratatui::TestBackend) — same pattern as agentview_session_header_per_session_tokens_rpc099.rs.
+  Four scenarios:
+  • (a) >100% fill renders raw value: dispatch ContextFillUpdate{105} on s-1, render, scrape header line, assert contains `[105%]` not `[100%]`, assert span style fg=Red.
+  • (b) COMPACTED suffix renders after CompactionComplete: dispatch ContextFillUpdate{80} then CompactionComplete{ratio:0.4}, assert header contains `[80%: COMPACTED 60%]`.
+  • (c) compaction_reduction does not leak across sessions: dispatch CompactionComplete on s-1, dispatch nothing on s-2, render s-1 (`COMPACTED N%` present), Action::SessionNext → render s-2 (no `COMPACTED`), Action::SessionPrev → render s-1 (`COMPACTED N%` present again).
+  • (d) SessionStateChange→Cleared resets both: seed s-1 with tokens+fill+compaction, dispatch SessionStateChange{state:Cleared}, render, assert `[0%]`, no COMPACTED suffix, `tokens: 0↓ 0↑`.
   """
 
   # ========================================
@@ -59,7 +58,6 @@ Four scenarios:
   #   6. Formula coherence: CompactionComplete{original_tokens=10000, compacted_tokens=4000, compression_ratio=0.4} → scrollback notice contains `60.0% reduction` AND header badge contains `COMPACTED 60%` — both derive from `(1 - 0.4) * 100 = 60`.
   #
   # ========================================
-
   Background: User Story
     As a developer using the Rust TUI
     I want to see the SessionHeader top-right [X%] badge accurately reflect the live context-fill percentage AND show the [X%: COMPACTED Y%] suffix immediately after a CompactionComplete event

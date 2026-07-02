@@ -4,12 +4,11 @@
 @cli
 @RPC-239
 Feature: init CLI subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `init` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/init.rs → fspec_core::commands::init::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::init::run
+  - Shell argv         → clap → codelet/fspec/src/init.rs → fspec_core::commands::init::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::init::run
   Both call sites pass a JSON-encoded `{ agent: string[] }` args shape and a
   `project_root: &Path`; the CLI surface resolves project_root from CWD (parity
   with TS `process.cwd()` default).
@@ -22,10 +21,10 @@ Feature: init CLI subcommand on the standalone fspec Rust binary
   error.
 
   Success output (parity with the TS action handler at src/commands/init.ts:362-378):
-    '✓ Installed fspec for <comma-joined agent ids>'
-    one '  - <path>' line per installed file
-    a blank line then 'Next steps:' then the agent-specific activation message
-    (getActivationMessage), exit 0.
+  '✓ Installed fspec for <comma-joined agent ids>'
+  one '  - <path>' line per installed file
+  a blank line then 'Next steps:' then the agent-specific activation message
+  (getActivationMessage), exit 0.
   Errors print '✗ Init failed: <msg>' to stderr and exit 1.
   --help is byte-for-byte identical to the captured TS fixture at
   codelet/fspec/tests/fixtures/help/init.txt.
@@ -52,7 +51,6 @@ Feature: init CLI subcommand on the standalone fspec Rust binary
   #   5. `fspec init --help` → exit 0, stdout byte-for-byte equal to the fixture and starting with a blank line followed by 'INIT'
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to invoke `fspec init --agent <agent>` directly from a shell with the same surface offered by the TypeScript Commander.js CLI

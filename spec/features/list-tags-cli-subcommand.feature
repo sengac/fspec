@@ -87,4 +87,3 @@ Feature: List tags CLI subcommand
     And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-tags.txt
     And stdout starts with a blank line followed by 'LIST-TAGS'
     And stdout contains the section header 'OPTIONS' followed by '  --category <category>'
-

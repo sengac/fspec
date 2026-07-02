@@ -4,12 +4,11 @@
 @cli
 @RPC-295
 Feature: review CLI subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `review` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/review.rs → fspec_core::commands::review::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::review::run
+  - Shell argv         → clap → codelet/fspec/src/review.rs → fspec_core::commands::review::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::review::run
   Both call sites pass a JSON-encoded `{ workUnitId: string }` args shape and a
   `project_root: &Path`; the CLI surface resolves project_root from CWD (parity
   with TS `review(workUnitId, { cwd: process.cwd() })`).
@@ -46,7 +45,6 @@ Feature: review CLI subcommand on the standalone fspec Rust binary
   #   4. dispatch review through fspec_core::dispatch::dispatch_command → same report as the CLI bridge (two-front-doors parity)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to invoke `fspec review <work-unit-id>` directly from a shell with the same surface offered by the TypeScript Commander.js CLI

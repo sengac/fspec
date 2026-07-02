@@ -1,7 +1,6 @@
 @done
 @RPC-273
 Feature: Port remove-example command to Rust
-
   """
   Core impl file: codelet/fspec-core/src/commands/remove_example.rs — replaces the NotYetPorted stub.
   Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`.

@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec set-user-story CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `set-user-story` exposes the same surface as the TS Commander.js registration at src/commands/set-user-story.ts:65-80 — positional `<work-unit-id>` plus required `--role`, `--action`, `--benefit` flags. The bridge at codelet/fspec/src/set_user_story.rs marshals the clap args into JSON and delegates to codelet_fspec_core::commands::set_user_story::run; no rendering or persistence logic is duplicated.
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with 'Error:'.

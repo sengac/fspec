@@ -3,7 +3,6 @@
 @cli
 @RPC-252
 Feature: Port list-virtual-hooks command to Rust
-
   """
   New impl file at codelet/fspec-core/src/commands/list_virtual_hooks.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_work_units::run. Args struct deserializes `{workUnitId: String, format?: 'text'|'json'}` with `#[serde(default)]` on format only — workUnitId is REQUIRED and parse failures surface as InvalidArgs.
 
@@ -36,7 +35,6 @@ Feature: Port list-virtual-hooks command to Rust
   #       still fails for the requested id because the new store is empty
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-virtual-hooks from the agent loop AND invoke `fspec list-virtual-hooks <workUnitId>` from a shell

@@ -3,7 +3,6 @@
 @viewer
 @RPC-373
 Feature: Wire D key on board to open FOUNDATION.md in browser
-
   """
   BoardView::handle_event (codelet/fspec-tui/src/views/board.rs) gains a KeyCode::Char('d')|Char('D') arm beside the existing f/c arms that emits Action::OpenFoundation and returns EventResult::consumed(). A new Action::OpenFoundation variant is added to src/components/mod.rs. App::bootstrap starts the attachment viewer via codelet_attachment_viewer::start_viewer(cwd) (cwd from std::env::current_dir()) best-effort/non-fatal like checkpoint_counts, storing ViewerHandle + port (Option<u16>) on App state. A new dispatch_viewer.rs helper (mirroring dispatch_changed_files.rs) handles Action::OpenFoundation: it computes App::foundation_target()->Option<String> = viewer_port.map(|p| format!("http://127.0.0.1:{p}/view/spec/FOUNDATION.md")) and, when Some, spawns open::that(url) (the open crate, promoted to a workspace dep). The pure foundation_url(port)->String and App::foundation_target() are unit-testable so no real browser launches in tests; the open::that call sits behind the Some branch only. All files <300 lines.
   """
@@ -25,7 +24,6 @@ Feature: Wire D key on board to open FOUNDATION.md in browser
   #   4. With no viewer port set, the foundation target resolves to nothing and no browser is launched
   #
   # ========================================
-
   Background: User Story
     As a fspec board user
     I want to press the D key on the board to open the project's FOUNDATION.md in my browser

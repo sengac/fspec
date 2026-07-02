@@ -9,16 +9,16 @@ Feature: /merge-worktree RPC surface source shape
   Pin the source-shape contract that downstream slices in RPC-030 depend on:
 
   - The five merge/discard/prune/list/inspect RPC methods MUST be declared
-    at every layer of the dual-transport stack (SessionManagerHandle trait
-    + tarpc FspecService + FspecBackend trait + both transport forwarders).
+  at every layer of the dual-transport stack (SessionManagerHandle trait
+  + tarpc FspecService + FspecBackend trait + both transport forwarders).
   - Five new wire types (MergeStrategy, MergeStatus, MergeOutcome,
-    SessionWorktreeInfo, SessionChangesSummary) MUST exist as public
-    declarations in codelet-rpc-types.
+  SessionWorktreeInfo, SessionChangesSummary) MUST exist as public
+  declarations in codelet-rpc-types.
   - MergeConfirmDialog MUST exist as a public dialog component with the
-    documented constructor + render + handle_key surface.
+  documented constructor + render + handle_key surface.
   - All slash-command wiring for /merge-worktree MUST live in
-    codelet/fspec-tui/src/app/dispatch_merge_worktree.rs (mirrors dispatch_blocklist)
-    so the orchestrator dispatch_slash_commands.rs stays under the 300-LoC ceiling.
+  codelet/fspec-tui/src/app/dispatch_merge_worktree.rs (mirrors dispatch_blocklist)
+  so the orchestrator dispatch_slash_commands.rs stays under the 300-LoC ceiling.
 
   These tests run against source files at compile time — they catch
   refactors that accidentally collapse the dual-transport layering, drop
@@ -42,7 +42,6 @@ Feature: /merge-worktree RPC surface source shape
   #   8. All /merge-worktree wiring MUST live in codelet/fspec-tui/src/app/dispatch_merge_worktree.rs.
   #
   # ========================================
-
   Background: User Story
     As a developer of fspec
     I want source-shape tests to pin the layering of the /merge-worktree RPC surface
@@ -124,4 +123,3 @@ Feature: /merge-worktree RPC surface source shape
     Then the MergeStrategy declaration in codelet/rpc-types/src/lib.rs carries `#[derive(Default)]` on the enum and `#[default]` on the FastForward variant, with no remaining manual `impl Default for MergeStrategy` block
     Then the MergeStatus declaration in codelet/rpc-types/src/lib.rs carries `#[derive(Default)]` on the enum and `#[default]` on the NoChanges variant, with no remaining manual `impl Default for MergeStatus` block
     Then the Default::default() values are byte-identical to the pre-fix manual impls: MergeStrategy::default() == MergeStrategy::FastForward and MergeStatus::default() == MergeStatus::NoChanges
-

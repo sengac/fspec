@@ -8,7 +8,6 @@
 @agent-core
 @session-management
 Feature: Agent loop dispatch routes every provider arm through the recovery-wired streaming engine
-
   """
   RPC-087 sibling regression-shape coverage. Pins that
   codelet/agent-loop/src/dispatch.rs has exactly one

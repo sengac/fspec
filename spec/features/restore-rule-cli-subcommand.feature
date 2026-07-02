@@ -1,7 +1,6 @@
 @done
 @RPC-291
 Feature: fspec restore-rule CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/restore_rule.rs — clap variant mirroring TS Commander.js
   at src/commands/restore-rule.ts:122-142. Surface: `fspec restore-rule <workUnitId> <index>`.

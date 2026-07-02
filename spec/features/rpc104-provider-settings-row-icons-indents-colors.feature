@@ -5,7 +5,6 @@
 @provider-settings
 @RPC-104
 Feature: Provider settings: per-row icons, indents and color coding
-
   """
   Test plan: new `codelet/fspec-tui/tests/provider_settings_row_render.rs` integration suite using ratatui `TestBackend` + `Buffer::diff` for cell-level assertions. Eight scenarios (1) yellow selection band on provider, (2) cyan on profile, (3) magenta on oauth-login, (4) green on oauth-status, (5) green on add-profile, (6) 4-space inner indent on every child kind, (7) no inner indent on provider, (8) ▼/▶ glyph flip on `expanded`. Pure widget tests — no NAPI, no async, no real terminal — so they run inside `cargo test -p codelet-fspec-tui` in <100ms.
   Implementation:
@@ -30,12 +29,10 @@ Feature: Provider settings: per-row icons, indents and color coding
   #   4. An unselected oauth-login row for github-copilot with label 'Sign in to GitHub' renders: '      🔑 Sign in to GitHub' with fg:magenta on the whole line (4-space inner indent after the 2-space marker)
   #
   # ========================================
-
   Background: User Story
     As a Rust frontend user opening /provider
     I want to see each nav-item row painted with the same icon, indent, and colour band as the TS Ink reference
     So that the screen is visually identical to the TS implementation and provides instant kind-recognition (yellow = api-key/provider, magenta = oauth, cyan = profile, green = oauth-status/add-profile)
-
 
   Scenario: Selected provider row paints a yellow background band
     Given a ProviderSettings row of kind Provider labelled "OpenAI"
@@ -44,7 +41,6 @@ Feature: Provider settings: per-row icons, indents and color coding
     Then every cell on the row carries bg=Yellow and fg=Black
     And the row uses Modifier::BOLD
 
-
   Scenario: Unselected provider row paints white foreground on default background
     Given a ProviderSettings row of kind Provider labelled "OpenAI"
     And the row is in the unselected state
@@ -52,13 +48,11 @@ Feature: Provider settings: per-row icons, indents and color coding
     Then the name span carries fg=White and bg=Reset
     And no Modifier::REVERSED flag is set on the row
 
-
   Scenario: Selected profile row paints a cyan background band
     Given a ProviderSettings row of kind Profile labelled "dev"
     And the row is in the selected state
     When the row is painted into a TestBackend buffer of width 40
     Then every cell on the row carries bg=Cyan and fg=Black
-
 
   Scenario: Selected oauth-login row paints a magenta background band
     Given a ProviderSettings row of kind OauthLogin labelled "Sign in to GitHub"
@@ -66,13 +60,11 @@ Feature: Provider settings: per-row icons, indents and color coding
     When the row is painted into a TestBackend buffer of width 40
     Then every cell on the row carries bg=Magenta and fg=Black
 
-
   Scenario: Selected oauth-status row paints a green background band
     Given a ProviderSettings row of kind OauthStatus labelled "✓ Signed in as user"
     And the row is in the selected state
     When the row is painted into a TestBackend buffer of width 40
     Then every cell on the row carries bg=Green and fg=Black
-
 
   Scenario: Selected add-profile row paints a green background band
     Given a ProviderSettings row of kind AddProfile labelled "Add Profile"
@@ -80,13 +72,11 @@ Feature: Provider settings: per-row icons, indents and color coding
     When the row is painted into a TestBackend buffer of width 40
     Then every cell on the row carries bg=Green and fg=Black
 
-
   Scenario: Selected api-key row paints a yellow background band
     Given a ProviderSettings row of kind ApiKey labelled "API Key"
     And the row is in the selected state
     When the row is painted into a TestBackend buffer of width 40
     Then every cell on the row carries bg=Yellow and fg=Black
-
 
   Scenario: Unselected child rows are tinted by their kind on the default background
     Given a ProviderSettings row of kind Profile labelled "dev"
@@ -94,13 +84,11 @@ Feature: Provider settings: per-row icons, indents and color coding
     When the row is painted into a TestBackend buffer of width 40
     Then the label span carries fg=Cyan and bg=Reset
 
-
   Scenario: Every non-provider row prepends a 4-space inner indent after the selection prefix
     Given a ProviderSettings row of kind Profile labelled "dev"
     When the row is painted into a TestBackend buffer of width 40
     Then cells at indices 0 and 1 are the selection prefix "  "
     And cells at indices 2, 3, 4, and 5 are spaces forming the inner indent
-
 
   Scenario: Provider rows have no 4-space inner indent — the expand glyph follows the marker directly
     Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=true
@@ -109,18 +97,15 @@ Feature: Provider settings: per-row icons, indents and color coding
     And cell at index 2 is the expanded glyph "▼"
     And cell at index 2 is NOT a space
 
-
   Scenario: Provider row paints the ▼ expanded glyph when expanded is true
     Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=true
     When the row is painted into a TestBackend buffer of width 40
     Then the expand glyph at cell index 2 is "▼"
 
-
   Scenario: Provider row paints the ▶ collapsed glyph when expanded is false
     Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=false
     When the row is painted into a TestBackend buffer of width 40
     Then the expand glyph at cell index 2 is "▶"
-
 
   Scenario: Selected row prefix is "> " and unselected prefix is "  "
     Given a ProviderSettings row of kind Provider labelled "OpenAI" with expanded=false
@@ -129,18 +114,15 @@ Feature: Provider settings: per-row icons, indents and color coding
     When the same row is painted unselected into a TestBackend buffer of width 40
     Then cells at indices 0 and 1 are "  "
 
-
   Scenario: Profile row carries the 📁 folder icon directly after the inner indent
     Given a ProviderSettings row of kind Profile labelled "dev"
     When the row is painted into a TestBackend buffer of width 40
     Then the icon cell at index 6 starts with "📁"
 
-
   Scenario: OauthLogin row carries the 🔑 key icon directly after the inner indent
     Given a ProviderSettings row of kind OauthLogin labelled "Sign in to GitHub"
     When the row is painted into a TestBackend buffer of width 40
     Then the icon cell at index 6 starts with "🔑"
-
 
   Scenario: AddProfile row carries the "+ " glyph directly after the inner indent
     Given a ProviderSettings row of kind AddProfile labelled "Add Profile"

@@ -3,22 +3,21 @@
 //!
 //! Factored out of `views/agent.rs` so the orchestrator file stays
 //! under the 300-LoC ceiling. Routing order:
+//!   0. Non-Press key events (Release/Repeat) are dropped up-front
+//!      (RPC-402 rule [3] — kitty enhancement protocol / Windows).
 //!   1. Ctrl+R chord — opens the search view when no popup / mode
 //!      view is currently active (RPC-026).
 //!   2. Resume / search MODE VIEW routing — when either is open the
 //!      key event is consumed by the view before anything else.
-//!   3. Slash / file popup routing (RPC-020).
+//!   3. Slash / file popup routing (RPC-020, in `dispatch_popups.rs`).
 //!   4. Default Esc/Ctrl+C/PageUp/Shift-arrow chord handling.
 //!   5. Forward to MultiLineInput + `sync_popups` to refilter.
 
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 
 use crate::components::{Action, EventResult};
 
-use super::file_search_popup::{FilePopupOutcome, FileSearchPopup};
 use super::multiline_input::{InputEventOutcome, InputGate};
-use super::popups::{classify_buffer, splice_file_selection, PopupTrigger};
-use super::slash_command_popup::{PopupOutcome, SlashCommandPopup};
 use super::AgentView;
 
 impl AgentView {
@@ -48,101 +47,6 @@ impl AgentView {
         None
     }
 
-    /// RPC-020: route the key through the slash / file popup overlays.
-    fn handle_popup_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
-        if let Some(popup) = self.slash_popup.as_mut() {
-            match popup.handle_key(key.code, key.modifiers) {
-                PopupOutcome::Selected(action) => {
-                    self.slash_popup = None;
-                    self.input.reset();
-                    self.emit(Action::SlashCommandSelected(action));
-                    return Some(EventResult::consumed());
-                }
-                PopupOutcome::Filled(text) => {
-                    self.slash_popup = None;
-                    self.input.set_value(&text);
-                    return Some(EventResult::consumed());
-                }
-                PopupOutcome::Dismiss => {
-                    self.slash_popup = None;
-                    return Some(EventResult::consumed());
-                }
-                PopupOutcome::Continued => return Some(EventResult::consumed()),
-                PopupOutcome::Ignored => {}
-            }
-        }
-        if let Some(popup) = self.file_popup.as_mut() {
-            match popup.handle_key(key.code, key.modifiers) {
-                FilePopupOutcome::SelectedEnter(path) => {
-                    let (anchor, filter_len) = (popup.anchor_offset(), popup.filter().len());
-                    self.splice_path(anchor, filter_len, &path, true);
-                    return Some(EventResult::consumed());
-                }
-                FilePopupOutcome::SelectedTab(path) => {
-                    let (anchor, filter_len) = (popup.anchor_offset(), popup.filter().len());
-                    self.splice_path(anchor, filter_len, &path, false);
-                    return Some(EventResult::consumed());
-                }
-                FilePopupOutcome::Dismiss => {
-                    self.file_popup = None;
-                    return Some(EventResult::consumed());
-                }
-                FilePopupOutcome::Continued => return Some(EventResult::consumed()),
-                FilePopupOutcome::Ignored => {}
-            }
-        }
-        None
-    }
-
-    fn splice_path(&mut self, anchor: usize, filter_len: usize, path: &str, trailing_space: bool) {
-        let new = splice_file_selection(
-            &self.input.value(),
-            anchor,
-            filter_len,
-            path,
-            trailing_space,
-        );
-        self.input.set_value(&new);
-        self.file_popup = None;
-    }
-
-    /// RPC-020: re-classify the input buffer after an edit and
-    /// open/close/refilter the popups accordingly.
-    pub fn sync_popups(&mut self) {
-        let trigger = classify_buffer(&self.input.value());
-        match trigger {
-            PopupTrigger::OpenSlash(filter) => {
-                let popup = self
-                    .slash_popup
-                    .get_or_insert_with(SlashCommandPopup::default);
-                if popup.filter() != filter {
-                    popup.set_filter(&filter);
-                }
-                self.file_popup = None;
-            }
-            PopupTrigger::OpenFile { anchor, filter } => {
-                let need_new = match self.file_popup.as_ref() {
-                    Some(p) => p.anchor_offset() != anchor,
-                    None => true,
-                };
-                if need_new {
-                    self.file_popup = Some(FileSearchPopup::new(anchor, &filter));
-                    self.emit(Action::SearchFiles(filter));
-                } else if let Some(p) = self.file_popup.as_mut() {
-                    if p.filter() != filter {
-                        p.set_filter(&filter);
-                        self.emit(Action::SearchFiles(filter));
-                    }
-                }
-                self.slash_popup = None;
-            }
-            PopupTrigger::Close => {
-                self.slash_popup = None;
-                self.file_popup = None;
-            }
-        }
-    }
-
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
         // RPC-028: route mouse events to popups / mode views first
         // (impl in `mouse_dispatch.rs` to keep this file under 300 LoC).
@@ -165,6 +69,22 @@ impl AgentView {
             return EventResult::ignored();
         }
         if let Event::Key(key) = event {
+            // RPC-402 rule [3]: only KeyEventKind::Press key events are
+            // processed. Release/Repeat events (delivered under the
+            // kitty enhancement protocol, and unconditionally on
+            // Windows) must not double-fire ANY branch below — the
+            // Esc/Ctrl+C/PageUp/Tab/Shift-arrow chords or the
+            // MultiLineInput itself.
+            if key.kind != KeyEventKind::Press {
+                return EventResult::ignored();
+            }
+            // RPC-406: the inline pause prompt (focused session has an
+            // active pause slot, cached at render time) consumes EVERY
+            // key before any other routing — nothing may reach the
+            // MultiLineInput while the prompt is showing. Esc DENIES.
+            if let Some(result) = self.handle_pause_prompt_key(key) {
+                return result;
+            }
             // RPC-026: Ctrl+R opens the search view when no popup /
             // mode view is currently active.
             if Self::is_ctrl_r(key)
@@ -244,10 +164,11 @@ impl AgentView {
             block_edits: self.last_is_compacting,
             suppress_enter: self.last_is_compacting,
         };
-        let outcome = match event {
-            Event::Key(key) => self.input.handle_key_gated(key.code, key.modifiers, gate),
-            other => self.input.handle_event(other),
-        };
+        // RPC-402/RPC-403: single gated entry point — key events
+        // reaching here are guaranteed Press (filtered above); the
+        // widget's own kind filter is defense-in-depth for direct
+        // `handle_event` callers.
+        let outcome = self.input.handle_event_gated(event, gate);
         self.sync_popups();
         match outcome {
             InputEventOutcome::Submitted(value) => {

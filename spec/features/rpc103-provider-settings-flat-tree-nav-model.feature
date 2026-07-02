@@ -6,7 +6,6 @@
 @rust
 @RPC-103
 Feature: Provider settings: flat tree nav model with expand/collapse and child rows
-
   """
   Rust ProviderSettingsView replaces `ProviderSettingsMode::Detail { sub: DetailSub }` with a flat `Vec<NavItem>` where `NavItemKind` enum has six variants: Provider{expanded}, Profile{profile_name}, AddProfile, ApiKey, OAuthLogin{method,label}, OAuthStatus{label}. The old DetailSub::{Summary, EditApiKey, OAuthNotice} are removed — their UX is now inline child rows that dispatch Actions when Enter is pressed.
   Expansion is stored in a `HashSet<String> expanded` field on ProviderSettingsView (TS analog: useRef<Set<string>> expandedProviderIds). build_nav_items reads `expanded.contains(&p.id)` to decide whether to emit children. Toggle flow: Enter on Provider row → flip membership in `expanded` → rebuild nav_items → adjust scroll only if needed; selected_index is left untouched.
@@ -34,7 +33,6 @@ Feature: Provider settings: flat tree nav model with expand/collapse and child r
   #   6. Reload triggered after destructive op: set_providers() rebuilds the providers Vec from disk; the `expanded: HashSet` is NOT cleared, so anthropic stays expanded across the reload (matches TS expandedProviderIds.current behavior)
   #
   # ========================================
-
   Background: User Story
     As a provider settings user
     I want to press Enter on a provider row to expand or collapse its children inline

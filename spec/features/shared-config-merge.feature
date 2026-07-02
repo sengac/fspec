@@ -4,7 +4,6 @@
 @persistence
 @CONFIG-008
 Feature: Shared Rust fspec-config.json module with project-scope deep-merge
-
   """
   config representation is serde_json::Value (untyped object), mirroring the untyped TS object
   Cores are path-injectable (load_config_with_dirs / write_config_with_dirs) with thin global wrappers using get_data_dir() + std::env::current_dir()
@@ -38,7 +37,6 @@ Feature: Shared Rust fspec-config.json module with project-scope deep-merge
   #   7. write_config(Project,{x:1}) then load returns {x:1} merged with user keys
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI port
     I want to load and write the shared fspec-config.json with user+project deep-merge

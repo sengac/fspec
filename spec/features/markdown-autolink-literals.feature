@@ -6,7 +6,6 @@
 @attachment-viewer
 @RPC-379
 Feature: Bare-URL and email autolink rendering parity in the Rust markdown viewer
-
   """
   Add a new module markdown/autolink.rs (kept under 300 lines) exposing a function that transforms a Vec<Event> (or iterates the event stream) and rewrites Event::Text nodes into Text + Start(Tag::Link) + Text + End(TagEnd::Link) sequences for detected URLs/emails. Apply it inside render.rs flush_passthrough BEFORE push_html so the autolinked events are serialized by pulldown's own HTML writer (keeping escaping identical to surrounding text).
   Skip-context tracking: the transform must NOT autolink Event::Text that appears inside a Tag::Link (track Start/End(Link) nesting depth) and must never touch Event::Code (inline code) which is a single non-Text event. Because render.rs buffers inline code as Event::Code in the passthrough vec, skipping non-Text events naturally excludes inline code. Heading inner text flows through HeadingState::render via push_html separately; decide and document whether autolinks apply inside headings (recommended: leave headings as-is for simplicity since slug text is plain).
@@ -34,7 +33,6 @@ Feature: Bare-URL and email autolink rendering parity in the Rust markdown viewe
   #   6. Both 'http://example.com' and 'https://example.com' in plain text autolink to anchors with matching hrefs
   #
   # ========================================
-
   Background: User Story
     As a fspec user viewing markdown attachments in the browser viewer
     I want to have bare URLs and email addresses rendered as clickable links

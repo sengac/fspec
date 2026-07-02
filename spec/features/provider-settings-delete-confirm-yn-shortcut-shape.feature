@@ -9,7 +9,6 @@
 @rust
 @RPC-156
 Feature: Provider settings delete-confirm dialog: n/N cancel shortcut
-
   """
   [0] This card complements the full integration coverage already provided by RPC-164 (codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs, 13 tests). Pattern matches RPC-077 / RPC-149 fast structural source-string regression-shape complement to slow integration tests.
   [1] Test file: codelet/fspec-tui/tests/rpc156_delete_confirm_yn_shortcut_shape.rs — sub-millisecond execution, no key event simulation, just source-string scanning of confirm_dialog.rs.

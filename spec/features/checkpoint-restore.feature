@@ -3,7 +3,6 @@
 @tui
 @RPC-365
 Feature: Checkpoint restore actions (single file / all files) with confirmation and progress dialog
-
   """
   Confirming a restore re-requests the file diff and refreshes the board counts
   """
@@ -27,7 +26,6 @@ Feature: Checkpoint restore actions (single file / all files) with confirmation 
   #   5. Cancelling the restore confirmation closes the dialog and makes no transport call
   #
   # ========================================
-
   Background: User Story
     As a fspec user browsing checkpoints
     I want to restore a single file or all files of a checkpoint with a confirmation and progress dialog

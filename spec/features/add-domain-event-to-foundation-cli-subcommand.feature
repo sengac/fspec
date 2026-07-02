@@ -3,7 +3,6 @@
 @cli
 @RPC-180
 Feature: fspec add-domain-event-to-foundation CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_domain_event_to_foundation.rs — clap-derived struct mirroring the
   TS Commander.js registration (src/commands/add-domain-event-to-foundation.ts:138-161). Surface:

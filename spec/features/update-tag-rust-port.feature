@@ -1,7 +1,6 @@
 @done
 @RPC-316
 Feature: Port update-tag command to Rust
-
   """
   Files: codelet/fspec-core/src/commands/update_tag.rs (replace stub); codelet/fspec-core/src/help/configs/update_tag.rs (NEW help config); codelet/fspec/src/update_tag.rs (NEW CLI bridge); codelet/fspec-core/tests/update_tag.rs (NEW dispatcher tests); codelet/fspec/tests/cli_update_tag.rs (NEW CLI shell tests); codelet/fspec/tests/fixtures/help/update-tag.txt (NEW captured fixture)
   Reuses shared infrastructure: io::ensure (READ only — load tags.json via direct fs::read; NO auto-create), io::locked_file::write_json_atomic for atomic write, types::tags::{TagsData, TagCategory, Tag} with #[serde(flatten)] extra preserving aux fields
@@ -42,7 +41,6 @@ Feature: Port update-tag command to Rust
   #   10. Malformed tags.json: parse failure returns structured error; file on disk unchanged
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch update-tag from the agent loop with byte-for-byte parity to the TypeScript implementation
@@ -55,7 +53,6 @@ Feature: Port update-tag command to Rust
     And the Phase Tags category on disk contains a tag with name '@critical' and description 'Critical paths only'
     And the dispatcher output contains the substring 'Successfully updated @critical'
 
-
   Scenario: Moves tag to a different category preserving original description when --description is omitted
     Given spec/tags.json contains a tag '@critical' under Phase Tags with description 'Critical features'
     When I dispatch update-tag with tag '@critical' and category 'Priority Tags'
@@ -64,7 +61,6 @@ Feature: Port update-tag command to Rust
     And the Phase Tags category on disk does not contain a tag named '@critical'
     And the Priority Tags category on disk contains a tag with name '@critical' and description 'Critical features'
 
-
   Scenario: Moves tag to a different category and overrides description when both --category and --description are provided
     Given spec/tags.json contains a tag '@critical' under Phase Tags with description 'Critical features'
     When I dispatch update-tag with tag '@critical', category 'Priority Tags', and description 'High priority work'
@@ -72,20 +68,17 @@ Feature: Port update-tag command to Rust
     And Priority Tags exists as an empty category
     And the Priority Tags category on disk contains a tag with name '@critical' and description 'High priority work'
 
-
   Scenario: Sorts tags alphabetically within the target category after cross-category move
     Given spec/tags.json contains Phase Tags with tag '@critical' and Priority Tags with tags '@zed', '@aaa', '@mid' in that insertion order
     When I dispatch update-tag with tag '@critical' and category 'Priority Tags'
     Then the dispatcher returns success=true
     And the Priority Tags category on disk contains tags in the order '@aaa', '@critical', '@mid', '@zed'
 
-
   Scenario: Preserves insertion order when description-only update inside the same category
     Given spec/tags.json contains Phase Tags with tags '@zed', '@aaa', '@mid' in that insertion order
     When I dispatch update-tag with tag '@aaa' and description 'New A description'
     Then the dispatcher returns success=true
     And the Phase Tags category on disk contains tags in the order '@zed', '@aaa', '@mid'
-
 
   Scenario: Rejects request when neither --category nor --description is provided
     Given spec/tags.json contains a tag '@critical' under Phase Tags
@@ -94,7 +87,6 @@ Feature: Port update-tag command to Rust
     And the error message contains the substring 'No updates specified. Use --category and/or --description'
     And spec/tags.json content on disk is unchanged from before the call
 
-
   Scenario: Rejects request when spec/tags.json does not exist
     Given an empty project root directory with no spec/tags.json
     When I dispatch update-tag with tag '@critical' and description 'New description'
@@ -102,13 +94,11 @@ Feature: Port update-tag command to Rust
     And the error message contains the substring 'spec/tags.json not found'
     And spec/tags.json was not created by the command
 
-
   Scenario: Rejects request when the tag is not found in any category
     Given spec/tags.json exists with the canonical empty category set
     When I dispatch update-tag with tag '@nonexistent' and description 'Anything'
     Then the dispatcher returns success=false
     And the error message contains the substring 'Tag @nonexistent not found in registry'
-
 
   Scenario: Rejects unknown target category with canonical Available categories list
     Given spec/tags.json contains a tag '@critical' under Phase Tags
@@ -117,13 +107,11 @@ Feature: Port update-tag command to Rust
     And the error message contains the substring 'Invalid category: Nonexistent Tags. Available categories: Phase Tags'
     And spec/tags.json content on disk is unchanged from before the call
 
-
   Scenario: Treats category lookup as case-sensitive (lowercase variant does not match)
     Given spec/tags.json contains a tag '@critical' under Phase Tags
     When I dispatch update-tag with tag '@critical' and category 'phase tags'
     Then the dispatcher returns success=false
     And the error message contains the substring 'Invalid category: phase tags'
-
 
   Scenario: Preserves auxiliary top-level fields and does NOT bump statistics.lastUpdated
     Given spec/tags.json contains a tag '@critical' under Phase Tags plus auxiliary fields combinationExamples, usageGuidelines, references, and statistics.lastUpdated set to '1999-01-01T00:00:00.000Z'
@@ -132,7 +120,6 @@ Feature: Port update-tag command to Rust
     And spec/tags.json on disk still contains combinationExamples, usageGuidelines, and references with their original payloads
     And spec/tags.json statistics.lastUpdated on disk still equals '1999-01-01T00:00:00.000Z'
 
-
   Scenario: Escalates malformed tags.json as a structured parse error
     Given spec/tags.json exists but contains invalid JSON syntax
     When I dispatch update-tag with tag '@critical' and description 'New description'
@@ -140,11 +127,9 @@ Feature: Port update-tag command to Rust
     And the error message contains the substring 'Failed to parse tags.json'
     And spec/tags.json content on disk is unchanged from before the call
 
-
   Scenario: Renders multi-line success block on success
     Given spec/tags.json contains a tag '@critical' under Phase Tags with description 'Critical features'
     When I dispatch update-tag with tag '@critical' and description 'Critical paths only'
     Then the dispatcher output contains the substring '✓ Successfully updated @critical'
     And the dispatcher output contains the substring 'Updated: spec/tags.json'
     And the dispatcher output contains the substring 'Regenerated: spec/TAGS.md'
-

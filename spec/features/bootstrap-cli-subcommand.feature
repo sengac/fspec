@@ -4,7 +4,6 @@
 @cli
 @RPC-200
 Feature: Port bootstrap command to Rust (CLI subcommand)
-
   """
   Clap surface for the ported bootstrap command. The CLI bridge codelet/fspec/src/bootstrap.rs is a thin façade that marshals JSON args and forwards to fspec_core::commands::bootstrap::run(args_json, project_root); it contains no documentation-building or transform logic. bootstrap takes no positional arguments and no flags. Help output is byte-parity with the captured TypeScript fixture at codelet/fspec/tests/fixtures/help/bootstrap.txt. SHARED-FILE CHANGES are owned by the supervisor (see bootstrap-rust-port.feature docstring).
   """
@@ -23,7 +22,6 @@ Feature: Port bootstrap command to Rust (CLI subcommand)
   #   2. Running `fspec bootstrap --help` prints help byte-for-byte identical to the captured TS fixture
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run `bootstrap` in the Rust binary

@@ -1,0 +1,211 @@
+{
+  "scenarios": [
+    {
+      "name": "Shift+Enter mid-word splits the line and grows the input to 2 rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "lines": "48-87",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Alt+Enter inserts a newline instead of submitting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "lines": "93-130",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Plain Enter submits the full multi-line buffer and resets the input",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "lines": "231-270",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Key release events are ignored by the input",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "lines": "276-324",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Enter is swallowed while the session is compacting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs",
+          "lines": "358-390",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agent_input_multiline_newline_rpc402.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+      "codelet/fspec-tui/src/views/agent/dispatch.rs"
+    ],
+    "totalLinesCovered": 314
+  }
+}

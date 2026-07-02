@@ -2,7 +2,6 @@
 @rust
 @RPC-268
 Feature: Port remove-attachment command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/remove_attachment.rs. Reuses io::ensure::ensure_work_units_file
   (auto-creates spec/work-units.json), io::locked_file::write_json_atomic (single atomic write), and

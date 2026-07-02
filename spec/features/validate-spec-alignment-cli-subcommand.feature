@@ -3,12 +3,11 @@
 @cli
 @RPC-323
 Feature: validate-spec-alignment clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `validate-spec-alignment` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/validate_spec_alignment.rs → fspec_core::commands::validate_spec_alignment::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::validate_spec_alignment::run
+  - Shell argv         → clap → codelet/fspec/src/validate_spec_alignment.rs → fspec_core::commands::validate_spec_alignment::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::validate_spec_alignment::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes a required positional <workUnitId> and an accepted-but-no-op --fix (mirroring the real exported contract; the TS CLI action handler is broken).
@@ -43,7 +42,6 @@ Feature: validate-spec-alignment clap subcommand on the standalone fspec Rust bi
   #   1. Working assumption pending supervisor confirmation: the clap surface exposes a required positional <workUnitId> (mirroring the real exported contract), with --fix accepted but no-op (parity with TS). A soft glob is handled locally by mapping DirectoryNotFound to an empty Vec; no new shared io helper is required.
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of validate-spec-alignment wired through both the LLM dispatcher and the clap subcommand

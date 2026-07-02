@@ -12,7 +12,6 @@
 @rpc
 @RPC-067
 Feature: Dependency-rule regression tests for fspec, fspec-tui, sessions
-
   """
   The new codelet/test-helpers/ crate is added to the workspace `members` list AND exposed as `codelet-test-helpers = { path = "test-helpers" }` in [workspace.dependencies] — so consuming crates declare it via `codelet-test-helpers.workspace = true` in [dev-dependencies]
   The helper API has two functions: `assert_no_codelet_napi_in_dependency_graph(crate_name: &str)` (cargo metadata BFS — fails if codelet-napi appears in the transitive set) and `assert_no_codelet_napi_imports_in_sources(crate_dir: &str)` (walks codelet/<crate_dir>/src/*.rs, strips comments, fails on `use codelet_napi` or `codelet_napi::` substrings)
@@ -45,7 +44,6 @@ Feature: Dependency-rule regression tests for fspec, fspec-tui, sessions
   #   7. When `cargo test --workspace` runs from a clean target dir, every no_napi_dependency.rs test binary (core, rpc-types, fspec, fspec-tui, sessions) completes within 10 seconds each — the cargo metadata invocation dominates runtime and is shared across all binaries
   #
   # ========================================
-
   Background: User Story
     As a fspec architect
     I want to enforce the no-codelet-napi forbidden-arrow architectural invariant via shared dependency-rule helpers and per-crate regression tests for codelet-core and codelet-rpc-types
@@ -122,8 +120,8 @@ Feature: Dependency-rule regression tests for fspec, fspec-tui, sessions
     When I diff its content against the pre-RPC-067 baseline
     Then no lines are removed
     And no test function is replaced by a helper invocation
-    # NOTE: the file asserts wider invariants beyond the no-napi rule
 
+    # NOTE: the file asserts wider invariants beyond the no-napi rule
   Scenario: cargo test --workspace passes after all RPC-067 changes
     Given all RPC-067 source changes are applied to the workspace
     When I run `cargo test --workspace --tests --no-fail-fast`
@@ -141,4 +139,3 @@ Feature: Dependency-rule regression tests for fspec, fspec-tui, sessions
     Given a Rust file containing only the line `// codelet_napi was here`
     When `assert_no_import_in_sources` walks the file
     Then the helper does NOT flag the file as an offender
-    # NOTE: comments are stripped before substring matching

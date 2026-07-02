@@ -3,7 +3,6 @@
 @tui
 @RPC-369
 Feature: Click a checkpoint or file row to select it in the Checkpoints view
-
   """
   handle_mouse in views/checkpoints/keys.rs gains a MouseEventKind::Down(_) arm placed AFTER the existing restore/delete dialog guard (which returns Consumed) and BEFORE the wheel match. It hit-tests via pane_at(col,row), sets focused_pane to the clicked pane, then: Checkpoints pane -> move_checkpoint_selection(clicked - selected_checkpoint); Files pane -> move_file_selection(clicked - selected_file); Diff pane -> Consumed.
   Reuses existing navigation.rs setters move_checkpoint_selection(delta) (emits Action::LoadCheckpointFiles) and move_file_selection(delta) (emits Action::LoadCheckpointFileDiff); both clamp, ensure_visible, and early-return Consumed with no Emit when the clamped index equals the current selection. last_checkpoints_rect/last_files_rect are CONTENT rects so clicked_index = scroll + (ev.row - rect.y), clamped to list length; ignore clicks past the last populated row.
@@ -29,7 +28,6 @@ Feature: Click a checkpoint or file row to select it in the Checkpoints view
   #   4. While the restore dialog is open, a left click on a checkpoint row is swallowed by the dialog and the selection does not change
   #
   # ========================================
-
   Background: User Story
     As a fspec user browsing the three-pane Checkpoints view
     I want to click a checkpoint name row or a file row to select it

@@ -7,7 +7,6 @@
 @cli
 @RPC-213
 Feature: Port create-prefix command to Rust
-
   """
   Core impl lives at codelet/fspec-core/src/commands/create_prefix.rs and replaces the NotYetPorted stub. It reuses shared infrastructure: `io::ensure::ensure_prefixes_file` (auto-create), `io::locked_file::write_json_atomic` (atomic write), `types::work_unit::PrefixesData` (IndexMap<String, Prefix>), `types::prefix::Prefix`.
   CLI bridge at codelet/fspec/src/create_prefix.rs marshals clap-derived `CliArgs { prefix: String, description: String }` to JSON `{ prefix, description }`, then re-enters `create_prefix::run(args_json, cwd)`. Bridge has NO validation or file IO — only `env::current_dir()` + JSON serialisation + stdout/stderr formatting.
@@ -40,7 +39,6 @@ Feature: Port create-prefix command to Rust
   #   7..10 — CLI surface (see create-prefix-cli-subcommand.feature)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to register a new work-unit prefix from either the LLM dispatcher or the shell CLI

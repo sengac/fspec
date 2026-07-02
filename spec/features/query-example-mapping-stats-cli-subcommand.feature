@@ -3,12 +3,11 @@
 @cli
 @RPC-260
 Feature: query-example-mapping-stats clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `query-example-mapping-stats` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern (architecture note [7] on RPC-253, reused for RPC-260):
-    - Shell argv         → clap → codelet/fspec/src/query_example_mapping_stats.rs → fspec_core::commands::query_example_mapping_stats::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_example_mapping_stats::run
+  - Shell argv         → clap → codelet/fspec/src/query_example_mapping_stats.rs → fspec_core::commands::query_example_mapping_stats::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_example_mapping_stats::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes only `--format <text|json>` defaulting to `text` (parity with TS Commander.js registration at src/commands/query-example-mapping-stats.ts:163-165 — workUnitId/hasQuestions/questionsFor are NOT exposed on the CLI surface).

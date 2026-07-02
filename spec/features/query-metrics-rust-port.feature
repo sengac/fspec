@@ -3,7 +3,6 @@
 @cli
 @RPC-261
 Feature: Port query-metrics command to Rust
-
   """
   Routing: dispatcher needs query-metrics moved from run_stub to run_ported and added to is_ported predicate — shared file change, supervisor required.
   CLI binding: codelet/fspec/src/main.rs needs a Mode::QueryMetrics clap variant — shared file change, supervisor required.
@@ -50,7 +49,6 @@ Feature: Port query-metrics command to Rust
   #   12. CLI bridge module codelet/fspec/src/query_metrics.rs contains NO inline aggregation or hours-formatting logic — only argv → JSON marshalling and delegation to fspec_core
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to invoke `query-metrics` through both the dispatcher and the Rust CLI binary
@@ -65,7 +63,6 @@ Feature: Port query-metrics command to Rust
     Then aggregateMetrics.averageCycleTime equals '4 hours'
     Then aggregateMetrics.byType has keys story, task, bug in that exact order with story.count=3, task.count=0, bug.count=0
 
-
   Scenario: Single work unit JSON returns cycleTime and timePerState
     Given spec/work-units.json contains AUTH-001 with stateHistory entries at hour 0 (backlog), hour 2 (specifying), hour 5 (done)
     When I dispatch query-metrics with workUnitId='AUTH-001' and format='json'
@@ -74,25 +71,21 @@ Feature: Port query-metrics command to Rust
     Then timePerState.backlog='2 hours' and timePerState.specifying='3 hours'
     Then the JSON does NOT contain an aggregateMetrics key
 
-
   Scenario: Unknown work unit id fails with wrapped error
     Given spec/work-units.json contains AUTH-001 but no NOPE-999
     When I dispatch query-metrics with workUnitId='NOPE-999'
     Then the dispatcher returns success=false with an error message containing 'Failed to query metrics: Work unit NOPE-999 not found'
-
 
   Scenario: Work unit without state history fails with wrapped error
     Given spec/work-units.json contains AUTH-001 with no stateHistory field
     When I dispatch query-metrics with workUnitId='AUTH-001'
     Then the dispatcher returns success=false with an error message containing 'Failed to query metrics: Work unit AUTH-001 has no state history'
 
-
   Scenario: Type filter omits byType from the result
     Given spec/work-units.json contains a story AUTH-001, a task TASK-001 and a bug BUG-001
     When I dispatch query-metrics with type='bug' and format='json'
     Then DispatchResult.data.aggregateMetrics.totalWorkUnits equals 1
     Then DispatchResult.data.aggregateMetrics does NOT contain a byType key
-
 
   Scenario: Empty work units map preserves the three byType keys with zero counts
     Given spec/work-units.json exists with an empty workUnits object
@@ -101,13 +94,11 @@ Feature: Port query-metrics command to Rust
     Then aggregateMetrics does NOT contain an averageCycleTime key
     Then aggregateMetrics.byType keys are exactly story, task, bug in that order with all counts equal to 0 and no averageCycleTime keys
 
-
   Scenario: Missing work-units.json escalates as a wrapped Failed to query metrics error
     Given the project root has no spec/work-units.json
     When I dispatch query-metrics with format='json'
     Then the dispatcher returns success=false with an error message starting with 'Failed to query metrics:'
     Then spec/work-units.json still does not exist after the call
-
 
   Scenario: Text aggregate output is human-readable and not JSON
     Given spec/work-units.json contains AUTH-001 (status done, stateHistory 0h→2h) and AUTH-002 (backlog)
@@ -117,4 +108,3 @@ Feature: Port query-metrics command to Rust
     Then DispatchResult.data contains the exact line 'Completed Work Units: 1'
     Then DispatchResult.data contains the substring 'By Type:'
     Then DispatchResult.data does NOT start with '{'
-

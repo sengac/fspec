@@ -5,7 +5,6 @@
 @rust
 @RPC-344
 Feature: Model selector missing custom-model CRUD (a/e/d keybinds)
-
   """
   Backend write surface already exists from RPC-347 (FspecBackend::add/update/delete_custom_model + Action::AddCustomModel/EditCustomModel/DeleteCustomModel + CustomModelDefinition wire type). RPC-344 adds only the UI: a custom-model mode enum + form-state struct on ModelSelectorView, a/e/d keybind guards in handle_key, form/confirm input sub-handlers, two overlay renderers under views/model_selector/, and App::dispatch arms that spawn the three backend calls followed by a list_providers refresh.
   The a/e/d guards reuse the existing row projection: focused_provider_key + the focused row's selectable/is_custom flags + provider profile_name. ModelSelectorRow currently lacks an is_custom flag (the [C] badge is derived in build_badges from ModelEntry.is_custom); the projection must carry is_custom (and the focused profile_name/provider_id) so the e/d guard and edit-prefill can read it without re-walking providers.
@@ -44,7 +43,6 @@ Feature: Model selector missing custom-model CRUD (a/e/d keybinds)
   #   1. KNOWN DIVERGENCE (user decision): the Edit form prefills only from the wire ModelEntry (id, displayName, contextWindow, reasoning, vision). Facade, Max Output Tokens and Compaction Trigger start blank because ProviderInfo/ModelEntry does not carry them; re-saving without re-entering those fields drops them. Lossless prefill would require extending the wire (deferred).
   #
   # ========================================
-
   Background: User Story
     As a user managing local-server (openai) profiles in the model selector
     I want to add, edit, and delete custom models via a/e/d keybinds with a form and a delete-confirmation overlay

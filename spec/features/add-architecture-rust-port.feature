@@ -3,7 +3,6 @@
 @done
 @RPC-167
 Feature: Port add-architecture command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_architecture.rs reuses crate::io::gherkin::parse_feature_lenient for pre/post validation and a TS-parity line-based splice (split('\n')/Vec mutation/join('\n')), NOT AST round-trip.
   Feature path resolution reuses the basename-over-spec/features pattern (ends_with('.feature') direct, else glob_feature_files basename match) mirroring show_feature::resolve_feature_path; can share a helper with add-background.
@@ -23,7 +22,6 @@ Feature: Port add-architecture command to Rust
   #   6. Mutation is line-based via split('\n')/join('\n'); the result MUST re-parse as valid Gherkin OR error 'Generated invalid Gherkin: <msg>'; success message is 'Added architecture documentation to <feature>'
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch add-architecture from the agent loop and run `fspec add-architecture` from a shell with byte-for-byte parity to the TypeScript implementation

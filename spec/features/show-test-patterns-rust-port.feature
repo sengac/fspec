@@ -3,7 +3,6 @@
 @cli
 @RPC-307
 Feature: Port show-test-patterns command to Rust
-
   """
   Reuses io::ensure::ensure_work_units_file path (TS queryWorkUnits throws on ENOENT — Rust mirrors by bubbling). Tag filter mirrors queryWorkUnits filter logic at src/commands/query-work-units.ts:118-123. No tag normalization (raw string includes).
   Adds NEW io helper: read_all_coverage_files(project_root) → Vec<CoverageFile> in io/coverage_glob.rs. Globs spec/features/*.feature.coverage, parses each JSON, returns minimal struct {feature_name, file_path, scenarios:[{name, testMappings:[{file, lines}]}]}. Skip files with parse errors. Submit shared-file request to wire this into io/mod.rs.

@@ -5,7 +5,6 @@
 @rust
 @ts-parity
 Feature: Provider catalog: canonical 17-provider ordered list with display names
-
   """
   Rust enum/struct design: introduce a static const slice CANONICAL_PROVIDERS: &[CanonicalProvider] in codelet/providers/src/catalog.rs (NEW file) carrying { id: &'static str, display_name: &'static str, env_var: &'static str, auth_type: AuthType, default_base_url: Option<&'static str> } for each of the 17 TS-canonical entries. AuthType is a Rust enum { ApiKey, OAuth } matching TS authType. Re-export via codelet/providers/src/lib.rs `pub mod catalog;`. The list_provider_credentials code path consumes this slice to populate ProviderCredentialInfo display_name + ordering — single source of truth, no scattered match arms
   Cross-transport parity contract: extend codelet/fspec-tui/tests/rpc054_cross_transport_parity.rs with a new scenario asserting that BOTH the embedded transport AND the websocket transport surface the same 17 canonical rows in the same canonical order with the same display_name strings. The CANONICAL_PROVIDERS slice lives BELOW the wire boundary (in codelet-providers, NOT in codelet-fspec-tui) so both transports see the same data without view-layer divergence. Coordinate with Agent E if a new RPC method list_canonical_providers() is needed for the TS frontend to converge onto the Rust catalog
@@ -29,33 +28,36 @@ Feature: Provider catalog: canonical 17-provider ordered list with display names
   #   4. Cross-transport parity: list_provider_credentials called through embedded transport returns the same 17 canonical rows in the same canonical order with the same canonical display names as the same call through websocket transport (against the same StubSessionManagerHandle)
   #
   # ========================================
-
   Background: User Story
     As a Rust frontend user
     I want to open /provider against any fspec workspace
     So that see the same 17 canonical providers in the same order with the same display names as the TS Ink reference
 
-  @unit @registry
+  @unit
+  @registry
   Scenario: CANONICAL_PROVIDERS slice declares exactly 17 entries in the TS-canonical order
     Given the codelet-providers crate exports a static CANONICAL_PROVIDERS slice
     When the slice is iterated in declaration order
     Then it yields exactly 17 entries
     And the provider ids in order are "openai", "anthropic", "cohere", "gemini", "mistral", "xai", "together", "huggingface", "openrouter", "groq", "deepseek", "moonshot", "galadriel", "azure", "zai", "codex", "github-copilot"
 
-  @unit @registry
+  @unit
+  @registry
   Scenario: CANONICAL_PROVIDERS display names match the TS PROVIDER_REGISTRY byte-for-byte
     Given the codelet-providers crate exports a static CANONICAL_PROVIDERS slice
     When the display_name field is read from each entry in order
     Then the display names in order are "OpenAI API", "Anthropic", "Cohere", "Google Gemini", "Mistral AI", "xAI", "Together AI", "Hugging Face", "OpenRouter", "Groq", "DeepSeek", "Moonshot", "Galadriel", "Azure OpenAI", "Z.AI", "Codex (ChatGPT)", "GitHub Copilot"
 
-  @unit @registry
+  @unit
+  @registry
   Scenario: CANONICAL_PROVIDERS tags codex, anthropic, and github-copilot as OAuth auth_type
     Given the codelet-providers crate exports a static CANONICAL_PROVIDERS slice
     When the auth_type field is read from each entry
     Then the entries with id "anthropic", "codex", and "github-copilot" have auth_type AuthType::OAuth
     And every other entry has auth_type AuthType::ApiKey
 
-  @integration @registry
+  @integration
+  @registry
   Scenario: Empty workspace returns 17 canonical rows in order with canonical display names
     Given no provider env vars are set in the process environment
     And no custom provider configs exist on disk
@@ -65,7 +67,8 @@ Feature: Provider catalog: canonical 17-provider ordered list with display names
     And every entry has display_name set to the TS-canonical display string
     And every entry has configured == false
 
-  @integration @registry
+  @integration
+  @registry
   Scenario: ANTHROPIC_API_KEY alone marks the Anthropic row configured under slug "anthropic"
     Given the env var ANTHROPIC_API_KEY is set to "sk-ant-test"
     And no other provider env vars are set
@@ -76,7 +79,8 @@ Feature: Provider catalog: canonical 17-provider ordered list with display names
     And no entry has provider_id "claude"
     And every other entry has configured == false
 
-  @integration @registry
+  @integration
+  @registry
   Scenario: Canonical rows precede custom providers in the response
     Given the env var ANTHROPIC_API_KEY is set
     And the env var GROQ_API_KEY is set
@@ -88,7 +92,8 @@ Feature: Provider catalog: canonical 17-provider ordered list with display names
     And the entry at index 17 has provider_id "my-vllm"
     And the entries with provider_id "anthropic", "groq", and "openrouter" have configured == true
 
-  @integration @registry
+  @integration
+  @registry
   Scenario: display_name on every canonical entry is sourced from the catalog not the slug
     Given no provider env vars are set in the process environment
     When list_provider_credentials is called
@@ -99,7 +104,8 @@ Feature: Provider catalog: canonical 17-provider ordered list with display names
     And the entry with provider_id "azure" has display_name "Azure OpenAI"
     And the entry with provider_id "codex" has display_name "Codex (ChatGPT)"
 
-  @integration @parity
+  @integration
+  @parity
   Scenario: Embedded and WebSocket transports surface the same 17 canonical rows in the same order
     Given a SharedFspecService backed by a StubSessionManagerHandle
     And both an EmbeddedFspecBackend and a WebSocketFspecBackend over that service

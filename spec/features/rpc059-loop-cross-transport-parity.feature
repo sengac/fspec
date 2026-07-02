@@ -12,9 +12,9 @@ Feature: /loop cross-transport parity
   the same StubSessionManagerHandle for every new RPC method introduced
   by RPC-059:
 
-    * loop_add
-    * loop_cancel
-    * loop_list
+  * loop_add
+  * loop_cancel
+  * loop_list
 
   Mirrors the RPC-058 cross-transport parity test — each transport
   invocation increments the same per-stub counter and returns the same

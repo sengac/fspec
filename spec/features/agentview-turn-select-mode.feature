@@ -5,7 +5,6 @@
 @rust
 @RPC-381
 Feature: Port AgentView Tab turn-selection (SELECT) mode to Rust
-
   """
   Mode toggle lives on AgentView.turn_select_mode (presentation state, mirrors TS component-level isTurnSelectMode). Selection cursor lives on ScrollbackList (SelectionMode { Scroll, Item } + selected index, keyed by stable chunk seq for stream-stability). A turn = one RenderedChunk (Rust chunks are already at message granularity; no TS-style separator-line group walking needed).
   Tab handler added in views/agent/dispatch.rs AFTER popup/mode-view routing (so popups consume Tab first). New actions: ToggleTurnSelectMode, TurnNavUp, TurnNavDown in components/mod.rs, reduced on the App task. Header badge wired by replacing the hardwired is_select_mode: false in chrome_paint.rs:60. Arrow bars rendered in scrollback_paint.rs (gray bg) via generate_arrow_bar (port of turnSelection.ts generateArrowBar).
@@ -35,7 +34,6 @@ Feature: Port AgentView Tab turn-selection (SELECT) mode to Rust
   #   7. While a slash-command popup is open, pressing Tab is handled by the popup and does NOT toggle turn-selection mode
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to press Tab to enter a turn-selection mode and navigate between conversation turns with arrow keys

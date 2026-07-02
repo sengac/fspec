@@ -1,7 +1,6 @@
 @done
 @RPC-289
 Feature: Port restore-example command to Rust
-
   """
   Core impl: codelet/fspec-core/src/commands/restore_example.rs — replaces the NotYetPorted stub.
   Single source of truth `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`.

@@ -17,7 +17,6 @@ Feature: TUI surfaces a declined session creation instead of swallowing it
   # an empty id. The decline action pushes a Priority::Critical ErrorDialog and
   # NO caller appends an empty-id SessionContext. Test is fully offline against
   # the MockBackend fixture (no network, no env mutation).
-
   Background: User Story
     As a developer integrating provider/model/profile selection
     I want the TUI to fail loudly when session creation is declined

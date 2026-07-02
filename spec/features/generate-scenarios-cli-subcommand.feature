@@ -4,7 +4,6 @@
 @cli
 @RPC-234
 Feature: Port generate-scenarios command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/generate_scenarios.rs (rewrite stub, signature gains project_root); help config codelet/fspec-core/src/help/configs/generate_scenarios.rs; CLI bridge codelet/fspec/src/generate_scenarios.rs; core tests codelet/fspec-core/tests/generate_scenarios.rs; CLI tests codelet/fspec/tests/cli_generate_scenarios.rs; help fixture codelet/fspec/tests/fixtures/help/generate-scenarios.txt. Two feature files: generate-scenarios-rust-port.feature (dispatcher contract) + generate-scenarios-cli-subcommand.feature (clap surface).
   Reuse existing shared modules: io::ensure (ensureWorkUnitsFile parity), io::feature_glob::glob_feature_files, io::gherkin::parse_feature_lenient. Example-mapping fields (userStory, rules, examples, questions, assumptions, architectureNotes) are read out of WorkUnit.extra as serde_json::Value, mirroring TS untyped access — no new shared type module.
@@ -47,7 +46,6 @@ Feature: Port generate-scenarios command to Rust
   #   11. A work unit with a user story produces a Background populated from role, action and benefit, while a work unit without one emits placeholder tokens and a prefill reminder
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run `generate-scenarios <workUnitId>` in the Rust binary and have it behave byte-for-byte like the TypeScript command
@@ -60,7 +58,6 @@ Feature: Port generate-scenarios command to Rust
     Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/generate-scenarios.txt
     Then stdout starts with a blank line followed by "GENERATE-SCENARIOS"
 
-
   Scenario: CLI creates a context-only feature file and exits 0
     Given a temp working directory whose work unit RPC-001 is ready with a user story, a rule and an example
     When I run `fspec generate-scenarios RPC-001 --feature=user-auth` from that directory
@@ -69,20 +66,17 @@ Feature: Port generate-scenarios command to Rust
     Then stdout contains the substring "Contains example mapping context as comments (NO scenarios yet)"
     Then the file spec/features/user-auth.feature exists on disk
 
-
   Scenario: CLI prints failure to stderr and exits 1 for a missing work unit
     Given a temp working directory with an empty work-units store
     When I run `fspec generate-scenarios MISSING-001` from that directory
     Then the command exits with code 1
     Then stderr contains the substring "✗ Failed to generate scenarios:"
 
-
   Scenario: CLI accepts the ignore-possible-duplicates flag
     Given a temp working directory whose work unit RPC-002 has an example matching an existing scenario above threshold
     When I run `fspec generate-scenarios RPC-002 --feature=widgets --ignore-possible-duplicates` from that directory
     Then the command exits 0
     Then the file spec/features/widgets.feature exists on disk
-
 
   Scenario: Default combined TUI mode is preserved when no subcommand is provided
     Given the fspec Rust binary has generate-scenarios registered as a clap subcommand alongside the existing subcommands

@@ -4,7 +4,6 @@
 @rust
 @RPC-209
 Feature: Port copy-virtual-hooks command to Rust
-
   """
   New impl file at codelet/fspec-core/src/commands/copy_virtual_hooks.rs replaces the NotYetPorted stub. Module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` mirroring the list_virtual_hooks::run signature.
 
@@ -13,10 +12,10 @@ Feature: Port copy-virtual-hooks command to Rust
   Args parsed via serde camelCase: `{from: String (default ''), to: String (default ''), hookName: Option<String>}`. `from`/`to` empty after default → CLI bridge emits the friendly "--from option is required" / "--to option is required" error before delegating. The core function ALSO defends both fields and raises the same canonical error strings when invoked over the dispatcher with empty/missing values.
 
   The command reads `spec/work-units.json` via the shared `crate::io::ensure::ensure_work_units_file` helper. Validation order (matching the TS source):
-    1. Source work unit must exist → `Error("Source work unit '<from>' does not exist")`.
-    2. Target work unit must exist → `Error("Target work unit '<to>' does not exist")`.
-    3. Source must have at least one virtualHook → `Error("No virtual hooks configured for source work unit <from>")` (no single quotes around `<from>`).
-    4. If `hookName` is supplied, it must match the `name` field of at least one source hook → `Error("Hook '<hookName>' not found in <from>")`.
+  1. Source work unit must exist → `Error("Source work unit '<from>' does not exist")`.
+  2. Target work unit must exist → `Error("Target work unit '<to>' does not exist")`.
+  3. Source must have at least one virtualHook → `Error("No virtual hooks configured for source work unit <from>")` (no single quotes around `<from>`).
+  4. If `hookName` is supplied, it must match the `name` field of at least one source hook → `Error("Hook '<hookName>' not found in <from>")`.
 
   Selected hooks are deep-cloned (`Value::clone()`) and APPENDED to the target's `extra["virtualHooks"]` array (initialized to `[]` if missing). Existing target hooks are preserved at the front. Target `updated_at` is bumped via `crate::io::time::iso8601_now()`; the source unit's `updated_at` is NOT touched. State is persisted with a single `crate::io::locked_file::write_json_atomic` call.
 
@@ -44,7 +43,6 @@ Feature: Port copy-virtual-hooks command to Rust
   #   14. Help intercept produces byte-exact output matching node dist/index.js copy-virtual-hooks --help
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch copy-virtual-hooks from the agent loop AND invoke `fspec copy-virtual-hooks --from <src> --to <dst>` from a shell

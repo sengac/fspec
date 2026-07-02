@@ -1,7 +1,9 @@
 @done
-@RPC-314 @wip @file-ops @feature-management
+@RPC-314
+@wip
+@file-ops
+@feature-management
 Feature: Port update-scenario command to Rust
-
   """
   Single source of truth: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>; both dispatcher and CLI bridge converge here (RPC-003 two-front-doors)
   Use parse_feature_lenient (io/gherkin.rs) for parity with @cucumber/gherkin tolerance; line-based edit via split('\n')/join('\n'); recoverable errors returned as inner JSON envelope {success:false,error} like list_scenario_tags.rs

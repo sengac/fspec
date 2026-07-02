@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port generate-foundation-md command to Rust
-
   """
   Rust port of src/commands/generate-foundation-md.ts (RPC-233), child of
   RPC-003 / epic 'rust-cli-port'. This port also REVERSES the "Framing A"
@@ -23,13 +22,13 @@ Feature: Port generate-foundation-md command to Rust
 
   Framing A divergences (documented, not bugs):
   * JSON schema validation: TS calls validateFoundationJson (Ajv) and aborts on
-    failure. No Ajv equivalent is ported (validate-foundation-schema still
-    NotYetPorted), so this port SKIPS schema validation. Valid foundations
-    produce byte-identical output; the Ajv error text cannot be reproduced.
+  failure. No Ajv equivalent is ported (validate-foundation-schema still
+  NotYetPorted), so this port SKIPS schema validation. Valid foundations
+  produce byte-identical output; the Ajv error text cannot be reproduced.
   * Mermaid validation: TS uses mermaid.parse() + jsdom. Rust uses the
-    pure-string pre-check from add_diagram.rs (quoted-subgraph-title +
-    invalid-identifier detection only). Generated diagrams always pass, so valid
-    foundations render identically.
+  pure-string pre-check from add_diagram.rs (quoted-subgraph-title +
+  invalid-identifier detection only). Generated diagrams always pass, so valid
+  foundations render identically.
 
   Args shape (camelCase JSON): { output?: String }. Relative output paths are
   joined to the project root, mirroring TS join(cwd, outputPath).
@@ -99,9 +98,7 @@ Feature: Port generate-foundation-md command to Rust
     When I dispatch generate-foundation-md
     Then generation fails reporting 'Found 1 invalid diagram:'
 
-
   Scenario: All generator-emitted diagrams parse cleanly under merman
     Given a foundation with bounded contexts, aggregates, commands and events
     When the FOUNDATION.md generator emits the bounded-context map and per-context event-flow diagrams
     Then every emitted diagram validates as Ok under merman so valid foundations still render byte-identically
-

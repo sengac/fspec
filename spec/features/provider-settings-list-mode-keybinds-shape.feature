@@ -9,7 +9,6 @@
 @rust
 @RPC-149
 Feature: Provider settings list: remove Rust-only keybinds (r/R, wrap-around, PageUp/PageDown/Home/End)
-
   """
   RPC-149 was already resolved during RPC-157 — list.rs comment at line 8 explicitly notes "no wrap-around, no PgUp/PgDn/Home/End — RPC-157". This card adds fast regression-shape tests pinning the absence so the Rust-only deviations cannot regress without paying the TUI compile cost on every CI run.
   Pattern: source-string structural assertions over codelet/fspec-tui/src/views/provider_settings/list.rs and mod.rs. Mirrors RPC-077 fast regression-shape complement to the slow integration test (skeleton_invariants pattern).

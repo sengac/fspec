@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec delete-work-unit CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `delete-work-unit` exposes the same surface as the TS Commander.js registration at src/commands/delete-work-unit.ts:142-180 — a required positional `<workUnitId>` plus optional `--force`, `--skip-confirmation`, and `--cascade-dependencies` flags. The bridge module at codelet/fspec/src/delete_work_unit.rs marshals workUnitId and cascadeDependencies into a JSON object and delegates to codelet_fspec_core::commands::delete_work_unit::run; --force and --skip-confirmation are parsed for parity but NOT forwarded because the TS implementation never reads them.
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with '✗ Failed to delete work unit:' (parity with the chalk-red TS error path at src/commands/delete-work-unit.ts:172-178). The success line is '✓ Work unit <id> deleted successfully', followed by '⚠ <warning>' lines.

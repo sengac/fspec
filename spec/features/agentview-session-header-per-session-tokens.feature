@@ -8,7 +8,6 @@
 @tui
 @RPC-099
 Feature: AgentView SessionHeader per-session token tracking parity — reasoning_tokens, tokens_per_second, cache_read/cache_creation, compaction_reduction not per-session in Rust port
-
   """
   TS REFERENCE (DeepSearch confirmed): src/tui/components/SessionHeader.tsx:104-206 is the renderer. It receives `tokenUsage` (local React state from current session's stream) and `rustTokens` (per-session SessionTokens via useSyncExternalStore on currentSessionId) as props and calls getMaxTokens(tokenUsage, rustTokens) at line 127. The display at lines 196-197 is `tokens: {input}↓ {output}↑ {reasoningTokens > 0 ? ` ${reasoningTokens}🧠` : ''}`. The Zustand sessionStore does NOT hold tokens — Rust SessionManager (per-session, NAPI sessionGetTokens) is the authoritative source.
   TS PARALLEL state: AgentView.tsx:836-839 holds local `tokenUsage` (TokenTracker) state. updateTokenStateFromChunk (1110-1125) calls setTokenUsage(chunk.tokens) on every TokenUpdate for the CURRENT session. On session switch via resumeSessionById (3532+), setTokenUsage is called again with restored tokens (3549) or extractTokenStateFromChunks (3609) for background sessions. Rust port can skip the parallel local-state mirror since token_state_by_session HashMap is already the single source per-session.
@@ -38,7 +37,6 @@ Feature: AgentView SessionHeader per-session token tracking parity — reasoning
   #   5. Reasoning suffix toggling: s-1 has reasoning_tokens=0 (Default), s-2 has reasoning_tokens=Some(45). When focused on s-1, header text contains `tokens: in↓ out↑` (no 🧠 suffix). When focused on s-2, header text contains `tokens: in↓ out↑ 45🧠`.
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user with multiple concurrent sessions
     I want to see each session's own reasoning_tokens, tokens_per_second, cache_read/cache_creation token counts, and compaction reduction in the SessionHeader when I Shift+Left/Right between sessions

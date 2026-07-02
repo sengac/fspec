@@ -5,7 +5,6 @@
 @tui
 @RPC-353
 Feature: Mouse wheel + Page/Home/End scroll missing for /provider and /model views
-
   """
   Navigator routes Event::Mouse into a handle_mouse on the active mode-view (navigator_events.rs). /model's existing handle_mouse (model_selector/dispatch.rs) becomes live; /provider gains a handle_mouse. Both use the shared WheelVelocity 1x-5x ramp from components/scroll_viewport.rs. /provider list.rs handle_list_key gains PageUp/PageDown/Home/End (filter_mode=false only) reusing view.move_clamped. The chat/agent view is the unchanged reference pattern.
   """
@@ -31,7 +30,6 @@ Feature: Mouse wheel + Page/Home/End scroll missing for /provider and /model vie
   #   6. While /provider filter mode is active, pressing PageDown does not move the selection (paging keys are inert in filter mode)
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user on the /provider and /model views
     I want to scroll the list with the mouse wheel and Page/Home/End keys

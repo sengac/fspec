@@ -4,7 +4,6 @@
 @wip
 @RPC-322
 Feature: Validate-hooks CLI subcommand
-
   """
   File layout: core impl codelet/fspec-core/src/commands/validate_hooks.rs (rewrite stub); help config codelet/fspec-core/src/help/configs/validate_hooks.rs; CLI bridge codelet/fspec/src/validate_hooks.rs; core test codelet/fspec-core/tests/validate_hooks.rs; CLI test codelet/fspec/tests/cli_validate_hooks.rs; help fixture codelet/fspec/tests/fixtures/help/validate-hooks.txt
   FRAMING A: the TS shell validate-hooks action awaits validateHooks but DISCARDS the result (prints nothing, never calls process.exit) — the broken-CLI pattern. Rust implements the help-doc canon (print status + meaningful exit code), mirroring the RPC-247 list-hooks precedent. DESIGN: core run reads spec/fspec-hooks.json as raw serde_json::Value (only hook.command strings needed; no new shared type). Map empty hooks -> 'No hooks configured (nothing to validate)' exit 0; missing/invalid file -> 'Failed to load hook configuration' exit 1; missing scripts -> '✗ Hook validation failed' block exit 1; all good -> '✓ All hooks are valid' exit 0. PROPOSAL for supervisor: run returns JSON {valid, exitCode, message} so CLI bridge prints message + uses exitCode (RPC-247 precedent); confirm. Supervisor wires canonical.rs, dispatch.rs, help/configs/mod.rs, main.rs Mode+intercept+forward. No new io/ensure helper required.
@@ -27,7 +26,6 @@ Feature: Validate-hooks CLI subcommand
   #   4. Running validate-hooks when spec/fspec-hooks.json does not exist reports 'Failed to load hook configuration' and exits 1
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to run `fspec validate-hooks` to confirm that every hook script referenced in spec/fspec-hooks.json exists on disk

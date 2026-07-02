@@ -13,7 +13,6 @@ Feature: Provider resolution never silently picks a default
   #   exactly one -> Ok(that provider)            [unambiguous, no choice made]
   #   more than 1 -> Err (none explicitly selected) [no silent Claude pick]
   # Exercised via the public detect_default_provider_for_test shim.
-
   Background: User Story
     As a developer integrating provider/model/profile selection
     I want provider resolution to refuse to guess when the choice is ambiguous

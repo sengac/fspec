@@ -207,6 +207,7 @@ fn thinking_prefix_applied_by_renderer_only_on_line_index_zero() {
     ));
 
     // @step Then the wrapped lines produced for that chunk are exactly the table
+    // RPC-401: one trailing blank separator row follows the header + body.
     let visible = session_lines(&app, &sid("s-1"));
     assert_eq!(
         visible,
@@ -214,6 +215,7 @@ fn thinking_prefix_applied_by_renderer_only_on_line_index_zero() {
             "[Thinking]".to_string(),
             "first line".to_string(),
             "second line".to_string(),
+            String::new(),
         ],
     );
 

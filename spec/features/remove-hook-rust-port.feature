@@ -3,7 +3,6 @@
 @rust
 @cli
 Feature: Port remove-hook command to Rust
-
   """
   Replace the stub at codelet/fspec-core/src/commands/remove_hook.rs with `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`.
   Local on-disk shapes (same as add_hook port): `struct HookFile { hooks: IndexMap<String, Vec<HookEntry>>, #[serde(flatten)] extra }` and `struct HookEntry { name, command, blocking, timeout?, #[serde(flatten)] extra }`. Local to the module — no shared types/hooks.rs.
@@ -32,7 +31,6 @@ Feature: Port remove-hook command to Rust
   #   11. Empty `data` on success
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch remove-hook from the agent loop AND invoke `fspec remove-hook` from a shell

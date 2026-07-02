@@ -1,7 +1,9 @@
 @done
-@RPC-315 @wip @cli @feature-management
+@RPC-315
+@wip
+@cli
+@feature-management
 Feature: update-step CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/update_step.rs (NEW CLI bridge); codelet/fspec/tests/cli_update_step.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/update-step.txt (captured help fixture from `node dist/index.js update-step --help`).
   Bridge marshals positional <feature> <scenario> <current-step> + optional --text/--keyword into JSON and delegates to commands::update_step::run. No logic in bridge — JSON marshalling + CWD resolution only.

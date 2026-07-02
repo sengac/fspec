@@ -3,7 +3,6 @@
 @cli
 @RPC-224
 Feature: Port dependencies command to Rust
-
   """
   Result envelope: TS showDependencies returns a String (the rendered text). The dispatcher path returns {success:true, data:<string>} on success, and {success:false, error:<msg>} when the work unit is missing. Recoverable 'does not exist' error: in TS it throws; in Rust mirror query-style by returning FspecCoreError so the dispatcher maps to success=false (substring 'does not exist').
   Read work-units.json directly with std::fs (NO ensure/auto-create) to match TS loadWorkUnits readFile+JSON.parse. Reuse crate::types::work_unit::WorkUnitsData + WorkUnit (IndexMap insertion order). Relationship arrays read from typed/extra: prefer workUnit.extra legacy top-level fields then relationships object — read both as serde_json arrays of strings, do NOT add typed fields to shared types/work_unit.rs (supervisor-only).
@@ -30,7 +29,6 @@ Feature: Port dependencies command to Rust
   #   5. CLI: `fspec dependencies INVALID-999` exits 1 and writes 'does not exist' to stderr
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to run `fspec dependencies <work-unit-id>` (optionally with --graph) through both the LLM dispatcher and the clap subcommand

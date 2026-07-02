@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port delete-diagram command to Rust
-
   """
   Framing A divergence — match-by-title: The TS implementation filters
   architectureDiagrams with `d.section === section && d.title === title`, using a

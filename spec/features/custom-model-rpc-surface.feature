@@ -3,7 +3,6 @@
 @rpc
 @RPC-347
 Feature: Backend custom-model RPC + NAPI surface (add/update/delete_custom_model)
-
   """
   Layer wiring (mirror set_session_model): (1) rpc-types/src/lib.rs add CustomModelDefinition; (2) rpc/src/lib.rs FspecService trait + FspecServiceImpl delegation; (3) core/src/session_manager_handle.rs SessionManagerHandle trait default no-op methods (~line 137/146); (4) sessions/src/handle_impl.rs concrete override calling profile_sections::save_custom_model/delete_custom_model; (5) fspec-tui/src/transport/{mod,embedded,websocket}.rs FspecBackend; (6) napi/src bindings; (7) fspec-tui/src/components/mod.rs Action enum variants
   Builds directly on RPC-346 public fns: save_custom_model(provider_id, profile_name, &CustomModelDef, original_model_id: Option<&str>) and delete_custom_model(provider_id, profile_name, model_id). add=save(None), update=save(Some(old_id)). Tests stay offline using the path-injectable *_at helpers + temp config files (no env mutation, no network)
@@ -33,7 +32,6 @@ Feature: Backend custom-model RPC + NAPI surface (add/update/delete_custom_model
   #   7. delete_custom_model on a non-existent profile or a non-openai provider returns Ok(()) and leaves config untouched (idempotent no-op)
   #
   # ========================================
-
   Background: User Story
     As a model-selector UI (and any RPC client)
     I want to add, update, and delete custom models on a local-server profile through the RPC/NAPI surface

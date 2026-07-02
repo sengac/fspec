@@ -6,7 +6,6 @@
 @configuration
 @rust
 Feature: OpenAI custom profiles loaded from fspec-config.json
-
   """
   PROV-100 — Custom OpenAI profiles were never loaded from fspec-config.json.
   TS stores them under providers.openai.profiles (name -> { baseUrl, ... }) in
@@ -16,7 +15,7 @@ Feature: OpenAI custom profiles loaded from fspec-config.json
   openai_profiles, so OpenAI only ever showed "+ Add Profile".
 
   Fix: a pure, path-injectable loader
-    profiles_config::load_openai_profiles_from(user_config_dir, project_root) -> Vec<String>
+  profiles_config::load_openai_profiles_from(user_config_dir, project_root) -> Vec<String>
   reads <user_config_dir>/fspec-config.json and <project_root>/spec/fspec-config.json,
   merges providers.openai.profiles key-by-key (project overrides user), and returns
   display strings sorted by profile name. Each display string is

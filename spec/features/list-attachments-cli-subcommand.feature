@@ -4,7 +4,6 @@
 @rust
 @RPC-241
 Feature: List attachments CLI subcommand
-
   """
   CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_attachments::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 

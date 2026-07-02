@@ -1,7 +1,7 @@
 @done
-@RPC-202 @wip
+@RPC-202
+@wip
 Feature: Port checkpoint command to Rust
-
   """
   File layout: core codelet/fspec-core/src/commands/checkpoint.rs is the single source of
   truth (run(args_json, project_root)); CLI bridge codelet/fspec/src/checkpoint.rs marshals

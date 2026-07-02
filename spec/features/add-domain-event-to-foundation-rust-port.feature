@@ -3,7 +3,6 @@
 @cli
 @RPC-180
 Feature: Port add-domain-event-to-foundation command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_domain_event_to_foundation.rs — Rust parity port of src/commands/add-domain-event-to-foundation.ts. COPY SHAPE of add_command_to_foundation.rs (RPC-175) twin: load foundation.json via read_or_init_json with the TS inline minimal default (version 2.0.0/project/problemSpace/solutionSpace), seed eventStorm {level:'big_picture',items:[],nextItemId:1} if absent, find bounded_context by type+text (no !deleted filter), append item in key order id,type,text,boundedContextId,color,deleted,createdAt,[description] then write_json_atomic. KEY DIFFS vs twin: type='event' (not 'command'), color='orange' (not 'blue'), 2nd positional eventName, message noun 'domain event'.
   CLI bridge codelet/fspec/src/add_domain_event_to_foundation.rs marshals JSON {contextName, eventName, description?} only and forwards to commands::add_domain_event_to_foundation::run — NO domain logic. Stdout success '✓ Added domain event ...'; stderr failure 'Error: <message>' exit 1. DIVERGENCE: none — FOUNDATION.md is regenerated after the write (matches the event-storm twins add_command_to_foundation.rs RPC-175 / remove_command_from_foundation.rs RPC-270; supervisor ruling 2026-06-13).
@@ -29,7 +28,6 @@ Feature: Port add-domain-event-to-foundation command to Rust
   #   5. Item color is the JSON string 'orange' (not blue, not null)
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the add-domain-event-to-foundation command to Rust as a parity port

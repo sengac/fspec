@@ -4,7 +4,6 @@
 @rust
 @RPC-383
 Feature: TurnContentModal not full-screen and not scrollable (parity gap)
-
   """
   Sizing: TurnContentModal must paint at a FIXED rect of area.width-4 by area.height-6 (centered), independent of content length. Either extend dialog_theme::FspecDialog/dialog_rect with a fixed/fill-size mode, or compute the forced rect in TurnContentModal::render. Other dialogs (confirm, model selector, thinking) MUST keep shrink-to-content (no regression).
   Scroll state: add a modal scroll offset on AgentView alongside turn_modal_seq (reset to 0 on open via handle_open_turn_modal in app/dispatch_scroll.rs). wrapped_rows() must window by offset (skip offset rows) instead of clipping from row 0, and clamp offset so the last page is fully visible.
@@ -37,7 +36,6 @@ Feature: TurnContentModal not full-screen and not scrollable (parity gap)
   #   7. Closing and re-opening the modal on a scrolled turn shows the top of the content again (offset reset)
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to view a long turn's full content in a full-screen, scrollable modal

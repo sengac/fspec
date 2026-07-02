@@ -3,7 +3,6 @@
 @tui
 @PROV-117
 Feature: Enter on a collapsed section header does not expand it in the /model view
-
   """
   Enter handling lives in ModelSelectorView::handle_key (codelet/fspec-tui/src/views/model_selector/dispatch.rs). TS reference: ModelSelectorScreen.tsx:203-210 — Enter on a 'section' item calls toggleSectionExpansion(providerId); Enter on a 'model' item builds a selection (selectModel) then onSelectModel + onClose. Rust parity: when the focused row is non-selectable (a provider/profile header) Enter toggles expansion via toggle_expansion(!is_expanded(key)); when the focused row is selectable Enter emits Action::ModelSelected gated by PROV-101 has_selection and a present session_id. Headers are non-selectable (model_selector_dialog_rows.rs); selectable model rows carry a model_id. Left/Right continue to collapse/expand explicitly.
   """
@@ -23,7 +22,6 @@ Feature: Enter on a collapsed section header does not expand it in the /model vi
   #   3. After expanding a section with Enter, pressing Down to a model row and pressing Enter selects that model and closes the view
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user choosing a model in the /model view
     I want to press Enter on a collapsed provider section to expand it, then press Enter on a model to select it
@@ -34,16 +32,13 @@ Feature: Enter on a collapsed section header does not expand it in the /model vi
     When I press Enter
     Then the section expands and its model rows become visible
 
-
   Scenario: Pressing Enter again on an expanded provider header collapses the section
     Given the /model view is open with a provider section that is expanded and the cursor is on its header
     When I press Enter
     Then the section collapses and its model rows are hidden
-
 
   Scenario: Pressing Enter on a selectable model row selects the model and closes the view
     Given the /model view is open for an active session and the cursor is on a selectable model row
     When I press Enter
     Then a model selection is emitted for the current session, provider and model
     And the model selector view closes
-

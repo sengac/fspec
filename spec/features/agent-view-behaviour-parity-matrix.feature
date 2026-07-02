@@ -6,7 +6,6 @@
 @rust
 @RPC-065
 Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
-
   """
   [A] File layout: (1) new module `codelet/fspec-tui/tests/common/harness.rs` declared from `tests/common/mod.rs` via `pub mod harness;`. The harness wraps `App` + `Arc<MockBackend>` (the existing 2876-LoC double already exports every counter we need). (2) new integration test file `codelet/fspec-tui/tests/behaviour_parity_rpc065.rs` declaring `mod common;` to pull in the harness module.
   [B] AppTestHarness API surface (private to tests/common/harness.rs): `pub struct AppTestHarness { pub app: App, pub mock: Arc<MockBackend> }`. Constructors: `pub fn new() -> Self` (seeds session s-1 + focuses it), `pub fn empty() -> Self` (no sessions). Helpers: `add_session(SessionId)`, `seed_chunks(&SessionId, usize)`, `submit_input(&str)` (synchronous: drives `Action::InputSubmitted` through dispatch), `press_key(KeyEvent)` (drives navigator.handle_event → emit → dispatch), `dispatch_slash(SlashCommandAction)` (sugar over Action::SlashCommandSelected), `current_session() -> Option<&SessionId>`, `compositor_contains(id: &str) -> bool`, `active_view() -> ViewMode`, `should_quit() -> bool`, `scrollback_chunk_count(&SessionId) -> usize`, `drain_pending() -> async` (loops until pending_tasks all settle and action_rx is drained — bounded by 1s), `wait_until(predicate, label) -> async`.
@@ -71,7 +70,6 @@ Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
   #   A: Add a #[tokio::test] for Tab turn-selection mode but mark it #[ignore = "Tab turn-selection mode pending future RPC card — placeholder behaviour-parity assertion documented but not yet wired in the Rust AgentView"]. The test body should compile (so the assertion contract is locked in) and a future RPC card simply removes the #[ignore] when Tab handling lands. Zero scope creep on RPC-065.
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the TS Ink AgentView to the Rust ratatui frontend
     I want to have a single behaviour-parity test suite that drives the AgentView through MockBackend and asserts every slash command and keyboard shortcut produces the same store-state transitions the TS frontend would
@@ -80,7 +78,6 @@ Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
   # ─────────────────────────────────────────────────────────────────────
   # SLASH COMMANDS — matrix rows 1-18
   # ─────────────────────────────────────────────────────────────────────
-
   Scenario: /help pushes the HelpDialog onto the compositor
     Given a fresh AppTestHarness with focused session s-1
     When I dispatch the slash command "/help"
@@ -204,7 +201,6 @@ Feature: Behaviour-parity test suite for every slash command + keyboard shortcut
   # ─────────────────────────────────────────────────────────────────────
   # KEYBOARD SHORTCUTS — matrix rows 19-25
   # ─────────────────────────────────────────────────────────────────────
-
   Scenario: Shift+Right cycles focus forward through open sessions
     Given a fresh AppTestHarness with two open sessions s-1 and s-2, focused on s-1
     When I press Shift+Right

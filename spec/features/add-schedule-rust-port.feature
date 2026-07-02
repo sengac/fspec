@@ -4,7 +4,6 @@
 @rust
 @RPC-191
 Feature: Port add-schedule command to Rust
-
   """
   New impl at codelet/fspec-core/src/commands/add_schedule.rs replaces the NotYetPorted stub. Signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Args struct (camelCase) mirrors AddScheduleOptions: name, cron, timezone, jobType, overlapPolicy?, role?, prompt?, command?
   SHARED-FILE REQUEST: cron validation. TS uses cron-validate npm pkg with 5-field preset (no seconds, no L/W/#/blank-day). Rust workspace already has croner=2 + chrono-tz=0.10 deps used by codelet/core/src/scheduler/cron_utils.rs (parse_cron via croner::Cron::new(expr).parse(); parse_timezone via tz_str.parse::<Tz>()). Need supervisor to add `croner` and `chrono-tz` to codelet/fspec-core/Cargo.toml [dependencies]. NOTE: croner default may accept 6-field/seconds; we enforce the 5-field count check first (matching TS split length==5) before croner parse to keep parity.
@@ -36,7 +35,6 @@ Feature: Port add-schedule command to Rust
   #   5. Add schedule with cron '0 2 * *' (4 fields) → error 'expected 5 fields ... got 4', no write
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch add-schedule from the agent loop AND invoke `fspec add-schedule` from a shell

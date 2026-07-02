@@ -3,7 +3,6 @@
 @cli
 @RPC-237
 Feature: Port get-scenarios command to Rust
-
   """
   Reuse io::feature_glob::glob_feature_files (sorted, forward-slash rel paths) for the spec/features walk and io::gherkin::parse_feature_lenient for parsing (same as show_acceptance_criteria.rs RPC-299). Missing spec/features dir: the TS access(featuresDir) check returns {success:false, error:'spec/features directory not found'}; in Rust escalate via FspecCoreError::Io with that exact substring so the dispatcher maps to success=false (mirror show_acceptance_criteria.rs).
   Result envelope is a serde struct {success, scenarios, totalCount, message, warnings?} in TS declaration order — use #[derive(Serialize)] not json!{} (BTreeMap alphabetizes). ScenarioInfo struct {feature, name, line, tags?} with #[serde(skip_serializing_if='Option::is_none')] tags. format=json prints ONLY the scenarios array (JSON.stringify(result.scenarios,null,2)), not the envelope; format=text builds the grouped human view. The dispatcher returns the full envelope; the CLI bridge picks the rendered string per format. Confirm exact dispatcher data shape against an already-ported gherkin read command (show_feature/show_acceptance_criteria) during testing.
@@ -31,7 +30,6 @@ Feature: Port get-scenarios command to Rust
   #   6. CLI: `fspec get-scenarios --tag @auth --format json` prints a JSON array of scenario objects each with feature, name, line keys and exits 0
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to run `fspec get-scenarios` (optionally with repeatable --tag and --format text|json) through both the LLM dispatcher and the clap subcommand

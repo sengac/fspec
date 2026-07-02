@@ -15,7 +15,6 @@ Feature: Session creation requires an explicit model
   # explicit default the session adopts THAT provider/model.
   # Tests run fully offline: a temp data dir is seeded with a trimmed models.json
   # so registry validation needs no network; dummy creds satisfy detection.
-
   Background: User Story
     As a developer integrating provider/model/profile selection
     I want session creation to fail loudly when no model is explicitly set

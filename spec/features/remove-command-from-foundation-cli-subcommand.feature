@@ -1,7 +1,6 @@
 @done
 @RPC-270
 Feature: fspec remove-command-from-foundation CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_command_from_foundation.rs — clap-derived struct mirroring the
   TS Commander.js registration (src/commands/remove-command-from-foundation.ts:131-154). Surface:

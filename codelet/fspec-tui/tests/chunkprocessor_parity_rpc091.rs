@@ -155,10 +155,15 @@ fn bullet_glyph_applied_by_renderer_only_on_line_index_zero() {
     ));
 
     // @step Then the wrapped lines produced for that chunk are exactly the table
+    // RPC-401: one trailing blank separator row follows the two content lines.
     let visible = session_lines(&app, &sid("s-1"));
     assert_eq!(
         visible,
-        vec!["\u{25CF} first line".to_string(), "second line".to_string(),],
+        vec![
+            "\u{25CF} first line".to_string(),
+            "second line".to_string(),
+            String::new(),
+        ],
     );
 
     // @step And the stored chunk.source.text is exactly "first line\nsecond line" (no bullet baked in)
@@ -319,10 +324,13 @@ fn tool_call_flushes_in_flight_and_pushes_tool_call_card() {
     ));
 
     // @step Then the s-1 scrollback contains exactly two rendered chunks in order
+    // RPC-401: each chunk carries a trailing blank separator row, so the
+    // combined visible lines are content + gutter, per chunk.
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
     let visible = session_lines(&app, &sid("s-1"));
     assert_eq!(visible[0], "\u{25CF} Let me check the board");
-    assert_eq!(visible[1], "\u{25CF} Fspec(board)");
+    assert_eq!(visible[1], "");
+    assert_eq!(visible[2], "\u{25CF} Fspec(board)");
 
     // @step And the SessionContext in_flight_assistant slot is None
     assert_eq!(session_in_flight(&app, &sid("s-1")), None);
@@ -651,17 +659,22 @@ fn full_round_trip_renders_four_chunks_in_order() {
     // @step Then the s-1 scrollback contains exactly four rendered chunks in order
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 4);
     let visible = session_lines(&app, &sid("s-1"));
-    // Expected visible top-line per chunk (subsequent chunk lines may follow).
-    assert_eq!(visible[0], "You: what cards are open?");
-    assert_eq!(visible[1], "\u{25CF} Let me check the board");
-    // Chunk 2 is the tool-call; the first visible line is the header.
-    assert_eq!(visible[2], "\u{25CF} Fspec(board)");
-    // Last assistant bubble — find a line equal to "● Here are the open work units"
-    assert!(
-        visible
-            .iter()
-            .any(|l| l == "\u{25CF} Here are the open work units"),
-        "expected final assistant bubble; got {visible:?}"
+    // RPC-401: each of the four chunks contributes its content line(s) plus
+    // exactly one trailing blank separator gutter. The tool-call chunk emits
+    // header + body ("ok", under the collapse threshold) before its gutter.
+    assert_eq!(
+        visible,
+        vec![
+            "You: what cards are open?".to_string(),
+            String::new(),
+            "\u{25CF} Let me check the board".to_string(),
+            String::new(),
+            "\u{25CF} Fspec(board)".to_string(),
+            "ok".to_string(),
+            String::new(),
+            "\u{25CF} Here are the open work units".to_string(),
+            String::new(),
+        ],
     );
     // @step And the SessionContext in_flight_assistant slot is None
     assert_eq!(session_in_flight(&app, &sid("s-1")), None);

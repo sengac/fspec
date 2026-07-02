@@ -7,7 +7,6 @@
 @rust
 @RPC-064
 Feature: /search slash command end-to-end (UI view)
-
   """
   [A] Debounce strategy: emit `FilterChanged(query)` immediately from the widget on every keystroke (preserve existing RPC-026 behaviour and tests). The DEBOUNCE lives in `App::handle_search_history` — when called, schedule a tokio sleep(150ms) task that, after the wait, fires `backend.persistence_search_history(query)`. A new keystroke aborts the prior in-flight tokio JoinHandle (stored on `App` or on a new `SearchDebounceState` field) so only the final query reaches the backend within a fast burst. Synchronous test-runtime path (`Handle::try_current().is_err()`) skips the debounce and silently no-ops, matching existing dispatch_resume_search_views.rs pattern.
   [B] Stale result discarding: widen `Action::HistorySearchResults` from `Vec<HistoryMatch>` to a struct-style variant `{ query: String, matches: Vec<HistoryMatch> }`. The spawned task captures the query it sent and emits it back with the matches. `handle_history_search_results` compares the response query to `search_view.query()` and only folds when they match. Update existing rpc026 tests that construct `Action::HistorySearchResults(...)` to use the new variant form. The `SearchHistoryView` gains a `set_matches_for(query: &str, matches: Vec<HistoryMatch>)` helper OR the dispatcher does the equality check before calling `set_matches`.
@@ -46,7 +45,6 @@ Feature: /search slash command end-to-end (UI view)
   #   11. User opens /search with an empty query — the placeholder `(type to search history)` is rendered in the body and zero backend calls have fired; pressing Esc immediately closes without RPC traffic
   #
   # ========================================
-
   Background: User Story
     As a fspec user with a long command history
     I want to open the /search view, type to filter, see matches highlighted, and pick one with Enter to insert into the input

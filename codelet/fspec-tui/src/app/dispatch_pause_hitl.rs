@@ -1,6 +1,8 @@
-//! App::dispatch routing for RPC-053 — Pause / HITL UI.
+//! App::dispatch routing for RPC-053 Pause / HITL + RPC-406 inline
+//! pause prompt.
 //!
-//! Feature: spec/features/pause-and-hitl-dialogs.feature
+//! Features: spec/features/pause-and-hitl-dialogs.feature,
+//! spec/features/inline-tool-approval-pause-prompt.feature
 //!
 //! Hosts the impl App helpers invoked from `app/dispatch.rs` and
 //! `app/dispatch_stream_chunks.rs` (chunk dispatcher):
@@ -9,27 +11,29 @@
 //!     `handle_stream_chunk_state_updates` when
 //!     `StreamChunk::SessionStateChange { state: Paused }` arrives. Spawns
 //!     parallel `backend.get_pause_state` and `backend.get_hitl_request`
-//!     reads and dispatches `Action::OpenPauseDialog` on Some pause state
-//!     or `Action::OpenHitlDialog` on Some hitl request (HITL wins on
-//!     tie). When both return None nothing happens (likely a stale
-//!     Paused chunk from a now-resumed session).
+//!     reads and dispatches `Action::PauseStateFetched` on Some pause
+//!     state (RPC-406: store slot, no modal) or `Action::OpenHitlDialog`
+//!     on Some hitl request (HITL wins on tie). When both return None
+//!     nothing happens (likely a stale Paused chunk from a now-resumed
+//!     session).
 //!
 //!   - `handle_pause_cleared(session_id)`: fired from the chunk
-//!     dispatcher on `Running` / `Idle`. Pops any mounted PauseDialog
-//!     or HitlDialog so the UI does not strand a stale dialog after the
-//!     agent loop resumes server-side.
+//!     dispatcher on `Running` / `Idle`. Clears the RPC-406 per-session
+//!     pause slot and pops any mounted HitlDialog so the UI does not
+//!     strand a stale prompt after the agent loop resumes server-side.
 //!
-//!   - `handle_open_pause_dialog(session, state)` / `handle_open_hitl_dialog(session, request)`:
-//!     idempotent compositor push (no-op on dialog-id collision).
+//!   - `handle_pause_confirmed` / `handle_pause_triple`: clear the
+//!     pause slot and fire-and-forget the backend write. Errors are
+//!     silently logged via `tracing` — no scrollback notice.
 //!
-//!   - `handle_pause_confirmed` / `handle_pause_triple` /
-//!     `handle_pause_resumed` / `handle_hitl_submitted`: fire-and-forget
-//!     backend writes. The dialog has already removed itself from the
-//!     Compositor via its EventResult::Consumed callback by the time
-//!     these helpers run — they're invoked from the Action match arm in
-//!     `app/dispatch.rs` AFTER the dialog's callback executed (the
-//!     compositor `update(action)` fan-out is also called post-dispatch).
-//!     Errors are silently logged via `tracing` — no scrollback notice.
+//!   - `handle_pause_resumed`: fire-and-forget `backend.pause_resume`.
+//!     RPC-406: NOT reachable from the inline pause prompt (Esc denies)
+//!     — retained for other callers only.
+//!
+//!   - `handle_pause_prompt_enter`: reads the authoritative triple
+//!     selection from the store, maps 0/1/2 →
+//!     `ApprovalChoice::{Approve, ApproveSession, Deny}` and routes
+//!     through `handle_pause_triple`.
 
 use std::sync::Arc;
 
@@ -37,7 +41,6 @@ use codelet_rpc_types::{ApprovalChoice, HitlRequest, HitlResponse, PauseState, S
 
 use crate::components::{
     hitl_dialog::{HitlDialog, HITL_DIALOG_ID},
-    pause_dialog::{PauseDialog, PAUSE_DIALOG_ID},
     Action,
 };
 use crate::transport::FspecBackend;
@@ -48,7 +51,7 @@ impl App {
     /// RPC-053: react to `SessionStateChange { state: Paused }` by
     /// spawning parallel reads of `backend.get_pause_state` and
     /// `backend.get_hitl_request` and routing the first Some result
-    /// back via `Action::OpenPauseDialog` / `Action::OpenHitlDialog`.
+    /// back via `Action::PauseStateFetched` / `Action::OpenHitlDialog`.
     pub(crate) fn handle_pause_chunk(&mut self, session_id: SessionId) {
         // Sync unit-test fallback — do not spawn a task when no runtime.
         if tokio::runtime::Handle::try_current().is_err() {
@@ -97,35 +100,54 @@ impl App {
                 return;
             }
             if let Some(state) = pause {
-                let _ = action_tx.send(Action::OpenPauseDialog {
+                // RPC-406: store slot instead of a modal push.
+                let _ = action_tx.send(Action::PauseStateFetched {
                     session_id: id,
                     state,
                 });
             }
-            // Both None → silent no-op.
+            // Both None → silent no-op (stale Paused chunk).
         });
         self.pending_tasks.push(handle);
     }
 
-    /// RPC-053: pop any mounted PauseDialog / HitlDialog for this
-    /// session when the agent loop resumes (Running or Idle).
-    pub(crate) fn handle_pause_cleared(&mut self, _session_id: SessionId) {
-        // Both dialog ids are singletons per App (one pause/hitl flow
-        // visible at a time). The matched dialog already owns its own
-        // session id internally; we simply pop both ids and let
-        // Compositor::remove be a no-op when the id is not mounted.
-        let _ = self.compositor.remove(PAUSE_DIALOG_ID);
+    /// RPC-406: clear the per-session pause slot (inline prompt) and
+    /// pop any mounted HitlDialog when the agent loop resumes
+    /// (Running or Idle).
+    pub(crate) fn handle_pause_cleared(&mut self, session_id: SessionId) {
+        self.agent_view_store.clear_pause_state(&session_id);
         let _ = self.compositor.remove(HITL_DIALOG_ID);
+        self.should_render = true;
     }
 
-    /// RPC-053: idempotent compositor push for the PauseDialog.
-    pub(crate) fn handle_open_pause_dialog(&mut self, session_id: SessionId, state: PauseState) {
-        if self.compositor.contains(PAUSE_DIALOG_ID) {
-            return;
-        }
-        let dialog = PauseDialog::new(session_id, state).with_action_tx(self.action_tx.clone());
-        self.compositor.push(Box::new(dialog));
+    /// RPC-406: fold a fetched PauseState into the per-session store
+    /// slot. The AgentView paints the inline prompt from this slot on
+    /// the next frame (only when the paused session is focused).
+    pub(crate) fn handle_pause_state_fetched(&mut self, session_id: SessionId, state: PauseState) {
+        self.agent_view_store.set_pause_state(session_id, state);
         self.should_render = true;
+    }
+
+    /// RPC-406: cycle the triple-prompt selection with wraparound.
+    pub(crate) fn handle_pause_prompt_nav(&mut self, session_id: &SessionId, delta: i32) {
+        self.agent_view_store
+            .cycle_triple_pause_selection(session_id, delta);
+        self.should_render = true;
+    }
+
+    /// RPC-406: Enter on the triple prompt — read the authoritative
+    /// selection from the store, map onto an ApprovalChoice, and route
+    /// through `handle_pause_triple` (which clears the slot).
+    pub(crate) fn handle_pause_prompt_enter(&mut self, session_id: SessionId) {
+        let choice = match self
+            .agent_view_store
+            .triple_pause_selection_for(&session_id)
+        {
+            0 => ApprovalChoice::Approve,
+            1 => ApprovalChoice::ApproveSession,
+            _ => ApprovalChoice::Deny,
+        };
+        self.handle_pause_triple(session_id, choice);
     }
 
     /// RPC-053: idempotent compositor push for the HitlDialog.
@@ -139,11 +161,11 @@ impl App {
     }
 
     /// RPC-053: fire-and-forget `backend.pause_confirm(session, accept)`.
-    /// The dialog has already removed itself via its callback by the
-    /// time this dispatch arm runs. Errors are silently logged.
+    /// RPC-406: clears the per-session pause slot so the inline prompt
+    /// unmounts on the next frame. Errors are silently logged.
     pub(crate) fn handle_pause_confirmed(&mut self, session_id: SessionId, accept: bool) {
-        // Ensure the dialog is gone even if a stale push survived.
-        let _ = self.compositor.remove(PAUSE_DIALOG_ID);
+        self.agent_view_store.clear_pause_state(&session_id);
+        self.should_render = true;
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
@@ -164,8 +186,10 @@ impl App {
     }
 
     /// RPC-053: fire-and-forget `backend.pause_triple(session, choice)`.
+    /// RPC-406: clears the per-session pause slot (selection resets).
     pub(crate) fn handle_pause_triple(&mut self, session_id: SessionId, choice: ApprovalChoice) {
-        let _ = self.compositor.remove(PAUSE_DIALOG_ID);
+        self.agent_view_store.clear_pause_state(&session_id);
+        self.should_render = true;
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
@@ -184,10 +208,10 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// RPC-053: fire-and-forget `backend.pause_resume(session)` from
-    /// the user pressing Esc on the PauseDialog.
+    /// RPC-053: fire-and-forget `backend.pause_resume(session)`.
+    /// RPC-406: NOT reachable from the inline pause prompt — Esc
+    /// denies. Retained for non-prompt callers only.
     pub(crate) fn handle_pause_resumed(&mut self, session_id: SessionId) {
-        let _ = self.compositor.remove(PAUSE_DIALOG_ID);
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
@@ -227,8 +251,8 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// Route the RPC-053 Action variants through their helpers.
-    /// Called from the catch-all arm of `App::dispatch`'s match.
+    /// Route the RPC-053 / RPC-406 Action variants through their
+    /// helpers. Called from the catch-all arm of `App::dispatch`.
     pub(crate) fn try_dispatch_pause_hitl(&mut self, action: &Action) -> bool {
         match action {
             Action::PauseChunkReceived(sid) => {
@@ -237,8 +261,14 @@ impl App {
             Action::PauseCleared(sid) => {
                 self.handle_pause_cleared(sid.clone());
             }
-            Action::OpenPauseDialog { session_id, state } => {
-                self.handle_open_pause_dialog(session_id.clone(), state.clone());
+            Action::PauseStateFetched { session_id, state } => {
+                self.handle_pause_state_fetched(session_id.clone(), state.clone());
+            }
+            Action::PausePromptNav { session_id, delta } => {
+                self.handle_pause_prompt_nav(session_id, *delta);
+            }
+            Action::PausePromptEnter { session_id } => {
+                self.handle_pause_prompt_enter(session_id.clone());
             }
             Action::OpenHitlDialog {
                 session_id,

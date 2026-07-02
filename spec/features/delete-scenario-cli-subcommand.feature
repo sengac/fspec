@@ -3,7 +3,6 @@
 @cli
 @RPC-219
 Feature: Port delete-scenario command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/delete_scenario.rs uses crate::io::gherkin::parse_feature_lenient for parse + re-validate, and gherkin-0.16 Scenario.position.line / Step.position.line (1-based) to compute the removal span; line-based split('\n')/join('\n') edit.
   Coverage sidecar update reuses crate::types::coverage::{CoverageFile, CoverageScenario}; only totalScenarios/coveredScenarios/coveragePercent are recomputed (Math.round half-up), other stats fields preserved via serde flatten extra — matching the TS spread of ...coverage.stats.
@@ -35,7 +34,6 @@ Feature: Port delete-scenario command to Rust
   #   6. CLI on a missing scenario exits 1 with stderr 'Error:' prefix
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to delete a named scenario from a feature file (and update its coverage sidecar) via both the LLM dispatcher and the shell CLI

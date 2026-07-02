@@ -3,7 +3,6 @@
 @rust
 @cli
 Feature: Port add-hook command to Rust
-
   """
   Replace the stub at codelet/fspec-core/src/commands/add_hook.rs with `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Module exposes the same signature shape as list_hooks::run.
   Local on-disk shapes: `struct HookFile { hooks: IndexMap<String, Vec<HookEntry>>, #[serde(flatten)] extra: Map<String,Value> }` and `struct HookEntry { name: String, command: String, blocking: bool, #[serde(skip_serializing_if=Option::is_none)] timeout: Option<u64>, #[serde(flatten)] extra: Map<String,Value> }`. Local, NOT promoted to types/hooks.rs.
@@ -30,7 +29,6 @@ Feature: Port add-hook command to Rust
   #   10. Dispatcher returns success=true with empty `data` on success
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch add-hook from the agent loop AND invoke `fspec add-hook` from a shell

@@ -3,7 +3,6 @@
 @cli
 @RPC-192
 Feature: add-step CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/add_step.rs (NEW CLI bridge); codelet/fspec/tests/cli_add_step.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/add-step.txt (captured help fixture from `node dist/index.js add-step --help`).
   Bridge marshals positional <feature> <scenario> <type> <text> into JSON {feature, scenario, type, text} and delegates to commands::add_step::run. No logic in bridge — JSON marshalling + CWD resolution only.

@@ -8,7 +8,6 @@
 @bug
 @PROV-102
 Feature: Provider Settings nav-item action dispatch
-
   """
   Fix lives in views/provider_settings/list.rs (Enter + d arms) delegating to a new list_actions.rs that dispatches by focused_nav_item().kind. The mismatched visible_providers()[selected_index] path is reached ONLY when nav_items is empty. The delete-confirm Primary path in mod.rs uses a new nav_tree_ops::delete_target_provider_id() that prefers the focused NavItem's provider_id.
   Parity gap (documented, not fabricated): the Rust frontend has no profile-create, profile-edit, OAuth-login, OAuth-disconnect or per-profile-delete modes. AddProfile Enter and d on Profile/AddProfile/OAuthLogin are explicit no-ops; OAuthLogin/OAuthStatus Enter route to the honest OAuthNotice placeholder. These rows still use the correct provider_id so no mismatched-index path remains. Wiring the real flows is out of scope (separate cards).
@@ -38,7 +37,6 @@ Feature: Provider Settings nav-item action dispatch
   #   7. With only set_providers used (nav_items empty), Enter on an api_key provider still transitions to Detail Summary and d on a configured provider still opens the delete confirm
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user navigating Provider Settings
     I want to press Enter or d on any expanded child row
@@ -101,4 +99,3 @@ Feature: Provider Settings nav-item action dispatch
     Then the Detail view that opens is the Summary sub-view for that provider
     When I press d on the configured provider row
     Then a delete confirmation dialog is open
-

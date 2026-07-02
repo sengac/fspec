@@ -5,7 +5,6 @@
 @agent-view
 @RPC-370
 Feature: Render markdown tables with box-drawing characters in Rust chat view
-
   """
   Column width uses char-count as the visual-width proxy, consistent with the existing text_wrap.rs approach in the Rust port (full East-Asian-width handling deferred, matching current scrollback behavior)
   Implementation modifies format_markdown_tables in codelet/fspec-tui/src/store/agent_view/markdown_tables.rs, which is already called from chunk_processor.rs::handle_done at Done finalization — no new call site needed, the box-drawing output replaces the existing pipe-padding output
@@ -35,7 +34,6 @@ Feature: Render markdown tables with box-drawing characters in Rust chat view
   #   2. Code-fence-wrapped tables (the TS looksLikeTable / code-token path) are out of scope because the Rust Done-finalization path has no markdown lexer; only contiguous pipe-table blocks are converted
   #
   # ========================================
-
   Background: User Story
     As a user reading AI responses in the Rust chat view
     I want to see markdown tables rendered as aligned box-drawing grids
@@ -86,4 +84,3 @@ Feature: Render markdown tables with box-drawing characters in Rust chat view
     When the chat view wraps the row to the viewport width
     Then the wrapped row equals the input with every internal column padding space preserved
     Then no column padding is collapsed to a single space
-

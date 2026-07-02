@@ -11,11 +11,11 @@ Feature: /merge-worktree cross-transport parity
   the same StubSessionManagerHandle for every new RPC method introduced
   by RPC-057:
 
-    * merge_session_worktree
-    * discard_session_worktree
-    * prune_orphaned_worktrees
-    * list_session_worktrees
-    * inspect_session_changes
+  * merge_session_worktree
+  * discard_session_worktree
+  * prune_orphaned_worktrees
+  * list_session_worktrees
+  * inspect_session_changes
 
   Mirrors the RPC-049 / RPC-050 / RPC-054 / RPC-055 / RPC-056
   cross-transport parity tests — each transport invocation increments

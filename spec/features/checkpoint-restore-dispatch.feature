@@ -23,4 +23,3 @@ Feature: Checkpoint Restore Dispatch
     When Action::RestoreCheckpointAll is dispatched
     Then the backend restore_checkpoint_all is called once
     And the App emits a RestoreCheckpointResult action
-

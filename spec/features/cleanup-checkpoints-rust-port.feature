@@ -1,7 +1,7 @@
 @done
-@RPC-203 @wip
+@RPC-203
+@wip
 Feature: Port cleanup-checkpoints command to Rust
-
   """
   File layout: core codelet/fspec-core/src/commands/cleanup_checkpoints.rs is the single source
   of truth (run(args_json, project_root)); CLI bridge codelet/fspec/src/cleanup_checkpoints.rs

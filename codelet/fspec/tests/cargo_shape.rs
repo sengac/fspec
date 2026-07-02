@@ -687,6 +687,10 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "bootstrap.rs",
         "report_bug_to_github.rs",
         "review.rs",
+        // RPC-407: in-crate regression tests proving build_service calls
+        // init_blocklist(Some(workspace)). Lives in src/ (cfg(test)-gated)
+        // because it needs the binary-crate-private common::build_service.
+        "blocklist_init_tests.rs",
     ]
     .iter()
     .copied()

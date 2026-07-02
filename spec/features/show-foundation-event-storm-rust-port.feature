@@ -3,7 +3,6 @@
 @cli
 @RPC-306
 Feature: Port show-foundation-event-storm command to Rust
-
   """
   Reads spec/foundation.json directly (no shared ensure_foundation_file helper exists yet) — port-local helper read_foundation_or_error in commands/show_foundation_event_storm.rs returning FspecCoreError::Io or ParseJson as needed. ENOENT must NOT auto-create.
   Uses serde_json::Value to model EventStorm items because the TS discriminated union has many shapes and the command only inspects type/text/deleted/boundedContextId/id — full struct modelling is unnecessary for read-only filtering. Output JSON is the raw item values from foundation.json (round-trip preserving).

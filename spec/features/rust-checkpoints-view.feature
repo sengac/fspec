@@ -3,7 +3,6 @@
 @tui
 @RPC-364
 Feature: Three-pane CheckpointsView with C-key board wiring and Navigator integration
-
   """
   Greenfield views/checkpoints/ module modeled on views/changed_files/ but with THREE panes (Checkpoints list, Files list, Diff) and a focus state machine (Checkpoints->Files->Diff). Board C/c key emits Action::OpenCheckpointsView; Navigator owns CheckpointsView via ViewMode::Checkpoints. App::dispatch_checkpoints spawns lazy loads: list_checkpoints -> CheckpointsLoaded; checkpoint_diff_files -> CheckpointFilesLoaded; checkpoint_file_diff -> CheckpointFileDiffLoaded (stale results dropped by key). Reuses RPC-363 shared diff_common helpers (diff_line, file_row, render_pane_scrollbar) and components/scroll_viewport (WheelVelocity, ensure_visible) + list_scrollbar. Browse + diff only; restore/delete are RPC-365/366. Auto checkpoints render as '{workUnitId}: {Phase}', manual show raw name; list most-recent-first capped 200. Esc returns to board.
   """
@@ -31,7 +30,6 @@ Feature: Three-pane CheckpointsView with C-key board wiring and Navigator integr
   #   7. With no checkpoints the view shows 'No checkpoints available' and pressing Esc emits Action::CloseCheckpointsView
   #
   # ========================================
-
   Background: User Story
     As a fspec user on the Kanban board
     I want to press C to open a three-pane Checkpoints viewer and browse checkpoints, their files and diffs

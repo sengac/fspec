@@ -4,7 +4,6 @@
 @tui
 @RPC-354
 Feature: File Changes view in Rust TUI (port ChangedFilesViewer)
-
   """
   Reuses the existing codelet/git primitives and the established Navigator/Action transport pattern (mirrors checkpoint_counts RPC-015); does not reimplement git logic
   """
@@ -24,7 +23,6 @@ Feature: File Changes view in Rust TUI (port ChangedFilesViewer)
   #   3. In a clean repo with no changes, pressing F shows an empty-state message and Esc returns to the board
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to press F on the board to open a Changed Files view showing my staged and unstaged git changes with diffs

@@ -3,7 +3,6 @@
 @cli
 @RPC-232
 Feature: Port generate-example-mapping-from-event-storm command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/generate_example_mapping_from_event_storm.rs (rewrite stub); CLI bridge codelet/fspec/src/generate_example_mapping_from_event_storm.rs; help config codelet/fspec-core/src/help/configs/generate_example_mapping_from_event_storm.rs; help fixture codelet/fspec/tests/fixtures/help/generate-example-mapping-from-event-storm.txt; core test codelet/fspec-core/tests/generate_example_mapping_from_event_storm.rs; CLI test codelet/fspec/tests/cli_generate_example_mapping_from_event_storm.rs. Module already registered as a stub in commands/mod.rs (do not edit).
   Shared types reused: crate::types::work_unit::WorkUnitsData (rules/examples/questions/nextXId all read+written via WorkUnit.extra, same pattern as add_rule.rs / add_example.rs / add_question.rs); eventStorm.items walked via WorkUnit.extra.get('eventStorm') (same as show_event_storm.rs). Meta.last_updated is a typed field on WorkUnitsData::meta (Meta::last_updated). Reuses crate::io::locked_file::write_json_atomic and crate::io::time::iso8601_now. Missing-file Option B (inline path.exists()).
@@ -33,7 +32,6 @@ Feature: Port generate-example-mapping-from-event-storm command to Rust
   #   4. Agent runs the command on a unit with a hotspot concern='Unclear how long to wait' and the generated question reads '@human: Unclear how long to wait?' (trailing ? added)
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to run a Rust port of generate-example-mapping-from-event-storm wired through both the LLM dispatcher and the clap subcommand

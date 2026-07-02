@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec add-capability CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `add-capability` mirrors the TS Commander.js
   registration at src/commands/register-add-capability.ts — two required
@@ -14,10 +13,10 @@ Feature: fspec add-capability CLI subcommand (Rust port)
   probing, placeholder detection, or file IO logic is duplicated in the bridge.
 
   Stdout success block (parity with the TS output.log lines):
-    [Removed N placeholder capability(ies)]   (only when N > 0)
-    ✓ Added capability to <fileName>
-      Name: <name>
-      Description: <description>
+  [Removed N placeholder capability(ies)]   (only when N > 0)
+  ✓ Added capability to <fileName>
+  Name: <name>
+  Description: <description>
   where <fileName> is 'foundation.json.draft' or 'foundation.json' depending on
   which file was actually written.
 

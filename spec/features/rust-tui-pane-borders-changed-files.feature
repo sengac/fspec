@@ -3,7 +3,6 @@
 @tui
 @RPC-367
 Feature: Restore pane border/divider parity in Rust TUI Changed Files and Checkpoints views
-
   """
   Add shared border helpers to codelet/fspec-tui/src/views/diff_common/: a vertical-divider helper (reserves a 1-col gutter and paints '│' using default colour) and a heading-underline helper (paints a 1-row '─' rule below pane_header). Both views (changed_files/render.rs and checkpoints/render.rs) consume these helpers.
   Layout constraints must reserve space for dividers (1 column between horizontally-split panes; 1 row for the heading underline) so content rects are not overdrawn. Update cached last_*_rect values used for mouse-wheel hit-testing (pane_at) and page-step math to reflect the reduced content area.
@@ -29,7 +28,6 @@ Feature: Restore pane border/divider parity in Rust TUI Changed Files and Checkp
   #   4. Rendering the Changed Files view with no changes still shows the empty-state message and is unaffected by divider rendering
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to see visible dividers between the panes in the Rust Changed Files and Checkpoints views, just like the old TypeScript board

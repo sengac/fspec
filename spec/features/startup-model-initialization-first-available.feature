@@ -5,7 +5,6 @@
 @rust
 @PROV-120
 Feature: Restore TS-parity first-available model initialization removed by PROV-101
-
   """
   TS reference: src/tui/services/modelInitializationService.ts -> initializeModels() (resolution chain), selectDefaultModel() (first-available), restorePersistedModel() (persisted match), loadPersistedModelString() (reads tui.lastUsedModel)
   Rust side: a startup init step must run before the bootstrap create_session (combined mode bootstrap in codelet rpc-server / fspec-tui app start). It should build sections via the existing list_providers/profile_sections + cloud_model_entries path, apply persisted->first-available, then call set_default_model.
@@ -50,7 +49,6 @@ Feature: Restore TS-parity first-available model initialization removed by PROV-
   #   A: model-selector-no-auto-select.feature (PROV-101) stays UNCHANGED and is NOT contradicted. In TS the selector seeds its cursor from currentModel: ModelSelectorScreen.tsx:94-119 auto-expands the section and highlights the row matching currentModel.apiModelId. If there is NO current model it returns early (no highlight, cursor on first header, modelIdx=-1) — exactly PROV-101's no-auto-select. PROV-120 simply means currentModel is now usually non-null at startup, so the selector legitimately highlights the resolved default. Restoring a default DOES highlight the selector cursor (because currentModel is set), but the 'nothing selected when no current model' invariant is preserved.
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user launching the app
     I want to have a working model selected automatically at startup when I have any reachable credentialed model (persisted choice first, otherwise the first available reachable model)
@@ -132,6 +130,3 @@ Feature: Restore TS-parity first-available model initialization removed by PROV-
     When startup model initialization runs
     Then no default model is committed by provider-priority preference
     And the bootstrap create_session declines with an empty SessionId
-
-  # RULE 11 / ANSWERED Q1 — restore from fspec-config.json tui.lastUsedModel (source of truth)
-  # RULE 11 / ANSWERED Q1 — back-compat: read legacy default-model.json once when config has none

@@ -1,7 +1,8 @@
 @done
-@RPC-054 @providers @config-management
+@RPC-054
+@providers
+@config-management
 Feature: Provider Credential Persistence
-
   """
   Architecture: ProviderSettingsView ports the full-screen mode-view pattern from RPC-026's ResumeSessionView. Crate layout: codelet/fspec-tui/src/views/provider_settings/{mod.rs (orchestrator: ProviderSettingsView struct, key dispatcher, render outer shell, ProviderSettingsMode enum), list.rs (render_list), detail.rs (render_detail), status_text.rs (DetailStatus → coloured text)}. Each file < 300 LoC per RPC-002 rule [10]
   Render shape: render(area, buf) first calls Clear.render(area, buf), then splits the FULL area with Layout::default().direction(Vertical).constraints([Length(1) /* title */, Length(1) /* separator */, Min(0) /* body */, Length(1) /* footer */]).split(area); title row paints via render_title_with_count('Provider Settings', configured_count); footer row paints via render_footer_hint(mode_aware_hint). Body content branches on ProviderSettingsMode (List vs Detail). ConfirmDialog renders LAST as an overlay on top of the body when delete_confirm is Some — same pattern as ResumeSessionView
@@ -84,7 +85,6 @@ Feature: Provider Credential Persistence
   #   1. OAuth credential persistence (codex/anthropic/github-copilot) and the openai profile write path remain follow-ups; this card ports only the api_key credentials.json write/delete path
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user configuring providers
     I want to save and delete an API key in the /provider screen

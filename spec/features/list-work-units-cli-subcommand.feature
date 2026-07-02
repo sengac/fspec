@@ -54,13 +54,11 @@ Feature: List work units CLI subcommand
     Then the command exits 0 and stdout contains a JSON workUnits array of length 1 with AUTH-001
     Then stderr does NOT contain the substring 'unknown variant'
 
-
   Scenario: Subcommand help excludes the global workspace flag
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
     When I run `./codelet/target/release/fspec list-work-units --help` from a shell
     Then the command exits 0
     Then stdout does NOT contain the substring '--workspace'
-
 
   Scenario: list-work-units --help is byte-for-byte identical to TS formatCommandHelp reference output
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
@@ -69,4 +67,3 @@ Feature: List work units CLI subcommand
     And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-work-units.txt
     And stdout starts with a blank line followed by 'LIST-WORK-UNITS'
     And stdout contains the section header 'TYPICAL WORKFLOW'
-

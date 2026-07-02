@@ -7,7 +7,6 @@
 @source-shape
 @rpc-090
 Feature: Agent loop: lifecycle hooks (session_start / user_prompt_submit / post_tool_use / session_end)
-
   """
   Regression-shape feature: source-string assertions over
   agent_loop.rs + background_output.rs only — no LifecycleHooks

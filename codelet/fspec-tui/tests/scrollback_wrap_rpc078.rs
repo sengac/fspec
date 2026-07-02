@@ -151,7 +151,11 @@ fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() {
 
     // Render again so stick-to-bottom recomputes offset using the new
     // total visual rows.
-    let mut buf_text = String::new();
+    // RPC-401: the latest chunk now ends with a trailing blank separator
+    // row, so with stick-to-bottom that gutter occupies the very bottom
+    // row and "You: hi" sits on the second-to-bottom row. Snapshot both.
+    let mut bottom_text = String::new();
+    let mut second_bottom_text = String::new();
     let _ = terminal.draw(|frame| {
         let area = frame.area();
         if let Some(ctx) = app
@@ -163,18 +167,23 @@ fn stick_to_bottom_counts_visual_rows_so_latest_chunk_stays_visible() {
             (&mut sb).render(area, frame.buffer_mut());
             ctx.scrollback = sb;
         }
-        // Snapshot bottom row text.
+        // Snapshot bottom and second-to-bottom row text.
         let buf = frame.buffer_mut();
         let bottom_y = area.y + area.height - 1;
+        let second_y = area.y + area.height - 2;
         for x in area.x..area.x + area.width {
-            buf_text.push_str(buf[(x, bottom_y)].symbol());
+            bottom_text.push_str(buf[(x, bottom_y)].symbol());
+            second_bottom_text.push_str(buf[(x, second_y)].symbol());
         }
     });
 
     // @step Then the bottom row of the rendered buffer contains "You: hi"
+    // RPC-401: "You: hi" is anchored one row above the bottom because its
+    // trailing separator gutter occupies the bottom row.
     assert!(
-        buf_text.contains("You: hi"),
-        "bottom row must contain 'You: hi'; got {buf_text:?}"
+        second_bottom_text.contains("You: hi"),
+        "second-to-bottom row must contain 'You: hi' (bottom is its separator gutter); \
+         got bottom={bottom_text:?} second={second_bottom_text:?}"
     );
 
     // @step Then no visual row of the wrapped chunk that should be visible is missing from the rendered buffer
@@ -248,10 +257,18 @@ fn short_scrollback_content_fills_from_top_of_viewport() {
         "row 0 must be the user message; got {:?}",
         rows_above_first_message[0]
     );
-    assert!(
-        rows_above_first_message[1].contains("API Error: rate limit"),
-        "row 1 must be the api error; got {:?}",
+    // RPC-401: row 1 is the user message's blank separator gutter; the API
+    // error line lands on row 2.
+    assert_eq!(
+        rows_above_first_message[1].trim(),
+        "",
+        "row 1 must be the blank separator gutter; got {:?}",
         rows_above_first_message[1]
+    );
+    assert!(
+        rows_above_first_message[2].contains("API Error: rate limit"),
+        "row 2 must be the api error; got {:?}",
+        rows_above_first_message[2]
     );
 }
 
@@ -314,11 +331,20 @@ fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() {
     );
 
     // @step Then row y=2 contains "API Error:"
-    let row2 = row_text(2);
+    // RPC-401: each message now emits one trailing blank separator row, so
+    // the user line at y=1 is followed by its gutter at y=2 and the API
+    // Error line lands at y=3.
+    let row3 = row_text(3);
     assert!(
-        row2.contains("API Error:"),
-        "row y=2 must contain the API Error line directly below the \
-         user line; got row2={row2:?}"
+        row3.contains("API Error:"),
+        "row y=3 must contain the API Error line below the user line + gutter; got row3={row3:?}"
+    );
+    // The gutter row (y=2) between the two messages is blank.
+    assert_eq!(
+        row_text(2).trim(),
+        "",
+        "row y=2 must be the blank separator gutter; got {:?}",
+        row_text(2)
     );
 
     // @step Then no row between y=1 and the bottom of the scrollback area (y=h-3 where the footer sits) is blank above the first message — the empty rows fall BELOW the API error line, never above the user line
@@ -328,10 +354,11 @@ fn end_to_end_app_render_top_fills_scrollback_when_only_user_line_and_error() {
     // scrollback content — by definition rows above y=1 are header
     // territory.
     // Sanity: row y=0 belongs to the SessionHeader, not scrollback.
-    // Sanity: rows AFTER the API error (y >= 3) up to footer area are
-    // allowed to be blank because there's no more content.
+    // Sanity: rows AFTER the API error (RPC-401: its gutter at y=4) up to
+    // the footer area are allowed to be blank because there's no more
+    // content.
     let footer_y = buf.area.height.saturating_sub(2); // footer above input
-    for y in 3..footer_y {
+    for y in 5..footer_y {
         let r = row_text(y);
         // Below the API error line, blank rows are EXPECTED — assert
         // they don't carry any orphaned message text (defensive: TS

@@ -6,7 +6,6 @@
 @agent-view
 @RPC-159
 Feature: Provider settings: testResult clears on Up/Down arrow navigation
-
   """
   Test parity vs TS: TS clears testResult only inside the `if (key.upArrow && selectedIndex > 0)` and `if (key.downArrow && selectedIndex < navItems.length - 1)` blocks — i.e. only when movement actually happens. Rust mirrors this by detecting whether move_clamped changed selected_index and clearing only on actual movement.
   """
@@ -38,13 +37,13 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
   #   11. Given selected_index=1, scroll_offset=0, test_result=Some(openai/Ok), When Down arrow is pressed and visible_rows constrains scroll, Then both scroll_offset adjusts AND test_result clears (no field is left out)
   #
   # ========================================
-
   Background: User Story
     As a user navigating the provider settings list
     I want to press Up or Down arrows after running a connection test
     So that the inline test result clears so it does not visually persist onto a different focused row
 
-  @navigation @clear
+  @navigation
+  @clear
   Scenario: Down arrow that moves focus clears the inline test_result
     Given a ProviderSettingsView in List mode with three providers
     And selected_index is 1
@@ -53,7 +52,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then selected_index is 2
     And test_result is None
 
-  @navigation @clear
+  @navigation
+  @clear
   Scenario: Up arrow that moves focus clears the inline test_result
     Given a ProviderSettingsView in List mode with three providers
     And selected_index is 2
@@ -62,7 +62,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then selected_index is 1
     And test_result is None
 
-  @navigation @boundary
+  @navigation
+  @boundary
   Scenario: Up arrow at index 0 does not clear test_result
     Given a ProviderSettingsView in List mode with three providers
     And selected_index is 0
@@ -71,7 +72,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then selected_index is still 0
     And test_result is still Some(provider_id="openai", status=Testing)
 
-  @navigation @boundary
+  @navigation
+  @boundary
   Scenario: Down arrow at last visible row does not clear test_result
     Given a ProviderSettingsView in List mode with three providers
     And selected_index is at the last visible nav-item index
@@ -80,7 +82,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then selected_index is unchanged
     And test_result is still Some(provider_id="openai", status=Ok{latency_ms=42})
 
-  @non-navigation @preserve
+  @non-navigation
+  @preserve
   Scenario: Enter on a Provider row toggles expansion and preserves test_result
     Given a ProviderSettingsView in List mode with three providers
     And the focused nav item is a Provider row
@@ -89,7 +92,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then the focused provider's expansion is toggled
     And test_result is still Some(provider_id="openai", status=Ok{latency_ms=42})
 
-  @non-navigation @preserve
+  @non-navigation
+  @preserve
   Scenario: Tab in list mode emits SwitchToModels and preserves test_result
     Given a ProviderSettingsView in List mode with three providers
     And test_result is set to Some(provider_id="openai", status=Ok{latency_ms=42})
@@ -97,7 +101,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then the returned event is SwitchToModels
     And test_result is still Some(provider_id="openai", status=Ok{latency_ms=42})
 
-  @non-navigation @preserve
+  @non-navigation
+  @preserve
   Scenario: Slash activates filter mode and preserves test_result
     Given a ProviderSettingsView in List mode with three providers
     And test_result is set to Some(provider_id="openai", status=Ok{latency_ms=42})
@@ -105,7 +110,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then filter_mode is true
     And test_result is still Some(provider_id="openai", status=Ok{latency_ms=42})
 
-  @filter-mode @routing
+  @filter-mode
+  @routing
   Scenario: Up arrow while filter_mode is true does not enter the list-mode clear path
     Given a ProviderSettingsView with three providers
     And filter_mode is true
@@ -114,7 +120,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then the call is routed through handle_filter_key
     And test_result is still Some(provider_id="openai", status=Ok{latency_ms=42})
 
-  @navigation @no-op-clear
+  @navigation
+  @no-op-clear
   Scenario: Down arrow that moves focus with test_result already None remains None
     Given a ProviderSettingsView in List mode with three providers
     And selected_index is 1
@@ -123,7 +130,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then selected_index is 2
     And test_result is still None
 
-  @navigation @empty-list
+  @navigation
+  @empty-list
   Scenario: Up or Down arrow with zero visible providers does not clear test_result
     Given a ProviderSettingsView in List mode with zero visible providers
     And selected_index is 0
@@ -135,7 +143,8 @@ Feature: Provider settings: testResult clears on Up/Down arrow navigation
     Then selected_index is still 0
     And test_result is still Some(provider_id="openai", status=Ok{latency_ms=42})
 
-  @navigation @scroll-and-clear
+  @navigation
+  @scroll-and-clear
   Scenario: Down arrow that scrolls and moves focus both adjusts scroll and clears test_result
     Given a ProviderSettingsView in List mode with many providers requiring scrolling
     And selected_index is 1

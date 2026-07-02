@@ -4,7 +4,6 @@
 @agent-registry
 @RPC-239
 Feature: Port init command to Rust
-
   """
   Core impl codelet/fspec-core/src/commands/init.rs: replace the NotYetPorted
   stub with `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`
@@ -17,12 +16,12 @@ Feature: Port init command to Rust
   Faithful port of src/commands/init.ts (executeInit + installAgents +
   installAgentFiles + installFullDoc + installSlashCommand) and the
   src/utils helpers it depends on:
-    - agentRegistry.ts (AGENT_REGISTRY / getAgentById)
-    - templateGenerator.ts (generateAgentDoc → getProjectManagementTemplate +
-      stripSystemReminders + removeMetaCognitivePrompts + replacePlaceholders)
-    - slashCommandTemplate.ts (getSlashCommandTemplate → getHeaderSection)
-    - agentRuntimeConfig.ts (writeAgentConfig — read-modify-write merge)
-    - agentDetection.ts (detectAgents — used by the switch prompt path)
+  - agentRegistry.ts (AGENT_REGISTRY / getAgentById)
+  - templateGenerator.ts (generateAgentDoc → getProjectManagementTemplate +
+  stripSystemReminders + removeMetaCognitivePrompts + replacePlaceholders)
+  - slashCommandTemplate.ts (getSlashCommandTemplate → getHeaderSection)
+  - agentRuntimeConfig.ts (writeAgentConfig — read-modify-write merge)
+  - agentDetection.ts (detectAgents — used by the switch prompt path)
   The 20-agent registry is INLINED as a local const table (SUPERVISOR DECISION:
   confirmed — same precedent as the ported remove-init-files command; no shared
   agents.rs module, no lib.rs/mod.rs touch).
@@ -95,7 +94,6 @@ Feature: Port init command to Rust
   #   1. Confirmed by supervisor: adopt run(args_json, project_root); inline the 20-agent registry as a local const table; empty agent list errors with the TTY-guard message; agent-switch is auto-confirmed headless; template embedded verbatim + transforms applied; HOME injectable (overridden to tempdir in tests); all writes use blocking std::fs.
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch init from the agent loop and scaffold the same agent docs, slash commands and config as the TypeScript implementation

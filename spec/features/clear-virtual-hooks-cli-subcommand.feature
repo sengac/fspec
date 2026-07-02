@@ -4,7 +4,6 @@
 @rust
 @RPC-205
 Feature: clear-virtual-hooks CLI subcommand
-
   """
   Shell-facing surface for the Rust port of `fspec clear-virtual-hooks <workUnitId>`. Lives at codelet/fspec/src/clear_virtual_hooks.rs as the standard two-front-doors CLI bridge — it owns clap parsing, marshals camelCase JSON into the shared `clear_virtual_hooks::run` core function (defined in codelet/fspec-core/src/commands/clear_virtual_hooks.rs and proven by spec/features/clear-virtual-hooks-rust-port.feature), prints the rendered text response to stdout, and surfaces InvalidArgs as a single `Error: <msg>` line to stderr followed by exit code 1.
 

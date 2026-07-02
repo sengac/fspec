@@ -1,7 +1,9 @@
 @done
-@RPC-258 @cli @querying @wip
+@RPC-258
+@cli
+@querying
+@wip
 Feature: Port query-estimate-accuracy command to Rust
-
   """
   This feature file describes the LLM-facing dispatcher behaviour of the
   Rust port of the `query-estimate-accuracy` command (RPC-258, child of
@@ -10,16 +12,16 @@ Feature: Port query-estimate-accuracy command to Rust
   by spec/features/query-estimate-accuracy-cli-subcommand.feature.
 
   Architecture notes:
-    - Reuses crate::io::ensure::read_work_units_or_empty for spec/work-units.json reads
-    - Parse errors are re-wrapped with the 'Failed to query estimate accuracy:' prefix
-      to honour TS outer try/catch behaviour
-    - Aggregator uses IndexMap<String, ...> to preserve TS Object.keys() insertion order
-    - avgIterations = ((sum/count) * 10.0).round() / 10.0; serialized as f64
-      so 2.0 prints as `2` and 1.5 prints as `1.5` (TS template-literal parity)
-    - WorkUnit estimate / iterations / metrics.iterations fields are read from the
-      `extra` map via serde_json::Value access (TS [key: string]: unknown indexer parity)
-    - Both invocation paths (LLM dispatcher AND standalone clap binary) call the
-      SAME fspec_core::commands::query_estimate_accuracy::run function
+  - Reuses crate::io::ensure::read_work_units_or_empty for spec/work-units.json reads
+  - Parse errors are re-wrapped with the 'Failed to query estimate accuracy:' prefix
+  to honour TS outer try/catch behaviour
+  - Aggregator uses IndexMap<String, ...> to preserve TS Object.keys() insertion order
+  - avgIterations = ((sum/count) * 10.0).round() / 10.0; serialized as f64
+  so 2.0 prints as `2` and 1.5 prints as `1.5` (TS template-literal parity)
+  - WorkUnit estimate / iterations / metrics.iterations fields are read from the
+  `extra` map via serde_json::Value access (TS [key: string]: unknown indexer parity)
+  - Both invocation paths (LLM dispatcher AND standalone clap binary) call the
+  SAME fspec_core::commands::query_estimate_accuracy::run function
   """
 
   Background: User Story

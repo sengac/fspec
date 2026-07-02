@@ -1,7 +1,6 @@
 @done
 @RPC-196
 Feature: fspec answer-question CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/answer_question.rs — clap-derived struct mirroring TS Commander.js
   registration (src/commands/answer-question.ts:126-170). Surface:
@@ -12,8 +11,8 @@ Feature: fspec answer-question CLI subcommand
   fspec_core::commands::answer_question::run.
 
   Stdout (success): '✓ Answered question: "<text>"'. If --answer was provided:
-    '  Answer: "<answer>"'. If result.addedTo and result.addedContent:
-    '  Added to <addedTo>: "<content>"' (TS uses chalk.cyan; substring assertions tolerate ANSI).
+  '  Answer: "<answer>"'. If result.addedTo and result.addedContent:
+  '  Added to <addedTo>: "<content>"' (TS uses chalk.cyan; substring assertions tolerate ANSI).
   Stderr (failure): '✗ Failed to answer question: <message>'; exit code 1.
 
   Help fixture captured from `node dist/index.js answer-question --help`. NOTE: TS help-ts file documents

@@ -1,22 +1,21 @@
-//! RPC-053 — Pause / HITL UI (PauseDialog + HitlDialog end-to-end).
+//! RPC-053 — Pause / HITL UI (chunk-driven trigger + HitlDialog end-to-end).
 //!
 //! Feature: spec/features/pause-and-hitl-dialogs.feature
 //!
-//! Drives the App::dispatch routing for the chunk-driven Paused trigger
-//! (parallel get_pause_state + get_hitl_request) and the dialog actions
-//! (PauseConfirmed / PauseTriple / PauseResumed / HitlSubmitted).
+//! RPC-406 superseded the PauseDialog modal with the inline pause prompt
+//! (see tests/inline_pause_prompt_rpc406.rs). This file retains the
+//! chunk-driven Paused trigger (parallel get_pause_state + get_hitl_request,
+//! HITL wins on tie, pause state lands in the AgentViewStore slot) and the
+//! HitlDialog interactions.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::sync::Arc;
 use std::time::Duration;
 
-use codelet_fspec_tui::{
-    Action, App, Component, FspecBackend, PauseDialog, HITL_DIALOG_ID, PAUSE_DIALOG_ID,
-};
+use codelet_fspec_tui::{Action, App, Component, FspecBackend, HITL_DIALOG_ID};
 use codelet_rpc_types::{
-    ApprovalChoice, HitlOption, HitlRequest, PauseKind, PauseState, SessionId, SessionState,
-    StreamChunk,
+    HitlOption, HitlRequest, PauseKind, PauseState, SessionId, SessionState, StreamChunk,
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use tokio::time::timeout;
@@ -94,13 +93,6 @@ fn fresh_app_with_session(session: &str) -> (App, Arc<MockBackend>) {
     (app, mock)
 }
 
-fn mount_pause_dialog(app: &mut App, session: &SessionId, state: PauseState) {
-    app.dispatch(Action::OpenPauseDialog {
-        session_id: session.clone(),
-        state,
-    });
-}
-
 fn mount_hitl_dialog(app: &mut App, session: &SessionId, request: HitlRequest) {
     app.dispatch(Action::OpenHitlDialog {
         session_id: session.clone(),
@@ -109,152 +101,128 @@ fn mount_hitl_dialog(app: &mut App, session: &SessionId, request: HitlRequest) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// PauseDialog interactions (Confirm + Triple kinds)
+// Chunk-driven trigger: SessionStateChange { Paused } routes correctly
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pause_dialog_enter_on_accept_calls_pause_confirm_true() {
+async fn session_state_change_paused_with_hitl_request_some_opens_a_hitl_dialog() {
     // @step Given an App with a MockBackend
     // @step And session s-1 is the current session
     let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And a Confirm PauseDialog is mounted on the Compositor for s-1 with focus on "Accept"
-    mount_pause_dialog(&mut app, &sid("s-1"), pause_state(PauseKind::Confirm, "p"));
-    // @step Then the PauseDialog's focused button is "Accept"
-    assert!(app.compositor().contains(PAUSE_DIALOG_ID));
+    // @step And the MockBackend's get_pause_state is scripted to return None for s-1
+    mock.script_pause_state(sid("s-1"), None);
+    // @step And the MockBackend's get_hitl_request is scripted to return Some HitlRequest{ id: "q-1", question: "Continue?", header: "Apply changes?", options: [Yes, No], allow_text_input: false } for s-1
+    mock.script_hitl_request(sid("s-1"), Some(hitl_request("q-1", &["Yes", "No"], false)));
 
-    // @step When the user presses Enter on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Enter));
+    // @step When Action::ChunkReceived(s-1, SessionStateChange{ state: Paused }) is dispatched
+    app.dispatch(Action::ChunkReceived(
+        sid("s-1"),
+        StreamChunk::SessionStateChange {
+            state: SessionState::Paused,
+        },
+    ));
     // @step And all pending tasks have drained
     drain_pending(&mut app).await;
 
-    // @step Then backend.pause_confirm is called exactly once with (s-1, true)
+    // @step Then the Compositor contains a layer with id HITL_DIALOG_ID
     wait_until(
-        || mock.pause_confirm_calls() == 1,
-        "pause_confirm called once",
+        || app.compositor().contains(HITL_DIALOG_ID),
+        "HitlDialog mounted",
     )
     .await;
-    let log = mock.pause_confirm_log();
-    assert_eq!(log.len(), 1);
-    assert_eq!(log[0], (sid("s-1"), true));
-
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
+    // @step And the AgentViewStore pause slot for s-1 is empty
+    assert!(app
+        .agent_view_store()
+        .pause_state_for(&sid("s-1"))
+        .is_none());
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pause_dialog_tab_then_enter_calls_pause_confirm_false() {
+async fn session_state_change_paused_with_both_some_hitl_wins() {
     // @step Given an App with a MockBackend
     // @step And session s-1 is the current session
     let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And a Confirm PauseDialog is mounted on the Compositor for s-1 with focus on "Deny"
-    mount_pause_dialog(&mut app, &sid("s-1"), pause_state(PauseKind::Confirm, "p"));
-    // Tab to advance focus from Accept to Deny.
-    // @step When the user presses Tab on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Tab));
-    // @step Then the PauseDialog's focused button is "Deny"
+    // @step And the MockBackend's get_pause_state is scripted to return Some PauseState{ kind: Confirm, prompt: "p", tool_call_id: None } for s-1
+    mock.script_pause_state(sid("s-1"), Some(pause_state(PauseKind::Confirm, "p")));
+    // @step And the MockBackend's get_hitl_request is scripted to return Some HitlRequest{ id: "q-1", question: "Q", header: "H", options: [Yes, No], allow_text_input: false } for s-1
+    mock.script_hitl_request(sid("s-1"), Some(hitl_request("q-1", &["Yes", "No"], false)));
 
-    // @step When the user presses Enter on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Enter));
+    // @step When Action::ChunkReceived(s-1, SessionStateChange{ state: Paused }) is dispatched
+    app.dispatch(Action::ChunkReceived(
+        sid("s-1"),
+        StreamChunk::SessionStateChange {
+            state: SessionState::Paused,
+        },
+    ));
     // @step And all pending tasks have drained
     drain_pending(&mut app).await;
 
-    // @step Then backend.pause_confirm is called exactly once with (s-1, false)
+    // @step Then the Compositor contains a layer with id HITL_DIALOG_ID
     wait_until(
-        || mock.pause_confirm_calls() == 1,
-        "pause_confirm called once",
+        || app.compositor().contains(HITL_DIALOG_ID),
+        "HitlDialog wins on tie",
     )
     .await;
-    let log = mock.pause_confirm_log();
-    assert_eq!(log[0], (sid("s-1"), false));
-    // @step And backend.pause_confirm is NOT called with (s-1, true)
-    assert!(!log.iter().any(|(_, accept)| *accept));
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
+    // @step And the AgentViewStore pause slot for s-1 is empty
+    assert!(app
+        .agent_view_store()
+        .pause_state_for(&sid("s-1"))
+        .is_none());
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pause_dialog_esc_calls_pause_resume_not_pause_confirm() {
+async fn session_state_change_paused_with_both_none_pushes_no_dialog() {
     // @step Given an App with a MockBackend
     // @step And session s-1 is the current session
     let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And a Confirm PauseDialog is mounted on the Compositor for s-1
-    mount_pause_dialog(&mut app, &sid("s-1"), pause_state(PauseKind::Confirm, "p"));
+    // @step And the MockBackend's get_pause_state is scripted to return None for s-1
+    mock.script_pause_state(sid("s-1"), None);
+    // @step And the MockBackend's get_hitl_request is scripted to return None for s-1
+    mock.script_hitl_request(sid("s-1"), None);
 
-    // @step When the user presses Esc on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Esc));
+    // @step When Action::ChunkReceived(s-1, SessionStateChange{ state: Paused }) is dispatched
+    app.dispatch(Action::ChunkReceived(
+        sid("s-1"),
+        StreamChunk::SessionStateChange {
+            state: SessionState::Paused,
+        },
+    ));
     // @step And all pending tasks have drained
     drain_pending(&mut app).await;
 
-    // @step Then backend.pause_resume is called exactly once with s-1
-    wait_until(
-        || mock.pause_resume_calls() == 1,
-        "pause_resume called once",
-    )
-    .await;
-    let log = mock.pause_resume_log();
-    assert_eq!(log, vec![sid("s-1")]);
-    // @step And backend.pause_confirm is NEVER called
-    assert_eq!(mock.pause_confirm_calls(), 0);
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
+    // @step Then the AgentViewStore pause slot for s-1 is empty
+    assert!(app
+        .agent_view_store()
+        .pause_state_for(&sid("s-1"))
+        .is_none());
+    // @step And the Compositor does NOT contain a layer with id HITL_DIALOG_ID
+    assert!(!app.compositor().contains(HITL_DIALOG_ID));
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn triple_pause_dialog_enter_on_deny_calls_pause_triple_deny() {
+async fn session_state_change_idle_pops_hitl_dialog() {
     // @step Given an App with a MockBackend
     // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And a Triple PauseDialog is mounted on the Compositor for s-1 with focus on "Deny"
-    mount_pause_dialog(&mut app, &sid("s-1"), pause_state(PauseKind::Triple, "p"));
-    // @step Then the PauseDialog's focused button is "Approve"
-    // Right arrow twice → focus on Deny (Approve → Approve Session → Deny).
-    // @step When the user presses Right arrow on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Right));
-    app.handle_event(&key_event(KeyCode::Right));
-
-    // @step When the user presses Enter on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Enter));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then backend.pause_triple is called exactly once with (s-1, ApprovalChoice::Deny)
-    wait_until(
-        || mock.pause_triple_calls() == 1,
-        "pause_triple called once",
-    )
-    .await;
-    let log = mock.pause_triple_log();
-    assert_eq!(log.len(), 1);
-    assert_eq!(log[0], (sid("s-1"), ApprovalChoice::Deny));
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn triple_pause_dialog_enter_on_approve_session_calls_pause_triple_approve_session() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And a Triple PauseDialog is mounted on the Compositor for s-1 with focus on "Approve Session"
-    mount_pause_dialog(&mut app, &sid("s-1"), pause_state(PauseKind::Triple, "p"));
-    // @step When the user presses Right arrow on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Right));
-    // @step Then the PauseDialog's focused button is "Approve Session"
-
-    // @step When the user presses Enter on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Enter));
-    drain_pending(&mut app).await;
-
-    // @step Then backend.pause_triple is called exactly once with (s-1, ApprovalChoice::ApproveSession)
-    wait_until(
-        || mock.pause_triple_calls() == 1,
-        "pause_triple called once",
-    )
-    .await;
-    assert_eq!(
-        mock.pause_triple_log()[0],
-        (sid("s-1"), ApprovalChoice::ApproveSession)
+    let (mut app, _mock) = fresh_app_with_session("s-1");
+    // @step And a HitlDialog is mounted on the Compositor for s-1
+    mount_hitl_dialog(
+        &mut app,
+        &sid("s-1"),
+        hitl_request("q-1", &["Yes", "No"], false),
     );
+    assert!(app.compositor().contains(HITL_DIALOG_ID));
+
+    // @step When Action::ChunkReceived(s-1, SessionStateChange{ state: Idle }) is dispatched
+    app.dispatch(Action::ChunkReceived(
+        sid("s-1"),
+        StreamChunk::SessionStateChange {
+            state: SessionState::Idle,
+        },
+    ));
+    drain_pending(&mut app).await;
+
+    // @step Then the Compositor does NOT contain a layer with id HITL_DIALOG_ID
+    assert!(!app.compositor().contains(HITL_DIALOG_ID));
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -308,6 +276,7 @@ async fn hitl_dialog_enter_on_no_submits_no() {
     app.handle_event(&key_event(KeyCode::Down));
     // @step When the user presses Enter on the HitlDialog
     app.handle_event(&key_event(KeyCode::Enter));
+    // @step And all pending tasks have drained
     drain_pending(&mut app).await;
 
     // @step Then backend.send_hitl_response is called exactly once with (s-1, HitlResponse{ id: "q-1", value: "No" })
@@ -335,6 +304,7 @@ async fn hitl_dialog_esc_dismisses_without_submit() {
 
     // @step When the user presses Esc on the HitlDialog
     app.handle_event(&key_event(KeyCode::Esc));
+    // @step And all pending tasks have drained
     drain_pending(&mut app).await;
 
     // @step Then backend.send_hitl_response is NEVER called
@@ -366,6 +336,7 @@ async fn hitl_dialog_free_text_enter_submits_typed_text() {
 
     // @step When the user presses Enter on the HitlDialog
     app.handle_event(&key_event(KeyCode::Enter));
+    // @step And all pending tasks have drained
     drain_pending(&mut app).await;
 
     // @step Then backend.send_hitl_response is called exactly once with (s-1, HitlResponse{ id: "q-1", value: "maybe later" })
@@ -383,47 +354,6 @@ async fn hitl_dialog_free_text_enter_submits_typed_text() {
 // ─────────────────────────────────────────────────────────────────────────
 // Error tolerance
 // ─────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pause_confirm_error_still_pops_dialog_and_emits_no_notice() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And the MockBackend's pause_confirm is scripted to return Err("network blip")
-    mock.set_pause_confirm_error("network blip".to_string());
-    // @step And a Confirm PauseDialog is mounted on the Compositor for s-1 with focus on "Accept"
-    mount_pause_dialog(&mut app, &sid("s-1"), pause_state(PauseKind::Confirm, "p"));
-
-    // @step When the user presses Enter on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Enter));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then the App must not panic
-    // (no panic = test reached this line)
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
-    // @step And the session s-1 scrollback contains no chunks mentioning "pause_confirm"
-    let ctx = app
-        .agent_view_store()
-        .session_context_for(&sid("s-1"))
-        .expect("session present");
-    let visible = ctx.scrollback.visible_window(1024);
-    for ch in &visible {
-        for line in &ch.lines {
-            let text: String = line.spans.iter().map(|s| s.content.as_ref()).collect();
-            assert!(
-                !text.contains("pause_confirm"),
-                "no pause_confirm notice in scrollback (saw: {text})"
-            );
-            // @step And the session s-1 scrollback contains no chunks mentioning "network blip"
-            assert!(
-                !text.contains("network blip"),
-                "no error mention in scrollback (saw: {text})"
-            );
-        }
-    }
-}
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn get_hitl_request_error_pushes_no_dialog() {
@@ -448,8 +378,11 @@ async fn get_hitl_request_error_pushes_no_dialog() {
     // @step Then the App must not panic
     // @step And the Compositor does NOT contain a layer with id HITL_DIALOG_ID
     assert!(!app.compositor().contains(HITL_DIALOG_ID));
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
+    // @step And the AgentViewStore pause slot for s-1 is empty
+    assert!(app
+        .agent_view_store()
+        .pause_state_for(&sid("s-1"))
+        .is_none());
     // @step And the session s-1 scrollback contains no chunks mentioning "get_hitl_request"
     let ctx = app
         .agent_view_store()
@@ -501,346 +434,7 @@ async fn send_hitl_response_error_still_pops_dialog_and_emits_no_notice() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Multi-session: dialog binds to its originating session
-// ─────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn pause_dialog_for_non_focused_session_routes_actions_to_originating_session() {
-    // @step Given an App with a MockBackend
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And open sessions are [s-1, s-2] and s-1 is focused
-    app.dispatch(Action::SessionCreated(sid("s-2")));
-    // Refocus to s-1 (SessionCreated set focus to the new session).
-    app.dispatch(Action::SessionPrev);
-    assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
-
-    // @step And the MockBackend's get_pause_state is scripted to return Some PauseState{ kind: Confirm, prompt: "p", tool_call_id: None } for s-2
-    mock.script_pause_state(sid("s-2"), Some(pause_state(PauseKind::Confirm, "p")));
-    // @step And the MockBackend's get_hitl_request is scripted to return None for s-2
-    mock.script_hitl_request(sid("s-2"), None);
-
-    // @step When Action::ChunkReceived(s-2, SessionStateChange{ state: Paused }) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-2"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Paused,
-        },
-    ));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then the Compositor contains a layer with id PAUSE_DIALOG_ID
-    wait_until(
-        || app.compositor().contains(PAUSE_DIALOG_ID),
-        "PauseDialog mounted for s-2",
-    )
-    .await;
-    // @step And the focused session is still s-1
-    assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
-
-    // @step When the user presses Enter on the PauseDialog
-    app.handle_event(&key_event(KeyCode::Enter));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then backend.pause_confirm is called exactly once with (s-2, true)
-    wait_until(
-        || mock.pause_confirm_calls() == 1,
-        "pause_confirm called once",
-    )
-    .await;
-    let log = mock.pause_confirm_log();
-    assert_eq!(log[0], (sid("s-2"), true));
-    // @step And backend.pause_confirm is NOT called with (s-1, true)
-    assert!(!log.iter().any(|(s, accept)| s == &sid("s-1") && *accept));
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Chunk-driven trigger: SessionStateChange { Paused } opens the right dialog
-// ─────────────────────────────────────────────────────────────────────────
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_state_change_paused_with_pause_state_some_opens_a_confirm_pause_dialog() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And the MockBackend's get_pause_state is scripted to return Some PauseState for s-1
-    mock.script_pause_state(
-        sid("s-1"),
-        Some(PauseState {
-            kind: PauseKind::Confirm,
-            prompt: "Run dangerous-cmd?".to_string(),
-            tool_call_id: Some("tc-1".to_string()),
-        }),
-    );
-    // @step And the MockBackend's get_hitl_request is scripted to return None for s-1
-    mock.script_hitl_request(sid("s-1"), None);
-
-    // @step When Action::ChunkReceived(s-1, SessionStateChange Paused) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Paused,
-        },
-    ));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then backend.get_pause_state is called at least once with s-1
-    wait_until(
-        || mock.get_pause_state_calls() >= 1,
-        "get_pause_state called",
-    )
-    .await;
-    // @step And backend.get_hitl_request is called at least once with s-1
-    assert!(mock.get_hitl_request_calls() >= 1);
-
-    // @step And the Compositor contains a layer with id PAUSE_DIALOG_ID
-    wait_until(
-        || app.compositor().contains(PAUSE_DIALOG_ID),
-        "PauseDialog mounted",
-    )
-    .await;
-    // @step And the Compositor does NOT contain a layer with id HITL_DIALOG_ID
-    assert!(!app.compositor().contains(HITL_DIALOG_ID));
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_state_change_paused_with_hitl_request_some_opens_a_hitl_dialog() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And the MockBackend's get_pause_state is scripted to return None for s-1
-    mock.script_pause_state(sid("s-1"), None);
-    // @step And the MockBackend's get_hitl_request is scripted to return Some HitlRequest for s-1
-    mock.script_hitl_request(sid("s-1"), Some(hitl_request("q-1", &["Yes", "No"], false)));
-
-    // @step When Action::ChunkReceived(s-1, SessionStateChange Paused) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Paused,
-        },
-    ));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then the Compositor contains a layer with id HITL_DIALOG_ID
-    wait_until(
-        || app.compositor().contains(HITL_DIALOG_ID),
-        "HitlDialog mounted",
-    )
-    .await;
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_state_change_paused_with_both_some_hitl_wins() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And the MockBackend's get_pause_state is scripted to return Some PauseState for s-1
-    mock.script_pause_state(sid("s-1"), Some(pause_state(PauseKind::Confirm, "p")));
-    // @step And the MockBackend's get_hitl_request is scripted to return Some HitlRequest for s-1
-    mock.script_hitl_request(sid("s-1"), Some(hitl_request("q-1", &["Yes", "No"], false)));
-
-    // @step When Action::ChunkReceived(s-1, SessionStateChange Paused) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Paused,
-        },
-    ));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then the Compositor contains a layer with id HITL_DIALOG_ID
-    wait_until(
-        || app.compositor().contains(HITL_DIALOG_ID),
-        "HitlDialog wins on tie",
-    )
-    .await;
-    // @step And the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_state_change_paused_with_both_none_pushes_no_dialog() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And the MockBackend's get_pause_state is scripted to return None for s-1
-    mock.script_pause_state(sid("s-1"), None);
-    // @step And the MockBackend's get_hitl_request is scripted to return None for s-1
-    mock.script_hitl_request(sid("s-1"), None);
-
-    // @step When Action::ChunkReceived(s-1, SessionStateChange Paused) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Paused,
-        },
-    ));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
-    // @step And the Compositor does NOT contain a layer with id HITL_DIALOG_ID
-    assert!(!app.compositor().contains(HITL_DIALOG_ID));
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn repeated_paused_chunks_push_only_one_pause_dialog() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, mock) = fresh_app_with_session("s-1");
-    // @step And the MockBackend's get_pause_state is scripted to return Some PauseState for s-1
-    mock.script_pause_state(sid("s-1"), Some(pause_state(PauseKind::Confirm, "p")));
-
-    // @step When Action::ChunkReceived(s-1, SessionStateChange Paused) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Paused,
-        },
-    ));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-    wait_until(
-        || app.compositor().contains(PAUSE_DIALOG_ID),
-        "first PauseDialog mounted",
-    )
-    .await;
-
-    // @step And Action::ChunkReceived(s-1, SessionStateChange Paused) is dispatched again
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Paused,
-        },
-    ));
-    // @step And all pending tasks have drained
-    drain_pending(&mut app).await;
-
-    // @step Then exactly one layer with id PAUSE_DIALOG_ID is mounted on the Compositor
-    let mounted = app
-        .compositor()
-        .layer_ids()
-        .iter()
-        .filter(|id| *id == PAUSE_DIALOG_ID)
-        .count();
-    assert_eq!(mounted, 1);
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_state_change_running_pops_pause_dialog() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, _mock) = fresh_app_with_session("s-1");
-    // @step And a PauseDialog is mounted on the Compositor for s-1
-    mount_pause_dialog(&mut app, &sid("s-1"), pause_state(PauseKind::Confirm, "p"));
-    assert!(app.compositor().contains(PAUSE_DIALOG_ID));
-
-    // @step When Action::ChunkReceived(s-1, SessionStateChange Running) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Running,
-        },
-    ));
-    drain_pending(&mut app).await;
-
-    // @step Then the Compositor does NOT contain a layer with id PAUSE_DIALOG_ID
-    assert!(!app.compositor().contains(PAUSE_DIALOG_ID));
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn session_state_change_idle_pops_hitl_dialog() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    let (mut app, _mock) = fresh_app_with_session("s-1");
-    // @step And a HitlDialog is mounted on the Compositor for s-1
-    mount_hitl_dialog(
-        &mut app,
-        &sid("s-1"),
-        hitl_request("q-1", &["Yes", "No"], false),
-    );
-    assert!(app.compositor().contains(HITL_DIALOG_ID));
-
-    // @step When Action::ChunkReceived(s-1, SessionStateChange Idle) is dispatched
-    app.dispatch(Action::ChunkReceived(
-        sid("s-1"),
-        StreamChunk::SessionStateChange {
-            state: SessionState::Idle,
-        },
-    ));
-    drain_pending(&mut app).await;
-
-    // @step Then the Compositor does NOT contain a layer with id HITL_DIALOG_ID
-    assert!(!app.compositor().contains(HITL_DIALOG_ID));
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// PauseDialog focus assertions (constructed directly to inspect
-// `focused_label()` without going through the Compositor)
-// ─────────────────────────────────────────────────────────────────────────
-
-#[test]
-fn confirm_pause_dialog_default_focus_is_accept_focus_only() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    // @step And a Confirm PauseDialog is mounted on the Compositor for s-1
-    let dialog = PauseDialog::new(sid("s-1"), pause_state(PauseKind::Confirm, "p"));
-    // @step Then the PauseDialog's focused button is "Accept"
-    assert_eq!(dialog.focused_label(), "Accept");
-}
-
-#[test]
-fn triple_pause_dialog_default_focus_is_approve_focus_only() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    // @step And a Triple PauseDialog is mounted on the Compositor for s-1
-    let dialog = PauseDialog::new(sid("s-1"), pause_state(PauseKind::Triple, "p"));
-    // @step Then the PauseDialog's focused button is "Approve"
-    assert_eq!(dialog.focused_label(), "Approve");
-}
-
-#[test]
-fn tab_cycles_confirm_pause_dialog_focus_accept_to_deny() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    // @step And a Confirm PauseDialog is mounted on the Compositor for s-1 with focus on "Accept"
-    let mut dialog = PauseDialog::new(sid("s-1"), pause_state(PauseKind::Confirm, "p"));
-    assert_eq!(dialog.focused_label(), "Accept");
-    // @step When the user presses Tab on the PauseDialog
-    let _ = dialog.handle_event(&key_event(KeyCode::Tab));
-    // @step Then the PauseDialog's focused button is "Deny"
-    assert_eq!(dialog.focused_label(), "Deny");
-}
-
-#[test]
-fn right_arrow_advances_triple_focus_through_three_states() {
-    // @step Given an App with a MockBackend
-    // @step And session s-1 is the current session
-    // @step And a Triple PauseDialog is mounted on the Compositor for s-1 with focus on "Approve"
-    let mut dialog = PauseDialog::new(sid("s-1"), pause_state(PauseKind::Triple, "p"));
-    assert_eq!(dialog.focused_label(), "Approve");
-    // @step When the user presses Right arrow on the PauseDialog
-    let _ = dialog.handle_event(&key_event(KeyCode::Right));
-    // @step Then the PauseDialog's focused button is "Approve Session"
-    assert_eq!(dialog.focused_label(), "Approve Session");
-    // @step When the user presses Right arrow on the PauseDialog
-    let _ = dialog.handle_event(&key_event(KeyCode::Right));
-    // @step Then the PauseDialog's focused button is "Deny"
-    assert_eq!(dialog.focused_label(), "Deny");
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// HitlDialog rendering + free-text row inspections (constructed directly to
-// inspect `option_hotkey()` / `is_free_text_selected()` / `text_buffer()`
-// without going through the Compositor)
+// HitlDialog rendering + free-text row inspections
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
@@ -848,7 +442,7 @@ fn hitl_dialog_rows_include_hotkey_letters_a_b_c() {
     use codelet_fspec_tui::HitlDialog;
     // @step Given an App with a MockBackend
     // @step And session s-1 is the current session
-    // @step And a HitlDialog is mounted on the Compositor for s-1 with options ["Yes", "No", "Maybe"]
+    // @step And a HitlDialog is mounted on the Compositor for s-1 with options ["Yes", "No", "Maybe"] and allow_text_input=false
     let dialog = HitlDialog::new(
         sid("s-1"),
         hitl_request("q-1", &["Yes", "No", "Maybe"], false),
@@ -888,11 +482,58 @@ fn hitl_dialog_tab_cycles_into_free_text_row() {
     // @step And session s-1 is the current session
     // @step And a HitlDialog is mounted on the Compositor for s-1 with options ["Yes", "No"] and allow_text_input=true
     let mut dialog = HitlDialog::new(sid("s-1"), hitl_request("q-1", &["Yes", "No"], true));
-    // @step When the user presses Tab twice on the HitlDialog
+    // @step And the HitlDialog's selected row is the first option (index 0)
+    // @step When the user presses Tab on the HitlDialog three times
     let _ = dialog.handle_event(&key_event(KeyCode::Tab));
     let _ = dialog.handle_event(&key_event(KeyCode::Tab));
     // @step Then the HitlDialog's selected row is the free-text input row
     assert!(dialog.is_free_text_selected());
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Source shape
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn dispatch_pause_hitl_hosts_the_pause_hitl_helpers() {
+    let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    // @step Given the file codelet/fspec-tui/src/app/dispatch_pause_hitl.rs exists
+    let dph_path = src.join("app").join("dispatch_pause_hitl.rs");
+    assert!(dph_path.exists(), "dispatch_pause_hitl.rs must exist");
+
+    // @step When the file is compiled as part of codelet-fspec-tui
+    let dph = std::fs::read_to_string(&dph_path).expect("read dispatch_pause_hitl.rs");
+
+    // @step Then it must declare impl App methods named handle_pause_chunk, handle_open_hitl_dialog, handle_pause_confirmed, handle_pause_triple, handle_pause_resumed, handle_hitl_submitted, and handle_pause_cleared
+    for method in [
+        "fn handle_pause_chunk",
+        "fn handle_open_hitl_dialog",
+        "fn handle_pause_confirmed",
+        "fn handle_pause_triple",
+        "fn handle_pause_resumed",
+        "fn handle_hitl_submitted",
+        "fn handle_pause_cleared",
+    ] {
+        assert!(dph.contains(method), "missing {method}");
+    }
+
+    // @step And codelet/fspec-tui/src/app/mod.rs must declare pub mod dispatch_pause_hitl
+    let app_mod = std::fs::read_to_string(src.join("app").join("mod.rs")).expect("read app/mod.rs");
+    assert!(app_mod.contains("pub mod dispatch_pause_hitl"));
+
+    // @step And codelet/fspec-tui/src/components/mod.rs must declare pub mod hitl_dialog and no pub mod pause_dialog
+    let components = std::fs::read_to_string(src.join("components").join("mod.rs"))
+        .expect("read components/mod.rs");
+    assert!(components.contains("pub mod hitl_dialog"));
+    assert!(!components.contains("pub mod pause_dialog"));
+
+    // @step And codelet/fspec-tui/src/app/dispatch.rs must NOT exceed 300 logical lines
+    let dispatch =
+        std::fs::read_to_string(src.join("app").join("dispatch.rs")).expect("read dispatch.rs");
+    assert!(
+        dispatch.lines().count() <= 300,
+        "app/dispatch.rs exceeds 300 lines"
+    );
 }
 
 #[test]
@@ -900,8 +541,9 @@ fn hitl_dialog_typing_updates_free_text_value() {
     use codelet_fspec_tui::HitlDialog;
     // @step Given an App with a MockBackend
     // @step And session s-1 is the current session
-    // @step And a HitlDialog is mounted on the Compositor for s-1 with options ["Yes", "No"] and allow_text_input=true and free-text row selected
+    // @step And a HitlDialog is mounted on the Compositor for s-1 with allow_text_input=true
     let mut dialog = HitlDialog::new(sid("s-1"), hitl_request("q-1", &["Yes", "No"], true));
+    // @step And the HitlDialog's selected row is the free-text input row
     dialog.set_selected_index(2);
     assert!(dialog.is_free_text_selected());
     // @step When the user types "maybe later" into the free-text row

@@ -1,7 +1,6 @@
 @done
 @RPC-279
 Feature: Port remove-rule command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/remove_rule.rs. Reuses io::ensure::ensure_work_units_file (auto-creates),
   io::locked_file::write_json_atomic (atomic write), io::time::iso8601_now (timestamps). The rules array lives in

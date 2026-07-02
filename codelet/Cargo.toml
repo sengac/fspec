@@ -134,6 +134,9 @@ tui-popup = "0.6"
 # tui-textarea — multi-line input widget (RPC-019).
 tui-input = "0.10"
 tui-textarea = "0.7"
+# unicode-width — display-width wrap geometry (RPC-405); same 0.2 line
+# tui-textarea 0.7 / ratatui 0.29 use.
+unicode-width = "0.2"
 
 # === Logging ===
 tracing = "0.1"

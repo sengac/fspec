@@ -1,7 +1,6 @@
 @done
 @RPC-193
 Feature: Port add-tag-to-feature command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_tag_to_feature.rs reuses crate::io::gherkin::parse_feature_lenient for parsing and a TS-parity line-based insertion (NOT AST round-trip).
   Registry validation reuses crate::types::tags::TagsData (already public) — flat tag set is built from categories[].tags[].name.
@@ -26,7 +25,6 @@ Feature: Port add-tag-to-feature command to Rust
   #   10. Success message MUST be 'Added <comma-space-tags> to <relPath>' verbatim
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch add-tag-to-feature from the agent loop and run `fspec add-tag-to-feature` from a shell with byte-for-byte parity to the TypeScript implementation

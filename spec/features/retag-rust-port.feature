@@ -1,7 +1,6 @@
 @wip
 @RPC-293
 Feature: Port retag command to Rust
-
   """
   Core impl codelet/fspec-core/src/commands/retag.rs ports src/commands/retag.ts FAITHFULLY: validates from/to + tag-format regex, globs spec/features via io::feature_glob::glob_feature_files, counts/replaces whole-word occurrences with regex (^|\s)from(?=\s|$), re-parses replaced content via io::gherkin::parse_feature_lenient before writing, supports dryRun. Signature pub async fn run(args_json,&Path). Returns envelope {success, fileCount, occurrenceCount, message?, files?, error?} like delete_features.rs.
   DIVERGENCE FROM BRIEF: worker brief said retag also updates spec/tags.json registry; the actual TS source touches ONLY feature files, never tags.json. We port to TS source = feature files only. Flagged for supervisor.
@@ -30,7 +29,6 @@ Feature: Port retag command to Rust
   #   5. Given no feature file contains @missing, dispatching retag from='@missing' fails with 'Tag @missing not found in any feature files'
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to have the retag command ported to Rust as a parity port

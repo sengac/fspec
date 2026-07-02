@@ -10,7 +10,6 @@
 @validation
 @RPC-153
 Feature: Provider settings api-key edit: filterPrintableChars ASCII 32-126 restriction
-
   """
   Pattern mirrors RPC-152 regression-shape coverage: read source as string, use brace-balancing to scope assertions to a function body, and use byte-offset ORDER assertions for sequencing invariants
   Implementation already exists from RPC-161 — this card is coverage-only, structural pinning of the shape so a regression breaks the test before reaching CI
@@ -34,7 +33,6 @@ Feature: Provider settings api-key edit: filterPrintableChars ASCII 32-126 restr
   #   4. Source-shape test verifies byte-offset ORDER: the `is_printable_ascii(c)` call appears BEFORE the `draft.push(c)` line inside the `KeyCode::Char(c)` arm, proving the guard precedes the append
   #
   # ========================================
-
   Background: User Story
     As a agent maintainer
     I want to pin the structural shape of the filterPrintableChars guard in the API-key edit handler

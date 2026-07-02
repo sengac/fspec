@@ -6,7 +6,6 @@
 @tui
 @RPC-337
 Feature: Shared full-screen shell scaffold
-
   """
   Shell shape: free function render_full_screen_scaffold(area, buf, title/count/suffix, footer_hint, body_fn(body_area, buf), Option<&ConfirmDialog> overlay). Body closure receives body_area so a view (&mut self) can capture body height itself; no shell struct/trait.
   The shell splits the area into exactly four vertical constraints: title Length(1), separator Length(1), body Min(0), footer Length(1). It paints an OPTIONAL ConfirmDialog overlay over the full area AFTER the body (Some painted, None skipped).

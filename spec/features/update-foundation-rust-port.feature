@@ -4,7 +4,6 @@
 @rust
 @RPC-312
 Feature: Port update-foundation command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/update_foundation.rs. Validation order mirrors TS: (1) empty section, (2) projectType length 1-30, (3) problemImpact enum high|medium|low, (4) generic empty content. Reference port: add_command_to_foundation.rs (read_or_init_json + serde_json::Value mutate + write_json_atomic + generate_foundation_md::regenerate).
   Draft detection: if spec/foundation.json.draft exists, target=draft (loaded via read_or_init_json), success message 'Updated "<section>" in foundation.json.draft', NO MD regen, NO schema validation. DIVERGENCE: discover_foundation scanOnly chaining deferred (stub) — no systemReminder emitted on draft path.
@@ -38,7 +37,6 @@ Feature: Port update-foundation command to Rust
   #   6. Empty section name '' fails with 'Section name cannot be empty'
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the update-foundation command to Rust as a parity port

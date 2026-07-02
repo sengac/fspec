@@ -6,7 +6,6 @@
 @tui
 @PROV-104
 Feature: Model view scroll/viewport parity with TypeScript
-
   """
   End-to-end tier (tui-test): launches the real fspec binary in a PTY and drives the /model view with real keystrokes, complementing the unit-level scroll geometry tests in model-view-scroll-viewport.feature. Data is made deterministic by pointing FSPEC_USER_DIR at a temp dir containing an fspec-config.json with a local-server (openai) profile carrying several customModels, so build_local_profile_sections() yields selectable rows offline without credentials or network. Key path under test: crossterm EventStream -> App::handle_event -> Navigator::handle_event(ViewMode::ModelSelector) -> handle_model_selector_event -> ModelSelectorView::handle_key (Up/Down -> move_up/move_down -> adjust_scroll). Rows are populated asynchronously via backend.list_providers() returning Action::ListProvidersLoaded; tests must wait for rows to render before asserting movement.
   """
@@ -45,7 +44,6 @@ Feature: Model view scroll/viewport parity with TypeScript
   #   A: Option B: seed a local-server profile with a custom model in a temp HOME (~/.fspec/fspec-config.json) so build_local_profile_sections() yields selectable rows offline and deterministically, independent of network/credentials.
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user selecting a model
     I want to move the highlight with Up/Down in the /model view and have the list follow my cursor
@@ -58,17 +56,14 @@ Feature: Model view scroll/viewport parity with TypeScript
     And I open a Work Agent and submit "/model"
     And the model rows have rendered with at least two selectable models
 
-
   Scenario: Down to the bottom of a tall list keeps the selected model painted in the viewport
     Given the fspec binary is launched with FSPEC_USER_DIR pointing at a temp config whose local-server profile has more custom models than fit the viewport
     When I press the Down arrow repeatedly to the last model
     Then the last model row is visible in the rendered viewport and remains highlighted
     And I open a Work Agent and submit "/model" and the model rows have rendered
 
-
   Scenario: Fresh open with all sections collapsed lets Down reach a section to expand
     Given the fspec binary is launched with a temp config whose local-server profile carries custom models and no current model is set so every section opens collapsed
     When I press the Down arrow to move the cursor onto the custom-model profile header and press the Right arrow to expand it
     Then the profile's custom models become visible in the list
     And I open the /model view and only collapsed provider headers are shown
-

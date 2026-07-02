@@ -8,7 +8,7 @@
 //! callbacks for self-removal, bottom-up render order, top-down
 //! Action fan-out.
 
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
+use crossterm::event::Event;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -185,26 +185,16 @@ impl Compositor {
         }
     }
 
-    /// Stub paste handler (rule [11]). Synthesises a `Key(Char(c))`
-    /// event for each character of `text` and dispatches each through
-    /// the normal `handle_event` path so the active topmost layer
-    /// receives them. This is intentionally a stub — proper paste
-    /// semantics (preserving newlines, IME state, multi-codepoint
-    /// graphemes) arrive in Slice 06 with `tui-textarea`.
+    /// RPC-403: forward the REAL `Event::Paste(String)` through the
+    /// normal `handle_event` layer chain so the topmost active modal
+    /// receives ONE intact paste event (newlines + grapheme clusters
+    /// preserved). Replaces the RPC-008 char-splitting stub that
+    /// exploded pastes into synthetic `KeyCode::Char` events.
     ///
-    /// Returns the final [`EventResult`] from the last dispatched
-    /// character, or `EventResult::ignored()` if `text` is empty.
+    /// Returns the layer chain's [`EventResult`] — `Ignored` when no
+    /// layer consumed the paste, letting `App::handle_paste` fall back
+    /// through the Navigator → AgentView input.
     pub fn handle_paste(&mut self, text: &str) -> EventResult {
-        let mut last = EventResult::ignored();
-        for c in text.chars() {
-            let key = KeyEvent {
-                code: KeyCode::Char(c),
-                modifiers: KeyModifiers::NONE,
-                kind: KeyEventKind::Press,
-                state: KeyEventState::NONE,
-            };
-            last = self.handle_event(&Event::Key(key));
-        }
-        last
+        self.handle_event(&Event::Paste(text.to_string()))
     }
 }

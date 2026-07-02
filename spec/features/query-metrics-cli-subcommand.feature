@@ -3,7 +3,6 @@
 @cli
 @RPC-261
 Feature: Port query-metrics command to Rust
-
   """
   Routing: dispatcher needs query-metrics moved from run_stub to run_ported and added to is_ported predicate — shared file change, supervisor required.
   CLI binding: codelet/fspec/src/main.rs needs a Mode::QueryMetrics clap variant — shared file change, supervisor required.
@@ -50,7 +49,6 @@ Feature: Port query-metrics command to Rust
   #   12. CLI bridge module codelet/fspec/src/query_metrics.rs contains NO inline aggregation or hours-formatting logic — only argv → JSON marshalling and delegation to fspec_core
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to invoke `query-metrics` through both the dispatcher and the Rust CLI binary
@@ -63,7 +61,6 @@ Feature: Port query-metrics command to Rust
     Then stdout is byte-for-byte identical to the captured fixture at codelet/fspec/tests/fixtures/help/query-metrics.txt
     Then stdout starts with a blank line followed by 'QUERY-METRICS'
 
-
   Scenario: CLI against missing work-units.json exits 1 with stderr Query failed prefix
     Given an empty directory with no spec/ subdirectory is set as the current working directory
     When I run `./codelet/target/release/fspec query-metrics` from that directory
@@ -72,14 +69,12 @@ Feature: Port query-metrics command to Rust
     Then stderr contains the substring 'Failed to query metrics:'
     Then spec/work-units.json was NOT created
 
-
   Scenario: CLI JSON output matches dispatcher output for the same on-disk state
     Given spec/work-units.json contains AUTH-001 with stateHistory at hour 0 (backlog) and hour 5 (done)
     When I run `./codelet/target/release/fspec query-metrics --work-unit-id AUTH-001 --format json` against that workspace
     Then the command exits 0
     Then stdout parses as JSON with cycleTime='5 hours'
     Then stdout equals the DispatchResult.data produced by dispatch_command for the same on-disk state followed by a trailing newline
-
 
   Scenario: CLI text output for aggregate path renders a Project Metrics block
     Given spec/work-units.json contains AUTH-001 (story, done with stateHistory 0→2h), AUTH-002 (story, backlog), BUG-001 (bug, done with stateHistory 0→1h)
@@ -91,7 +86,6 @@ Feature: Port query-metrics command to Rust
     Then stdout contains the exact line '  story: 2 work units'
     Then stdout contains the exact line '  bug: 1 work unit'
 
-
   Scenario: CLI bridge module delegates to fspec_core with no inline aggregation logic
     Given the file codelet/fspec/src/query_metrics.rs exists as the CLI bridge module
     When I read the source of codelet/fspec/src/query_metrics.rs
@@ -100,4 +94,3 @@ Feature: Port query-metrics command to Rust
     Then the source does NOT contain the substring 'cycleTime'
     Then the source does NOT contain the substring 'hour'
     Then the source calls codelet_fspec_core::commands::query_metrics::run
-

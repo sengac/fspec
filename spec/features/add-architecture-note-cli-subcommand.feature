@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec add-architecture-note CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `add-architecture-note` exposes the same surface as the TS Commander.js registration at src/commands/add-architecture-note.ts:89-108 — two positional arguments `<workUnitId>` and `<note>`. The bridge module at codelet/fspec/src/add_architecture_note.rs marshals the clap args into a JSON object and delegates to codelet_fspec_core::commands::add_architecture_note::run; no validation or rendering logic is duplicated.
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with 'Error:' (parity with the chalk-red TS error path at src/commands/add-architecture-note.ts:102-107).

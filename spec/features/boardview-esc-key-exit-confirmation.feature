@@ -6,7 +6,6 @@
 @tui
 @RPC-102
 Feature: BoardView Esc key incorrectly bound to 'q' for exit
-
   """
   Mirrors the TS BoardView ConfirmationDialog with message 'Exit fspec?' and description 'Are you sure you want to exit?'
   Fix is in codelet/fspec-tui/src/app/events.rs: replace KeyCode::Char('q') at line 130 with KeyCode::Esc that pushes a board exit confirmation dialog onto the compositor (guarded by compositor.contains() to prevent double-push)
@@ -36,7 +35,6 @@ Feature: BoardView Esc key incorrectly bound to 'q' for exit
   #   7. User is in the AgentView with text in the input box, presses Esc — the input clears (Esc-cascade behaviour unchanged)
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to press Esc on the BoardView to exit

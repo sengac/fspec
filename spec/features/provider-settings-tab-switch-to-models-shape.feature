@@ -9,7 +9,6 @@
 @rust
 @RPC-152
 Feature: Provider settings list: Tab keybind emits SwitchToModels event
-
   """
   [0] This card complements the full integration coverage already provided by RPC-160 (codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs). Pattern matches RPC-077 / RPC-149 / RPC-151 / RPC-156 fast structural source-string regression-shape complement to slow integration tests.
   [1] Test file: codelet/fspec-tui/tests/rpc152_tab_switch_to_models_shape.rs — sub-millisecond execution, no key event simulation, just source-string scanning of mod.rs (enum) + list.rs (Tab arm + filter_mode gate).

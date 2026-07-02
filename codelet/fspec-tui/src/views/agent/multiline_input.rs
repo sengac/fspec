@@ -7,25 +7,22 @@
 //! contract:
 //!
 //!   - Plain Enter submits the buffer (Surface a [`InputEventOutcome::Submitted`]).
-//!   - Shift+Enter inserts a literal newline (Continued).
+//!   - Any modifier-carrying Enter (Shift/Alt/Ctrl/…) inserts a literal
+//!     newline (Continued) — RPC-402; routing lives in
+//!     `multiline_input_enter.rs`.
 //!   - Shift+Up/Down/Left/Right are returned as [`InputEventOutcome::Ignored`]
 //!     so the AgentView can map them onto history / session navigation
 //!     Actions.
-//!   - Pasted text containing embedded newlines is inserted verbatim
-//!     (no `\n` → space substitution).
+//!   - Pasted text containing embedded newlines is inserted verbatim.
 //!   - The widget auto-grows from 1 visible row up to a configurable
 //!     `max_visible_rows` cap (default 6).
 //!
 //! Mirrors the consumer surface of `src/tui/components/MultiLineInput.tsx`
 //! but stays small — history persistence + slash-command palette
-//! integration is deferred to RPC-021 / RPC-020.
+//! integration lives in RPC-021 / RPC-020; Enter routing in
+//! `multiline_input_enter.rs` (RPC-402).
 
-use crossterm::event::{Event, KeyCode, KeyModifiers};
-use ratatui::buffer::Buffer;
-use ratatui::layout::Rect;
-use ratatui::style::{Color, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Paragraph, Widget};
+use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers};
 use tui_textarea::{Input, TextArea};
 
 /// Outcome of routing one input event through the [`MultiLineInput`].
@@ -57,6 +54,9 @@ pub struct InputGate {
 pub struct MultiLineInput {
     textarea: TextArea<'static>,
     max_visible_rows: u16,
+    /// RPC-405 — first visible VISUAL row of the wrap-aware viewport.
+    /// Mutated by `sync_viewport` (cursor-follow) before each paint.
+    scroll_top: usize,
 }
 
 impl Default for MultiLineInput {
@@ -84,6 +84,7 @@ impl MultiLineInput {
         Self {
             textarea,
             max_visible_rows: max.max(1),
+            scroll_top: 0,
         }
     }
 
@@ -98,7 +99,9 @@ impl MultiLineInput {
     }
 
     /// Replace the buffer with `text` (newlines split into lines).
-    /// Cursor lands at the end of the last line.
+    /// Cursor lands at the end of the LAST line (RPC-405: TS parity —
+    /// `setValue` scrolls to the end; `CursorMove::End` alone would
+    /// park it at the end of line 0).
     pub fn set_value(&mut self, text: &str) {
         let lines: Vec<String> = if text.is_empty() {
             vec![String::new()]
@@ -109,6 +112,7 @@ impl MultiLineInput {
         };
         let mut ta = TextArea::new(lines);
         ta.set_cursor_line_style(ratatui::style::Style::default());
+        ta.move_cursor(tui_textarea::CursorMove::Bottom);
         ta.move_cursor(tui_textarea::CursorMove::End);
         self.textarea = ta;
     }
@@ -119,8 +123,11 @@ impl MultiLineInput {
         self.textarea.lines().len()
     }
 
-    /// Current visible-row count = `line_count` clamped to
-    /// `[1, max_visible_rows]`.
+    /// LOGICAL-line count clamped to `[1, max_visible_rows]` — NOT
+    /// wrap-aware. Retained for tests/back-compat; the AgentView
+    /// layout uses the wrap-aware
+    /// [`visible_rows_for_width`](Self::visible_rows_for_width)
+    /// instead.
     pub fn visible_rows(&self) -> u16 {
         let n = self.line_count() as u16;
         n.clamp(1, self.max_visible_rows)
@@ -131,6 +138,30 @@ impl MultiLineInput {
         let mut ta = TextArea::default();
         ta.set_cursor_line_style(ratatui::style::Style::default());
         self.textarea = ta;
+        self.scroll_top = 0;
+    }
+
+    /// The logical buffer lines (RPC-405: consumed by the wrap-aware
+    /// renderer + geometry in `multiline_input_render.rs`).
+    pub fn lines(&self) -> &[String] {
+        self.textarea.lines()
+    }
+
+    /// RPC-405 — first visible visual row of the wrap viewport
+    /// (exposed for RPC-404 hardware-cursor positioning).
+    pub fn scroll_top(&self) -> usize {
+        self.scroll_top
+    }
+
+    /// RPC-405 — viewport mutation hook for `sync_viewport` (lives in
+    /// `multiline_input_render.rs` to keep this file under 300 LoC).
+    pub(super) fn set_scroll_top(&mut self, top: usize) {
+        self.scroll_top = top;
+    }
+
+    /// Visual-row cap (RPC-405: consumed by `visible_rows_for_width`).
+    pub fn max_visible_rows(&self) -> u16 {
+        self.max_visible_rows
     }
 
     /// 0-based (row, col) cursor position inside the buffer. Useful
@@ -154,6 +185,17 @@ impl MultiLineInput {
         self.textarea.move_cursor(tui_textarea::CursorMove::Head);
     }
 
+    /// RPC-402 — newline at cursor; used by the Enter-key router.
+    pub(super) fn insert_newline(&mut self) {
+        self.textarea.insert_newline();
+    }
+
+    /// RPC-403 — insert `text` at the cursor (embedded `\n` preserved);
+    /// used by the paste router in `multiline_input_paste.rs`.
+    pub(super) fn insert_str(&mut self, text: &str) {
+        let _ = self.textarea.insert_str(text);
+    }
+
     /// RPC-095 — Gated variant of `handle_key`. The `gate` is
     /// computed by the AgentView orchestrator per-frame.
     pub fn handle_key_gated(
@@ -162,23 +204,10 @@ impl MultiLineInput {
         mods: KeyModifiers,
         gate: InputGate,
     ) -> InputEventOutcome {
-        // Plain Enter → submit, unless suppressed.
-        if code == KeyCode::Enter && mods.is_empty() {
-            if gate.suppress_enter {
-                return InputEventOutcome::Continued;
-            }
-            let buf = self.value();
-            self.reset();
-            return InputEventOutcome::Submitted(buf);
-        }
-        // Shift+Enter → literal newline (Continued). Treated as an
-        // edit, so block_edits swallows it too.
-        if code == KeyCode::Enter && mods.contains(KeyModifiers::SHIFT) {
-            if gate.block_edits {
-                return InputEventOutcome::Continued;
-            }
-            self.textarea.insert_newline();
-            return InputEventOutcome::Continued;
+        // RPC-402: Enter dispositions (plain submit, Shift/Alt newline)
+        // live in `multiline_input_enter.rs` to keep this file <300 LoC.
+        if let Some(outcome) = super::multiline_input_enter::handle_enter(self, code, mods, gate) {
+            return outcome;
         }
         // Shift+arrow chords → forwarded to caller (history / session
         // navigation). Reported as Ignored so AgentView can convert
@@ -210,8 +239,9 @@ impl MultiLineInput {
             return InputEventOutcome::Ignored;
         }
         // RPC-095 — block edits gate. Swallow Backspace, Delete,
-        // forward-delete, and printable character insertion.
-        if gate.block_edits && is_edit_keystroke(code, mods) {
+        // forward-delete, and printable character insertion
+        // (`is_edit_keystroke` lives in `multiline_input_enter.rs`).
+        if gate.block_edits && super::multiline_input_enter::is_edit_keystroke(code, mods) {
             return InputEventOutcome::Continued;
         }
         // Everything else → forward to the textarea.
@@ -221,77 +251,27 @@ impl MultiLineInput {
     }
 
     /// Handle an arbitrary crossterm Event (key OR bracketed paste).
+    /// Ungated variant of [`Self::handle_event_gated`].
     pub fn handle_event(&mut self, event: &Event) -> InputEventOutcome {
+        self.handle_event_gated(event, InputGate::default())
+    }
+
+    /// RPC-402: only `KeyEventKind::Press` key events are processed —
+    /// under kitty enhancement flags the terminal may deliver
+    /// `Release`/`Repeat` events which would double-type, so they are
+    /// ignored. RPC-403: bracketed paste routes through
+    /// `multiline_input_paste.rs` (CRLF→LF normalization + RPC-095
+    /// `block_edits` gate).
+    pub fn handle_event_gated(&mut self, event: &Event, gate: InputGate) -> InputEventOutcome {
         match event {
-            Event::Key(key) => self.handle_key(key.code, key.modifiers),
-            Event::Paste(s) => {
-                // Bracketed paste — insert verbatim, preserving '\n'.
-                // tui-textarea's insert_str DOES preserve embedded
-                // newlines; verified via its `insert_str` test.
-                let _ = self.textarea.insert_str(s);
-                InputEventOutcome::Continued
+            Event::Key(key) => {
+                if key.kind != KeyEventKind::Press {
+                    return InputEventOutcome::Ignored;
+                }
+                self.handle_key_gated(key.code, key.modifiers, gate)
             }
+            Event::Paste(s) => super::multiline_input_paste::handle_paste(self, s, gate),
             _ => InputEventOutcome::Ignored,
         }
     }
-
-    /// Render the textarea content into `area`. The caller is
-    /// responsible for the surrounding border + placeholder hint.
-    pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        if area.width == 0 || area.height == 0 {
-            return;
-        }
-        // ratatui 0.29 / tui-textarea 0.7: the textarea itself
-        // implements Widget for `&TextArea`.
-        (&self.textarea).render(area, buf);
-    }
-
-    /// Paint the input box body: green "> " prompt prefix on the top
-    /// row, then either the textarea content or a dim placeholder
-    /// hint when the buffer is empty. Used by AgentView so the
-    /// orchestrator stays under its 300-LoC ceiling.
-    pub fn render_with_prompt(&self, area: Rect, buf: &mut Buffer, placeholder: &str) {
-        if area.width == 0 || area.height == 0 {
-            return;
-        }
-        let prompt_area = Rect {
-            x: area.x,
-            y: area.y,
-            width: 2.min(area.width),
-            height: 1,
-        };
-        Paragraph::new(Line::from(Span::styled(
-            "> ",
-            Style::default().fg(Color::Green),
-        )))
-        .render(prompt_area, buf);
-
-        let body_x = area.x.saturating_add(2);
-        let body_width = area.width.saturating_sub(2);
-        if body_width == 0 {
-            return;
-        }
-        let body_area = Rect {
-            x: body_x,
-            y: area.y,
-            width: body_width,
-            height: area.height,
-        };
-        if self.is_empty() {
-            let hint = Span::styled(placeholder, Style::default().fg(Color::DarkGray));
-            Paragraph::new(Line::from(hint)).render(body_area, buf);
-        } else {
-            self.render(body_area, buf);
-        }
-    }
-}
-
-/// RPC-095 — returns true if the keystroke would otherwise insert
-/// text or delete characters. Used by `handle_key_gated` to swallow
-/// input while the session is Compacting (`gate.block_edits = true`).
-fn is_edit_keystroke(code: KeyCode, _mods: KeyModifiers) -> bool {
-    matches!(
-        code,
-        KeyCode::Char(_) | KeyCode::Backspace | KeyCode::Delete | KeyCode::Tab
-    )
 }

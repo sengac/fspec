@@ -1,7 +1,6 @@
 @wip
 @RPC-236
 Feature: Port generate-tags-md command to Rust
-
   """
   Core impl codelet/fspec-core/src/commands/generate_tags_md.rs mirrors generate_foundation_md.rs (RPC-233): exists-check spec/tags.json -> schema-validate -> parse -> render markdown -> mkdir parent -> write -> message 'Generated <out> from spec/tags.json'. Signature pub async fn run(args_json,&Path). NOTE: unlike foundation_md, tags-md.ts renders via sections.join('\n') where the final pushed section is '' so the rendered markdown ENDS WITH a single trailing newline (TS-faithful).
   New generator codelet/fspec-core/src/generators/tags_md.rs ports src/generators/tags-md.ts. New validator (analogous to foundation_schema.rs) ports tags.schema.json subset. Both require generators/mod.rs wiring (SHARED — supervisor).
@@ -27,7 +26,6 @@ Feature: Port generate-tags-md command to Rust
   #   4. Given tags.json missing required top-level keys, dispatching fails with a 'tags.json has validation errors:' message and writes nothing
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to have the generate-tags-md command ported to Rust as a parity port

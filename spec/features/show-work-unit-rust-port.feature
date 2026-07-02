@@ -3,7 +3,6 @@
 @cli
 @querying
 Feature: Port show-work-unit command to Rust
-
   """
   File layout: codelet/fspec-core/src/commands/show_work_unit.rs (impl, replaces stub) + codelet/fspec-core/src/help/configs/show_work_unit.rs (help config) + codelet/fspec-core/tests/show_work_unit.rs (dispatcher tests) + codelet/fspec/src/show_work_unit.rs (CLI bridge) + codelet/fspec/tests/cli_show_work_unit.rs (CLI shell tests) + codelet/fspec/tests/fixtures/help/show-work-unit.txt (TS help fixture)
   Reuses shared modules: gherkin crate (already in fspec-core Cargo.toml) for parsing feature files; io::feature_glob::glob_feature_files for walking spec/features/ (errors silently swallowed to match TS); does NOT use ensure_work_units_file because TS uses bare readFile that escalates ENOENT. WorkUnit.rules/examples/questions/architectureNotes are read inline from wu.extra (parity with show_deleted) so the shared WorkUnit type stays minimal and parallel-port-safe

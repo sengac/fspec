@@ -4,7 +4,6 @@
 @wip
 @RPC-319
 Feature: Port update-work-unit-status command to Rust
-
   """
   RPC-319 is the largest port (1404 LOC). Rust impl reuses: codelet_git ghost_commit checkpoint primitives (RPC-202/203/288), the ported hooks executor, configure-tools test/quality command checks, compact-work-unit, and io::gherkin for scenario/prefill detection. IPC is a no-op. Must stay synchronous (poll_sync_future) — use blocking std + git2/gitoxide, no real tokio .await. Files: core commands/update_work_unit_status.rs (rewrite stub to 2-arg), bridge fspec/src/update_work_unit_status.rs, help config, cli + dispatcher tests. Supervisor wires canonical/dispatch/main/mod.
   """
@@ -33,7 +32,6 @@ Feature: Port update-work-unit-status command to Rust
   #   11. Pre/post hooks run around the transition; a blocking pre-hook failure prevents the transition
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer / AI agent
     I want to transition a work unit between ACDD states via the ported Rust update-work-unit-status command

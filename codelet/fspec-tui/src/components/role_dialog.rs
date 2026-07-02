@@ -153,7 +153,12 @@ impl Component for RoleDialog {
             return EventResult::consumed();
         }
         if let Event::Paste(s) = event {
-            let _ = self.textarea.insert_str(s);
+            // RPC-403 review: normalize CRLF / lone-CR before insertion —
+            // tui-textarea handles \r\n itself but would let a lone \r
+            // enter the role draft as literal text.
+            let _ = self
+                .textarea
+                .insert_str(crate::text_normalize::normalize_line_endings(s));
             return EventResult::consumed();
         }
         EventResult::ignored()

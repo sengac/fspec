@@ -1,7 +1,6 @@
 @done
 @RPC-194
 Feature: fspec add-tag-to-scenario CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_tag_to_scenario.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-tag-to-scenario.ts:261-282). Surface:

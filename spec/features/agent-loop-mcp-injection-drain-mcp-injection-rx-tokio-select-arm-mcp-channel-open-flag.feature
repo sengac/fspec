@@ -7,7 +7,6 @@
 @source-shape
 @RPC-089
 Feature: Agent loop: MCP injection drain (mcp_injection_rx tokio::select! arm + mcp_channel_open flag)
-
   """
   Pattern mirrors RPC-082/083/084/085/086/088 regression-shape coverage: read agent_loop.rs as a string, brace-balance to scope assertions to the function body, byte-offset ORDER for sequencing invariants
   Implementation already exists in codelet/agent-loop/src/agent_loop.rs:74-243 (function signature line 74-77, mcp_channel_open flag line 83, tokio::select! arm lines 194-242) — this card is coverage-only structural pinning so a regression breaks the test before reaching CI
@@ -35,7 +34,6 @@ Feature: Agent loop: MCP injection drain (mcp_injection_rx tokio::select! arm + 
   #   5. Source-shape test verifies byte-offset ORDER: the `mcp_channel_open = false;` assignment appears AFTER the `mut mcp_channel_open = true;` initialiser, AND inside the same `agent_loop` body — proving the flag flip lives in the None arm and the initialiser remains the canonical starting state
   #
   # ========================================
-
   Background: User Story
     As a agent maintainer
     I want to pin the structural shape of the MCP injection drain inside the canonical agent_loop (`mcp_injection_rx` parameter, `mcp_channel_open` flag, the tokio::select! arm gated on the flag, Notification/SamplingRequest match arms, and the None arm that flips the flag to prevent busy-loop spin)

@@ -4,7 +4,6 @@
 @cli
 @RPC-284
 Feature: Port repair-work-units command to Rust
-
   """
   Core impl signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> in codelet/fspec-core/src/commands/repair_work_units.rs (replaces NotYetPorted stub).
   Args struct (camelCase, serde default): dryRun: Option<bool> (accepted but ignored — file always written, matching TS bug). Loads via ensure_work_units_file; writes via write_json_atomic on the whole WorkUnitsData.
@@ -34,7 +33,6 @@ Feature: Port repair-work-units command to Rust
   #   6. CLI: running 'fspec repair-work-units' on a corrupted file exits 0 and prints '✓ Repaired 1 issues'.
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to run the Rust repair-work-units command to fix data integrity issues in work-units.json

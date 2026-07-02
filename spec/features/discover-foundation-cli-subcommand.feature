@@ -4,7 +4,6 @@
 @cli
 @RPC-226
 Feature: Port discover-foundation command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/discover_foundation.rs. Signature changes from stub run(args_json) to run(args_json, project_root). Args: {finalize:bool, output:Option<String>, draftPath:Option<String>, autoGenerateMd:bool(default true), force:bool}. Returns a JSON envelope String (mirroring update_foundation.rs) that the CLI bridge decodes to render exact TS stdout/stderr lines.
   Reuse existing shared helpers: io::ensure::{ensure_foundation_file, ensure_work_units_file}, io::locked_file::{write_json_atomic} (2-space indent, no trailing newline = JSON.stringify null,2), commands::generate_foundation_md::regenerate(project_root), generators::foundation_schema::validate_foundation(&Value)->Result<(),Vec<SchemaError>> (SchemaError has instance_path+message only). Draft read = std::fs::read_to_string + serde_json::from_str. Draft write/dir = std::fs::create_dir_all + write_json_atomic.
@@ -39,7 +38,6 @@ Feature: Port discover-foundation command to Rust
   #   6. Finalize schema failure: dispatching discover-foundation --finalize on a draft whose placeholders are filled but which violates the schema (e.g. empty solutionSpace.capabilities) returns valid=false with validationErrors starting 'Schema validation failed.' and a 'Missing required: ...' line
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the discover-foundation command to Rust as a parity port
@@ -84,4 +82,3 @@ Feature: Port discover-foundation command to Rust
     Given a project root tempdir with no spec/foundation.json.draft
     When I dispatch discover-foundation via the dispatcher and via the standalone binary with identical flags
     Then both invocations produce the same draft content on disk
-

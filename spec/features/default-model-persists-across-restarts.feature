@@ -5,7 +5,6 @@
 @session
 @PROV-119
 Feature: Default model selection is not persisted across restarts
-
   """
   Persist to <data_dir>/default-model.json (JSON {model}) resolved via codelet_common::get_data_dir, mirroring the credentials writer path convention; isolates under the test tempdir set by set_data_directory
   SessionManager::set_default_model persists best-effort after the in-memory write; SessionManager::new loads the persisted value at construction so a fresh process is pre-populated
@@ -28,7 +27,6 @@ Feature: Default model selection is not persisted across restarts
   #   3. Calling set_default_model with an empty string writes nothing to disk and leaves get_default_model returning None
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to have my selected default model persist across process restarts

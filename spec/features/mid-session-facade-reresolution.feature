@@ -4,7 +4,6 @@
 @model-selection
 @RPC-348
 Feature: Mid-session facade re-resolution for custom models on set_model
-
   """
   Fix location is codelet/sessions/src/model_resolution.rs apply_model_selection. For the custom-model branch, after set_model_direct, derive the facade via codelet_providers::custom::derive_facade_for_custom(provider), call pm.set_facade_override(Some(facade)) when derived, and call apply_custom_provider_env_vars; for the non-custom branch call pm.set_facade_override(None) to clear any stale facade. Mirrors the NAPI session_set_model_profile post-set_model_direct block in session_bindings.rs lines 1955-1993.
   Offline test setup combines two fixtures: the rpc343 SessionManager setup (set_data_directory + dummy ANTHROPIC/GOOGLE keys + set_default_model) plus a DiscoveryFixture-style redirect of HOME/FSPEC_HOME/CWD so a custom provider config written under .fspec/providers is discoverable by derive_facade_for_custom and custom_provider_registered. Facade is observed via session.inner.lock().await then provider_manager().facade_override().
@@ -34,7 +33,6 @@ Feature: Mid-session facade re-resolution for custom models on set_model
   #   1. Reasoning surfacing on SessionModel (RPC-343 parity-review warning 2) is DEFERRED and out of scope here. It requires widening the SessionModel wire (rpc-types plus NAPI struct plus conversions) and there is no current consumer of a reasoning field. RPC-348 deliberately stays wire-compatible by resolving the facade server-side. Reasoning surfacing should be a separate wire-change follow-up if a consumer emerges.
   #
   # ========================================
-
   Background: User Story
     As a developer who switches mid-session to a custom (OpenAI-compatible / profile) model
     I want to have the per-selection facade override re-resolved server-side on set_model

@@ -4,7 +4,6 @@
 @model-selection
 @parity
 Feature: Custom-model RPC write surface cross-transport parity
-
   """
   RPC-347 slice: prove add/update/delete_custom_model behave identically over
   the EmbeddedFspecBackend and WebSocketFspecBackend, both built against the

@@ -7,7 +7,6 @@
 @source-shape
 @tui
 Feature: RPC-074 source-shape regression — divergent /clear strings absent
-
   """
   RPC-074 source-shape regression test. The TS-divergent strings
   `[notice] /clear: history cleared`, `[error] /clear failed: <e>`, and

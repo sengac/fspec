@@ -57,7 +57,6 @@ Feature: List Feature Tags Cli Subcommand
     Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
     Then stdout contains zero bytes
 
-
   Scenario: CLI exits 1 with stderr-routed error when --show-categories is combined with a missing file
     Given a working directory containing no spec/features/missing.feature
     When I run `./codelet/target/release/fspec list-feature-tags spec/features/missing.feature --show-categories` from that directory
@@ -65,14 +64,12 @@ Feature: List Feature Tags Cli Subcommand
     Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
     Then stdout contains zero bytes
 
-
   Scenario: CLI exits 1 with stderr-routed error when the file is not a valid Gherkin feature
     Given spec/features/broken.feature contains the plain text 'Not a feature at all' with no Feature header
     When I run `./codelet/target/release/fspec list-feature-tags spec/features/broken.feature` from that directory
     Then the command exits with code 1
     Then stderr contains the exact line 'Error: File does not contain a valid Feature'
     Then stdout contains zero bytes
-
 
   Scenario: list-feature-tags --help is byte-for-byte identical to TS formatCommandHelp reference output
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
@@ -82,4 +79,3 @@ Feature: List Feature Tags Cli Subcommand
     And stdout starts with a blank line followed by 'LIST-FEATURE-TAGS'
     And stdout contains the section header 'ARGUMENTS' followed by '  <file> (required)'
     And stdout contains the section header 'OPTIONS' listing only '--show-categories'
-

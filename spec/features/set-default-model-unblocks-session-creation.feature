@@ -1,15 +1,17 @@
 @done
-@tui @session @configuration @PROV-118
+@tui
+@session
+@configuration
+@PROV-118
 Feature: Set default model unblocks session creation
-
   """
   Architecture notes:
   - Rust port: SessionManagerHandle::set_default_model delegates to
-    SessionManager::set_default_model (sessions/src/session_manager.rs), which
-    feeds get_default_model used by create_session
-    (sessions/src/handle_impl.rs:82-108).
+  SessionManager::set_default_model (sessions/src/session_manager.rs), which
+  feeds get_default_model used by create_session
+  (sessions/src/handle_impl.rs:82-108).
   - PROV-101 preserved: empty model strings are ignored and no hardcoded
-    anthropic fallback is re-introduced.
+  anthropic fallback is re-introduced.
   """
 
   Background: User Story

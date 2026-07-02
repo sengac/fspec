@@ -12,21 +12,21 @@ Feature: /loop subcommand parser + dispatch
   slash command by:
 
   1. Adding THREE new RPC methods through the trait, FspecService,
-     FspecBackend, and both transports:
-       * loop_add(session_id, interval_seconds, prompt) -> Result<RegisteredLoop>
-       * loop_cancel(id) -> Result<bool>
-       * loop_list(session_id) -> Vec<RegisteredLoop>
+  FspecBackend, and both transports:
+  * loop_add(session_id, interval_seconds, prompt) -> Result<RegisteredLoop>
+  * loop_cancel(id) -> Result<bool>
+  * loop_list(session_id) -> Vec<RegisteredLoop>
   2. Replacing the `SlashCommandAction::Loop` notice fallback in
-     dispatch_slash_commands.rs with a real `handle_slash_loop_help` routed
-     through a new app/dispatch_slash_loop.rs file (mirrors the
-     dispatch_slash_schedule pattern).
+  dispatch_slash_commands.rs with a real `handle_slash_loop_help` routed
+  through a new app/dispatch_slash_loop.rs file (mirrors the
+  dispatch_slash_schedule pattern).
   3. Intercepting `/loop …` (with args) in the submit-line path
-     via a new LoopSubcommand variant on SlashCommandParse, then
-     fanning the parsed subcommand out to the matching
-     handle_loop_* helper.
+  via a new LoopSubcommand variant on SlashCommandParse, then
+  fanning the parsed subcommand out to the matching
+  handle_loop_* helper.
   4. Routing every subcommand response into the focused session's
-     scrollback via Action::EmitSessionNotice so the line lands on
-     the right SessionContext even if the user switched tabs mid-RPC.
+  scrollback via Action::EmitSessionNotice so the line lands on
+  the right SessionContext even if the user switched tabs mid-RPC.
 
   TS reference: `src/tui/services/loop-service.ts` —
   `handleLoopCommand(input, sessionId)` and
@@ -54,14 +54,12 @@ Feature: /loop subcommand parser + dispatch
   #   10. With no Tokio runtime (sync unit tests), helpers are graceful no-ops.
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user with an open AgentView session
     I want to manage session-scoped recurring prompts via /loop [interval] <prompt> | cancel <id> | list from the Rust ratatui frontend
     So that I get full parity with the TS Ink /loop slash command without leaving the TUI
 
   # ---- Parser scenarios ---------------------------------------------
-
   Scenario: parse_loop_command resolves bare /loop to Help
     When parse_loop_command("/loop") is invoked
     Then it returns LoopSubcommand::Help
@@ -103,7 +101,6 @@ Feature: /loop subcommand parser + dispatch
     Then it returns LoopSubcommand::Add with interval_seconds 1 and prompt "prompt"
 
   # ---- slash_parser interception ------------------------------------
-
   Scenario: parse_slash_command routes a /loop submit-line input to LoopSubcommand
     When parse_slash_command("/loop list") is invoked
     Then it returns SlashCommandParse::LoopSubcommand(LoopSubcommand::List)
@@ -113,7 +110,6 @@ Feature: /loop subcommand parser + dispatch
     Then it returns SlashCommandParse::LoopSubcommand(LoopSubcommand::Help)
 
   # ---- Dispatch scenarios -------------------------------------------
-
   Scenario: /loop popup pick with no current session is a silent no-op
     Given an App with NO open AgentView session
     When SlashCommandSelected(SlashCommandAction::Loop) is dispatched

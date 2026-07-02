@@ -1,7 +1,6 @@
 @done
 @RPC-182
 Feature: fspec add-external-system CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_external_system.rs — clap-derived struct mirroring TS Commander.js
   registration (src/commands/add-external-system.ts:77-129). Surface:

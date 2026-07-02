@@ -4,7 +4,6 @@
 @providers
 @RPC-069
 Feature: Route ProviderType::Custom("stub") through in-memory LlmProvider registry
-
   """
   Cargo plumbing is already complete: codelet/fspec/Cargo.toml:93-109 defines test-stub-provider with propagation to both codelet-providers/test-support AND codelet-agent-loop/test-support; codelet/agent-loop/Cargo.toml:50-67 defines test-support that pulls codelet-providers/test-support. No Cargo.toml edits are needed by this card — only verification via `cargo metadata`.
   Stub registration is already wired at codelet/fspec/src/common.rs:122-126 under #[cfg(feature = "test-stub-provider")]: build_service() calls register_stub_provider() then manager.set_default_model("stub/canned"). The manager.rs predicate at lines 131-146 already consults is_stub_registered. The only missing link is the agent-loop dispatch arm at agent_loop.rs:880 — currently "stub" falls through to the _ arm (line 966) which scans disk for ~/.fspec/providers/stub.json (none exists) and errors out as "Unsupported provider: stub".
@@ -54,4 +53,3 @@ Feature: Route ProviderType::Custom("stub") through in-memory LlmProvider regist
     When agent_loop_dispatch_supports_provider("stub") is called
     Then it returns true
     And the predicate stays in lock-step with the agent_loop.rs match arms
-

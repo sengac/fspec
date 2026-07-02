@@ -1,5 +1,6 @@
 ---
 source: fspec-tui/tests/app_with_mock_backend_repl.rs
+assertion_line: 115
 expression: rows
 ---
 - " #1 (AUTH-002): Agent                                        tokens: 0↓ 0↑ [0%] "
@@ -25,4 +26,4 @@ expression: rows
 - "                                                                                "
 - "                                                                                "
 - "                                                                                "
-- " > Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select "
+- " > Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history, 'Shift+←/→' se "

@@ -6,7 +6,6 @@
 @tui
 @RPC-337
 Feature: Model selector navigator wiring
-
   """
   Navigator wiring: add ViewMode::ModelSelector, field model_selector: ModelSelectorView, handle_model_selector_event, render arm, apply_action arms for Action::OpenModelSelectorView/CloseModelSelectorView. Tab in ProviderSettings List mode (not filter mode) flips the Navigator into ViewMode::ModelSelector, wiring the existing ProviderSettingsEvent::SwitchToModels stub.
   """

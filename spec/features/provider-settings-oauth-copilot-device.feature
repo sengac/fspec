@@ -6,7 +6,6 @@
 @tui
 @PROV-114
 Feature: GitHub Copilot OAuth device flow (deployment/enterprise preamble)
-
   """
   Builds on PROV-112 (OAuth boundary) and PROV-113 (shared oauth-device-waiting / oauth-success / oauth-error modes + generation stale-cancel). Adds two copilot-only preamble modes: OAuthDeploymentTypeSelect{provider_id,selected_index} and OAuthEnterpriseUrlEntry{provider_id,url_input,validation_error} (TS settingsMode.ts:48-52,59-63), with sub-handlers + renderers (CopilotOauthRender.tsx parity). Enter on the github-copilot login row → deployment-type-select. Backend (codelet-providers-direct via embedded): copilot::oauth_device_code device-start (Option<enterprise_url>) + copilot::oauth_polling device-poll; copilot::oauth_device_code::normalize_enterprise_domain (sync, pure) for host normalization. github.com → device-start(None); enterprise → enterprise-url-entry → normalize → device-start(Some(host)); both converge on PROV-113's device-waiting → success/error. Dispatch via dispatch_provider_settings_oauth.rs. list_actions.rs Enter on the copilot OauthLogin row routes here (checked by provider_id == github-copilot FIRST, before method, per dossier §2.1). Offline tests: MockBackend scripted Ok/Err + call counters (assert enterprise host passed through); view/key tests drive handle_key; no real network/~/.fspec mutation. Files <300 LoC; clippy -D warnings + fmt clean; NO git; do not touch user WIP. Reference: spec/attachments/PROV-105/oauth-parity-spec.md §4.3, §6, §9 copilot_oauth; napi/src/copilot_oauth.rs for exact semantics.
   """
@@ -30,13 +29,14 @@ Feature: GitHub Copilot OAuth device flow (deployment/enterprise preamble)
   #   5. Copilot device-start fails (napi error) → oauth-error 'OAuth Login error' + message; Enter retries; Esc returns to list
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user with GitHub Copilot configured
     I want to log in with the GitHub Copilot device flow, choosing GitHub.com or a GitHub Enterprise host
     So that I can authenticate Copilot (including enterprise/data-residency hosts) from the Rust TUI exactly like the TypeScript TUI
 
-  @tui @provider-settings @oauth
+  @tui
+  @provider-settings
+  @oauth
   Scenario: GitHub.com device flow goes straight to device-waiting and connects
     Given the "github-copilot" provider is expanded
     And the cursor is on the "Login with GitHub Copilot (device flow)" row
@@ -52,7 +52,10 @@ Feature: GitHub Copilot OAuth device flow (deployment/enterprise preamble)
     Then the mode becomes oauth-success for provider "github-copilot"
     And the screen shows "✓ Connected to GitHub Copilot"
 
-  @tui @provider-settings @oauth @enterprise
+  @tui
+  @provider-settings
+  @oauth
+  @enterprise
   Scenario: GitHub Enterprise prompts for a host, normalizes it, and polls against it
     Given the "github-copilot" provider is in oauth-deployment-type-select
     When the user presses Down
@@ -65,7 +68,11 @@ Feature: GitHub Copilot OAuth device flow (deployment/enterprise preamble)
     And the backend copilot device-start is called with enterprise host "company.ghe.com"
     And the mode becomes oauth-device-waiting for provider "github-copilot"
 
-  @tui @provider-settings @oauth @enterprise @error
+  @tui
+  @provider-settings
+  @oauth
+  @enterprise
+  @error
   Scenario: Submitting an empty enterprise URL shows a validation error
     Given the "github-copilot" provider is in oauth-enterprise-url-entry with an empty URL input
     When the user presses Enter
@@ -75,7 +82,9 @@ Feature: GitHub Copilot OAuth device flow (deployment/enterprise preamble)
     When the user types "c"
     Then the validation error is cleared
 
-  @tui @provider-settings @oauth
+  @tui
+  @provider-settings
+  @oauth
   Scenario: Esc cancels the copilot preamble modes back to list
     Given the "github-copilot" provider is in oauth-deployment-type-select
     When the user presses Esc
@@ -86,7 +95,10 @@ Feature: GitHub Copilot OAuth device flow (deployment/enterprise preamble)
     Then the mode returns to list
     And no backend call is made
 
-  @tui @provider-settings @oauth @error
+  @tui
+  @provider-settings
+  @oauth
+  @error
   Scenario: A failed copilot device-start shows the error screen and retries on Enter
     Given the "github-copilot" provider is in oauth-deployment-type-select
     When the user presses Enter

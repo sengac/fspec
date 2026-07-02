@@ -16,21 +16,21 @@ Feature: Scheduler engine lift into codelet-core::scheduler
   After the lift:
 
   - codelet/core/src/scheduler/mod.rs hosts all engine modules and a
-    SchedulerHooks trait that replaces the direct
-    crate::session_bindings::SessionManager::instance() calls. Engine
-    APIs (spawn_scheduler, evaluate_and_run) take an
-    `Arc<dyn SchedulerHooks>` so the engine can call into either NAPI
-    or codelet-sessions without importing them.
+  SchedulerHooks trait that replaces the direct
+  crate::session_bindings::SessionManager::instance() calls. Engine
+  APIs (spawn_scheduler, evaluate_and_run) take an
+  `Arc<dyn SchedulerHooks>` so the engine can call into either NAPI
+  or codelet-sessions without importing them.
   - codelet/napi/src/scheduler/mod.rs collapses to `pub use
-    codelet_core::scheduler::{...}` plus the still-NAPI-resident
-    `pub mod loop_store;` (RPC-059 lifts loop_store separately).
+  codelet_core::scheduler::{...}` plus the still-NAPI-resident
+  `pub mod loop_store;` (RPC-059 lifts loop_store separately).
   - The pure CRUD helpers (validate_cron, validate_timezone,
-    validate_add_request, with_schedules_lock, read_schedules_file,
-    write_schedules_file, handle_add/list/pause/resume/remove) move
-    out of codelet/napi/src/schedule_handler.rs into a new
-    codelet/core/src/scheduler/crud.rs (NAPI-free). The remaining
-    schedule_handler.rs becomes a thin shim that adapts
-    ScheduleRequest/ScheduleResult.
+  validate_add_request, with_schedules_lock, read_schedules_file,
+  write_schedules_file, handle_add/list/pause/resume/remove) move
+  out of codelet/napi/src/schedule_handler.rs into a new
+  codelet/core/src/scheduler/crud.rs (NAPI-free). The remaining
+  schedule_handler.rs becomes a thin shim that adapts
+  ScheduleRequest/ScheduleResult.
 
   These tests pin the file layout so a future refactor cannot
   accidentally re-introduce the NAPI dependency.
@@ -100,4 +100,3 @@ Feature: Scheduler engine lift into codelet-core::scheduler
     Then every such invocation uses the captured-identifier syntax `"... {name} ..."` instead of the trailing-argument syntax `"... {} ...", name`
     Given codelet/core/src/scheduler/engine.rs and codelet/core/src/scheduler/cron_utils.rs live at their post-RPC-058 location
     Then `cargo clippy -p codelet-sessions -- -D warnings` exits 0 with no `clippy::uninlined_format_args` errors against engine.rs:284, engine.rs:299, cron_utils.rs:41, or cron_utils.rs:49
-

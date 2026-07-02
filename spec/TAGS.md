@@ -632,6 +632,7 @@ Tags tracking development status of features.
 | `@rpc-337` | Work unit identifier tag for RPC-337 — full-screen Model Selector mode-view + shared full-screen shell extraction |
 | `@rpc-376` | Work unit identifier for RPC-376 — heading anchor IDs and in-page anchor navigation in the Rust markdown viewer |
 | `@rpc-377` | Work unit identifier for RPC-377 — client-side viewer parity (Prism, copy/badge, theme toggle, font controls) in the Rust markdown viewer |
+| `@rpc-408` | Work unit identifier tag for RPC-408 — send_hitl_response wire-to-internal answer mapping fix |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -943,7 +944,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-06-28T04:32:02.170Z_
+_Last updated: 2026-07-02T04:17:29.293Z_
 
 **Update Command**: `fspec tag-stats`
 

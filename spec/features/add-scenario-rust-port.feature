@@ -3,7 +3,6 @@
 @cli
 @RPC-190
 Feature: Port add-scenario command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_scenario.rs: run(args_json,&Path) args {feature, scenario, dryRun?}. Path resolution mirrors TS endsWith/startsWith/else against project_root. Validation + duplicate detection via crate::io::gherkin::parse_feature_lenient; scenario-name comparison uses scenario.name with keyword.trim()=='Scenario' filter. Insertion is TS line-based split('\n')/slice/join, NOT AST round-trip. Response {success, valid, warning?}; CLI bridge prints ✓/⚠ and Error+Suggestion on failure. Two-front-doors: bridge marshals <feature> <scenario> + optional --dry-run into JSON only.
   """
@@ -29,7 +28,6 @@ Feature: Port add-scenario command to Rust
   #   4. running 'fspec add-scenario missing "X"' against a non-existent file prints 'Error: Feature file not found: ...' plus a 'Suggestion:' line and exits 1
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to add a new scenario with placeholder Given/When/Then steps to an existing feature file

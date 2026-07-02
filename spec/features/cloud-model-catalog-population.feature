@@ -1,5 +1,7 @@
 @done
-@RPC-073 @providers @model-selection
+@RPC-073
+@providers
+@model-selection
 Feature: Cloud Model Catalog Population
 
   Background: User Story

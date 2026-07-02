@@ -8,7 +8,6 @@
 @rust
 @agent-loop
 Feature: Agent loop: error classification + retry (recovery_network/compaction/thinking/truncation/stall/image)
-
   """
   Regression-shape coverage card following the established
   RPC-149/150/151/152/153/155/156 pattern. Implementation pre-exists in

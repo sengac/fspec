@@ -3,7 +3,6 @@
 @cli
 @RPC-326
 Feature: workflow-automation CLI subcommand (Rust binary)
-
   """
   Front door #1 (shell argv): codelet/fspec/src/workflow_automation.rs is the thin clap bridge for the
   `workflow-automation <action> <work-unit-id>` subcommand with --event / --from-state flags. It marshals
@@ -27,7 +26,6 @@ Feature: workflow-automation CLI subcommand (Rust binary)
   #   6. The CLI bridge contains NO action-dispatch / transition / mutation logic — it only marshals args and delegates.
   #
   # ========================================
-
   Background: User Story
     Given the fspec Rust binary exposes workflow-automation as a clap subcommand
     And the bridge codelet/fspec/src/workflow_automation.rs delegates to fspec_core::commands::workflow_automation::run

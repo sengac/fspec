@@ -4,7 +4,6 @@
 @cli
 @RPC-254
 Feature: Pause schedule CLI subcommand
-
   """
   The pause-schedule CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant taking a required positional <name>, per RPC-003 §7/§11. The CLI bridge codelet/fspec/src/pause_schedule.rs is JSON marshalling only — it resolves project_root from CWD, marshals { name } to JSON, calls fspec_core::commands::pause_schedule::run, prints "✓ Schedule '<name>' paused successfully" on success (exit 0), or the failure message on stderr (exit 1).
   The intercept_ts_help() pre-clap routine in main.rs dispatches `pause-schedule --help` to codelet/fspec-core/src/help/configs/pause_schedule.rs which mirrors src/commands/pause-schedule-help.ts byte-for-byte under formatCommandHelp.

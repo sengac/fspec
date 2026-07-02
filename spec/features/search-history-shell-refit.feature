@@ -4,7 +4,6 @@
 @tui
 @RPC-339
 Feature: Refit SearchHistoryView onto the shared full-screen shell (title-renderer generalization)
-
   """
   render_full_screen_scaffold_with_title<T, B> lives in views/full_screen_shell.rs alongside the existing render_full_screen_scaffold and render_full_screen_scaffold_raw_title; body = Clear.render + Layout [Length(1),Length(1),Min(0),Length(1)] -> (split[0], split[2], split[3]); calls title_fn(title_area), body_fn(body_area), render_footer_hint(footer_area, hint), then overlay branch
   render_title_with_count is defined in views/agent/mode_view_render.rs (not the shell). The count wrapper re-expresses its title via the closure: |a,b| render_title_with_count(a,b,title,count,suffix)
@@ -39,7 +38,6 @@ Feature: Refit SearchHistoryView onto the shared full-screen shell (title-render
   #   2. render_full_screen_scaffold_raw_title (used by ModelSelector) is left unchanged; only render_full_screen_scaffold is re-expressed on top of the new closure variant
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI developer
     I want to refit SearchHistoryView onto the shared full-screen shell via a title-renderer closure

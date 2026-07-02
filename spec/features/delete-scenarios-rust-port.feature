@@ -3,7 +3,6 @@
 @parser
 @RPC-220
 Feature: Port delete-scenarios command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/delete_scenarios.rs reuses crate::io::feature_glob::glob_feature_files for the recursive spec/features walk and crate::io::gherkin::parse_feature_lenient for parsing. It matches scenarios with AND logic on SCENARIO-level tags (every supplied tag must be present, compared with leading @), computes each scenario's lineStart (first tag line, else keyword line) and lineEnd (next scenario/background start, else EOF), and returns the JSON envelope {success, deletedCount, fileCount, message?, scenarios?, error?}. Dry-run reports without modifying. Real delete splices matching scenario line ranges bottom-up, collapses 4+ blank lines to 3, re-parses (validation failure → file unmodified, success=false), writes the file, and updates the .feature.coverage sidecar (remove deleted scenario names, recalc stats). The CLI bridge owns all rendering. delete-scenarios has NO matching custom -help.ts (the file maps to command name delete-scenarios-by-tag), so its --help is bare Commander.js, hard-coded as DELETE_SCENARIOS_HELP in main.rs (mirrors delete-features).
   """
@@ -26,7 +25,6 @@ Feature: Port delete-scenarios command to Rust
   #   3. Dispatcher tags=['@deprecated','@critical'] only matches a scenario carrying BOTH tags
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to bulk-delete scenarios whose scenario-level tags match ALL supplied tags (with a dry-run preview) across feature files via both the LLM dispatcher and the shell CLI

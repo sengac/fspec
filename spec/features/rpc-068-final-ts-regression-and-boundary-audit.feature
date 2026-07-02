@@ -6,7 +6,6 @@
 @rpc
 @RPC-068
 Feature: Final TS-frontend regression + boundary audit
-
   """
   codelet-sessions owns the agent loop (BackgroundSession + SessionManager) and is NAPI-free; codelet-napi is a thin #[napi] adapter that subscribes to chunks_tx::broadcast and republishes via the JS ThreadsafeFunction so TS keeps its sessionSetGlobalChunkCallback API
   The dependency-rule tests in codelet/{core,sessions,rpc-types,fspec,fspec-tui}/tests/no_napi_dependency.rs each assert (a) no `use codelet_napi` substring in src/ after comment stripping and (b) no codelet-napi node in the transitive `cargo metadata` graph
@@ -35,7 +34,6 @@ Feature: Final TS-frontend regression + boundary audit
   #   6. A `spec/attachments/RPC-068/boundary-audit-report.md` exists, summarises every verification matrix item, and lists the precise pass/fail counts so a future agent can re-run the audit and compare
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to run the final TS-frontend regression and Rust boundary audit at the end of the RPC-030 chain

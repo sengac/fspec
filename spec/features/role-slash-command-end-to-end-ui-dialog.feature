@@ -6,7 +6,6 @@
 @rust
 @RPC-063
 Feature: /role slash command end-to-end (UI dialog)
-
   """
   Wires the `/role` slash command to the RoleDialog. Both the palette
   pick AND the bare `/role` submit-line open the dialog (seeded from

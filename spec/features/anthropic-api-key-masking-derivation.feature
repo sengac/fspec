@@ -4,7 +4,6 @@
 @providers
 @PROV-099
 Feature: Anthropic API key masking derivation in list_providers_info
-
   """
   management.rs::list_providers_info: change the masked_key/source derivation from `match auth_type { ApiKey if available && !env_var.is_empty() => mask }` to mask whenever `available && !env_var.is_empty()` and the env var holds a non-empty value, independent of AuthType. Codex/github-copilot have empty env_var so stay None.
   Offline tests: management-layer tests are #[serial] and use an RAII env guard to save/restore ANTHROPIC_API_KEY + FSPEC_HOME; the OAuth-auth-file case writes claude_auth.json into a tempdir pointed to by FSPEC_HOME (read_claude_auth_sync -> oauth::fspec_home honors it). No network.
@@ -25,7 +24,6 @@ Feature: Anthropic API key masking derivation in list_providers_info
   #   3. codex and github-copilot (empty env_var) -> masked_key=None, source=None
   #
   # ========================================
-
   Background: User Story
     As a developer using the pure-Rust fspec Provider Settings screen
     I want to see my ANTHROPIC_API_KEY shown as a masked env-sourced api-key credential

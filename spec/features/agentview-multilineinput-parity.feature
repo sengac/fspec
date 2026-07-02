@@ -4,7 +4,6 @@
 @rpc
 @RPC-095
 Feature: AgentView MultiLineInput parity: spinner/busy, placeholder, blocking, and Esc cascade
-
   """
   Rust render loop is currently event-driven only — no idle ticks. Spinner needs an 80ms timer that fires only while is_loading || is_compacting.
   Existing pattern: scrollback_paint.rs (RPC-094 polish) wrote a manual painter rather than using ratatui's built-in widget. Reuse the same approach for spinner — write a single-line painter that takes (area, buf, frame_index, message, hint).
@@ -68,7 +67,6 @@ Feature: AgentView MultiLineInput parity: spinner/busy, placeholder, blocking, a
   #   A: Spawn a tokio::time::interval(80ms) tick task while a session is Running or Compacting; emit Action::SpinnerTick. Cancel/stop when the session leaves those states. Pattern mirrors existing background tasks under app/.
   #
   # ========================================
-
   Background: User Story
     As a fspec user running the Rust ratatui AgentView
     I want to see a spinner while the agent is thinking or compacting, have my input safely locked during compaction, and have a sensible Esc cascade that clears text before navigating away

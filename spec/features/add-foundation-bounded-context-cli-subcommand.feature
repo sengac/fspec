@@ -1,7 +1,6 @@
 @done
 @RPC-183
 Feature: fspec add-foundation-bounded-context CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_foundation_bounded_context.rs — clap-derived struct mirroring
   the TS Commander.js registration (src/commands/add-foundation-bounded-context.ts:122-132).

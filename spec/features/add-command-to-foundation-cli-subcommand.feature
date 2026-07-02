@@ -1,7 +1,6 @@
 @done
 @RPC-175
 Feature: fspec add-command-to-foundation CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_command_to_foundation.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-command-to-foundation.ts:138-156). Surface:

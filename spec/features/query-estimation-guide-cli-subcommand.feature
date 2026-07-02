@@ -1,14 +1,14 @@
 @done
 @cli
 @querying
-@RPC-259 @wip
+@RPC-259
+@wip
 Feature: query-estimation-guide clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `query-estimation-guide` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/query_estimation_guide.rs → fspec_core::commands::query_estimation_guide::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_estimation_guide::run
+  - Shell argv         → clap → codelet/fspec/src/query_estimation_guide.rs → fspec_core::commands::query_estimation_guide::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_estimation_guide::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes the REQUIRED positional <workUnitId> argument (TS parity — argument is accepted but unused by the core function) and `--format <text|json>` defaulting to `text`.

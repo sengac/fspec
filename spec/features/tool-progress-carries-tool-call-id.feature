@@ -6,7 +6,6 @@
 @streaming
 @BUG-149
 Feature: Live tool output not folded into TUI card: ToolProgress emitted with empty tool_call_id
-
   """
   Uses bcrypt... N/A. Architecture: emit-side change in stream_loop.rs threads active tool_call.id into the progress callback; match-side in fspec-tui chunk_processor.rs is unchanged (exact-id fold). Serial tool execution within a turn (tool_execution_in_progress flag) makes single active id unambiguous.
   """
@@ -30,7 +29,6 @@ Feature: Live tool output not folded into TUI card: ToolProgress emitted with em
   #   5. The active-tool-call tracking: id is present between ToolCall and ToolResult and absent (cleared) after the result
   #
   # ========================================
-
   Background: User Story
     As a developer using the fspec-tui
     I want to see bash/tool output stream into the tool-call card line-by-line while the command runs

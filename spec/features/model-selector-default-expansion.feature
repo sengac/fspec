@@ -3,7 +3,6 @@
 @tui
 @RPC-342
 Feature: Model selector default expansion inverted (all-expanded vs all-collapsed)
-
   """
   TS parity port of ModelSelectorScreen.tsx:93-119 / useModelSelectorState.ts:148-150: expandedProviders starts as an empty set (all collapsed), auto-expanding only the current model's section. Replaces Rust set_providers expand-all (mod.rs:93).
   """
@@ -28,7 +27,6 @@ Feature: Model selector default expansion inverted (all-expanded vs all-collapse
   #   5. Refresh re-collapse: with current gpt-4o loaded (openai expanded), a second set_providers call re-applies the default leaving only openai expanded
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to have the model selector open with every provider collapsed except the section holding my current model

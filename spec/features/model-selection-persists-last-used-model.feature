@@ -3,7 +3,6 @@
 @providers
 @PROV-122
 Feature: Model selection never persists tui.lastUsedModel to fspec-config.json (live-session writes nothing; no-session writes legacy default-model.json only)
-
   """
   Add writer to last_used_model_persistence.rs: save_persisted_model_string_to(user_dir, model) + env-resolved save_persisted_model_string(model). Reuse read_config_value/write_config_value/fspec_user_dir from profile_sections.rs (key-preserving, preserve_order serde). Mirror save_custom_model_at read-merge-write pattern.
   Call sites: (1) handle_impl.rs::set_model after success near line 1050 using model=format!("{provider_id}/{model_id}"); (2) session_manager.rs::set_default_model line 227 (or FspecBackend wrapper) alongside existing save_default_model. Both best-effort with tracing::warn on failure.
@@ -30,7 +29,6 @@ Feature: Model selection never persists tui.lastUsedModel to fspec-config.json (
   #   6. Profile-qualified selection (e.g. openai:qwen/Qwen3-80B) round-trips: written to tui.lastUsedModel and read back by load_persisted_model_string as the same string
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to have my model selection saved to tui.lastUsedModel in fspec-config.json whether or not a session is active

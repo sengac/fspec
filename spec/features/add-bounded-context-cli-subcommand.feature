@@ -1,7 +1,6 @@
 @done
 @RPC-172
 Feature: fspec add-bounded-context CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_bounded_context.rs — clap-derived struct mirroring TS Commander.js
   registration (src/commands/add-bounded-context.ts:72-122). Surface:

@@ -4,7 +4,6 @@
 @cli
 @RPC-286
 Feature: Port research command to Rust
-
   """
   Core impl target: codelet/fspec-core/src/commands/research.rs. Signature changes from the
   current stub run(args_json) to the canonical run(args_json, project_root). Args mirror the TS
@@ -14,25 +13,25 @@ Feature: Port research command to Rust
 
   ⚠️ SCOPE FLAG (poll_sync_future / async-process safety) — see WORKER report to supervisor.
   The TS `research` command has TWO modes:
-    (A) LIST mode (no --tool): pure file IO + static registry. resolveConfig (src/utils/config-resolution.ts)
-        reads env vars + spec/fspec-config.json + ~/.fspec/fspec-config.json synchronously. The static
-        TOOL_REGISTRY (ast, perplexity, jira, confluence, stakeholder) is a compile-time table. This mode is
-        100% poll_sync_future-SAFE (blocking std::fs only) and is the surface specified in THIS feature file.
-    (B) EXECUTE mode (--tool=X ...): NOT poll_sync_future-safe on the dispatcher front-door and partly
-        un-portable as parity. Detail:
-          - bundled perplexity/jira/confluence/stakeholder tools do real network IO over https → genuine
-            async; would return Poll::Pending under single-poll dispatch.
-          - bundled ast tool calls @sengac/codelet-napi astGrepSearch/astGrepRefactor (async NAPI). Rust HAS
-            a native ast-grep core (the AstGrep tool / codelet) so this COULD be re-implemented natively, but
-            that is a sizeable sub-port needing its own decision.
-          - custom tools load via dynamic `import()` of arbitrary user spec/research-tools/<name>.js modules
-            → NO Rust equivalent (cannot import JS plugins).
-          - script tools (spec/research-scripts/*) execute via child_process.spawn awaiting the 'close'
-            event. This single sub-path IS portable with BLOCKING std::process::Command::output() (resolves
-            on first poll, sync-safe) — but only if the supervisor wants script execution in scope.
-        EXECUTE-mode behaviour is therefore DEFERRED pending a supervisor scope decision and is intentionally
-        NOT specified here beyond the pre-spawn argument-validation / tool-not-found error paths, which ARE
-        deterministic and sync-safe.
+  (A) LIST mode (no --tool): pure file IO + static registry. resolveConfig (src/utils/config-resolution.ts)
+  reads env vars + spec/fspec-config.json + ~/.fspec/fspec-config.json synchronously. The static
+  TOOL_REGISTRY (ast, perplexity, jira, confluence, stakeholder) is a compile-time table. This mode is
+  100% poll_sync_future-SAFE (blocking std::fs only) and is the surface specified in THIS feature file.
+  (B) EXECUTE mode (--tool=X ...): NOT poll_sync_future-safe on the dispatcher front-door and partly
+  un-portable as parity. Detail:
+  - bundled perplexity/jira/confluence/stakeholder tools do real network IO over https → genuine
+  async; would return Poll::Pending under single-poll dispatch.
+  - bundled ast tool calls @sengac/codelet-napi astGrepSearch/astGrepRefactor (async NAPI). Rust HAS
+  a native ast-grep core (the AstGrep tool / codelet) so this COULD be re-implemented natively, but
+  that is a sizeable sub-port needing its own decision.
+  - custom tools load via dynamic `import()` of arbitrary user spec/research-tools/<name>.js modules
+  → NO Rust equivalent (cannot import JS plugins).
+  - script tools (spec/research-scripts/*) execute via child_process.spawn awaiting the 'close'
+  event. This single sub-path IS portable with BLOCKING std::process::Command::output() (resolves
+  on first poll, sync-safe) — but only if the supervisor wants script execution in scope.
+  EXECUTE-mode behaviour is therefore DEFERRED pending a supervisor scope decision and is intentionally
+  NOT specified here beyond the pre-spawn argument-validation / tool-not-found error paths, which ARE
+  deterministic and sync-safe.
 
   Reuse / new shared infrastructure (Phase C, supervisor-owned wiring): a config-resolution helper mirroring
   src/utils/config-resolution.ts (env → user → project → default precedence) under codelet/fspec-core/src/io/
@@ -71,7 +70,6 @@ Feature: Port research command to Rust
   #   3. Unknown tool: dispatching research --tool=does-not-exist returns a 'Research tool not found' error.
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the research command's list/discovery surface to Rust as a parity port

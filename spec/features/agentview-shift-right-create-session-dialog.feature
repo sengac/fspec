@@ -7,7 +7,6 @@
 @tui
 @RPC-097
 Feature: AgentView Shift+Right does not open CreateSessionDialog and option styling drifts from TS Ink — dialog flag set but never pushed onto compositor
-
   """
   TS canonical source: src/components/CreateSessionDialog.tsx (135 lines). Rust port target: codelet/fspec-tui/src/components/create_session_dialog.rs (rewrite render). Dispatch wiring: codelet/fspec-tui/src/app/dispatch_session_cycle.rs::handle_session_cycle NavTarget::CreateDialog branch.
   Base dialog primitive (REUSED, not bypassed): codelet/fspec-tui/src/components/dialog_theme.rs — render_dialog + FspecDialog + DialogRow + Accent. CreateSessionDialog::render continues to delegate to render_dialog. Only the DialogRow construction and the FOOTER constant change.
@@ -55,13 +54,15 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   #   15. After the refactor, codelet/fspec-tui/src/components/create_session_dialog.rs LoC stays under 300 (verified by wc -l in source-shape regression test)
   #
   # ========================================
-
   Background: User Story
     As a user pressing Shift+Right at the end of the open-sessions list in the Rust AgentView
     I want to summon the Create Session dialog and pick Yes / Yes - Isolated / Cancel
     So that I can start a fresh AI session — bound or unbound to my current work unit — without ever leaving the keyboard
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Shift+Right with a single open session mounts CreateSessionDialog
     Given an App in AgentView with one open session at current_session_index 0
     When the user presses Shift+Right
@@ -69,14 +70,20 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And the dialog is at Priority::Foreground
     And current_session_index is still 0
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Shift+Right at the last index of three open sessions mounts CreateSessionDialog
     Given an App in AgentView with three open sessions s-1, s-2, s-3 and current_session_index 2
     When the user presses Shift+Right
     Then the Compositor contains CREATE_SESSION_DIALOG_ID
     And current_session_index is still 2
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Shift+Right with zero open sessions mounts CreateSessionDialog with generic title
     Given an App in AgentView with zero open sessions
     When the user presses Shift+Right
@@ -84,14 +91,20 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And the rendered dialog title is "Start New Agent?"
     And the rendered description is "Begin a fresh AI conversation, not linked to any task."
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Dialog title and description are work-unit-aware when the current session is bound to a work unit
     Given an App in AgentView with one open session bound to WorkUnitContext with id "RPC-097"
     When the user presses Shift+Right
     Then the rendered dialog title is "Work on RPC-097?"
     And the rendered description is "Start an AI session for this task"
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Freshly mounted dialog paints the Yes button blue/white/bold and the other two buttons gray
     Given an App in AgentView with one open session
     When the user presses Shift+Right
@@ -102,7 +115,10 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And no cell in the buffer contains the glyph "▸"
     And no cell in the buffer contains the glyph "○"
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Right arrow cycles selection forward with wrap-around
     Given the CreateSessionDialog is mounted with default selection Yes
     When the user presses Right
@@ -112,27 +128,39 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     When the user presses Right
     Then the selected option is Yes
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Left arrow wraps from Yes back to Cancel
     Given the CreateSessionDialog is mounted with default selection Yes
     When the user presses Left
     Then the selected option is Cancel
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Enter on Yes emits CreateSessionSubmitted with isolated false and dismisses the dialog
     Given the CreateSessionDialog is mounted with selection Yes
     When the user presses Enter
     Then Action::CreateSessionSubmitted with isolated false is emitted
     And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Enter on Yes - Isolated emits CreateSessionSubmitted with isolated true
     Given the CreateSessionDialog is mounted with selection Yes - Isolated
     When the user presses Enter
     Then Action::CreateSessionSubmitted with isolated true is emitted
     And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Enter on Cancel emits CreateSessionCancelled and leaves the MultiLineInput buffer untouched
     Given an App in AgentView with one open session and MultiLineInput value "hello"
     And the CreateSessionDialog is mounted with selection Cancel
@@ -141,14 +169,20 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
     And the MultiLineInput value is still "hello"
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Esc emits CreateSessionCancelled and dismisses the dialog
     Given the CreateSessionDialog is mounted
     When the user presses Esc
     Then Action::CreateSessionCancelled is emitted
     And the Compositor no longer contains CREATE_SESSION_DIALOG_ID
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Typed MultiLineInput draft survives the Shift+Right summon and subsequent Esc
     Given an App in AgentView with one open session and MultiLineInput value "pending"
     When the user presses Shift+Right
@@ -156,7 +190,10 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     When the user presses Esc
     Then the MultiLineInput value is still "pending"
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Shift+Right is idempotent when the dialog is already mounted
     Given an App in AgentView with one open session
     When the user presses Shift+Right
@@ -164,7 +201,10 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     When the user presses Shift+Right again
     Then the Compositor contains exactly one CREATE_SESSION_DIALOG_ID instance
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Rendered footer uses ASCII pipe separators not box-drawing pipes
     Given an App in AgentView with one open session
     When the user presses Shift+Right
@@ -173,18 +213,28 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And the rendered buffer does not contain the glyph "│"
     And the ASCII pipe "|" appears in the footer row exactly two times
 
-  @rust @tui @agent-view @tui-component @source-shape
+  @rust
+  @tui
+  @agent-view
+  @tui-component
+  @source-shape
   Scenario: Source-shape budget for the refactored CreateSessionDialog
     Given the file codelet/fspec-tui/src/components/create_session_dialog.rs
     Then it has fewer than 300 lines
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: CreateSessionDialog renders via dialog_theme::render_dialog (base dialog primitive reused)
     Given the source of codelet/fspec-tui/src/components/create_session_dialog.rs
     Then it imports render_dialog from super::dialog_theme
     And it does not call ratatui Block or Paragraph directly inside the render function
 
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: BoardView first Shift+Right with unattached work unit mounts CreateSessionDialog OVER BoardView (no view switch)
     Given an App in BoardView with a selected work unit that has no attached session
     When the user presses Shift+Right once
@@ -192,8 +242,10 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And the Compositor contains CREATE_SESSION_DIALOG_ID
     And the dialog overlays the BoardView
 
-
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: BoardView first Shift+Right with attached session jumps directly into AgentView without dialog
     Given an App in BoardView with a selected work unit that has an attached session "sid-1"
     When the user presses Shift+Right once
@@ -201,8 +253,10 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And agent_view_store.navigation_target is Some("sid-1")
     And the Compositor does not contain CREATE_SESSION_DIALOG_ID
 
-
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: Two Shift+Rights from BoardView with unattached work unit remain idempotent
     Given an App in BoardView with a selected work unit that has no attached session
     When the user presses Shift+Right once
@@ -212,8 +266,10 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     Then the Compositor contains exactly one CREATE_SESSION_DIALOG_ID instance
     And navigator.active_view is still ViewMode::Board
 
-
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: BoardView Shift+Right then Esc cancels and leaves the user on BoardView
     Given an App in BoardView with a selected work unit that has no attached session
     When the user presses Shift+Right once
@@ -223,8 +279,10 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     Then the Compositor does not contain CREATE_SESSION_DIALOG_ID
     And navigator.active_view is still ViewMode::Board
 
-
-  @rust @tui @agent-view @tui-component
+  @rust
+  @tui
+  @agent-view
+  @tui-component
   Scenario: BoardView Shift+Right then Enter on Yes switches to AgentView and submits create-session
     Given an App in BoardView with a selected work unit that has no attached session
     When the user presses Shift+Right once
@@ -235,7 +293,6 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And navigator.active_view is ViewMode::Agent
     And the Compositor does not contain CREATE_SESSION_DIALOG_ID
 
-
   # ========================================
   # RPC-097 reopen #2: BoardView Shift+Right MUST consult the global
   # open-session list (mirroring TS sessionGetNext) BEFORE deciding to
@@ -243,8 +300,11 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
   # it instead of asking the user to create another.
   # See spec/attachments/RPC-097/reopen2-active-session-list-not-checked.md
   # ========================================
-
-  @rust @tui @agent-view @tui-component @rpc-097-reopen2
+  @rust
+  @tui
+  @agent-view
+  @tui-component
+  @rpc-097-reopen2
   Scenario: BoardView Shift+Right with an already-open session resumes that session instead of showing the dialog
     Given an App in BoardView with a selected work unit that has no attached session
     And the agent_view_store has one open session "sid-A"
@@ -253,8 +313,11 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And agent_view_store.navigation_target is Some("sid-A")
     And the Compositor does not contain CREATE_SESSION_DIALOG_ID
 
-
-  @rust @tui @agent-view @tui-component @rpc-097-reopen2
+  @rust
+  @tui
+  @agent-view
+  @tui-component
+  @rpc-097-reopen2
   Scenario: BoardView Shift+Right with two open sessions resumes the first one
     Given an App in BoardView with a selected work unit that has no attached session
     And the agent_view_store has two open sessions "sid-A" and "sid-B"
@@ -263,8 +326,11 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And agent_view_store.navigation_target is Some("sid-A")
     And the Compositor does not contain CREATE_SESSION_DIALOG_ID
 
-
-  @rust @tui @agent-view @tui-component @rpc-097-reopen2
+  @rust
+  @tui
+  @agent-view
+  @tui-component
+  @rpc-097-reopen2
   Scenario: Shift+Left from Agent back to Board then Shift+Right resumes the open session (full round trip)
     Given an App in AgentView with one open session "sid-A" focused
     When the user presses Shift+Left
@@ -274,12 +340,14 @@ Feature: AgentView Shift+Right does not open CreateSessionDialog and option styl
     And agent_view_store.navigation_target is Some("sid-A")
     And the Compositor does not contain CREATE_SESSION_DIALOG_ID
 
-
-  @rust @tui @agent-view @tui-component @rpc-097-reopen2
+  @rust
+  @tui
+  @agent-view
+  @tui-component
+  @rpc-097-reopen2
   Scenario: BoardView Shift+Right with zero open sessions still mounts CreateSessionDialog (regression guard for reopen #1)
     Given an App in BoardView with a selected work unit that has no attached session
     And the agent_view_store has zero open sessions
     When the user presses Shift+Right once
     Then navigator.active_view is still ViewMode::Board
     And the Compositor contains CREATE_SESSION_DIALOG_ID
-

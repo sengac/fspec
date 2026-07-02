@@ -24,6 +24,7 @@ pub mod isolation_state;
 pub mod markdown_table_render;
 pub mod markdown_tables;
 pub mod navigation;
+pub mod pause_state;
 pub mod pending_tool_diff;
 pub mod role_state;
 pub mod session_context;
@@ -101,14 +102,13 @@ pub struct AgentViewStore {
     pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
 
     // ── RPC-100 per-session compaction reduction percentage ─────────────
-    // Populated by `dispatch_stream_chunks.rs::handle_stream_chunk_state_updates`
-    // when a `StreamChunk::CompactionComplete` arrives, and cleared on
-    // `SessionStateChange { state: Cleared }`. Read by
-    // `views/agent/chrome_paint.rs::paint_header_and_role` to render the
-    // `[X%: COMPACTED Y%]` SessionHeader suffix (mirrors TS
-    // `AgentView.tsx:946-979` `setCompactionReductionRef`).
-    // Accessors live in `store/agent_view/chrome_state.rs`.
+    // Set by `dispatch_stream_chunks.rs` on `CompactionComplete`, cleared
+    // on Cleared; read by `chrome_paint.rs` for the `[X%: COMPACTED Y%]`
+    // suffix (TS `AgentView.tsx:946-979`). Accessors in `chrome_state.rs`.
     pub(crate) compaction_reduction_by_session: HashMap<SessionId, i32>,
+    // ── RPC-406 inline pause slot — accessors in `pause_state.rs` ───────
+    pub(crate) pause_state_by_session: HashMap<SessionId, codelet_rpc_types::PauseState>,
+    pub(crate) triple_pause_selection_by_session: HashMap<SessionId, usize>,
 }
 
 impl AgentViewStore {

@@ -7,7 +7,6 @@
 @tui
 @RPC-387
 Feature: Supervisor message rendering in the subordinate view
-
   """
   Backend wire format stays space-separated; only the TUI parser changes (parity with TS chunkProcessor and NAPI assertions)
   Fix lives in parse_supervisor_envelope (session_context.rs): split on header closing bracket, trim leading space/newline from body
@@ -30,7 +29,6 @@ Feature: Supervisor message rendering in the subordinate view
   #   4. A StreamChunk::IncomingMessage carrying the space-separated backend envelope renders scrollback text '[W] reviewer> please check this' in magenta
   #
   # ========================================
-
   Background: User Story
     As a subordinate agent user
     I want to see the full text of a message my supervisor sends me in my session view

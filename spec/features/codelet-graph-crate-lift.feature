@@ -7,7 +7,6 @@
 @codelet
 @RPC-092
 Feature: Lift codelet/napi/src/graph/ (52 files, ~15,013 LOC) into a NAPI-free codelet-graph workspace crate — verbatim relocation, NO cut-downs
-
   """
   Source-of-truth: codelet/napi/src/graph/ (52 .rs files, ~15,013 LOC, zero direct NAPI coupling). Lift target: codelet/graph/ as a peer workspace crate. See spec/attachments/RPC-092/inventory.md for the complete file-by-file LOC table.
   Why this card was carved (instead of inlining into RPC-072 Phase B): the body port at codelet/napi/src/agent_loop.rs:299-1456 calls graph_search_handler::create_handler() and register_deep_search_handler(...), both of which transitively pull crate::graph::*. Inlining a 15,013-LOC mechanical relocation into the 1,170-LOC body port would produce a single ~30,000-LOC commit with no checkpoint between stages — context-window-exhausting and impossible to bisect. RPC-092 is the discrete, atomic relocation step. See spec/attachments/RPC-092/root-cause-analysis.md.
@@ -47,7 +46,6 @@ Feature: Lift codelet/napi/src/graph/ (52 files, ~15,013 LOC) into a NAPI-free c
   #   10. Pre-lift baseline checkpoint `rpc092-pre-lift-baseline` exists in `fspec list-checkpoints RPC-092` — at any point during the lift, the maintainer can run `fspec restore-checkpoint RPC-092 rpc092-pre-lift-baseline` and recover the workspace to a known-good state
   #
   # ========================================
-
   Background: User Story
     As a rust workspace maintainer
     I want to lift codelet/napi/src/graph/ verbatim into a NAPI-free codelet-graph crate

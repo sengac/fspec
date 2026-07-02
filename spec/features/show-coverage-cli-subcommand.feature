@@ -3,7 +3,6 @@
 @cli
 @RPC-300
 Feature: show-coverage CLI subcommand on the standalone fspec Rust binary
-
   """
   The CLI bridge module codelet/fspec/src/show_coverage.rs marshals argv into JSON
   args and delegates to codelet_fspec_core::commands::show_coverage::run — the

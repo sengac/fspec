@@ -3,7 +3,6 @@
 @viewer
 @RPC-372
 Feature: Axum attachment viewer HTTP server with markdown rendering
-
   """
   New workspace crate codelet/attachment-viewer follows the fspec.pro axum architecture. lib.rs exposes build_router(state)/build_router_with_config(cfg), ViewerHandle, start_viewer(cwd)->Result<ViewerHandle> and ViewerHandle::stop(). state.rs defines ViewerState as a Clone newtype over Arc<Inner{cwd}>, injected via the axum State extractor. Routes: GET /view/{*path} and GET /health, wrapped with CorsLayer::permissive() and TraceLayer::new_for_http(). The view handler percent-decodes the path, lexically normalizes it relative to cwd, rejects traversal outside cwd with 403, renders .md/.markdown via render_markdown+viewer_template (text/html), and serves other extensions raw with a content-type map (png/jpeg/gif/svg/pdf/txt; default application/octet-stream). Missing file -> 404, other errors -> 500, never panics. render_markdown uses pulldown-cmark (GFM) wrapping mermaid blocks as <pre class="mermaid"> and other code blocks as <pre class="code-block" data-language=...> with HTML-escaped content. viewer_template returns a full HTML doc including the mermaid CDN script. start_viewer binds 127.0.0.1:0 and serves with axum::serve(...).with_graceful_shutdown(rx). All files <300 lines. Browser launching and key wiring are out of scope (RPC-373/RPC-374).
   """
@@ -30,7 +29,6 @@ Feature: Axum attachment viewer HTTP server with markdown rendering
   #   7. start_viewer(tempdir) returns a handle whose port is non-zero and reachable on /health; after stop() the server task ends
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI developer
     I want to serve card attachments and FOUNDATION.md through a local HTTP viewer that renders markdown (incl. mermaid) and serves images/pdf raw

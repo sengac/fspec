@@ -3,7 +3,6 @@
 @cli
 @RPC-250
 Feature: Port list-schedules command to Rust
-
   """
   New impl file at codelet/fspec-core/src/commands/list_schedules.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_hooks::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.
   Schedules data is parsed using a lightweight Rust shape: `struct SchedulesFile { schedules: IndexMap<String, serde_json::Value> }` so that insertion order is preserved AND we surface each schedule entry value as-is (parity with TS `Object.values(data.schedules)`). The full ScheduleEntry union (agent vs shell) is intentionally not modelled — we re-emit the raw entry Value on the structured path.
@@ -30,7 +29,6 @@ Feature: Port list-schedules command to Rust
   #  12. CLI delegates to single source of truth in fspec_core
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-schedules from the agent loop AND invoke `fspec list-schedules` from a shell

@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port create-bug command to Rust
-
   """
   Core impl lives at codelet/fspec-core/src/commands/create_bug.rs, a faithful port of src/commands/create-bug.ts. It checks spec/foundation.json exists (verbatim foundation-missing error via the shared check_foundation_exists helper), validates a non-empty title, requires the prefix be registered in spec/prefixes.json (read via auto-creating ensure_prefixes_file), validates an optional --parent (must exist; nesting depth < MAX_NESTING_DEPTH=3) and an optional --epic (must exist in spec/epics.json via auto-creating ensure_epics_file).
   The new bug is built as an ORDERED serde_json::Map with key order id, title, type:"bug", status:"backlog", createdAt, updatedAt, then optional description/epic/parent and children:[] only when no parent — NOT the WorkUnit struct serializer (whose canonical order id,type,title differs). The work-units.json mutation (push to states.backlog, persist prefixCounters[prefix], append to parent.children) is one atomic write_json_atomic preserving insertion order; a second atomic write to spec/epics.json appends the id to epic.workUnits when --epic is given.

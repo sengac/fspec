@@ -4,7 +4,6 @@
 @rust
 @RPC-301
 Feature: Port show-deleted command to Rust
-
   """
   File layout: codelet/fspec-core/src/commands/show_deleted.rs (impl) + codelet/fspec-core/src/help/configs/show_deleted.rs (help config) + codelet/fspec-core/tests/show_deleted.rs (dispatcher tests) + codelet/fspec/src/show_deleted.rs (CLI bridge) + codelet/fspec/tests/cli_show_deleted.rs (CLI shell tests) + codelet/fspec/tests/fixtures/help/show-deleted.txt (TS help fixture)
   Reuses existing io::ensure::ensure_work_units_file (load-or-init) — NOT the read-or-empty twin. The TS show-deleted explicitly uses ensureWorkUnitsFile (src/commands/show-deleted.ts:32), so missing spec/work-units.json gets created with the canonical empty initial structure before the work-unit-existence check runs
@@ -49,7 +48,6 @@ Feature: Port show-deleted command to Rust
   #   11. Both invocation paths produce the SAME structured data: (a) dispatch_command('show-deleted', {workUnitId:'AUTH-001', format:'json'}, project_root) and (b) './codelet/target/release/fspec show-deleted AUTH-001' against the same on-disk state — the only differences are how args are parsed (JSON vs clap positional) and how the result is delivered (DispatchResult.data vs stdout text)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch show-deleted from the agent loop and invoke it from a shell to enumerate every soft-deleted rule, example, question, and architecture note for a work unit
@@ -125,4 +123,3 @@ Feature: Port show-deleted command to Rust
     When I inspect codelet/fspec-core/src/commands/show_deleted.rs
     Then the file calls io::ensure::ensure_work_units_file rather than embedding its own work-units.json read logic
     Then the file does NOT contain the substring 'FspecCoreError::NotYetPorted'
-

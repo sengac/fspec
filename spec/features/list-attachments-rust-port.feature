@@ -4,7 +4,6 @@
 @rust
 @RPC-241
 Feature: Port list-attachments command to Rust
-
   """
   Implementation reads the `attachments` array from `WorkUnit.extra` (serde flatten map). A typed field on `WorkUnit` was considered but deferred — see test `shared_infrastructure_and_ported_wiring_are_in_place` in `codelet/fspec-core/tests/list_attachments.rs` for the Phase-C architecture-revision rationale.
   Reuses `crate::io::ensure::ensure_work_units_file` (NOT the read-only `read_work_units_or_empty` twin) so the load-or-init + escalating-parse-error semantics match TS's `await ensureWorkUnitsFile(cwd)` at src/commands/list-attachments.ts:20
@@ -56,7 +55,6 @@ Feature: Port list-attachments command to Rust
   #   14. Both invocation paths produce the SAME structured data: (a) dispatch_command("list-attachments", `{"workUnitId":"AUTH-001","format":"json"}`, project_root) and (b) `./codelet/target/release/fspec list-attachments AUTH-001` against the same on-disk state — the only differences are how args are parsed (JSON vs clap positional) and how the result is delivered (DispatchResult.data JSON vs stdout text)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-attachments from the agent loop AND invoke `fspec list-attachments <workUnitId>` from a shell and get the same attachment listing — with size and modification time for each file — as the TypeScript implementation

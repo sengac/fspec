@@ -1,9 +1,9 @@
 @feature-management
 @cli
 @done
-@RPC-304 @wip
+@RPC-304
+@wip
 Feature: show-feature CLI subcommand on the standalone fspec Rust binary
-
   """
   The CLI bridge module codelet/fspec/src/show_feature.rs marshals argv into JSON
   args and delegates to codelet_fspec_core::commands::show_feature::run — the

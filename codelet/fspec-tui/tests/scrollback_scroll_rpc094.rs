@@ -618,10 +618,13 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //   - RPC-383 added ≤8 lines (TurnModalScrollUp / TurnModalScrollDown /
     //     TurnModalPageUp / TurnModalPageDown / TurnModalHome / TurnModalEnd
     //     modal-scroll variants + a 2-line doc comment)
-    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 + 5 + 5 + 8 = 1118
+    //   - RPC-406 added ≤25 lines net (PauseStateFetched / PausePromptNav /
+    //     PausePromptEnter inline pause-prompt variants + expanded pause
+    //     doc comments, minus the deleted OpenPauseDialog variant)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 + 5 + 5 + 8 + 25 = 1143
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1118,
-        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381 + RPC-382 + RPC-383 budget is +316 over baseline 802"
+        n_components <= 1143,
+        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381 + RPC-382 + RPC-383 + RPC-406 budget is +341 over baseline 802"
     );
 }

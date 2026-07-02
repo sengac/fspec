@@ -8,7 +8,6 @@
 @multi-session
 @session-management
 Feature: /debug debug-capture wiring
-
   """
   Phase 7.2 of the RPC-030 roadmap. The DebugCaptureManager already lives in
   codelet-common::debug_capture (NAPI-free, per-session). The RPC-037
@@ -20,18 +19,18 @@ Feature: /debug debug-capture wiring
 
   This slice connects the loose ends:
 
-    1. Add a NEW `set_debug_directory(path)` RPC method through the trait,
-       FspecService, FspecBackend, and both transports — needed for the
-       pre-session global toggle path (the TS reference calls
-       `toggleDebug(debugDir)` when no session is active).
-    2. Replace the `SlashCommandAction::Debug` notice fallback in
-       dispatch_slash_commands.rs::handle_slash_command with a real
-       backend.toggle_debug(session_id, debug_dir) round-trip in a new
-       app/dispatch_slash_debug.rs file, mirroring the dispatch_slash_clear (/clear)
-       and dispatch_provider_settings (/provider) patterns.
-    3. Replace the hardcoded `is_debug_enabled: false` in views/agent.rs
-       with `agent_view_store.debug_enabled_for(session_id).unwrap_or(false)`
-       so the existing SessionHeader [DEBUG] badge reflects live state.
+  1. Add a NEW `set_debug_directory(path)` RPC method through the trait,
+  FspecService, FspecBackend, and both transports — needed for the
+  pre-session global toggle path (the TS reference calls
+  `toggleDebug(debugDir)` when no session is active).
+  2. Replace the `SlashCommandAction::Debug` notice fallback in
+  dispatch_slash_commands.rs::handle_slash_command with a real
+  backend.toggle_debug(session_id, debug_dir) round-trip in a new
+  app/dispatch_slash_debug.rs file, mirroring the dispatch_slash_clear (/clear)
+  and dispatch_provider_settings (/provider) patterns.
+  3. Replace the hardcoded `is_debug_enabled: false` in views/agent.rs
+  with `agent_view_store.debug_enabled_for(session_id).unwrap_or(false)`
+  so the existing SessionHeader [DEBUG] badge reflects live state.
 
   TS reference: `AgentView.tsx` line 2643 — `sessionToggleDebug(currentSessionId, debugDir)`
   if a session is active, else `toggleDebug(debugDir)` (pre-session global).
@@ -59,7 +58,6 @@ Feature: /debug debug-capture wiring
   #   9. Cross-transport parity: invoking set_debug_directory and toggle_debug through both EmbeddedFspecBackend and WebSocketFspecBackend MUST land on the same StubSessionManagerHandle with identical per-call counter increments
   #
   # ========================================
-
   Background: User Story
     As a user with an open AgentView session
     I want to use the /debug slash command to toggle debug capture on or off

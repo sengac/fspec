@@ -1,7 +1,6 @@
 @done
 @RPC-281
 Feature: Port remove-tag-from-feature command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/remove_tag_from_feature.rs reuses crate::io::gherkin::parse_feature_lenient for the existence pre-check and a TS-parity whole-line filter for the actual removal pass.
   No registry validation. No system reminders. Strict parity with TS removeTagFromFeature which returns {success, valid, message?, error?}.
@@ -22,7 +21,6 @@ Feature: Port remove-tag-from-feature command to Rust
   #   7. Multi-tag-on-one-line is NOT split — a line containing '@a @b' is dropped only when the trimmed full line equals an input tag (documented divergence from TS preserved)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch remove-tag-from-feature from the agent loop and run `fspec remove-tag-from-feature` from a shell with byte-for-byte parity to the TypeScript implementation

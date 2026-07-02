@@ -4,7 +4,6 @@
 @rpc
 @RPC-070
 Feature: Fix sync→async block_on panic in SessionManagerHandle impl (Work Agent crash)
-
   """
   Architecture: Option B from the fix-proposal.md attachment was chosen — wrap each affected sync->async bridge in tokio::task::block_in_place(|| Handle::current().block_on(...)) instead of refactoring the SessionManagerHandle trait to async fn (Option A) or building per-call runtimes (Option C, rejected).
   Architecture: The fspec binary's main is annotated with #[tokio::main] (default: multi-thread runtime), and codelet-napi's #[napi(tokio_main)] also uses multi-thread, so block_in_place is legal on every production call site. A debug_assert!(handle.runtime_flavor() == MultiThread, ...) inside the helper makes the precondition explicit.
@@ -31,7 +30,6 @@ Feature: Fix sync→async block_on panic in SessionManagerHandle impl (Work Agen
   #   4. The pre-existing codelet-sessions handle_impl tests (scenario_session_manager_satisfies_trait_object, scenario_unknown_session_id_returns_safe_defaults, scenario_impl_block_exists_with_every_override) all still pass after the fix
   #
   # ========================================
-
   Background: User Story
     As a fspec user
     I want to open the Work Agent by pressing Enter on a work unit in the Rust TUI

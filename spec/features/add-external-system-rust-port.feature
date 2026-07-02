@@ -1,7 +1,6 @@
 @done
 @RPC-182
 Feature: Port add-external-system command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_external_system.rs. Reuses the same event-storm
   shared-util semantics as the TS addEventStormItem (src/commands/event-storm-utils.ts). Validation

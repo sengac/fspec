@@ -4,7 +4,6 @@
 @cli
 @RPC-285
 Feature: Port report-bug-to-github command to Rust
-
   """
   Core impl target: codelet/fspec-core/src/commands/report_bug_to_github.rs. Signature changes from the
   current stub run(_args_json) to the canonical run(args_json, project_root). Args mirror the TS
@@ -16,22 +15,22 @@ Feature: Port report-bug-to-github command to Rust
 
   ⚠️ SCOPE FLAG (poll_sync_future / async-process safety) — see WORKER report to supervisor.
   The TS command has a deterministic gather/format/URL core plus two NON-deterministic side surfaces:
-    (A) DETERMINISTIC CORE (specified here, 100% poll_sync_future-SAFE):
-        - gatherContext: blocking fs reads (package.json→pinned const 0.9.3, error-logs json), OS from
-          std::env::consts::OS, work-unit context from work-units.json + feature-file scan, and git
-          branch/status via BLOCKING std::process::Command::new("git").output() — the exact pattern already
-          documented poll_sync_future-safe in update_work_unit_status.rs:479.
-        - formatBugReportMarkdown: pure string assembly.
-        - constructGitHubURL: percent-encoding (hand-rolled encodeURIComponent — no url crate available).
-    (B) DEFERRED pending supervisor scope decision (the research EXECUTE-mode analogue):
-        - openInBrowser(url): launches the system browser via the `open` npm package (no-ops in test env,
-          fire-and-forget detached spawn). Launching a GUI browser from the LLM dispatcher / a headless CI
-          context is an undesirable real side effect, so the dispatcher/core path returns browserOpened=false
-          and surfaces the url in the envelope instead. Best-effort launch on the standalone-binary path is a
-          supervisor decision.
-        - Interactive stdin prompts (prompt/confirm/editTitle/editBody): real stdin blocking, NOT
-          poll_sync_future-safe, and never wired by the Commander action handler anyway (the handler passes
-          interactive:true without any callbacks, so --interactive only sets previewShown).
+  (A) DETERMINISTIC CORE (specified here, 100% poll_sync_future-SAFE):
+  - gatherContext: blocking fs reads (package.json→pinned const 0.9.3, error-logs json), OS from
+  std::env::consts::OS, work-unit context from work-units.json + feature-file scan, and git
+  branch/status via BLOCKING std::process::Command::new("git").output() — the exact pattern already
+  documented poll_sync_future-safe in update_work_unit_status.rs:479.
+  - formatBugReportMarkdown: pure string assembly.
+  - constructGitHubURL: percent-encoding (hand-rolled encodeURIComponent — no url crate available).
+  (B) DEFERRED pending supervisor scope decision (the research EXECUTE-mode analogue):
+  - openInBrowser(url): launches the system browser via the `open` npm package (no-ops in test env,
+  fire-and-forget detached spawn). Launching a GUI browser from the LLM dispatcher / a headless CI
+  context is an undesirable real side effect, so the dispatcher/core path returns browserOpened=false
+  and surfaces the url in the envelope instead. Best-effort launch on the standalone-binary path is a
+  supervisor decision.
+  - Interactive stdin prompts (prompt/confirm/editTitle/editBody): real stdin blocking, NOT
+  poll_sync_future-safe, and never wired by the Commander action handler anyway (the handler passes
+  interactive:true without any callbacks, so --interactive only sets previewShown).
 
   SHARED-FILE REQUESTS to supervisor (deferred to Phase C): (1) canonical.rs PORTED_COMMANDS add
   'report-bug-to-github'; (2) dispatch.rs move from run_stub to run_ported with run(args_json, project_root);
@@ -84,7 +83,6 @@ Feature: Port report-bug-to-github command to Rust
   #   - Work-units file: replicate TS side-effect faithfully via ensure_work_units_file (creates the file).
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the report-bug-to-github command's deterministic context-gathering, markdown-formatting and

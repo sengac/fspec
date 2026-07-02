@@ -3,7 +3,6 @@
 @cli
 @RPC-305
 Feature: Port show-foundation command to Rust
-
   """
   Uses ensure_foundation_file from crate::io::ensure (auto-creating spec/foundation.json with canonical v2.0.0 defaults when missing) — TS source-of-truth at src/commands/show-foundation.ts:75 calls ensureFoundationFile, so the Rust port matches that auto-create behaviour exactly.
 
@@ -47,7 +46,6 @@ Feature: Port show-foundation command to Rust
   #   12. CLI exit code is 0 on success and 1 on any error
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of show-foundation wired through both the LLM dispatcher and the clap subcommand

@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port create-epic command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/create_epic.rs reads spec/epics.json (tolerating missing/malformed via TS bare-catch parity), validates the epic id with regex `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, rejects duplicates, then writes the merged store via io::locked_file::write_json_atomic. Errors are wrapped with the 'Failed to create epic: ' prefix to mirror TS outer-catch semantics.
   Help config at codelet/fspec-core/src/help/configs/create_epic.rs mirrors src/commands/create-epic-help.ts byte-for-byte.

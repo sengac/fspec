@@ -1,9 +1,9 @@
 @done
 @cli
 @querying
-@RPC-256 @wip
+@RPC-256
+@wip
 Feature: Port query-bottlenecks command to Rust
-
   """
   Use ensure_work_units_file from crate::io::ensure (auto-creating spec/work-units.json with canonical defaults if missing) — TS source-of-truth at src/commands/query-bottlenecks.ts:69 calls ensureWorkUnitsFile, so the Rust port matches that auto-create behaviour exactly.
   Read the blocks array from WorkUnit.extra via extra.get("blocks").and_then(Value::as_array) — do NOT add typed dependency fields to shared types/work_unit.rs (file-ownership rule: shared types module is supervisor-only). Mirror the dependency-stats port pattern.
@@ -29,7 +29,6 @@ Feature: Port query-bottlenecks command to Rust
   #   9. CLI exit codes: 0 on success, 1 on any FspecCoreError with stderr prefixed 'Error:'
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of query-bottlenecks wired through both the LLM dispatcher and the clap subcommand

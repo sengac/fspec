@@ -10,17 +10,17 @@ Feature: /loop RPC surface source shape
   Pin the source-shape contract that the rest of RPC-030 depends on:
 
   - The three loop_add/loop_cancel/loop_list RPC methods MUST be
-    declared at every layer of the dual-transport stack
-    (SessionManagerHandle trait + tarpc FspecService + FspecBackend
-    trait + both transport forwarders).
+  declared at every layer of the dual-transport stack
+  (SessionManagerHandle trait + tarpc FspecService + FspecBackend
+  trait + both transport forwarders).
   - The new wire type RegisteredLoop MUST exist as a public
-    declaration in codelet-rpc-types with all seven documented fields.
+  declaration in codelet-rpc-types with all seven documented fields.
   - The LoopSubcommand enum + parse_loop_command MUST live in
-    codelet/fspec-tui/src/app/loop_parser.rs.
+  codelet/fspec-tui/src/app/loop_parser.rs.
   - All slash-command wiring for /loop MUST live in
-    codelet/fspec-tui/src/app/dispatch_slash_loop.rs (mirrors
-    dispatch_slash_schedule) so the orchestrator dispatch.rs stays under the
-    300-LoC ceiling.
+  codelet/fspec-tui/src/app/dispatch_slash_loop.rs (mirrors
+  dispatch_slash_schedule) so the orchestrator dispatch.rs stays under the
+  300-LoC ceiling.
 
   These tests run against source files at compile/parse time — they
   catch refactors that accidentally collapse the dual-transport
@@ -43,7 +43,6 @@ Feature: /loop RPC surface source shape
   #   8. All /loop wiring MUST live in codelet/fspec-tui/src/app/dispatch_slash_loop.rs.
   #
   # ========================================
-
   Background: User Story
     As a developer of fspec
     I want source-shape tests to pin the layering of the /loop RPC surface

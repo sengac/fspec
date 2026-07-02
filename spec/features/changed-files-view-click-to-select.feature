@@ -3,7 +3,6 @@
 @tui
 @RPC-368
 Feature: Click a file row to select it in the Changed Files view
-
   """
   handle_mouse in views/changed_files/mod.rs gains a MouseEventKind::Down(_) arm placed BEFORE the wheel match. It hit-tests via pane_at(col,row); on the Files pane it computes clicked_index and calls move_selection(clicked_index as i32 - selected_index as i32) to reuse the existing clamp/ensure_visible/Emit(LoadFileDiff) path; on the Diff pane it sets focused_pane=Pane::Diff and returns Consumed.
   last_files_rect is the CONTENT rect (header + underline rows already excluded by pane_header), so no header offset adjustment is needed: row 0 of the content rect maps to file index file_scroll. Clamp clicked_index to files.len()-1 and ignore clicks where (ev.row - rect.y) >= files.len().saturating_sub(file_scroll).
@@ -28,7 +27,6 @@ Feature: Click a file row to select it in the Changed Files view
   #   4. Clicking inside the diff pane focuses the diff pane and leaves the file selection unchanged
   #
   # ========================================
-
   Background: User Story
     As a fspec user browsing the Changed Files view
     I want to click a file row to select it

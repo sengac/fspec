@@ -4,7 +4,6 @@
 @rust
 @RPC-242
 Feature: Port list-checkpoints command to Rust
-
   """
   File layout (worker-owned): codelet/fspec-core/src/commands/list_checkpoints.rs (rewrite stub), codelet/fspec-core/src/help/configs/list_checkpoints.rs (new), codelet/fspec-core/tests/list_checkpoints.rs (new dispatcher test), codelet/fspec/src/list_checkpoints.rs (new CLI bridge), codelet/fspec/tests/cli_list_checkpoints.rs (new CLI test), codelet/fspec/tests/fixtures/help/list-checkpoints.txt (new help fixture)
   Shared-file changes required from supervisor: (1) codelet/fspec-core/Cargo.toml — add `codelet-git.workspace = true` to [dependencies]; (2) codelet/fspec-core/src/help/configs/mod.rs — add `pub mod list_checkpoints;`; (3) codelet/fspec-core/src/dispatch.rs — register list-checkpoints route delegating to commands::list_checkpoints::run; (4) codelet/fspec/src/main.rs — add Mode::ListCheckpoints { work_unit_id: String } clap variant plus action arm plus help-printing branch. canonical.rs already lists list-checkpoints so no change there.
@@ -49,7 +48,6 @@ Feature: Port list-checkpoints command to Rust
   #   13. Running `./codelet/target/release/fspec --help` lists `list-checkpoints` as an available subcommand alongside daemon, client, status, list-work-units, list-prefixes (default combined TUI mode preserved)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-checkpoints from the agent loop (and run it from the shell) to view all checkpoints for a work unit with the same visual indicators as the TypeScript implementation

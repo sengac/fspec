@@ -748,16 +748,66 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     fn send_hitl_response(
         &self,
         session_id: &SessionId,
-        _response: HitlResponse,
+        response: HitlResponse,
     ) -> Result<(), String> {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
-                // The wire-portable HitlResponse carries (id, value).
-                // Map it to the internal tools::request_user_input::HitlResponse::Cancelled
-                // path: full answer-mapping is wired in RPC-053.
+                // RPC-408: map the wire HitlResponse{id, value} to the
+                // internal Answered variant — mirroring the napi path
+                // (session_send_hitl_response). The wire path has no
+                // cancel affordance, so this never sends Cancelled.
+                let pending = session
+                    .get_hitl_request()
+                    .and_then(|req| req.questions.into_iter().next());
+                let answer = match &pending {
+                    Some(question) => {
+                        let is_option_label = question
+                            .options
+                            .as_deref()
+                            .unwrap_or_default()
+                            .iter()
+                            .any(|opt| opt.label == response.value);
+                        if is_option_label {
+                            codelet_tools::request_user_input::HitlAnswer {
+                                selected: vec![response.value],
+                                other: None,
+                            }
+                        } else {
+                            codelet_tools::request_user_input::HitlAnswer {
+                                selected: vec![],
+                                other: Some(response.value),
+                            }
+                        }
+                    }
+                    // No pending request stored — treat the value as
+                    // free text and key by the response id below.
+                    None => codelet_tools::request_user_input::HitlAnswer {
+                        selected: vec![],
+                        other: Some(response.value),
+                    },
+                };
+                // Prefer the pending question's id as the answer key;
+                // execute_hitl consumers look answers up by the ids
+                // they generated. Warn on mismatch with the wire id.
+                let question_id = match pending {
+                    Some(question) => {
+                        if question.id != response.id {
+                            tracing::warn!(
+                                pending_id = %question.id,
+                                response_id = %response.id,
+                                "[HITL] wire response id does not match pending \
+                                 question id; keying answer by the pending id"
+                            );
+                        }
+                        question.id
+                    }
+                    None => response.id,
+                };
+                let mut answers = std::collections::HashMap::new();
+                answers.insert(question_id, answer);
                 session.send_hitl_response(
-                    codelet_tools::request_user_input::HitlResponse::Cancelled { cancelled: false },
+                    codelet_tools::request_user_input::HitlResponse::Answered { answers },
                 );
                 Ok(())
             }

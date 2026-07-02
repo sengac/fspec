@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port add-capability command to Rust
-
   """
   Rust port of the TypeScript `add-capability` command
   (src/commands/add-capability.ts via src/commands/register-add-capability.ts).

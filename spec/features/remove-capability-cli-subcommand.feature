@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec remove-capability CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `remove-capability` mirrors the TS Commander.js
   registration at src/commands/register-remove-capability.ts — a single
@@ -15,7 +14,7 @@ Feature: fspec remove-capability CLI subcommand (Rust port)
   matching, or file IO logic is duplicated in the bridge.
 
   Stdout success line (parity with the TS output.log line):
-    ✓ Removed capability "<name>" from <fileName>
+  ✓ Removed capability "<name>" from <fileName>
   where <fileName> is 'foundation.json.draft' or 'foundation.json' depending on
   which file was actually written.
 

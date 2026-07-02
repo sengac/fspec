@@ -3,7 +3,6 @@
 @napi
 @model-selection
 Feature: Custom-model add NAPI binding
-
   """
   RPC-347 slice: the add_custom_model NAPI binding accepts a
   CustomModelDefinition-shaped object and persists it through the RPC-346

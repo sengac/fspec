@@ -1,7 +1,6 @@
 @done
 @RPC-204
 Feature: fspec clear-dependencies CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/clear_dependencies.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/clear-dependencies.ts:101-123).
   Surface: `fspec clear-dependencies <workUnitId> --confirm`.

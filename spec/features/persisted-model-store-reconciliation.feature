@@ -5,7 +5,6 @@
 @rust
 @PROV-120
 Feature: Persisted Model Store Reconciliation
-
   """
   PROV-120 persistence reconciliation. Source of truth = tui.lastUsedModel in ~/.fspec/fspec-config.json (TS parity: modelInitializationService.ts loadPersistedModelString / modelSelectionService.ts writeConfig). Rust reader added in codelet/sessions/src/last_used_model_persistence.rs (path-injectable _from(&Path) core + env-resolved convenience). Legacy default-model.json (PROV-119) is read once for back-compat when fspec-config.json has no tui.lastUsedModel; new writes go to fspec-config.json.
   """

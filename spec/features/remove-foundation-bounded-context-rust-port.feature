@@ -1,7 +1,6 @@
 @done
 @RPC-274
 Feature: Port remove-foundation-bounded-context command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/remove_foundation_bounded_context.rs. Signature
   run(args_json, project_root). Args struct {contextName: String, cascade: Option<bool>} (serde

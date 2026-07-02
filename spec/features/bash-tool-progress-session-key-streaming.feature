@@ -5,7 +5,6 @@
 @tools
 @RPC-398
 Feature: Bash/tool output does not stream incrementally in Rust TUI (session-id key mismatch)
-
   """
   Root cause: tool-progress registry (codelet/tools/src/session_registry.rs:95-100) uses exact HashMap lookup with no fallback. Registration was under Uuid::nil() (cli/src/interactive/stream_loop.rs:459-462, BUG-126) while BashTool emits under the real session.id (bash.rs:66,268 -> bash_streams.rs:73).
   Fix: thread the real per-session UUID (the one passed to create_rig_agent/BashTool::new) into the stream-loop registration site so set_tool_progress_callback(session_id, ...) uses the same id BashTool emits with. Clear with the same id.
@@ -30,7 +29,6 @@ Feature: Bash/tool output does not stream incrementally in Rust TUI (session-id 
   #   4. After the stream loop clears the callback for session S, a subsequent emit under S is a no-op (registration removed)
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user
     I want to see bash/tool output stream line-by-line while a command is running

@@ -4,7 +4,6 @@
 @tui
 @RPC-393
 Feature: Refactor Edit/Write diff formatting to a clean structured-row model with consistent gutter coloring
-
   """
   Chosen gutter-consistency rule: line-number gutter is ALWAYS rendered with a dim/gray style OUTSIDE the colored background; the red/green bar fills from the marker column to the right edge. Applied uniformly to Removed/Added/Context. This fixes defect A (no per-row-type flip) while preserving RPC-392 full-width bars.
   Option 1 chosen (string codec): ChunkSource.text/full_text stay String to keep the store shape stable (rpc024/026 source-shape ceilings). A single private codec in diff_format.rs (to_line/parse_line) is the sole encode/decode; chunk_wrap and turn_modal parse_line then call the shared style_row. Marker steganography + context_gutter_len/strip_marker heuristics deleted.
@@ -44,7 +43,6 @@ Feature: Refactor Edit/Write diff formatting to a clean structured-row model wit
   #   13. No-regression: a Bash tool result renders plain with no diff background
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI developer
     I want to represent Edit/Write diff rows as a typed structured-row model with one uniform styling function

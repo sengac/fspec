@@ -1,7 +1,6 @@
 @done
 @RPC-281
 Feature: remove-tag-from-feature CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/remove_tag_from_feature.rs (NEW CLI bridge); codelet/fspec/tests/cli_remove_tag_from_feature.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/remove-tag-from-feature.txt (captured help fixture from `node dist/index.js remove-tag-from-feature --help`).
   Bridge marshals positional <file> + variadic <tags...> into JSON and delegates to commands::remove_tag_from_feature::run. No logic in bridge — JSON marshalling only.

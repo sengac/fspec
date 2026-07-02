@@ -8,7 +8,6 @@
 @code-quality
 @RPC-076
 Feature: skeleton_invariants clippy fails on unused_imports NotificationSeverity in codelet-core session_manager_handle
-
   """
   Workspace-wide clippy lint `clippy::unused_imports` (implied by `-D warnings`) stays at deny — no `#[allow(unused_imports)]` escape hatch is added to session_manager_handle.rs
   Fix Option A (drop the import) is correct because the WIP diff shows NotificationSeverity was imported but the original UserNotification broadcast it was for has been intentionally removed (see git diff: 'The previous UserNotification { message: ... } broadcast for /clear was a Rust-side invention with no counterpart in the TypeScript reference… and has been removed')
@@ -33,7 +32,6 @@ Feature: skeleton_invariants clippy fails on unused_imports NotificationSeverity
   #   4. `cargo clippy -p codelet-core --all-targets -- -D warnings` exits 0 with no unused_imports diagnostics against session_manager_handle.rs
   #
   # ========================================
-
   Background: User Story
     As a developer maintaining the Rust port
     I want to have the codelet-core session_manager_handle.rs comply with the workspace-wide `clippy::unused_imports = deny` policy by removing the unused NotificationSeverity import
@@ -45,12 +43,10 @@ Feature: skeleton_invariants clippy fails on unused_imports NotificationSeverity
     Then the symbol `NotificationSeverity` does not appear in the import list
     Then the symbols `PauseState` and `ProviderInfo` continue to appear in the import list
 
-
   Scenario: cargo clippy on codelet-core emits no unused_imports diagnostic against session_manager_handle.rs
     Given the workspace lint set denies `unused_imports` (implied by `-D warnings`)
     When I run `cargo clippy -p codelet-core --all-targets -- -D warnings`
     Then no `unused_imports` diagnostic is emitted against `core/src/session_manager_handle.rs`
-
 
   Scenario: codelet-core skeleton-invariants workspace-lint precondition: codelet-core itself passes -D warnings
     Given the codelet/Cargo.toml workspace lints declaration is inherited by codelet-core
@@ -58,9 +54,7 @@ Feature: skeleton_invariants clippy fails on unused_imports NotificationSeverity
     When I run `cargo clippy -p codelet-core --all-targets -- -D warnings`
     Then the command exits 0 with no errors
 
-
   Scenario: Source-shape regression test pins the absence of unused NotificationSeverity import
     Given the file `codelet/core/src/session_manager_handle.rs` exists in the workspace
     When I scan the file for occurrences of the identifier `NotificationSeverity`
     Then either the identifier does not appear at all, or every occurrence inside the `use codelet_rpc_types::{...}` block is matched by at least one use-site elsewhere in the same file
-

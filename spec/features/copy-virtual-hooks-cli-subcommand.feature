@@ -4,7 +4,6 @@
 @rust
 @RPC-209
 Feature: copy-virtual-hooks CLI subcommand
-
   """
   Shell-facing surface for the Rust port of `fspec copy-virtual-hooks --from <src> --to <dst> [--hook-name <name>]`. Lives at codelet/fspec/src/copy_virtual_hooks.rs as the standard two-front-doors CLI bridge. It owns clap parsing, enforces the friendly "--from option is required" / "--to option is required" errors at the bridge layer (matching the TS Commander.js action handler), marshals camelCase JSON into the shared `copy_virtual_hooks::run` core function (defined in codelet/fspec-core/src/commands/copy_virtual_hooks.rs and proven by spec/features/copy-virtual-hooks-rust-port.feature), prints the rendered text response to stdout, and surfaces InvalidArgs as a single `Error: <msg>` line to stderr followed by exit code 1.
 

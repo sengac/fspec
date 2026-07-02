@@ -4,7 +4,6 @@
 @rust
 @RPC-205
 Feature: Port clear-virtual-hooks command to Rust
-
   """
   New impl file at codelet/fspec-core/src/commands/clear_virtual_hooks.rs replaces the NotYetPorted stub. Module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` mirroring the list_virtual_hooks::run signature.
 
@@ -35,7 +34,6 @@ Feature: Port clear-virtual-hooks command to Rust
   #   11. Help intercept produces byte-exact output matching node dist/index.js clear-virtual-hooks --help
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch clear-virtual-hooks from the agent loop AND invoke `fspec clear-virtual-hooks <workUnitId>` from a shell

@@ -3,7 +3,6 @@
 @diff-viewer
 @RPC-366
 Feature: Checkpoint delete actions (single / all) with typed-confirmation dialog
-
   """
   Rust ratatui CheckpointsView (RPC-364) gains delete actions reusing the RPC-365 modal sub-state pattern. d/D opens a yes/no single-delete confirmation; a/A opens a typed-confirmation requiring the exact phrase DELETE ALL before Enter dispatches. Keys emit Action::DeleteCheckpoint / Action::DeleteAllCheckpoints which App::dispatch_checkpoints spawns onto transport delete_checkpoint / delete_all_checkpoints (RPC-362), folding a DeleteCheckpointResult back. On a successful single delete the view removes the row, clamps the selection and reloads the now-selected checkpoint's files (or CloseCheckpointsView when the list empties); delete-all closes back to the board. Any successful delete refreshes the board checkpoint_counts. Cancelling makes no transport call.
   """
@@ -27,7 +26,6 @@ Feature: Checkpoint delete actions (single / all) with typed-confirmation dialog
   #   5. Cancelling the delete-all dialog makes no transport call and leaves all checkpoints in the list
   #
   # ========================================
-
   Background: User Story
     As a fspec user browsing checkpoints
     I want to delete a single checkpoint or all checkpoints from the viewer behind confirmation dialogs

@@ -4,7 +4,6 @@
 @rust
 @RPC-295
 Feature: Port review command to Rust
-
   """
   FUTURE CONSOLIDATION (follow-up task): review.rs will (a) inline a PRIVATE copy of getAgentConfig/formatAgentOutput mirroring init.rs's inlined AGENT_REGISTRY precedent, and (b) re-implement linked-feature lookup LOCALLY rather than pub-exporting from show_work_unit.rs (a shared/done command). A later follow-up should extract a shared agent_runtime module and migrate both init + review onto it, and consolidate the linked-feature lookup. Out of scope for RPC-295.
   """
@@ -49,7 +48,6 @@ Feature: Port review command to Rust
   #   A: review GETS a clap subcommand (Mode::Review { work_unit_id }) but NO rich help CONFIG / NO intercept_ts_help arm (delete-scenarios special-case: bare output). CLI test asserts subcommand exists + functional behaviour, not byte-parity help fixture.
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to run an end-to-end review of a work unit

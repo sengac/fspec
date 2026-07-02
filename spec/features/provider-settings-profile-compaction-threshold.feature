@@ -5,7 +5,6 @@
 @rust
 @PROV-115
 Feature: Profile compaction-threshold range validation parity (reject <1% / >100% and <1000 tokens)
-
   """
   Mirror TS constants exactly: MIN_PERCENTAGE=1, MAX_PERCENTAGE=100, MIN_TOKEN_THRESHOLD=1000 (compactionThresholdParser.ts:15-21)
   Apply the range guard on the profile save path (profile_form::build_definition, after parse_compaction_trigger returns the split fields) so out-of-range -> (None, None). Do NOT bake the range into the SHARED parse_compaction_trigger (model_selector/form.rs) unless the worker verifies TS range-checks the custom-model form too; default is to leave model_selector untouched and keep its tests green.
@@ -29,13 +28,14 @@ Feature: Profile compaction-threshold range validation parity (reject <1% / >100
   #   4. User types '101%' but supplies valid baseUrl/apiKey/name -> the profile still saves, with the compactionThreshold key omitted
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user editing an OpenAI profile
     I want to enter a compaction trigger value
     So that out-of-range thresholds are rejected exactly like the TypeScript TUI instead of being silently persisted
 
-  @tui @provider-settings @validation
+  @tui
+  @provider-settings
+  @validation
   Scenario: A below-minimum percentage is treated as unset
     Given a profile create form with a valid base URL, API key and name
     And the compaction trigger field contains "0%"
@@ -43,7 +43,9 @@ Feature: Profile compaction-threshold range validation parity (reject <1% / >100
     Then the saved profile definition has no compaction threshold type
     And the saved profile definition has no compaction threshold value
 
-  @tui @provider-settings @validation
+  @tui
+  @provider-settings
+  @validation
   Scenario: Percentage boundaries 1 and 100 are accepted
     Given a profile create form with a valid base URL, API key and name
     When the compaction trigger field contains "1%" and the profile is saved
@@ -51,7 +53,9 @@ Feature: Profile compaction-threshold range validation parity (reject <1% / >100
     When the compaction trigger field contains "100%" and the profile is saved
     Then the saved profile definition has compaction threshold type "percentage" and value 100
 
-  @tui @provider-settings @validation
+  @tui
+  @provider-settings
+  @validation
   Scenario: An above-maximum percentage is omitted but the profile still saves
     Given a profile create form with a valid base URL, API key and name
     And the compaction trigger field contains "101%"
@@ -60,7 +64,9 @@ Feature: Profile compaction-threshold range validation parity (reject <1% / >100
     And the saved profile definition has no compaction threshold type
     And the saved profile definition has no compaction threshold value
 
-  @tui @provider-settings @validation
+  @tui
+  @provider-settings
+  @validation
   Scenario: A below-minimum token count is treated as unset
     Given a profile create form with a valid base URL, API key and name
     When the compaction trigger field contains "999" and the profile is saved
@@ -68,7 +74,9 @@ Feature: Profile compaction-threshold range validation parity (reject <1% / >100
     When the compaction trigger field contains "1000" and the profile is saved
     Then the saved profile definition has compaction threshold type "tokens" and value 1000
 
-  @tui @provider-settings @validation
+  @tui
+  @provider-settings
+  @validation
   Scenario: Empty and non-numeric input remain unset
     Given a profile create form with a valid base URL, API key and name
     When the compaction trigger field contains "" and the profile is saved

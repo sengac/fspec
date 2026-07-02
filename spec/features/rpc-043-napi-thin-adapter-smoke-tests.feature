@@ -5,22 +5,21 @@
 @codelet
 @RPC-043
 Feature: RPC-043 NAPI thin-adapter smoke-test contract
-
   """
   Architecture notes:
   - Split out from the main RPC-043 feature file (reduce-codelet-napi-to-thin-adapter-session-bindings-rs-update-cargo-toml.feature)
-    to satisfy fspec's 1-feature = 1-test-file invariant. RPC-043's deliverables include BOTH a static shape-test
-    binary (codelet/napi/tests/session_bindings_shape.rs) AND a runtime smoke-test binary
-    (codelet/napi/tests/session_bindings_smoke.rs). When fspec's 1:1 validator was introduced this feature was
-    refactored into two siblings to keep both test binaries traceable to their owning Gherkin scenarios.
+  to satisfy fspec's 1-feature = 1-test-file invariant. RPC-043's deliverables include BOTH a static shape-test
+  binary (codelet/napi/tests/session_bindings_shape.rs) AND a runtime smoke-test binary
+  (codelet/napi/tests/session_bindings_smoke.rs). When fspec's 1:1 validator was introduced this feature was
+  refactored into two siblings to keep both test binaries traceable to their owning Gherkin scenarios.
   - The smoke binary exercises every public #[napi] wrapper from codelet-napi against a fresh SessionManager
-    singleton + the canonical UNKNOWN_UUID, locking in the pre-RPC-043 observable error/no-op behaviour as a
-    regression detector for future agent-loop lifts (RPC-046..RPC-068).
+  singleton + the canonical UNKNOWN_UUID, locking in the pre-RPC-043 observable error/no-op behaviour as a
+  regression detector for future agent-loop lifts (RPC-046..RPC-068).
   - Behaviour-preservation invariant: NO #[napi] symbol is renamed, removed, or has its signature altered; every
-    wrapper continues to compile against the existing `use codelet_napi::{...}` import block.
+  wrapper continues to compile against the existing `use codelet_napi::{...}` import block.
   """
 
-  Background:
+  Background: 
     Given the RPC-043 changes are applied to the codelet workspace
     And UNKNOWN_UUID is the well-formed but unregistered UUID "00000000-0000-0000-0000-000000000000"
 

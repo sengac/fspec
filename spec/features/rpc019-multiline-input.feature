@@ -24,8 +24,9 @@ Feature: RPC-019 AgentView multi-line input (tui-textarea-backed MultiLineInput)
   ONLY emits them; RPC-021 will route them through App::dispatch.
   - ESC always emits Action::BackToBoard (preserved from RPC-012).
   - When the buffer is empty, the input row paints
-  "> Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions
-  | 'Tab' select turn)" in dim grey + green prompt.
+  "> Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history,
+  'Shift+←/→' sessions, 'Tab' turns" in dim grey + green prompt
+  (RPC-402: 'Shift+Enter' leads and the string fits 80 cols).
 
   Pair: render tests live in
   codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs.
@@ -74,7 +75,7 @@ Feature: RPC-019 AgentView multi-line input (tui-textarea-backed MultiLineInput)
     Then the rendered buffer's input row contains the substring "> Type a message..."
     And the rendered buffer's input row contains the substring "'Shift+↑/↓' history"
     And the rendered buffer's input row contains the substring "'Shift+←/→' sessions"
-    And the rendered buffer's input row contains the substring "'Tab' select turn"
+    And the rendered buffer's input row contains the substring "'Tab' turns"
 
   Scenario: Non-empty MultiLineInput hides the placeholder hint
     Given an AgentView whose MultiLineInput contains "draft"

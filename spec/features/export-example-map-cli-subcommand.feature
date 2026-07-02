@@ -3,7 +3,6 @@
 @cli
 @RPC-228
 Feature: Port export-example-map command to Rust
-
   """
   Core: codelet/fspec-core/src/commands/export_example_map.rs — pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>. Args: { workUnitId: String, file: String }. Reads rules/examples/questions/assumptions from WorkUnit.extra as serde_json::Value; defaults to empty arrays. Serializes via #[derive(Serialize)] struct (fixed field order) with to_string_pretty (2-space).
   CLI bridge: codelet/fspec/src/export_example_map.rs (CliArgs { work_unit_id, file }). clap variant Mode::ExportExampleMap with two required positionals. Success: println! the returned message; Error: eprintln! ✗ Failed to export example map: <msg>, exit 1. Help intercept + help config codelet/fspec-core/src/help/configs/export_example_map.rs + fixture export-example-map.txt.
@@ -32,7 +31,6 @@ Feature: Port export-example-map command to Rust
   #   6. Dispatcher and CLI produce identical written file content for the same work unit
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run export-example-map in the Rust binary and via the LLM dispatcher

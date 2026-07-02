@@ -2,7 +2,6 @@
 @git-integration
 @RPC-355
 Feature: Git Change Type Derivation
-
   """
   Change-type derivation is gitoxide-based with no shelling out. A=untracked or absent-from-HEAD, D=indexed but missing from workdir, M=otherwise, R best-effort defaults to M. get_staged_files_with_change_type / get_unstaged_files_with_change_type return ChangedFileStatus { path, change_type } where ChangeType is an enum with as_letter().
   """

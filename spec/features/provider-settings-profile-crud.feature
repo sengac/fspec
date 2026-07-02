@@ -5,7 +5,6 @@
 @provider-settings
 @PROV-111
 Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
-
   """
   Final wiring slice of the PROV-106 epic (parity with the TS profile-management
   flows). Earlier slices shipped the backend write path (PROV-108
@@ -69,7 +68,6 @@ Feature: Profile nav routing, prefill, per-profile delete and end-to-end refresh
   #   - ProfileForm field navigation, save validation, parse-on-build, Tab/Esc: PROV-110 (provider-settings-profile-form.feature)
   #
   # ========================================
-
   Background: User Story
     As a fspec user managing OpenAI-compatible local-server profiles in Provider Settings
     I want to press Enter/d on profile and Add-Profile nav rows to open prefilled edit, create and delete-confirm flows

@@ -4,7 +4,6 @@
 @parser
 @RPC-230
 Feature: Port format command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/format.rs parses each target feature file with crate::io::gherkin and re-emits it through a hand-ported AST-based Gherkin formatter (new module codelet/fspec-core/src/io/gherkin_format.rs) that reproduces src/utils/gherkin-formatter.ts byte-for-byte: 2-space scenario / 4-space step indentation, per-column-aligned tables, preserved doc strings and tags, blank line before each feature child and before each Examples block, single trailing newline. With no file argument it globs spec/features/**/*.feature (empty → formattedCount=0, no error) and skips unparseable files with a warning; with a file argument it formats only that file and a missing file surfaces 'File not found: <file>'. Returns the JSON envelope {formattedCount}. The CLI bridge owns rendering: 'No feature files found to format' / '✓ Formatted <file>' / '✓ Formatted N feature files' / 'Error: <message>'. format has a rich -help.ts → a normal CommandHelpConfig module renders byte-for-byte parity.
   """
@@ -25,7 +24,6 @@ Feature: Port format command to Rust
   #   3. Dispatcher formatting a workspace with no feature files returns formattedCount=0
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to format feature files with the AST-based Gherkin formatter via both the LLM dispatcher and the shell CLI

@@ -1,7 +1,9 @@
 @done
-@RPC-160 @rust-frontend @provider-settings @wip
+@RPC-160
+@rust-frontend
+@provider-settings
+@wip
 Feature: Provider settings: Tab keybind in list mode emits SwitchToModels event
-
   """
   TS reference: src/tui/inputHandlers/listModeHandler.ts lines 57-60 —
   `if (key.tab) { onSwitchToModels(); return; }`. The callback is invoked
@@ -9,18 +11,18 @@ Feature: Provider settings: Tab keybind in list mode emits SwitchToModels event
   navigation logic is skipped.
 
   Rust port (RPC-160):
-    * codelet/fspec-tui/src/views/provider_settings/mod.rs adds
-      `ProviderSettingsEvent::SwitchToModels` next to Consumed / Ignored /
-      Emit(Action) / Close.
-    * list.rs::handle_list_key adds `KeyCode::Tab =>
-      ProviderSettingsEvent::SwitchToModels` BEFORE the catch-all
-      `_ => Consumed`.
-    * Filter-mode Tab continues to fall through handle_filter_key's
-      catch-all (Consumed) because filter_mode is checked first.
-    * navigator.rs::handle_provider_settings_event gets an arm
-      `ProviderSettingsEvent::SwitchToModels => EventResult::consumed()`
-      so the new variant compiles. Actual Navigator-to-models-view
-      transition is deferred to a follow-up card.
+  * codelet/fspec-tui/src/views/provider_settings/mod.rs adds
+  `ProviderSettingsEvent::SwitchToModels` next to Consumed / Ignored /
+  Emit(Action) / Close.
+  * list.rs::handle_list_key adds `KeyCode::Tab =>
+  ProviderSettingsEvent::SwitchToModels` BEFORE the catch-all
+  `_ => Consumed`.
+  * Filter-mode Tab continues to fall through handle_filter_key's
+  catch-all (Consumed) because filter_mode is checked first.
+  * navigator.rs::handle_provider_settings_event gets an arm
+  `ProviderSettingsEvent::SwitchToModels => EventResult::consumed()`
+  so the new variant compiles. Actual Navigator-to-models-view
+  transition is deferred to a follow-up card.
   """
 
   # ========================================
@@ -42,7 +44,6 @@ Feature: Provider settings: Tab keybind in list mode emits SwitchToModels event
   #      typing into the filter is not interrupted.
   #
   # ========================================
-
   Background: User Story
     As a user navigating provider settings
     I want to press Tab in list mode

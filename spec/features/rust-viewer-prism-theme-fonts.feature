@@ -4,7 +4,6 @@
 @viewer
 @RPC-377
 Feature: Client-side viewer parity: Prism syntax highlighting, copy button, language badge, theme toggle and font-size controls in the Rust markdown viewer
-
   """
   Server-emitted client JS; Rust tests assert on the emitted HTML string (script/style/markup presence, Prism 1.29 + prism-vsc-dark-plus, alias entries, localStorage keys fspec-theme/fspec-base-font-size, clamp bounds 10/24). Only the <title> is escaped via html_escape. Existing rust-attachment-viewer-server.feature scenarios and RPC-376 anchor tests must not regress.
   """
@@ -32,7 +31,6 @@ Feature: Client-side viewer parity: Prism syntax highlighting, copy button, lang
   #   7. The existing scenario still holds: the page still embeds the mermaid script and the .markdown-content wrapper with the rendered content, and the title is escaped
   #
   # ========================================
-
   Background: User Story
     As a documentation reader
     I want to view rendered markdown with syntax highlighting, copy buttons, a theme toggle and font-size controls in the Rust viewer
@@ -93,11 +91,9 @@ Feature: Client-side viewer parity: Prism syntax highlighting, copy button, lang
     Then the mermaid script reads the localStorage key "fspec-theme"
     And the mermaid init selects theme "'dark'" or "'default'" from the saved theme
 
-
   Scenario: Prism language aliases map shorthand languages to Prism grammars
     Given I render a viewer page for some content
     When I inspect the emitted HTML
     Then the alias map contains "shell: 'bash'" and "console: 'bash'"
     And the alias map contains "js: 'javascript'", "py: 'python'", "rb: 'ruby'" and "yml: 'yaml'"
     And the language resolver maps "text" to "plaintext"
-

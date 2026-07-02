@@ -4,7 +4,6 @@
 @rust
 @RPC-245
 Feature: Port list-features command to Rust
-
   """
   Uses an inline hand-rolled scanner in `parse_feature_header` rather than the upstream `gherkin` crate — deliberate divergence to keep the dep tree tight while maintaining the same public surface as the TypeScript implementation.
   New shared helper `io::feature_glob::glob_feature_files(cwd) -> Result<Vec<String>, FspecCoreError>` returns sorted forward-slash relative paths for every `spec/features/**/*.feature` match. Uses std walk + manual filtering (no extra glob crate dep) to keep the dep tree tight.
@@ -52,7 +51,6 @@ Feature: Port list-features command to Rust
   #   14. Both invocation paths produce the SAME structured data: (a) dispatch_command('list-features', {format:'json',tag:'@critical'}, project_root) and (b) `./codelet/target/release/fspec list-features --tag @critical` against the same on-disk state — only the rendering and delivery channel differ
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to list feature files with their names, scenario counts, and tags — optionally filtered by tag — from both the LLM-facing agent-loop dispatcher and the shell-facing CLI subcommand

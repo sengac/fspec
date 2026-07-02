@@ -4,7 +4,6 @@
 @tui
 @TUI-093
 Feature: Default thinking-level save/restore TS parity in Rust TUI
-
   """
   Restore parity ports TS src/tui/hooks/useDefaultThinkingLevel.ts to the Rust TUI. Persisted default lives in fspec-config.json tui.defaultThinkingLevel (int 0-3); missing/invalid loads as Off. Three application sites: (a) handle_set_thinking_level_default repaints via get_thinking_level + Action::ThinkingLevelLoaded; (b) bootstrap initialize_default_thinking_level mirrors initialize_startup_model; (c) refresh_session_chrome applies the default on activation/resume guarded by a per-session HashSet<SessionId> (Rust equivalent of TS appliedToSessionRef) so manual /thinking selections are never clobbered. Persistence is best-effort and non-fatal; storage location/encoding unchanged.
   """
@@ -28,7 +27,6 @@ Feature: Default thinking-level save/restore TS parity in Rust TUI
   #   5. No default has ever been set (no key on disk); a new session shows no thinking badge (Off) and startup does not error
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI user
     I want to have my selected default thinking level restored and visibly reflected across new, resumed, and active sessions

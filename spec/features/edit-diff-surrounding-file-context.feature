@@ -5,7 +5,6 @@
 @agent-view
 @tui
 Feature: Inject surrounding file context lines into Edit diffs
-
   """
   Architecture: extend PendingDiffKind::Edit to carry file_path; produce_diff_strings threads file_path into a new context-aware edit-diff builder in diff_format.rs (or a small helper module) that reads the post-edit file, slices CONTEXT_LINES before/after the changed span, and prepends/appends Context DiffOutputLines before running build_diff_rows. Keep files <300 LoC.
   """
@@ -30,7 +29,6 @@ Feature: Inject surrounding file context lines into Edit diffs
   #   5. A Write of a brand-new 3-line file still shows three green added lines and no context rows
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user
     I want to see a few unchanged file lines above and below an Edit's changed lines

@@ -4,7 +4,6 @@
 @rust
 @RPC-185
 Feature: Port add-hotspot command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_hotspot.rs. Uses the SHARED addEventStormItem util (event-storm-utils style — NOT inlined, NO dedup), because hotspots may repeat. Reads spec/work-units.json (existsSync check first, NO auto-create), mutates wu.extra['eventStorm'] map, write_json_atomic. Item construction: itemData fields (type 'hotspot', color 'red', text, optional concern/timestamp/boundedContext) first, then id, deleted, createdAt appended.
   Returns {success, hotspotId} from core; CLI bridge codelet/fspec/src/add_hotspot.rs is a clap-derived struct (workUnitId, text, --concern, --timestamp, --bounded-context) that marshals to dispatch and formats success/failure stdout/stderr lines (no domain logic). Success line: '✓ Hotspot added to <workUnitId> (id: <hotspotId>)'; failure: '✗ Failed to add hotspot: <message>'.
@@ -34,7 +33,6 @@ Feature: Port add-hotspot command to Rust
   #   8. CLI: fspec add-hotspot for a missing work unit exits 1 and stderr shows '✗ Failed to add hotspot:' with the not-found error
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the add-hotspot command to Rust (fspec-core)
@@ -47,25 +45,21 @@ Feature: Port add-hotspot command to Rust
     And the Event Storm contains an item with id 0, type "hotspot", color "red", deleted false
     And the eventStorm has level "process_modeling" and nextItemId 1
 
-
   Scenario: Add the same hotspot text twice without deduplication
     given a work unit "RPC-185" with a non-deleted hotspot "Unclear retry policy" at id 0
     when I add a hotspot "Unclear retry policy" again
     then the command succeeds and returns hotspotId 1
     And the Event Storm now contains two non-deleted hotspots with the same text
 
-
   Scenario: Append optional concern, timestamp and bounded context
     given a work unit "RPC-185" in the "specifying" state with no Event Storm
     when I add a hotspot "Timeout unknown" with concern "How long to wait?", timestamp 500 and bounded context "Payments"
     then the item has concern "How long to wait?", timestamp 500 and boundedContext "Payments"
 
-
   Scenario: Reject add for a missing work unit
     given a work units file that does not contain "NOPE-1"
     when I add a hotspot "X" to "NOPE-1"
     then the command fails with error "Work unit NOPE-1 not found"
-
 
   Scenario: Reject add when work units file is absent
     given there is no spec/work-units.json file
@@ -73,9 +67,7 @@ Feature: Port add-hotspot command to Rust
     then the command fails with error "spec/work-units.json not found. Run fspec init first."
     And no spec/work-units.json file is created
 
-
   Scenario: Reject add for a work unit in blocked state
     given a work unit "RPC-185" in the "blocked" state
     when I add a hotspot "X" to "RPC-185"
     then the command fails with error "Cannot add Event Storm items to work unit in blocked state"
-

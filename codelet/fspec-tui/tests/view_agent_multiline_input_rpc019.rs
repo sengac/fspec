@@ -213,9 +213,9 @@ fn empty_multi_line_input_paints_the_dim_placeholder_hint_with_a_green_prefix() 
         input_row.contains("'Shift+←/→' sessions"),
         "input row missing sessions hint: {input_row:?}"
     );
-    // @step And the rendered buffer's input row contains the substring "'Tab' select turn"
+    // @step And the rendered buffer's input row contains the substring "'Tab' turns"
     assert!(
-        input_row.contains("'Tab' select turn"),
+        input_row.contains("'Tab' turns"),
         "input row missing turn hint: {input_row:?}"
     );
 }

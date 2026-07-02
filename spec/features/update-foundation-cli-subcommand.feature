@@ -3,7 +3,6 @@
 @cli
 @RPC-312
 Feature: fspec update-foundation CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/update_foundation.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/update-foundation.ts:323-329). Surface:

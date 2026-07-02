@@ -1,7 +1,6 @@
 @done
 @RPC-187
 Feature: Port add-policy command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_policy.rs. Reuses io::ensure::ensure_work_units_file,
   io::locked_file::write_json_atomic, io::time::iso8601_now. The Event Storm items array lives in the

@@ -1,10 +1,8 @@
-//! AgentView — always-on container. RPC-029 layout:
-//! Header(1) / RoleBanner(0|1) / Scrollback(flex) / SessionFooter(1) /
-//! Input(visible_rows). RPC-026: resume_view/search_view early-return.
+//! AgentView — always-on container. RPC-029 layout: Header / RoleBanner /
+//! Scrollback / Footer / Input. RPC-026: resume/search views early-return.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::Color;
 use std::time::Instant;
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -22,17 +20,25 @@ pub mod chrome_paint;
 pub mod confirm_dialog;
 pub mod dispatch;
 pub mod dispatch_mode_views;
+mod dispatch_popups;
 pub mod dispatch_select;
 pub mod file_search_popup;
 pub mod file_search_popup_rows;
 pub mod footer;
 pub mod header;
 pub mod header_build;
+mod input_area;
 pub mod input_transition;
 pub mod merge_confirm_dialog;
 pub mod mode_view_render;
 pub mod mouse_dispatch;
 pub mod multiline_input;
+mod multiline_input_enter;
+mod multiline_input_paste;
+mod multiline_input_render;
+pub mod multiline_wrap;
+mod pause_keys;
+pub mod pause_prompt;
 pub mod popups;
 pub mod rendered_chunk;
 pub mod resume_session_view;
@@ -70,18 +76,13 @@ pub use turn_modal::TurnContentModal;
 /// RPC-013 placeholder footer hints.
 pub const PLACEHOLDER_FOOTER_HINTS: &str = "Enter=send  Ctrl+C=interrupt  ESC=back";
 
-/// RPC-019 placeholder hint painted inside the input box when empty.
+/// RPC-019 placeholder hint. RPC-402: 'Shift+Enter' leads to survive 80-col truncation.
 pub const INPUT_PLACEHOLDER_HINT: &str =
-    "Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn)";
+    "Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns";
 
-/// RPC-029: paint `color` over every cell of `area`.
-pub(crate) fn paint_row_bg(area: Rect, buf: &mut Buffer, color: Color) {
-    for y in area.y..area.y.saturating_add(area.height) {
-        for x in area.x..area.x.saturating_add(area.width) {
-            buf[(x, y)].set_bg(color);
-        }
-    }
-}
+/// RPC-029: paint `color` over every cell of `area` (RPC-405: moved
+/// to `chrome.rs`; re-exported so `super::paint_row_bg` callers work).
+pub(crate) use chrome::paint_row_bg;
 
 /// AgentView — owns presentation state only.
 #[derive(Default)]
@@ -113,6 +114,12 @@ pub struct AgentView {
     pub(crate) input_transition_state: InputTransitionState,
     pub(crate) last_spinner_line: Option<String>,
     pub(crate) animation_clock_ms: u64,
+    /// RPC-406: `(session, kind)` of the pause prompt painted on the
+    /// last frame — set by `paint_input_area` when the FOCUSED
+    /// session's pause slot is Some. Read by the pause key router
+    /// (`pause_keys.rs`) and the cursor gate so actions always target
+    /// the paused session id.
+    pub(crate) last_pause: Option<(codelet_rpc_types::SessionId, codelet_rpc_types::PauseKind)>,
 }
 
 impl AgentView {
@@ -130,16 +137,13 @@ impl AgentView {
             .unwrap_or(0)
     }
 
+    /// RPC-404 — wrap-aware, viewport-clamped hardware cursor. The
+    /// full geometry (body width, visual row/col, scroll offset,
+    /// clamping to the input area) lives in
+    /// [`MultiLineInput::hardware_cursor_in`].
     pub fn cursor_position(&self) -> Option<(u16, u16)> {
         let area = self.last_input_area?;
-        let (row, col) = self.input.cursor();
-        let x = area
-            .x
-            .saturating_add(1)
-            .saturating_add(2)
-            .saturating_add(col as u16);
-        let y = area.y.saturating_add(row as u16);
-        Some((x, y))
+        Some(self.input.hardware_cursor_in(area))
     }
 
     /// RPC-093 rule [6]: busy iff session is Running or Compacting.
@@ -172,6 +176,10 @@ impl AgentView {
     }
 
     pub fn is_cursor_visible(&self, session_status: Option<SessionStatus>) -> bool {
+        // RPC-406: no hardware cursor inside the inline pause prompt.
+        if self.last_pause.is_some() {
+            return false;
+        }
         Self::is_cursor_visible_for(session_status, &self.input_transition_state)
     }
 
@@ -223,8 +231,11 @@ impl AgentView {
             v.render(area, buf);
             return;
         }
-        let input_height = self.input.visible_rows();
+        // RPC-405: height from the SAME area width the renderer derives
+        // its body widths from. RPC-406: the pause prompt's wrapped
+        // height wins while paused.
         let sid = store.current_session().cloned();
+        let input_height = self.input_area_height(store, sid.as_ref(), area.width);
         let role_height: u16 = sid
             .as_ref()
             .and_then(|s| store.role_for(s))
@@ -268,23 +279,9 @@ impl AgentView {
         }
         chrome_paint::paint_footer(&areas, buf, store, sid.as_ref());
 
-        // RPC-029: input has no border; paddingX=1.
-        let pad = areas.input.width.min(1);
-        let padded = Rect {
-            x: areas.input.x + pad,
-            y: areas.input.y,
-            width: areas.input.width.saturating_sub(pad * 2),
-            height: areas.input.height,
-        };
-        input_transition::paint_input_or_spinner(
-            padded,
-            buf,
-            &self.input,
-            &self.input_transition_state,
-        );
-        if let Some(line) = transition_driver::cached_spinner_line(&self.input_transition_state) {
-            self.last_spinner_line = Some(line);
-        }
+        // RPC-406: inline pause prompt OR spinner/transition/input
+        // (impl in `input_area.rs` to keep this file under 300 LoC).
+        self.paint_input_area(areas.input, buf, store, sid.as_ref());
         if let Some(p) = self.slash_popup.as_ref() {
             p.render(area, buf);
         } else if let Some(p) = self.file_popup.as_ref() {

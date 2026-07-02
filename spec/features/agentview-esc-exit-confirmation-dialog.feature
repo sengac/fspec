@@ -6,7 +6,6 @@
 @tui
 @RPC-098
 Feature: Port AgentView ESC exit confirmation dialog (Detach/Close Session/Cancel) from TS Ink to Rust ratatui
-
   """
   New file: codelet/fspec-tui/src/components/exit_confirmation_dialog.rs (≈250 LoC) — modelled on create_session_dialog.rs but with ExitChoice enum {Detach, CloseSession, Cancel}, Accent::Yellow, Priority::Critical, ID 'exit-confirmation-dialog', is_busy-driven description, no work-unit binding.
   New Action variants in codelet/fspec-tui/src/components/mod.rs: enum ExitChoice {Detach, CloseSession, Cancel}; Action::AgentExitChoice { choice: ExitChoice }. Register the dialog module via `pub mod exit_confirmation_dialog;` in components/mod.rs.
@@ -47,7 +46,6 @@ Feature: Port AgentView ESC exit confirmation dialog (Detach/Close Session/Cance
   #   13. App-level integration test: drive ESC through full Esc-cascade with idle session — assert App.render buffer contains a yellow rounded border centred in 80x24 view AND the title 'Exit Session?' is visible, AND the previous AgentView chrome (input row, footer) is still painted underneath (modal overlay, not view switch)
   #
   # ========================================
-
   Background: User Story
     As a user in the Rust AgentView
     I want to see a three-button confirmation dialog (Detach / Close Session / Cancel) when I press ESC and the Esc-cascade reaches the final fall-through level
@@ -215,4 +213,3 @@ Feature: Port AgentView ESC exit confirmation dialog (Detach/Close Session/Cance
     And navigate_next from the focused session resolves to NavTarget::CreateDialog
     And navigate_prev from the focused session resolves to NavTarget::Board
     And the destroyed SessionId "s-1" never appears in open_sessions
-

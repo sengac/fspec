@@ -14,18 +14,18 @@ Feature: Agent loop injects session role as the system prompt every turn
 
   Architecture notes:
   - Structural test approach mirrors the pattern used by
-    copilot_create_rig_agent_signature_matches_dispatch_macro_contract
-    in codelet/agent-loop/src/dispatch.rs:198-214.
+  copilot_create_rig_agent_signature_matches_dispatch_macro_contract
+  in codelet/agent-loop/src/dispatch.rs:198-214.
   - Every provider (Claude/OpenAI/Gemini/ZAI/Codex/Copilot/CustomProvider)
-    exposes create_rig_agent(session_id, preamble: Option<&str>, thinking).
+  exposes create_rig_agent(session_id, preamble: Option<&str>, thinking).
   - Out of scope: live behavioral test through /role slash command —
-    that path is covered by RPC-063 (done). RPC-082 only verifies the
-    agent loop reads the stored role.
+  that path is covered by RPC-063 (done). RPC-082 only verifies the
+  agent loop reads the stored role.
 
   Parity reference: codelet/napi/src/agent_loop.rs:91-96.
   """
 
-  Background:
+  Background: 
     Given the BUG-120 fix requires session.get_role() to be read every turn
     And the canonical agent loop passes the result as preamble to provider.create_rig_agent
 

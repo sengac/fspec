@@ -14,12 +14,12 @@ Feature: Agent loop threads /thinking high into the provider request
   additional_params. The computation has three priority branches
   (PROV-005 fix):
 
-    1. Adaptive thinking models ALWAYS use model-aware config and
-       override any TS-passed `PromptInput.thinking_config` (prevents
-       Opus 4.6 `max_tokens` rejection).
-    2. Non-adaptive models honour `PromptInput.thinking_config` verbatim.
-    3. Otherwise, unified detection from message text + session base
-       level (with `has_disable_keywords` force-off).
+  1. Adaptive thinking models ALWAYS use model-aware config and
+  override any TS-passed `PromptInput.thinking_config` (prevents
+  Opus 4.6 `max_tokens` rejection).
+  2. Non-adaptive models honour `PromptInput.thinking_config` verbatim.
+  3. Otherwise, unified detection from message text + session base
+  level (with `has_disable_keywords` force-off).
 
   The resulting `Option<serde_json::Value>` must reach all three
   dispatch paths: the `run_with_provider!` macro (claude / gemini /

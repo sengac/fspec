@@ -6,7 +6,6 @@
 @tui
 @RPC-337
 Feature: Model selector row rendering
-
   """
   Model rows display capability badges in TS order: [C] custom (yellow), [R] reasoning (magenta), [V] vision (blue), [{cw}] context window (gray); badges are dimmed/normal per selection, matching ModelSelectorView.tsx. The row whose model id matches the active session's current model shows a green '(current)' marker. The body renders a legend line '[R] Reasoning | [V] Vision | [C] Custom' inside the body region (not shell chrome). Providers load asynchronously via Action::ListProvidersLoaded and a placeholder shows until loaded.
   """

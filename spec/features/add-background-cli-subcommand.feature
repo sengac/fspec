@@ -3,7 +3,6 @@
 @done
 @RPC-171
 Feature: add-background CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/add_background.rs (NEW CLI bridge); codelet/fspec/tests/cli_add_background.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/add-background.txt (captured help fixture from `node dist/index.js add-background --help`).
   Bridge marshals positional <feature> + <text> into JSON {feature, text} and delegates to commands::add_background::run. No logic in bridge — JSON marshalling and CWD resolution only.

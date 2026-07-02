@@ -4,7 +4,6 @@
 @rust
 @RPC-245
 Feature: List features CLI subcommand
-
   """
   CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_features::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
@@ -32,7 +31,6 @@ Feature: List features CLI subcommand
   #   7. The CLI bridge module contains NO inline parsing/glob/filter/sort/render logic (asserted by source-content scan)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to invoke `fspec list-features` directly from a shell — with optional `--tag` filtering — to browse my feature files
@@ -100,7 +98,6 @@ Feature: List features CLI subcommand
     Then stderr contains the exact line "  Suggestion: Run 'fspec create-feature' to create your first feature"
     Then the command exits with code 2
 
-
   Scenario: CLI prints a Warning line to stderr when a feature file cannot be parsed
     Given spec/features/valid.feature contains a parseable feature with 2 scenarios
     When I run `./codelet/target/release/fspec list-features` from that directory
@@ -110,7 +107,6 @@ Feature: List features CLI subcommand
     Then stdout contains the substring 'spec/features/valid.feature - Valid'
     Then stdout contains the exact line 'Found 1 feature files'
 
-
   Scenario: list-features --help is byte-for-byte identical to TS formatCommandHelp reference output
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
     When I run `./codelet/target/release/fspec list-features --help` piped to non-TTY
@@ -118,4 +114,3 @@ Feature: List features CLI subcommand
     And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-features.txt
     And stdout starts with a blank line followed by 'LIST-FEATURES'
     And stdout contains the section headers 'OPTIONS' and 'EXAMPLES' and 'NOTES'
-

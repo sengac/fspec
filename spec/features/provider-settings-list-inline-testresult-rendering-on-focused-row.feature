@@ -7,7 +7,6 @@
 @source-shape
 @regression
 Feature: Provider settings list: inline testResult rendering on focused row
-
   """
   Regression-shape feature: source-string assertions over
   codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs only

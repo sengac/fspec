@@ -3,7 +3,6 @@
 @rpc
 @RPC-355
 Feature: Expose git changed-file status and per-file diff to the TUI transport
-
   """
   FspecBackend trait (transport/mod.rs) gains changed_files() + file_diff(path) with default impls (empty/None). embedded.rs adds one-line delegates; websocket.rs uses the client.read().await + BackendError::Disconnected guard pattern.
   """
@@ -30,7 +29,6 @@ Feature: Expose git changed-file status and per-file diff to the TUI transport
   #   7. WebSocketFspecBackend.changed_files() crosses tarpc and returns the same entries as the embedded backend
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI developer
     I want to request the working tree's changed files (each with a change type) and a per-file unified diff through the TUI transport backend

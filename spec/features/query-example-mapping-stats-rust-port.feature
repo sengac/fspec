@@ -3,7 +3,6 @@
 @cli
 @RPC-260
 Feature: Port query-example-mapping-stats command to Rust
-
   """
   Uses ensure_work_units_file from crate::io::ensure (auto-creating spec/work-units.json with canonical defaults if missing) — TS source-of-truth at src/commands/query-example-mapping-stats.ts:62 calls ensureWorkUnitsFile, so the Rust port matches that auto-create behaviour exactly.
 
@@ -37,7 +36,6 @@ Feature: Port query-example-mapping-stats command to Rust
   #   12. Dispatcher path always returns the JSON payload as a String (even when no format flag is set), but the CLI bridge only prints to stdout when format='json'
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of query-example-mapping-stats wired through both the LLM dispatcher and the clap subcommand

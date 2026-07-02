@@ -12,11 +12,11 @@ Feature: /schedule cross-transport parity
   the same StubSessionManagerHandle for every new RPC method introduced
   by RPC-058:
 
-    * schedule_add
-    * schedule_list
-    * schedule_pause
-    * schedule_resume
-    * schedule_remove
+  * schedule_add
+  * schedule_list
+  * schedule_pause
+  * schedule_resume
+  * schedule_remove
 
   Mirrors the RPC-049 / RPC-050 / RPC-054 / RPC-055 / RPC-056 / RPC-057
   cross-transport parity tests — each transport invocation increments

@@ -4,7 +4,6 @@
 @querying
 @rust
 Feature: Port query-work-units command to Rust
-
   """
   WorkUnit struct in codelet/fspec-core/src/types/work_unit.rs currently exposes id, title, status, type, epic, createdAt, updatedAt + extra; query-work-units needs to read additional fields (tags, questions, stateHistory, featureFile, estimate) via the existing `extra` JSON map rather than extending the typed struct, keeping the worker self-contained and avoiding edits to shared type files
   Unlike list-work-units, query-work-units does NOT auto-create spec/work-units.json on first run; implementation uses std::fs::read_to_string + serde_json::from_str directly with TS-style error prefix 'Failed to query work units:' (rather than the ensure_work_units_file helper)

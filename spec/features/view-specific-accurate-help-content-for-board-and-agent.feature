@@ -4,7 +4,6 @@
 @tui
 @RPC-397
 Feature: View-specific accurate help content for board and agent
-
   """
   Parameterize HelpDialog with a HelpKind enum {Board, Agent} (or two constructors HelpDialog::for_board()/for_agent()). Keep the canonical id 'help-dialog' so compositor.contains guards still work. Store the content slice per-kind; title stays 'Help' (or 'Board Help'/'Agent Help').
   Call site 1: app/events.rs:127 handle_app_shortcut '?' pushes the Board variant (board is the active view when '?' fires there). Call site 2: app/dispatch_slash_commands.rs:31-35 SlashCommandAction::Help pushes the Agent variant. Slash-command descriptions sourced from views/agent/slash_commands.rs SLASH_COMMANDS. Board keys from views/board.rs handle_event. Agent keys from views/agent/dispatch.rs.
@@ -27,7 +26,6 @@ Feature: View-specific accurate help content for board and agent
   #   3. Neither help variant shows the misleading 'q Quit fspec-tui' line; the quit entry correctly reads 'Ctrl+D Quit'
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user pressing '?' on the board or typing /help in the agent view
     I want to see a help dialog whose content is accurate and specific to the view I'm in

@@ -6,7 +6,6 @@
 @viewer
 @RPC-376
 Feature: Heading anchor IDs and in-page anchor navigation in the Rust markdown viewer
-
   """
   Render options: ENABLE_SMART_PUNCTUATION removed (no curly quotes), SoftBreak mapped to <br> for breaks parity. ENABLE_TABLES/STRIKETHROUGH/TASKLISTS/FOOTNOTES kept.
   """
@@ -35,7 +34,6 @@ Feature: Heading anchor IDs and in-page anchor navigation in the Rust markdown v
   #   8. A mermaid block still renders '<pre class="mermaid">' and a python block still renders data-language='python'
   #
   # ========================================
-
   Background: User Story
     As a documentation author
     I want to write anchor links to markdown headings in the Rust attachment viewer

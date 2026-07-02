@@ -1,7 +1,6 @@
 @done
 @RPC-289
 Feature: fspec restore-example CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/restore_example.rs — clap variant mirroring TS Commander.js
   at src/commands/restore-example.ts:88-110. Surface: `fspec restore-example <workUnitId> <index>`.

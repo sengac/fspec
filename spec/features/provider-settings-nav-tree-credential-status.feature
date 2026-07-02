@@ -6,7 +6,6 @@
 @configuration
 @rust
 Feature: Provider Settings nav tree shows credential status (masked key, source, not configured)
-
   """
   PROV-098 — The RPC-103/349 rich nav tree dropped credential display data.
   ProviderDisplayInfo (nav_item.rs) gains masked_key: Option<String> and
@@ -17,18 +16,18 @@ Feature: Provider Settings nav tree shows credential status (masked key, source,
   ProviderSettingsPanel render shape (✓ {masked} [{source}] / (not configured)).
 
   DISPLAY masked_key/source priority in project_one (NOT the backend field):
-    1. backend info.masked_key.is_some() (env api key)  -> copy info.masked_key/info.source verbatim
-    2. else if is_oauth && info.configured (OAuth login) -> masked_key=Some("OAuth"), source=Some(oauth_label)
-    3. else                                              -> None, None
+  1. backend info.masked_key.is_some() (env api key)  -> copy info.masked_key/info.source verbatim
+  2. else if is_oauth && info.configured (OAuth login) -> masked_key=Some("OAuth"), source=Some(oauth_label)
+  3. else                                              -> None, None
   oauth_label (oauthProviderLabels.ts): anthropic->"Claude", codex->"ChatGPT",
   github-copilot->"GitHub Copilot", fallback->"OAuth".
 
   Render rule (TS parity, src/tui/components/ProviderSettingsPanel.tsx:594-608,734-746):
-    Provider row:  "{name} ✓ {masked} [{source}]"  when display masked_key is Some
-                   "{name} ✓ {masked}"             when source is None
-                   "{name} (not configured)"        when display masked_key is None
-    ApiKey  row:   "API Key ✓ {masked} [{source}]" when display masked_key is Some
-                   "API Key (not set)"              when display masked_key is None
+  Provider row:  "{name} ✓ {masked} [{source}]"  when display masked_key is Some
+  "{name} ✓ {masked}"             when source is None
+  "{name} (not configured)"        when display masked_key is None
+  ApiKey  row:   "API Key ✓ {masked} [{source}]" when display masked_key is Some
+  "API Key (not set)"              when display masked_key is None
 
   CRITICAL: has_oauth_tokens is computed from the BACKEND info.masked_key.is_none()
   (PROV-099, UNCHANGED) — it reads the backend field, not the new DISPLAY field —
@@ -97,4 +96,3 @@ Feature: Provider Settings nav tree shows credential status (masked key, source,
     Given a ProviderSettings view loaded with a "codex" provider configured via OAuth with backend masked_key None
     When the nav tree is rendered into a buffer
     Then the codex provider header row contains "Codex (ChatGPT) ✓ OAuth [ChatGPT]"
-

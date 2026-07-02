@@ -3,7 +3,6 @@
 @cli
 @RPC-247
 Feature: Port list-hooks command to Rust
-
   """
   New impl file at codelet/fspec-core/src/commands/list_hooks.rs replaces the NotYetPorted stub. The module exposes `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` with the same signature shape as list_prefixes::run. Args struct deserializes `{format?: 'text'|'json'}` with `#[serde(default)]`.
   Hook config is parsed using a lightweight Rust shape: `struct HookConfigPartial { hooks: IndexMap<String, Vec<serde_json::Value>> }` so that insertion order is preserved AND we can pluck `.name` as `Option<String>` regardless of whether the entry has extra/missing fields. We deliberately do NOT model the full HookDefinition struct because list-hooks only needs the name field (parity with TS `hooks.map(h => h.name)`).
@@ -29,7 +28,6 @@ Feature: Port list-hooks command to Rust
   #   12. No new shared io helpers needed
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-hooks from the agent loop AND invoke `fspec list-hooks` from a shell
@@ -110,4 +108,3 @@ Feature: Port list-hooks command to Rust
     When I dispatch list-hooks with format='text'
     Then the dispatcher returns success=true
     Then the DispatchResult.data contains the exact line '  - (unnamed)'
-

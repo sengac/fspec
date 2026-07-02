@@ -1,7 +1,6 @@
 @done
 @RPC-193
 Feature: add-tag-to-feature CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/add_tag_to_feature.rs (NEW CLI bridge); codelet/fspec/tests/cli_add_tag_to_feature.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/add-tag-to-feature.txt (captured help fixture from `node dist/index.js add-tag-to-feature --help`).
   Bridge marshals positional <file> + variadic <tags...> + optional --validate-registry into JSON and delegates to commands::add_tag_to_feature::run. No logic in bridge — JSON marshalling only.

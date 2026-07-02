@@ -3,7 +3,6 @@
 @cli
 @RPC-323
 Feature: Port validate-spec-alignment command to Rust
-
   """
   Core impl codelet/fspec-core/src/commands/validate_spec_alignment.rs: Args {work_unit_id: Option<String>, fix: Option<bool>} (camelCase workUnitId). work_unit_id None -> InvalidArgs. Reads spec/work-units.json directly as serde_json::Value (NOT ensure_*) so only .get('workUnits').get(id) is needed; ENOENT/parse wrap into 'Failed to validate spec alignment:' message.
   Feature globbing: reuse crate::io::feature_glob::glob_feature_files but map FspecCoreError::DirectoryNotFound to an empty Vec locally (TS glob returns [] when spec/features absent). Tag scan: for each file split lines, line.trim().contains('@<id>') && next.trim().starts_with('Scenario:') increments count.
@@ -37,7 +36,6 @@ Feature: Port validate-spec-alignment command to Rust
   #   1. Working assumption pending supervisor confirmation: the clap surface exposes a required positional <workUnitId> (mirroring the real exported contract), with --fix accepted but no-op (parity with TS). A soft glob is handled locally by mapping DirectoryNotFound to an empty Vec; no new shared io helper is required.
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of validate-spec-alignment wired through both the LLM dispatcher and the clap subcommand

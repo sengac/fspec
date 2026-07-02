@@ -3,7 +3,6 @@
 @cli
 @RPC-218
 Feature: Port delete-features command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/delete_features.rs reuses crate::io::feature_glob::glob_feature_files for the recursive spec/features walk (relative forward-slash paths, alphabetical sort); a DirectoryNotFound result is mapped to an empty list to preserve the TS 'No feature files found' message.
   Feature-level tags come from parse_feature_lenient(feature.tags) with the leading '@' re-prepended (gherkin-0.16 strips it); AND match via tags.iter().all(); unparseable/featureless files skipped. Output JSON envelope {success, deletedCount, message?, files?, error?}; CLI bridge owns all rendering (dry-run/real/empty) and marshals repeatable --tag into {tags:[...], dryRun?}.
@@ -35,7 +34,6 @@ Feature: Port delete-features command to Rust
   #   8. CLI with no --tag exits 1 with stderr 'Error:' prefix
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to bulk-delete feature files whose feature-level tags match ALL of the supplied tags (with a dry-run preview) via both the LLM dispatcher and the shell CLI

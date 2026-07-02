@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port add-diagram command to Rust
-
   """
   Framing A divergence — Mermaid validation: The Rust port skips JSDOM + mermaid.render
   validation (the TS path requires a full DOM and the mermaid renderer, neither of which
@@ -116,10 +115,8 @@ Feature: Port add-diagram command to Rust
     Then the dispatcher returns success=false
     And no entry is appended to architectureDiagrams
 
-
   Scenario: Dispatcher rejects code that matches no mermaid diagram type
     Given spec/foundation.json exists with architectureDiagrams=[]
     When I dispatch add-diagram with section='Architecture' title='Bad' code='this is not a diagram at all'
     Then the dispatcher returns success=false
     And no entry is appended to architectureDiagrams
-

@@ -3,7 +3,6 @@
 @model-selector
 @RPC-345
 Feature: Model selector missing Tab to return to Provider Settings
-
   """
   (a) Add ModelSelectorEvent::SwitchToProviders variant (model_selector/mod.rs enum ~:33-38). Pure UI nav, no Action payload. TS analog: onSwitchToSettings (ModelSelectorScreen.tsx:145).
   (b) Add `KeyCode::Tab => ModelSelectorEvent::SwitchToProviders` in handle_key before the `_` catch-all (mod.rs ~:353). Filter mode is handled earlier in handle_filter_key, so Tab while typing a filter stays consumed and does NOT navigate (mirror of provider_settings/list.rs:62).
@@ -28,7 +27,6 @@ Feature: Model selector missing Tab to return to Provider Settings
   #   4. Pressing Esc in non-filter mode still returns Close (Tab arm did not change the catch-all/Close behavior)
   #
   # ========================================
-
   Background: User Story
     As a Codelet user in the model selector
     I want to press Tab to jump back to Provider Settings

@@ -211,6 +211,12 @@ impl Component for StatusDialog {
                 }
             }
         }
+        // RPC-403 review: Critical modal — consume (swallow) pastes so
+        // they can never leak into the agent input hidden behind this
+        // dialog (even while Restoring). Nothing is inserted.
+        if matches!(event, Event::Paste(_)) {
+            return EventResult::consumed();
+        }
         EventResult::ignored()
     }
 

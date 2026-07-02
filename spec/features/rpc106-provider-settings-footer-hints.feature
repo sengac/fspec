@@ -5,7 +5,6 @@
 @tui
 @RPC-106
 Feature: Provider settings: TS-parity footer hints with context-sensitive per-row-type strings and bullet separators
-
   """
   Test plan: new `codelet/fspec-tui/tests/provider_settings_footer_hints.rs` integration suite — 10 assertions (provider/oauth-status/oauth-login/api-key/profile/add-profile/None branches, bullet-not-pipe, lowercase-colon, render-into-bottom-row-with-dim-style). Pure string + widget tests using ratatui `TestBackend`. Depends on RPC-103 for the flat NavItem tree and on RPC-104 for `RowKind` — both are sibling cards in the same RPC-054 fan-out, so the test crate can refer to their exports.
   Implementation:
@@ -30,7 +29,6 @@ Feature: Provider settings: TS-parity footer hints with context-sensitive per-ro
   #   4. When the user is on a github-copilot 'Sign in to GitHub' oauth-login row the footer reads: 'Enter: start login · / filter · Tab: Switch to models · Esc: close' (NOT the generic List-mode hint the current Rust impl shows)
   #
   # ========================================
-
   Background: User Story
     As a Rust frontend user navigating /provider
     I want to see the footer hint line update based on the currently selected nav-item kind (provider, api-key, profile, oauth-login, oauth-status, add-profile) using the same per-row-type strings and bullet separators as the TS Ink reference

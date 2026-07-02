@@ -3,7 +3,6 @@
 @parser
 @RPC-207
 Feature: Port compare-implementations command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/compare_implementations.rs reads spec/work-units.json (via the shared WorkUnitsData type; tags live in WorkUnit::extra["tags"]) and returns the JSON envelope {workUnits:[{tags}], comparison:{type:'side-by-side'}, namingConventionDifferences:[], coverage:[]}. Missing work-units.json surfaces FspecCoreError::Io (parity with show_test_patterns / the TS queryWorkUnits throw). With showCoverage=true every spec/features/*.feature.coverage file is read and coverage[0] = {testFiles, implementationFiles} carries the deduplicated testMapping / implMapping file paths; without it coverage stays empty. namingConventionDifferences is always empty (TS TODO). The CLI bridge owns all rendering (green summary / pretty JSON / '✗ Comparison failed:' error). The TS parseAllFeatures call is a no-op (its map is never consumed) and is intentionally omitted from the Rust port.
   """
@@ -24,7 +23,6 @@ Feature: Port compare-implementations command to Rust
   #   2. With --show-coverage and one work unit tagged @cli plus a coverage file referencing one test file and one impl file, coverage[0].testFiles=['test/a.test.ts'] and coverage[0].implementationFiles=['src/a.ts']
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to run compare-implementations to summarise tag-filtered work units and optional coverage file paths via both the LLM dispatcher and the shell CLI

@@ -3,7 +3,6 @@
 @rust
 @cli
 Feature: Remove hook CLI subcommand
-
   """
   CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::remove_hook::run(args_json, &cwd).
   Positional arguments `<event>` and `<name>` (both required). NO options.

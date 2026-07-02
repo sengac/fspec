@@ -1,7 +1,6 @@
 @done
 @RPC-274
 Feature: fspec remove-foundation-bounded-context CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_foundation_bounded_context.rs — clap-derived struct mirroring
   the TS Commander.js registration (src/commands/remove-foundation-bounded-context.ts:140-160).

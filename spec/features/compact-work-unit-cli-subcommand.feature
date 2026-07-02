@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec compact-work-unit CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `compact-work-unit` exposes the same surface as the TS Commander.js registration at src/commands/compact-work-unit.ts:155-203 — a required positional `<workUnitId>` plus an optional `--force` flag. The bridge module at codelet/fspec/src/compact_work_unit.rs marshals workUnitId and force into a JSON object and delegates to codelet_fspec_core::commands::compact_work_unit::run.
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with '✗ Failed to compact work unit:' (parity with the chalk-red TS error path at src/commands/compact-work-unit.ts:196-201). Success prints either 'No deleted items to remove' OR '✓ Compacted work unit <id>' followed by '  Removed items:' and per-category lines.

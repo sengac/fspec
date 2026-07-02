@@ -12,24 +12,24 @@ Feature: /schedule subcommand parser + dispatch
   /schedule slash command by:
 
   1. Adding FIVE new RPC methods through the trait, FspecService,
-     FspecBackend, and both transports:
-       * schedule_add(name, cron, timezone, job_type, role, prompt,
-         command, overlap_policy) -> Result<ScheduledJob>
-       * schedule_list() -> Vec<ScheduledJob>
-       * schedule_pause(name) -> Result<ScheduledJob>
-       * schedule_resume(name) -> Result<ScheduledJob>
-       * schedule_remove(name) -> Result<()>
+  FspecBackend, and both transports:
+  * schedule_add(name, cron, timezone, job_type, role, prompt,
+  command, overlap_policy) -> Result<ScheduledJob>
+  * schedule_list() -> Vec<ScheduledJob>
+  * schedule_pause(name) -> Result<ScheduledJob>
+  * schedule_resume(name) -> Result<ScheduledJob>
+  * schedule_remove(name) -> Result<()>
   2. Replacing the `SlashCommandAction::Schedule` notice fallback in
-     dispatch_slash_commands.rs with a real `handle_slash_schedule_help`
-     routed through a new app/dispatch_slash_schedule.rs file (mirrors the
-     dispatch_merge_worktree pattern).
+  dispatch_slash_commands.rs with a real `handle_slash_schedule_help`
+  routed through a new app/dispatch_slash_schedule.rs file (mirrors the
+  dispatch_merge_worktree pattern).
   3. Intercepting `/schedule …` (with args) in the submit-line path
-     via a new ScheduleSubcommand variant on SlashCommandParse, then
-     fanning the parsed subcommand out to the matching
-     handle_schedule_* helper.
+  via a new ScheduleSubcommand variant on SlashCommandParse, then
+  fanning the parsed subcommand out to the matching
+  handle_schedule_* helper.
   4. Routing every subcommand response into the focused session's
-     scrollback via Action::EmitSessionNotice so the line lands on
-     the right SessionContext even if the user switched tabs mid-RPC.
+  scrollback via Action::EmitSessionNotice so the line lands on
+  the right SessionContext even if the user switched tabs mid-RPC.
 
   TS reference: `src/tui/services/schedule-service.ts` —
   `handleScheduleCommand(input, cwd)` and `src/tui/utils/
@@ -57,14 +57,12 @@ Feature: /schedule subcommand parser + dispatch
   #   10. With no Tokio runtime (sync unit tests), helpers are graceful no-ops.
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user with an open AgentView session
     I want to manage scheduled jobs via /schedule add|list|pause|resume|remove from the Rust ratatui frontend
     So that I have full parity with the TS Ink /schedule slash command without leaving the TUI
 
   # ---- Parser scenarios ---------------------------------------------
-
   Scenario: parse_schedule_command resolves bare /schedule to Help
     When parse_schedule_command("/schedule") is invoked
     Then it returns ScheduleSubcommand::Help
@@ -98,13 +96,11 @@ Feature: /schedule subcommand parser + dispatch
     Then it returns ScheduleSubcommand::Help
 
   # ---- slash_parser interception ------------------------------------
-
   Scenario: parse_slash_command routes a /schedule submit-line input to ScheduleSubcommand
     When parse_slash_command("/schedule list") is invoked
     Then it returns SlashCommandParse::ScheduleSubcommand(ScheduleSubcommand::List)
 
   # ---- Dispatch scenarios -------------------------------------------
-
   Scenario: /schedule popup pick with no current session is a silent no-op
     Given an App with NO open AgentView session
     When SlashCommandSelected(SlashCommandAction::Schedule) is dispatched

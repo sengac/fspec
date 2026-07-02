@@ -42,7 +42,6 @@ Feature: OpenAI profile model selection ignores profile baseUrl/apiKey and deman
     When the profile model "openai:qwen/qwen" is resolved for selection
     Then the OpenAI client resolves credentials from the profile and no "OPENAI_API_KEY not set" authentication error occurs
 
-
   Scenario: Cloud OpenAI model selection does not trigger the profile credential bridge
     Given no openai profile is referenced by the selection and OPENAI_BASE_URL and OPENAI_API_KEY hold their pre-existing values
     When the cloud model "openai/gpt-4" is resolved for selection
@@ -50,17 +49,14 @@ Feature: OpenAI profile model selection ignores profile baseUrl/apiKey and deman
     Then OPENAI_BASE_URL and OPENAI_API_KEY are not overwritten with profile values
     Then no hardcoded anthropic or claude fallback is substituted
 
-
   Scenario: A profile model selected at create-session time applies the credential bridge before first dispatch
     Given an openai profile "qwen" is stored in fspec-config.json with baseUrl "http://192.168.0.50:8000" and apiKey "test" and the OPENAI_API_KEY environment variable is unset
     When a fresh session is created with the profile model "openai:qwen/qwen" via the shared model resolver
     Then OPENAI_BASE_URL equals "http://192.168.0.50:8000" and OPENAI_API_KEY equals "test" before the first dispatch
     Then the create-session path and the mid-session switch path apply the same profile bridge via the shared resolver
 
-
   Scenario: A profile model selected on the isolated session create path applies the credential bridge via the shared helper
     Given an openai profile "qwen" is stored in fspec-config.json with baseUrl "http://192.168.0.50:8000" and apiKey "test" and the OPENAI_API_KEY environment variable is unset
     When the isolated session create path applies the profile credential bridge for the profile model "openai:qwen/qwen" before constructing the provider manager
     Then OPENAI_BASE_URL equals "http://192.168.0.50:8000" and OPENAI_API_KEY equals "test" before the isolated session dispatches
     Then the isolated path and the shared resolver apply the identical profile bridge through one shared helper so they cannot drift
-

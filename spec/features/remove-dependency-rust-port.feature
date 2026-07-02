@@ -1,7 +1,6 @@
 @done
 @RPC-271
 Feature: Port remove-dependency command to Rust
-
   """
   Core impl file: codelet/fspec-core/src/commands/remove_dependency.rs — replaces NotYetPorted stub. Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Reuses existing infrastructure: io::ensure::ensure_work_units_file, io::locked_file::write_json_atomic, types::work_unit::{WorkUnitsData, WorkUnit} with #[serde(flatten)] extra map (blocks/blockedBy/dependsOn/relatesTo arrays live in `extra`).
   Removal semantics: filter-then-delete-when-empty on the source array; bidirectional cleanup for blocks/blockedBy/relatesTo by mirroring the same op on the target. NO status transitions, NO state-array mutations, NO cycle detection. updatedAt bumped on source only. Single atomic write at end via write_json_atomic.

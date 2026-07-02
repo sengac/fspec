@@ -6,12 +6,11 @@
 @rust
 @RPC-157
 Feature: Provider settings: drop Rust-only list-mode keybinds (r/R, wrap-around, PageUp/Down, Home/End) to match TS
-
   """
   Implementation: surgery in codelet/fspec-tui/src/views/provider_settings/mod.rs (and any extracted list-mode handler module — see RPC-103). Remove the match arms for KeyCode::Char('r') | Char('R'), KeyCode::PageUp, KeyCode::PageDown, KeyCode::Home, KeyCode::End from the list-mode dispatcher. Replace wrap_index() usage on ↑/↓ with saturating clamp: down = (sel + 1).min(len - 1); up = sel.saturating_sub(1). Remove `wrap_index` import if no remaining callers in the file.
-  
+
   Dependencies: builds on top of RPC-054 (the existing view scaffolding) and indirectly on RPC-103 (flat-tree nav model — when RPC-103 lands the list-mode dispatcher will already be reshaped to operate over Vec<NavItem>; this card surgically removes excess keybinds from whatever dispatcher exists).
-  
+
   Critical requirements: zero regressions on the other list-mode keybinds (↑/↓ clamped, Enter, /, Tab, Esc, d) — those are owned by RPC-054/103/106/160/164 etc. Removed keybinds must fall through to a no-op (do NOT match-and-ignore explicitly; let the default arm absorb them). Source-shape test asserts the absence of the removed match arms via grep on the dispatcher file.
   """
 
@@ -38,7 +37,6 @@ Feature: Provider settings: drop Rust-only list-mode keybinds (r/R, wrap-around,
   #   8. User is in list mode. Pressing ↑/↓/Enter/// /Tab/Esc/d all continue to behave per the TS-canonical contract (RPC-054/103/160 etc.). Only the four Rust-only keybinds (r/R, wrap-around behavior on arrows, PageUp/Down, Home/End) are removed; the rest of the list-mode contract is untouched.
   #
   # ========================================
-
   Background: User Story
     As a Rust frontend user
     I want to have provider-settings list-mode keybinds exactly match the TS Ink reference

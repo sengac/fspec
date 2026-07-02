@@ -107,8 +107,12 @@ fn incoming_message_space_separated_backend_envelope_renders_magenta_bracket_w_l
     ));
 
     // @step Then the scrollback shows a single rendered chunk with text "[W] reviewer> please check this"
+    // RPC-401: the message carries one trailing blank separator row.
     let lines = session_scrollback_text_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["[W] reviewer> please check this".to_string()]);
+    assert_eq!(
+        lines,
+        vec!["[W] reviewer> please check this".to_string(), String::new()]
+    );
 
     // @step And the rendered chunk is colored magenta
     assert_eq!(first_span_fg(&app, &sid("s-1")), Some(Color::Magenta));
@@ -140,7 +144,11 @@ fn parse_space_separated_supervisor_envelope_yields_role_and_body() {
     );
 
     // @step And the extracted body is "please check this"
-    assert_eq!(lines, vec!["[W] reviewer> please check this".to_string()]);
+    // RPC-401: the message carries one trailing blank separator row.
+    assert_eq!(
+        lines,
+        vec!["[W] reviewer> please check this".to_string(), String::new()]
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -168,7 +176,11 @@ fn parse_newline_separated_supervisor_envelope_yields_role_and_body() {
     );
 
     // @step And the extracted body is "please check this"
-    assert_eq!(lines, vec!["[W] reviewer> please check this".to_string()]);
+    // RPC-401: the message carries one trailing blank separator row.
+    assert_eq!(
+        lines,
+        vec!["[W] reviewer> please check this".to_string(), String::new()]
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -195,8 +207,12 @@ fn parse_supervisor_envelope_without_header_falls_back_to_supervisor_role() {
     );
 
     // @step And the extracted body is "raw body without header"
+    // RPC-401: the message carries one trailing blank separator row.
     assert_eq!(
         lines,
-        vec!["[W] supervisor> raw body without header".to_string()]
+        vec![
+            "[W] supervisor> raw body without header".to_string(),
+            String::new()
+        ]
     );
 }

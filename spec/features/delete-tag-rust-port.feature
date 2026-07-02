@@ -1,7 +1,6 @@
 @done
 @RPC-222
 Feature: Port delete-tag command to Rust
-
   """
   Files: codelet/fspec-core/src/commands/delete_tag.rs (replace stub); codelet/fspec-core/src/help/configs/delete_tag.rs (NEW); codelet/fspec/src/delete_tag.rs (NEW bridge); codelet/fspec-core/tests/delete_tag.rs (NEW dispatcher tests); codelet/fspec/tests/cli_delete_tag.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/delete-tag.txt (NEW captured fixture)
   Reuses shared infra: types::tags::{TagsData, TagCategory, Tag} (with #[serde(flatten)] extra preserving aux fields), io::locked_file::write_json_atomic (atomic write). NO io::ensure helper — tags.json must already exist (no auto-create, opposite of register-tag)
@@ -45,12 +44,10 @@ Feature: Port delete-tag command to Rust
   #   12. CLI help: 'fspec delete-tag --help' exits 0 and stdout matches the captured TypeScript fixture byte-for-byte
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch delete-tag from the agent loop with byte-for-byte parity to the TypeScript implementation
     So that I can prune obsolete tags from the registry without depending on Node.js, sharing one source of truth between the LLM dispatcher and the CLI
-
 
   Scenario: Deletes a tag and regenerates TAGS.md when no feature files reference it
     Given spec/tags.json contains a tag '@deprecated' under Status Tags
@@ -60,7 +57,6 @@ Feature: Port delete-tag command to Rust
     And the dispatcher output contains the substring 'Successfully deleted tag @deprecated from registry'
     And spec/tags.json on disk no longer contains a tag named '@deprecated' in any category
     And spec/TAGS.md exists in the project root after the call
-
 
   Scenario: Blocks deletion when the tag is referenced by feature files and --force is not set
     Given spec/tags.json contains a tag '@critical' under Phase Tags
@@ -74,7 +70,6 @@ Feature: Port delete-tag command to Rust
     And the error message contains the substring 'Use --force to delete anyway'
     And spec/tags.json content on disk is unchanged from before the call
 
-
   Scenario: Forces deletion with a warning prefix when --force is set and the tag is still in use
     Given spec/tags.json contains a tag '@critical' under Phase Tags
     And spec/features/auth.feature contains the substring '@critical'
@@ -87,7 +82,6 @@ Feature: Port delete-tag command to Rust
     And the dispatcher output contains the substring 'Successfully deleted tag @critical from registry'
     And spec/tags.json on disk no longer contains a tag named '@critical' in any category
 
-
   Scenario: Dry-run reports the intended deletion without mutating disk
     Given spec/tags.json contains a tag '@critical' under Status Tags
     When I dispatch delete-tag with tag '@critical' and --dry-run
@@ -97,7 +91,6 @@ Feature: Port delete-tag command to Rust
     And the dispatcher output does not contain the substring 'Regenerated: spec/TAGS.md'
     And spec/tags.json content on disk is unchanged from before the call
 
-
   Scenario: Rejects request when spec/tags.json does not exist
     Given an empty project root directory with no spec/tags.json
     When I dispatch delete-tag with tag '@deprecated' and no flags
@@ -105,13 +98,11 @@ Feature: Port delete-tag command to Rust
     And the error message contains the substring 'spec/tags.json not found'
     And spec/tags.json was not created by the command
 
-
   Scenario: Rejects request when the tag is not found in any category
     Given spec/tags.json exists with the canonical empty category set
     When I dispatch delete-tag with tag '@nonexistent' and no flags
     Then the dispatcher returns success=false
     And the error message contains the substring 'Tag @nonexistent not found in registry'
-
 
   Scenario: Preserves auxiliary top-level fields and does NOT bump statistics.lastUpdated
     Given spec/tags.json contains a tag '@critical' under Phase Tags plus auxiliary fields combinationExamples, usageGuidelines, references, and statistics.lastUpdated set to '1999-01-01T00:00:00.000Z'
@@ -120,7 +111,6 @@ Feature: Port delete-tag command to Rust
     And spec/tags.json on disk still contains combinationExamples, usageGuidelines, and references with their original payloads
     And spec/tags.json statistics.lastUpdated on disk still equals '1999-01-01T00:00:00.000Z'
 
-
   Scenario: Escalates malformed tags.json as a structured parse error
     Given spec/tags.json exists but contains invalid JSON syntax
     When I dispatch delete-tag with tag '@critical' and no flags
@@ -128,14 +118,12 @@ Feature: Port delete-tag command to Rust
     And the error message contains the substring 'Failed to parse tags.json'
     And spec/tags.json content on disk is unchanged from before the call
 
-
   Scenario: Suppresses 'Updated:' and 'Regenerated:' lines when dry-run succeeds
     Given spec/tags.json contains a tag '@critical' under Status Tags
     When I dispatch delete-tag with tag '@critical' and --dry-run
     Then the dispatcher output contains the substring 'Would delete tag @critical from category "Status Tags"'
     And the dispatcher output does not contain the substring 'Updated: spec/tags.json'
     And the dispatcher output does not contain the substring 'Regenerated: spec/TAGS.md'
-
 
   Scenario: Renders multi-line success block on a non-dry-run delete
     Given spec/tags.json contains a tag '@deprecated' under Status Tags

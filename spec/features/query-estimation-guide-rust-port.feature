@@ -1,9 +1,9 @@
 @done
 @cli
 @querying
-@RPC-259 @wip
+@RPC-259
+@wip
 Feature: Port query-estimation-guide command to Rust
-
   """
   Use ensure_work_units_file from crate::io::ensure (auto-creating spec/work-units.json with canonical defaults if missing) — Framing A divergence from TS source: TS calls bare readFile and errors on ENOENT with an unhelpful "Failed to query estimation guide: ENOENT" message; the Rust port auto-creates the canonical empty store so the dispatcher returns {patterns: []} on a fresh project.
   Read estimate and iterations from WorkUnit.extra via extra.get("estimate").and_then(Value::as_u64) and extra.get("iterations").and_then(Value::as_u64) — these fields are not modeled on shared types/work_unit.rs (file-ownership rule: shared types module is supervisor-only).
@@ -31,7 +31,6 @@ Feature: Port query-estimation-guide command to Rust
   #  10. CLI exit codes: 0 on success, 1 on error
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of query-estimation-guide wired through both the LLM dispatcher and the clap subcommand

@@ -1,7 +1,12 @@
 @done
-@RPC-061 @rust @tui @rpc @supervisor @session-management @parity
+@RPC-061
+@rust
+@tui
+@rpc
+@supervisor
+@session-management
+@parity
 Feature: RPC-061 cross-transport parity — supervisor surface
-
   """
   Cross-transport parity for the supervisor surface introduced by
   RPC-061. Drives identical scripted scenarios against
@@ -11,8 +16,8 @@ Feature: RPC-061 cross-transport parity — supervisor surface
   per-method call counts.
 
   Companion features:
-    - spec/features/rpc061-source-shape.feature
-    - spec/features/rpc061-supervisor-links.feature
+  - spec/features/rpc061-source-shape.feature
+  - spec/features/rpc061-supervisor-links.feature
   """
 
   Background: User Story

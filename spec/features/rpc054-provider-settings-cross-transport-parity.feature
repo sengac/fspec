@@ -7,7 +7,6 @@
 @rust
 @RPC-054
 Feature: /provider provider-credentials cross-transport parity (Embedded + WebSocket)
-
   """
   Mirrors RPC-049 / RPC-050 cross-transport parity tests for the new provider-credentials RPC surface. Both EmbeddedFspecBackend and WebSocketFspecBackend are constructed against the SAME StubSessionManagerHandle; identical scripted calls flow through each transport and the stub's per-method call counters confirm both round-trips landed.
   """

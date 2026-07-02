@@ -4,7 +4,6 @@
 @cli
 @RPC-197
 Feature: audit-coverage CLI subcommand
-
   """
   Core impl: rewrite codelet/fspec-core/src/commands/audit_coverage.rs to `pub async fn run(args_json, project_root)`; reuse crate::types::coverage::CoverageFile (no new shared type).
   Core returns JSON envelope {output, exitCode} (validate.rs pattern); CLI bridge codelet/fspec/src/audit_coverage.rs parses it, prints output, returns exitCode. Help config codelet/fspec-core/src/help/configs/audit_coverage.rs. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::AuditCoverage + intercept + mod, help configs/mod.rs.
@@ -30,7 +29,6 @@ Feature: audit-coverage CLI subcommand
   #   4. Given the binary is run with 'audit-coverage --help', output is byte-for-byte identical to the captured TS formatCommandHelp fixture, exit 0
   #
   # ========================================
-
   Background: User Story
     As a developer porting fspec to Rust
     I want to run audit-coverage through both the LLM dispatcher and the standalone Rust CLI

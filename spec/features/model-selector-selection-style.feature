@@ -4,7 +4,6 @@
 @tui
 @RPC-351
 Feature: Model selector view selection/arrow style does not match /provider TS-parity
-
   """
   Selection styling lives in views/model_selector/rows_render.rs (model rows) and header.rs (provider headers). Replaces Modifier::REVERSED|BOLD with a solid Style::default().bg(Color::Cyan).fg(Color::Black) band, mirroring provider_settings/row_render.rs:132-136 full-width pre-fill loop. Model-local SEL='> ' / NOSEL='  ' constants follow provider_settings/icons.rs. /provider view is reference-only and must not change.
   """
@@ -31,7 +30,6 @@ Feature: Model selector view selection/arrow style does not match /provider TS-p
   #   6. A short selected row still has cyan background painted to the right edge of the row
   #
   # ========================================
-
   Background: User Story
     As a fspec user navigating the /model selector
     I want to see the selected row highlighted with a solid cyan band and a > arrow matching /provider and the TS reference

@@ -4,7 +4,6 @@
 @rust
 @RPC-249
 Feature: List scenario tags CLI subcommand
-
   """
   CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_scenario_tags::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
@@ -56,4 +55,3 @@ Feature: List scenario tags CLI subcommand
     And stdout starts with a blank line followed by 'LIST-SCENARIO-TAGS'
     And stdout contains '<file> (required)' and '<scenario> (required)' lines
     And stdout does NOT contain 'WHEN TO USE' or 'NOTES' section headers
-

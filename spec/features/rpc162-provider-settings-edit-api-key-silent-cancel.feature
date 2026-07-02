@@ -5,7 +5,6 @@
 @provider-settings
 @tui
 Feature: Provider settings: empty-Enter in API-key edit cancels silently (drop inline 'cannot be empty' validation)
-
   """
   TS reference: src/tui/components/ProviderSettingsPanel.tsx — the editApiKey form's Enter handler returns silently when draft is empty (no validation chip rendered). On successful save, the form closes and the panel returns to the provider list (Ink unmounts the form node and re-renders the list). No "summary" intermediate view exists in TS.
   Test impact: codelet/fspec-tui/tests/provider_settings_view_rpc054.rs contains pre-existing tests that pin the OLD Esc→Summary and Enter→Summary { SavingCredentials } behavior. Those scenarios must be deleted from spec/features/rpc054-provider-settings-view.feature and their test bodies removed from provider_settings_view_rpc054.rs as part of this card — they are superseded by the new RPC-162 scenarios.

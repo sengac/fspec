@@ -1,7 +1,6 @@
 @done
 @RPC-264
 Feature: Port record-iteration command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/record_iteration.rs: signature pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>; direct std::fs::read_to_string of spec/work-units.json (no auto-create), mutate iterations in WorkUnit.extra, bump updated_at via io::time::iso8601_now, write back via io::locked_file::write_json_atomic (2-space pretty, preserve_order)
   CLI bridge codelet/fspec/src/record_iteration.rs marshals name/start/end clap fields but per Framing A passes no workUnitId, so core returns 'Work unit undefined not found'; help config codelet/fspec-core/src/help/configs/record_iteration.rs mirrors record-iteration-help.ts. SUPERVISOR wires canonical.rs/dispatch.rs/commands.mod.rs/help configs.mod.rs/main.rs
@@ -29,7 +28,6 @@ Feature: Port record-iteration command to Rust
   #   6. Two-front-doors: the CLI bridge and the dispatcher both call commands::record_iteration::run with identical JSON args and produce identical results
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to record an iteration increment on a work unit via the Rust-ported record-iteration command

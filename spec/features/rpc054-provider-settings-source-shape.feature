@@ -5,7 +5,6 @@
 @source-shape
 @provider-settings
 Feature: ProviderSettingsView — source-shape invariants
-
   """
   Source-shape regression tests that lock in the architectural decisions
   for ProviderSettingsView. The view MUST follow the full-screen mode-view

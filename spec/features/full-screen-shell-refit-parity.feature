@@ -6,7 +6,6 @@
 @tui
 @RPC-337
 Feature: Full-screen shell refit parity
-
   """
   Refit the existing scaffolds (ProviderSettingsView, ResumeSessionView) onto the shared shell. Migrating these views to the shell MUST preserve rendered output (snapshot parity). SearchHistoryView's refit is deferred to RPC-339 (its editable-query title needs a title-renderer generalization of the shell).
   """

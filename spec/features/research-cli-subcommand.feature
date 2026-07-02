@@ -4,14 +4,13 @@
 @cli
 @RPC-286
 Feature: Research CLI subcommand
-
   """
   CLI subcommand wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003
   §7/§11. The action arm delegates to codelet_fspec_core::commands::research::run(args_json, &cwd) so the
   list/discovery business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
   TS Commander.js registration (src/commands/research.ts:276-407) declares:
-    .command('research [args...]') .option('--tool <name>') .option('--work-unit <id>') .allowUnknownOption()
+  .command('research [args...]') .option('--tool <name>') .option('--work-unit <id>') .allowUnknownOption()
   The clap variant therefore exposes --tool, --work-unit and a trailing variadic [args...] capture, and must
   tolerate unknown flags so tool-specific args forward through untouched.
 

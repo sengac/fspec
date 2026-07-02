@@ -289,6 +289,18 @@ impl Component for HitlDialog {
                 _ => {}
             }
         }
+        // RPC-403: the compositor now delivers REAL paste events (the
+        // old stub exploded them into synthetic Char keys). Append to
+        // the free-text row when focused; always consume so a paste
+        // can never leak into the agent input hidden behind this
+        // Critical modal.
+        if let Event::Paste(s) = event {
+            if self.request.allow_text_input && self.is_free_text_selected() {
+                self.text
+                    .push_str(&crate::text_normalize::normalize_line_endings(s));
+            }
+            return EventResult::consumed();
+        }
         if let Event::Mouse(m) = event {
             match m.kind {
                 MouseEventKind::ScrollUp => {

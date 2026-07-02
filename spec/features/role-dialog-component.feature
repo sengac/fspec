@@ -6,7 +6,6 @@
 @rust
 @RPC-063
 Feature: RoleDialog component — Priority::Foreground modal for editing the session role
-
   """
   RoleDialog is the Priority::Foreground modal mounted by the `/role`
   slash command. Seeds a text editor from `AgentViewStore::role_for`

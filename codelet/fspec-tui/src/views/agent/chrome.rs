@@ -11,8 +11,19 @@
 //! exactly one source of truth, and so future row-strip widgets can
 //! reuse the same primitives alongside [`super::paint_row_bg`].
 
+use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
+use ratatui::style::Color;
 use ratatui::text::Line;
+
+/// RPC-029: paint `color` over every cell of `area`.
+pub(crate) fn paint_row_bg(area: Rect, buf: &mut Buffer, color: Color) {
+    for y in area.y..area.y.saturating_add(area.height) {
+        for x in area.x..area.x.saturating_add(area.width) {
+            buf[(x, y)].set_bg(color);
+        }
+    }
+}
 
 /// Carve `pad` columns off the left and right of `area`. Returns an
 /// area with `width = 0` when `pad * 2 >= area.width` so callers can

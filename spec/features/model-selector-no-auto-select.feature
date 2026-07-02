@@ -11,7 +11,6 @@ Feature: Model selector does not auto-select when no current model
   # index_of_model matches the current model; otherwise no selection is active
   # (no auto-snap to index 0). Enter is a no-op while there is no active
   # selection; explicit user navigation (arrows/Home/End/filter) activates it.
-
   Background: User Story
     As a fspec TUI user
     I want the model selector to show nothing selected when I have no current model

@@ -3,7 +3,6 @@
 @querying
 @RPC-257
 Feature: Port query-dependency-stats command to Rust
-
   """
   Use ensure_work_units_file from crate::io::ensure (auto-creating spec/work-units.json with canonical defaults if missing) — TS source-of-truth at src/commands/query-dependency-stats.ts:72 calls ensureWorkUnitsFile, so the Rust port matches that auto-create behaviour exactly.
   Read the four dependency arrays (blocks, blockedBy, dependsOn, relatesTo) from WorkUnit.extra via extra.get(k).and_then(Value::as_array) — do NOT add typed fields to the shared types/work_unit.rs (file-ownership rule: shared types module is supervisor-only).
@@ -30,7 +29,6 @@ Feature: Port query-dependency-stats command to Rust
   #   8. Dispatcher path always returns 2-space pretty-printed JSON
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of query-dependency-stats wired through both the LLM dispatcher and the clap subcommand

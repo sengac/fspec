@@ -55,6 +55,7 @@ pub(crate) fn agent_help_lines() -> Vec<String> {
         "",
         "Enter         Send message",
         "Shift+Enter   Newline",
+        "Alt+Enter     Newline (legacy terminals)",
         "Ctrl+C        Interrupt turn",
         "PageUp/PageDn Scroll history",
         "Home          Top",

@@ -5,7 +5,6 @@
 @tui
 @RPC-079
 Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from TS Ink to Rust ratatui via dialog_theme::render_dialog
-
   """
   TS source files: src/components/ErrorDialog.tsx, src/components/NotificationDialog.tsx, src/components/StatusDialog.tsx (read-only references)
   Rust port targets: codelet/fspec-tui/src/components/error_dialog.rs, notification_dialog.rs, status_dialog.rs (new). Register in codelet/fspec-tui/src/components/mod.rs.
@@ -39,7 +38,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
   #   7. Every new dialog test fixture that grep-asserts the rendered buffer NEVER finds inline FspecDialog struct usage in non-test code (verified by clippy lint or repo grep)
   #
   # ========================================
-
   Background: User Story
     As a Rust ratatui developer adding modal feedback to a view
     I want to drop in a single struct call for error / notification / progress modals
@@ -56,7 +54,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     When the dialog receives a KeyCode::Esc event
     Then the dialog emits a Callback that calls compositor.remove(ERROR_DIALOG_ID)
 
-
   Scenario: NotificationDialog success severity shows cyan border with green title and 2s countdown
     Given a NotificationDialog constructed with message "Saved" and severity Success
     Given auto_dismiss_ms is left at its default of 2000
@@ -70,7 +67,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     When a further 1 second of simulated time elapses
     Then the dialog emits a Callback that calls compositor.remove(NOTIFICATION_DIALOG_ID)
 
-
   Scenario: NotificationDialog warning severity with auto_dismiss_ms=0 is sticky with yellow border
     Given a NotificationDialog constructed with message "Slow connection" and severity Warning
     Given auto_dismiss_ms is set to 0
@@ -83,7 +79,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     When the dialog receives a KeyCode::Esc event
     Then the dialog emits a Callback that calls compositor.remove(NOTIFICATION_DIALOG_ID)
 
-
   Scenario: StatusDialog in Restoring state shows progress counter and ignores ESC
     Given a StatusDialog constructed with operation_type "Restoring Files"
     When the dialog enters Restoring state with current="file3.txt", idx=3, total=10
@@ -94,7 +89,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then the body contains a row whose visible text equals "(3/10)"
     When the dialog receives a KeyCode::Esc event
     Then the dialog returns EventResult::ignored() and emits NO Callback
-
 
   Scenario: StatusDialog transitions Restoring to Complete with green title and 3s auto-close
     Given a StatusDialog currently in Restoring state with operation_type "Restoring Files"
@@ -108,7 +102,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     When a fresh StatusDialog enters Complete state and receives a KeyCode::Esc event before the countdown finishes
     Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID) immediately
 
-
   Scenario: StatusDialog transitions Restoring to Error with red border and ESC dismissal
     Given a StatusDialog currently in Restoring state
     When the dialog transitions to Error state with error_message "Permission denied: /etc/passwd"
@@ -119,7 +112,6 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then no auto-dismiss Callback fires
     When the dialog receives a KeyCode::Esc event
     Then the dialog emits a Callback that calls compositor.remove(STATUS_DIALOG_ID)
-
 
   Scenario: No raw FspecDialog struct literals remain in non-test code after the wrappers ship
     Given the codelet/fspec-tui crate after RPC-079 implementation completes
@@ -134,9 +126,7 @@ Feature: Port reusable ErrorDialog/NotificationDialog/StatusDialog wrappers from
     Then the Compositor contains a layer with id ERROR_DIALOG_ID at Priority::Critical
     Then the scrollback for that session still contains the 'API Error: provider error: [claude] API error: Rig completion failed: HttpError: Invalid status code 429 Too Many Requests' line per RPC-078
 
-
   Scenario: End-to-end App.render paints ErrorDialog modal on top of AgentView when a provider Error chunk arrives
     given an App with an active session s-1 routed to the AgentView and no error dialog currently on the compositor
     when the App dispatches Action::ChunkReceived(s-1, StreamChunk::Error{error: "provider error: [claude] API error: Rig completion failed: HttpError: Invalid status code 429 Too Many Requests"}) and then App::render is called into an 80x24 TestBackend buffer
     then the rendered buffer contains a centered rounded red border drawn ON TOP of the AgentView scrollback (i.e. the ErrorDialog modal is painted last and covers the centre of the 80x24 buffer), with the bold red 'Error' title text visible inside the border and the scrollback 'API Error:' text still present in the rows the modal does not cover
-

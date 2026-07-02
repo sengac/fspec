@@ -2346,6 +2346,10 @@
           "description": "Work unit identifier for RPC-377 — client-side viewer parity (Prism, copy/badge, theme toggle, font controls) in the Rust markdown viewer"
         },
         {
+          "name": "@rpc-408",
+          "description": "Work unit identifier tag for RPC-408 — send_hitl_response wire-to-internal answer mapping fix"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
@@ -2806,7 +2810,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-06-28T04:32:02.170Z",
+    "lastUpdated": "2026-07-02T04:17:29.293Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

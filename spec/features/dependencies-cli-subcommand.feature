@@ -3,12 +3,11 @@
 @cli
 @RPC-224
 Feature: dependencies clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `dependencies` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern (architecture note on RPC-253, reused for RPC-224):
-    - Shell argv         → clap → codelet/fspec/src/dependencies.rs → fspec_core::commands::dependencies::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::dependencies::run
+  - Shell argv         → clap → codelet/fspec/src/dependencies.rs → fspec_core::commands::dependencies::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::dependencies::run
   Both call sites pass a JSON-encoded args shape ({workUnitId, graph}) and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS process.cwd() default).
   The clap subcommand exposes one required positional <work-unit-id> and a boolean --graph flag (default false, long only — no short).

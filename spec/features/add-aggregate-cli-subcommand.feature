@@ -1,7 +1,6 @@
 @wip
 @RPC-165
 Feature: fspec add-aggregate CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_aggregate.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/add-aggregate.ts:152-189). Surface:

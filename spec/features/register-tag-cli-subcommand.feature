@@ -1,7 +1,6 @@
 @done
 @RPC-265
 Feature: register-tag CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/register_tag.rs (NEW CLI bridge); codelet/fspec/tests/cli_register_tag.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/register-tag.txt (captured help fixture from `node dist/index.js register-tag --help`)
   Bridge marshals positional <tag> <category> <description> args to JSON and delegates to commands::register_tag::run. No logic in bridge — JSON marshalling only.

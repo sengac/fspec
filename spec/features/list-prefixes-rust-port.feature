@@ -4,7 +4,6 @@
 @cli
 @RPC-248
 Feature: Port list-prefixes command to Rust
-
   """
   New shared helper `io::ensure::read_prefixes_or_empty(cwd) -> Result<PrefixesData, FspecCoreError>` lives alongside `ensure_prefixes_file` but returns `Ok(PrefixesData::initial())` on ENOENT instead of auto-creating. This separates 'read-only' from 'load-or-init' semantics — list-prefixes uses the former (TS does NOT call ensurePrefixesFile), list-work-units continues to use the latter.
   New shared helper `io::ensure::read_work_units_or_empty(cwd) -> Result<WorkUnitsData, FspecCoreError>` returns `Ok(WorkUnitsData::initial(...))` on BOTH ENOENT and parse error — this captures TS's bare `catch {}` on work-units (silently empty on any failure). list-work-units continues to use `ensure_work_units_file` (which auto-creates AND escalates parse errors).
@@ -46,7 +45,6 @@ Feature: Port list-prefixes command to Rust
   #   13. Both invocation paths produce the SAME structured data: (a) dispatch_command("list-prefixes", `{"format":"json"}`, project_root) and (b) `./codelet/target/release/fspec list-prefixes` against the same on-disk state — the only differences are how args are parsed (JSON vs flag-less clap) and how the result is delivered (DispatchResult.data vs stdout text)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-prefixes from the agent loop and get the same prefix listing — with per-prefix work-unit completion progress — as the TypeScript implementation

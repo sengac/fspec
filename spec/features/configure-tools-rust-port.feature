@@ -4,7 +4,6 @@
 @rust
 @RPC-208
 Feature: Port configure-tools command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/configure_tools.rs. Reference port: add_command_to_foundation.rs (read_or_init_json + serde_json::Value mutate + write_json_atomic). Config path = spec/fspec-config.json. read-modify-write: load existing or init {agent:'claude'}; ensure .tools object; set tools.test={command} and/or tools.qualityCheck={commands} only for provided flags; write_json_atomic (2-space, no trailing newline).
   CLI bridge codelet/fspec/src/configure_tools.rs: clap struct with --test-command <command>, --quality-commands <commands...> (multi-value), --reconfigure flag. Marshals JSON {testCommand?, qualityCommands?, reconfigure?} omitting None. Non-reconfigure success prints '✓ Tool configuration saved to spec/fspec-config.json'. Reconfigure prints the returned system-reminder message. No domain logic in bridge.
@@ -33,7 +32,6 @@ Feature: Port configure-tools command to Rust
   #   4. Running configure-tools --quality-commands twice: a second run with --test-command preserves the previously stored qualityCheck.commands via read-modify-write
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the configure-tools command to Rust as a parity port

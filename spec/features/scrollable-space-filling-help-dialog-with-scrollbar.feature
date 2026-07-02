@@ -4,7 +4,6 @@
 @tui
 @RPC-396
 Feature: Scrollable, space-filling help dialog with scrollbar
-
   """
   Add scroll_offset: usize + visible_rows: usize + wheel: WheelVelocity fields to HelpDialog. render() takes &mut self so store measured body height directly (unlike SlashCommandPopup which uses Cell). Slice content by [scroll_offset..scroll_offset+visible_rows].
   Reuse scroll_viewport::ensure_visible + WheelVelocity/WheelDirection and list_scrollbar::render_list_scrollbar (both already pub in src/components/). For content-scroll (no selection cursor) clamp scroll_offset against total-visible_rows directly, mirroring TurnContentModal scroll. Mouse wheel: match Event::Mouse(m) => m.kind ScrollUp/ScrollDown in handle_event (dialog is centered/topmost Critical, no hit-test needed, per thinking_level_dialog.rs pattern).
@@ -30,7 +29,6 @@ Feature: Scrollable, space-filling help dialog with scrollbar
   #   4. A user opens the help dialog on a large terminal where all content fits — no scrollbar is shown and paging keys are no-ops
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user viewing the help dialog
     I want to scroll the help dialog with arrow keys, PageUp/PageDown, Home/End, and the mouse wheel, and see a scrollbar while the dialog fills the available space

@@ -3,7 +3,6 @@
 @done
 @RPC-167
 Feature: add-architecture CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/add_architecture.rs (NEW CLI bridge); codelet/fspec/tests/cli_add_architecture.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/add-architecture.txt (captured help fixture from `node dist/index.js add-architecture --help`).
   Bridge marshals positional <feature> + <text> into JSON {feature, text} and delegates to commands::add_architecture::run. No logic in bridge — JSON marshalling and CWD resolution only.

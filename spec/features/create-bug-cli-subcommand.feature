@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec create-bug CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `create-bug` exposes the same surface as the TS Commander.js registration at src/commands/create-bug.ts:278-288 — two positional arguments `<prefix>` and `<title>` plus optional `-d, --description`, `-e, --epic`, and `-p, --parent` flags. The bridge module at codelet/fspec/src/create_bug.rs marshals the clap args into a JSON object and delegates to codelet_fspec_core::commands::create_bug::run; no validation or rendering logic is duplicated.
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with 'Error:' (parity with the TS error path at src/commands/create-bug.ts:269-275). The success block (✓ Created bug <id>, Title:, optional Description:/Epic:/Parent:) prints to stdout and the research-guidance system-reminder prints to stderr.

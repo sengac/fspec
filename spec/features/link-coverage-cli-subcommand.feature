@@ -4,12 +4,11 @@
 @cli
 @RPC-240
 Feature: fspec link-coverage CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/link_coverage.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/link-coverage.ts:226-250). Surface:
   `fspec link-coverage <feature-name> --scenario <name> [--test-file <path>] [--test-lines <range>]
-   [--impl-file <path>] [--impl-lines <lines>] [--skip-validation] [--skip-step-validation]`.
+  [--impl-file <path>] [--impl-lines <lines>] [--skip-validation] [--skip-step-validation]`.
   Stdout (success): result.message (plus removal hint and yellow warnings) printed; exit 0.
   Stderr (failure): 'Error: <message>'; exit 1.
   Two-front-doors invariant: the bridge marshals args into JSON and forwards to

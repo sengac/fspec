@@ -4,7 +4,6 @@
 @tui
 @PROV-099
 Feature: Anthropic OAuth-vs-api-key classification in the provider settings projection
-
   """
   projection.rs::project_one: change `has_oauth_tokens = is_oauth && info.configured` to `is_oauth && info.configured && info.masked_key.is_none()`. masked_key=Some means env api key present (api-key config), so not OAuth-logged-in. No new wire field; projection reads existing ProviderCredentialInfo.masked_key.
   Offline tests: projection-layer tests are pure (hand-built ProviderCredentialInfo, no env/fs). No network.
@@ -32,7 +31,6 @@ Feature: Anthropic OAuth-vs-api-key classification in the provider settings proj
   #   1. Env api key wins: when both are present, masked_key=Some so has_oauth_tokens=false (api-key row, no logout). A fully correct both-present resolution would need a dedicated wire field and is out of scope for PROV-099.
   #
   # ========================================
-
   Background: User Story
     As a developer using the pure-Rust fspec Provider Settings screen
     I want to see my ANTHROPIC_API_KEY shown as a masked env-sourced api-key credential

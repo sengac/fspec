@@ -3,7 +3,6 @@
 @cli
 @RPC-299
 Feature: Port show-acceptance-criteria command to Rust
-
   """
   Uses gherkin crate (already in fspec-core deps) to parse feature files. Pattern matches show_feature.rs but iterates the entire spec/features/**/*.feature glob via glob_feature_files (already shared). Children filter is keyword == 'Scenario' — Scenario Outlines are intentionally skipped (TS parity at show-acceptance-criteria.ts:146).
   Three rendering paths: text (ANSI-color compat via plain text — non-TTY identity), markdown (H1/H2/bullet steps with blockquote background), json (serde_json::to_string_pretty with 2-space indent over the FeatureAC vec). Order of features matches glob_feature_files (sorted ascending by path).

@@ -4,7 +4,6 @@
 @tui-component
 @RPC-382
 Feature: Port AgentView turn content modal (Enter on selected turn) to Rust
-
   """
   Modal state lives on AgentView as turn_modal_seq: Option<u64> (Some(seq) => open for that turn, keyed by stable chunk seq like RPC-381 selection). Full content sourced from the selected chunk's ChunkSource.text (re-wrapped to modal width), falling back to joining RenderedChunk.lines when source is None. New TurnContentModal widget in views/agent/turn_modal.rs follows confirm_dialog.rs/merge_confirm_dialog.rs overlay conventions; title colored by the turn's ChunkKind/role color; painted on top in views/agent.rs render after scrollback.
   New actions OpenTurnModal(u64) and CloseTurnModal in components/mod.rs, reduced on the App task to set/clear AgentView.turn_modal_seq. Enter routing: in views/agent/dispatch_select.rs, replace the Enter-suppression (RPC-381) with emit OpenTurnModal(selected_seq). Esc cascade in dispatch_select.rs/dispatch.rs: when turn_modal_seq.is_some() emit CloseTurnModal and consume (do NOT exit select mode); else if turn_select_mode exit mode; else AgentEscPressed. Tab tear-down: ToggleTurnSelectMode disable path also clears turn_modal_seq.
@@ -29,7 +28,6 @@ Feature: Port AgentView turn content modal (Enter on selected turn) to Rust
   #   5. With the modal open, user presses Tab; the modal closes and select mode is turned off
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to press Enter on a selected turn to open a modal showing the turn's full content, and press Esc to close it

@@ -3,12 +3,11 @@
 @cli
 @RPC-303
 Feature: show-event-storm clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `show-event-storm` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern (architecture note [7] on RPC-253, reused for RPC-303):
-    - Shell argv         → clap → codelet/fspec/src/show_event_storm.rs → fspec_core::commands::show_event_storm::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::show_event_storm::run
+  - Shell argv         → clap → codelet/fspec/src/show_event_storm.rs → fspec_core::commands::show_event_storm::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::show_event_storm::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes exactly one required positional argument <work-unit-id> and no flags — matching TS Commander.js registration at src/commands/show-event-storm.ts:107-115.

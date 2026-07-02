@@ -4,7 +4,6 @@
 @tui
 @RPC-391
 Feature: Render colored Edit/Write diffs in the Rust agent view
-
   """
   Consumes RPC-390 diff_format module. Touch points: chunk_processor.rs (handle_tool_call capture, handle_tool_result produce), chunk_wrap.rs (marker decode into ratatui spans), session_context.rs (pending_tool_diffs map), ChunkKind::ToolCall is_diff flag, Rust TurnContentModal full-diff decode.
   """
@@ -30,7 +29,6 @@ Feature: Render colored Edit/Write diffs in the Rust agent view
   #   5. An Edit whose pending input was not captured (malformed JSON) falls back to plain raw text without panicking
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user
     I want to see Edit/Write tool results as colored red/green diffs in the agent view
@@ -42,13 +40,11 @@ Feature: Render colored Edit/Write diffs in the Rust agent view
     Then the removed line span has a background of rgb 139,0,0 and white text
     And the added line span has a background of rgb 0,100,0 and white text
 
-
   Scenario: Write of a new three-line file shows three green-background lines
     Given a Write tool call whose content has three lines is captured at tool-call time
     When the matching ToolResult arrives and the diff card is wrapped into lines
     Then three line spans each have a background of rgb 0,100,0 and white text
     And no removed-line background appears
-
 
   Scenario: A Bash tool result renders plain white with no diff coloring
     Given a Bash tool call and its ToolResult with no captured pending diff
@@ -56,13 +52,11 @@ Feature: Render colored Edit/Write diffs in the Rust agent view
     Then no span carries a red or green diff background
     And the card is collapsed by the existing eight-line tool-output rule
 
-
   Scenario: An Edit over the collapse limit shows 25 lines inline while the modal shows the full diff
     Given an Edit producing more than 25 diff display lines is captured at tool-call time
     When the matching ToolResult arrives and the diff card is wrapped into lines
     Then the inline body shows 25 display lines plus a '... +N lines' indicator
     And the retained full diff exposed to the turn-content modal contains all display lines
-
 
   Scenario: An Edit with uncaptured pending input falls back to raw text without panicking
     Given an Edit tool call whose input is malformed JSON so no pending diff is captured
@@ -70,22 +64,18 @@ Feature: Render colored Edit/Write diffs in the Rust agent view
     Then the raw ToolResult content is shown as plain text with no diff coloring
     And no panic occurs
 
-
   Scenario: Context diff lines render with a gray line-number gutter and white content
     Given an Edit diff card containing a context line of the form '  250   foo'
     When the diff card is wrapped into lines
     Then the line-number gutter span is gray and the content span is white
-
 
   Scenario: The marker characters are stripped before display
     Given an Edit diff card with removed and added lines
     When the diff card is wrapped into lines
     Then no rendered span text contains the literal '[R]' or '[A]' marker
 
-
   Scenario: Diff cards bypass the eight-line tool-output collapse
     Given an Edit diff card whose collapsed body has more than eight lines
     When the diff card is wrapped into lines
     Then no '... +N lines (Enter to view full)' indicator from the eight-line collapse appears
     And all of the diff body lines are rendered
-

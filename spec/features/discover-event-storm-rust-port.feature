@@ -3,7 +3,6 @@
 @cli
 @RPC-225
 Feature: Port discover-event-storm command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/discover_event_storm.rs (rewrite stub); CLI bridge codelet/fspec/src/discover_event_storm.rs; help config codelet/fspec-core/src/help/configs/discover_event_storm.rs; help fixture codelet/fspec/tests/fixtures/help/discover-event-storm.txt; core test codelet/fspec-core/tests/discover_event_storm.rs; CLI test codelet/fspec/tests/cli_discover_event_storm.rs. Module already registered as a stub in commands/mod.rs (do not edit).
   Shared types reused: crate::types::work_unit::WorkUnitsData + WorkUnitStatus::as_str() (parity with add_rule.rs specifying gate); crate::error::FspecCoreError. Missing-file Option B (inline path.exists(), no ensure_work_units_file) mirrors add_domain_event.rs. Read-only command — no write_json_atomic call.
@@ -30,7 +29,6 @@ Feature: Port discover-event-storm command to Rust
   #   3. Agent runs discover-event-storm on a work unit currently in backlog and sees 'Work unit X must be in specifying status (currently: backlog)' plus the update-work-unit-status hint, exit 1
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to run a Rust port of discover-event-storm wired through both the LLM dispatcher and the clap subcommand

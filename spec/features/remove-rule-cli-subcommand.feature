@@ -1,7 +1,6 @@
 @done
 @RPC-279
 Feature: fspec remove-rule CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_rule.rs — clap-derived struct mirroring TS Commander.js registration
   (src/commands/remove-rule.ts:88-105). Surface: `fspec remove-rule <workUnitId> <index>` (index parsed via parseInt base 10).

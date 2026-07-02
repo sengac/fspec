@@ -4,7 +4,6 @@
 @cli
 @RPC-310
 Feature: Port tag-stats command to Rust
-
   """
   Two-front-doors pattern: dispatcher (LLM tool-call JSON) and clap CLI subcommand BOTH call the single fspec_core::commands::tag_stats::run function. CLI bridge only marshals empty args JSON; never duplicates counting/projection/rendering logic.
   Reuse codelet/fspec-core/src/io/feature_glob::glob_feature_files for spec/features/**/*.feature enumeration. When that helper returns FspecCoreError::DirectoryNotFound, tag-stats MUST catch it locally and treat it as an empty list (matching tinyglobby's empty-array-on-missing-dir behaviour). No shared-file change required.
@@ -56,7 +55,6 @@ Feature: Port tag-stats command to Rust
   #   16. Both invocation paths produce equivalent data: (a) dispatch_command('tag-stats', '{"format":"json"}', project_root) and (b) `./codelet/target/release/fspec tag-stats` against the same on-disk state — CLI bridge file contains NO counting/projection/rendering logic
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch tag-stats from the agent loop and run `fspec tag-stats` from a shell, getting the same tag usage statistics as the TypeScript implementation

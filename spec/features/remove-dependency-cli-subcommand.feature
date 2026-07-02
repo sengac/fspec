@@ -1,7 +1,6 @@
 @done
 @RPC-271
 Feature: fspec remove-dependency CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_dependency.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/remove-dependency.ts:133-200).
   Surface: `fspec remove-dependency <workUnitId> [dependsOnId] [--blocks <id>] [--blocked-by <id>] [--depends-on <id>] [--relates-to <id>]`.

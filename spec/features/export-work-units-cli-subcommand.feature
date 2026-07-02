@@ -1,7 +1,6 @@
 @done
 @RPC-229
 Feature: Port export-work-units command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/export_work_units.rs: signature pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>; direct std::fs::read_to_string of spec/work-units.json (no auto-create), Object.values via data.work_units.values(), for format=json serde_json::to_string_pretty(units) then std::fs::write(output, ...); else wrap 'Unsupported format: <fmt>'; returns {success:true}
   CLI bridge codelet/fspec/src/export_work_units.rs marshals format(positional)/output(positional)/status(--status) to core; success log mirrors broken TS 'Exported undefined work units to undefined'. Help config codelet/fspec-core/src/help/configs/export_work_units.rs mirrors export-work-units-help.ts. SUPERVISOR wires canonical.rs/dispatch.rs/commands.mod.rs/help configs.mod.rs/main.rs
@@ -32,7 +31,6 @@ Feature: Port export-work-units command to Rust
   #   8. Two-front-doors: the CLI bridge and the dispatcher both call commands::export_work_units::run with identical JSON args and produce identical results
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to export all work units to a JSON file via the Rust-ported export-work-units command

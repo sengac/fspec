@@ -6,7 +6,6 @@
 @tui
 @RPC-337
 Feature: Model selector view interaction
-
   """
   The model selector is a full-screen Navigator mode-view (ViewMode::ModelSelector), replacing the Compositor modal. /model dispatches Action::OpenModelSelectorView (and spawns list_providers); Esc returns to Agent. Provider header rows stay non-selectable; navigation (up/down, PageUp/Down, Home/End, mouse-wheel) skips them with wrap-around. Selecting a model row with Enter emits Action::ModelSelected(Option<session_id>, provider_key, model_id) and returns to the prior view. Following the TypeScript implementation (ModelSelectorScreen.tsx Enter handler + modelSelectionService.selectModel), the Enter handler has NO session-existence guard: the selection is always emitted and the view always closes; only the downstream backend write (set_session_model) and the green (current) marker are gated on a present session. With no active session the selector still closes but no backend write fires. The mode-view supports filter (/), expand/collapse of provider groups (left/right arrows) and refresh (r); footer reads 'Enter Select | <-> Expand/Collapse | / Filter | r Refresh | Esc Close'.
   """

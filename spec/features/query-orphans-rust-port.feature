@@ -1,9 +1,9 @@
 @done
 @cli
 @querying
-@RPC-262 @wip
+@RPC-262
+@wip
 Feature: Port query-orphans command to Rust
-
   """
   Use ensure_work_units_file from crate::io::ensure (auto-creating spec/work-units.json with canonical defaults if missing) — TS source-of-truth at src/commands/query-orphans.ts:37 calls ensureWorkUnitsFile.
   Read dependency arrays (blocks, blockedBy, dependsOn, relatesTo) from WorkUnit.extra via extra.get(k).and_then(Value::as_array) — do NOT modify shared types/work_unit.rs (file-ownership rule: shared types module is supervisor-only).
@@ -29,7 +29,6 @@ Feature: Port query-orphans command to Rust
   #  10. --exclude-done flag skips orphans whose status is 'done'
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of query-orphans wired through both the LLM dispatcher and the clap subcommand

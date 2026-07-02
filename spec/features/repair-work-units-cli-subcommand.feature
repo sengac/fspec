@@ -4,7 +4,6 @@
 @cli
 @RPC-284
 Feature: fspec repair-work-units CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/repair_work_units.rs — clap-derived struct mirroring TS
   Commander.js registration (src/commands/repair-work-units.ts:128-151). Surface:

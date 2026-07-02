@@ -4,7 +4,6 @@
 @cli
 @RPC-255
 Feature: fspec prioritize-work-unit CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/prioritize_work_unit.rs — clap-derived struct mirroring TS
   Commander.js registration (src/commands/prioritize-work-unit.ts:133-172). Surface:

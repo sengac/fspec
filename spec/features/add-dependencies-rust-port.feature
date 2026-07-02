@@ -1,7 +1,6 @@
 @done
 @RPC-176
 Feature: Port add-dependencies command to Rust
-
   """
   Core impl file: codelet/fspec-core/src/commands/add_dependencies.rs — replaces NotYetPorted stub. Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` (parity with list_work_units::run).
   Reuses existing shared infrastructure: io::ensure::ensure_work_units_file (load-or-init), io::locked_file::write_json_atomic (atomic write), types::work_unit::{WorkUnitsData, WorkUnit, WorkUnitStatus} with #[serde(flatten)] extra map preserving unknown fields (blocks, blockedBy, dependsOn, relatesTo, blockedReason all live in `extra`).

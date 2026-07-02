@@ -4,7 +4,6 @@
 @wip
 @RPC-325
 Feature: Port validate-work-units command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/validate_work_units.rs (rewrite stub); help config codelet/fspec-core/src/help/configs/validate_work_units.rs; CLI bridge codelet/fspec/src/validate_work_units.rs; core test codelet/fspec-core/tests/validate_work_units.rs; CLI test codelet/fspec/tests/cli_validate_work_units.rs; help fixture codelet/fspec/tests/fixtures/help/validate-work-units.txt
   Implement validation over RAW serde_json::Value (mirror TS untyped JSON.parse) because every check inspects ad-hoc fields and TS keeps invalid status as a raw string. SHARED-FILE REQUEST to supervisor: add io::ensure helper to load spec/work-units.json as raw Value with ensure semantics (auto-create default, escalate parse) — proposed ensure_work_units_value(cwd) -> Result<Value> — OR confirm we can call ensure_work_units_file then serde_json::to_value (note: typed WorkUnitsData parse would REJECT an invalid status before Check 4 can run, breaking parity, so a raw loader is preferred). Supervisor also wires canonical.rs PORTED_COMMANDS, dispatch.rs run_ported, help/configs/mod.rs, main.rs Mode+intercept+forward.
@@ -37,7 +36,6 @@ Feature: Port validate-work-units command to Rust
   #   7. Running validate-work-units on a clean store prints '✓ All work units are valid' and exits 0; on a corrupt store prints '✗ Found N validation errors' with bullet lines and exits 1
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to run `fspec validate-work-units` to check work-unit data integrity (schema, unique IDs, parent/child links, valid statuses, state-index consistency, example-mapping arrays, dependency arrays)

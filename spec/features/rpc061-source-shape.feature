@@ -1,7 +1,13 @@
 @done
-@RPC-061 @rust @tui @rpc @agent-view @supervisor @session-management @source-shape
+@RPC-061
+@rust
+@tui
+@rpc
+@agent-view
+@supervisor
+@session-management
+@source-shape
 Feature: RPC-061 source-shape — supervisor surface file layout
-
   """
   Source-shape regression test for RPC-061. Pins the file locations
   and member-symbol invariants for the new supervisor surface across
@@ -11,8 +17,8 @@ Feature: RPC-061 source-shape — supervisor surface file layout
   app/dispatch.rs catch-all).
 
   Companion features:
-    - spec/features/rpc061-cross-transport-parity.feature
-    - spec/features/rpc061-supervisor-links.feature
+  - spec/features/rpc061-cross-transport-parity.feature
+  - spec/features/rpc061-supervisor-links.feature
   """
 
   Background: User Story

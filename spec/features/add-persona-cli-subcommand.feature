@@ -4,7 +4,6 @@
 @rust
 @RPC-186
 Feature: fspec add-persona CLI subcommand
-
   """
   File layout: rewrite stub codelet/fspec-core/src/commands/add_persona.rs; add CLI bridge codelet/fspec/src/add_persona.rs; help config codelet/fspec-core/src/help/configs/add_persona.rs; dispatcher test codelet/fspec-core/tests/add_persona.rs; CLI test codelet/fspec/tests/cli_add_persona.rs; help fixture codelet/fspec/tests/fixtures/help/add-persona.txt
   Core signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> (2-arg form like add_diagram/add_bounded_context). Args (camelCase): { name: String, description: String, goals: Vec<String> default [] }. Does NOT use ensure_foundation_file — reads draft-or-final directly with inline draft-precedence and errors on ENOENT (no auto-create).
@@ -37,7 +36,6 @@ Feature: fspec add-persona CLI subcommand
   #   8. foundation.json exists but has no personas key; add-persona initializes personas to [] then appends the new persona
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to add a persona to spec/foundation.json (or its draft) via the Rust fspec-core add-persona command

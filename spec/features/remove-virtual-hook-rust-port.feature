@@ -3,7 +3,6 @@
 @rust
 @RPC-283
 Feature: Port remove-virtual-hook command to Rust
-
   """
   Two-front-doors invariant (RPC-003 §7/§11): both the LLM-facing dispatcher and the clap shell subcommand invoke fspec_core::commands::remove_virtual_hook::run with a JSON args string and &Path project_root.
   Removal uses Vec::retain on the wu.extra["virtualHooks"] array (no clone needed). After retain, compare new length vs initial — if equal, return InvalidArgs("Virtual hook '...' not found in ...").
@@ -41,7 +40,6 @@ Feature: Port remove-virtual-hook command to Rust
   #   11. CLI subcommand with empty virtualHooks prints '✗ Failed to remove virtual hook: No virtual hooks configured ...' to stderr and exits 1
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch remove-virtual-hook from the agent loop AND invoke `fspec remove-virtual-hook <workUnitId> <hookName>` from a shell

@@ -4,7 +4,6 @@
 @rust
 @RPC-385
 Feature: Spawned subordinate agents are not registered/visible in the Rust TUI
-
   """
   Backend broadcast: add a session_created broadcast sender to SessionManager (codelet/sessions/src/session_manager.rs) alongside chunks_tx/logs_tx/status_changes_tx, with a session_created_tx() accessor. Fire it inside create_session_with_id right after sessions.write().insert(uuid, session), next to the existing broadcast_metadata_update() call. Payload should carry at least the SessionId (and name if convenient via SessionInfo).
   Transport surface: add fn session_created_rx(&self) -> broadcast::Receiver<...> to the FspecBackend trait (codelet/fspec-tui/src/transport/mod.rs). Embedded backend returns session_manager.session_created_tx().subscribe(). Provide a safe default (e.g. a never-firing receiver) for remote/tarpc backend so it compiles; full remote-transport parity is an explicit OUT-OF-SCOPE follow-up.
@@ -31,7 +30,6 @@ Feature: Spawned subordinate agents are not registered/visible in the Rust TUI
   #   5. When the session-created subscriber reports a lagged receiver, it continues processing subsequent events instead of terminating
   #
   # ========================================
-
   Background: User Story
     As a operator running the Rust TUI
     I want to see a tab/session appear when an agent spawns a subordinate via AgentManager

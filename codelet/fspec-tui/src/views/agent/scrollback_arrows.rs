@@ -55,6 +55,13 @@ pub(in crate::views::agent) fn generate_arrow_bar(
 /// `area.y` after skipping the first `skip_rows` visual rows. The top
 /// bar overwrites the row immediately ABOVE the selected chunk's first
 /// visible row; the bottom bar the row immediately BELOW its last.
+///
+/// **RPC-401**: because every chunk now carries a trailing blank
+/// separator row, the selected chunk's LAST visible row is its own blank
+/// gutter, so the ▲ bar (painted below it) lands one row past the gutter
+/// — still a blank separator — and the ▼ bar lands on the PREVIOUS
+/// chunk's trailing gutter. Both bars therefore sit on blank rows and no
+/// longer overwrite adjacent content.
 pub(in crate::views::agent) fn paint_selection_arrow_bars(
     area: Rect,
     buf: &mut Buffer,
@@ -107,7 +114,23 @@ pub(in crate::views::agent) fn paint_selection_arrow_bars(
         }
     }
     if let Some(ly) = last_y {
-        let by = ly.saturating_add(1);
+        // **RPC-401**: every source-backed chunk now ends with a trailing
+        // blank separator row, so the selected chunk's LAST visible row
+        // (`ly`) is its own gutter — paint the ▲ bar THERE so it occupies
+        // the blank separator instead of overwriting the next turn's first
+        // content row (`ly + 1`). Legacy source-less chunks (no separator)
+        // keep the original `ly + 1` placement so the RPC-381 geometry is
+        // preserved.
+        let selected_has_separator = chunks
+            .get(sel)
+            .and_then(|c| c.lines.last())
+            .map(is_blank_line)
+            .unwrap_or(false);
+        let by = if selected_has_separator {
+            ly
+        } else {
+            ly.saturating_add(1)
+        };
         if by < y_end {
             let bar = generate_arrow_bar(width, ArrowDir::Bottom, 4);
             let row = Rect {
@@ -119,6 +142,14 @@ pub(in crate::views::agent) fn paint_selection_arrow_bars(
             Paragraph::new(bar).style(style).render(row, buf);
         }
     }
+}
+
+/// **RPC-401**: true when a rendered line is the empty blank separator
+/// row appended by `wrap_source` — no spans, or only whitespace spans.
+fn is_blank_line(line: &ratatui::text::Line<'static>) -> bool {
+    line.spans
+        .iter()
+        .all(|s| s.content.as_ref().trim().is_empty())
 }
 
 #[cfg(test)]

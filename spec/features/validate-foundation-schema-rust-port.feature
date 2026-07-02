@@ -4,7 +4,6 @@
 @wip
 @RPC-321
 Feature: Port validate-foundation-schema command to Rust
-
   """
   Reuse the existing native validator at codelet/fspec-core/src/generators/foundation_schema.rs (validate_foundation + SchemaError) which already mirrors the Ajv draft-07 subset against the bundled generic-foundation.schema.json — do NOT add a JSON-schema crate. The TS minItems special-case (instancePath stripped of leading '/' and '/' → '.') must be applied in the command layer, NOT in the shared validator, because validate_foundation/format_errors produce the generic 'instancePath: message' form used by generate-foundation-md.
   minItems parity detail: the native validator emits message 'must NOT have fewer than <limit> items' (Ajv standard) but the TS validate-foundation-schema command formats minItems errors as 'Field <dotted.path> must have at least <limit> items (found <n>)'. SchemaError carries instance_path + message only (no params.limit, no data.length). The command layer must (a) detect the message prefix 'must NOT have fewer than ', (b) parse the <limit> from it, (c) re-fetch the actual array length by re-reading the offending node from the parsed foundation via instance_path, OR re-implement a small minItems-aware error mapper. Decision: parse limit from the message and resolve the actual array length by walking the parsed JSON along instance_path — keeps the shared validator untouched.
@@ -35,7 +34,6 @@ Feature: Port validate-foundation-schema command to Rust
   #   8. Running `./codelet/target/release/fspec validate-foundation-schema --help` prints the formatted help block (header VALIDATE-FOUNDATION-SCHEMA, description, USAGE, EXAMPLES, RELATED COMMANDS, NOTES) byte-identical to the TS fixture and exits 0
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to validate spec/foundation.json against the generic-foundation JSON schema from both the LLM dispatcher and the shell CLI
@@ -46,12 +44,10 @@ Feature: Port validate-foundation-schema command to Rust
     When I dispatch the validate-foundation-schema command against that project root
     Then the dispatcher returns success=true with the output '✓ foundation.json is valid according to the schema'
 
-
   Scenario: Reports a friendly error when foundation.json is missing
     Given an empty project root directory with no spec/foundation.json
     When I dispatch the validate-foundation-schema command against that project root
     Then the dispatcher returns success=false with the error 'foundation.json not found in spec/ directory'
-
 
   Scenario: Renders the minItems special-case error for an empty capabilities array
     Given spec/foundation.json is valid except solutionSpace.capabilities is an empty array
@@ -67,4 +63,3 @@ Feature: Port validate-foundation-schema command to Rust
     Given spec/foundation.json exists but contains the malformed bytes '{ not json'
     When I dispatch the validate-foundation-schema command against that project root
     Then the dispatcher returns success=false with an error beginning 'Failed to validate foundation schema:'
-

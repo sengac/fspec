@@ -1,7 +1,6 @@
 @wip
 @RPC-174
 Feature: Port add-command command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_command.rs. INLINE style: the TS source
   (src/commands/add-command.ts) inlines the Event Storm mutation directly (it does NOT use the

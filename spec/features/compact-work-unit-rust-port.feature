@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port compact-work-unit command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/compact_work_unit.rs: ensure_work_units_file -> existence check -> force gate on status!='done' -> compact rules/examples/questions/architectureNotes (filter deleted:true, renumber id from 0) -> reset nextRuleId/nextExampleId/nextQuestionId/nextNoteId -> set updatedAt + meta.lastUpdated -> single write_json_atomic. Arrays and counters live in WorkUnit.extra; status is a typed field; reuse iso8601_now.
   CLI bridge codelet/fspec/src/compact_work_unit.rs marshals {workUnitId, force?} JSON only. The dispatcher returns the rendered summary text. Framing A: the TS CLI action discards result.warning and the renumber-range line shown in help-doc examples; Rust mirrors the ACTUAL CLI output, not the divergent help-doc examples.

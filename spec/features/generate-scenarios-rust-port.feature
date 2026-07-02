@@ -4,7 +4,6 @@
 @cli
 @RPC-234
 Feature: Port generate-scenarios command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/generate_scenarios.rs (rewrite stub, signature gains project_root); help config codelet/fspec-core/src/help/configs/generate_scenarios.rs; CLI bridge codelet/fspec/src/generate_scenarios.rs; core tests codelet/fspec-core/tests/generate_scenarios.rs; CLI tests codelet/fspec/tests/cli_generate_scenarios.rs; help fixture codelet/fspec/tests/fixtures/help/generate-scenarios.txt. Two feature files: generate-scenarios-rust-port.feature (dispatcher contract) + generate-scenarios-cli-subcommand.feature (clap surface).
   Reuse existing shared modules: io::ensure (ensureWorkUnitsFile parity), io::feature_glob::glob_feature_files, io::gherkin::parse_feature_lenient. Example-mapping fields (userStory, rules, examples, questions, assumptions, architectureNotes) are read out of WorkUnit.extra as serde_json::Value, mirroring TS untyped access — no new shared type module.
@@ -47,7 +46,6 @@ Feature: Port generate-scenarios command to Rust
   #   11. A work unit with a user story produces a Background populated from role, action and benefit, while a work unit without one emits placeholder tokens and a prefill reminder
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run `generate-scenarios <workUnitId>` in the Rust binary and have it behave byte-for-byte like the TypeScript command
@@ -61,13 +59,11 @@ Feature: Port generate-scenarios command to Rust
     Then the rendered output contains the substring "Created context-only feature file"
     Then the rendered output contains the substring "ZERO scenarios"
 
-
   Scenario: Dispatch fails for a missing work unit
     Given a project root tempdir with an empty work-units store
     When I dispatch generate-scenarios with workUnitId="MISSING-1"
     Then the dispatcher returns success=false
     Then the error message contains the substring "does not exist"
-
 
   Scenario: Dispatch fails when a question is unanswered
     Given a project root tempdir whose work unit WU-1 has an unanswered question
@@ -75,13 +71,11 @@ Feature: Port generate-scenarios command to Rust
     Then the dispatcher returns success=false
     Then the error message contains the substring "unanswered question"
 
-
   Scenario: Dispatch fails when there is no Example Mapping data
     Given a project root tempdir whose work unit WU-1 has no rules and no examples
     When I dispatch generate-scenarios with workUnitId="WU-1"
     Then the dispatcher returns success=false
     Then the error message contains the substring "No Example Mapping data found"
-
 
   Scenario: Dispatch fails when there are no active examples
     Given a project root tempdir whose work unit WU-1 has a rule but only deleted examples
@@ -89,13 +83,11 @@ Feature: Port generate-scenarios command to Rust
     Then the dispatcher returns success=false
     Then the error message contains the substring "has no examples to generate scenarios from"
 
-
   Scenario: Dispatch fails when the target feature file already exists
     Given a project root tempdir whose work unit WU-1 is ready and spec/features/wu-1.feature already exists
     When I dispatch generate-scenarios with workUnitId="WU-1"
     Then the dispatcher returns success=false
     Then the error message contains the substring "already exists"
-
 
   Scenario: Dispatch blocks on a duplicate scenario without the override flag
     Given a project root tempdir whose work unit WU-1 has an example that matches an existing scenario above threshold
@@ -103,13 +95,11 @@ Feature: Port generate-scenarios command to Rust
     Then the dispatcher returns success=false
     Then the error message contains the substring "DUPLICATE SCENARIOS DETECTED"
 
-
   Scenario: Dispatch proceeds past duplicates with ignore-possible-duplicates
     Given a project root tempdir whose work unit WU-1 has an example that matches an existing scenario above threshold
     When I dispatch generate-scenarios with workUnitId="WU-1" and ignorePossibleDuplicates=true
     Then the dispatcher returns success=true
     Then a feature file is created under spec/features for WU-1 containing zero Scenario blocks
-
 
   Scenario: Dispatch honours an explicit feature name
     Given a project root tempdir whose work unit WU-1 is ready with title "Some Other Title"
@@ -117,14 +107,12 @@ Feature: Port generate-scenarios command to Rust
     Then the dispatcher returns success=true
     Then the file spec/features/login.feature exists on disk
 
-
   Scenario: Background falls back to placeholder tokens without a user story
     Given a project root tempdir whose work unit WU-1 is ready but has no user story
     When I dispatch generate-scenarios with workUnitId="WU-1"
     Then the dispatcher returns success=true
     Then the created feature file Background contains role, action and benefit placeholder tokens
     Then the rendered output contains a prefill reminder
-
 
   Scenario: CLI and dispatcher converge on the same fspec_core run function
     Given a project root tempdir whose work unit WU-1 is ready

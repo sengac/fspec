@@ -4,7 +4,6 @@
 @rust
 @ui-refinement
 Feature: Full-screen shell title-renderer closure variant
-
   """
   render_full_screen_scaffold_with_title<T, B> lives in views/full_screen_shell.rs alongside the existing render_full_screen_scaffold and render_full_screen_scaffold_raw_title; body = Clear.render + Layout [Length(1),Length(1),Min(0),Length(1)] -> (split[0], split[2], split[3]); calls title_fn(title_area), body_fn(body_area), render_footer_hint(footer_area, hint), then overlay branch. render_title_with_count is defined in views/agent/mode_view_render.rs (not the shell). The count wrapper re-expresses its title via the closure: |a,b| render_title_with_count(a,b,title,count,suffix).
   """

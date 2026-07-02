@@ -4,7 +4,6 @@
 @rust
 @RPC-392
 Feature: Colored Edit/Write diff lines lack full-width background padding
-
   """
   Pads each decoded [R]/[A] diff line with trailing spaces to the target render width before applying the dark-red/dark-green background (parity with the TS <Box flexGrow={1}> bar). Width is PASSED IN per call site: scrollback uses the wrap width, the modal uses content_width. Reuses the existing chars().count() display-width proxy from text_wrap.rs (DRY). Context-gutter lines, gap markers, and plain lines stay unchanged. Saturating arithmetic; width 0 adds no padding and never panics.
   """
@@ -34,7 +33,6 @@ Feature: Colored Edit/Write diff lines lack full-width background padding
   #   8. Modal diff rows emit full-width bars while non-diff rows do not: a modal body containing a [R]/[A] row and a plain row, decoded at content_width, pads the diff rows full-width with the diff background while the plain row stays a single unpadded raw span
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user
     I want to see edited diff lines as solid full-width colored bars

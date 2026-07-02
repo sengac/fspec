@@ -4,7 +4,6 @@
 @cli
 @RPC-243
 Feature: List epics CLI subcommand
-
   """
   CLI subcommand is wired into codelet/fspec/src/main.rs's Mode enum as a clap v4 derive variant per RPC-003 §7/§11. The action arm delegates to fspec_core::commands::list_epics::run(args_json, &cwd) so business logic is not duplicated between the LLM-facing dispatcher and the shell-facing CLI.
 
@@ -82,4 +81,3 @@ Feature: List epics CLI subcommand
     Then the command exits 0
     And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-epics.txt
     And stdout starts with a blank line followed by 'LIST-EPICS'
-

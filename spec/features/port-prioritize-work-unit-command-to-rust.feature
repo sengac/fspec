@@ -4,7 +4,6 @@
 @cli
 @RPC-255
 Feature: Port prioritize-work-unit command to Rust
-
   """
   Core impl signature: pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError> in codelet/fspec-core/src/commands/prioritize_work_unit.rs (replaces NotYetPorted stub).
   Args struct (camelCase, serde default): workUnitId: String (required); position: optional accepting 'top'/'bottom' string OR a JSON number (use serde_json::Value or untagged enum); before: Option<String>; after: Option<String>.
@@ -39,7 +38,6 @@ Feature: Port prioritize-work-unit command to Rust
   #   8. Implementing [AUTH-002, AUTH-001]; prioritize AUTH-001 --before AUTH-002 -> [AUTH-001, AUTH-002]; prioritize AUTH-001 --after AUTH-002 -> [AUTH-002, AUTH-001].
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to run the Rust prioritize-work-unit command to reorder a work unit within its Kanban column

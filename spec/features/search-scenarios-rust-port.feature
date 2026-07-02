@@ -3,7 +3,6 @@
 @wip
 @RPC-297
 Feature: Port search-scenarios command to Rust
-
   """
   Core impl: codelet/fspec-core/src/commands/search_scenarios.rs rewrites the stub; signature run(args_json, project_root). Reuses io/feature_glob.rs (filtered to flat spec/features/*.feature) + io/gherkin.rs::parse_feature_lenient. Reads spec/work-units.json best-effort for work-unit-title matching.
   Two-front-doors: dispatcher and clap CLI both call search_scenarios::run. CLI bridge codelet/fspec/src/search_scenarios.rs marshals --query/--regex/--json into JSON only. Help config + intercept arm in main.rs (search-scenarios-help.ts exists as rich help). Mode::SearchScenarios variant + forward! arm wired by supervisor.
@@ -28,7 +27,6 @@ Feature: Port search-scenarios command to Rust
   #   3. Searching '--query nonexistent' with no matches returns searchedFiles>0 and an empty scenarios array
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to search scenarios across all feature files by literal text or regex, sharing one Rust source of truth between the LLM dispatcher and the CLI

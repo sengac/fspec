@@ -1,7 +1,7 @@
 @done
-@RPC-288 @wip
+@RPC-288
+@wip
 Feature: restore-checkpoint CLI subcommand on the standalone fspec Rust binary
-
   """
   Two-front-doors invariant (RPC-003 §7/§11): the clap subcommand
   `fspec restore-checkpoint <work-unit-id> <checkpoint-name>` and the LLM-facing dispatcher both

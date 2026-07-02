@@ -1,7 +1,10 @@
 @done
-@RPC-095 @rpc @input @agent-view @critical
+@RPC-095
+@rpc
+@input
+@agent-view
+@critical
 Feature: AgentView Esc Cascade Input Clear
-
   """
   RPC-095 — Esc-cascade level 6 (input clear) extension to the RPC-051 cascade.
 

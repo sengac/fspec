@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec remove-aggregate-from-foundation CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `remove-aggregate-from-foundation` mirrors the TS Commander.js
   registration at src/commands/remove-aggregate-from-foundation.ts:134-153 — two positional

@@ -4,7 +4,6 @@
 @rust
 @RPC-214
 Feature: Port create-story command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/create_story.rs ports src/commands/create-story.ts. It (1)
   requires spec/foundation.json to exist (checkFoundationExists at src/commands/create-story.ts:38-42; when

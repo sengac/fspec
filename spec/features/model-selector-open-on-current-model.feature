@@ -1,7 +1,8 @@
 @done
-@RPC-341 @tui @model-selector
+@RPC-341
+@tui
+@model-selector
 Feature: Model selector opens on the current model
-
   """
   Dispatch order is favorable: set_current_model is called before set_providers (dispatch_model_selector.rs:28-29 then :42-43), so cursor seeding happens synchronously inside set_providers — no TS-style hasAutoExpanded latch needed
   Add rows::index_of_model(rows, current_model_id) helper (selectable guard so headers with empty model_id can't match); seed selected_index in set_providers, else keep validate-or-first-selectable fallback
@@ -27,7 +28,6 @@ Feature: Model selector opens on the current model
   #   4. Current model lives in a long list below the viewport fold; selector opens with cursor on it AND the row scrolled into view
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to have the model selector open with the cursor already on my current model

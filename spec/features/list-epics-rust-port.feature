@@ -4,7 +4,6 @@
 @cli
 @RPC-243
 Feature: Port list-epics command to Rust
-
   """
   New shared helper `io::ensure::read_epics_or_empty(cwd) -> Result<EpicsData, FspecCoreError>` lives alongside `read_prefixes_or_empty` and returns `Ok(EpicsData::initial())` on ENOENT instead of auto-creating. Mirrors the RPC-248 read-only / load-or-init split exactly.
 
@@ -45,7 +44,6 @@ Feature: Port list-epics command to Rust
   #   13. Unmatched epic field → ignored by aggregation
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-epics from the agent loop and get the same epic listing — with per-epic work-unit completion progress — as the TypeScript implementation

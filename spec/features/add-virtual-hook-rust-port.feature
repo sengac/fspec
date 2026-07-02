@@ -3,7 +3,6 @@
 @rust
 @RPC-195
 Feature: Port add-virtual-hook command to Rust
-
   """
   Two-front-doors invariant (RPC-003 §7/§11): both the LLM-facing dispatcher and the clap shell subcommand invoke fspec_core::commands::add_virtual_hook::run with a JSON args string and &Path project_root.
   virtualHooks lives in workUnit.extra (not a typed field on WorkUnit) — parity with the list_virtual_hooks port (RPC-252). The mutator reads/initialises wu.extra["virtualHooks"] as Value::Array and appends a typed VirtualHook serialised back via serde_json::to_value.
@@ -43,7 +42,6 @@ Feature: Port add-virtual-hook command to Rust
   #   11. CLI subcommand with unknown work unit prints '✗ Failed to add virtual hook: Work unit ... does not exist' to stderr and exits 1
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch add-virtual-hook from the agent loop AND invoke `fspec add-virtual-hook <workUnitId> <event> <command>` from a shell

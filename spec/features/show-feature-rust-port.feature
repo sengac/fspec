@@ -1,9 +1,9 @@
 @feature-management
 @cli
 @done
-@RPC-304 @wip
+@RPC-304
+@wip
 Feature: Port show-feature command to Rust
-
   """
   Reuses the workspace `gherkin = 0.16` crate (already used by list_scenario_tags) for AST parsing. The Rust gherkin crate does NOT produce @cucumber/gherkin-style UUIDs or column positions, so JSON output is a Rust-shaped projection (feature.name, feature.tags, feature.children/scenario steps, location.line) — NOT byte-for-byte parity with the TS JSON AST.
   Bare-name lookup reuses io::feature_glob::glob_feature_files (sorted, forward-slash paths) and picks the first whose basename minus '.feature' equals the input. Direct path lookup does NOT use glob — it joins project_root + input and stat-checks.

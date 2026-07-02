@@ -4,7 +4,6 @@
 @cli
 @RPC-197
 Feature: Port audit-coverage command to Rust
-
   """
   Rewrite the stub at codelet/fspec-core/src/commands/audit_coverage.rs to
   `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`.
@@ -32,7 +31,6 @@ Feature: Port audit-coverage command to Rust
   #   6. Both front doors call the single fspec_core::commands::audit_coverage::run function
   #
   # ========================================
-
   Background: User Story
     As a developer porting fspec to Rust
     I want to run audit-coverage through the LLM dispatcher

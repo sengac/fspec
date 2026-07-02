@@ -110,8 +110,9 @@ fn user_input_chunk_renders_as_green_you_prefixed_line() {
     ));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "You: hi"
+    // RPC-401: the message carries one trailing blank separator row.
     let lines = session_scrollback_text_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["You: hi".to_string()]);
+    assert_eq!(lines, vec!["You: hi".to_string(), String::new()]);
 
     // @step Then the rendered chunk's spans carry foreground color GREEN
     assert_eq!(first_span_fg(&app, &sid("s-1")), Some(Color::Green));
@@ -141,8 +142,9 @@ fn text_assistant_chunk_renders_as_white_circle_bullet_prefixed_line() {
     ));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "● hello back"
+    // RPC-401: the message carries one trailing blank separator row.
     let lines = session_scrollback_text_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["● hello back".to_string()]);
+    assert_eq!(lines, vec!["● hello back".to_string(), String::new()]);
 
     // @step When the chunks subscriber forwards StreamChunk::Done for s-1
     app.dispatch(Action::ChunkReceived(sid("s-1"), StreamChunk::Done));
@@ -177,8 +179,12 @@ fn error_chunk_renders_as_api_error_prefixed_status_line() {
     ));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "API Error: rate limit exceeded"
+    // RPC-401: the message carries one trailing blank separator row.
     let lines = session_scrollback_text_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["API Error: rate limit exceeded".to_string()]);
+    assert_eq!(
+        lines,
+        vec!["API Error: rate limit exceeded".to_string(), String::new()]
+    );
 
     // @step Then no rendered chunk contains the substring "[error]"
     for line in &lines {
@@ -235,8 +241,9 @@ fn interrupted_chunk_renders_as_warning_prefixed_status_line() {
     ));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "⚠ Interrupted"
+    // RPC-401: the message carries one trailing blank separator row.
     let lines = session_scrollback_text_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["⚠ Interrupted".to_string()]);
+    assert_eq!(lines, vec!["⚠ Interrupted".to_string(), String::new()]);
 
     // @step Then no rendered chunk contains the substring "[interrupted]" or "queued"
     for line in &lines {
@@ -267,8 +274,9 @@ fn user_notification_chunk_renders_message_verbatim_with_no_extra_prefix() {
     ));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "⟳ Reconnecting..."
+    // RPC-401: the message carries one trailing blank separator row.
     let lines = session_scrollback_text_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["⟳ Reconnecting...".to_string()]);
+    assert_eq!(lines, vec!["⟳ Reconnecting...".to_string(), String::new()]);
 
     // @step Then no rendered chunk contains the substring "[notice]"
     for line in &lines {
@@ -297,8 +305,12 @@ fn incoming_message_chunk_parses_supervisor_prefix_and_renders_as_magenta_bracke
     ));
 
     // @step Then the s-1 scrollback contains exactly one rendered chunk whose visible text equals "[W] reviewer> please check this"
+    // RPC-401: the message carries one trailing blank separator row.
     let lines = session_scrollback_text_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["[W] reviewer> please check this".to_string()]);
+    assert_eq!(
+        lines,
+        vec!["[W] reviewer> please check this".to_string(), String::new()]
+    );
 
     // @step Then the rendered chunk's spans carry foreground color MAGENTA
     assert_eq!(first_span_fg(&app, &sid("s-1")), Some(Color::Magenta));

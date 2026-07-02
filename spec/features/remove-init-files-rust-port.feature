@@ -3,7 +3,6 @@
 @cli
 @RPC-276
 Feature: Port remove-init-files command to Rust
-
   """
   Core impl codelet/fspec-core/src/commands/remove_init_files.rs: Args {keep_config: Option<bool>} (camelCase keepConfig). Local const AGENT table (20 agents) with id/docTemplate/slashCommandPath/slashCommandFormat/detectionPaths — inlined to avoid touching shared mod.rs/lib.rs (pending supervisor confirmation).
   detect_installed_agent(project_root): read spec/fspec-config.json as serde_json::Value, use .agent if present/parseable; else iterate AGENT table and pick first whose any detectionPaths entry exists under project_root. File deletion uses std::fs::remove_file with ErrorKind::NotFound tolerated (force:true parity). Does NOT use ensure_* or locked_file — these are unconditional rm -f.
@@ -37,7 +36,6 @@ Feature: Port remove-init-files command to Rust
   #   1. Working assumption pending supervisor confirmation: inline a local const AGENT table inside commands/remove_init_files.rs (no shared mod.rs/lib.rs changes); an unspecified keepConfig defaults to false (remove config), matching the destructive --no-keep-config default.
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of remove-init-files wired through both the LLM dispatcher and the clap subcommand

@@ -3,7 +3,6 @@
 @cli
 @RPC-300
 Feature: Port show-coverage command to Rust
-
   """
   The Rust port lives at codelet/fspec-core/src/commands/show_coverage.rs with the signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`. Both invocation paths (LLM dispatcher AND standalone CLI) call this single function — RPC-003 §7/§11 two-front-doors invariant.
   Coverage sidecar types live in a new shared module codelet/fspec-core/src/types/coverage.rs that mirrors src/utils/coverage-file.ts: CoverageFile { scenarios: Vec<CoverageScenario>, stats: Option<CoverageStats> }, CoverageScenario { name, test_mappings }, TestMapping { file, lines: String, impl_mappings: Vec<ImplMapping> }, ImplMapping { file, lines: ImplLines (untagged enum of Vec<u32> | String) }, CoverageStats { total_scenarios, covered_scenarios, coverage_percent, test_files, impl_files, total_lines_covered }. All structs carry #[serde(rename_all = "camelCase")] and #[serde(flatten)] extra: serde_json::Map<String, Value> to preserve unknown fields.
@@ -22,7 +21,6 @@ Feature: Port show-coverage command to Rust
   # =====================================================
   # Per-feature mode (positional feature-name supplied)
   # =====================================================
-
   Scenario: Bare feature name resolves to spec/features/<name>.feature.coverage and renders markdown report
     Given a temp project root contains spec/features/user-login.feature.coverage with 5 scenarios, 4 of which have testMappings with implMappings and 1 with no testMappings
     When I dispatch show-coverage with featureName='user-login' (no format)
@@ -126,7 +124,6 @@ Feature: Port show-coverage command to Rust
   # =====================================================
   # Project-wide mode (no positional)
   # =====================================================
-
   Scenario: Project-wide mode aggregates totals and prints '# Project Coverage Report'
     Given a temp project root contains spec/features/a.feature.coverage with 2 scenarios both fully covered AND spec/features/b.feature.coverage with 2 scenarios, 1 fully covered and 1 uncovered
     When I dispatch show-coverage with no featureName
@@ -206,7 +203,6 @@ Feature: Port show-coverage command to Rust
   # =====================================================
   # Two-front-doors / shared infrastructure
   # =====================================================
-
   Scenario: args_json that fails to parse returns FspecCoreError::InvalidArgs
     Given an arbitrary project root directory
     When I call show_coverage::run with args_json='{ not valid json'

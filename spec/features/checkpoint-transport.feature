@@ -4,7 +4,6 @@
 @rust
 @RPC-362
 Feature: Checkpoint transport methods (list + diff-files + file-diff + restore + delete)
-
   """
   Adds 7 FspecBackend transport methods (list_checkpoints, checkpoint_diff_files, checkpoint_file_diff, restore_checkpoint_file, restore_checkpoint_all, delete_checkpoint, delete_all_checkpoints) mirroring the checkpoint_counts plumbing across the trait, embedded + websocket transports, and the tarpc FspecService.
   """
@@ -28,7 +27,6 @@ Feature: Checkpoint transport methods (list + diff-files + file-diff + restore +
   #   5. delete_checkpoint removes one checkpoint so a subsequent list_checkpoints returns one fewer entry
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to list, diff, restore and delete git checkpoints from the Rust TUI
@@ -71,9 +69,7 @@ Feature: Checkpoint transport methods (list + diff-files + file-diff + restore +
     When I call the restore_checkpoint_file helper for a.txt
     Then the file content matches the checkpoint snapshot
 
-
   Scenario: delete_all_checkpoints removes every checkpoint
     Given a git repository with three checkpoints
     When I call the delete_all_checkpoints helper
     Then a subsequent list_checkpoints returns no entries
-

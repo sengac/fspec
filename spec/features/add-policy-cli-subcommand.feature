@@ -4,7 +4,6 @@
 @rust
 @RPC-187
 Feature: fspec add-policy CLI subcommand (Rust port)
-
   """
   CLI bridge: codelet/fspec/src/add_policy.rs — clap-derived struct mirroring the TS Commander.js
   registration (src/commands/add-policy.ts:73-116). Surface:

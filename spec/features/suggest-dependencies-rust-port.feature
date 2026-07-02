@@ -3,7 +3,6 @@
 @cli
 @RPC-309
 Feature: Port suggest-dependencies command to Rust
-
   """
   Core impl in codelet/fspec-core/src/commands/suggest_dependencies.rs: Args {output: Option<String>}; reads via ensure_work_units_file(project_root); iterates data.work_units.values() (IndexMap insertion order). Suggestion struct #[derive(Serialize)] #[serde(rename_all=camelCase)] decl order from,to,type(r#type renamed 'type'),reason,confidence.
   WorkUnit fields used: id, title (typed); dependsOn/blockedBy read from extra via extra.get(field).and_then(Value::as_array). Do NOT touch shared types/work_unit.rs. Circular tiebreak uses Rust &str < comparison = JS string compare for ASCII ids.
@@ -33,7 +32,6 @@ Feature: Port suggest-dependencies command to Rust
   #   5. AUTH-002 already lists AUTH-001 in dependsOn -> no sequential suggestion produced for that pair
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of suggest-dependencies wired through both the LLM dispatcher and the clap subcommand

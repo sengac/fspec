@@ -1,7 +1,6 @@
 @done
 @RPC-169
 Feature: fspec add-assumption CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_assumption.rs — clap-derived struct mirroring TS Commander.js registration
   (src/commands/add-assumption.ts:65-80). Surface: `fspec add-assumption <work-unit-id> <assumption>`.

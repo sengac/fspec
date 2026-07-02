@@ -1,14 +1,14 @@
 @done
 @cli
 @querying
-@RPC-262 @wip
+@RPC-262
+@wip
 Feature: query-orphans clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `query-orphans` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/query_orphans.rs → fspec_core::commands::query_orphans::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_orphans::run
+  - Shell argv         → clap → codelet/fspec/src/query_orphans.rs → fspec_core::commands::query_orphans::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_orphans::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes `--output <text|json>` defaulting to `text` and `--exclude-done` (boolean).

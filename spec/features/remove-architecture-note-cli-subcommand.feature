@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec remove-architecture-note CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `remove-architecture-note` exposes the same surface as the TS Commander.js registration at src/commands/remove-architecture-note.ts:88-107 — two positional arguments `<workUnitId>` and `<index>` (integer). The bridge module at codelet/fspec/src/remove_architecture_note.rs marshals the clap args into a JSON object and delegates to codelet_fspec_core::commands::remove_architecture_note::run; no soft-delete or rendering logic is duplicated.
   Exit codes: 0 on success (including the idempotent already-deleted path), 1 on any FspecCoreError. Errors are written to stderr prefixed with 'Error:'.

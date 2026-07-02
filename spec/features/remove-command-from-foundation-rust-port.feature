@@ -1,7 +1,6 @@
 @done
 @RPC-270
 Feature: Port remove-command-from-foundation command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/remove_command_from_foundation.rs — Rust parity port of
   src/commands/remove-command-from-foundation.ts. Soft-deletes (sets deleted=true) a `command` Event
@@ -13,10 +12,10 @@ Feature: Port remove-command-from-foundation command to Rust
   Validation order (parity with TS):
   1. eventStorm absent → "Bounded context '<contextName>' not found (no Event Storm data)" (no write).
   2. bounded_context matched by type='bounded_context' AND text===contextName AND !deleted; absent →
-     "Bounded context '<contextName>' not found".
+  "Bounded context '<contextName>' not found".
   3. command matched by type='command' AND text===commandName AND !deleted AND
-     boundedContextId===context.id; absent → "Command '<commandName>' not found in bounded context
-     '<contextName>'".
+  boundedContextId===context.id; absent → "Command '<commandName>' not found in bounded context
+  '<contextName>'".
   An already soft-deleted command is therefore treated as not-found (operation is non-idempotent on a
   second call). On match the item's `deleted` flag is set to true; all other items/fields are
   preserved. Dispatcher result is {success:true, message:'Removed command "<commandName>" from

@@ -1,7 +1,12 @@
 @done
-@RPC-081 @rpc @rust @agent-loop @session-management @history @wip
+@RPC-081
+@rpc
+@rust
+@agent-loop
+@session-management
+@history
+@wip
 Feature: Agent loop body threads &mut session.inner.messages into the rig streaming engine every turn
-
   """
   RPC-081 (child of RPC-072 family). Source-shape regression guarding the
   conversation-history threading. Before RPC-072 the stub at

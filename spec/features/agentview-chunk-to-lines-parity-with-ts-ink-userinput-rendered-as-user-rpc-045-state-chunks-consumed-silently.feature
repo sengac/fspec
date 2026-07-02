@@ -6,7 +6,6 @@
 @agent-view
 @RPC-071
 Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `user>`, RPC-045 state chunks consumed silently
-
   """
   AgentView chunk renderer is exhaustive (no catch-all Debug arm). Visible variants: UserInput->'user> {text}', Text->'assistant> {text}', Thinking->'(thinking) {text}', IncomingMessage->'supervisor> {text}', UserNotification->'[notice] {message}', Error->'[error] {error}', Interrupted->'[interrupted] {n} queued', Done->'[done]'. Silent variants (return None): SessionStateChange, IsolationStateChange, DebugStateChange, FooterStateUpdate, FspecCommandRequest, FspecCommandResult, WorkUnitsUpdate, SupervisorPendingInjection, CompactionComplete, TokenUpdate, ContextFillUpdate, ToolCall, ToolResult, ToolProgress.
   """
@@ -35,7 +34,6 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
   #   8. Status pill still reflects Idle after SessionStateChange chunks despite no scrollback line (state mutation still runs)
   #
   # ========================================
-
   Background: User Story
     As a fspec user with an AgentView open
     I want to submit a message and watch state changes flow
@@ -49,14 +47,12 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
     When the chunks subscriber forwards SessionStateChange { state: Idle } for s-1
     Then no scrollback line contains the literal substring "SessionStateChange" or "UserInput {"
 
-
   Scenario: UserInput chunk renders as user-prefix scrollback line
     Given a fresh SessionContext for session s-1
     When record_chunk receives StreamChunk::UserInput { text: "hello" }
     Then the scrollback contains exactly one rendered chunk
     Then the rendered text equals "user> hello"
     Then the scrollback_next_seq cursor equals 1
-
 
   Scenario: Two SessionStateChange chunks leave scrollback empty and seq at zero
     Given a fresh SessionContext for session s-1
@@ -65,7 +61,6 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
     When record_chunk receives StreamChunk::SessionStateChange { state: Idle }
     Then the scrollback_next_seq cursor remains 0
 
-
   Scenario: Interleaved visible and silent chunks keep seq monotonic over visible chunks only
     Given a fresh SessionContext for session s-1
     When record_chunk receives UserInput { text: "hi" }, SessionStateChange(Running), Text { text: "hello back" }, SessionStateChange(Idle), Done in that order
@@ -73,18 +68,15 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
     Then the rendered scrollback lines equal ["user> hi", "assistant> hello back", "[done]"]
     Then the scrollback_next_seq cursor equals 3
 
-
   Scenario: IncomingMessage chunk renders as supervisor-prefix line
     Given a fresh SessionContext for session s-1
     When record_chunk receives StreamChunk::IncomingMessage { text: "supervisor here", images: None }
     Then the scrollback contains exactly one rendered chunk whose line equals "supervisor> supervisor here"
 
-
   Scenario: Interrupted chunk renders as interrupted-with-queued-count line
     Given a fresh SessionContext for session s-1
     When record_chunk receives StreamChunk::Interrupted { queued_inputs: vec!["a", "b"] }
     Then the scrollback contains exactly one rendered chunk whose line equals "[interrupted] 2 queued"
-
 
   Scenario: All state-only and tool variants are suppressed from scrollback
     Given a fresh SessionContext for session s-1
@@ -92,10 +84,8 @@ Feature: AgentView chunk_to_lines parity with TS Ink: UserInput rendered as `use
     Then the scrollback is empty
     Then the scrollback_next_seq cursor remains 0
 
-
   Scenario: SessionStateChange still mutates per-session status pill even when suppressed from scrollback
     Given an App with an open session s-1
     When the App dispatches Action::ChunkReceived(s-1, SessionStateChange { state: Idle })
     Then the agent_view_store.session_status_for(&s-1) returns SessionStatus::Idle
     Then the s-1 scrollback remains empty
-

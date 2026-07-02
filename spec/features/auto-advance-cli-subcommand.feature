@@ -3,7 +3,6 @@
 @cli
 @RPC-198
 Feature: auto-advance CLI subcommand (Rust binary)
-
   """
   Front door #1 (shell argv): codelet/fspec/src/auto_advance.rs is the thin clap bridge for the
   `auto-advance` subcommand. Per Framing A the TS Commander shell is broken — it calls autoAdvance({dryRun})
@@ -25,7 +24,6 @@ Feature: auto-advance CLI subcommand (Rust binary)
   #   4. The CLI bridge contains NO transition/state-mutation logic — it only marshals args and delegates.
   #
   # ========================================
-
   Background: User Story
     Given the fspec Rust binary exposes auto-advance as a clap subcommand
     And the bridge codelet/fspec/src/auto_advance.rs delegates to fspec_core::commands::auto_advance::run

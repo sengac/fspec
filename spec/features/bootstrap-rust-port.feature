@@ -4,7 +4,6 @@
 @cli
 @RPC-200
 Feature: Port bootstrap command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/bootstrap.rs (rewrite stub, signature gains project_root); embedded static doc asset adjacent to it via include_str! (e.g. bootstrap_doc.txt, byte-exact capture of `node dist/index.js bootstrap` in an empty dir); help config codelet/fspec-core/src/help/configs/bootstrap.rs; CLI bridge codelet/fspec/src/bootstrap.rs; core tests codelet/fspec-core/tests/bootstrap.rs; CLI tests codelet/fspec/tests/cli_bootstrap.rs; help fixture codelet/fspec/tests/fixtures/help/bootstrap.txt. Two feature files: bootstrap-rust-port.feature (dispatcher contract) + bootstrap-cli-subcommand.feature (clap surface).
   Strategy: do NOT re-port the ~4000 lines of TS string-building (17 slashCommandSections + 6 display*Help bodies). Capture the byte-exact static output once and embed via include_str!; run() applies ONLY the two config string-replacements (<test-command>, <quality-check-commands>) and appends the event-storm reminder. Reuse existing Rust precedents: configure_tools.rs for spec/fspec-config.json (tools.test.command, tools.qualityCheck.commands), board.rs / generate_foundation_md.rs for foundation.json eventStorm.items, io store helpers for work-units.json (FOUND- id / title contains 'event storm' / status != done), and the inline wrapInSystemReminder byte format used in discover_event_storm.rs.
@@ -41,7 +40,6 @@ Feature: Port bootstrap command to Rust
   #   9. With foundation.json whose eventStorm.items has entries, no reminder is appended
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run `bootstrap` in the Rust binary

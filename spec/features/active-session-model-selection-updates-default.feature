@@ -3,7 +3,6 @@
 @providers
 @PROV-123
 Feature: Selecting a model in an active session does not update the global default, so a new session created in the same process inherits the stale startup model
-
   """
   Fix in handle_impl.rs::set_model (~1050-1061): after session.set_model/set_model_limits succeed, call SessionManager::set_default_model(self, &model) and REMOVE the now-redundant standalone save_persisted_model_string(&model) (set_default_model already writes RwLock + default-model.json + tui.lastUsedModel).
   VERIFY the model string format: set_model currently builds model=format!("{provider_id}/{model_id}"). For profile selections, confirm the string stored in the global default is the SAME form a new session can resolve (e.g. profile-qualified openai:<profile>/<model>). If set_model does not carry the profile, the worker must reconcile so new-session resolution matches the active-session selection; add a test that proves the round-trip.
@@ -29,7 +28,6 @@ Feature: Selecting a model in an active session does not update the global defau
   #   5. User selects profile-qualified openai:qwen/Qwen3-80B in the active session; get_default_model() returns openai:qwen/Qwen3-80B and a new session resolves that same profile model
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to have a model I select in my active session immediately become the model that new agents/sessions inherit

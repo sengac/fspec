@@ -4,7 +4,6 @@
 @viewer
 @RPC-378
 Feature: Fullscreen mermaid modal with Panzoom zoom/pan and SVG download in the Rust markdown viewer
-
   """
   The viewer_template (codelet/attachment-viewer src/markdown/template) emits all interactivity as static server-rendered HTML/JS strings; tests assert on the emitted string, not browser execution. Mermaid ESM v11 + Panzoom v4.5.1 are loaded from CDN. The fullscreen modal JS is split into a mermaid_modal submodule and modal CSS into a modal_styles submodule so every file stays under 300 lines. The public viewer_template(title, content_html) signature is unchanged.
   """
@@ -32,7 +31,6 @@ Feature: Fullscreen mermaid modal with Panzoom zoom/pan and SVG download in the 
   #   7. Rendering markdown containing a mermaid code fence still emits pre.mermaid and the existing server scenarios pass; mod.rs, scripts.rs, styles.rs, modal_styles.rs and mermaid_modal.rs are each under 300 lines
   #
   # ========================================
-
   Background: User Story
     As a developer viewing markdown attachments
     I want to open mermaid diagrams in a fullscreen modal with zoom, pan and SVG download
@@ -95,22 +93,18 @@ Feature: Fullscreen mermaid modal with Panzoom zoom/pan and SVG download in the 
     And the JS defines a handleModalWheel function that locks the zoom point at the cursor
     And the wheel zoom clamps the new scale between 0.5 and 5
 
-
   Scenario: Horizontal scroll pans the diagram in zoom mode
     Given I render a viewer page for some content
     When I inspect the emitted HTML
     Then the JS pans horizontally by deltaX divided by the current scale when not zooming
-
 
   Scenario: The mode indicator fades after a period of inactivity
     Given I render a viewer page for some content
     When I inspect the emitted HTML
     Then the JS defines a showModeIndicator function that fades the indicator after a timeout
 
-
   Scenario: Holding Space toggles the pan-mode class on the diagram container
     Given I render a viewer page for some content
     When I inspect the emitted HTML
     Then the JS adds the pan-mode class to the diagram container in pan mode
     And the JS removes the pan-mode class when leaving pan mode
-

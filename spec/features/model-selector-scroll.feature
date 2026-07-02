@@ -5,7 +5,6 @@
 @tui
 @RPC-340
 Feature: Model selector list does not scroll to follow the cursor
-
   """
   Scroll state lives in ModelSelectorView (codelet/fspec-tui/src/views/model_selector/mod.rs): scroll_offset + visible_rows fields, windowed by rows::render_body. Fix reuses the existing components::scroll_viewport::ensure_visible(scroll_offset, selected, visible_rows, total) helper (scroll_viewport.rs:46-66), wrapped in a private adjust_scroll() mirroring provider_settings::adjust_scroll. visible_rows = body_area.height - 1 (legend row). adjust_scroll is invoked from move_up/move_down (covers keyboard + mouse-wheel), Home/End, set_providers, handle_filter_key, toggle_expansion, and once at render after visible_rows is known (defensive resize reconcile). No wire-type or Action changes; scrollbar/overflow indicators in rows.rs follow automatically once scroll_offset tracks the cursor.
   """
@@ -43,7 +42,6 @@ Feature: Model selector list does not scroll to follow the cursor
   #   A: Yes, add a defensive render-time reconcile after the true body height is known (right after self.visible_rows is assigned). ensure_visible is idempotent so it is harmless, and it covers window-resize and initial-draw cases where the viewport height was not yet known during navigation.
   #
   # ========================================
-
   Background: User Story
     As a user browsing the full-screen model selector
     I want to have the list scroll to keep my highlighted model visible as I navigate

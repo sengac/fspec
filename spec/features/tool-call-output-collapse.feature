@@ -5,7 +5,6 @@
 @tui
 @RPC-389
 Feature: Tool Call Output Collapse
-
   """
   Fix site is wrap_source in chunk_wrap.rs: collapse/window happens at the ChunkSource->lines render layer; ChunkSource.text stays full. Mirrors AgentView.tsx formatCollapsedOutput (8) + createStreamingWindow (10)
   Constants COLLAPSED_LINES=8 and STREAMING_WINDOW_SIZE=10. Diff-style collapse (25/3-context, [R]-/[A]+) is OUT OF SCOPE — no inline diff renderer exists in the Rust port
@@ -30,7 +29,6 @@ Feature: Tool Call Output Collapse
   #   5. Selecting a collapsed 20-line tool card and pressing Enter opens the TurnContentModal showing all 20 lines
   #
   # ========================================
-
   Background: User Story
     As a developer watching the agent TUI
     I want to see long tool output collapsed inline (first lines plus a 'more lines' hint, or a tail window while streaming) instead of the entire body dumped into the scrollback

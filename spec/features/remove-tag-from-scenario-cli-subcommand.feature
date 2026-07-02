@@ -1,7 +1,6 @@
 @done
 @RPC-282
 Feature: fspec remove-tag-from-scenario CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_tag_from_scenario.rs — clap-derived struct mirroring the
   TS Commander.js registration (src/commands/remove-tag-from-scenario.ts:213-226). Surface:

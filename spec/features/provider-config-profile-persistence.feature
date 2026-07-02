@@ -5,7 +5,6 @@
 @persistence
 @PROV-108
 Feature: Backend profile write path — save/delete profile in fspec-config.json
-
   """
   New module codelet/sessions/src/profile_persistence.rs holds save_profile/delete_profile (env-resolved) + save_profile_at/delete_profile_at (path-injectable cores). Reuses fspec_user_dir/read_config_value/write_config_value from profile_sections (made pub(crate)) to avoid duplication and NOT bloat profile_sections.rs (485 prod LoC).
   Wire type codelet_rpc_types::ProfileDefinition (base_url, api_key, optional context_window/max_output_tokens + flat compaction_threshold_type/value) mirrors CustomModelDefinition convention. conversions::profile_def_from_wire folds flat compaction fields into profile_sections::CompactionThreshold.
@@ -34,7 +33,6 @@ Feature: Backend profile write path — save/delete profile in fspec-config.json
   #   8. delete_profile on a non-existent profile leaves the config byte-identical
   #
   # ========================================
-
   Background: User Story
     As a TUI user managing local-server provider profiles
     I want to create, edit and delete an openai profile so it persists to ~/.fspec/fspec-config.json

@@ -1,7 +1,6 @@
 @done
 @RPC-176
 Feature: fspec add-dependencies CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_dependencies.rs — clap-derived struct mirroring TS Commander.js registration (src/commands/add-dependencies.ts:85-125).
   Surface: `fspec add-dependencies <workUnitId> [--blocks <ids...>] [--blocked-by <ids...>] [--depends-on <ids...>] [--relates-to <ids...>]`.

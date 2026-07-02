@@ -1,7 +1,7 @@
 @done
-@RPC-288 @wip
+@RPC-288
+@wip
 Feature: Port restore-checkpoint command to Rust
-
   """
   File layout: core codelet/fspec-core/src/commands/restore_checkpoint.rs is the single source
   of truth (run(args_json, project_root)); CLI bridge codelet/fspec/src/restore_checkpoint.rs

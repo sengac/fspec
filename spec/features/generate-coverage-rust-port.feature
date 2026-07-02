@@ -4,7 +4,6 @@
 @cli
 @RPC-231
 Feature: Port generate-coverage command to Rust
-
   """
   Core impl: codelet/fspec-core/src/commands/generate_coverage.rs rewrites the stub; signature run(args_json, project_root). Reuses types/coverage.rs (CoverageFile/CoverageScenario/CoverageStats + calculate_stats) — REUSE only, no extension. Scans spec/features/*.feature; for each, resolves <feature>.feature.coverage and computes one of four statuses (created/recreated/updated/skipped) mirroring src/utils/coverage-file.ts createCoverageFile. Scenario names come from io::gherkin::parse_feature_lenient over top-level feature.scenarios. Created/recreated bodies are written via io::locked_file::write_json_atomic (2-space JSON, no trailing newline). Updated sidecars preserve existing test mappings + unknown stats fields (serde_json::Value path like delete_scenario::update_coverage), drop stale scenarios, add new empty ones, recompute totalScenarios/coveredScenarios/coveragePercent.
   Output (non-dry-run): a '✓ '-prefixed line joining nonzero parts 'Created N, Updated N, Skipped N, Recreated N (invalid JSON)' (or 'No coverage files needed'), ALWAYS followed verbatim by the long link-coverage <system-reminder> block (src/commands/generate-coverage.ts:155-189). Dry-run: 'Would create N coverage files (DRY RUN)' + file list + 'Would skip/recreate' lines, no writes, never reports updates. Missing spec/features dir → error 'Failed to read features directory'. The full stdout string is rendered in CORE and returned; the CLI bridge prints it verbatim.

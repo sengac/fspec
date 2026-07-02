@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port remove-capability command to Rust
-
   """
   Rust port of the TypeScript `remove-capability` command
   (src/commands/remove-capability.ts via
@@ -22,10 +21,10 @@ Feature: Port remove-capability command to Rust
 
   Matching removes the FIRST entry whose name == the requested name (splice
   index, 1). Failure modes:
-    * capabilities missing or empty → 'Capability "<name>" not found' with the
-      detail line 'No capabilities exist in foundation'.
-    * name not present → 'Capability "<name>" not found' with the detail line
-      'Available capabilities: <comma-joined names>'.
+  * capabilities missing or empty → 'Capability "<name>" not found' with the
+  detail line 'No capabilities exist in foundation'.
+  * name not present → 'Capability "<name>" not found' with the detail line
+  'Available capabilities: <comma-joined names>'.
 
   Framing-A divergence — trailing newline: the TS command writes
   JSON.stringify(data, null, 2) + '\n'. The Rust port uses a module-local atomic

@@ -3,7 +3,6 @@
 @cli
 @RPC-326
 Feature: Port workflow-automation command to Rust
-
   """
   File layout: core codelet/fspec-core/src/commands/workflow_automation.rs (rewrite stub) single source of truth run(args_json, project_root); CLI bridge codelet/fspec/src/workflow_automation.rs (positional action + work-unit-id, --event/--from-state); help config codelet/fspec-core/src/help/configs/workflow_automation.rs; help fixture codelet/fspec/tests/fixtures/help/workflow-automation.txt; integration test codelet/fspec/tests/cli_workflow_automation.rs; core test codelet/fspec-core/tests/workflow_automation.rs
   Reuses shared helpers: WorkUnitsData (types/work_unit.rs), write_json_atomic (io/locked_file.rs), iso8601_now (io/time.rs), glob_feature_files (io/feature_glob.rs) for validate-alignment. Mutating actions use raw serde_json::Map round-trip (like update_work_unit.rs) for key-order + unmodelled-field preservation; tag matching hand-rolled (word-boundary check) to avoid new regex dep. No new shared files required.
@@ -28,7 +27,6 @@ Feature: Port workflow-automation command to Rust
   #   5. Dispatcher: {action:'frobnicate', workUnitId:'AUTH-001'} returns error 'Invalid action: frobnicate'; and auto-advance on a unit whose status differs from fromState returns "Work unit 'AUTH-001' is in state 'implementing', expected 'testing'"
   #
   # ========================================
-
   Background: User Story
     Given the workflow-automation command is ported to Rust in codelet/fspec-core/src/commands/workflow_automation.rs
     And both the LLM dispatcher and the standalone Rust binary call the same fspec_core::commands::workflow_automation::run function

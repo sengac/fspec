@@ -4,7 +4,6 @@
 @rpc
 @RPC-066
 Feature: Cross-frontend integration test against stub provider
-
   """
   [A] File layout: (1) NEW codelet/fspec/tests/cross_frontend_parity.rs — the integration test binary. (2) NEW codelet/fspec/tests/fixtures/cross_frontend_run.jsonl — Rust-pinned golden chunk stream. (3) NEW codelet/fspec/tests/README.md — regeneration + future-TS-fixture docs. (4) WIDENED codelet/providers/src/stub_provider.rs — adds `impl LlmProvider for StubProvider`. (5) NEW codelet/providers/src/stub_provider_registration.rs (or inline in stub_provider.rs) — `pub fn register_stub_provider()` that inserts a synthetic ProviderConfig into the custom provider registry so ProviderType::Custom("stub") routes to it. (6) NEW codelet/fspec/Cargo.toml [dev-dependencies] entry `codelet-providers = { workspace = true, features = ["test-support"] }`.
   [B] StubProvider LlmProvider impl: name() = "stub"; model() = "canned"; context_window() = 200_000; max_output_tokens() = 4096; supports_caching() = false; supports_streaming() = true; complete(_) returns Ok("hi back".to_string()); complete_with_tools depends on the scripted run — for inputs containing "trigger-tool" it emits a CompletionResponse with content=MessageContent::ToolUse{...} so the SessionManager's tool dispatcher exercises the ToolCall + ToolResult chunk path; otherwise it emits content=MessageContent::Text("hi back") + StopReason::EndTurn. The tool call is for a sandboxed tool slug `noop_tool` that codelet_tools resolves to a no-op result.
@@ -62,7 +61,6 @@ Feature: Cross-frontend integration test against stub provider
   #   A: Omit /thinking from chunk comparison — see rule [12]
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to run a cross-frontend integration test that drives every slash command end-to-end against the fspec binary backed by a deterministic stub provider
@@ -100,13 +98,13 @@ Feature: Cross-frontend integration test against stub provider
     Given a running fspec daemon with the stub provider registered
     And the golden file at codelet/fspec/tests/fixtures/cross_frontend_run.jsonl exists
     When the test executes the scripted run sequence
-      | step | rpc                          | argument           |
-      |  1   | send_input                   | "hello"            |
-      |  2   | clear_history                | -                  |
-      |  3   | set_thinking_level           | High               |
-      |  4   | send_input                   | "trigger-tool"     |
-      |  5   | compact_session              | -                  |
-      |  6   | interrupt                    | -                  |
+      | step | rpc                | argument       |
+      | 1    | send_input         | "hello"        |
+      | 2    | clear_history      | -              |
+      | 3    | set_thinking_level | High           |
+      | 4    | send_input         | "trigger-tool" |
+      | 5    | compact_session    | -              |
+      | 6    | interrupt          | -              |
     And each step waits for SessionStatus::Idle on backend.status_changes_rx() before the next
     Then the captured chunk stream, after normalisation, is byte-identical to the golden file
 

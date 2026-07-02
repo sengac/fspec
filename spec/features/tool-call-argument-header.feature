@@ -5,7 +5,6 @@
 @agent-view
 @RPC-388
 Feature: Tool call argument header
-
   """
   Port mirrors src/tui/utils/chunkProcessor.ts:130-205 extractToolArgsDisplay; replaces the single-key selection in tool_args.rs with the three-branch algorithm + value formatter
   Use char-boundary-safe slicing (chars().take(100)) for the 100-char cap; preserve JSON object insertion order (serde_json Map already used by existing tests); update existing tool_args tests to the new parity outputs
@@ -32,7 +31,6 @@ Feature: Tool call argument header
   #   7. Invalid JSON input 'not-json' renders header args 'not-json' verbatim
   #
   # ========================================
-
   Background: User Story
     As a developer watching the agent TUI
     I want to see a tool call's arguments rendered the same way the TypeScript reference renders them — all parameters, with long values capped at 100 characters

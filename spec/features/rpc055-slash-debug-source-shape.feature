@@ -5,7 +5,6 @@
 @rust
 @source-shape
 Feature: /debug RPC surface source shape
-
   """
   Pin the source-shape contract that downstream slices in RPC-030 depend
   on: set_debug_directory MUST be declared at each layer of the dual

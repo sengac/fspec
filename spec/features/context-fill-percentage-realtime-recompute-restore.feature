@@ -5,7 +5,6 @@
 @utils
 @RPC-101
 Feature: Context Fill Percentage Realtime Recompute Restore
-
   """
   TS utility side of the RPC-101 parallel fix.
   ExtractedTokenState (src/tui/utils/tokenStateUtils.ts:38-53) gained `contextThreshold: number | null` field.
@@ -19,11 +18,9 @@ Feature: Context Fill Percentage Realtime Recompute Restore
     I want extractTokenStateFromChunks to surface the last known context-fill threshold so AgentView can prime its realtime-recompute cache on restore
     So that live TokenUpdates immediately move the [X%] badge for the restored session — without waiting for the next backend ContextFillUpdate
 
-
   Scenario: Session restore seeds the threshold cache so live TokenUpdates immediately move the badge
     Given a buffered session contains multiple ContextFillUpdate chunks, the last carrying threshold=100000 tokens
     When extractTokenStateFromChunks is called on the buffered chunks during session restore
     Then the returned ExtractedTokenState.contextThreshold MUST equal 100000
     Then AgentView MUST seed cachedContextThresholdRef.current with 100000 so the next TokenUpdate updates the badge without waiting for a backend ContextFillUpdate
     Then ContextFillUpdate without a threshold field MUST yield ExtractedTokenState.contextThreshold === null
-

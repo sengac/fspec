@@ -5,7 +5,6 @@
 @tui
 @TUI-095
 Feature: Live-update (default) marker when D pressed in Rust /thinking dialog
-
   """
   The D-key handler in ThinkingLevelDialog::handle_event (codelet/fspec-tui/src/components/thinking_level_dialog.rs) updates self.default_index = Some(self.selected_index) so render() marks the new default row live. The marker rides the dimmable description span via label_description_default_row; after D the new default row is also the selected (non-dim) row. Pressing D still emits Action::SetThinkingLevelDefault(session_id, selected_level) and returns EventResult::Consumed without a remove callback so the dialog stays open. Mirrors TS ThinkingLevelDialog.tsx onSetDefault + AgentView defaultLevel state re-render.
   """
@@ -29,7 +28,6 @@ Feature: Live-update (default) marker when D pressed in Rust /thinking dialog
   #   5. Pressing D emits Action::SetThinkingLevelDefault and handle_event returns Consumed so the dialog stays open
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI user
     I want to see the (default) marker move to the level I just pressed D on, immediately, without reopening the dialog

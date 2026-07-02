@@ -1,7 +1,6 @@
 @done
 @RPC-189
 Feature: fspec add-rule CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_rule.rs — clap-derived struct mirroring TS Commander.js registration
   (src/commands/add-rule.ts:76-93). Surface: `fspec add-rule <workUnitId> <rule>`.

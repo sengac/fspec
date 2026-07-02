@@ -16,18 +16,18 @@ Feature: Loop store lift into codelet-core::loops
   After the lift:
 
   - codelet/core/src/loops/mod.rs hosts the LoopEntry struct, the
-    LoopStore active-task manager, the IdleCheckFn type alias, and the
-    process-global LOOP_STORE singleton.
+  LoopStore active-task manager, the IdleCheckFn type alias, and the
+  process-global LOOP_STORE singleton.
   - codelet/napi/src/scheduler/mod.rs collapses its
-    `pub mod loop_store; pub use loop_store::LoopStore;` lines into a
-    re-export shim: `pub use codelet_core::loops::{LoopEntry,
-    LoopStore, IdleCheckFn};` plus an empty `pub mod loop_store {
-    pub use codelet_core::loops::*; }` so existing absolute paths
-    (`crate::scheduler::loop_store::LoopEntry` etc. in
-    session_bindings.rs) continue to resolve unchanged.
+  `pub mod loop_store; pub use loop_store::LoopStore;` lines into a
+  re-export shim: `pub use codelet_core::loops::{LoopEntry,
+  LoopStore, IdleCheckFn};` plus an empty `pub mod loop_store {
+  pub use codelet_core::loops::*; }` so existing absolute paths
+  (`crate::scheduler::loop_store::LoopEntry` etc. in
+  session_bindings.rs) continue to resolve unchanged.
   - The lifted module has zero `use napi` / `napi_derive` references —
-    it only depends on chrono, tokio, tracing, uuid, and std (the same
-    NAPI-free deps it already had).
+  it only depends on chrono, tokio, tracing, uuid, and std (the same
+  NAPI-free deps it already had).
 
   These tests pin the file layout so a future refactor cannot
   accidentally re-introduce a NAPI dependency on the loop store.

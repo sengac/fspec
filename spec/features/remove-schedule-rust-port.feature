@@ -4,7 +4,6 @@
 @rust
 @RPC-280
 Feature: Port remove-schedule command to Rust
-
   """
   New impl at codelet/fspec-core/src/commands/remove_schedule.rs replaces NotYetPorted stub. Signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Args struct (camelCase) { name: String }. Load spec/schedules.json (read existing, default empty if missing — TS does NOT ensure-create), check key, remove, write_json_atomic. SHARED-FILE REQUEST: reuse the same ensure_schedules_file/schedules path helper requested for RPC-191; remove only needs the path + read (not auto-create). Model SchedulesData { version, schedules: IndexMap<String, Value> } with #[serde(flatten)] extra. Returns {success:true} JSON.
   """
@@ -27,7 +26,6 @@ Feature: Port remove-schedule command to Rust
   #   3. Remove from a file with three schedules ZED, AAA, MID → remove AAA, remaining order ZED, MID preserved (insertion order kept)
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch remove-schedule from the agent loop AND invoke `fspec remove-schedule <name>` from a shell

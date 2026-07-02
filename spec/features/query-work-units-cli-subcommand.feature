@@ -4,7 +4,6 @@
 @querying
 @rust
 Feature: query-work-units CLI subcommand on the standalone fspec Rust binary
-
   """
   This feature describes the shell-facing surface for `fspec query-work-units`
   exposed via clap on the standalone Rust binary. Per the two-front-doors

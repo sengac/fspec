@@ -3,12 +3,11 @@
 @cli
 @RPC-276
 Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `remove-init-files` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/remove_init_files.rs → fspec_core::commands::remove_init_files::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::remove_init_files::run
+  - Shell argv         → clap → codelet/fspec/src/remove_init_files.rs → fspec_core::commands::remove_init_files::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::remove_init_files::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes `--keep-config` / `--no-keep-config` (boolean keepConfig). The headless Rust port does NOT render the interactive Ink prompt; an unspecified keepConfig defaults to false.
@@ -43,7 +42,6 @@ Feature: remove-init-files clap subcommand on the standalone fspec Rust binary
   #   1. Working assumption pending supervisor confirmation: inline a local const AGENT table inside commands/remove_init_files.rs (no shared mod.rs/lib.rs changes); an unspecified keepConfig defaults to false (remove config), matching the destructive --no-keep-config default.
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of remove-init-files wired through both the LLM dispatcher and the clap subcommand

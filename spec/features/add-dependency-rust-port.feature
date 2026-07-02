@@ -1,7 +1,6 @@
 @done
 @RPC-177
 Feature: Port add-dependency command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_dependency.rs. Reuses io::ensure::ensure_work_units_file
   (auto-creates spec/work-units.json), io::locked_file::write_json_atomic (single atomic write), and

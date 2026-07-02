@@ -971,16 +971,39 @@ impl BackgroundSession {
         self.set_status(SessionStatus::Running);
     }
 
+    /// Run a synchronous blocking `recv` without stranding the tokio
+    /// worker's LIFO slot (RPC-409).
+    ///
+    /// When the caller is inside a multi-thread tokio runtime,
+    /// `block_in_place` hands the worker's queue (including the
+    /// non-stealable LIFO slot holding a just-woken broadcast
+    /// subscriber) to another thread before blocking — otherwise chunks
+    /// emitted immediately before the wait are stranded until the wait
+    /// resolves. Off-runtime (or on a current-thread runtime, where
+    /// `block_in_place` panics) it falls back to a direct blocking recv.
+    fn blocking_recv_compat<T>(recv: impl FnOnce() -> T) -> T {
+        match tokio::runtime::Handle::try_current() {
+            Ok(handle)
+                if handle.runtime_flavor() == tokio::runtime::RuntimeFlavor::MultiThread =>
+            {
+                tokio::task::block_in_place(recv)
+            }
+            _ => recv(),
+        }
+    }
+
     /// Wait for pause response (PAUSE-001) - BLOCKS until TypeScript sends response
     ///
     /// Called by the pause handler to block until the UI sends a response.
     pub fn wait_for_pause_response(&self) -> PauseResponse {
-        let rx = self
-            .pause_response_rx
-            .lock()
-            .expect("pause_response_rx lock poisoned");
-        // Block until we receive a response
-        rx.recv().unwrap_or(PauseResponse::Interrupted)
+        Self::blocking_recv_compat(|| {
+            let rx = self
+                .pause_response_rx
+                .lock()
+                .expect("pause_response_rx lock poisoned");
+            // Block until we receive a response
+            rx.recv().unwrap_or(PauseResponse::Interrupted)
+        })
     }
 
     /// Send pause response (PAUSE-001)
@@ -1014,17 +1037,19 @@ impl BackgroundSession {
     /// Called by session loop when FspecTool is invoked. Blocks until TypeScript
     /// executes the command and sends the result back via sessionSendFspecResult.
     pub fn wait_for_fspec_response(&self) -> FspecResult {
-        let rx = self
-            .fspec_response_rx
-            .lock()
-            .expect("fspec_response_rx lock poisoned");
-        // Block until we receive a response
-        rx.recv().unwrap_or_else(|_| FspecResult {
-            success: false,
-            data: String::new(),
-            error: Some("Fspec response channel closed unexpectedly".to_string()),
-            system_reminder: None,
-            tool_call_id: String::new(),
+        Self::blocking_recv_compat(|| {
+            let rx = self
+                .fspec_response_rx
+                .lock()
+                .expect("fspec_response_rx lock poisoned");
+            // Block until we receive a response
+            rx.recv().unwrap_or_else(|_| FspecResult {
+                success: false,
+                data: String::new(),
+                error: Some("Fspec response channel closed unexpectedly".to_string()),
+                system_reminder: None,
+                tool_call_id: String::new(),
+            })
         })
     }
 
@@ -1047,15 +1072,17 @@ impl BackgroundSession {
     /// Called by the HITL handler closure when request_user_input is invoked.
     /// Blocks until the TUI renders the modal and the user responds.
     pub fn wait_for_hitl_response(&self) -> codelet_tools::request_user_input::HitlResponse {
-        let rx = self
-            .hitl_response_rx
-            .lock()
-            .expect("hitl_response_rx lock poisoned");
-        // Block until we receive a response
-        rx.recv()
-            .unwrap_or(codelet_tools::request_user_input::HitlResponse::Cancelled {
-                cancelled: true,
-            })
+        Self::blocking_recv_compat(|| {
+            let rx = self
+                .hitl_response_rx
+                .lock()
+                .expect("hitl_response_rx lock poisoned");
+            // Block until we receive a response
+            rx.recv()
+                .unwrap_or(codelet_tools::request_user_input::HitlResponse::Cancelled {
+                    cancelled: true,
+                })
+        })
     }
 
     /// Send HITL response (BUG-117)

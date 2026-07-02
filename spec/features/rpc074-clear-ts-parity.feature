@@ -5,7 +5,6 @@
 @rust
 @RPC-074
 Feature: /clear emits TS-divergent scrollback notice — match TypeScript contract exactly
-
   """
   RPC-074 reverts a divergence introduced in RPC-046 (synthetic '[notice] /clear: history cleared' scrollback line) and in the StubSessionManagerHandle (StreamChunk::UserNotification with message 'history cleared'). The Rust port MUST behave exactly like src/tui/components/AgentView.tsx:1554-1564 (handleClearCommand): only clear the input, call backend.clear_history(session_id), and let the SessionStateChange { state: Cleared } chunk drive any downstream UI updates. Errors go to tracing::error!, never to scrollback. The StubSessionManagerHandle MUST emit a SessionStateChange { state: Cleared } chunk to mirror BackgroundSession::clear_history so cross-transport parity tests pass against the stub identically to the real impl.
   """
@@ -29,7 +28,6 @@ Feature: /clear emits TS-divergent scrollback notice — match TypeScript contra
   #   5. Source-shape check: a grep for 'history cleared' in codelet/fspec-tui/src/app/dispatch_slash_clear.rs and codelet/core/src/session_manager_handle.rs returns zero matches
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI user
     I want to type /clear and have it behave exactly like the TypeScript reference (only clear input + scrollback, no synthetic notice line)
@@ -42,9 +40,7 @@ Feature: /clear emits TS-divergent scrollback notice — match TypeScript contra
     Then after draining pending tasks and the action bus, s-1's scrollback contains zero lines matching "[notice] /clear"
     Then after draining pending tasks and the action bus, s-1's scrollback contains zero lines matching "history cleared"
 
-
   Scenario: /clear with backend Err does NOT append any [error] line to scrollback
     Given an App with an open session s-1 wired to a MockBackend whose clear_history returns Err("boom")
     When SlashCommandSelected(SlashCommandAction::Clear) is dispatched
     Then after draining pending tasks and the action bus, s-1's scrollback contains zero lines matching "[error] /clear failed"
-

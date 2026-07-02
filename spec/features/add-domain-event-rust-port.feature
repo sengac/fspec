@@ -4,7 +4,6 @@
 @rust
 @RPC-179
 Feature: Port add-domain-event command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_domain_event.rs. INLINES the logic (does NOT use the shared addEventStormItem util) because it has the BUG-087 dedup step. Reads spec/work-units.json (existsSync check first, NO auto-create on missing), mutates wu.extra['eventStorm'] map, write_json_atomic. Item field order: id, type, color, text, deleted, createdAt, then optional timestamp/boundedContext appended.
   Returns {success, eventId} from core; CLI bridge codelet/fspec/src/add_domain_event.rs is a clap-derived struct (workUnitId, text, --timestamp, --bounded-context) that marshals to dispatch and formats the success/failure stdout/stderr lines (no domain logic).
@@ -36,7 +35,6 @@ Feature: Port add-domain-event command to Rust
   #   9. CLI: fspec add-domain-event with a duplicate event exits 1 and stderr shows '✗ Failed to add domain event:' with the dedup error
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the add-domain-event command to Rust (fspec-core)
@@ -49,31 +47,26 @@ Feature: Port add-domain-event command to Rust
     And the Event Storm contains an item with id 0, type "event", color "orange", deleted false
     And the eventStorm has level "process_modeling" and nextItemId 1
 
-
   Scenario: Reject duplicate event with same case
     given a work unit "RPC-179" with a non-deleted event "UserRegistered" at id 0
     when I add a domain event "UserRegistered"
     then the command fails with error "Event 'UserRegistered' already exists (ID: 0)"
     And the work units file is unchanged
 
-
   Scenario: Append optional timestamp and bounded context
     given a work unit "RPC-179" in the "specifying" state with no Event Storm
     when I add a domain event "OrderPlaced" with timestamp 1000 and bounded context "Sales"
     then the item has timestamp 1000 and boundedContext "Sales"
-
 
   Scenario: Re-add an event whose prior occurrence was soft-deleted
     given a work unit "RPC-179" with a soft-deleted event "UserRegistered" at id 0
     when I add a domain event "UserRegistered"
     then the command succeeds and a new non-deleted event is appended
 
-
   Scenario: Reject add for a missing work unit
     given a work units file that does not contain "NOPE-1"
     when I add a domain event "X" to "NOPE-1"
     then the command fails with error "Work unit NOPE-1 not found"
-
 
   Scenario: Reject add when work units file is absent
     given there is no spec/work-units.json file
@@ -81,15 +74,12 @@ Feature: Port add-domain-event command to Rust
     then the command fails with error "spec/work-units.json not found. Run fspec init first."
     And no spec/work-units.json file is created
 
-
   Scenario: Reject add for a work unit in done state
     given a work unit "RPC-179" in the "done" state
     when I add a domain event "X" to "RPC-179"
     then the command fails with error "Cannot add Event Storm items to work unit in done state"
 
-
   Scenario: Reject duplicate event case-insensitively
     given a work unit "RPC-179" with a non-deleted event "UserRegistered" at id 0
     when I add a domain event "userregistered"
     then the command fails with error "Event 'userregistered' already exists (ID: 0)"
-

@@ -9,7 +9,6 @@
 @rust
 @RPC-151
 Feature: Provider settings list: testResult clears on ↑/↓ arrow navigation
-
   """
   [0] This card complements the full integration coverage already provided by RPC-159 (codelet/fspec-tui/tests/provider_settings_clear_test_result_on_nav_rpc159.rs). Pattern matches RPC-077 / RPC-149 / RPC-156 fast structural source-string regression-shape complement to slow integration tests.
   [1] Test file: codelet/fspec-tui/tests/rpc151_test_result_clear_on_nav_shape.rs — sub-millisecond execution, no key event simulation, just source-string scanning of list.rs handle_list_key body.

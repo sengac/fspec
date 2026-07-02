@@ -10,7 +10,6 @@
 @validation
 @RPC-154
 Feature: Provider settings api-key edit: empty-Enter cancels silently (no validation, no Detail hop)
-
   """
   Existing rpc054 test `t inside Detail::Summary emits TestProviderConnection` (provider_settings_view_rpc054.rs:149) and `r inside Detail::Summary emits RefreshProviderModels` (line 173) — only the `t` test is superseded by RPC-154; the `r` test stays since RPC-154 explicitly scopes to `t` only
   RPC-163 (delete-key) test at provider_settings_api_key_delete_key_rpc163.rs:292-300 uses `t` to set up Testing state. Removing the `t` arm WILL BREAK that test setup. The test must be migrated to set view.test_result directly (or to drive TestProviderConnection via the dispatch layer, which still receives the action when called externally)
@@ -35,7 +34,6 @@ Feature: Provider settings api-key edit: empty-Enter cancels silently (no valida
   #   5. TS reference parity assertion: reading src/tui/inputHandlers/listModeHandler.ts shows no binding for `key.t` / `'t'`, confirming TS has no `t` keybind to mirror
   #
   # ========================================
-
   Background: User Story
     As a developer maintaining provider settings TS parity
     I want to ensure the Detail::Summary `t` (test connection) keybind from Rust does not exist (TS has no such keybind on any Detail screen)

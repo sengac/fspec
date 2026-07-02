@@ -6,7 +6,6 @@
 @rust
 @RPC-164
 Feature: Provider settings: n/N as cancel shortcut in delete-confirm ConfirmDialog
-
   """
   TS reference: src/tui/inputHandlers/deleteConfirmModeHandler.ts handleConfirmation() function — 'y' || 'Y' → onConfirm; 'n' || 'N' || Esc → onCancel. Visible UI hint: 'Press y to confirm, n or Esc to cancel' (ProviderSettingsPanel.tsx lines 198, 225, 251).
   Rust implementation site: codelet/fspec-tui/src/views/agent/confirm_dialog.rs ConfirmDialog::handle_key() (line 139-160). Insert two new match arms BEFORE the catch-all `_ => Ignored`: KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0) which yields Primary; KeyCode::Char('n') | KeyCode::Char('N') => self.outcome_for_index(self.cancel_index()) which yields Cancel.
@@ -44,7 +43,6 @@ Feature: Provider settings: n/N as cancel shortcut in delete-confirm ConfirmDial
   #   13. All pre-existing scenarios continue to pass: Esc → Cancel, Tab cycles focus, Left/Right cycle focus, Enter on focused button emits matching outcome
   #
   # ========================================
-
   Background: User Story
     As a TUI user using a confirm-dialog overlay
     I want to press y/Y to confirm and n/N to cancel as one-key shortcuts

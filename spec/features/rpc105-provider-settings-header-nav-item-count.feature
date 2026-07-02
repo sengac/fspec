@@ -5,7 +5,6 @@
 @tui
 @RPC-105
 Feature: Provider settings: header line shows total nav items not configured count
-
   """
   Depends on RPC-103: this card cannot ship until ProviderSettingsView has a `nav_items: Vec<NavItem>` field. Until then there is no `navItems.length` analog to count. Implementation removes `configured_count()` method (no other callers) and replaces title_text() to use `self.nav_items.len()`.
   Existing unit tests that assert the title string (search `"Provider Settings ("` in `codelet/fspec-tui/src/views/provider_settings/`) and any rendering snapshot goldens must be updated in the same commit to use the new `(N items)` format.
@@ -29,7 +28,6 @@ Feature: Provider settings: header line shows total nav items not configured cou
   #   5. Title MUST NOT contain the substring 'configured' — a regression guard test asserts the literal absence
   #
   # ========================================
-
   Background: User Story
     As a provider settings user
     I want to see the header count match the actual number of rows I can navigate to

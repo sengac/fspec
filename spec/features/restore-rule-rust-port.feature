@@ -1,7 +1,6 @@
 @done
 @RPC-291
 Feature: Port restore-rule command to Rust
-
   """
   Core impl: codelet/fspec-core/src/commands/restore_rule.rs — replaces the NotYetPorted stub.
   Single source of truth `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>`.

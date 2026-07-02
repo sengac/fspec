@@ -6,7 +6,6 @@
 @tui
 @RPC-158
 Feature: Provider settings: inline testResult rendering on focused row in list mode
-
   """
   Render integration: codelet/fspec-tui/src/views/provider_settings/list_nav_render.rs — `render_nav_items` checks `view.test_result` for each Provider row. If `test_result.provider_id == item.provider_id`, after the existing `render_row` call, paint the test-result span on top of the row's color band. Decoration column = end-of-label column returned from a refactored `render_row` (change render_row return type from `()` to `u16` representing the column AFTER the last painted label cell — 18 existing RPC-104 callers ignore return value, no test changes required). Decoration style: foreground from ProviderTestStatus::span_color (Cyan/Green/Red), background from the row's existing band style (selected ? tint : Reset). Use `buf.set_stringn(end_x, y, &decoration_text, remaining_width, decoration_style)`. Skip painting if `end_x >= row_area.x + row_area.width` (no space left).
   Decoration text + color: introduce `ProviderTestStatus::decoration(&self) -> (String, Color)` returning ('Testing…', Cyan) | (format!('✓ ok ({n}ms)'), Green) | (format!('✗ {m}'), Red). Mirrors the existing `DetailStatus::to_span()` for the Testing/TestOk/TestErr variants (status_text.rs L28-37) bytes-for-bytes. Prefix the decoration with a single ASCII space when painting so the visible row reads 'Label ✓ ok (Nms)'.
@@ -49,7 +48,6 @@ Feature: Provider settings: inline testResult rendering on focused row in list m
   #   12. Direct unit: with test_result already set, pre-set selected_index=2, scroll_offset=1; call clear_test_result(); assert selected_index and scroll_offset are unchanged; assert test_result is None
   #
   # ========================================
-
   Background: User Story
     As a user testing a provider connection
     I want to see the test result inline next to the provider row I just tested

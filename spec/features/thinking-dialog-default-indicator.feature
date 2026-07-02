@@ -5,7 +5,6 @@
 @rust
 @TUI-094
 Feature: Render (default) indicator in Rust /thinking dialog for TS parity
-
   """
   Threads the persisted default (load_default_thinking_level_opt -> Option<ThinkingLevel>) into ThinkingLevelDialog via a with_default_level builder; new(session_id, current_level) stays stable.
   """
@@ -28,7 +27,6 @@ Feature: Render (default) indicator in Rust /thinking dialog for TS parity
   #   4. Default is High and current selection is also High; user opens /thinking; the High row shows both the selection highlight marker and (default)
   #
   # ========================================
-
   Background: User Story
     As a Rust TUI user
     I want to see a (default) marker on the thinking level that is currently my persisted default when I open the /thinking dialog
@@ -39,12 +37,10 @@ Feature: Render (default) indicator in Rust /thinking dialog for TS parity
     When I render it onto an 80x24 TestBackend buffer
     Then the High row reads "High - ~32K tokens, deep reasoning (default)"
 
-
   Scenario: No default persisted shows no (default) marker on any row
     Given a ThinkingLevelDialog seeded with current level Off and default level None
     When I render it onto an 80x24 TestBackend buffer
     Then no row in the rendered buffer contains the text "(default)"
-
 
   Scenario: Default marker is independent of the selection highlight
     Given a ThinkingLevelDialog seeded with current level Off and default level Medium
@@ -52,16 +48,13 @@ Feature: Render (default) indicator in Rust /thinking dialog for TS parity
     Then the Off row is highlighted with the "▸" marker and shows no "(default)" text
     Then the Medium row is not highlighted and reads "(default)"
 
-
   Scenario: Default equals current selection shows both the highlight and the (default) marker
     Given a ThinkingLevelDialog seeded with current level High and default level High
     When I render it onto an 80x24 TestBackend buffer
     Then the High row begins with the "▸" selection marker
     Then the High row also reads "(default)"
 
-
   Scenario: Default marker on an unselected row is dimmed on the description span
     Given a ThinkingLevelDialog seeded with current level Off and default level High
     When I render it onto an 80x24 TestBackend buffer
     Then the "(default)" cells on the unselected High row carry the Modifier::DIM style
-

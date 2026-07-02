@@ -6,7 +6,6 @@
 @tui
 @PROV-104
 Feature: Model view scroll/viewport parity with TypeScript
-
   """
   The full-screen ModelSelectorView (codelet/fspec-tui/src/views/model_selector/) renders a windowed flat row list (provider headers + model rows). Scroll state lives in mod.rs (selected_index, scroll_offset, visible_rows); adjust_scroll reuses components::scroll_viewport::ensure_visible. FIX (TS parity with ModelSelectorView.tsx): rows::render_body slices the FULL visible window so every visible slot paints content, and draws the up/down/scrollbar indicator in a dedicated column beside the list rather than overwriting the first/last content row, eliminating the inline-arrow row-stealing that hid the selected row at viewport edges. PageDown/PageUp added in handle_key, moving selection by one viewport height across selectable rows. Tests render to a ratatui TestBackend and assert the selected row text/marker is actually PAINTED at top/bottom/mid edges.
   """
@@ -31,7 +30,6 @@ Feature: Model view scroll/viewport parity with TypeScript
   #   6. When the list overflows the viewport, a scrollbar column is painted beside the list and the rightmost content column still shows model text
   #
   # ========================================
-
   Background: User Story
     As a model selector user
     I want to scroll through a long model list

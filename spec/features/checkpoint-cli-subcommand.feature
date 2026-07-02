@@ -1,7 +1,7 @@
 @done
-@RPC-202 @wip
+@RPC-202
+@wip
 Feature: checkpoint CLI subcommand on the standalone fspec Rust binary
-
   """
   Two-front-doors invariant (RPC-003 §7/§11): the clap subcommand
   `fspec checkpoint <work-unit-id> <checkpoint-name>` and the LLM-facing dispatcher both

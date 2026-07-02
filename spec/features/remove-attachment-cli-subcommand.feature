@@ -3,7 +3,6 @@
 @cli
 @RPC-268
 Feature: fspec remove-attachment CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_attachment.rs — clap-derived struct mirroring TS Commander.js
   registration at src/commands/remove-attachment.ts:87-117. Surface: `fspec remove-attachment

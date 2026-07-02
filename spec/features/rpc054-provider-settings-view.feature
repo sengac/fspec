@@ -7,7 +7,6 @@
 @provider-settings
 @view-isolation
 Feature: ProviderSettingsView — full-screen mode-view keyboard handling
-
   """
   Isolated view-layer behaviour of ProviderSettingsView
   (codelet/fspec-tui/src/views/provider_settings/mod.rs).

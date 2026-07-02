@@ -1,0 +1,100 @@
+{
+  "scenarios": [
+    {
+      "name": "Project blocklist rules are enforced after service startup",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/blocklist_init_tests.rs",
+          "lines": "93-126",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/common.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blocking comes from the project config and not any other source",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/blocklist_init_tests.rs",
+          "lines": "128-156",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/common.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Startup seam covers both daemon and combined modes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/blocklist_init_tests.rs",
+          "lines": "158-196",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/common.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/src/blocklist_init_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/common.rs"
+    ],
+    "totalLinesCovered": 138
+  }
+}

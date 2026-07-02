@@ -1,7 +1,6 @@
 @wip
 @RPC-293
 Feature: fspec retag CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/retag.rs — clap-derived struct mirroring the TS Commander.js
   registration (src/commands/retag.ts:214-221). Surface: `fspec retag --from <tag> --to <tag> [--dry-run]`.

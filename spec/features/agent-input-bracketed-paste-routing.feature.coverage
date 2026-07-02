@@ -1,0 +1,204 @@
+{
+  "scenarios": [
+    {
+      "name": "Multi-line paste with no modal open is inserted verbatim and grows the input",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "72-101",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/events.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CRLF line endings are normalized to LF on paste",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "107-136",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/text_normalize.rs",
+              "lines": [
+                18,
+                19,
+                20
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_paste.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paste is inserted at the cursor preserving existing text",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "142-154",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paste while a modal is open is delivered to the modal intact",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "160-203",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paste while the session is compacting is suppressed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "209-234",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_paste.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Large paste keeps the full buffer but caps the input at 6 visible rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_paste_routing_rpc403.rs",
+          "lines": "241-273",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agent_input_paste_routing_rpc403.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/events.rs",
+      "codelet/fspec-tui/src/text_normalize.rs",
+      "codelet/fspec-tui/src/views/agent/multiline_input_paste.rs",
+      "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+      "codelet/fspec-tui/src/compositor.rs",
+      "codelet/fspec-tui/src/views/agent/dispatch.rs"
+    ],
+    "totalLinesCovered": 253
+  }
+}

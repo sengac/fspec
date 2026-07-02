@@ -30,7 +30,6 @@ pub mod hitl_dialog;
 pub mod list_scrollbar;
 pub mod model_selector_dialog_rows;
 pub mod notification_dialog;
-pub mod pause_dialog;
 pub mod role_dialog;
 pub mod scroll_viewport;
 pub mod status_dialog;
@@ -535,25 +534,43 @@ pub enum Action {
     /// App::dispatch routes this through `handle_pause_chunk`, which
     /// spawns parallel `backend.get_pause_state(id)` and
     /// `backend.get_hitl_request(id)` reads. The first non-None result
-    /// dispatches `Action::OpenPauseDialog` (PauseState) or
-    /// `Action::OpenHitlDialog` (HitlRequest). When both return Some
-    /// the HITL dialog wins (the HITL handler in the agent loop is the
-    /// only path that populates `hitl_request`).
+    /// dispatches `Action::PauseStateFetched` (PauseState → RPC-406
+    /// inline prompt slot) or `Action::OpenHitlDialog` (HitlRequest).
+    /// When both return Some the HITL dialog wins (the HITL handler in
+    /// the agent loop is the only path that populates `hitl_request`).
     PauseChunkReceived(codelet_rpc_types::SessionId),
     /// RPC-053: emitted by the chunk dispatcher when
     /// `StreamChunk::SessionStateChange { state: Running | Idle }`
     /// arrives. App::dispatch routes this through
-    /// `handle_pause_cleared`, which pops any mounted PauseDialog or
-    /// HitlDialog so the UI does not strand a stale dialog after the
-    /// agent loop has resumed server-side.
+    /// `handle_pause_cleared`, which clears the RPC-406 per-session
+    /// pause slot AND pops any mounted HitlDialog so the UI does not
+    /// strand a stale prompt after the agent loop has resumed
+    /// server-side.
     PauseCleared(codelet_rpc_types::SessionId),
-    /// RPC-053: emitted by `handle_pause_chunk` on `Ok(Some(state))`.
-    /// App::dispatch routes this through `handle_open_pause_dialog`,
-    /// which pushes a fresh PauseDialog at Priority::Critical (idempotent
-    /// on dialog-id collision) onto the Compositor.
-    OpenPauseDialog {
+    /// RPC-406: emitted by `handle_pause_chunk` on `Ok(Some(state))`.
+    /// App::dispatch stores the fetched PauseState into the
+    /// AgentViewStore per-session pause slot — the AgentView paints
+    /// the inline tool-approval prompt from that slot when the paused
+    /// session is focused (replaces the deleted RPC-053 modal push).
+    PauseStateFetched {
         session_id: codelet_rpc_types::SessionId,
         state: codelet_rpc_types::PauseState,
+    },
+    /// RPC-406: emitted by the AgentView pause-prompt key handler on
+    /// ←/→ while a Triple pause prompt is showing. App::dispatch
+    /// cycles the per-session selection with wraparound
+    /// (0 = Allow Once, 1 = Allow Session, 2 = Deny).
+    PausePromptNav {
+        session_id: codelet_rpc_types::SessionId,
+        delta: i32,
+    },
+    /// RPC-406: emitted by the AgentView pause-prompt key handler on
+    /// Enter while a Triple pause prompt is showing. App::dispatch
+    /// reads the authoritative selection from the store, maps it onto
+    /// `ApprovalChoice::{Approve, ApproveSession, Deny}`, and routes
+    /// through `handle_pause_triple` (which clears the slot).
+    PausePromptEnter {
+        session_id: codelet_rpc_types::SessionId,
     },
     /// RPC-053: emitted by `handle_pause_chunk` on
     /// `Ok(Some(hitl_request))`. App::dispatch routes this through
@@ -563,31 +580,32 @@ pub enum Action {
         session_id: codelet_rpc_types::SessionId,
         request: codelet_rpc_types::HitlRequest,
     },
-    /// RPC-053: emitted by PauseDialog (Confirm kind) on Enter over
-    /// Accept or Deny. App::dispatch routes this through
-    /// `handle_pause_confirmed`, which fires
-    /// `backend.pause_confirm(session_id, accept)` fire-and-forget and
-    /// pops the dialog from the Compositor BEFORE awaiting the response
-    /// (best-effort UX so a slow backend does not leave the dialog
-    /// dangling on screen).
+    /// RPC-053: emitted by the RPC-406 inline pause prompt (Confirm
+    /// kind) on Y/N/Esc. App::dispatch routes this through
+    /// `handle_pause_confirmed`, which clears the per-session pause
+    /// slot and fires `backend.pause_confirm(session_id, accept)`
+    /// fire-and-forget (best-effort UX so a slow backend does not
+    /// leave the prompt dangling on screen).
     PauseConfirmed {
         session_id: codelet_rpc_types::SessionId,
         accept: bool,
     },
-    /// RPC-053: emitted by PauseDialog (Triple kind) on Enter over one
-    /// of the three buttons. App::dispatch routes this through
-    /// `handle_pause_triple`, which fires
-    /// `backend.pause_triple(session_id, choice)` fire-and-forget and
-    /// pops the dialog.
+    /// RPC-053: emitted by the RPC-406 inline pause prompt (Triple
+    /// kind) — via the `PausePromptEnter` reducer or directly with
+    /// `ApprovalChoice::Deny` on Esc. App::dispatch routes this
+    /// through `handle_pause_triple`, which clears the per-session
+    /// pause slot and fires `backend.pause_triple(session_id, choice)`
+    /// fire-and-forget.
     PauseTriple {
         session_id: codelet_rpc_types::SessionId,
         choice: codelet_rpc_types::ApprovalChoice,
     },
-    /// RPC-053: emitted by PauseDialog on Esc. App::dispatch routes this
-    /// through `handle_pause_resumed`, which fires
-    /// `backend.pause_resume(session_id)` fire-and-forget and pops the
-    /// dialog. The agent loop receives the resume signal and unblocks
-    /// from `wait_for_pause_response`.
+    /// RPC-053: routes through `handle_pause_resumed`, which fires
+    /// `backend.pause_resume(session_id)` fire-and-forget. The agent
+    /// loop receives the resume signal and unblocks from
+    /// `wait_for_pause_response`. RPC-406: NOT reachable from the
+    /// inline pause prompt (Esc DENIES) — kept for other callers
+    /// (Continue-kind internal pauses via the napi path).
     PauseResumed {
         session_id: codelet_rpc_types::SessionId,
     },

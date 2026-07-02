@@ -3,7 +3,6 @@
 @cli
 @RPC-303
 Feature: Port show-event-storm command to Rust
-
   """
   Uses ensure_work_units_file from crate::io::ensure (auto-creating spec/work-units.json with canonical defaults `{ version: '1.0.0', workUnits: {}, states: {} }` when missing) — TS source-of-truth at src/commands/show-event-storm.ts:38-45 calls fileManager.readJSON with the same default payload, and fileManager.readJSON auto-creates on ENOENT, so the Rust port matches that auto-create behaviour exactly.
 
@@ -36,7 +35,6 @@ Feature: Port show-event-storm command to Rust
   #   9. The dispatcher payload shape is { workUnitId: String (REQUIRED) }; both invocation paths call fspec_core::commands::show_event_storm::run
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of show-event-storm wired through both the LLM dispatcher and the clap subcommand

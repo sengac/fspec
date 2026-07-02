@@ -1,7 +1,6 @@
 @done
 @RPC-181
 Feature: fspec add-example CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_example.rs — clap variant mirroring TS Commander.js registration
   at src/commands/add-example.ts:98-115. Surface: `fspec add-example <workUnitId> <example>`.

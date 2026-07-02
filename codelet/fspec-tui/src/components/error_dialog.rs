@@ -66,6 +66,12 @@ impl Component for ErrorDialog {
                 return EventResult::Consumed(Some(callback));
             }
         }
+        // RPC-403 review: Critical modal — consume (swallow) pastes so
+        // they can never leak into the agent input hidden behind this
+        // dialog. No text field here, so nothing is inserted.
+        if matches!(event, Event::Paste(_)) {
+            return EventResult::consumed();
+        }
         EventResult::ignored()
     }
 

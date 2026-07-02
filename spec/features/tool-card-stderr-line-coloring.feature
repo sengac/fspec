@@ -4,7 +4,6 @@
 @tui
 @RPC-400
 Feature: Stderr lines in tool cards must render red and strip the stderr sentinel (TS parity)
-
   """
   Marker constant: define/reuse a single Rust STDERR_MARKER='⚠stderr⚠' in fspec-tui, locked by a parity test to codelet-tools bash_output.rs value. Prefer a small shared const rather than a cross-crate dependency if it keeps fspec-tui decoupled.
   Live path (chunk_processor::handle_tool_progress): when info.is_stderr, prefix each non-empty split('\n') line with STDERR_MARKER before appending, mirroring AgentView.tsx:2485-2490. is_stderr=false path unchanged.
@@ -35,7 +34,6 @@ Feature: Stderr lines in tool cards must render red and strip the stderr sentine
   #   6. Opening the TurnContentModal (Enter) on a card with stderr lines shows those lines red with the marker stripped, matching the scrollback
   #
   # ========================================
-
   Background: User Story
     As a developer watching bash tool output in the Rust fspec-tui
     I want to see stderr lines rendered red with the ⚠stderr⚠ sentinel stripped, on both live streaming and settled cards

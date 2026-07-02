@@ -1,7 +1,9 @@
 @done
-@RPC-314 @wip @cli @feature-management
+@RPC-314
+@wip
+@cli
+@feature-management
 Feature: update-scenario CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/update_scenario.rs (NEW CLI bridge); codelet/fspec/tests/cli_update_scenario.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/update-scenario.txt (captured help fixture from `node dist/index.js update-scenario --help`).
   Bridge marshals positional <feature> <old-name> <new-name> into JSON and delegates to commands::update_scenario::run. No logic in bridge — JSON marshalling + CWD resolution only.

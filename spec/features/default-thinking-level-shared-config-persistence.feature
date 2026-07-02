@@ -4,7 +4,6 @@
 @persistence
 @TUI-092
 Feature: Repoint default thinking-level persistence to shared fspec-config.json
-
   """
   Storage is delegated to the CONFIG-008 shared fspec_config module (load_config_with_dirs / write_config_with_dirs / ConfigScope) under nested key tui.defaultThinkingLevel; no dedicated file or DefaultThinkingLevelFile struct remains.
   Path-injectable *_with_dirs cores (data_dir + cwd) carry the logic; thin global wrappers resolve get_data_dir()/current_dir() and keep their existing signatures so session_manager.rs and handle_impl.rs callers stay edit-free.
@@ -36,7 +35,6 @@ Feature: Repoint default thinking-level persistence to shared fspec-config.json
   #   A: Option (a): No migration. The TS reference never had a default-thinking-level.json file, so there is no interop legacy to preserve. Users re-select once via the /thinking dialog. Simplest and avoids dead migration code.
   #
   # ========================================
-
   Background: User Story
     As a developer using the AI agent TUI
     I want to have my default thinking level persisted in the shared fspec-config.json under tui.defaultThinkingLevel

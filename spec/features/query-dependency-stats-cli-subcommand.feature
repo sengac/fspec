@@ -3,12 +3,11 @@
 @querying
 @RPC-257
 Feature: query-dependency-stats clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `query-dependency-stats` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern (architecture note [7] on RPC-253, reused for RPC-257):
-    - Shell argv         → clap → codelet/fspec/src/query_dependency_stats.rs → fspec_core::commands::query_dependency_stats::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_dependency_stats::run
+  - Shell argv         → clap → codelet/fspec/src/query_dependency_stats.rs → fspec_core::commands::query_dependency_stats::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_dependency_stats::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes `--format <text|json>` defaulting to `text` (parity with TS Commander.js registration).

@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec create-task CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `create-task` exposes the same surface as the TS Commander.js registration at src/commands/create-task.ts:273-283 — two positional arguments `<prefix>` and `<title>` plus optional `-d, --description`, `-e, --epic`, and `-p, --parent` flags. The bridge module at codelet/fspec/src/create_task.rs marshals the clap args into a JSON object and delegates to codelet_fspec_core::commands::create_task::run; no validation or rendering logic is duplicated.
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with 'Error:' (parity with the TS error path at src/commands/create-task.ts:264-270). The success block (✓ Created task <id>, Title:, optional Description:/Epic:/Parent:) prints to stdout and the minimal-requirements system-reminder prints to stderr.

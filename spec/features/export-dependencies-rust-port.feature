@@ -3,7 +3,6 @@
 @cli
 @RPC-227
 Feature: Port export-dependencies command to Rust
-
   """
   Core: codelet/fspec-core/src/commands/export_dependencies.rs — pub async fn run(args_json:&str, project_root:&Path)->Result<String,FspecCoreError>. Args: { format: String, output: String }. Reads blocks/blockedBy/dependsOn/relatesTo from WorkUnit.extra. mermaid → string builder; else → IndexMap<String, DepEntry> serialized via to_string_pretty (insertion order, NOT BTreeMap).
   CLI bridge: codelet/fspec/src/export_dependencies.rs (CliArgs { format, output }). clap variant Mode::ExportDependencies with two required positionals. Success: println! the returned message; Error: eprintln! ✗ Failed to export dependencies: <msg>, exit 1. Help config codelet/fspec-core/src/help/configs/export_dependencies.rs + fixture export-dependencies.txt.
@@ -36,7 +35,6 @@ Feature: Port export-dependencies command to Rust
   #   8. Dispatcher and CLI produce identical written file content for the same store and format
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the CLI to Rust
     I want to run export-dependencies in the Rust binary and via the LLM dispatcher

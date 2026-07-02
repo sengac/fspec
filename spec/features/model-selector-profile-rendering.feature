@@ -1,10 +1,13 @@
 @done
-@RPC-338 @tui @model-selector @ts-parity @wip
+@RPC-338
+@tui
+@model-selector
+@ts-parity
+@wip
 Feature: Model selector profile section rendering
 
   # Work unit: RPC-338. Rendering layer in views/model_selector/rows.rs —
   # magenta 📁 icon, red (unreachable) marker, and the restored legend segment.
-
   Background: User Story
     As a codelet TUI user
     I want profile sections (📁) and unreachable markers rendered in the model selector

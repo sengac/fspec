@@ -1,7 +1,7 @@
 @done
-@RPC-203 @wip
+@RPC-203
+@wip
 Feature: cleanup-checkpoints CLI subcommand on the standalone fspec Rust binary
-
   """
   Two-front-doors invariant (RPC-003 §7/§11): the clap subcommand
   `fspec cleanup-checkpoints <work-unit-id> --keep-last <N>` and the LLM-facing dispatcher both

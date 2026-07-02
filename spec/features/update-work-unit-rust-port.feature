@@ -4,7 +4,6 @@
 @rust
 @RPC-317
 Feature: Port update-work-unit command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/update_work_unit.rs; signature pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>. Loads work-units via ensure_work_units_file and epics via ensure_epics_file. Two atomic writes (epics.json then work-units.json) via io::locked_file::write_json_atomic.
   WorkUnit typed fields used: title, epic, updated_at. description, parent, children arrays live in the WorkUnit.extra map and are mutated by string key (same pattern as update_prefix.rs) to avoid touching the shared work_unit.rs type. Circular-reference check is a recursive helper over the work_units IndexMap mirroring TS wouldCreateCircularReference.
@@ -38,7 +37,6 @@ Feature: Port update-work-unit command to Rust
   #   7. CLI: ./fspec update-work-unit MISSING-999 --title X exits 1 and prints the failure message to stderr
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer
     I want to port the update-work-unit command to the Rust fspec-core crate

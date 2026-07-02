@@ -3,7 +3,6 @@
 @cli
 @RPC-170
 Feature: fspec add-attachment CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/add_attachment.rs — clap-derived struct mirroring TS Commander.js
   registration at src/commands/add-attachment.ts:121-152. Surface: `fspec add-attachment <workUnitId>

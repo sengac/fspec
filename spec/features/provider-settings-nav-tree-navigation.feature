@@ -6,7 +6,6 @@
 @tui
 @PROV-103
 Feature: Up/Down and Enter dead in provider settings nav tree
-
   """
   TS-parity research (deepsearch of listModeHandler.ts/useProviderSettingsState.ts/ProviderSettingsPanel.tsx): every NavItem variant (provider, profile, add-profile, api-key, oauth-login, oauth-status) is an Enter-actionable landing target. TS Up/Down is a plain ±1 clamp to [0, navItems.length-1] with NO skip-non-selectable loop. Therefore the correct parity fix bounds move_clamped/adjust_scroll by nav_items.len() WITHOUT a header-skip — the model_selector skip logic exists only because that view has non-selectable provider HEADER rows; the provider_settings nav tree has none.
   """
@@ -30,7 +29,6 @@ Feature: Up/Down and Enter dead in provider settings nav tree
   #   5. Given nav_items is empty (legacy set_providers-only state), Down with two providers can still step to index 1 but never beyond providers.len()-1, and never silently snaps to a selection
   #
   # ========================================
-
   Background: User Story
     As a fspec user navigating the provider settings nav tree
     I want to move the cursor with Up/Down and press Enter on any row including expanded child rows

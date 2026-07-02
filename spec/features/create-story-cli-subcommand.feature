@@ -4,7 +4,6 @@
 @rust
 @RPC-214
 Feature: fspec create-story CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `create-story` exposes the same surface as the TS Commander.js registration at
   src/commands/create-story.ts:277-287 — two positional arguments `<prefix>` and `<title>` plus three optional

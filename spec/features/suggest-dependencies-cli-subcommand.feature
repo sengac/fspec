@@ -3,12 +3,11 @@
 @cli
 @RPC-309
 Feature: suggest-dependencies clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `suggest-dependencies` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/suggest_dependencies.rs → fspec_core::commands::suggest_dependencies::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::suggest_dependencies::run
+  - Shell argv         → clap → codelet/fspec/src/suggest_dependencies.rs → fspec_core::commands::suggest_dependencies::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::suggest_dependencies::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes `--output <text|json>` defaulting to `text`.
@@ -41,7 +40,6 @@ Feature: suggest-dependencies clap subcommand on the standalone fspec Rust binar
   #   5. AUTH-002 already lists AUTH-001 in dependsOn -> no sequential suggestion produced for that pair
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting commands to Rust
     I want to have a Rust port of suggest-dependencies wired through both the LLM dispatcher and the clap subcommand

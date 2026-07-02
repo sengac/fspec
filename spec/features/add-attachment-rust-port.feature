@@ -2,7 +2,6 @@
 @rust
 @RPC-170
 Feature: Port add-attachment command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_attachment.rs. Reuses io::ensure::ensure_work_units_file
   (auto-creates spec/work-units.json), io::locked_file::write_json_atomic (single atomic write), and
@@ -101,10 +100,8 @@ Feature: Port add-attachment command to Rust
     Then the dispatcher returns an error containing 'Invalid Mermaid'
     And no file is copied into spec/attachments/AUTH-001 and the work unit is unchanged
 
-
   Scenario: Validates mermaid fences inside a .md attachment and accepts fence-free markdown
     Given a work unit AUTH-001 and a notes.md containing one valid and one invalid mermaid fence
     When I dispatch add-attachment with workUnitId='AUTH-001' filePath='notes.md'
     Then the dispatcher returns an error naming the failing code block
     And a plain.md containing no mermaid fences is accepted and copied unchanged
-

@@ -3,7 +3,6 @@
 @cli
 @RPC-190
 Feature: add-scenario CLI subcommand (Rust shell front-door)
-
   """
   Files: codelet/fspec/src/add_scenario.rs (NEW CLI bridge); codelet/fspec/tests/cli_add_scenario.rs (NEW CLI tests); codelet/fspec/tests/fixtures/help/add-scenario.txt (captured help fixture from `node dist/index.js add-scenario --help`).
   Bridge marshals positional <feature> + <scenario> into JSON {feature, scenario} and delegates to commands::add_scenario::run. No logic in bridge — JSON marshalling + CWD resolution only.

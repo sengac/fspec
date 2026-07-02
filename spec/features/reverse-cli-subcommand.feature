@@ -4,7 +4,6 @@
 @rust
 @RPC-294
 Feature: Port reverse command to Rust
-
   """
   File layout: core impl codelet/fspec-core/src/commands/reverse.rs (rewrite stub); new type module codelet/fspec-core/src/types/reverse_session.rs (ReverseSession, GapAnalysis, AnalysisResult); help config codelet/fspec-core/src/help/configs/reverse.rs; CLI bridge codelet/fspec/src/reverse.rs; integration tests codelet/fspec/tests/cli_reverse.rs + core tests codelet/fspec-core/tests/reverse.rs; help fixture codelet/fspec/tests/fixtures/help/reverse.txt. Two feature files: reverse-rust-port.feature (dispatcher contract) + reverse-cli-subcommand.feature (clap surface).
   SHARED-FILE CHANGE (supervisor) #1: dispatch.rs reverse arm must change commands::reverse::run(args_json).await to commands::reverse::run(args_json, project_root).await — the ported signature adds project_root (parity: session hash + analysis need the project root, never env::current_dir()).
@@ -52,7 +51,6 @@ Feature: Port reverse command to Rust
   #   12. Running `fspec reverse` when a session already exists prints 'Existing reverse session detected' with four next-step suggestions and exit 1
   #
   # ========================================
-
   Background: User Story
     As a AI agent maintaining an existing codebase
     I want to run fspec reverse to analyze gaps and be guided step-by-step through a reverse ACDD session
@@ -65,13 +63,11 @@ Feature: Port reverse command to Rust
     Then stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/reverse.txt
     Then stdout starts with a blank line followed by "REVERSE"
 
-
   Scenario: CLI reset deletes the session and prints Session reset
     Given a temp working directory marked as a project root with an active reverse session file
     When I run `fspec reverse --reset` from that directory
     Then the command exits 0
     Then stdout contains the substring "Session reset"
-
 
   Scenario: CLI status with no session prints no active session and exits 0
     Given a temp working directory marked as a project root with no reverse session file
@@ -79,13 +75,11 @@ Feature: Port reverse command to Rust
     Then the command exits 0
     Then stdout contains the substring "No active reverse session"
 
-
   Scenario: CLI complete with no session exits 1
     Given a temp working directory marked as a project root with no reverse session file
     When I run `fspec reverse --complete` from that directory
     Then the command exits with code 1
     Then stdout contains the substring "No active reverse session to complete"
-
 
   Scenario: CLI initial analysis prints gap-analysis guidance and exits 0
     Given a temp working directory marked as a project root with three *.test.ts files under src/__tests__, no spec/features directory, and no session file
@@ -93,7 +87,6 @@ Feature: Port reverse command to Rust
     Then the command exits 0
     Then stdout contains the substring "Gap analysis complete."
     Then stdout contains the substring "Strategy A (Spec Gap Filling)"
-
 
   Scenario: CLI existing session detected prints suggestions under Next steps and exits 1
     Given a temp working directory marked as a project root with a parseable executing reverse session file
@@ -103,10 +96,8 @@ Feature: Port reverse command to Rust
     Then stdout contains the substring "Next steps:"
     Then stdout contains the substring "  - fspec reverse --continue"
 
-
   Scenario: Default combined TUI mode is preserved when no subcommand is provided
     Given the fspec Rust binary has reverse registered as a clap subcommand alongside the existing subcommands
     When I run `fspec --help`
     Then the command exits 0
     Then the help output lists reverse as an available subcommand
-

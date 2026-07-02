@@ -7,7 +7,6 @@
 @cli
 @RPC-313
 Feature: Port update-prefix command to Rust
-
   """
   Two-front-doors invariant (RPC-003 §7/§11): dispatcher and clap CLI both call commands::update_prefix::run(args_json, project_root). CLI bridge marshals positional <prefix> + --description into JSON object {prefix, description}; epicId is dispatcher-only.
   Prefix struct (codelet/fspec-core/src/types/prefix.rs) does NOT have native epicId or updatedAt fields. RPC-313 mutates these via the existing #[serde(flatten)] extra: serde_json::Map<String, Value> catch-all. Existing on-disk epicId/updatedAt round-trip through this map; new values are inserted by string key. This keeps RPC-313 fully within worker-owned files and avoids a shared-type change.
@@ -54,7 +53,6 @@ Feature: Port update-prefix command to Rust
   #   14. CLI help surface: `fspec update-prefix --help` prints byte-for-byte the same usage block the TS `node dist/index.js update-prefix --help` emits (captured as `tests/fixtures/help/update-prefix.txt`)
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting the TypeScript CLI to Rust
     I want to port `update-prefix` to the fspec-core crate behind a clap subcommand and the existing LLM dispatcher

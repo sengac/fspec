@@ -6,7 +6,6 @@
 @dispatch
 @provider-settings
 Feature: ProviderSettingsView — App dispatch wiring for the /provider slash command
-
   """
   Wiring from the SlashCommandAction::Provider variant through
   App::dispatch_provider_settings round-trips into the backend, back through Action

@@ -13,23 +13,23 @@ Feature: /merge-worktree flow + worktree RPC surface
   /merge-worktree slash command by:
 
   1. Adding FIVE new RPC methods through the trait, FspecService,
-     FspecBackend, and both transports:
-       * merge_session_worktree(session_id, strategy) -> Result<MergeOutcome>
-       * discard_session_worktree(session_id) -> Result<()>
-       * prune_orphaned_worktrees() -> Result<Vec<String>>
-       * list_session_worktrees() -> Vec<SessionWorktreeInfo>
-       * inspect_session_changes(session_id) -> Result<SessionChangesSummary>
+  FspecBackend, and both transports:
+  * merge_session_worktree(session_id, strategy) -> Result<MergeOutcome>
+  * discard_session_worktree(session_id) -> Result<()>
+  * prune_orphaned_worktrees() -> Result<Vec<String>>
+  * list_session_worktrees() -> Vec<SessionWorktreeInfo>
+  * inspect_session_changes(session_id) -> Result<SessionChangesSummary>
   2. Replacing the `SlashCommandAction::MergeWorktree` notice fallback
-     in dispatch_slash_commands.rs with a real `handle_slash_merge_worktree`
-     routed through a new app/dispatch_merge_worktree.rs file (mirroring the
-     dispatch_blocklist pattern).
+  in dispatch_slash_commands.rs with a real `handle_slash_merge_worktree`
+  routed through a new app/dispatch_merge_worktree.rs file (mirroring the
+  dispatch_blocklist pattern).
   3. Adding a compositor-owned `MergeConfirmDialog` that paints the
-     SessionChangesSummary + three buttons (Merge, Discard, Cancel).
+  SessionChangesSummary + three buttons (Merge, Discard, Cancel).
   4. On a Conflict response, seeding the per-session input draft with a
-     conflict-context message via the existing Action::SeedPendingInput
-     plumbing (RPC-052) so the LLM agent can see the conflicting files
-     and resolve them — TS parity with the buildConflictLlmContext +
-     pendingAutoSubmitRef pattern.
+  conflict-context message via the existing Action::SeedPendingInput
+  plumbing (RPC-052) so the LLM agent can see the conflicting files
+  and resolve them — TS parity with the buildConflictLlmContext +
+  pendingAutoSubmitRef pattern.
 
   TS reference: `src/tui/handlers/mergeWorktreeHandler.ts` —
   `handleMergeWorktree(ctx)` calls inspectSessionChanges →
@@ -60,7 +60,6 @@ Feature: /merge-worktree flow + worktree RPC surface
   #   10. The conflict-context payload format starts with "Merge produced conflicts in the following files:" followed by a bullet list and an "Effective worktree:" footer.
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user with an open AgentView session and modified worktree changes
     I want to run /merge-worktree to merge those changes back to main with explicit confirmation

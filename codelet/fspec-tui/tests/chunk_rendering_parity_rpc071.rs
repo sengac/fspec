@@ -108,9 +108,17 @@ fn screenshot_reproduction_renders_only_the_user_input_line() {
     ));
 
     // @step Then the s-1 scrollback contains exactly one line equal to "You: please review this card" (RPC-078 prefix correction)
+    // RPC-401: each message now emits one trailing blank separator line
+    // (TS wrapMessageToLines addSeparator=true parity), so the wrapped
+    // chunk is the content line followed by one blank gutter row.
     let lines = session_scrollback_lines(&app, &sid("s-1"));
-    assert_eq!(lines.len(), 1, "expected 1 scrollback line, got {lines:?}");
+    assert_eq!(
+        lines.len(),
+        2,
+        "expected content + separator, got {lines:?}"
+    );
     assert_eq!(lines[0], "You: please review this card");
+    assert_eq!(lines[1], "");
 
     // @step When the chunks subscriber forwards SessionStateChange { state: Running } for s-1
     app.dispatch(Action::ChunkReceived(
@@ -124,11 +132,12 @@ fn screenshot_reproduction_renders_only_the_user_input_line() {
     ));
 
     // @step Then no scrollback line contains the literal substring "SessionStateChange" or "UserInput {"
+    // RPC-401: one trailing blank separator row follows the content line.
     let after = session_scrollback_lines(&app, &sid("s-1"));
     assert_eq!(
         after,
-        vec!["You: please review this card".to_string()],
-        "scrollback must contain ONLY the user input line; got {after:?}",
+        vec!["You: please review this card".to_string(), String::new()],
+        "scrollback must contain ONLY the user input line + separator; got {after:?}",
     );
     for line in &after {
         assert!(
@@ -161,8 +170,9 @@ fn user_input_chunk_renders_as_user_prefix_scrollback_line() {
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
 
     // @step Then the rendered text equals "You: hello" (RPC-078 prefix correction)
+    // RPC-401: plus one trailing blank separator row.
     let lines = session_scrollback_lines(&app, &sid("s-1"));
-    assert_eq!(lines, vec!["You: hello".to_string()]);
+    assert_eq!(lines, vec!["You: hello".to_string(), String::new()]);
 
     // @step Then the scrollback_next_seq cursor equals 1
     assert_eq!(session_next_seq(&app, &sid("s-1")), 1);
@@ -229,9 +239,16 @@ fn interleaved_visible_and_silent_chunks_keep_seq_monotonic_over_visible_chunks_
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 2);
 
     // @step Then the rendered scrollback lines equal ["You: hi", "● hello back"] (RPC-078 prefix correction; Done emits no line)
+    // RPC-401: each of the two messages now carries one trailing blank
+    // separator row.
     assert_eq!(
         session_scrollback_lines(&app, &sid("s-1")),
-        vec!["You: hi".to_string(), "\u{25CF} hello back".to_string(),]
+        vec![
+            "You: hi".to_string(),
+            String::new(),
+            "\u{25CF} hello back".to_string(),
+            String::new(),
+        ]
     );
 
     // @step Then the scrollback_next_seq cursor equals 2 (RPC-078: Done does not bump seq)
@@ -257,10 +274,11 @@ fn incoming_message_chunk_renders_as_supervisor_prefix_line() {
     ));
 
     // @step Then the scrollback contains exactly one rendered chunk whose line equals "[W] supervisor> supervisor here" (RPC-078: bare body w/ no envelope falls back to default role "supervisor")
+    // RPC-401: plus one trailing blank separator row.
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
     assert_eq!(
         session_scrollback_lines(&app, &sid("s-1")),
-        vec!["[W] supervisor> supervisor here".to_string()]
+        vec!["[W] supervisor> supervisor here".to_string(), String::new()]
     );
 }
 
@@ -280,10 +298,11 @@ fn interrupted_chunk_renders_as_interrupted_with_queued_count_line() {
     ));
 
     // @step Then the scrollback contains exactly one rendered chunk whose line equals "⚠ Interrupted" (RPC-078: queue count is suppressed; the TS Ink reference renders a flat warning line)
+    // RPC-401: plus one trailing blank separator row.
     assert_eq!(session_chunk_count(&app, &sid("s-1")), 1);
     assert_eq!(
         session_scrollback_lines(&app, &sid("s-1")),
-        vec!["\u{26A0} Interrupted".to_string()]
+        vec!["\u{26A0} Interrupted".to_string(), String::new()]
     );
 }
 

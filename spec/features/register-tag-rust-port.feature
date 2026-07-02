@@ -1,7 +1,6 @@
 @done
 @RPC-265
 Feature: Port register-tag command to Rust
-
   """
   Files: codelet/fspec-core/src/commands/register_tag.rs (replace stub); codelet/fspec-core/src/help/configs/register_tag.rs (NEW help config); codelet/fspec/src/register_tag.rs (NEW CLI bridge); codelet/fspec-core/tests/register_tag.rs (NEW dispatcher tests); codelet/fspec/tests/cli_register_tag.rs (NEW CLI shell tests); codelet/fspec/tests/fixtures/help/register-tag.txt (NEW captured fixture)
   Reuses existing shared infrastructure: io::ensure::ensure_tags_file (load-or-init), io::locked_file::write_json_atomic (atomic write), types::tags::{TagsData, TagCategory, Tag} with #[serde(flatten)] extra map preserving aux fields

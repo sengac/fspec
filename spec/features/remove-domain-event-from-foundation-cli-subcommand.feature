@@ -3,7 +3,6 @@
 @cli
 @RPC-272
 Feature: fspec remove-domain-event-from-foundation CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_domain_event_from_foundation.rs — clap-derived struct mirroring
   the TS Commander.js registration (src/commands/remove-domain-event-from-foundation.ts:131-153).

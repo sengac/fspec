@@ -4,7 +4,6 @@
 @cli
 @RPC-201
 Feature: Port check command to Rust
-
   """
   Core impl: rewrite codelet/fspec-core/src/commands/check.rs to `pub async fn run(args_json, project_root)`; reuse io::feature_glob::glob_feature_files, io::gherkin::parse_feature_lenient, and call commands::validate_tags::run internally (await it). Returns full JSON result object {success, gherkinStatus, tagStatus, formatStatus, fileCount, errors?, message?, details?}.
   BLOCKING DECISION for SUPERVISOR: formatStatus needs a Gherkin AST->text formatter (src/utils/gherkin-formatter.ts ~380 LOC) that does NOT exist in Rust (format RPC-230 still a stub). Option A: port formatter to shared io::gherkin_format.rs first (cross-worker dep). Option B (recommended): land check now with gherkin+tag fully ported and formatStatus=SKIP until the formatter lands (SKIP never fails success, matching TS outer-catch behaviour). CLI bridge codelet/fspec/src/check.rs renders display + exit code. SUPERVISOR must wire: canonical PORTED_COMMANDS, dispatch run_ported, main.rs Mode::Check{verbose} + intercept + mod, help configs/mod.rs.
@@ -31,7 +30,6 @@ Feature: Port check command to Rust
   #   5. Given the binary is run with 'check --help', output is byte-for-byte identical to the captured TS formatCommandHelp fixture, exit 0
   #
   # ========================================
-
   Background: User Story
     As a developer porting fspec to Rust
     I want to run check through the LLM dispatcher and the standalone Rust CLI

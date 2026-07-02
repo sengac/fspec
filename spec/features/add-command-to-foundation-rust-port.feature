@@ -1,7 +1,6 @@
 @done
 @RPC-175
 Feature: Port add-command-to-foundation command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_command_to_foundation.rs — Rust parity port of
   src/commands/add-command-to-foundation.ts. Appends a `command` Event Storm item to

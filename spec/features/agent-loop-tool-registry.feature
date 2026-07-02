@@ -32,7 +32,6 @@ Feature: Agent loop registers tools and executes them end-to-end
     And the body contains `codelet_core::RigAgent::with_default_depth(agent)`
     And those five calls appear in the order: gather → create_rig_agent → add_tool loop → set_mcp_tool_server_handle → with_default_depth
 
-
   Scenario: OpenAI inlined arm in agent_loop.rs mirrors the macro body with the same five canonical calls
     Given the source file codelet/agent-loop/src/agent_loop.rs
     When I locate the "openai" => match arm body
@@ -41,7 +40,6 @@ Feature: Agent loop registers tools and executes them end-to-end
     And the arm contains `agent.tool_server_handle.add_tool(wrapper).await`
     And the arm contains `codelet_tools::set_mcp_tool_server_handle(session.id, agent.tool_server_handle.clone())`
     And the arm contains `codelet_core::RigAgent::with_default_depth(agent)`
-
 
   Scenario: Custom-provider fallthrough arm wraps CustomProvider::create_rig_agent with the four follow-up calls
     Given the source file codelet/agent-loop/src/agent_loop.rs
@@ -52,19 +50,16 @@ Feature: Agent loop registers tools and executes them end-to-end
     And the arm contains `codelet_tools::set_mcp_tool_server_handle(session.id, agent.tool_server_handle.clone())`
     And the arm contains `codelet_core::RigAgent::with_default_depth(agent)`
 
-
   Scenario: Every provider's create_rig_agent accepts the (session_id, preamble, thinking) signature the macro relies on
     Given the providers crate exposes ClaudeProvider, OpenAIProvider, GeminiProvider, ZaiProvider, CodexProvider, CopilotProvider
     When I take a closure reference to each provider's `create_rig_agent` method
     Then each closure compiles with parameters `(provider, session_id: uuid::Uuid, preamble: Option<&str>, thinking: Option<serde_json::Value>)`
     And the signature is stable across all six built-in providers
 
-
   Scenario: RigAgent::with_default_depth accepts any rig Agent built by create_rig_agent
     Given codelet_core::RigAgent::with_default_depth has signature `fn(Agent<M>) -> RigAgent<M>`
     When I take a closure reference to RigAgent::with_default_depth
     Then the closure compiles for the rig::agent::Agent returned by every provider's create_rig_agent
-
 
   Scenario: gather_mcp_tool_wrappers and set_mcp_tool_server_handle have stable session-id signatures
     Given codelet_tools exposes `gather_mcp_tool_wrappers` and `set_mcp_tool_server_handle`
@@ -72,10 +67,8 @@ Feature: Agent loop registers tools and executes them end-to-end
     Then gather_mcp_tool_wrappers compiles as `fn(uuid::Uuid) -> Vec<McpToolWrapper>`
     And set_mcp_tool_server_handle compiles as `fn(uuid::Uuid, ToolServerHandle)`
 
-
   Scenario: gather_mcp_tool_wrappers returns an empty Vec when no MCP servers are connected for the session
     Given a freshly minted session id with no MCP servers connected
     When I call `codelet_tools::gather_mcp_tool_wrappers(session_id)`
     Then the returned vector is empty
     And the function is callable from the codelet-agent-loop crate's test scope
-

@@ -4,7 +4,6 @@
 @tui
 @MODEL-006
 Feature: Selecting a model in /model with no active session does nothing
-
   """
   Re-creation funnels through post_create_session_action so empty ids map to SessionCreationDeclined and real ids seed the active session via SessionCreated
   """
@@ -24,7 +23,6 @@ Feature: Selecting a model in /model with no active session does nothing
   #   3. Selecting a model with an active session updates the live session via set_session_model and does NOT call set_default_model or create_session (no regression)
   #
   # ========================================
-
   Background: User Story
     As a TUI user with no active session
     I want to select a model in the /model view

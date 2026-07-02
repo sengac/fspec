@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: fspec delete-epic CLI subcommand (Rust port)
-
   """
   Clap derive subcommand `delete-epic` exposes the same surface as the TS Commander.js registration at src/commands/delete-epic.ts:92-108 — a single positional `<epicId>` and an optional `--force` flag. The bridge module at codelet/fspec/src/delete_epic.rs marshals these into a JSON object and delegates to codelet_fspec_core::commands::delete_epic::run; --force is parsed for parity but NOT forwarded into the dispatcher's logic because the TS implementation never reads its value (see src/commands/delete-epic.ts:98-99).
   Exit codes: 0 on success, 1 on any FspecCoreError. Errors are written to stderr prefixed with 'Error:' (parity with the chalk-red TS error path at src/commands/delete-epic.ts:104-107). The success line is '✓ Epic <id> deleted successfully'.

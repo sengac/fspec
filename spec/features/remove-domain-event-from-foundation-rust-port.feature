@@ -3,7 +3,6 @@
 @cli
 @RPC-272
 Feature: Port remove-domain-event-from-foundation command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/remove_domain_event_from_foundation.rs — Rust parity port of src/commands/remove-domain-event-from-foundation.ts. COPY SHAPE of remove_command_from_foundation.rs (RPC-270) twin: load foundation.json via read_or_init_json with TS inline minimal default, error if no eventStorm field, find non-deleted bounded_context by text, find non-deleted matching item by boundedContextId, set deleted=true, write_json_atomic. KEY DIFFS vs twin: item type matched is 'event' (not 'command'), 2nd positional eventName, not-found noun 'Domain event' (not 'Command'), message noun 'domain event'.
   CLI bridge codelet/fspec/src/remove_domain_event_from_foundation.rs marshals JSON {contextName, eventName} only and forwards to commands::remove_domain_event_from_foundation::run — NO domain logic. Surface: fspec remove-domain-event-from-foundation <context-name> <event-name> (no options). Stdout success '✓ Removed domain event ...'; stderr failure 'Error: <message>' exit 1. FOUNDATION.md is regenerated after the write (matches the event-storm twins remove_command_from_foundation.rs RPC-270 / add_command_to_foundation.rs RPC-175; supervisor ruling 2026-06-13).
@@ -30,7 +29,6 @@ Feature: Port remove-domain-event-from-foundation command to Rust
   #   5. CLI: fspec remove-domain-event-from-foundation "Work Management" "WorkUnitCreated" exits 0 and stdout shows '✓ Removed domain event "WorkUnitCreated" from "Work Management" bounded context'; missing event exits 1 with 'Error:' prefix
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer porting RPC-003 commands to Rust
     I want to port the remove-domain-event-from-foundation command to Rust as a parity port

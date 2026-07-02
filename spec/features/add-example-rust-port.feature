@@ -1,7 +1,6 @@
 @done
 @RPC-181
 Feature: Port add-example command to Rust
-
   """
   Core impl file: codelet/fspec-core/src/commands/add_example.rs — replaces the NotYetPorted stub.
   Public signature `pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>` (parity with list_prefixes::run).

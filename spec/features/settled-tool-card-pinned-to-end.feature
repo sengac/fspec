@@ -4,7 +4,6 @@
 @rust
 @RPC-399
 Feature: Settled tool card must stay pinned to end of output, not jump to start
-
   """
   This changes the RPC-389 collapse contract for settled cards (first-8 -> last-8). Existing RPC-389 tests and the tool-call-output-collapse.feature settled scenarios must be updated to the end-pinned contract; streaming/modal/diff-bypass behavior stays.
   """
@@ -29,7 +28,6 @@ Feature: Settled tool card must stay pinned to end of output, not jump to start
   #   5. Selecting a collapsed 20-line tool card and pressing Enter opens the TurnContentModal showing all 20 lines (unchanged)
   #
   # ========================================
-
   Background: User Story
     As a developer watching the agent TUI
     I want to keep a settled tool-call card pinned to the END of its output (the last lines I was reading while it streamed)

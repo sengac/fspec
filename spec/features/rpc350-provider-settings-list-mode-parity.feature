@@ -4,7 +4,6 @@
 @tui
 @RPC-350
 Feature: Provider settings list-mode visual parity regressions vs TypeScript
-
   """
   R1 must NOT modify the shared render_title_with_count (mode_view_render.rs) which other full-screen views depend on; use the render_full_screen_scaffold_with_title title-closure variant for a provider-specific two-span title.
   R4 requires a span-aware row painter: render_row currently applies a single Style to the whole row and has a wide-glyph band-repair loop (row_render.rs:148-150) that must be preserved so the full-width background band stays intact under emoji continuation cells.
@@ -30,13 +29,14 @@ Feature: Provider settings list-mode visual parity regressions vs TypeScript
   #   6. A selected configured provider row paints a yellow background band with ALL segments (name, green-key, dim-source) flipped to black foreground for readability
   #
   # ========================================
-
   Background: User Story
     As a fspec user opening the Rust /provider settings screen
     I want to see the same colors, labels and badges the TypeScript implementation renders
     So that the ported Rust TUI is faithful visual parity with the original and nothing looks broken or inconsistent
 
-  @tui @provider-settings @ts-parity
+  @tui
+  @provider-settings
+  @ts-parity
   Scenario: Title renders the name in bold yellow and the item count in dim gray
     Given the provider settings view has 19 nav items
     When the view is rendered to the terminal buffer
@@ -44,7 +44,9 @@ Feature: Provider settings list-mode visual parity regressions vs TypeScript
     And the "Provider Settings" name segment is foreground yellow and bold
     And the " (19 items)" count segment is foreground dim gray
 
-  @tui @provider-settings @ts-parity
+  @tui
+  @provider-settings
+  @ts-parity
   Scenario: Expanded OpenAI provider with profiles shows a dim pluralized profile badge
     Given the openai provider is expanded with one profile named "qwen"
     When the view is rendered to the terminal buffer
@@ -52,7 +54,9 @@ Feature: Provider settings list-mode visual parity regressions vs TypeScript
     And the " (1 profile)" badge segment is rendered dim
     And a second openai profile changes the badge to " (2 profiles)"
 
-  @tui @provider-settings @ts-parity
+  @tui
+  @provider-settings
+  @ts-parity
   Scenario: Add-profile row label reads "Create new profile"
     Given the openai provider is expanded
     And the add-profile row is selected
@@ -60,7 +64,9 @@ Feature: Provider settings list-mode visual parity regressions vs TypeScript
     Then the add-profile row label text is "Create new profile"
     And the row is prefixed with the "+ " glyph and selection marker
 
-  @tui @provider-settings @ts-parity
+  @tui
+  @provider-settings
+  @ts-parity
   Scenario: Configured unselected provider row paints per-color status segments
     Given an unselected configured "Google Gemini" provider row with masked key "AIza••••••••H3Ck" and source "env"
     When the view is rendered to the terminal buffer
@@ -68,7 +74,9 @@ Feature: Provider settings list-mode visual parity regressions vs TypeScript
     And the "✓ AIza••••••••H3Ck" masked-key segment is foreground green
     And the "[env]" source segment is foreground dim gray
 
-  @tui @provider-settings @ts-parity
+  @tui
+  @provider-settings
+  @ts-parity
   Scenario: Unconfigured rows use gray empty-state text with distinct provider and api-key wording
     Given an unselected unconfigured "Cohere" provider row
     When the view is rendered to the terminal buffer
@@ -76,14 +84,18 @@ Feature: Provider settings list-mode visual parity regressions vs TypeScript
     And the "(not configured)" segment is foreground gray
     And an unconfigured api-key child row uses "(not set)" in gray instead
 
-  @tui @provider-settings @ts-parity
+  @tui
+  @provider-settings
+  @ts-parity
   Scenario: Selected configured provider row flips all segments to black over the colour band
     Given a selected configured provider row with a masked key and source
     When the view is rendered to the terminal buffer
     Then the entire row paints a yellow background band
     And the name, masked-key and source segments are all foreground black
 
-  @tui @provider-settings @ts-parity
+  @tui
+  @provider-settings
+  @ts-parity
   Scenario: Non-provider full-screen views keep their existing title styling
     Given the Resume Session full-screen view with 5 sessions
     When that view is rendered to the terminal buffer

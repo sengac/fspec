@@ -1,14 +1,14 @@
 @done
 @cli
 @querying
-@RPC-256 @wip
+@RPC-256
+@wip
 Feature: query-bottlenecks clap subcommand on the standalone fspec Rust binary
-
   """
   CLI surface for the `query-bottlenecks` subcommand on the standalone fspec Rust binary.
   Two-front-doors pattern:
-    - Shell argv         → clap → codelet/fspec/src/query_bottlenecks.rs → fspec_core::commands::query_bottlenecks::run
-    - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_bottlenecks::run
+  - Shell argv         → clap → codelet/fspec/src/query_bottlenecks.rs → fspec_core::commands::query_bottlenecks::run
+  - LLM tool call JSON → fspec_core::dispatch::dispatch_command → fspec_core::commands::query_bottlenecks::run
   Both call sites pass a JSON-encoded args shape and a `project_root: &Path`.
   The CLI surface resolves project_root from CWD (parity with TS `process.cwd()` default).
   The clap subcommand exposes `--output <text|json>` defaulting to `text` (parity with TS Commander.js registration).

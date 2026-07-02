@@ -1,7 +1,6 @@
 @done
 @RPC-273
 Feature: fspec remove-example CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/remove_example.rs — clap variant mirroring TS Commander.js
   at src/commands/remove-example.ts:88-107. Surface: `fspec remove-example <workUnitId> <index>`.

@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port add-aggregate-to-foundation command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/add_aggregate_to_foundation.rs uses
   crate::io::ensure::ensure_foundation_file to load (or auto-create) spec/foundation.json

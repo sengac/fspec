@@ -6,7 +6,6 @@
 @attachment-viewer
 @RPC-380
 Feature: GFM footnote-option alignment with marked in the Rust markdown viewer
-
   """
   In render.rs, remove options.insert(Options::ENABLE_FOOTNOTES); from the Options set passed to Parser::new_ext. Keep ENABLE_TABLES, ENABLE_STRIKETHROUGH, ENABLE_TASKLISTS. Update the module doc comment accordingly. Verify the existing tests still pass and add a test asserting footnote syntax does not produce footnote markup. Keep files <300 lines; cargo test/clippy/fmt clean. No HTTP-layer (axum) changes.
   """
@@ -26,7 +25,6 @@ Feature: GFM footnote-option alignment with marked in the Rust markdown viewer
   #   3. Strikethrough '~~gone~~' still renders a <del> element after footnotes are disabled
   #
   # ========================================
-
   Background: User Story
     As a fspec user viewing markdown attachments in the browser viewer
     I want to see footnote-style text rendered the same way the TypeScript viewer renders it

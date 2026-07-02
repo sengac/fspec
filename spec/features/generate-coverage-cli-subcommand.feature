@@ -4,7 +4,6 @@
 @cli
 @RPC-231
 Feature: fspec generate-coverage CLI subcommand
-
   """
   CLI bridge: codelet/fspec/src/generate_coverage.rs — clap-derived struct mirroring the TS
   Commander.js registration (src/commands/generate-coverage.ts:198-208). Surface:

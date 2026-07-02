@@ -4,7 +4,6 @@
 @cli
 @mutation
 Feature: Port remove-architecture-note command to Rust
-
   """
   Core impl at codelet/fspec-core/src/commands/remove_architecture_note.rs uses ensure_work_units_file to load (or auto-create) spec/work-units.json, validates that the requested work unit exists and has architecture notes, looks up the note by its STABLE id (not array position), soft-deletes the matched note by setting deleted=true plus deletedAt=iso8601_now(), bumps workUnit.updatedAt and data.meta.lastUpdated, and persists via io::locked_file::write_json_atomic. When the matched note is already deleted, the function returns an idempotent success WITHOUT mutating disk and surfaces the canonical "Item ID <id> already deleted" message.
   Help config at codelet/fspec-core/src/help/configs/remove_architecture_note.rs mirrors src/commands/remove-architecture-note-help.ts byte-for-byte.

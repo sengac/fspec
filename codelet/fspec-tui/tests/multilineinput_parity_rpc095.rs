@@ -244,10 +244,12 @@ fn idle_placeholder_text_verbatim() {
     // @step When the AgentView renders the input row
     // @step Then the input row shows the placeholder text "Type a message..."
 
-    // The placeholder constant is unchanged — verbatim assert.
+    // The placeholder constant gained the RPC-402 Shift+Enter newline
+    // hint (leading, so it survives 80-col truncation; the whole
+    // string fits a 100-col render) — verbatim assert.
     assert_eq!(
         INPUT_PLACEHOLDER_HINT,
-        "Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn)"
+        "Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns"
     );
 }
 

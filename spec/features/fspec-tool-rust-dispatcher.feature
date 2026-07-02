@@ -7,7 +7,6 @@
 @tools
 @TOOL-019
 Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool dispatch in standalone Rust binary
-
   """
   New crate codelet/fspec-core is the future home of the Rust port; this work creates the empty skeleton with stub command modules and a single dispatcher entry point
   Dispatcher signature: fn dispatch_command(name: &str, args_json: &str, project_root: &Path) -> FspecResult — pure synchronous fn called from the registered FspecHandler closure
@@ -53,7 +52,6 @@ Feature: FspecTool::call is a NAPI stub — hangs agent loop on every Fspec tool
   #   2. Child cards are created without estimates at bulk-creation; each gets its estimate during its own specifying phase
   #
   # ========================================
-
   Background: User Story
     As a agent operator running the standalone fspec Rust binary
     I want to have Fspec tool dispatches return clean per-command errors instead of a generic 'callback not registered' failure that hangs the loop
