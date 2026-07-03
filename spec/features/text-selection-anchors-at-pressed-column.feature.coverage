@@ -1,0 +1,187 @@
+{
+  "scenarios": [
+    {
+      "name": "Dragging from a mid-line column in the scrollback copies from that column",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "lines": "40-77",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dragging from a mid-word column in the input composer copies from that column",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "lines": "84-142",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dragging from a mid-line column in the turn-content modal copies from that column",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "lines": "149-195",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dragging from a mid-title column in the board details strip copies from that column",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "lines": "202-265",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A long-press with no drag still selects and copies the whole line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "lines": "272-312",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A zero-width drag copies nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs",
+          "lines": "319-347",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/selection.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/text_selection_anchors_at_pressed_column_copy010.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+      "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+      "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+      "codelet/fspec-tui/src/views/board/details_select.rs",
+      "codelet/fspec-tui/src/mouse/gesture.rs",
+      "codelet/fspec-tui/src/mouse/selection.rs"
+    ],
+    "totalLinesCovered": 348
+  }
+}

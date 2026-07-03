@@ -26,7 +26,7 @@ use ratatui::layout::Rect;
 use codelet_rpc_types::WorkUnitInfo;
 
 use crate::mouse::gesture::SelectionGesture;
-use crate::mouse::selection::{Cell, RowSpan, Selection};
+use crate::mouse::selection::{RowSpan, Selection};
 
 use super::details_strip::visible_strip_rows;
 use super::BoardView;
@@ -75,10 +75,11 @@ impl BoardView {
         self.apply_details_gestures(&gestures, rect, selected);
     }
 
-    /// COPY-009: translate recognizer gestures into strip-selection state.
-    /// Begin anchors the row start → the border-free content width so a
-    /// bare Begin+Commit selects the whole row; Extend overrides the
-    /// cursor to the drag cell; Commit reconstructs + copies.
+    /// COPY-009/010: translate recognizer gestures into strip-selection
+    /// state. Begin anchors PRECISELY at the press cell (so a drag copies
+    /// from the press column); BeginLine (long-press) selects the WHOLE
+    /// row; Extend overrides the cursor to the drag cell; Commit
+    /// reconstructs + copies.
     fn apply_details_gestures(
         &self,
         gestures: &[SelectionGesture],
@@ -89,16 +90,17 @@ impl BoardView {
         for gesture in gestures {
             match gesture {
                 SelectionGesture::Begin(cell) => {
-                    *self.details_selection.borrow_mut() = Some(Selection {
-                        anchor: Cell {
-                            row: cell.row,
-                            col: 0,
-                        },
-                        cursor: Cell {
-                            row: cell.row,
-                            col: cw,
-                        },
-                    });
+                    // COPY-010: anchor precisely at the pressed cell so a
+                    // drag copies from the press column, not line start.
+                    *self.details_selection.borrow_mut() =
+                        Some(Selection::collapsed(*cell));
+                    *self.selection_unit_id.borrow_mut() =
+                        selected.map(|u| u.id.clone());
+                }
+                SelectionGesture::BeginLine(cell) => {
+                    // COPY-010: long-press selects the WHOLE line.
+                    *self.details_selection.borrow_mut() =
+                        Some(Selection::whole_line(cell.row, cw));
                     *self.selection_unit_id.borrow_mut() =
                         selected.map(|u| u.id.clone());
                 }

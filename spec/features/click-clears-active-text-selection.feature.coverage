@@ -1,0 +1,213 @@
+{
+  "scenarios": [
+    {
+      "name": "A quick click clears an active scrollback selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
+          "lines": "39-92",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quick click clears an active input composer selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
+          "lines": "93-137",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quick click clears an active turn-content modal selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
+          "lines": "138-199",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quick click clears an active board details strip selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
+          "lines": "200-251",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Starting a new drag replaces the old selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
+          "lines": "252-299",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quick click with no active selection stays inert",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/click_clears_active_text_selection_copy011.rs",
+          "lines": "300-328",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/click_clears_active_text_selection_copy011.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/mouse/gesture.rs",
+      "codelet/fspec-tui/src/views/agent/multiline_input_select.rs",
+      "codelet/fspec-tui/src/views/agent/turn_modal_select.rs",
+      "codelet/fspec-tui/src/views/board/details_select.rs"
+    ],
+    "totalLinesCovered": 388
+  }
+}

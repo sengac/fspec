@@ -1142,6 +1142,10 @@ pub enum Action {
     /// focused SessionContext's ScrollbackList at the supplied cell.
     /// Mouse capture stays ON — selection is drawn by the TUI itself.
     SelectionBegin(crate::mouse::selection::Cell),
+    /// COPY-010: emitted by a long-press (BeginLine) to select the WHOLE
+    /// line under the press. App::dispatch routes it to
+    /// `ScrollbackList::selection_begin_line`.
+    SelectionBeginLine(crate::mouse::selection::Cell),
     /// COPY-006: emitted as the pointer drags (button-held move) inside
     /// the scrollback rect. App::dispatch extends the live selection's
     /// cursor to the supplied cell and refreshes the highlight spans.

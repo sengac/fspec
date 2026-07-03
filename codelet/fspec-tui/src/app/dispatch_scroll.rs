@@ -171,11 +171,19 @@ impl App {
         }
     }
 
-    /// COPY-006: begin a live text selection on the focused scrollback
-    /// at `cell` (drag start / long-press anchor).
+    /// COPY-006/010: begin a live text selection on the focused scrollback
+    /// at `cell` (drag start), anchored precisely at the pressed cell.
     pub(crate) fn handle_selection_begin(&mut self, cell: crate::mouse::selection::Cell) {
         if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
             ctx.scrollback.selection_begin(cell);
+        }
+    }
+
+    /// COPY-010: begin a whole-line selection on the focused scrollback
+    /// at `cell` (long-press).
+    pub(crate) fn handle_selection_begin_line(&mut self, cell: crate::mouse::selection::Cell) {
+        if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+            ctx.scrollback.selection_begin_line(cell);
         }
     }
 

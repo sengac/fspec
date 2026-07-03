@@ -37,6 +37,25 @@ pub struct RowSpan {
 }
 
 impl Selection {
+    /// COPY-010: a collapsed selection anchored precisely at `cell`
+    /// (anchor == cursor). A drag then moves the cursor from this exact
+    /// press column, and a bare Begin+Commit selects nothing.
+    pub fn collapsed(cell: Cell) -> Self {
+        Self {
+            anchor: cell,
+            cursor: cell,
+        }
+    }
+
+    /// COPY-010: a whole-line selection on `row` spanning the line start
+    /// (`col: 0`) to the content `width` — the long-press linewise anchor.
+    pub fn whole_line(row: u16, width: u16) -> Self {
+        Self {
+            anchor: Cell { row, col: 0 },
+            cursor: Cell { row, col: width },
+        }
+    }
+
     /// Normalize the anchor/cursor pair into ordered, half-open row spans.
     ///
     /// `row_width` (content width) lets the first and middle rows of a
@@ -214,6 +233,31 @@ mod tests {
                 row: 1,
                 start_col: 2,
                 end_col: 6
+            }]
+        );
+    }
+
+    #[test]
+    fn collapsed_constructor_sets_anchor_and_cursor_to_the_same_cell() {
+        let cell = Cell { row: 4, col: 7 };
+        let selection = Selection::collapsed(cell);
+        assert_eq!(selection.anchor, cell);
+        assert_eq!(selection.cursor, cell);
+        // A collapsed selection yields no spans.
+        assert_eq!(selection.spans(10), Vec::<RowSpan>::new());
+    }
+
+    #[test]
+    fn whole_line_constructor_spans_line_start_to_width() {
+        let selection = Selection::whole_line(2, 8);
+        assert_eq!(selection.anchor, Cell { row: 2, col: 0 });
+        assert_eq!(selection.cursor, Cell { row: 2, col: 8 });
+        assert_eq!(
+            selection.spans(8),
+            vec![RowSpan {
+                row: 2,
+                start_col: 0,
+                end_col: 8
             }]
         );
     }

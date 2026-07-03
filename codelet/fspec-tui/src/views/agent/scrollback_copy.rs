@@ -75,21 +75,19 @@ impl ScrollbackList {
         self.selection_highlight_spans = spans;
     }
 
-    /// COPY-006: begin a live selection on the press row. The anchor is
-    /// pinned to line start and the cursor to the gutter-free content
-    /// width, so a bare long-press Begin+Commit (no drag) selects and
-    /// copies the WHOLE line under the press (feature example 2). A drag
-    /// `selection_extend` then overrides the cursor to the pointer cell,
-    /// so drag selections still track the mouse precisely.
+    /// COPY-006/010: begin a live selection anchored PRECISELY at the
+    /// pressed cell so a drag copies from the press column (COPY-010).
     pub(crate) fn selection_begin(&mut self, cell: crate::mouse::selection::Cell) {
-        use crate::mouse::selection::{Cell, Selection};
-        self.selection = Some(Selection {
-            anchor: Cell { row: cell.row, col: 0 },
-            cursor: Cell {
-                row: cell.row,
-                col: self.content_width,
-            },
-        });
+        use crate::mouse::selection::Selection;
+        self.selection = Some(Selection::collapsed(cell));
+        self.refresh_selection_highlight();
+    }
+
+    /// COPY-010: begin a whole-line selection on the press row (long-press):
+    /// anchor line start → gutter-free content width (feature example 5).
+    pub(crate) fn selection_begin_line(&mut self, cell: crate::mouse::selection::Cell) {
+        use crate::mouse::selection::Selection;
+        self.selection = Some(Selection::whole_line(cell.row, self.content_width));
         self.refresh_selection_highlight();
     }
 

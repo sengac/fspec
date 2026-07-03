@@ -22,7 +22,7 @@ use ratatui::layout::Rect;
 use crate::components::dialog_theme_rows::{fixed_dialog_rect, turn_modal_geometry};
 use crate::components::Action;
 use crate::mouse::gesture::SelectionGesture;
-use crate::mouse::selection::{Cell, RowSpan, Selection};
+use crate::mouse::selection::{RowSpan, Selection};
 use crate::store::AgentViewStore;
 
 use super::turn_modal::TurnContentModal;
@@ -90,25 +90,23 @@ impl AgentView {
         self.apply_turn_modal_gestures(&gestures);
     }
 
-    /// COPY-008: translate recognizer gestures into modal-selection
-    /// state. Begin anchors the line start → gutter-free content width so
-    /// a bare Begin+Commit selects the whole line; Extend overrides the
-    /// cursor to the drag cell; Commit reconstructs + copies (rule [4]).
+    /// COPY-008/010: translate recognizer gestures into modal-selection
+    /// state. Begin anchors PRECISELY at the press cell (so a drag copies
+    /// from the press column); BeginLine (long-press) selects the WHOLE
+    /// line; Extend overrides the cursor to the drag cell; Commit
+    /// reconstructs + copies (rule [4]).
     fn apply_turn_modal_gestures(&mut self, gestures: &[SelectionGesture]) {
         let cw = self.turn_modal_content_width();
         for gesture in gestures {
             match gesture {
                 SelectionGesture::Begin(cell) => {
-                    self.turn_modal_selection = Some(Selection {
-                        anchor: Cell {
-                            row: cell.row,
-                            col: 0,
-                        },
-                        cursor: Cell {
-                            row: cell.row,
-                            col: cw,
-                        },
-                    });
+                    // COPY-010: anchor precisely at the pressed cell so a
+                    // drag copies from the press column, not line start.
+                    self.turn_modal_selection = Some(Selection::collapsed(*cell));
+                }
+                SelectionGesture::BeginLine(cell) => {
+                    // COPY-010: long-press selects the WHOLE line.
+                    self.turn_modal_selection = Some(Selection::whole_line(cell.row, cw));
                 }
                 SelectionGesture::Extend(cell) => {
                     if let Some(sel) = self.turn_modal_selection.as_mut() {

@@ -206,6 +206,10 @@ impl AgentView {
                     self.text_selection_active = true;
                     self.emit(Action::SelectionBegin(*cell));
                 }
+                SelectionGesture::BeginLine(cell) => {
+                    self.text_selection_active = true;
+                    self.emit(Action::SelectionBeginLine(*cell));
+                }
                 SelectionGesture::Extend(cell) => self.emit(Action::SelectionExtend(*cell)),
                 SelectionGesture::Commit => self.emit(Action::SelectionCommit),
                 SelectionGesture::Cancel => {

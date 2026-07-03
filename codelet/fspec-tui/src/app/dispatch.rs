@@ -244,6 +244,7 @@ impl App {
             Action::ScrollbackMouseWheelUp(velocity) => self.scroll_focused(-(*velocity as i64)),
             Action::ScrollbackMouseWheelDown(velocity) => self.scroll_focused(*velocity as i64),
             Action::SelectionBegin(cell) => self.handle_selection_begin(*cell),
+            Action::SelectionBeginLine(cell) => self.handle_selection_begin_line(*cell),
             Action::SelectionExtend(cell) => self.handle_selection_extend(*cell),
             Action::SelectionCommit => self.handle_selection_commit(),
             Action::SelectionClear => self.handle_selection_clear(),

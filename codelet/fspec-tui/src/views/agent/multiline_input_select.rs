@@ -118,22 +118,17 @@ impl MultiLineInput {
         for gesture in gestures {
             match gesture {
                 SelectionGesture::Begin(cell) => {
-                    // Mirror COPY-006's scrollback `selection_begin`: pin
-                    // the anchor to the row start and the cursor to the
-                    // body width, so a bare long-press Begin+Commit (no
-                    // drag) selects the WHOLE row under the press. A drag
-                    // Extend then overrides the cursor to the pointer.
+                    // COPY-010: anchor precisely at the pressed cell (real
+                    // row AND column) so a drag selects from the press
+                    // column, not the line start. Extend then moves the
+                    // cursor to the pointer.
+                    self.selection = Some(Selection::collapsed(*cell));
+                }
+                SelectionGesture::BeginLine(cell) => {
+                    // COPY-010: a long-press selects the WHOLE row under
+                    // the press — anchor row start → body width.
                     let body_width = input_body_width(area.width);
-                    self.selection = Some(Selection {
-                        anchor: Cell {
-                            row: cell.row,
-                            col: 0,
-                        },
-                        cursor: Cell {
-                            row: cell.row,
-                            col: body_width,
-                        },
-                    });
+                    self.selection = Some(Selection::whole_line(cell.row, body_width));
                 }
                 SelectionGesture::Extend(cell) => {
                     if let Some(sel) = self.selection.as_mut() {

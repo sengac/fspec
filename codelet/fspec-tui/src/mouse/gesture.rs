@@ -29,8 +29,12 @@ const HOLD: Duration = Duration::from_millis(400);
 /// A high-level selection gesture emitted by [`SelectionRecognizer`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SelectionGesture {
-    /// Begin a selection anchored at the given cell.
+    /// Begin a selection anchored precisely at the given press cell
+    /// (drag start). The anchor keeps the real row AND column.
     Begin(Cell),
+    /// Begin a whole-line selection at the given cell's row (long-press).
+    /// The consumer expands this to the full line under the press.
+    BeginLine(Cell),
     /// Extend the active selection to the given cell.
     Extend(Cell),
     /// Commit (finish) the active selection.
@@ -89,25 +93,28 @@ impl SelectionRecognizer {
                 State::Idle => Vec::new(),
             },
             MouseEventKind::Up(MouseButton::Left) => {
-                let committing = matches!(self.state, State::Selecting);
-                self.state = State::Idle;
-                if committing {
-                    vec![SelectionGesture::Commit]
-                } else {
-                    Vec::new()
+                let prev = std::mem::replace(&mut self.state, State::Idle);
+                match prev {
+                    // Drag or long-press produced an active selection: commit it.
+                    State::Selecting => vec![SelectionGesture::Commit],
+                    // A quick click (press then release, no drag/long-press):
+                    // cancel any selection that was active before the click.
+                    State::Pressed { .. } => vec![SelectionGesture::Cancel],
+                    State::Idle => Vec::new(),
                 }
             }
             _ => Vec::new(),
         }
     }
 
-    /// Poll the recognizer with an injected `now`. Fires `Begin` exactly
-    /// once when a stationary press has been held for at least [`HOLD`].
+    /// Poll the recognizer with an injected `now`. Fires `BeginLine`
+    /// exactly once when a stationary press has been held for at least
+    /// [`HOLD`] — a long-press selects the WHOLE line under the press.
     pub fn tick(&mut self, now: Instant) -> Vec<SelectionGesture> {
         if let State::Pressed { cell, at } = self.state {
             if now.duration_since(at) >= HOLD {
                 self.state = State::Selecting;
-                return vec![SelectionGesture::Begin(cell)];
+                return vec![SelectionGesture::BeginLine(cell)];
             }
         }
         Vec::new()
@@ -169,11 +176,14 @@ mod tests {
         let ticked = rec.tick(base + Duration::from_millis(500));
 
         // @step Then the recognizer emits Begin at row 5 column 3
-        assert_eq!(ticked, vec![SelectionGesture::Begin(Cell { row: 5, col: 3 })]);
+        assert_eq!(
+            ticked,
+            vec![SelectionGesture::BeginLine(Cell { row: 5, col: 3 })]
+        );
     }
 
     #[test]
-    fn a_quick_click_produces_no_selection_gesture() {
+    fn a_quick_click_cancels_any_active_selection() {
         // @step Given a fresh selection recognizer
         let mut rec = SelectionRecognizer::new();
         let base = Instant::now();
@@ -187,8 +197,8 @@ mod tests {
             base + Duration::from_millis(100),
         );
 
-        // @step Then the recognizer emits no gesture
-        assert_eq!(up, vec![]);
+        // @step Then the recognizer emits Cancel
+        assert_eq!(up, vec![SelectionGesture::Cancel]);
     }
 
     #[test]
@@ -258,7 +268,10 @@ mod tests {
         );
 
         // @step Then the recognizer emits Begin at row 5 column 3, then Extend at row 7 column 2, then Commit
-        assert_eq!(ticked, vec![SelectionGesture::Begin(Cell { row: 5, col: 3 })]);
+        assert_eq!(
+            ticked,
+            vec![SelectionGesture::BeginLine(Cell { row: 5, col: 3 })]
+        );
         assert_eq!(drag, vec![SelectionGesture::Extend(Cell { row: 7, col: 2 })]);
         assert_eq!(up, vec![SelectionGesture::Commit]);
     }
