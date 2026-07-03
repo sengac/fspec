@@ -113,6 +113,11 @@ impl MultiLineInput {
             };
             Paragraph::new(Line::from(vrow.text.clone())).render(row_area, buf);
         }
+        // COPY-007: paint the REVERSED selection highlight over the body
+        // rows AFTER the text. Spans are body-relative (prompt/pad
+        // already excluded), so the `> ` columns are never highlighted.
+        let spans = self.selection_highlight_spans(area.width);
+        super::scrollback_paint::paint_selection_highlight(area, buf, &spans, area.width);
     }
 
     /// Paint the input box body: green "> " prompt prefix on the top

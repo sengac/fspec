@@ -28,9 +28,9 @@ use codelet_fspec_tui::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBacken
 use codelet_rpc::SharedFspecService;
 use codelet_rpc_server::bind_and_serve;
 use codelet_rpc_types::{
-    ApprovalChoice, FspecResult, HitlOption, HitlRequest, HitlResponse, PauseKind, PauseState,
-    SessionId, SessionModel, SessionStatus, SessionTokens, StreamChunk, ThinkingLevel,
-    TokenRestoreState, WorkUnitContext,
+    ApprovalChoice, FspecResult, HitlAnswer, HitlOption, HitlQuestion, HitlRequest, HitlResponse,
+    PauseKind, PauseState, SessionId, SessionModel, SessionStatus, SessionTokens, StreamChunk,
+    ThinkingLevel, TokenRestoreState, WorkUnitContext,
 };
 use tempfile::TempDir;
 use tokio::time::timeout;
@@ -699,21 +699,23 @@ async fn hitl_request_response_round_trips_across_transports() {
     // @step Given an engineer seeds the StubSessionManagerHandle with a HitlRequest { id: "q-1", question: "Apply?", header: "Apply", options: [HitlOption{label:"Yes",..}, HitlOption{label:"No",..}], allow_text_input: true } for sid
     let sid = embedded.create_session(None).await.expect("create_session");
 
+    // RPC-410: TS-parity wire shape — multi-question request.
     let req = HitlRequest {
-        id: "q-1".into(),
-        question: "Apply?".into(),
-        header: "Apply".into(),
-        options: vec![
-            HitlOption {
-                label: "Yes".into(),
-                description: String::new(),
-            },
-            HitlOption {
-                label: "No".into(),
-                description: String::new(),
-            },
-        ],
-        allow_text_input: true,
+        questions: vec![HitlQuestion {
+            id: "q-1".into(),
+            header: "Apply".into(),
+            question: "Apply?".into(),
+            options: vec![
+                HitlOption {
+                    label: "Yes".into(),
+                    description: String::new(),
+                },
+                HitlOption {
+                    label: "No".into(),
+                    description: String::new(),
+                },
+            ],
+        }],
     };
     stub.seed_hitl_request(sid.clone(), req.clone());
 
@@ -731,12 +733,17 @@ async fn hitl_request_response_round_trips_across_transports() {
     assert_eq!(em_req, Some(req));
 
     // @step When the engineer calls backend.send_hitl_response(sid, HitlResponse { id: "q-1".into(), value: "Yes".into() }).await
+    // RPC-410: structured cancel-capable response shape.
     embedded
         .send_hitl_response(
             sid.clone(),
             HitlResponse {
-                id: "q-1".into(),
-                value: "Yes".into(),
+                cancelled: false,
+                answers: vec![HitlAnswer {
+                    id: "q-1".into(),
+                    selected: vec!["Yes".into()],
+                    other: None,
+                }],
             },
         )
         .await

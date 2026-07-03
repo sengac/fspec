@@ -938,6 +938,10 @@
           "description": "Testing and quality assurance features"
         },
         {
+          "name": "@text-selection",
+          "description": "In-app mouse-driven text selection and clipboard copy in the Rust TUI (COPY epic)"
+        },
+        {
           "name": "@thinking-detection",
           "description": "Features related to thinking/reasoning level detection and configuration"
         },
@@ -1216,6 +1220,10 @@
         {
           "name": "@cleanup",
           "description": "Cleanup and resource management features"
+        },
+        {
+          "name": "@clipboard",
+          "description": "Clipboard integration (OSC 52 escape-sequence clipboard writes)"
         },
         {
           "name": "@code-review",
@@ -2810,7 +2818,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-07-02T04:17:29.293Z",
+    "lastUpdated": "2026-07-03T01:37:07.504Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

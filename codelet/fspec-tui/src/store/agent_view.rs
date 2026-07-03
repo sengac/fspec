@@ -20,6 +20,7 @@ pub mod diff_context;
 pub mod diff_decode;
 pub mod diff_format;
 pub mod history_state;
+pub mod hitl_state; // RPC-411
 pub mod isolation_state;
 pub mod markdown_table_render;
 pub mod markdown_tables;
@@ -96,18 +97,17 @@ pub struct AgentViewStore {
     // Accessors live in `store/agent_view/blocklist_state.rs`.
     pub(crate) blocklist_disabled_by_session: HashMap<SessionId, std::collections::HashSet<String>>,
 
-    // ── RPC-061 per-session supervisor / subordinate state ──────────────
-    // Accessors in `supervisor_state.rs`.
+    // RPC-061 supervisor state — accessors in `supervisor_state.rs`.
     pub(crate) supervisors_by_session: HashMap<SessionId, Vec<SessionId>>,
     pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
 
     // ── RPC-100 per-session compaction reduction percentage ─────────────
-    // Set by `dispatch_stream_chunks.rs` on `CompactionComplete`, cleared
-    // on Cleared; read by `chrome_paint.rs` for the `[X%: COMPACTED Y%]`
-    // suffix (TS `AgentView.tsx:946-979`). Accessors in `chrome_state.rs`.
+    // Set on `CompactionComplete`, cleared on Cleared; read by
+    // `chrome_paint.rs` (TS parity). Accessors in `chrome_state.rs`.
     pub(crate) compaction_reduction_by_session: HashMap<SessionId, i32>,
-    // ── RPC-406 inline pause slot — accessors in `pause_state.rs` ───────
+    // RPC-406 pause + RPC-411 HITL slots — pause_state.rs / hitl_state.rs
     pub(crate) pause_state_by_session: HashMap<SessionId, codelet_rpc_types::PauseState>,
+    pub(crate) hitl_prompt_by_session: hitl_state::HitlPromptBySession,
     pub(crate) triple_pause_selection_by_session: HashMap<SessionId, usize>,
 }
 

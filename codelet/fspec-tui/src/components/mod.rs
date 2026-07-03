@@ -26,7 +26,6 @@ pub mod hello;
 pub mod help_content;
 pub mod help_dialog;
 pub mod help_dialog_scroll;
-pub mod hitl_dialog;
 pub mod list_scrollbar;
 pub mod model_selector_dialog_rows;
 pub mod notification_dialog;
@@ -535,15 +534,16 @@ pub enum Action {
     /// spawns parallel `backend.get_pause_state(id)` and
     /// `backend.get_hitl_request(id)` reads. The first non-None result
     /// dispatches `Action::PauseStateFetched` (PauseState → RPC-406
-    /// inline prompt slot) or `Action::OpenHitlDialog` (HitlRequest).
-    /// When both return Some the HITL dialog wins (the HITL handler in
-    /// the agent loop is the only path that populates `hitl_request`).
+    /// inline prompt slot) or `Action::HitlPromptFetched` (HitlRequest
+    /// → RPC-411 inline prompt slot). When both return Some the HITL
+    /// prompt wins (the HITL handler in the agent loop is the only
+    /// path that populates `hitl_request`).
     PauseChunkReceived(codelet_rpc_types::SessionId),
     /// RPC-053: emitted by the chunk dispatcher when
     /// `StreamChunk::SessionStateChange { state: Running | Idle }`
     /// arrives. App::dispatch routes this through
     /// `handle_pause_cleared`, which clears the RPC-406 per-session
-    /// pause slot AND pops any mounted HitlDialog so the UI does not
+    /// pause slot AND the RPC-411 HITL slot so the UI does not
     /// strand a stale prompt after the agent loop has resumed
     /// server-side.
     PauseCleared(codelet_rpc_types::SessionId),
@@ -572,13 +572,55 @@ pub enum Action {
     PausePromptEnter {
         session_id: codelet_rpc_types::SessionId,
     },
-    /// RPC-053: emitted by `handle_pause_chunk` on
-    /// `Ok(Some(hitl_request))`. App::dispatch routes this through
-    /// `handle_open_hitl_dialog`, which pushes a fresh HitlDialog at
-    /// Priority::Critical (idempotent) onto the Compositor.
-    OpenHitlDialog {
+    /// RPC-411: emitted by `handle_pause_chunk` on
+    /// `Ok(Some(hitl_request))`. App::dispatch stores the fetched
+    /// request into the AgentViewStore per-session HITL slot — the
+    /// AgentView paints the inline HITL prompt from that slot when the
+    /// session is focused (replaces the deleted RPC-053 modal push).
+    HitlPromptFetched {
         session_id: codelet_rpc_types::SessionId,
         request: codelet_rpc_types::HitlRequest,
+    },
+    /// RPC-411: ↑/↓ on an options question — cycle the selection with
+    /// wraparound over `options.len() + 1` (virtual "Other...").
+    HitlPromptNav {
+        session_id: codelet_rpc_types::SessionId,
+        delta: i32,
+    },
+    /// RPC-411: Enter on an options question. The reducer reads the
+    /// authoritative slot state: Other... selected → enter Other mode,
+    /// else capture `{id, selected:[label]}` and advance-or-submit.
+    HitlPromptEnter {
+        session_id: codelet_rpc_types::SessionId,
+    },
+    /// RPC-411: Enter in freeform/Other mode with non-empty text —
+    /// the key handler reads + clears the SHARED composer input and
+    /// carries the value here so the reducer stays store-authoritative.
+    /// Captures `{id, selected:[], other:text}` and advance-or-submits.
+    HitlAnswerCaptured {
+        session_id: codelet_rpc_types::SessionId,
+        text: String,
+    },
+    /// RPC-411: Esc in Other mode — local only: back to the options
+    /// list, clears the empty-submit hint. NOTHING is sent.
+    HitlOtherExit {
+        session_id: codelet_rpc_types::SessionId,
+    },
+    /// RPC-411: empty/whitespace Enter in freeform/Other mode — sets
+    /// the yellow empty-submit hint. NOTHING is sent.
+    HitlEmptySubmit {
+        session_id: codelet_rpc_types::SessionId,
+    },
+    /// RPC-411: typing in freeform/Other mode while the empty-submit
+    /// hint is showing — clears the hint (useHitlInput.ts:201-208).
+    HitlHintCleared {
+        session_id: codelet_rpc_types::SessionId,
+    },
+    /// RPC-411: Esc outside Other mode — cancel the WHOLE request:
+    /// sends `HitlResponse { cancelled: true, answers: [] }` via the
+    /// backend, THEN clears the slot (no path clears without sending).
+    HitlCancelled {
+        session_id: codelet_rpc_types::SessionId,
     },
     /// RPC-053: emitted by the RPC-406 inline pause prompt (Confirm
     /// kind) on Y/N/Esc. App::dispatch routes this through
@@ -609,12 +651,9 @@ pub enum Action {
     PauseResumed {
         session_id: codelet_rpc_types::SessionId,
     },
-    /// RPC-053: emitted by HitlDialog on submit (Enter on a highlighted
-    /// option, hotkey letter, or Enter while the free-text row is
-    /// focused). App::dispatch routes this through
-    /// `handle_hitl_submitted`, which fires
-    /// `backend.send_hitl_response(session_id, response)` fire-and-forget
-    /// and pops the dialog.
+    /// RPC-053/RPC-411: routes through `handle_hitl_submitted`, which
+    /// fires `backend.send_hitl_response(session_id, response)`
+    /// fire-and-forget and clears the per-session HITL slot.
     HitlSubmitted {
         session_id: codelet_rpc_types::SessionId,
         response: codelet_rpc_types::HitlResponse,
@@ -1096,6 +1135,30 @@ pub enum Action {
     TurnModalPageDown,
     TurnModalHome,
     TurnModalEnd,
+
+    /// COPY-006: emitted by `views/agent/mouse_dispatch.rs` when a
+    /// left-button press lands inside the scrollback rect (drag start /
+    /// long-press anchor). App::dispatch begins a live selection on the
+    /// focused SessionContext's ScrollbackList at the supplied cell.
+    /// Mouse capture stays ON — selection is drawn by the TUI itself.
+    SelectionBegin(crate::mouse::selection::Cell),
+    /// COPY-006: emitted as the pointer drags (button-held move) inside
+    /// the scrollback rect. App::dispatch extends the live selection's
+    /// cursor to the supplied cell and refreshes the highlight spans.
+    SelectionExtend(crate::mouse::selection::Cell),
+    /// COPY-006: emitted on left-button release (or long-press fire)
+    /// when a live selection exists. App::dispatch reconstructs the
+    /// selected text and copies it to the terminal clipboard via OSC52.
+    /// Per rule [2] the selection is NOT cleared on commit — it stays
+    /// highlighted so the user sees what was copied.
+    SelectionCommit,
+    /// COPY-006: clears any live selection + highlight. Emitted on Esc
+    /// (first cascade level) and on any scrollback scroll (rule [7]).
+    SelectionClear,
+    /// COPY-007: emitted by the AgentView composer on a Commit gesture
+    /// carrying the prompt-free selected text. App::dispatch copies it
+    /// via OSC 52 (`self.clipboard.copy(text)`), reusing the COPY-006 writer.
+    CopyToClipboard(String),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

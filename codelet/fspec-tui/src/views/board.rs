@@ -17,7 +17,7 @@
 //! `&BoardStore`. Keyboard + mouse handlers emit Actions onto the bus
 //! that `App::dispatch` consumes.
 
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::sync::Arc;
 
 use codelet_rpc_types::SessionId;
@@ -27,12 +27,16 @@ use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::components::{Action, EventResult};
+use crate::mouse::clipboard::Osc52Clipboard;
+use crate::mouse::gesture::SelectionRecognizer;
+use crate::mouse::selection::Selection;
 use crate::store::BoardStore;
 use crate::theme::Theme;
 
 pub mod borders;
 pub mod checkpoint_status;
 pub mod columns;
+pub mod details_select;
 pub mod details_strip;
 pub mod footer;
 pub mod grid;
@@ -44,6 +48,7 @@ pub mod render;
 pub mod viewport;
 
 use self::columns::paint_column_headers;
+use self::details_select::is_selection_nav_key;
 use self::grid::calculate_column_widths;
 use self::viewport::paint_content_rows;
 
@@ -69,6 +74,27 @@ pub struct BoardView {
     /// RPC-023: per-column content Rects observed by the most recent
     /// `render_with_store`. Indexed by `COLUMN_ORDER` position.
     pub(super) last_column_content_areas: Cell<Option<[Rect; 7]>>,
+    /// COPY-009: the details-strip inner Rect (split[3] inner) observed by
+    /// the most recent `render_with_store`. Read by the mouse branch to
+    /// hit-test strip text selection FIRST.
+    pub(super) last_details_area: Cell<Option<Rect>>,
+    /// COPY-009: gesture recognizer for strip text selection (COPY-003).
+    pub(super) recognizer: RefCell<SelectionRecognizer>,
+    /// COPY-009: live strip selection (COPY-002), held via interior
+    /// mutability; cleared when the selected work unit changes or on Esc.
+    pub(super) details_selection: RefCell<Option<Selection>>,
+    /// COPY-009: the id of the work unit the active strip selection was
+    /// anchored on, so a later render can clear the selection when the
+    /// selected unit changes.
+    pub(super) selection_unit_id: RefCell<Option<String>>,
+    /// COPY-009: true while a strip left-press is in progress (Down landed
+    /// inside the strip rect) so subsequent drag/release events route to
+    /// the recognizer even if the cursor strays onto the border column.
+    pub(super) details_press_active: Cell<bool>,
+    /// COPY-009: OSC 52 clipboard writer (COPY-001). Production writes to
+    /// stdout; tests inject a `Vec<u8>` sink via
+    /// [`BoardView::set_clipboard_writer_for_test`].
+    pub(super) clipboard: RefCell<Osc52Clipboard<Box<dyn std::io::Write + Send>>>,
 }
 
 impl BoardView {
@@ -80,7 +106,26 @@ impl BoardView {
             last_content_area: Cell::new(None),
             last_column_header_areas: Cell::new(None),
             last_column_content_areas: Cell::new(None),
+            last_details_area: Cell::new(None),
+            recognizer: RefCell::new(SelectionRecognizer::new()),
+            details_selection: RefCell::new(None),
+            selection_unit_id: RefCell::new(None),
+            details_press_active: Cell::new(false),
+            clipboard: RefCell::new(Osc52Clipboard::new(Box::new(std::io::stdout()))),
         }
+    }
+
+    /// COPY-009 test seam: replace the OSC 52 clipboard writer with an
+    /// injected sink so integration tests can assert the exact bytes.
+    /// Not `#[cfg(test)]` — integration tests compile without that cfg,
+    /// mirroring `App::set_clipboard_writer_for_test`.
+    pub fn set_clipboard_writer_for_test(&self, writer: Box<dyn std::io::Write + Send>) {
+        *self.clipboard.borrow_mut() = Osc52Clipboard::new(writer);
+    }
+
+    /// COPY-009 test seam: the live strip selection, if any.
+    pub fn details_selection(&self) -> Option<Selection> {
+        *self.details_selection.borrow()
     }
 
     /// RPC-016: read the most-recent column-content viewport_height
@@ -110,6 +155,15 @@ impl BoardView {
             return EventResult::ignored();
         };
 
+        // COPY-009: Esc clears an active strip selection with NO copy, and
+        // consumes the key so it does not also trigger the RPC-102 exit
+        // confirmation. When there is no strip selection, fall through so
+        // the App-level Esc cascade (RPC-102) runs unchanged.
+        if key.code == KeyCode::Esc && self.details_selection.borrow().is_some() {
+            self.clear_details_selection();
+            return EventResult::consumed();
+        }
+
         // Shift+Right → open AgentView (with or without an attached session).
         if key.code == KeyCode::Right && key.modifiers.contains(KeyModifiers::SHIFT) {
             let target = self.selected_session(store);
@@ -124,6 +178,12 @@ impl BoardView {
                 return EventResult::consumed();
             }
             return EventResult::ignored();
+        }
+
+        // COPY-009: any selection-changing navigation key clears an
+        // active strip selection (the strip content is about to change).
+        if is_selection_nav_key(key.code) {
+            self.clear_details_selection();
         }
 
         match key.code {

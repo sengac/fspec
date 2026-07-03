@@ -20,6 +20,7 @@ pub mod credentials;
 pub mod default_model_persistence;
 pub mod default_thinking_level_persistence;
 pub mod handle_impl;
+pub mod hitl_mapping;
 pub mod last_used_model_persistence;
 pub mod model_resolution;
 pub mod navigation;

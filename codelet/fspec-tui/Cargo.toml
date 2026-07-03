@@ -66,6 +66,9 @@ open.workspace = true
 # RPC-374: percent-encode attachment paths when building the viewer /view URL.
 urlencoding.workspace = true
 
+# COPY-001: OSC 52 clipboard writer base64-encodes the payload.
+base64 = "0.22"
+
 # Logging
 tracing.workspace = true
 

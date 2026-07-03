@@ -29,6 +29,7 @@ pub mod dispatch_dialog_dismiss;
 pub mod dispatch_esc_cascade;
 pub mod dispatch_fspec_runner;
 pub mod dispatch_history_recall;
+pub mod dispatch_hitl_prompt;
 pub mod dispatch_merge_worktree;
 pub mod dispatch_model_selector;
 pub mod dispatch_model_thinking_dialogs;

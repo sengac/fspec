@@ -57,6 +57,11 @@ pub struct MultiLineInput {
     /// RPC-405 — first visible VISUAL row of the wrap-aware viewport.
     /// Mutated by `sync_viewport` (cursor-follow) before each paint.
     scroll_top: usize,
+    /// COPY-007: live composer text selection (None when inactive).
+    /// Logic lives in `multiline_input_select.rs`.
+    pub(super) selection: Option<crate::mouse::selection::Selection>,
+    /// COPY-007: drag / long-press gesture recognizer for the composer.
+    pub(super) recognizer: crate::mouse::gesture::SelectionRecognizer,
 }
 
 impl Default for MultiLineInput {
@@ -85,6 +90,8 @@ impl MultiLineInput {
             textarea,
             max_visible_rows: max.max(1),
             scroll_top: 0,
+            selection: None,
+            recognizer: crate::mouse::gesture::SelectionRecognizer::new(),
         }
     }
 
@@ -115,6 +122,7 @@ impl MultiLineInput {
         ta.move_cursor(tui_textarea::CursorMove::Bottom);
         ta.move_cursor(tui_textarea::CursorMove::End);
         self.textarea = ta;
+        self.selection = None; // COPY-007: set_value clears any selection.
     }
 
     /// Number of logical lines (including the trailing empty line if
@@ -139,6 +147,7 @@ impl MultiLineInput {
         ta.set_cursor_line_style(ratatui::style::Style::default());
         self.textarea = ta;
         self.scroll_top = 0;
+        self.selection = None; // COPY-007: reset clears any selection.
     }
 
     /// The logical buffer lines (RPC-405: consumed by the wrap-aware
@@ -156,6 +165,9 @@ impl MultiLineInput {
     /// RPC-405 — viewport mutation hook for `sync_viewport` (lives in
     /// `multiline_input_render.rs` to keep this file under 300 LoC).
     pub(super) fn set_scroll_top(&mut self, top: usize) {
+        if top != self.scroll_top {
+            self.selection = None; // COPY-007 rule [5]: scroll clears selection.
+        }
         self.scroll_top = top;
     }
 
@@ -243,6 +255,11 @@ impl MultiLineInput {
         // (`is_edit_keystroke` lives in `multiline_input_enter.rs`).
         if gate.block_edits && super::multiline_input_enter::is_edit_keystroke(code, mods) {
             return InputEventOutcome::Continued;
+        }
+        // COPY-007 rule [5]: an editing keystroke clears any live
+        // composer selection before the edit is applied.
+        if super::multiline_input_enter::is_edit_keystroke(code, mods) {
+            self.selection = None;
         }
         // Everything else → forward to the textarea.
         let input = Input::from(crossterm::event::KeyEvent::new(code, mods));

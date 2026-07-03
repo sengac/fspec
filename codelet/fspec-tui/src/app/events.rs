@@ -236,6 +236,8 @@ impl App {
                     self.dispatch(action);
                 }
                 _ = tick.tick() => {
+                    // COPY-006: drive long-press selection Begin from the tick.
+                    self.navigator.agent.poll_selection_tick();
                     let is_busy = self.is_session_busy();
                     let is_animating = self.is_input_animating();
                     if super::tick_should_draw(self.should_render, is_busy, is_animating) {

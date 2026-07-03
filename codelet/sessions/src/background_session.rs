@@ -983,9 +983,7 @@ impl BackgroundSession {
     /// `block_in_place` panics) it falls back to a direct blocking recv.
     fn blocking_recv_compat<T>(recv: impl FnOnce() -> T) -> T {
         match tokio::runtime::Handle::try_current() {
-            Ok(handle)
-                if handle.runtime_flavor() == tokio::runtime::RuntimeFlavor::MultiThread =>
-            {
+            Ok(handle) if handle.runtime_flavor() == tokio::runtime::RuntimeFlavor::MultiThread => {
                 tokio::task::block_in_place(recv)
             }
             _ => recv(),

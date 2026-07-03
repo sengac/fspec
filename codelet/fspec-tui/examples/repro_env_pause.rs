@@ -10,8 +10,8 @@
 
 use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
 use codelet_rpc_types::ApprovalChoice;
-use url::Url;
 use std::time::Instant;
+use url::Url;
 
 fn variant_name(chunk: &codelet_rpc_types::StreamChunk) -> String {
     let dbg = format!("{chunk:?}");
@@ -45,7 +45,12 @@ async fn main() -> anyhow::Result<()> {
     // Discriminator: late subscriber created mid-pause. If it receives the
     // Paused chunk, the send happened AFTER subscription time.
     let late_backend = &backend;
-    let mut late_rx: Option<tokio::sync::broadcast::Receiver<(codelet_rpc_types::SessionId, codelet_rpc_types::StreamChunk)>> = None;
+    let mut late_rx: Option<
+        tokio::sync::broadcast::Receiver<(
+            codelet_rpc_types::SessionId,
+            codelet_rpc_types::StreamChunk,
+        )>,
+    > = None;
     let t0 = Instant::now();
     let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(90);
     let mut poll = tokio::time::interval(std::time::Duration::from_secs(5));

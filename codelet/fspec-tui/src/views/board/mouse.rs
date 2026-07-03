@@ -38,12 +38,44 @@ use super::BoardView;
 ///   * `Down(Left)` inside a `last_column_content_areas[idx]` cell  → SetFocusedColumn(idx)
 ///    + SelectIndexInFocused(row + scroll_offset)
 pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) -> EventResult {
-    let MouseEvent {
-        kind, column, row, ..
-    } = match event {
+    let mouse_event = match event {
         Event::Mouse(m) => *m,
         _ => return EventResult::ignored(),
     };
+    let MouseEvent {
+        kind, column, row, ..
+    } = mouse_event;
+
+    // COPY-009: hit-test the cached details-strip rect FIRST. A left
+    // press/drag/release inside it feeds the strip selection recognizer.
+    // Once a strip selection is in progress, subsequent left drag/release
+    // events are also routed to the recognizer even when the cursor
+    // strays onto the side-border column (the selection stays clamped to
+    // the border-free content width). Anything else outside the strip
+    // falls through to the existing wheel/click logic UNCHANGED.
+    if let Some(rect) = view.last_details_area.get() {
+        let inside = rect_contains(rect, column, row);
+        let is_left = matches!(
+            kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        );
+        let down = matches!(kind, MouseEventKind::Down(MouseButton::Left));
+        // A Down inside the strip begins strip-local routing; once active,
+        // drag/release stay routed here (clamped to content width) even if
+        // the cursor strays onto the side-border column.
+        if is_left && ((inside && down) || (!down && view.details_press_active.get())) {
+            if down {
+                view.details_press_active.set(true);
+            }
+            view.feed_details_selection(mouse_event, rect, store.selected_work_unit());
+            if matches!(kind, MouseEventKind::Up(MouseButton::Left)) {
+                view.details_press_active.set(false);
+            }
+            return EventResult::consumed();
+        }
+    }
 
     let in_content = view
         .last_content_area
@@ -53,18 +85,22 @@ pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) 
 
     match kind {
         MouseEventKind::ScrollUp if in_content => {
+            view.clear_details_selection();
             view.emit(Action::SelectPrev);
             EventResult::consumed()
         }
         MouseEventKind::ScrollDown if in_content => {
+            view.clear_details_selection();
             view.emit(Action::SelectNext);
             EventResult::consumed()
         }
         MouseEventKind::ScrollLeft if in_content => {
+            view.clear_details_selection();
             view.emit(Action::FocusPrevColumn);
             EventResult::consumed()
         }
         MouseEventKind::ScrollRight if in_content => {
+            view.clear_details_selection();
             view.emit(Action::FocusNextColumn);
             EventResult::consumed()
         }
@@ -74,6 +110,9 @@ pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) 
 }
 
 fn handle_left_click(view: &BoardView, column: u16, row: u16, store: &BoardStore) -> EventResult {
+    // COPY-009: a click on the grid selects a different card and thereby
+    // changes the strip content, so clear any active strip selection.
+    view.clear_details_selection();
     // Header click → focus that column.
     if let Some(headers) = view.last_column_header_areas.get() {
         for (idx, rect) in headers.iter().enumerate() {

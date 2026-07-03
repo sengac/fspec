@@ -1,0 +1,291 @@
+{
+  "scenarios": [
+    {
+      "name": "Dragging across the id and title row copies its visible text",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "lines": "62-107",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dragging across the wrapped description rows copies them as shown",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "lines": "116-197",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Copying a full-width description line excludes the side border glyph",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "lines": "205-262",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Changing the selected work unit clears an active strip selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "lines": "270-329",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/details_select.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc clears an active strip selection without copying",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "lines": "337-378",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quick click in the details strip does not select or copy",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs",
+          "lines": "366-388",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/board_details_strip_text_selection_copy_copy009.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board/details_select.rs",
+      "codelet/fspec-tui/src/views/board.rs",
+      "codelet/fspec-tui/src/views/board/mouse.rs"
+    ],
+    "totalLinesCovered": 488
+  }
+}

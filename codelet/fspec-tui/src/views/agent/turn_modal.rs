@@ -160,6 +160,16 @@ impl TurnContentModal {
         }
         rows
     }
+
+    /// COPY-008: the plain-text of each wrapped visual row at `width`
+    /// (span contents concatenated). Shares the exact `styled_rows`
+    /// windowing so the copied text agrees with what is painted.
+    pub fn plain_rows(&self, width: usize) -> Vec<String> {
+        self.styled_rows(width)
+            .into_iter()
+            .map(|spans| spans.iter().map(|s| s.content.as_ref()).collect::<String>())
+            .collect()
+    }
 }
 
 /// Map a turn's [`ChunkKind`] to its modal title + accent color,
@@ -177,29 +187,6 @@ fn title_and_accent(kind: Option<&ChunkKind>) -> (&'static str, Accent) {
         Some(ChunkKind::Incoming) => ("Incoming", Accent::Cyan),
         None => ("Turn", Accent::Cyan),
     }
-}
-
-/// RPC-382/383: paint the turn content modal overlay (if open) for the
-/// focused session. Extracted from `AgentView::render_with_store` so
-/// that orchestrator file stays under the 300-LoC source-shape ceiling.
-pub fn render_turn_modal(
-    area: Rect,
-    buf: &mut Buffer,
-    seq: Option<u64>,
-    offset: usize,
-    store: &crate::store::AgentViewStore,
-) {
-    let Some(seq) = seq else { return };
-    let Some(ctx) = store.current_session_context() else {
-        return;
-    };
-    let Some(text) = ctx.scrollback.full_text_for_seq(seq) else {
-        return;
-    };
-    let kind = ctx.scrollback.kind_for_seq(seq);
-    TurnContentModal::new(text, kind)
-        .with_offset(offset)
-        .render(area, buf);
 }
 
 #[cfg(test)]

@@ -9,6 +9,8 @@ impl App {
     /// RPC-094: shared scrollback dispatch helper.
     pub(crate) fn scroll_focused(&mut self, delta: i64) {
         if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+            // COPY-006 rule [7]: scrolling clears any live text selection.
+            ctx.scrollback.selection_clear();
             if delta < 0 {
                 ctx.scrollback.scroll_up(delta.unsigned_abs() as usize);
             } else if delta > 0 {
@@ -109,6 +111,8 @@ impl App {
         if self.navigator.agent.turn_modal_seq.is_none() {
             return;
         }
+        // COPY-008 rule [6]: scrolling the modal clears any live selection.
+        self.navigator.agent.turn_modal_selection = None;
         let (total, viewport) = self.turn_modal_metrics();
         let max_off = total.saturating_sub(viewport);
         let cur = self.navigator.agent.turn_modal_offset as i64;
@@ -122,6 +126,8 @@ impl App {
         if self.navigator.agent.turn_modal_seq.is_none() {
             return;
         }
+        // COPY-008 rule [6]: jumping the modal clears any live selection.
+        self.navigator.agent.turn_modal_selection = None;
         let (total, viewport) = self.turn_modal_metrics();
         self.navigator.agent.turn_modal_offset = if to_bottom {
             total.saturating_sub(viewport)
@@ -163,5 +169,80 @@ impl App {
         if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
             ctx.scrollback.navigate_turn(dir);
         }
+    }
+
+    /// COPY-006: begin a live text selection on the focused scrollback
+    /// at `cell` (drag start / long-press anchor).
+    pub(crate) fn handle_selection_begin(&mut self, cell: crate::mouse::selection::Cell) {
+        if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+            ctx.scrollback.selection_begin(cell);
+        }
+    }
+
+    /// COPY-006: extend the live selection's cursor to `cell` (drag).
+    pub(crate) fn handle_selection_extend(&mut self, cell: crate::mouse::selection::Cell) {
+        if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+            ctx.scrollback.selection_extend(cell);
+        }
+    }
+
+    /// COPY-006: clear the live selection + highlight (Esc / scroll).
+    pub(crate) fn handle_selection_clear(&mut self) {
+        if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+            ctx.scrollback.selection_clear();
+        }
+    }
+
+    /// COPY-006 rule [3]: reconstruct the selected text (COPY-004) and
+    /// write it to the clipboard via OSC 52 (COPY-001). The selection is
+    /// NOT cleared (rule [2]) so the highlight persists after the copy.
+    pub(crate) fn handle_selection_commit(&mut self) {
+        let text = self.agent_view_store.current_session_context().map(|c| {
+            let spans = c.scrollback.selection_spans_for_content_width();
+            c.scrollback.selected_text(&spans)
+        });
+        if let Some(text) = text {
+            if text.is_empty() {
+                return;
+            }
+            if let Err(e) = self.clipboard.copy(&text) {
+                tracing::warn!("OSC 52 clipboard copy failed: {e}");
+            }
+        }
+    }
+
+    /// COPY-007: write the composer's prompt-free selected text to the
+    /// terminal clipboard via OSC 52 (COPY-001), reusing the COPY-006
+    /// clipboard writer. Empty text is a no-op.
+    pub(crate) fn handle_copy_to_clipboard(&mut self, text: String) {
+        if text.is_empty() {
+            return;
+        }
+        if let Err(e) = self.clipboard.copy(&text) {
+            tracing::warn!("OSC 52 clipboard copy failed: {e}");
+        }
+    }
+
+    /// COPY-006 test seam: replace the OSC 52 clipboard writer with an
+    /// injected sink so integration tests can assert the exact bytes.
+    /// Not `#[cfg(test)]` — integration tests compile without that cfg,
+    /// matching the existing `next_pending_task` / `try_recv_action`
+    /// pub test-seam convention on `App`.
+    pub fn set_clipboard_writer_for_test(
+        &mut self,
+        writer: Box<dyn std::io::Write + Send>,
+    ) {
+        self.clipboard = crate::mouse::clipboard::Osc52Clipboard::new(writer);
+    }
+
+    /// COPY-006 test seam: drive the AgentView's long-press recognizer
+    /// tick from an integration test (the production run loop calls
+    /// `poll_selection_tick` from its 16ms render-tick arm — see
+    /// `app/events.rs`). Fans any emitted gestures onto the action bus,
+    /// exactly like the production tick. Public for the same reason as
+    /// `set_clipboard_writer_for_test`: integration tests compile without
+    /// the `#[cfg(test)]` cfg.
+    pub fn poll_selection_tick_for_test(&mut self) {
+        self.navigator.agent.poll_selection_tick();
     }
 }

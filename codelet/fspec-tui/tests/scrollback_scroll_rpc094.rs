@@ -621,10 +621,17 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //   - RPC-406 added ≤25 lines net (PauseStateFetched / PausePromptNav /
     //     PausePromptEnter inline pause-prompt variants + expanded pause
     //     doc comments, minus the deleted OpenPauseDialog variant)
-    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 + 5 + 5 + 8 + 25 = 1143
+    //   - RPC-411 added ≤55 lines net (HitlPromptFetched / HitlPromptNav /
+    //     HitlPromptEnter / HitlAnswerCaptured / HitlOtherExit /
+    //     HitlEmptySubmit / HitlHintCleared / HitlCancelled inline
+    //     HITL-prompt variants + doc comments, minus the deleted
+    //     OpenHitlDialog variant and the hitl_dialog mod decl)
+    //   - COPY-007 added ≤5 lines (CopyToClipboard composer-copy variant
+    //     + a 3-line doc comment)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 + 5 + 5 + 8 + 25 + 55 + 5 = 1203
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1143,
-        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381 + RPC-382 + RPC-383 + RPC-406 budget is +341 over baseline 802"
+        n_components <= 1203,
+        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381..RPC-383 + RPC-406 + RPC-411 + COPY-007 budget is +401 over baseline 802"
     );
 }

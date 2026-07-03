@@ -409,6 +409,11 @@
       "prefix": "RPC",
       "description": "Rust RPC layer (tarpc + WebSocket) and ratatui frontend",
       "createdAt": "2026-05-07T07:52:32.381Z"
+    },
+    "COPY": {
+      "prefix": "COPY",
+      "description": "In-app text selection and clipboard copy for the Rust ratatui TUI (mouse-drag / long-press selection + OSC 52)",
+      "createdAt": "2026-07-03T01:28:56.102Z"
     }
   }
 }

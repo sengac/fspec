@@ -1,4 +1,4 @@
-@wip
+@done
 @session
 @rpc
 @RPC-409
@@ -33,21 +33,21 @@ Feature: Paused SessionStateChange chunk stranded on blocked tokio worker — in
     Given a BackgroundSession on a multi-thread tokio runtime with a chunks broadcast subscriber
     When a tokio task runs the agent-loop pause handler which emits SessionStateChange Paused and blocks in wait_for_pause_response
     Then the subscriber receives the Paused chunk within 1 second while the pause is still pending
-    Then sending a pause response afterwards unblocks the handler with that response
+    And sending a pause response afterwards unblocks the handler with that response
 
 
   Scenario: Fspec request chunk reaches subscribers while the fspec wait is still pending
     Given a BackgroundSession on a multi-thread tokio runtime with a chunks broadcast subscriber
     When a tokio task emits an FspecCommandRequest chunk and blocks in wait_for_fspec_response
     Then the subscriber receives the FspecCommandRequest chunk within 1 second while the wait is still pending
-    Then sending an fspec result afterwards unblocks the waiter with that result
+    And sending an fspec result afterwards unblocks the waiter with that result
 
 
   Scenario: Paused chunk reaches subscribers while the HITL wait is still pending
     Given a BackgroundSession on a multi-thread tokio runtime with a chunks broadcast subscriber
     When a tokio task emits SessionStateChange Paused and blocks in wait_for_hitl_response
     Then the subscriber receives the Paused chunk within 1 second while the wait is still pending
-    Then sending a HITL response afterwards unblocks the waiter with that response
+    And sending a HITL response afterwards unblocks the waiter with that response
 
 
   Scenario: Waits fall back to a direct blocking recv when called off-runtime

@@ -12,11 +12,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use codelet_fspec_tui::{
-    Action, AgentView, AgentViewStore, App, FspecBackend, SessionContext, ViewMode, HITL_DIALOG_ID,
+    Action, AgentView, AgentViewStore, App, FspecBackend, SessionContext, ViewMode,
 };
 use codelet_rpc_types::{
-    ApprovalChoice, HitlOption, HitlRequest, PauseKind, PauseState, SessionId, SessionState,
-    SessionStatus, StreamChunk,
+    ApprovalChoice, HitlOption, HitlQuestion, HitlRequest, PauseKind, PauseState, SessionId,
+    SessionState, SessionStatus, StreamChunk,
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
 use ratatui::backend::TestBackend;
@@ -152,19 +152,21 @@ async fn wait_until<F: FnMut() -> bool>(mut predicate: F, label: &str) {
     .unwrap_or_else(|_| panic!("timed out waiting for: {label}"));
 }
 
+// RPC-410: multi-question wire shape (single-question fixture).
 fn hitl_request(id: &str, labels: &[&str]) -> HitlRequest {
     HitlRequest {
-        id: id.to_string(),
-        question: "Continue?".to_string(),
-        header: "Apply the proposed change?".to_string(),
-        options: labels
-            .iter()
-            .map(|l| HitlOption {
-                label: (*l).to_string(),
-                description: format!("desc-{l}"),
-            })
-            .collect(),
-        allow_text_input: false,
+        questions: vec![HitlQuestion {
+            id: id.to_string(),
+            header: "Apply the proposed change?".to_string(),
+            question: "Continue?".to_string(),
+            options: labels
+                .iter()
+                .map(|l| HitlOption {
+                    label: (*l).to_string(),
+                    description: format!("desc-{l}"),
+                })
+                .collect(),
+        }],
     }
 }
 
@@ -840,9 +842,15 @@ async fn hitl_wins_on_tie_and_no_pause_slot_is_set() {
     drain_pending(&mut app).await;
 
     // @step Then the Compositor contains a layer with id HITL_DIALOG_ID
+    // RPC-411: the HitlDialog modal was deleted — HITL now wins into
+    // the per-session inline HITL slot (no compositor layer).
     wait_until(
-        || app.compositor().contains(HITL_DIALOG_ID),
-        "HitlDialog wins on tie",
+        || {
+            app.agent_view_store()
+                .hitl_prompt_for(&sid("s-1"))
+                .is_some()
+        },
+        "HITL slot wins on tie",
     )
     .await;
 

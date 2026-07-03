@@ -22,8 +22,14 @@
 //!     capture so the terminal can begin a selection; 5-second debounce
 //!     timer + immediate release-handler re-enable).
 
+pub mod clipboard;
+pub mod gesture;
 pub mod hit_test;
+pub mod selection;
 pub mod toggle;
 
+pub use clipboard::Osc52Clipboard;
+pub use gesture::{SelectionGesture, SelectionRecognizer};
 pub use hit_test::rect_contains;
+pub use selection::{Cell, RowSpan, Selection};
 pub use toggle::MouseTrackingToggle;

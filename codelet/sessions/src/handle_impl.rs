@@ -35,8 +35,8 @@ use uuid::Uuid;
 
 use codelet_rpc_types::{
     ApprovalChoice, BlocklistRuleInfo, CompactionProgress, CompactionResult, FspecResult,
-    HitlOption, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
-    MergeOutcome, MergeStatus, MergeStrategy, ModelEntry, PauseState, ProviderCredentialInfo,
+    HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, MergeOutcome,
+    MergeStatus, MergeStrategy, ModelEntry, PauseState, ProviderCredentialInfo,
     ProviderCredentialInput, RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId,
     SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk,
     TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext,
@@ -753,62 +753,14 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         let uuid = uuid_from(session_id);
         match self.get_session(&uuid.to_string()) {
             Ok(session) => {
-                // RPC-408: map the wire HitlResponse{id, value} to the
-                // internal Answered variant — mirroring the napi path
-                // (session_send_hitl_response). The wire path has no
-                // cancel affordance, so this never sends Cancelled.
-                let pending = session
-                    .get_hitl_request()
-                    .and_then(|req| req.questions.into_iter().next());
-                let answer = match &pending {
-                    Some(question) => {
-                        let is_option_label = question
-                            .options
-                            .as_deref()
-                            .unwrap_or_default()
-                            .iter()
-                            .any(|opt| opt.label == response.value);
-                        if is_option_label {
-                            codelet_tools::request_user_input::HitlAnswer {
-                                selected: vec![response.value],
-                                other: None,
-                            }
-                        } else {
-                            codelet_tools::request_user_input::HitlAnswer {
-                                selected: vec![],
-                                other: Some(response.value),
-                            }
-                        }
-                    }
-                    // No pending request stored — treat the value as
-                    // free text and key by the response id below.
-                    None => codelet_tools::request_user_input::HitlAnswer {
-                        selected: vec![],
-                        other: Some(response.value),
-                    },
-                };
-                // Prefer the pending question's id as the answer key;
-                // execute_hitl consumers look answers up by the ids
-                // they generated. Warn on mismatch with the wire id.
-                let question_id = match pending {
-                    Some(question) => {
-                        if question.id != response.id {
-                            tracing::warn!(
-                                pending_id = %question.id,
-                                response_id = %response.id,
-                                "[HITL] wire response id does not match pending \
-                                 question id; keying answer by the pending id"
-                            );
-                        }
-                        question.id
-                    }
-                    None => response.id,
-                };
-                let mut answers = std::collections::HashMap::new();
-                answers.insert(question_id, answer);
-                session.send_hitl_response(
-                    codelet_tools::request_user_input::HitlResponse::Answered { answers },
-                );
+                // RPC-410: direct pass-through mapping — the wire
+                // payload {cancelled, answers} is authoritative; no
+                // option-label inference, no reading of the pending
+                // request to classify answers.
+                session.send_hitl_response(crate::hitl_mapping::wire_response_to_internal(
+                    response.cancelled,
+                    response.answers,
+                ));
                 Ok(())
             }
             Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
@@ -829,26 +781,9 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             .get_session(&uuid.to_string())
             .ok()
             .and_then(|s| s.get_hitl_request())?;
-        // Surface only the first question through the wire shape — the
-        // wire `HitlRequest` is a single question; the multi-question
-        // surface is wired in RPC-053.
-        let first = internal.questions.into_iter().next()?;
-        let options = first
-            .options
-            .unwrap_or_default()
-            .into_iter()
-            .map(|o| HitlOption {
-                label: o.label,
-                description: o.description,
-            })
-            .collect();
-        Some(HitlRequest {
-            id: first.id,
-            question: first.question,
-            header: first.header,
-            options,
-            allow_text_input: true,
-        })
+        // RPC-410: full pass-through — every question surfaces on the
+        // wire in order (options: None → empty vec).
+        Some(crate::hitl_mapping::internal_request_to_wire(internal))
     }
 
     fn send_fspec_result(&self, session_id: &SessionId, result: FspecResult) -> Result<(), String> {

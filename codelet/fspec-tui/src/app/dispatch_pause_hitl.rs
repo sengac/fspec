@@ -12,14 +12,14 @@
 //!     `StreamChunk::SessionStateChange { state: Paused }` arrives. Spawns
 //!     parallel `backend.get_pause_state` and `backend.get_hitl_request`
 //!     reads and dispatches `Action::PauseStateFetched` on Some pause
-//!     state (RPC-406: store slot, no modal) or `Action::OpenHitlDialog`
+//!     state (RPC-406: store slot, no modal) or `Action::HitlPromptFetched`
 //!     on Some hitl request (HITL wins on tie). When both return None
 //!     nothing happens (likely a stale Paused chunk from a now-resumed
 //!     session).
 //!
 //!   - `handle_pause_cleared(session_id)`: fired from the chunk
 //!     dispatcher on `Running` / `Idle`. Clears the RPC-406 per-session
-//!     pause slot and pops any mounted HitlDialog so the UI does not
+//!     pause slot and the RPC-411 HITL slot so the UI does not
 //!     strand a stale prompt after the agent loop resumes server-side.
 //!
 //!   - `handle_pause_confirmed` / `handle_pause_triple`: clear the
@@ -37,12 +37,9 @@
 
 use std::sync::Arc;
 
-use codelet_rpc_types::{ApprovalChoice, HitlRequest, HitlResponse, PauseState, SessionId};
+use codelet_rpc_types::{ApprovalChoice, HitlResponse, PauseState, SessionId};
 
-use crate::components::{
-    hitl_dialog::{HitlDialog, HITL_DIALOG_ID},
-    Action,
-};
+use crate::components::Action;
 use crate::transport::FspecBackend;
 
 use super::state::App;
@@ -51,7 +48,7 @@ impl App {
     /// RPC-053: react to `SessionStateChange { state: Paused }` by
     /// spawning parallel reads of `backend.get_pause_state` and
     /// `backend.get_hitl_request` and routing the first Some result
-    /// back via `Action::PauseStateFetched` / `Action::OpenHitlDialog`.
+    /// back via `Action::PauseStateFetched` / `Action::HitlPromptFetched`.
     pub(crate) fn handle_pause_chunk(&mut self, session_id: SessionId) {
         // Sync unit-test fallback — do not spawn a task when no runtime.
         if tokio::runtime::Handle::try_current().is_err() {
@@ -91,9 +88,10 @@ impl App {
                     None
                 }
             };
-            // RPC-053 rule [13]: HITL wins on tie.
+            // RPC-053 rule [13]: HITL wins on tie. RPC-411: store
+            // slot instead of a modal push.
             if let Some(request) = hitl {
-                let _ = action_tx.send(Action::OpenHitlDialog {
+                let _ = action_tx.send(Action::HitlPromptFetched {
                     session_id: id,
                     request,
                 });
@@ -111,12 +109,12 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// RPC-406: clear the per-session pause slot (inline prompt) and
-    /// pop any mounted HitlDialog when the agent loop resumes
-    /// (Running or Idle).
+    /// RPC-406/RPC-411: clear the per-session pause AND HITL slots
+    /// when the agent loop resumes (Running or Idle) so the UI does
+    /// not strand a stale inline prompt.
     pub(crate) fn handle_pause_cleared(&mut self, session_id: SessionId) {
         self.agent_view_store.clear_pause_state(&session_id);
-        let _ = self.compositor.remove(HITL_DIALOG_ID);
+        self.agent_view_store.clear_hitl_prompt(&session_id);
         self.should_render = true;
     }
 
@@ -148,16 +146,6 @@ impl App {
             _ => ApprovalChoice::Deny,
         };
         self.handle_pause_triple(session_id, choice);
-    }
-
-    /// RPC-053: idempotent compositor push for the HitlDialog.
-    pub(crate) fn handle_open_hitl_dialog(&mut self, session_id: SessionId, request: HitlRequest) {
-        if self.compositor.contains(HITL_DIALOG_ID) {
-            return;
-        }
-        let dialog = HitlDialog::new(session_id, request).with_action_tx(self.action_tx.clone());
-        self.compositor.push(Box::new(dialog));
-        self.should_render = true;
     }
 
     /// RPC-053: fire-and-forget `backend.pause_confirm(session, accept)`.
@@ -230,9 +218,12 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// RPC-053: fire-and-forget `backend.send_hitl_response`.
+    /// RPC-053/RPC-411: fire-and-forget `backend.send_hitl_response`
+    /// and clear the per-session HITL slot (submit AND cancel both
+    /// route here — the response is always sent before the slot dies).
     pub(crate) fn handle_hitl_submitted(&mut self, session_id: SessionId, response: HitlResponse) {
-        let _ = self.compositor.remove(HITL_DIALOG_ID);
+        self.agent_view_store.clear_hitl_prompt(&session_id);
+        self.should_render = true;
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
@@ -270,12 +261,7 @@ impl App {
             Action::PausePromptEnter { session_id } => {
                 self.handle_pause_prompt_enter(session_id.clone());
             }
-            Action::OpenHitlDialog {
-                session_id,
-                request,
-            } => {
-                self.handle_open_hitl_dialog(session_id.clone(), request.clone());
-            }
+
             Action::PauseConfirmed { session_id, accept } => {
                 self.handle_pause_confirmed(session_id.clone(), *accept);
             }
@@ -291,7 +277,7 @@ impl App {
             } => {
                 self.handle_hitl_submitted(session_id.clone(), response.clone());
             }
-            _ => return false,
+            _ => return self.try_dispatch_hitl_prompt(action),
         }
         true
     }

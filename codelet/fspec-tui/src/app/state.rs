@@ -1,14 +1,9 @@
 //! `App` struct + constructor + accessor surface (RPC-012, RPC-013).
 //!
-//! Holds the Compositor (modal layers only — HelpDialog / DisconnectDialog),
-//! the Action bus, the FspecBackend handle, the Theme, the Navigator
-//! (which owns BoardView + AgentView, each painting its own footer per
-//! RPC-013), and the two stores (BoardStore + AgentViewStore) that the
-//! navigator's children read from.
-//!
-//! All store mutations happen synchronously inside [`crate::app::dispatch`]
-//! on the App task per the RPC-009 single-task tenere pattern — no Mutex /
-//! RwLock / AtomicXyz anywhere on the store surface.
+//! Holds the Compositor (modal layers only), Action bus, FspecBackend,
+//! Theme, Navigator (BoardView + AgentView) and the BoardStore +
+//! AgentViewStore. All store mutations happen synchronously inside
+//! [`crate::app::dispatch`] on the App task (RPC-009 single-task).
 
 use std::sync::Arc;
 
@@ -19,6 +14,7 @@ use tokio::task::JoinHandle;
 
 use crate::components::Action;
 use crate::compositor::Compositor;
+use crate::mouse::clipboard::Osc52Clipboard;
 use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
 use crate::transport::FspecBackend;
@@ -82,6 +78,8 @@ pub struct App {
     /// RPC-373: handle to the running viewer server, retained so it shuts down
     /// cleanly on App drop. `None` when the server failed to start.
     pub(crate) viewer_handle: Option<codelet_attachment_viewer::ViewerHandle>,
+    /// COPY-006: OSC 52 clipboard writer (boxed; tests inject a Vec<u8>).
+    pub(crate) clipboard: Osc52Clipboard<Box<dyn std::io::Write + Send>>,
 }
 
 impl App {
@@ -124,6 +122,7 @@ impl App {
             applied_default_thinking: std::collections::HashSet::new(),
             viewer_port: None,
             viewer_handle: None,
+            clipboard: Osc52Clipboard::new(Box::new(std::io::stdout())),
         }
     }
 

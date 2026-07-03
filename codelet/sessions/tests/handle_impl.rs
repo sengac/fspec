@@ -168,8 +168,8 @@ async fn scenario_unknown_session_id_returns_safe_defaults() {
         handle.send_hitl_response(
             &sid,
             HitlResponse {
-                id: "q1".into(),
-                value: "answer".into(),
+                cancelled: false,
+                answers: vec![],
             },
         ),
     );

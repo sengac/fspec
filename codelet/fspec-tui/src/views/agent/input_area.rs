@@ -26,6 +26,7 @@ use codelet_rpc_types::SessionId;
 
 use crate::store::AgentViewStore;
 
+use super::hitl_prompt;
 use super::input_transition::paint_input_or_spinner;
 use super::pause_prompt;
 use super::{multiline_input_render, transition_driver, AgentView};
@@ -51,6 +52,11 @@ impl AgentView {
         sid: Option<&SessionId>,
         area_width: u16,
     ) -> u16 {
+        // RPC-411: the HITL slot wins over the pause slot (TS
+        // InputTransition.tsx:385-388 priority).
+        if let Some(state) = sid.and_then(|s| store.hitl_prompt_for(s)) {
+            return hitl_prompt::prompt_height(state, pause_body_width(area_width), &self.input);
+        }
         if let Some(state) = sid.and_then(|s| store.pause_state_for(s)) {
             return pause_prompt::prompt_height(state, pause_body_width(area_width));
         }
@@ -76,6 +82,40 @@ impl AgentView {
             width: input_area.width.saturating_sub(pad * 2),
             height: input_area.height,
         };
+        // RPC-412: clear any stale freeform cursor offset — only the
+        // freeform HITL branch below re-sets it. Normal composer,
+        // options-mode HITL and pause prompts all leave it None.
+        self.last_hitl_input_offset = None;
+        // RPC-411: the focused session's HITL slot wins over the pause
+        // slot, the MultiLineInput AND the spinner (TS early-return
+        // order — InputTransition.tsx:385-388).
+        if let Some((session, state)) = sid.and_then(|s| store.hitl_prompt_for(s).map(|h| (s, h))) {
+            if state.freeform_active() {
+                // The shared input paints below the header — keep its
+                // viewport in sync (prompt "> " geometry).
+                let input_body_width = multiline_input_render::input_body_width(input_area.width);
+                self.input
+                    .sync_viewport(input_body_width, input_area.height);
+            }
+            // RPC-412: capture the freeform header offset (row where the
+            // "> " input line is painted); `None` in options mode.
+            self.last_hitl_input_offset =
+                hitl_prompt::render_hitl_prompt(padded, buf, state, &self.input);
+            self.last_hitl = Some((
+                session.clone(),
+                if state.freeform_active() {
+                    super::hitl_keys::HitlKeyMode::Freeform {
+                        other: state.other_active,
+                        hint: state.show_empty_hint,
+                    }
+                } else {
+                    super::hitl_keys::HitlKeyMode::Options
+                },
+            ));
+            self.last_pause = None;
+            return;
+        }
+        self.last_hitl = None;
         // RPC-406: the focused session's pause slot wins over the
         // MultiLineInput AND the spinner (TS early-return order).
         if let Some((session, state)) = sid.and_then(|s| store.pause_state_for(s).map(|p| (s, p))) {

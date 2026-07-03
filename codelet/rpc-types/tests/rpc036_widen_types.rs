@@ -18,9 +18,9 @@
 )]
 
 use codelet_rpc_types::{
-    ApprovalChoice, HitlOption, HitlRequest, HitlResponse, IsolatedSessionInfo, PauseKind,
-    PauseResponse, PauseState, SessionId, SessionModel, SessionTokens, StreamChunk, ThinkingConfig,
-    ThinkingLevel, TokenRestoreState, WorkUnitContext,
+    ApprovalChoice, HitlAnswer, HitlOption, HitlQuestion, HitlRequest, HitlResponse,
+    IsolatedSessionInfo, PauseKind, PauseResponse, PauseState, SessionId, SessionModel,
+    SessionTokens, StreamChunk, ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext,
 };
 
 // ---------------------------------------------------------------------------
@@ -176,16 +176,23 @@ fn phase_22_pause_and_hitl_wire_types_have_documented_shape() {
         label: "Yes".to_string(),
         description: "Proceed".to_string(),
     };
+    // RPC-410: wire HitlRequest/HitlResponse are now TS-parity shapes
+    // (multi-question request; cancel-capable structured response).
     let req = HitlRequest {
-        id: "q-1".to_string(),
-        question: "Apply?".to_string(),
-        header: "Apply".to_string(),
-        options: vec![opt.clone()],
-        allow_text_input: true,
+        questions: vec![HitlQuestion {
+            id: "q-1".to_string(),
+            header: "Apply".to_string(),
+            question: "Apply?".to_string(),
+            options: vec![opt.clone()],
+        }],
     };
     let resp = HitlResponse {
-        id: "q-1".to_string(),
-        value: "Yes".to_string(),
+        cancelled: false,
+        answers: vec![HitlAnswer {
+            id: "q-1".to_string(),
+            selected: vec!["Yes".to_string()],
+            other: None,
+        }],
     };
 
     // @step Then a PauseKind enum exists with exactly the variants Confirm and Triple, derives Serialize/Deserialize/PartialEq, and is gated for napi via #[cfg_attr(feature = "napi", napi_derive::napi(string_enum))]
@@ -227,15 +234,22 @@ fn phase_22_pause_and_hitl_wire_types_have_documented_shape() {
     assert_eq!(opt.description, "Proceed");
 
     // @step And a HitlRequest struct exists with exactly id: String, question: String, header: String, options: Vec<HitlOption>, allow_text_input: bool
-    assert_eq!(req.id, "q-1");
-    assert_eq!(req.question, "Apply?");
-    assert_eq!(req.header, "Apply");
-    assert_eq!(req.options.len(), 1);
-    assert!(req.allow_text_input);
+    // RPC-410 superseded this shape: HitlRequest is now
+    // { questions: Vec<HitlQuestion{id, header, question, options}> }.
+    assert_eq!(req.questions.len(), 1);
+    assert_eq!(req.questions[0].id, "q-1");
+    assert_eq!(req.questions[0].question, "Apply?");
+    assert_eq!(req.questions[0].header, "Apply");
+    assert_eq!(req.questions[0].options.len(), 1);
 
     // @step And a HitlResponse struct exists with exactly id: String and value: String
-    assert_eq!(resp.id, "q-1");
-    assert_eq!(resp.value, "Yes");
+    // RPC-410 superseded this shape: HitlResponse is now
+    // { cancelled: bool, answers: Vec<HitlAnswer{id, selected, other}> }.
+    assert!(!resp.cancelled);
+    assert_eq!(resp.answers.len(), 1);
+    assert_eq!(resp.answers[0].id, "q-1");
+    assert_eq!(resp.answers[0].selected, vec!["Yes".to_string()]);
+    assert_eq!(resp.answers[0].other, None);
 }
 
 // ---------------------------------------------------------------------------
@@ -398,25 +412,43 @@ fn all_new_types_round_trip_through_serde_json() {
         label: "l".to_string(),
         description: "d".to_string(),
     });
+    // RPC-410: TS-parity wire shapes.
     round_trip(HitlRequest {
-        id: "id".to_string(),
-        question: "q".to_string(),
-        header: "h".to_string(),
-        options: vec![
-            HitlOption {
-                label: "Yes".to_string(),
-                description: "Proceed".to_string(),
+        questions: vec![
+            HitlQuestion {
+                id: "id".to_string(),
+                header: "h".to_string(),
+                question: "q".to_string(),
+                options: vec![
+                    HitlOption {
+                        label: "Yes".to_string(),
+                        description: "Proceed".to_string(),
+                    },
+                    HitlOption {
+                        label: "No".to_string(),
+                        description: "Stop".to_string(),
+                    },
+                ],
             },
-            HitlOption {
-                label: "No".to_string(),
-                description: "Stop".to_string(),
+            HitlQuestion {
+                id: "id2".to_string(),
+                header: "h2".to_string(),
+                question: "q2".to_string(),
+                options: vec![],
             },
         ],
-        allow_text_input: true,
     });
     round_trip(HitlResponse {
-        id: "id".to_string(),
-        value: "Yes".to_string(),
+        cancelled: false,
+        answers: vec![HitlAnswer {
+            id: "id".to_string(),
+            selected: vec!["Yes".to_string()],
+            other: None,
+        }],
+    });
+    round_trip(HitlResponse {
+        cancelled: true,
+        answers: vec![],
     });
     round_trip(IsolatedSessionInfo {
         session_id: SessionId::new("uuid"),
@@ -576,16 +608,10 @@ fn new_types_are_publicly_re_exported_from_crate_root() {
         label: "l".to_string(),
         description: "d".to_string(),
     };
-    let _: _HR = HitlRequest {
-        id: "i".to_string(),
-        question: "q".to_string(),
-        header: "h".to_string(),
-        options: vec![],
-        allow_text_input: false,
-    };
+    let _: _HR = HitlRequest { questions: vec![] };
     let _: _HResp = HitlResponse {
-        id: "i".to_string(),
-        value: "v".to_string(),
+        cancelled: true,
+        answers: vec![],
     };
     let _: _ISI = IsolatedSessionInfo {
         session_id: SessionId::new("u"),

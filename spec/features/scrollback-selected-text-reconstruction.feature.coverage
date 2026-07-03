@@ -1,0 +1,246 @@
+{
+  "scenarios": [
+    {
+      "name": "Reconstruct a single-row partial selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "lines": "97-110",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reconstruct a multi-row selection joined by newline",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "lines": "114-137",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The scrollbar gutter glyph is excluded from copied text",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "lines": "139-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll offset maps viewport rows to visual rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "lines": "159-179",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End column beyond content length is clamped without padding",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "lines": "181-196",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multi-byte glyphs are sliced on character boundaries",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "lines": "198-213",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An empty selection reconstructs an empty string",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+          "lines": "215-228",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_copy.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/agent/scrollback_copy.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/scrollback_copy.rs"
+    ],
+    "totalLinesCovered": 242
+  }
+}

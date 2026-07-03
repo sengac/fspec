@@ -74,11 +74,14 @@ pub(super) fn render_with_store(
         border_style,
     );
     borders::paint_side_borders(split[3], buf, border_style);
-    details_strip::render(
-        borders::inner_rect(split[3]),
-        buf,
-        store.selected_work_unit(),
-    );
+    let details_area = borders::inner_rect(split[3]);
+    details_strip::render(details_area, buf, store.selected_work_unit());
+    // COPY-009: cache the strip inner rect for mouse hit-testing, clear a
+    // stale selection when the selected unit changed, then overlay the
+    // REVERSED highlight over the selected strip rows (never the borders).
+    view.last_details_area.set(Some(details_area));
+    view.sync_details_selection(store.selected_work_unit());
+    view.paint_details_highlight(details_area, buf);
     borders::paint_border_string(
         split[4],
         buf,

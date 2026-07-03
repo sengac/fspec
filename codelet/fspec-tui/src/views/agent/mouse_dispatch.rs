@@ -8,11 +8,12 @@
 //! then (RPC-094) the scrollback rect itself. Returns `None` when
 //! nothing absorbs the event.
 
-use crossterm::event::{MouseEvent, MouseEventKind};
+use crossterm::event::{MouseButton, MouseEvent, MouseEventKind};
 use ratatui::layout::Rect;
 
 use crate::components::scroll_viewport::WheelDirection;
 use crate::components::{Action, EventResult};
+use crate::mouse::gesture::SelectionGesture;
 
 use super::file_search_popup::FilePopupOutcome;
 use super::resume_session_view::ResumeSessionViewOutcome;
@@ -70,20 +71,30 @@ impl AgentView {
         None
     }
 
-    /// RPC-383: while the turn content modal is open, route mouse-wheel
-    /// ScrollUp/ScrollDown into the modal's scroll offset (mirroring the
-    /// scrollback wheel handling) via `Action::TurnModalScroll{Up,Down}`.
-    /// Returns `None` (so the event bubbles to the scrollback) when the
-    /// modal is closed or the event is not a vertical wheel. The modal is
-    /// a full-screen overlay, so no rect hit-test is needed.
+    /// RPC-383 / COPY-008: while the turn content modal is open, route
+    /// left press/drag/release into the modal's own selection recognizer
+    /// (rule [1]) BEFORE the wheel-scroll branch, and route mouse-wheel
+    /// ScrollUp/ScrollDown into the modal's scroll offset (clearing any
+    /// active selection first, rule [6]). Returns `None` (so the event
+    /// bubbles to the scrollback) when the modal is closed or the event
+    /// is neither a left button nor a vertical wheel. The modal is a
+    /// full-screen overlay, so no rect hit-test is needed.
     pub(super) fn handle_turn_modal_mouse(&mut self, ev: MouseEvent) -> Option<EventResult> {
         self.turn_modal_seq?;
         match ev.kind {
+            MouseEventKind::Down(MouseButton::Left)
+            | MouseEventKind::Drag(MouseButton::Left)
+            | MouseEventKind::Up(MouseButton::Left) => {
+                self.feed_turn_modal_selection(ev);
+                Some(EventResult::consumed())
+            }
             MouseEventKind::ScrollUp => {
+                self.turn_modal_selection = None; // COPY-008 rule [6].
                 self.emit(Action::TurnModalScrollUp);
                 Some(EventResult::consumed())
             }
             MouseEventKind::ScrollDown => {
+                self.turn_modal_selection = None; // COPY-008 rule [6].
                 self.emit(Action::TurnModalScrollDown);
                 Some(EventResult::consumed())
             }
@@ -107,18 +118,101 @@ impl AgentView {
         }
         match ev.kind {
             MouseEventKind::ScrollUp => {
+                self.text_selection_active = false; // COPY-006 rule [7].
                 let step = self.scrollback_wheel.step(WheelDirection::Up);
                 let velocity = step.unsigned_abs();
                 self.emit(Action::ScrollbackMouseWheelUp(velocity));
                 Some(EventResult::consumed())
             }
             MouseEventKind::ScrollDown => {
+                self.text_selection_active = false; // COPY-006 rule [7].
                 let step = self.scrollback_wheel.step(WheelDirection::Down);
                 let velocity = step.unsigned_abs();
                 self.emit(Action::ScrollbackMouseWheelDown(velocity));
                 Some(EventResult::consumed())
             }
+            // COPY-006: left press/drag/release drive text selection via
+            // the gesture recognizer (rule [1]) BEFORE any wheel handling.
+            MouseEventKind::Down(MouseButton::Left)
+            | MouseEventKind::Drag(MouseButton::Left)
+            | MouseEventKind::Up(MouseButton::Left) => {
+                self.feed_selection_recognizer(ev, rect);
+                Some(EventResult::consumed())
+            }
             _ => None,
+        }
+    }
+
+    /// COPY-007: route a left press/drag/release that lands over the
+    /// input rect into the composer's own [`MultiLineInput::handle_mouse`]
+    /// selection recognizer. On a Commit gesture (`Some(text)`) the
+    /// prompt-free selected text is copied via `Action::CopyToClipboard`.
+    /// Returns `None` when the event is not a left button event or falls
+    /// outside the input rect (so it bubbles to the key/paste path).
+    pub(super) fn handle_composer_mouse(&mut self, ev: MouseEvent) -> Option<EventResult> {
+        if !matches!(
+            ev.kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        ) {
+            return None;
+        }
+        let area = self.last_input_area?;
+        let inside = ev.column >= area.x
+            && ev.column < area.x.saturating_add(area.width)
+            && ev.row >= area.y
+            && ev.row < area.y.saturating_add(area.height);
+        if !inside {
+            return None;
+        }
+        // Pass the FULL input rect: `handle_mouse` derives the body
+        // origin (area.x + INPUT_PAD_X + PROMPT_WIDTH) and body width
+        // (`input_body_width(area.width)`) itself, matching the render
+        // geometry.
+        if let Some(text) = self.input.handle_mouse(ev, area) {
+            self.emit(Action::CopyToClipboard(text));
+        }
+        Some(EventResult::consumed())
+    }
+
+    /// COPY-006: feed a left press/drag/release to the selection
+    /// recognizer with scrollback-relative coords (subtract the rect
+    /// origin) and fan the resulting gestures onto the action bus.
+    fn feed_selection_recognizer(&mut self, ev: MouseEvent, rect: Rect) {
+        let local = MouseEvent {
+            column: ev.column.saturating_sub(rect.x),
+            row: ev.row.saturating_sub(rect.y),
+            ..ev
+        };
+        let gestures = self.recognizer.on_mouse(local, std::time::Instant::now());
+        self.apply_selection_gestures(&gestures);
+    }
+
+    /// COPY-006: poll the recognizer from the run loop's render tick so a
+    /// stationary long-press fires its `Begin` gesture (~0.5s).
+    pub(crate) fn poll_selection_tick(&mut self) {
+        let gestures = self.recognizer.tick(std::time::Instant::now());
+        self.apply_selection_gestures(&gestures);
+    }
+
+    /// COPY-006: translate recognizer gestures into `Action`s and track
+    /// the view-local `text_selection_active` flag (rule [10]). Commit
+    /// keeps the flag set so the highlight persists (rule [2]).
+    fn apply_selection_gestures(&mut self, gestures: &[SelectionGesture]) {
+        for gesture in gestures {
+            match gesture {
+                SelectionGesture::Begin(cell) => {
+                    self.text_selection_active = true;
+                    self.emit(Action::SelectionBegin(*cell));
+                }
+                SelectionGesture::Extend(cell) => self.emit(Action::SelectionExtend(*cell)),
+                SelectionGesture::Commit => self.emit(Action::SelectionCommit),
+                SelectionGesture::Cancel => {
+                    self.text_selection_active = false;
+                    self.emit(Action::SelectionClear);
+                }
+            }
         }
     }
 }

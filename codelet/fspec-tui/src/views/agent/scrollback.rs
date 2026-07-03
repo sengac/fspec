@@ -1,14 +1,10 @@
-//! ScrollbackList — windowed VirtualList-style scrollback widget for
-//! AgentView (RPC-019, RPC-078, RPC-094).
+//! ScrollbackList — windowed scrollback widget for AgentView (RPC-019/
+//! 078/094). Viewport-slice paint; `offset` in VISUAL ROWS. SELECT-mode
+//! lives in `scrollback_select`, live text-selection (COPY-006) in `copy`.
 //!
 //! Feature: spec/features/rpc019-scrollback.feature
 //!          spec/features/agentview-scrollback-wrap.feature
 //!          spec/features/rpc094-agentview-scrollback-scroll.feature
-//!
-//! Tracks a [`ScrollState`] (offset + `stick_to_bottom`) and paints
-//! only the slice of chunks that fit in the visible viewport. RPC-078:
-//! `offset` is in VISUAL ROWS (wrapped Lines). RPC-381: the SELECT-mode
-//! selection logic lives in the sibling `scrollback_select` module.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -32,10 +28,7 @@ pub struct ScrollState {
 
 impl Default for ScrollState {
     fn default() -> Self {
-        Self {
-            offset: 0,
-            stick_to_bottom: true,
-        }
+        Self { offset: 0, stick_to_bottom: true }
     }
 }
 
@@ -46,16 +39,21 @@ pub struct ScrollbackList {
     scroll_state: ScrollState,
     /// Latest observed viewport height (rows).
     viewport_height: u16,
-    /// Latest observed viewport width (cols). Drives per-chunk re-wrap
-    /// from `ChunkSource::text` on resize (RPC-078).
+    /// Latest viewport width (cols). Drives per-chunk re-wrap on resize (RPC-078).
     viewport_width: u16,
-    /// RPC-094: cached layout rect from `render_count_visited`.
-    /// `mouse_dispatch::handle_scrollback_mouse` hit-tests this.
+    /// RPC-094: cached layout rect; `mouse_dispatch` hit-tests this.
     last_rect: Option<Rect>,
     // RPC-381 SELECT-mode state; logic lives in `scrollback_select`.
     selection_mode: SelectionMode,
     selected: Option<usize>,
     selected_seq: Option<u64>,
+    /// COPY-005/006: viewport-space REVERSED-overlay spans (empty = none).
+    selection_highlight_spans: Vec<crate::mouse::selection::RowSpan>,
+    /// COPY-006: live text selection (anchor/cursor); None when inactive.
+    selection: Option<crate::mouse::selection::Selection>,
+    /// COPY-006: content width (viewport minus gutter) cached at last
+    /// render — the single clamp shared by highlight + copy.
+    content_width: u16,
 }
 
 impl ScrollbackList {
@@ -157,8 +155,7 @@ impl ScrollbackList {
         }
     }
 
-    /// Update cached viewport width. Re-wraps every chunk that carries
-    /// a `ChunkSource` so resize never permanently truncates.
+    /// Update cached viewport width. Re-wraps every `ChunkSource` chunk so resize never permanently truncates.
     pub fn set_viewport_width(&mut self, w: u16) {
         if self.viewport_width != w {
             self.viewport_width = w;
@@ -199,8 +196,7 @@ impl ScrollbackList {
     }
 
     /// RPC-020: drop every chunk and reset scroll state to default.
-    pub fn reset(&mut self) {
-        self.chunks.clear();
+    pub fn reset(&mut self) {        self.chunks.clear();
         self.scroll_state = ScrollState::default();
         self.viewport_height = 0;
         self.viewport_width = 0;
@@ -208,8 +204,8 @@ impl ScrollbackList {
     }
 
     /// Render the visible window into `area`. Returns chunks visited.
-    /// RPC-078: fills from the TOP; stick-to-bottom kicks in on overflow.
-    /// RPC-094: on overflow reserve a 2-col gutter, rewrap, paint scrollbar.
+    /// RPC-078 fills from the TOP, stick on overflow; RPC-094 reserves a
+    /// 2-col gutter + scrollbar on overflow.
     pub fn render_count_visited(&mut self, area: Rect, buf: &mut Buffer) -> usize {
         // Pass 1: wrap at full width to detect overflow.
         self.set_viewport_width(area.width);
@@ -219,8 +215,7 @@ impl ScrollbackList {
             return 0;
         }
         let vh = area.height as usize;
-        // Pass 2: when overflowing AND the terminal is at least 4 cols
-        // wide, reserve a 2-col gutter (1 gap + 1 scrollbar) and rewrap.
+        // Pass 2: on overflow with width >= 4, reserve a 2-col gutter, rewrap.
         let reserve_gutter = self.total_visual_rows() > vh && area.width >= 4;
         let content_width = if reserve_gutter {
             area.width - 2
@@ -230,6 +225,8 @@ impl ScrollbackList {
         if reserve_gutter {
             self.set_viewport_width(content_width);
         }
+        // COPY-006: cache the gutter-free width so highlight + copy clamp alike.
+        self.content_width = content_width;
         let total_rows = self.total_visual_rows();
         let skip_rows = if self.scroll_state.stick_to_bottom {
             total_rows.saturating_sub(vh)
@@ -245,14 +242,15 @@ impl ScrollbackList {
         );
         // RPC-381: in Item mode, frame the selected turn with ▼/▲ bars.
         self.paint_selection_overlay(area, buf, content_width, skip_rows);
+        // COPY-005: overlay the live text-selection region (REVERSED).
+        super::scrollback_paint::paint_selection_highlight(area, buf, &self.selection_highlight_spans, content_width);
         if reserve_gutter && total_rows > vh {
             paint_scrollbar(area, buf, vh, total_rows, self.scroll_state);
         }
         visited
     }
 
-    /// Sum of `chunk.lines.len()` across every chunk — the total
-    /// visible row count once everything is unfurled.
+    /// Sum of `chunk.lines.len()` across every chunk — the total visible row count once everything is unfurled.
     pub(crate) fn total_visual_rows(&self) -> usize {
         self.chunks.iter().map(|c| c.lines.len()).sum()
     }
@@ -293,6 +291,8 @@ impl Widget for &mut ScrollbackList {
 
 #[path = "scrollback_select.rs"]
 mod select;
+#[path = "scrollback_copy.rs"]
+mod copy;
 #[cfg(test)]
 #[path = "scrollback_tests.rs"]
 mod tests;

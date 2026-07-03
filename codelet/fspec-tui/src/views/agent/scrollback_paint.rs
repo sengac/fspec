@@ -101,8 +101,11 @@ pub(super) fn paint_chunk_rows(
 
 #[path = "scrollback_arrows.rs"]
 mod arrows;
+#[path = "scrollback_highlight.rs"]
+mod highlight;
 
 pub(in crate::views::agent) use arrows::paint_selection_arrow_bars;
+pub(crate) use highlight::paint_selection_highlight;
 
 #[cfg(test)]
 mod tests {

@@ -952,7 +952,10 @@
         "RPC-402",
         "RPC-403",
         "RPC-404",
-        "RPC-405"
+        "RPC-405",
+        "RPC-410",
+        "RPC-411",
+        "RPC-412"
       ]
     },
     "rust-cli-port": {
@@ -1199,6 +1202,23 @@
         "RPC-378",
         "RPC-379",
         "RPC-380"
+      ]
+    },
+    "tui-text-selection-copy": {
+      "id": "tui-text-selection-copy",
+      "title": "In-app Text Selection & Clipboard Copy (Rust TUI)",
+      "createdAt": "2026-07-03T01:29:07.609Z",
+      "description": "In-app text selection and clipboard copy for the Rust ratatui AgentView scrollback. The TUI holds mouse capture (alt-screen), which disables the terminal's own click-drag text selection, so users cannot copy transcript text. This epic adds an app-owned selection model: the user selects transcript text via mouse drag or a long mouse press, the selected cells are highlighted in-app, and on release the reconstructed plain text (excluding the scrollbar gutter glyphs) is written to the OS clipboard via an OSC 52 escape sequence. Keeps mouse capture enabled so scroll/click still work, and works over SSH/tmux. Designed as a reusable copy component that other views can adopt later.",
+      "workUnits": [
+        "COPY-001",
+        "COPY-002",
+        "COPY-003",
+        "COPY-004",
+        "COPY-005",
+        "COPY-006",
+        "COPY-007",
+        "COPY-008",
+        "COPY-009"
       ]
     }
   }

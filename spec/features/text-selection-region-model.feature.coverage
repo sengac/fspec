@@ -1,0 +1,263 @@
+{
+  "scenarios": [
+    {
+      "name": "Single-row forward selection yields one span",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/selection.rs",
+          "lines": "94-114",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/selection.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backwards multi-row drag normalizes start before end",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/selection.rs",
+          "lines": "116-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/selection.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multi-row selection extends first and middle rows to the row width",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/selection.rs",
+          "lines": "150-182",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/selection.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Collapsed selection yields no spans",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/selection.rs",
+          "lines": "184-197",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/selection.rs",
+              "lines": [
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Same-row backwards drag normalizes to one ordered span",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/selection.rs",
+          "lines": "199-219",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/selection.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/mouse/selection.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/mouse/selection.rs"
+    ],
+    "totalLinesCovered": 289
+  }
+}

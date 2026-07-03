@@ -252,6 +252,7 @@ Tags that categorize features by functional area.
 | `@test-coverage` | Test coverage tracking and validation features |
 | `@test-maintenance` | Test maintenance and quality assurance features |
 | `@testing` | Testing and quality assurance features |
+| `@text-selection` | In-app mouse-driven text selection and clipboard copy in the Rust TUI (COPY epic) |
 | `@thinking-detection` | Features related to thinking/reasoning level detection and configuration |
 | `@tool-discovery` | Tool discovery and listing features |
 | `@tool-display` | Tool output display and formatting features |
@@ -329,6 +330,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@checkpoints` | Git checkpoint and state restoration features |
 | `@ci` | Continuous integration and build automation |
 | `@cleanup` | Cleanup and resource management features |
+| `@clipboard` | Clipboard integration (OSC 52 escape-sequence clipboard writes) |
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
 | `@command` | CLI command implementation |
@@ -944,7 +946,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-07-02T04:17:29.293Z_
+_Last updated: 2026-07-03T01:37:07.504Z_
 
 **Update Command**: `fspec tag-stats`
 

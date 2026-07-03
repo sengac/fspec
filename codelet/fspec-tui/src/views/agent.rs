@@ -18,6 +18,7 @@ pub mod animation;
 pub mod chrome;
 pub mod chrome_paint;
 pub mod confirm_dialog;
+mod cursor_anchor;
 pub mod dispatch;
 pub mod dispatch_mode_views;
 mod dispatch_popups;
@@ -27,6 +28,8 @@ pub mod file_search_popup_rows;
 pub mod footer;
 pub mod header;
 pub mod header_build;
+mod hitl_keys;
+pub mod hitl_prompt;
 mod input_area;
 pub mod input_transition;
 pub mod merge_confirm_dialog;
@@ -36,6 +39,7 @@ pub mod multiline_input;
 mod multiline_input_enter;
 mod multiline_input_paste;
 mod multiline_input_render;
+mod multiline_input_select;
 pub mod multiline_wrap;
 mod pause_keys;
 pub mod pause_prompt;
@@ -54,6 +58,7 @@ pub mod spinner;
 pub mod text_wrap;
 pub mod transition_driver;
 pub mod turn_modal;
+mod turn_modal_select;
 
 pub use confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 pub use file_search_popup::{FilePopupOutcome, FileSearchPopup};
@@ -102,10 +107,12 @@ pub struct AgentView {
     pub turn_select_mode: bool,
     /// RPC-382: turn content modal — `Some(seq)` ⇒ open for that turn.
     pub turn_modal_seq: Option<u64>,
-    /// RPC-383: turn content modal scroll offset (first visible visual
-    /// row of the modal body). Reset to 0 on open; mutated (clamped) by
-    /// the `Action::TurnModal*` reducers; read via `with_offset`.
+    /// RPC-383: turn content modal scroll offset (first visible body row).
     pub turn_modal_offset: usize,
+    /// COPY-008: modal text selection + cached body layout (semantics in `turn_modal_select`).
+    pub turn_modal_selection: Option<crate::mouse::selection::Selection>,
+    pub(crate) turn_modal_rows: Vec<String>,
+    pub(crate) turn_modal_body_origin: Option<Rect>,
     pub(crate) last_render_area: Option<Rect>,
     pub(crate) last_scrollback_area: Option<Rect>,
     pub(crate) scrollback_wheel: WheelVelocity,
@@ -114,12 +121,14 @@ pub struct AgentView {
     pub(crate) input_transition_state: InputTransitionState,
     pub(crate) last_spinner_line: Option<String>,
     pub(crate) animation_clock_ms: u64,
-    /// RPC-406: `(session, kind)` of the pause prompt painted on the
-    /// last frame — set by `paint_input_area` when the FOCUSED
-    /// session's pause slot is Some. Read by the pause key router
-    /// (`pause_keys.rs`) and the cursor gate so actions always target
-    /// the paused session id.
+    /// RPC-406: `(session, kind)` of the pause prompt painted last frame.
     pub(crate) last_pause: Option<(codelet_rpc_types::SessionId, codelet_rpc_types::PauseKind)>,
+    /// RPC-411: `(session, mode)` of the HITL prompt painted last frame.
+    pub(crate) last_hitl: Option<(codelet_rpc_types::SessionId, hitl_keys::HitlKeyMode)>,
+    /// RPC-412: freeform HITL header offset (rows to the "> " input line).
+    pub(crate) last_hitl_input_offset: Option<u16>,
+    /// COPY-006: scrollback drag / long-press selection recognizer.
+    pub(crate) recognizer: crate::mouse::gesture::SelectionRecognizer,    pub(crate) text_selection_active: bool, // COPY-006: live scrollback selection.
 }
 
 impl AgentView {
@@ -137,13 +146,13 @@ impl AgentView {
             .unwrap_or(0)
     }
 
-    /// RPC-404 — wrap-aware, viewport-clamped hardware cursor. The
-    /// full geometry (body width, visual row/col, scroll offset,
-    /// clamping to the input area) lives in
-    /// [`MultiLineInput::hardware_cursor_in`].
+    /// RPC-404/RPC-412 hardware cursor: geometry in
+    /// [`MultiLineInput::hardware_cursor_in`], freeform header offset
+    /// applied by [`cursor_anchor::anchored_input_area`].
     pub fn cursor_position(&self) -> Option<(u16, u16)> {
         let area = self.last_input_area?;
-        Some(self.input.hardware_cursor_in(area))
+        let anchored = cursor_anchor::anchored_input_area(area, self.last_hitl_input_offset);
+        Some(self.input.hardware_cursor_in(anchored))
     }
 
     /// RPC-093 rule [6]: busy iff session is Running or Compacting.
@@ -175,12 +184,9 @@ impl AgentView {
         transition.is_cursor_painted()
     }
 
+    /// Cursor gate — RPC-411 HITL-mode logic lives in `hitl_keys.rs`.
     pub fn is_cursor_visible(&self, session_status: Option<SessionStatus>) -> bool {
-        // RPC-406: no hardware cursor inside the inline pause prompt.
-        if self.last_pause.is_some() {
-            return false;
-        }
-        Self::is_cursor_visible_for(session_status, &self.input_transition_state)
+        self.is_cursor_visible_with_prompts(session_status)
     }
 
     pub fn push_line<S: Into<String>>(&mut self, store: &mut AgentViewStore, line: S) {
@@ -287,8 +293,7 @@ impl AgentView {
         } else if let Some(p) = self.file_popup.as_ref() {
             p.render(area, buf);
         }
-        // RPC-382/383: turn content modal overlays the normal chrome.
-        let off = self.turn_modal_offset;
-        turn_modal::render_turn_modal(area, buf, self.turn_modal_seq, off, store);
+        // RPC-382/383 + COPY-008: turn content modal overlay + selection.
+        self.paint_turn_modal(area, buf, store);
     }
 }

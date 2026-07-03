@@ -13,12 +13,12 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use codelet_providers::ProviderManager;
+use codelet_rpc_types::SessionStatus;
 use codelet_sessions::background_session::BackgroundSession;
 use codelet_tools::tool_pause::{
     pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest, PauseResponse,
     PauseState,
 };
-use codelet_rpc_types::SessionStatus;
 use tokio::sync::{broadcast, mpsc};
 use uuid::Uuid;
 
@@ -29,8 +29,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let tmp = std::env::temp_dir().join(format!("repro-pause-{}", std::process::id()));
     std::fs::create_dir_all(&tmp)?;
-    codelet_common::set_data_directory(tmp.clone()).map_err(|e| format!("{e}"))?;
-    let provider_manager = ProviderManager::with_provider("claude").map_err(|e| format!("{e:?}"))?;
+    codelet_common::set_data_directory(tmp.clone())?;
+    let provider_manager =
+        ProviderManager::with_provider("claude").map_err(|e| format!("{e:?}"))?;
     let inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
     let (chunks_tx, mut chunks_rx) =
@@ -76,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             kind: request.kind,
             tool_name: request.tool_name.clone(),
             message: request.message.clone(),
-            details: request.details.clone(),
+            details: request.details,
         };
         session_for_pause.set_pause_state(Some(state));
         session_for_pause.set_status(SessionStatus::Paused);

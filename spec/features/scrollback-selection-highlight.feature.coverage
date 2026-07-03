@@ -1,0 +1,221 @@
+{
+  "scenarios": [
+    {
+      "name": "Selected cells are painted with the reversed style",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+          "lines": "65-85",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The scrollbar gutter column is never highlighted",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+          "lines": "86-106",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No selection paints no highlight",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+          "lines": "107-124",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A multi-row selection highlights first, middle, and last rows correctly",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+          "lines": "125-170",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A selection scrolled partly off-screen highlights only the visible portion",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+          "lines": "171-209",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/scrollback_highlight.rs"
+    ],
+    "totalLinesCovered": 270
+  }
+}

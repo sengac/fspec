@@ -274,27 +274,21 @@ fn large_paste_keeps_the_full_buffer_but_caps_the_input_at_6_visible_rows() {
 
 // ─────────────────────────────────────────────────────────────────────────
 // Supplementary test (RPC-403 review, warning 2 — documented, no @step
-// comments): Critical modals without a focused text field must CONSUME
-// Event::Paste (swallow it) so a paste can never leak into the agent
-// input hidden behind them. RPC-406 deleted the PauseDialog modal, so
-// the invariant is pinned on HitlDialog (option-only, no free text).
+// comments): RPC-411 replaced the HitlDialog modal with the inline HITL
+// prompt. Options mode must CONSUME Event::Paste (swallow it) so a
+// paste can never leak into the composer draft; freeform/Other mode
+// inserts the paste into the SHARED composer input (TS parity — the
+// real MultiLineInput is active). See
+// tests/inline_hitl_prompt_rpc411.rs for the full key/paste matrix.
 // ─────────────────────────────────────────────────────────────────────────
 
-#[test]
-fn paste_while_pause_dialog_is_open_is_swallowed_and_never_reaches_the_agent_input() {
-    use codelet_fspec_tui::HitlDialog;
-    use codelet_rpc_types::{HitlOption, HitlRequest, SessionId};
-
-    // Given: the agent input holds a draft and a Critical HitlDialog
-    // is the topmost compositor layer.
-    let mut h = AppTestHarness::new();
-    h.app.navigator_mut().agent.input.set_value("agent draft");
-    let dialog = HitlDialog::new(
-        SessionId::new("s-1"),
-        HitlRequest {
+fn rpc411_hitl_request() -> codelet_rpc_types::HitlRequest {
+    use codelet_rpc_types::{HitlOption, HitlQuestion, HitlRequest};
+    HitlRequest {
+        questions: vec![HitlQuestion {
             id: "q-1".to_string(),
-            question: "Run tool?".to_string(),
             header: "Apply?".to_string(),
+            question: "Run tool?".to_string(),
             options: vec![
                 HitlOption {
                     label: "Yes".to_string(),
@@ -305,29 +299,49 @@ fn paste_while_pause_dialog_is_open_is_swallowed_and_never_reaches_the_agent_inp
                     description: "skip".to_string(),
                 },
             ],
-            allow_text_input: false,
-        },
-    );
-    h.app.compositor_mut().push(Box::new(dialog));
-    assert_eq!(h.app.compositor().len(), 1, "hitl dialog must be open");
+        }],
+    }
+}
+
+#[test]
+fn paste_while_hitl_options_prompt_is_active_is_swallowed_and_never_reaches_the_agent_input() {
+    use codelet_fspec_tui::Action;
+    use codelet_rpc_types::SessionId;
+
+    // Given: the agent input holds a draft and the focused session has
+    // an active options-mode HITL slot (rendered once so the AgentView
+    // caches the prompt for paste routing).
+    let mut h = AppTestHarness::new();
+    h.app
+        .dispatch(Action::SessionCreated(SessionId::new("s-1")));
+    h.app.navigator_mut().active_view = ViewMode::Agent;
+    h.app.navigator_mut().agent.input.set_value("agent draft");
+    h.app.dispatch(Action::HitlPromptFetched {
+        session_id: SessionId::new("s-1"),
+        request: rpc411_hitl_request(),
+    });
+    let area = Rect::new(0, 0, 100, 20);
+    let mut buf = Buffer::empty(area);
+    h.app.render(area, &mut buf);
 
     // When: a multi-line paste arrives through the real App entry point.
     let _ = h.app.handle_paste("clipboard\ncontents");
 
-    // Then: the paste is NOT inserted into the agent input hidden
-    // behind the Critical modal (it must not fall through)…
+    // Then: the paste is NOT inserted into the composer draft hidden
+    // behind the options prompt (consumed/ignored)…
     assert_eq!(
         h.app.navigator().agent.input.value(),
         "agent draft",
-        "paste while HitlDialog is open must never reach the agent input"
+        "paste while the options-mode HITL prompt shows must never reach the agent input"
     );
 
-    // …and it is not inserted anywhere else: no free-text row is
-    // focused, so the dialog must swallow the paste without dismissing
-    // itself or committing a button (no deferred pop callback ran).
-    assert_eq!(
-        h.app.compositor().len(),
-        1,
-        "swallowed paste must leave the hitl dialog open and unchanged"
+    // …and the prompt stays active (a swallowed paste must not answer
+    // or cancel the request).
+    assert!(
+        h.app
+            .agent_view_store()
+            .hitl_prompt_for(&SessionId::new("s-1"))
+            .is_some(),
+        "swallowed paste must leave the HITL slot active and unchanged"
     );
 }

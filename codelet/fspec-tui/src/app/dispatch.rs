@@ -34,15 +34,12 @@ impl App {
                 self.maybe_push_error_dialog_for_chunk(chunk); // RPC-079
             }
             Action::SessionStatusChanged(id, status) => {
-                // RPC-045: push-driven SessionStatus from status_changes_rx.
                 self.handle_session_status_changed(id.clone(), *status);
             }
             Action::Disconnected if !self.compositor.contains(DISCONNECT_DIALOG_ID) => {
-                // RPC-011 CR-1: DisconnectDialog @ Priority::Critical.
                 self.compositor.push(Box::new(DisconnectDialog::new()));
             }
             Action::ManualReconnect => {
-                // RPC-011: route `r` through FspecBackend (no-op default).
                 self.backend.request_manual_reconnect();
             }
             Action::Reconnected => {
@@ -232,7 +229,6 @@ impl App {
             }
             Action::ScrollbackLineUp => self.scroll_focused(-1),
             Action::ScrollbackLineDown => self.scroll_focused(1),
-            // RPC-381: turn-selection (SELECT) mode reducers.
             Action::ToggleTurnSelectMode => self.handle_toggle_turn_select_mode(),
             Action::TurnNavUp => self.handle_turn_nav(crate::views::agent::TurnDir::Up),
             Action::TurnNavDown => self.handle_turn_nav(crate::views::agent::TurnDir::Down),
@@ -247,9 +243,12 @@ impl App {
             }
             Action::ScrollbackMouseWheelUp(velocity) => self.scroll_focused(-(*velocity as i64)),
             Action::ScrollbackMouseWheelDown(velocity) => self.scroll_focused(*velocity as i64),
-            Action::HistoryPrev => {
-                self.handle_history_prev();
-            }
+            Action::SelectionBegin(cell) => self.handle_selection_begin(*cell),
+            Action::SelectionExtend(cell) => self.handle_selection_extend(*cell),
+            Action::SelectionCommit => self.handle_selection_commit(),
+            Action::SelectionClear => self.handle_selection_clear(),
+            Action::CopyToClipboard(text) => self.handle_copy_to_clipboard(text.clone()),
+            Action::HistoryPrev => self.handle_history_prev(),
             Action::HistoryNext => {
                 self.handle_history_next();
             }

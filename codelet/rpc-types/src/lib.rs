@@ -1094,28 +1094,54 @@ pub struct HitlOption {
     pub description: String,
 }
 
-/// Single HITL question to render in the AgentView modal — wire-facing
-/// slice of `codelet_tools::request_user_input::HitlQuestion`. The
-/// internal type wraps multiple questions; the AgentView wire surface
-/// represents one question per outgoing request.
+/// Single HITL question — wire-facing mirror of
+/// `codelet_tools::request_user_input::HitlQuestion` (RPC-410). An
+/// empty `options` vec means a pure freeform question; a question WITH
+/// options still accepts freeform text via the virtual "Other..."
+/// entry — freeform capability is derived exactly as the TypeScript
+/// frontend derives it (there is no `allow_text_input` flag).
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HitlQuestion {
+    pub id: String,
+    pub header: String,
+    pub question: String,
+    #[serde(default)]
+    pub options: Vec<HitlOption>,
+}
+
+/// Active HITL request — carries the FULL array of 1–3 questions in
+/// order (RPC-410: TS parity with `HitlRequestInfo { questions }`; no
+/// first-question slicing).
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HitlRequest {
-    pub id: String,
-    pub question: String,
-    pub header: String,
-    pub options: Vec<HitlOption>,
-    pub allow_text_input: bool,
+    pub questions: Vec<HitlQuestion>,
 }
 
-/// User's response to an `HitlRequest`. The `value` field carries
-/// either the selected option label or the freeform text the user
-/// entered.
+/// One structured answer for one HITL question (RPC-410: TS parity
+/// with `HitlAnswer { id, selected, other }`). Option answers carry
+/// the chosen labels in `selected` with `other: None`; freeform /
+/// "Other..." answers carry `selected: []` and the typed text in
+/// `other`.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HitlAnswer {
+    pub id: String,
+    pub selected: Vec<String>,
+    pub other: Option<String>,
+}
+
+/// User's response to an `HitlRequest` (RPC-410: TS parity with
+/// `{ cancelled, answers }`). Cancel (Esc) is `cancelled: true` with
+/// an empty `answers` vec; submit is `cancelled: false` with one
+/// answer per question.
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HitlResponse {
-    pub id: String,
-    pub value: String,
+    pub cancelled: bool,
+    #[serde(default)]
+    pub answers: Vec<HitlAnswer>,
 }
 
 // ---------------------------------------------------------------------------
@@ -1623,30 +1649,54 @@ mod tests {
     }
 
     #[test]
-    fn hitl_request_round_trips_with_multiple_options_and_text_input() {
+    fn hitl_request_round_trips_with_multiple_questions_and_empty_options() {
         round_trip(HitlRequest {
-            id: "q-1".to_string(),
-            question: "Apply changes?".to_string(),
-            header: "Apply".to_string(),
-            options: vec![
-                HitlOption {
-                    label: "Yes".to_string(),
-                    description: "Proceed".to_string(),
+            questions: vec![
+                HitlQuestion {
+                    id: "q-1".to_string(),
+                    header: "Apply".to_string(),
+                    question: "Apply changes?".to_string(),
+                    options: vec![
+                        HitlOption {
+                            label: "Yes".to_string(),
+                            description: "Proceed".to_string(),
+                        },
+                        HitlOption {
+                            label: "No".to_string(),
+                            description: "Stop".to_string(),
+                        },
+                    ],
                 },
-                HitlOption {
-                    label: "No".to_string(),
-                    description: "Stop".to_string(),
+                HitlQuestion {
+                    id: "q-2".to_string(),
+                    header: "Notes".to_string(),
+                    question: "Any notes?".to_string(),
+                    options: vec![],
                 },
             ],
-            allow_text_input: true,
         });
     }
 
     #[test]
     fn hitl_response_round_trips() {
         round_trip(HitlResponse {
-            id: "q-1".to_string(),
-            value: "Yes".to_string(),
+            cancelled: false,
+            answers: vec![
+                HitlAnswer {
+                    id: "q-1".to_string(),
+                    selected: vec!["Yes".to_string()],
+                    other: None,
+                },
+                HitlAnswer {
+                    id: "q-2".to_string(),
+                    selected: vec![],
+                    other: Some("free text".to_string()),
+                },
+            ],
+        });
+        round_trip(HitlResponse {
+            cancelled: true,
+            answers: vec![],
         });
     }
 

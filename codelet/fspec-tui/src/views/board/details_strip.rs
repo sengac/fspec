@@ -130,6 +130,30 @@ fn render_placeholder(area: Rect, buf: &mut Buffer) {
     Paragraph::new(Line::from(Span::raw(text))).render(rect, buf);
 }
 
+/// COPY-009: the exact border-free on-screen text of the five strip rows
+/// for `selected`, reproducing `render`'s truncation/wrap so the selection
+/// reader can copy what is shown. Row order: id:title, description line 1,
+/// description line 2, attachments, metadata. Rows past real content are
+/// empty. Returns the placeholder line when nothing is selected.
+pub(super) fn visible_strip_rows(selected: Option<&WorkUnitInfo>, width: u16) -> Vec<String> {
+    let w = width as usize;
+    let Some(unit) = selected else {
+        return vec!["No work unit selected".to_string()];
+    };
+    let title = truncate_to(format!("{}: {}", unit.id, unit.title), w);
+    let avail = (w.saturating_sub(2)).max(10).min(w);
+    let normalized = normalize(&unit.description.clone().unwrap_or_default());
+    let (line1, line2) = wrap_to_two_lines(&normalized, avail);
+    let attachments = line_to_plain(&build_attachments_line(unit, width));
+    let metadata = line_to_plain(&build_metadata_line(unit, width));
+    vec![title, line1, line2, attachments, metadata]
+}
+
+/// Flatten a styled [`Line`] to its plain concatenated span text.
+fn line_to_plain(line: &Line<'static>) -> String {
+    line.spans.iter().map(|s| s.content.as_ref()).collect()
+}
+
 fn normalize(s: &str) -> String {
     let collapsed = s.replace('\n', " ");
     let mut out = String::with_capacity(collapsed.len());

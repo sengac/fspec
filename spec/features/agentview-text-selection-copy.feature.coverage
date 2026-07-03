@@ -1,0 +1,296 @@
+{
+  "scenarios": [
+    {
+      "name": "Dragging across two lines copies their text and keeps the highlight",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "174-219",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Long-pressing a line selects and copies it",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "225-252",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel scrolling still works and does not select or copy",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "258-284",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quick click does not select or copy",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "290-316",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc clears an active selection without copying",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "322-364",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scrolling clears an active selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "370-414",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Copying a line abutting the scrollbar excludes the scrollbar glyph",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "421-462",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+              "lines": [
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mouse capture remains enabled throughout selection and copy",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs",
+          "lines": "469-515",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agentview_text_selection_copy_copy006.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_scroll.rs",
+      "codelet/fspec-tui/src/views/agent/mouse_dispatch.rs"
+    ],
+    "totalLinesCovered": 456
+  }
+}

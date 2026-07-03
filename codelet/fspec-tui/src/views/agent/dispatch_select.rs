@@ -70,6 +70,13 @@ impl AgentView {
                 // RPC-382 Esc cascade: close the modal first (stay in
                 // SELECT mode); only a second Esc exits SELECT mode.
                 if self.turn_modal_seq.is_some() {
+                    // COPY-008 rule [6]: the FIRST Esc clears an active
+                    // modal text selection (modal stays open); a later
+                    // Esc then closes the modal.
+                    if self.turn_modal_selection.is_some() {
+                        self.turn_modal_selection = None;
+                        return Some(EventResult::consumed());
+                    }
                     self.turn_modal_seq = None;
                     self.emit(Action::CloseTurnModal);
                     return Some(EventResult::consumed());

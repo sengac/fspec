@@ -21,6 +21,7 @@
 //!   2. UNCONDITIONALLY sends the unblocking response,
 //!   3. joins the handler with a hard timeout,
 //!   4. only THEN runs assertions.
+//!
 //! Never reorder these — an assert before the unblock reintroduces the
 //! hang-on-failure mode.
 
@@ -121,7 +122,7 @@ async fn join_within<T>(handle: tokio::task::JoinHandle<T>, secs: u64) -> Option
     tokio::time::timeout(Duration::from_secs(secs), handle)
         .await
         .ok()
-        .and_then(|joined| joined.ok())
+        .and_then(std::result::Result::ok)
 }
 
 fn is_paused_chunk(chunk: &StreamChunk) -> bool {
@@ -240,9 +241,7 @@ async fn fspec_request_chunk_reaches_subscribers_while_the_fspec_wait_is_still_p
         "the fspec wait must still be pending when the chunk arrives"
     );
     assert!(
-        result
-            .as_ref()
-            .is_some_and(|r| r.success && r.data == "ok"),
+        result.as_ref().is_some_and(|r| r.success && r.data == "ok"),
         "waiter must unblock with the sent result within 5s, got {result:?}"
     );
 }

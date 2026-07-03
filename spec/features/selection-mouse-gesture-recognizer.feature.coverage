@@ -1,0 +1,318 @@
+{
+  "scenarios": [
+    {
+      "name": "Drag begins and extends a selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "lines": "133-158",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A stationary long-press begins a selection at the press cell",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "lines": "159-174",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A quick click produces no selection gesture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "lines": "175-193",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Releasing an active selection commits it",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "lines": "194-214",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel events are ignored during an active selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "lines": "215-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Long-press then drag begins, extends, and commits",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+          "lines": "236-272",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/mouse/gesture.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/mouse/gesture.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/mouse/gesture.rs"
+    ],
+    "totalLinesCovered": 346
+  }
+}
