@@ -1381,13 +1381,41 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     }
 
     fn delete_provider_credentials(&self, provider_id: &str) -> Result<(), String> {
-        // RPC-054 (reopened): actually remove the provider entry from
-        // credentials.json and refresh the in-memory store, mirroring TS
-        // deleteCredential. Absent provider / missing file is a no-op success.
+        // PROV-133: pressing 'd' in provider settings must actually remove the
+        // credential across EVERY source the availability projection reads.
+        // `ProviderCredentials::detect()` derives `configured` from ENV VARS +
+        // OAuth AUTH FILES (never credentials.json), so an authoritative delete
+        // (Option A) must clear all three sources for the target provider.
+        //
+        // 1. credentials.json entry (absent provider / missing file = no-op).
         crate::credentials::delete_credential(provider_id)?;
+
+        // 2. Process env vars for ONLY this provider (env source).
+        crate::credentials::remove_provider_env_vars(provider_id);
+
+        // 3. OAuth auth file for the three OAuth providers (auth-file source).
+        //    Sync file removals so this sync bridge never needs a tokio runtime;
+        //    a missing file stays a no-op success. Copilot uses the sync twin
+        //    `delete_copilot_auth_sync` for the same reason.
+        match provider_id {
+            "anthropic" => {
+                codelet_providers::claude_auth::delete_claude_auth()
+                    .map_err(|e| format!("failed to delete claude auth file: {e}"))?;
+            }
+            "codex" => {
+                codelet_providers::codex::codex_auth::delete_codex_auth()
+                    .map_err(|e| format!("failed to delete codex auth file: {e}"))?;
+            }
+            "github-copilot" => {
+                codelet_providers::copilot::delete_copilot_auth_sync()
+                    .map_err(|e| format!("failed to delete copilot auth file: {e}"))?;
+            }
+            _ => {}
+        }
+
         tracing::info!(
             provider = provider_id,
-            "delete_provider_credentials: credential removed from credentials.json"
+            "delete_provider_credentials: credential removed from credentials.json, env vars, and auth file"
         );
         Ok(())
     }

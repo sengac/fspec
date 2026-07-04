@@ -1,0 +1,208 @@
+{
+  "scenarios": [
+    {
+      "name": "Active filter renders prompt with trailing cursor",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/model_selector_filter_row_model007.rs",
+          "lines": "150-193",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Committed non-empty filter renders prompt without cursor",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/model_selector_filter_row_model007.rs",
+          "lines": "198-223",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No filter renders no prompt row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/model_selector_filter_row_model007.rs",
+          "lines": "228-259",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter row reserves a line so no model row is hidden",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/model_selector_filter_row_model007.rs",
+          "lines": "263-342",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/render.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/model_selector_filter_row_model007.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/model_selector/render.rs"
+    ],
+    "totalLinesCovered": 310
+  }
+}

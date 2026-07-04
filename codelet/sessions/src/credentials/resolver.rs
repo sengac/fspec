@@ -248,3 +248,25 @@ pub fn update_all_provider_env_vars() -> Result<(), String> {
     }
     Ok(())
 }
+
+/// PROV-133: Remove every environment variable that could make a single
+/// provider appear configured, and ONLY that provider's variables.
+///
+/// This is the env-var half of the authoritative multi-source delete
+/// (Option A). `ProviderCredentials::detect()` projects `configured` from
+/// live env vars (never `credentials.json`), so deleting a provider must
+/// unset every name in [`get_provider_env_vars`]. For `anthropic` we also
+/// remove `CLAUDE_CODE_OAUTH_TOKEN`, which `resolve_and_set_env_var` sets
+/// for OAuth tokens (resolver.rs:196) — it is already listed among the
+/// anthropic env vars, but we clear it explicitly for symmetry with that
+/// set site. Providers other than the target are never touched.
+pub fn remove_provider_env_vars(provider_id: &str) {
+    if let Some(env_vars) = get_provider_env_vars(provider_id) {
+        for env_var in env_vars {
+            std::env::remove_var(env_var);
+        }
+    }
+    if provider_id == "anthropic" {
+        std::env::remove_var("CLAUDE_CODE_OAUTH_TOKEN");
+    }
+}

@@ -143,6 +143,23 @@ impl ModelSelectorView {
         self.selected_index
     }
 
+    /// MODEL-007: the number of model rows the last render reserved for the
+    /// windowed list (body height minus the legend, minus the filter line
+    /// when a filter prompt is present). Exposed for the filter-reservation
+    /// acceptance test, which asserts the value drops by one when the filter
+    /// row steals a body line — mirrors the existing `selected_index` /
+    /// `model_count` observability accessors.
+    ///
+    /// Integration tests live in a SEPARATE crate (`tests/`) and cannot see
+    /// `#[cfg(test)]` lib items, so this accessor must stay ungated `pub`
+    /// (matching the sibling `set_visible_rows_for_test` popup accessors).
+    /// `#[doc(hidden)]` keeps it off the published API surface — the same
+    /// convention those siblings use.
+    #[doc(hidden)]
+    pub fn visible_rows_for_test(&self) -> usize {
+        self.visible_rows
+    }
+
     /// RPC-344: the current custom-model CRUD sub-mode.
     pub fn custom_model_mode(&self) -> &CustomModelMode {
         &self.custom_model_mode
@@ -168,16 +185,33 @@ impl ModelSelectorView {
         self.providers.iter().map(|p| p.models.len()).sum()
     }
 
-    pub fn title_text(&self) -> String {
-        let suffix = if self.is_refreshing {
-            " (refreshing...)"
-        } else {
-            ""
-        };
+    /// MODEL-008: the SINGLE source of truth for the browse-list title's
+    /// dim count span. Produces the already-pluralized `(N models)` label
+    /// with the `(refreshing...)` status annotation appended when a refresh
+    /// is in flight. BOTH `render.rs` (the rendered dim span) and
+    /// [`Self::title_text`] consume this, so the rendered UI and the tested
+    /// string can never drift apart.
+    pub fn title_count_label(&self) -> String {
         // PROV-127: share the singular/plural rule with the header rows.
-        format!(
-            "Select Model {}{suffix}",
-            super::rows::model_count_label(self.total_model_count())
-        )
+        let base = super::rows::model_count_label(self.total_model_count());
+        if self.is_refreshing {
+            format!("{base} (refreshing...)")
+        } else {
+            base
+        }
+    }
+
+    /// The bold-yellow name span of the browse-list title. A constant today,
+    /// exposed as a method so render and tests share one definition.
+    pub fn title_name(&self) -> &'static str {
+        "Select Model"
+    }
+
+    /// The full flat title string (`"Select Model (N models)"`, plus a
+    /// trailing ` (refreshing...)` while refreshing). Composed from the same
+    /// [`Self::title_name`] + [`Self::title_count_label`] pieces that
+    /// `render.rs` paints, so this remains a faithful projection of the UI.
+    pub fn title_text(&self) -> String {
+        format!("{} {}", self.title_name(), self.title_count_label())
     }
 }

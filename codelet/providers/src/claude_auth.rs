@@ -82,3 +82,20 @@ pub async fn write_claude_auth(auth: &ClaudeAuthJson) -> Result<()> {
     tokio::fs::write(&auth_path, content).await?;
     Ok(())
 }
+
+/// Delete the Claude OAuth credential file (idempotent logout).
+///
+/// PROV-133: Mirrors `copilot::auth::delete_copilot_auth` so a provider
+/// delete can authoritatively clear the auth-file source that
+/// `ProviderCredentials::detect()` reads. Returns `Ok(())` when the file is
+/// already absent so deleting an unconfigured provider stays a no-op success.
+/// Uses `std::fs` (sync) so it can be called from sync contexts like
+/// `SessionManager::delete_provider_credentials`.
+pub fn delete_claude_auth() -> Result<()> {
+    let auth_path = get_claude_auth_path();
+    match std::fs::remove_file(&auth_path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e.into()),
+    }
+}

@@ -60,6 +60,23 @@ pub fn get_auth_path() -> PathBuf {
     get_codex_home().join("auth.json")
 }
 
+/// Delete the Codex OAuth credential file (idempotent logout).
+///
+/// PROV-133: Mirrors `copilot::auth::delete_copilot_auth` so a provider
+/// delete can authoritatively clear the auth-file source that
+/// `ProviderCredentials::detect()` reads via `has_codex_auth`. Returns
+/// `Ok(())` when the file is already absent so deleting an unconfigured
+/// provider stays a no-op success. Note: on macOS keychain-stored codex
+/// credentials are not removed here — only the file source is cleared.
+pub fn delete_codex_auth() -> Result<()> {
+    let auth_path = get_auth_path();
+    match fs::remove_file(&auth_path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e.into()),
+    }
+}
+
 /// Compute the keyring store key from codex home path
 /// Format: cli|{first 16 chars of sha256 hash}
 #[cfg(target_os = "macos")]

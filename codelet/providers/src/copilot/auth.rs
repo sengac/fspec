@@ -229,6 +229,22 @@ pub async fn delete_copilot_auth() -> Result<()> {
     Ok(())
 }
 
+/// Delete the Copilot credential file (idempotent logout), synchronous.
+///
+/// PROV-133: The `SessionManager::delete_provider_credentials` bridge is a
+/// SYNC `fn` that may run inside an existing tokio runtime, so it cannot
+/// safely `block_on` the async [`delete_copilot_auth`]. This sync twin does
+/// the same idempotent `remove_file` via `std::fs` and stays a no-op success
+/// when the file is already absent.
+pub fn delete_copilot_auth_sync() -> Result<()> {
+    let path = get_copilot_auth_path();
+    match std::fs::remove_file(&path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e).with_context(|| format!("failed to delete {}", path.display())),
+    }
+}
+
 /// Apply `0o600` permissions to a credential file on Unix hosts.
 ///
 /// No-op on non-Unix platforms so Windows builds link without cfg plumbing.

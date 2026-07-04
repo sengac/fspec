@@ -56,6 +56,28 @@ pub(crate) fn render_two_span_title(
     Paragraph::new(line).render(area, buf);
 }
 
+/// MODEL-008 — label-based two-span title: the `name` segment in **bold
+/// yellow** and a ` {label}` segment in dim gray (`Color::DarkGray`),
+/// where `label` is a PRE-BUILT, already-pluralized string (e.g.
+/// `"(1 model)"` / `"(12 models)"` / `"(12 models) (refreshing...)"`).
+///
+/// Sibling of [`render_two_span_title`] (which takes `count`+`suffix` and
+/// cannot pluralize): the model view builds the label from the single
+/// source of truth `rows::model_count_label`, so the singular/plural rule
+/// lives in exactly one place and the provider view's `"items"` path is
+/// left untouched.
+pub(crate) fn render_two_span_title_label(area: Rect, buf: &mut Buffer, name: &str, label: &str) {
+    let name_style = Style::default()
+        .fg(Color::Yellow)
+        .add_modifier(Modifier::BOLD);
+    let count_style = Style::default().fg(Color::DarkGray);
+    let line = Line::from(vec![
+        Span::styled(name.to_string(), name_style),
+        Span::styled(format!(" {label}"), count_style),
+    ]);
+    Paragraph::new(line).render(area, buf);
+}
+
 pub(crate) fn render_footer_hint(area: Rect, buf: &mut Buffer, text: &str) {
     Paragraph::new(text.to_string()).render(area, buf);
 }

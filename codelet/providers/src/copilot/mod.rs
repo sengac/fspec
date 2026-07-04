@@ -72,8 +72,8 @@ pub const CONTEXT_WINDOW: usize = 200_000;
 pub const MAX_OUTPUT_TOKENS: usize = 4_096;
 
 pub use auth::{
-    delete_copilot_auth, get_copilot_auth_path, read_copilot_auth, read_copilot_auth_sync,
-    write_copilot_auth, CopilotAuthJson,
+    delete_copilot_auth, delete_copilot_auth_sync, get_copilot_auth_path, read_copilot_auth,
+    read_copilot_auth_sync, write_copilot_auth, CopilotAuthJson,
 };
 pub use base_url::{base_url_for, CopilotBaseUrl};
 pub use behavior_facade::{
