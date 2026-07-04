@@ -174,6 +174,10 @@ impl ModelSelectorView {
         } else {
             ""
         };
-        format!("Select Model ({} models){suffix}", self.total_model_count())
+        // PROV-127: share the singular/plural rule with the header rows.
+        format!(
+            "Select Model {}{suffix}",
+            super::rows::model_count_label(self.total_model_count())
+        )
     }
 }

@@ -955,45 +955,98 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 // failure (cold cache offline, corrupt file) → None → the
                 // built-ins keep their empty model lists (prior behaviour).
                 let cloud_registry = build_cloud_registry();
-                let mut providers: Vec<codelet_rpc_types::ProviderInfo> = list
-                    .into_iter()
-                    .map(|p| {
-                        let is_custom = p.is_custom;
-                        let display_name = p.display_name.unwrap_or_else(|| p.name.clone());
-                        let mut models: Vec<codelet_rpc_types::ModelEntry> = p
-                            .models
-                            .into_iter()
-                            .map(|m| codelet_rpc_types::ModelEntry {
-                                id: m.id.clone(),
-                                display_name: m.id,
-                                context_window: u32::try_from(m.context_window).unwrap_or(u32::MAX),
-                                supports_reasoning: m.supports_thinking,
-                                supports_vision: m.supports_vision,
-                                is_custom,
-                            })
-                            .collect();
-                        // RPC-073: built-in (non-custom) providers carry no
-                        // declared models — fill them from the models.dev
-                        // registry, gated on configured credentials.
-                        if !is_custom && models.is_empty() {
-                            if let Some(registry) = cloud_registry.as_ref() {
-                                let has_creds =
-                                    crate::cloud_models::provider_has_credentials(&p.name);
-                                models = crate::cloud_models::cloud_model_entries(
-                                    registry, &p.name, has_creds,
-                                );
-                            }
+                // PROV-130: partition the mapped sections into the cloud
+                // (built-in / canonical) bucket and the custom-provider bucket
+                // by the SOURCE `p.is_custom` flag. The wire `ProviderInfo`
+                // carries no section-level `is_custom`, so the split must happen
+                // here at the map, before it is erased. Mirrors the TS
+                // `cloudSections` vs `customSections` distinction consumed by
+                // `modelInitializationService.ts`.
+                let mut cloud_sections: Vec<codelet_rpc_types::ProviderInfo> = Vec::new();
+                let mut custom_sections: Vec<codelet_rpc_types::ProviderInfo> = Vec::new();
+                for p in list {
+                    let is_custom = p.is_custom;
+                    let display_name = p.display_name.unwrap_or_else(|| p.name.clone());
+                    let mut models: Vec<codelet_rpc_types::ModelEntry> = p
+                        .models
+                        .into_iter()
+                        .map(|m| codelet_rpc_types::ModelEntry {
+                            id: m.id.clone(),
+                            display_name: m.id,
+                            context_window: u32::try_from(m.context_window).unwrap_or(u32::MAX),
+                            supports_reasoning: m.supports_thinking,
+                            supports_vision: m.supports_vision,
+                            is_custom,
+                        })
+                        .collect();
+                    // RPC-073: built-in (non-custom) providers carry no
+                    // declared models — fill them from the models.dev
+                    // registry, gated on configured credentials.
+                    if !is_custom && models.is_empty() {
+                        if let Some(registry) = cloud_registry.as_ref() {
+                            let has_creds =
+                                crate::cloud_models::provider_has_credentials(&p.name);
+                            models = crate::cloud_models::cloud_model_entries(
+                                registry, &p.name, has_creds,
+                            );
                         }
-                        // RPC-338: cloud / custom providers are never profile
-                        // sections and are always treated as reachable.
-                        crate::profile_sections::cloud_provider_info(&p.name, &display_name, models)
-                    })
-                    .collect();
-                // RPC-338: append local-server profile sections, probing each
-                // profile's `/v1/models` endpoint to compute reachability
-                // (MODEL-004: a profile with custom models is never marked
-                // unreachable). Mirrors TS `loadProfileSections`.
-                providers.extend(crate::profile_sections::build_local_profile_sections());
+                    }
+                    // RPC-338: cloud / custom providers are never profile
+                    // sections and are always treated as reachable.
+                    let info = crate::profile_sections::cloud_provider_info(
+                        &p.name,
+                        &display_name,
+                        models,
+                    );
+                    if is_custom {
+                        custom_sections.push(info);
+                    } else {
+                        cloud_sections.push(info);
+                    }
+                }
+                // PROV-129: synthesize the "Codex (ChatGPT)" section by
+                // re-parenting the OpenAI cloud models when Codex credentials
+                // (OAuth or Codex API key) are present. Mirrors TS
+                // `cloudSectionBuilder.ts` `extractCodexSection` (:191-237) +
+                // the `openai.hasCredentials = hasCodexCredentials` override
+                // (:117-119): the OpenAI catalog is allowlist-filtered under a
+                // synthetic Codex identity, the standalone OpenAI section is
+                // removed, and (PROV-130) the Codex section LEADS the cloud
+                // group. Applied to the CLOUD bucket only (customs are never
+                // re-parented) and BEFORE the PROV-127 drop-empty filter so the
+                // now-populated codex header survives and the now-empty openai
+                // header is dropped.
+                let cloud_sections = if let Some(registry) = cloud_registry.as_ref() {
+                    crate::cloud_models::synthesize_codex_section(cloud_sections, registry)
+                } else {
+                    cloud_sections
+                };
+                // PROV-127: drop cloud/custom sections whose model list is empty
+                // so uncredentialed/known-absent providers do not render as dead
+                // "Provider (0 models)" headers. Mirrors TS
+                // `cloudSectionBuilder.ts` (`filter(s => s.hasCredentials)`) +
+                // `modelInitializationService.ts` (`filter(s => s.models.length
+                // > 0)`). Local profile sections (appended below) may legitimately
+                // have zero models when unreachable (RPC-338/MODEL-004) and are
+                // never subject to this filter.
+                let cloud_sections =
+                    crate::profile_sections::retain_populated_cloud_sections(cloud_sections);
+                let custom_sections =
+                    crate::profile_sections::retain_populated_cloud_sections(custom_sections);
+                // PROV-130: assemble the final DISPLAY order to match TS
+                // `modelInitializationService.ts:196-200`
+                // `[...profileSections, ...customSections, ...cloudSections]` —
+                // local-server profiles FIRST, then custom providers, then the
+                // cloud group. Because the first section-with-models is the
+                // auto-default, this makes the Rust default match TS.
+                //
+                // RPC-338: local-server profile sections probe each profile's
+                // `/v1/models` endpoint to compute reachability (MODEL-004: a
+                // profile with custom models is never marked unreachable).
+                // Mirrors TS `loadProfileSections`.
+                let mut providers = crate::profile_sections::build_local_profile_sections();
+                providers.extend(custom_sections);
+                providers.extend(cloud_sections);
                 providers
             }
             Err(e) => {

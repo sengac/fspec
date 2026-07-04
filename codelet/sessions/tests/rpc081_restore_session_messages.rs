@@ -18,7 +18,19 @@ use std::time::Duration;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_rpc_types::{SessionId, StreamChunk};
 use codelet_sessions::SessionManager;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, Mutex};
+
+/// PROV-132: Serializes the tests that swap the process-global data directory
+/// (`codelet_common::set_data_directory`) so a parallel test in this binary
+/// cannot swap the pointer out from under another test's `SessionManager::new()`
+/// — which eagerly loads `<data_dir>/default-model.json`. Without this guard a
+/// racing test observes a foreign persisted default model, making the
+/// malformed-envelope / no-default-model assertions flake on the first
+/// full-suite run. Mirrors RPC-385's async `DATA_DIR_GUARD` (a
+/// `tokio::sync::Mutex`, held across the `.await`s that follow — the awaits only
+/// drive this test's own already-constructed manager, never the global pointer,
+/// so serialising the whole body is both correct and async-safe).
+static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
 /// Drain all currently-broadcasted chunks for the given session,
 /// waiting up to `total_timeout` and collecting everything that
@@ -93,6 +105,7 @@ fn assistant_envelope(content: serde_json::Value) -> String {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_replays_user_and_assistant_text_into_inner_and_output() {
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
     let data_dir = tempfile::tempdir().expect("tempdir");
     let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
@@ -202,6 +215,7 @@ async fn restore_messages_replays_user_and_assistant_text_into_inner_and_output(
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_replays_assistant_thinking_text_and_tool_use() {
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
     let data_dir = tempfile::tempdir().expect("tempdir");
     let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
@@ -304,6 +318,7 @@ async fn restore_messages_replays_assistant_thinking_text_and_tool_use() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_replays_tool_result_without_appending_inner() {
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
     let data_dir = tempfile::tempdir().expect("tempdir");
     let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
@@ -369,6 +384,7 @@ async fn restore_messages_replays_tool_result_without_appending_inner() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_skips_system_reminder_envelopes_silently() {
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession via SessionManagerHandle
     let data_dir = tempfile::tempdir().expect("tempdir");
     let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
@@ -439,6 +455,7 @@ async fn restore_messages_skips_system_reminder_envelopes_silently() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_returns_err_on_unknown_session_id_without_panic() {
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManagerHandle whose underlying SessionManager has no session registered under the id "00000000-0000-0000-0000-000000000000"
     let data_dir = tempfile::tempdir().expect("tempdir");
     let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
@@ -467,6 +484,7 @@ async fn restore_messages_returns_err_on_unknown_session_id_without_panic() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn restore_messages_returns_err_on_malformed_envelope_json() {
+    let _guard = DATA_DIR_GUARD.lock().await;
     // @step Given a SessionManager has created a fresh BackgroundSession with baseline inner.messages.len() == N
     let data_dir = tempfile::tempdir().expect("tempdir");
     let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());

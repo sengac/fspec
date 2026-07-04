@@ -18,10 +18,43 @@
 
 use std::fs;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::SessionManager;
+
+/// Trimmed offline models.dev catalog (anthropic/openai/google) shared with
+/// PROV-101. Seeded into the temp cache so the built-in cloud providers
+/// populate from the models.dev registry with no network — the precondition
+/// PROV-127's drop-empty filter needs to KEEP a built-in cloud section.
+const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
+
+/// Serializes the tests that swap the process-global data directory
+/// (`codelet_common::set_data_directory`) and mutate credential env vars, so a
+/// parallel test cannot observe another test's seeded state. Mirrors PROV-118's
+/// `DATA_DIR_GUARD`; held across the synchronous portion of the test body.
+static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
+
+/// Seed a throwaway data dir with the offline models.dev cache and configure
+/// credentials for the built-in cloud providers `openai`, `anthropic` and
+/// `gemini` so they populate with >=1 model and survive the PROV-127
+/// drop-empty filter. `zai`/`codex`/`github-copilot` are intentionally left
+/// uncredentialed / absent from the catalog so they are dropped (zero models).
+///
+/// Returns the `TempDir` guard — the caller must keep it alive for the whole
+/// test body so `build_cloud_registry` can read the seeded cache. Mirrors the
+/// e2e fixture seeding in `e2e/prov-126-cloud-sections.test.ts`.
+fn seed_populated_cloud_env() -> tempfile::TempDir {
+    std::env::set_var("OPENAI_API_KEY", "sk-openai-test-dummy");
+    std::env::set_var("ANTHROPIC_API_KEY", "sk-ant-test-dummy");
+    std::env::set_var("GEMINI_API_KEY", "AIza-test-dummy");
+    let data_dir = tempfile::tempdir().expect("create temp data dir");
+    let cache_dir = data_dir.path().join("cache");
+    fs::create_dir_all(&cache_dir).expect("create cache dir");
+    fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models cache");
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data directory");
+    data_dir
+}
 
 /// Workspace root (one level above `codelet/sessions/`).
 fn workspace_root() -> PathBuf {
@@ -121,62 +154,85 @@ fn extract_method_body<'src>(src: &'src str, fn_name: &str) -> &'src str {
 }
 
 // =============================================================================
-// Scenario: list_providers returns all built-in providers when no custom
-// providers are configured
+// Scenario: list_providers returns built-in cloud providers only when they have
+// at least one model
 // =============================================================================
-#[test]
-fn list_providers_returns_all_six_built_in_providers() {
-    // @step Given a SessionManager is constructed in an environment with no ~/.fspec/providers/ custom configs
+#[tokio::test(flavor = "multi_thread")]
+async fn list_providers_returns_all_six_built_in_providers() {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    // @step Given a SessionManager is constructed with a seeded models.dev cache and credentials for openai, anthropic and gemini
     //
-    // We rely on the test environment NOT having custom providers
-    // registered for the canonical 6 keys. The built-ins are always
-    // returned by `list_providers_info` regardless of credentials
-    // (see codelet/providers/src/custom/management.rs:99-117).
+    // PROV-127: built-in cloud providers only survive the drop-empty filter
+    // when they expose >=1 model (credentialed + present in the models.dev
+    // cache). We seed openai/anthropic/gemini so they populate; zai/codex/
+    // github-copilot are left uncredentialed/absent so they are dropped.
+    let _data_dir = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
 
     // @step When the test calls handle.list_providers()
     let providers = handle.list_providers();
 
-    // @step Then the returned Vec<ProviderInfo> contains at least 6 entries
+    // @step Then every returned cloud ProviderInfo entry has at least one model
+    //
+    // The isolated data dir has no local-server profiles, so EVERY returned
+    // entry is a cloud section — and the PROV-127 filter guarantees each one
+    // carries >=1 model.
     assert!(
-        providers.len() >= 6,
-        "RPC-073 bug 3: list_providers returned {} entries, expected at least 6 (built-ins)",
-        providers.len(),
+        !providers.is_empty(),
+        "PROV-127: list_providers must return the populated built-in cloud sections",
     );
+    for p in &providers {
+        assert!(
+            !p.models.is_empty(),
+            "PROV-127: cloud provider '{}' survived the drop-empty filter with zero models",
+            p.key,
+        );
+    }
 
-    // @step Then the entries include the built-in provider keys 'claude', 'openai', 'gemini', 'zai', 'codex', and 'github-copilot'
-    // RPC-107: the legacy 'claude' slug was migrated to the TS-canonical
-    // 'anthropic' slug. Assert on the canonical slug going forward.
+    // @step Then the entries include the credentialed built-in provider keys 'openai' and 'anthropic'
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
-    for builtin in [
-        "anthropic",
-        "openai",
-        "gemini",
-        "zai",
-        "codex",
-        "github-copilot",
-    ] {
+    for builtin in ["openai", "anthropic"] {
         assert!(
             keys.contains(&builtin),
-            "RPC-073 bug 3 / RPC-107: canonical built-in provider '{builtin}' missing from list_providers result; got keys: {keys:?}",
+            "PROV-127: credentialed built-in '{builtin}' missing from list_providers result; got keys: {keys:?}",
+        );
+    }
+
+    // @step Then zero-model built-in cloud providers such as 'codex' and 'zai' are dropped from the result
+    //
+    // codex is genuinely absent from models.dev (KNOWN_ABSENT_FROM_MODELS_DEV)
+    // and zai has no seeded credentials/catalog entry — both resolve to zero
+    // models and must be dropped rather than rendered as dead "(0 models)" rows.
+    for dropped in ["codex", "zai"] {
+        assert!(
+            !keys.contains(&dropped),
+            "PROV-127: zero-model built-in '{dropped}' must be dropped, but it appeared; keys: {keys:?}",
         );
     }
 }
 
 // =============================================================================
 // Scenario: list_providers entries have populated key and display_name fields
-// and a non-null models Vec
+// and a non-empty models Vec
 // =============================================================================
-#[test]
-fn list_providers_entries_have_populated_fields() {
-    // @step Given list_providers has been called and returned a non-empty Vec
+#[tokio::test(flavor = "multi_thread")]
+async fn list_providers_entries_have_populated_fields() {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    // @step Given list_providers has been called with seeded credentials and returned a non-empty Vec
+    let _data_dir = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
     let providers = handle.list_providers();
     assert!(!providers.is_empty(), "list_providers must be non-empty");
 
-    // @step When the test inspects the 'claude' ProviderInfo entry
+    // @step When the test inspects the 'anthropic' ProviderInfo entry
     // RPC-107: the legacy 'claude' slug was migrated to the TS-canonical
     // 'anthropic' slug. Inspect the canonical entry instead.
     let anthropic = providers
@@ -184,7 +240,7 @@ fn list_providers_entries_have_populated_fields() {
         .find(|p| p.key == "anthropic")
         .expect("anthropic entry must exist in list_providers result (RPC-107 canonical slug)");
 
-    // @step Then the entry has a non-empty 'key' field matching the provider slug 'claude'
+    // @step Then the entry has a non-empty 'key' field matching the canonical provider slug 'anthropic'
     assert_eq!(anthropic.key, "anthropic");
 
     // @step Then the entry has a non-empty 'display_name' field
@@ -193,35 +249,35 @@ fn list_providers_entries_have_populated_fields() {
         "ProviderInfo.display_name must be non-empty for built-in providers (RPC-073 mapping)",
     );
 
-    // @step Then the entry has a 'models' field of type Vec (which may be empty for built-in providers but is present)
+    // @step Then the entry has a 'models' field of type Vec containing at least one model
     //
-    // codelet_providers::custom::list_providers_info returns empty
-    // models for built-ins (codelet/providers/src/custom/management.rs:115);
-    // custom providers carry their config models. The field MUST exist
-    // and be a Vec — even if empty.
-    let _models: &Vec<codelet_rpc_types::ModelEntry> = &anthropic.models;
-    // Reaching here is the type-shape proof.
+    // PROV-127: a built-in cloud provider only appears when its models list is
+    // populated from the models.dev registry — so the Vec is present AND
+    // non-empty here (was previously allowed to be empty pre-PROV-127).
+    let models: &Vec<codelet_rpc_types::ModelEntry> = &anthropic.models;
+    assert!(
+        !models.is_empty(),
+        "PROV-127: the 'anthropic' cloud section must carry at least one model to appear",
+    );
 }
 
 // =============================================================================
 // Scenario: list_providers maps codelet_providers::custom::ProviderInfo into
 // codelet_rpc_types::ProviderInfo with the correct field mapping
 // =============================================================================
-#[test]
-fn list_providers_maps_provider_info_fields_correctly() {
-    // @step Given a codelet_providers::custom::ProviderInfo with name='openai', display_name=Some('OpenAI'), is_custom=false, and a child model whose supports_thinking=true
+#[tokio::test(flavor = "multi_thread")]
+async fn list_providers_maps_provider_info_fields_correctly() {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    // @step Given a seeded models.dev cache and credentials populate the built-in 'openai' provider with a reasoning-capable model whose supports_thinking=true
     //
-    // We cannot construct a synthetic codelet_providers::custom::ProviderInfo
-    // directly because the adapter is invoked inside list_providers and
-    // there is no plumbing to inject a custom list. Instead, we
-    // exercise the mapping over the real built-in 'openai' entry:
-    //   * name = "openai" → key = "openai"
-    //   * display_name is Some(<some string>) → display_name unwrap
-    //   * is_custom = false → carried as Default on built-ins (vacuous)
-    //
-    // The supports_thinking → supports_reasoning rename and the u32
-    // saturating cast are exercised at compile time by the field shape
-    // (ModelEntry has supports_reasoning: bool and context_window: u32).
+    // The seeded catalog gives openai the `o3` model (reasoning=true,
+    // tool_call=true, context=200000). The models.dev `reasoning` flag maps to
+    // `supports_thinking` on the source struct and to `supports_reasoning` on
+    // the wire `ModelEntry`; the `usize` limit maps to `u32` (saturating).
+    let _data_dir = seed_populated_cloud_env();
     let handle: Arc<dyn SessionManagerHandle> =
         Arc::new(SessionManager::new()) as Arc<dyn SessionManagerHandle>;
 
@@ -232,26 +288,41 @@ fn list_providers_maps_provider_info_fields_correctly() {
         .find(|p| p.key == "openai")
         .expect("openai entry must exist");
 
-    // @step Then the resulting codelet_rpc_types::ProviderInfo has key='openai', display='OpenAI', and the child ModelEntry has supports_reasoning=true and is_custom=false
+    // @step Then the resulting codelet_rpc_types::ProviderInfo has key='openai', a non-empty display, and a child ModelEntry with supports_reasoning=true and is_custom=false
     assert_eq!(openai.key, "openai");
-    // display_name should be SOME non-empty string (the adapter uses
-    // display_name.unwrap_or(name) so even for entries with None it
-    // falls back to the name).
-    assert!(!openai.display_name.is_empty());
+    assert!(
+        !openai.display_name.is_empty(),
+        "display_name falls back to the provider name and must be non-empty",
+    );
+    assert!(
+        !openai.models.is_empty(),
+        "PROV-127: the populated 'openai' section must carry its seeded models",
+    );
+    let reasoning_model = openai
+        .models
+        .iter()
+        .find(|m| m.supports_reasoning)
+        .expect("seeded 'o3' model has reasoning=true → supports_reasoning=true");
+    assert!(
+        !reasoning_model.is_custom,
+        "built-in cloud models carry is_custom=false",
+    );
 
     // @step Then context_window and max_output_tokens are converted from usize to u32 with saturating cast
     //
-    // Type-level proof: ModelEntry.context_window is u32 by definition.
-    // For each model, the value must be a valid u32 (saturated if the
-    // source usize exceeded u32::MAX). Built-in providers have empty
-    // models so this is vacuous for them; assert it at type level
-    // instead.
+    // The seeded `o3` limit.context is 200000, well within u32 range: the
+    // wire `ModelEntry.context_window` is u32 by definition and must carry the
+    // saturating-cast value (u32::MAX had the source usize exceeded u32::MAX).
     for m in &openai.models {
         let _cw: u32 = m.context_window;
         let _sr: bool = m.supports_reasoning;
         let _vis: bool = m.supports_vision;
         let _custom: bool = m.is_custom;
     }
+    assert!(
+        reasoning_model.context_window > 0,
+        "seeded model context_window must be a valid non-zero u32 (200000)",
+    );
 }
 
 // =============================================================================

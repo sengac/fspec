@@ -32,6 +32,23 @@ pub fn cloud_provider_info(key: &str, display_name: &str, models: Vec<ModelEntry
     }
 }
 
+/// PROV-127: drop cloud provider sections whose model list is empty, so the
+/// `/model` selector does not render dead "Provider (0 models)" headers.
+/// Mirrors the TS reference (`cloudSectionBuilder.ts`
+/// `filter(s => s.hasCredentials)` + `modelInitializationService.ts`
+/// `filter(s => s.models.length > 0)`).
+///
+/// A **cloud** section is identified by `profile_name == None`. A **local
+/// profile** section (`profile_name == Some(..)`) is NEVER dropped by this
+/// filter — an unreachable profile with zero models must still render (see
+/// RPC-338 / MODEL-004).
+pub fn retain_populated_cloud_sections(sections: Vec<ProviderInfo>) -> Vec<ProviderInfo> {
+    sections
+        .into_iter()
+        .filter(|section| section.profile_name.is_some() || !section.models.is_empty())
+        .collect()
+}
+
 /// Build the wire `ProviderInfo` for a local-server profile section.
 ///
 /// Ports `profileSectionBuilder.ts`:
@@ -461,7 +478,32 @@ pub fn build_local_profile_sections() -> Vec<ProviderInfo> {
 
 /// Probe a profile's `/v1/models` endpoint. Returns `(model_ids,
 /// probe_failed)`; on any error `(vec![], true)`.
+///
+/// PROV-131: the probe bridges an async call into this synchronous function via
+/// `tokio::task::block_in_place(|| Handle::current().block_on(..))`, which
+/// requires a live MULTI-THREAD tokio runtime. When `list_providers` is invoked
+/// from a plain (non-tokio) or current-thread context there is no such runtime,
+/// so `block_in_place` / `Handle::current()` would PANIC ("there is no reactor
+/// running" / "can call blocking only when running on the multi-threaded
+/// runtime"). Guard the bridge with `Handle::try_current()` +
+/// `runtime_flavor() == MultiThread`; when absent, log via `tracing::warn` and
+/// degrade gracefully — skip the probe and report it as failed so the profile
+/// renders unreachable (empty models). Mirrors the TS `loadProfileSections`
+/// try/catch that sets `isUnreachable = true` on any probe failure.
 fn probe_profile_models(profile: &LocalServerProfile) -> (Vec<String>, bool) {
+    let on_multi_thread_runtime = matches!(
+        tokio::runtime::Handle::try_current().map(|h| h.runtime_flavor()),
+        Ok(tokio::runtime::RuntimeFlavor::MultiThread)
+    );
+    if !on_multi_thread_runtime {
+        tracing::warn!(
+            target: "profile_sections",
+            base_url = %profile.base_url,
+            "probe_profile_models: no multi-thread tokio runtime available; \
+             skipping /v1/models probe and marking profile unreachable",
+        );
+        return (Vec::new(), true);
+    }
     let base_url = profile.base_url.clone();
     let api_key = profile.api_key.clone();
     let result = tokio::task::block_in_place(|| {
@@ -593,6 +635,73 @@ mod tests {
         // @step And the "custom-profile" entry lists its custom models
         assert_eq!(info.models.len(), 1);
         assert!(info.models[0].is_custom);
+    }
+
+    // ====================================================================
+    // PROV-127 — drop empty/uncredentialed cloud sections (TS parity).
+    // Feature: spec/features/model-selector-cloud-sections.feature
+    // Mirrors TS cloudSectionBuilder.ts `filter(s => s.hasCredentials)` +
+    // modelInitializationService.ts `filter(s => s.models.length > 0)`.
+    // A cloud section (profile_name == None) with an empty model list must
+    // be dropped; a local profile section (profile_name == Some) is never
+    // dropped by this filter.
+    // ====================================================================
+
+    /// Scenario: A cloud provider with no models is dropped from the provider list
+    #[test]
+    fn empty_cloud_section_is_dropped() {
+        // @step Given a canonical cloud provider that resolves to an empty model list
+        let sections = vec![cloud_provider_info("cohere", "Cohere", Vec::new())];
+
+        // @step When the provider list is assembled
+        let kept = super::retain_populated_cloud_sections(sections);
+
+        // @step Then that cloud provider section is not present in the list
+        assert!(
+            !kept.iter().any(|p| p.key == "cohere"),
+            "empty cloud section must be dropped"
+        );
+    }
+
+    /// Scenario: A cloud provider with one or more models is kept unchanged
+    #[test]
+    fn populated_cloud_section_is_kept_unchanged() {
+        // @step Given a canonical cloud provider that resolves to a non-empty model list
+        let models = vec![model("claude-sonnet", false)];
+        let sections = vec![cloud_provider_info("anthropic", "Anthropic", models)];
+
+        // @step When the provider list is assembled
+        let kept = super::retain_populated_cloud_sections(sections);
+
+        // @step Then that cloud provider section is present with its models intact
+        let anthropic = kept
+            .iter()
+            .find(|p| p.key == "anthropic")
+            .expect("anthropic present");
+        assert_eq!(anthropic.models.len(), 1);
+        assert_eq!(anthropic.models[0].id, "claude-sonnet");
+    }
+
+    /// Scenario: Local profile sections are not affected by the empty-cloud filter
+    #[test]
+    fn empty_local_profile_section_is_not_dropped() {
+        // @step Given a local profile section with an empty model list
+        let sections = vec![build_profile_provider_info(
+            "openai",
+            "down-profile",
+            Vec::new(),
+            true,
+        )];
+
+        // @step When the provider list is assembled
+        let kept = super::retain_populated_cloud_sections(sections);
+
+        // @step Then the local profile section is still present in the list
+        assert!(
+            kept.iter()
+                .any(|p| p.profile_name.as_deref() == Some("down-profile")),
+            "local profile section must be preserved even with zero models"
+        );
     }
 }
 

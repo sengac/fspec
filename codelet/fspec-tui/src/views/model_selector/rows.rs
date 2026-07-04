@@ -74,9 +74,9 @@ pub(crate) fn build_view_rows(
         let arrow = if is_expanded { '▼' } else { '▶' };
         rows.push(ModelSelectorRow {
             label: format!(
-                "{arrow} {} ({} models)",
+                "{arrow} {} {}",
                 provider.display_name,
-                provider.models.len()
+                model_count_label(provider.models.len())
             ),
             badges: String::new(),
             selectable: false,
@@ -147,6 +147,16 @@ pub(crate) fn index_of_model(
     let target = current_model_id?;
     rows.iter()
         .position(|r| r.selectable && super::model_id::model_ids_match(&r.model_id, target))
+}
+
+/// PROV-127: pluralize a provider header's model count as a parenthetical
+/// suffix. Renders `(1 model)` for a single model and `(N models)` otherwise
+/// (including `(0 models)`), matching the TS reference selector labels. Shared
+/// by the full-screen header rows and the `state.rs` title so the singular /
+/// plural rule lives in exactly one place.
+pub(crate) fn model_count_label(count: usize) -> String {
+    let noun = if count == 1 { "model" } else { "models" };
+    format!("({count} {noun})")
 }
 
 /// Per-token badge style: `[C]` yellow, `[R]` magenta, `[V]` blue,

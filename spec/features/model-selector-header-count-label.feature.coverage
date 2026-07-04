@@ -1,0 +1,77 @@
+{
+  "scenarios": [
+    {
+      "name": "A provider with exactly one model is labelled with the singular noun",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests.rs",
+          "lines": "222-239",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/state.rs",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A provider with two models is labelled with the plural noun",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/rows_tests.rs",
+          "lines": "243-263",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/rows.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/model_selector/rows_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/model_selector/rows.rs",
+      "codelet/fspec-tui/src/views/model_selector/state.rs"
+    ],
+    "totalLinesCovered": 62
+  }
+}

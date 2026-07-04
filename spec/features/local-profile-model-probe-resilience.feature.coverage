@@ -1,0 +1,178 @@
+{
+  "scenarios": [
+    {
+      "name": "list_providers does not panic when a local-server profile is configured and no tokio runtime is present",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov131_local_profile_probe_resilience.rs",
+          "lines": "58-80",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A profile whose probe is skipped degrades to an empty unreachable section",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov131_local_profile_probe_resilience.rs",
+          "lines": "86-124",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "On a multi-thread runtime the local-server probe still runs",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov131_local_profile_probe_resilience.rs",
+          "lines": "129-157",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_sections.rs",
+              "lines": [
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/prov131_local_profile_probe_resilience.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/profile_sections.rs"
+    ],
+    "totalLinesCovered": 205
+  }
+}

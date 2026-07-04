@@ -1,0 +1,154 @@
+{
+  "scenarios": [
+    {
+      "name": "Together provider resolves its models.dev catalog despite a differing key",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov125_slug_key_mapping.rs",
+          "lines": "51-80",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moonshot provider resolves its models.dev catalog despite a differing key",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov125_slug_key_mapping.rs",
+          "lines": "82-108",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini provider still resolves via the existing gemini to google mapping",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov125_slug_key_mapping.rs",
+          "lines": "110-121",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A provider absent from models.dev yields an empty list without warning",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov125_slug_key_mapping.rs",
+          "lines": "123-138",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unexpected registry miss logs a diagnostic warning and returns empty",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov125_slug_key_mapping.rs",
+          "lines": "140-168",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/cloud_models.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/prov125_slug_key_mapping.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/cloud_models.rs"
+    ],
+    "totalLinesCovered": 172
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "scenarios": [
+    {
+      "name": "rpc081 restore-messages tests serialize global data-dir access via a poison-tolerant guard",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov132_data_dir_guard_shape.rs",
+          "lines": "163-208",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "prov101 no-default-model tests serialize global data-dir access via a poison-tolerant guard",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov132_data_dir_guard_shape.rs",
+          "lines": "215-259",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "full codelet-sessions suite is deterministic across repeated parallel runs",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov132_data_dir_guard_shape.rs",
+          "lines": "273-311",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            },
+            {
+              "file": "codelet/sessions/tests/prov101_no_selection_fallbacks.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/prov132_data_dir_guard_shape.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/tests/rpc081_restore_session_messages.rs",
+      "codelet/sessions/tests/prov101_no_selection_fallbacks.rs"
+    ],
+    "totalLinesCovered": 194
+  }
+}

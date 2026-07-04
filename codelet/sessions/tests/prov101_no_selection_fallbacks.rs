@@ -14,7 +14,7 @@
 
 #![allow(clippy::panic)]
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::SessionManager;
@@ -22,6 +22,16 @@ use codelet_sessions::SessionManager;
 /// Trimmed offline models.dev catalog (anthropic/openai/google, one tool-call
 /// model each). Seeded into the temp cache so registry validation is offline.
 const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
+
+/// PROV-132: Serializes the tests that swap the process-global data directory
+/// (`codelet_common::set_data_directory`). Without it, a sibling test in this
+/// binary that persists a `default-model.json` can swap the global pointer out
+/// from under this file's `SessionManager::new()` (which eagerly loads that
+/// file), leaking a foreign default model and breaking the "no default model"
+/// decline assertion on the first full-suite run. Mirrors PROV-118/119/123's
+/// `DATA_DIR_GUARD`; held across the synchronous critical section (the `.await`s
+/// below only drive this test's own manager, not the global pointer).
+static DATA_DIR_GUARD: Mutex<()> = Mutex::new(());
 
 /// Set dummy creds so `ProviderCredentials::detect()` passes offline. No
 /// network calls are made — only registry validation, which reads the cache.
@@ -49,6 +59,9 @@ fn manager_with_seeded_cache() -> Result<(tempfile::TempDir, Arc<SessionManager>
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn create_session_declines_when_no_default_model() -> Result<(), String> {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given a SessionManager with no default model set
     let (_data_dir, manager) = manager_with_seeded_cache()?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
@@ -76,6 +89,9 @@ async fn create_session_declines_when_no_default_model() -> Result<(), String> {
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn create_session_uses_explicit_default_model() -> Result<(), String> {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given a SessionManager with the default model set to "google/gemini-2.5-pro"
     let (_data_dir, manager) = manager_with_seeded_cache()?;
     manager.set_default_model("google/gemini-2.5-pro");
@@ -108,6 +124,9 @@ async fn create_session_uses_explicit_default_model() -> Result<(), String> {
 // =============================================================================
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn create_isolated_session_errors_when_no_default_model() -> Result<(), String> {
+    let _guard = DATA_DIR_GUARD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     // @step Given a SessionManager with no default model set
     let (_data_dir, manager) = manager_with_seeded_cache()?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();

@@ -15,6 +15,7 @@
 pub mod background_session;
 pub mod chain_of_command;
 pub mod cloud_models;
+pub mod codex_allowlist;
 pub mod conversions;
 pub mod credentials;
 pub mod default_model_persistence;
