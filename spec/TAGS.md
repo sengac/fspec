@@ -462,6 +462,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@prettier` | Prettier configuration and code formatting |
 | `@programmatic` | Programmatic API usage |
 | `@progressive-degradation` | Progressive degradation of reasoning effort on repeated exhaustion |
+| `@prov-124` | Bug PROV-124: /model selector first-arrow-press navigation fix (has_selection gates Enter only) |
 | `@provider` | Provider-related functionality for LLM provider identification |
 | `@push` | Push notification functionality |
 | `@query-api` | Tree-sitter Query API features using S-expression pattern matching |
@@ -946,7 +947,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-07-03T01:37:07.504Z_
+_Last updated: 2026-07-03T23:50:52.772Z_
 
 **Update Command**: `fspec tag-stats`
 

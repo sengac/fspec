@@ -1168,7 +1168,8 @@
         "PROV-120",
         "PROV-121",
         "PROV-122",
-        "PROV-123"
+        "PROV-123",
+        "PROV-124"
       ]
     },
     "checkpoints-view-rust": {

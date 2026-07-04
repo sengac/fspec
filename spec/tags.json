@@ -1750,6 +1750,10 @@
           "description": "Progressive degradation of reasoning effort on repeated exhaustion"
         },
         {
+          "name": "@prov-124",
+          "description": "Bug PROV-124: /model selector first-arrow-press navigation fix (has_selection gates Enter only)"
+        },
+        {
           "name": "@provider",
           "description": "Provider-related functionality for LLM provider identification"
         },
@@ -2818,7 +2822,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-07-03T01:37:07.504Z",
+    "lastUpdated": "2026-07-03T23:50:52.772Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

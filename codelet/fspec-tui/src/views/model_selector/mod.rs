@@ -132,3 +132,7 @@ mod tests_loading_empty;
 #[cfg(test)]
 #[path = "tests_enter_expand.rs"]
 mod tests_enter_expand;
+
+#[cfg(test)]
+#[path = "tests_first_press_nav.rs"]
+mod tests_first_press_nav;

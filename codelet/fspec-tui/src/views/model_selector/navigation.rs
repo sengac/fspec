@@ -14,48 +14,41 @@ impl ModelSelectorView {
     }
 
     pub(crate) fn move_up(&mut self) {
-        // PROV-101: the first explicit navigation from a "nothing selected"
-        // state activates the selection on the first selectable row instead of
-        // moving relative to a stale index.
-        if !self.has_selection {
-            self.anchor_first_selectable();
-            self.adjust_scroll();
-            return;
-        }
+        // PROV-124: `has_selection` gates Enter ONLY. The first explicit
+        // navigation from a "nothing selected" state must ACTIVATE the
+        // selection AND perform the clamped move on the SAME press (no
+        // swallowed first press). `anchor_first_selectable` is reserved for
+        // the Home/filter paths.
+        self.has_selection = true;
         if let Some(next) = crate::components::model_selector_dialog_rows::move_up_clamped(
             &self.rows,
             self.selected_index,
         ) {
             self.selected_index = next;
-            self.adjust_scroll();
         }
+        self.adjust_scroll();
     }
 
     pub(crate) fn move_down(&mut self) {
-        if !self.has_selection {
-            self.anchor_first_selectable();
-            self.adjust_scroll();
-            return;
-        }
+        // PROV-124: activate the selection and move on the same first press;
+        // `has_selection` gates Enter only.
+        self.has_selection = true;
         if let Some(next) = crate::components::model_selector_dialog_rows::move_down_clamped(
             &self.rows,
             self.selected_index,
         ) {
             self.selected_index = next;
-            self.adjust_scroll();
         }
+        self.adjust_scroll();
     }
 
     /// PageDown / PageUp: move the selection by one viewport height across
     /// selectable rows (skipping headers), matching the TS navigate-by-page
-    /// semantics. The first explicit navigation from a "nothing selected"
-    /// state anchors on the first selectable row (PROV-101).
+    /// semantics. PROV-124: the first explicit navigation from a "nothing
+    /// selected" state activates the selection AND pages on the same press;
+    /// `has_selection` gates Enter only.
     pub(crate) fn page_down(&mut self) {
-        if !self.has_selection {
-            self.anchor_first_selectable();
-            self.adjust_scroll();
-            return;
-        }
+        self.has_selection = true;
         let step = self.visible_rows.max(1);
         for _ in 0..step {
             match crate::components::model_selector_dialog_rows::move_down_clamped(
@@ -70,11 +63,9 @@ impl ModelSelectorView {
     }
 
     pub(crate) fn page_up(&mut self) {
-        if !self.has_selection {
-            self.anchor_first_selectable();
-            self.adjust_scroll();
-            return;
-        }
+        // PROV-124: activate the selection and page on the same first press;
+        // `has_selection` gates Enter only.
+        self.has_selection = true;
         let step = self.visible_rows.max(1);
         for _ in 0..step {
             match crate::components::model_selector_dialog_rows::move_up_clamped(

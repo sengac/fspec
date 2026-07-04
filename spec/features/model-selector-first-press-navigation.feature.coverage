@@ -1,0 +1,272 @@
+{
+  "scenarios": [
+    {
+      "name": "First Down press moves the cursor one row when opened with no matched current model",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "lines": "29-58",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "First Up press at the top row is a clamped no-move but activates the selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "lines": "61-86",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "First PageDown press moves the selection by a viewport step",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "lines": "89-133",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter before any navigation is a no-op on a model row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "lines": "142-189",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opening on a matched current model seeds the cursor and Enter selects immediately",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs",
+          "lines": "194-231",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/model_selector/navigation.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/model_selector/tests_first_press_nav.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/model_selector/navigation.rs"
+    ],
+    "totalLinesCovered": 363
+  }
+}
