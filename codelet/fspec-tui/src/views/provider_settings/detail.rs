@@ -171,6 +171,28 @@ fn handle_edit_key(
     }
 }
 
+/// PROV-137 — inline API-key paste sink. Appends each printable-ASCII char of
+/// `text` (same 32..=126 gate as typed input) to the draft, dropping newlines,
+/// control chars, and non-ASCII. Re-stores the mutated draft so the existing
+/// masked render (`"•".repeat(draft.len())`) keeps the secret hidden.
+pub(super) fn handle_edit_paste(
+    view: &mut ProviderSettingsView,
+    provider_id: String,
+    mut draft: String,
+    text: &str,
+) -> ProviderSettingsEvent {
+    for c in text.chars() {
+        if is_printable_ascii(c) {
+            draft.push(c);
+        }
+    }
+    view.mode = ProviderSettingsMode::Detail {
+        provider_id,
+        sub: DetailSub::EditApiKey { draft },
+    };
+    ProviderSettingsEvent::Consumed
+}
+
 fn handle_oauth_notice_key(
     view: &mut ProviderSettingsView,
     key: KeyEvent,
@@ -228,7 +250,7 @@ pub(super) fn render_detail(
             lines.push(Line::from(""));
             lines.push(Line::from(vec![
                 Span::styled("Key: ", Style::default().fg(Color::Cyan)),
-                Span::raw("•".repeat(draft.len())),
+                Span::raw(super::mask_secret(draft)),
                 Span::styled("█", Style::default().fg(Color::White)),
             ]));
             if !view.status.is_empty() {

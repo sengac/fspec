@@ -1,0 +1,195 @@
+{
+  "scenarios": [
+    {
+      "name": "Copying the focused Base URL field copies its plaintext value",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_copy_prov138.rs",
+          "lines": "158-173",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/copy.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Copying the profile form API Key field copies the masked value",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_copy_prov138.rs",
+          "lines": "178-219",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/copy.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Copying the inline API-key entry copies the masked draft",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_copy_prov138.rs",
+          "lines": "224-265",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                253
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Ctrl+C on the provider list copies no field value",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_copy_prov138.rs",
+          "lines": "270-289",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/copy.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_input_copy_prov138.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/copy.rs",
+      "codelet/fspec-tui/src/views/provider_settings/detail.rs"
+    ],
+    "totalLinesCovered": 234
+  }
+}

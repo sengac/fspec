@@ -77,8 +77,16 @@ fn field_line(form: &ProfileForm, idx: usize, label: &str) -> Line<'static> {
             Style::default().add_modifier(Modifier::DIM),
         )
     } else {
+        // PROV-137/138: the API Key field (idx 1) stays masked — render one
+        // bullet per char via the shared `mask_secret` helper so the on-screen
+        // mask and the Ctrl+C copy mask can never drift.
+        let shown = if idx == 1 {
+            super::mask_secret(value)
+        } else {
+            value.to_string()
+        };
         Span::styled(
-            value.to_string(),
+            shown,
             if active {
                 active_style()
             } else {

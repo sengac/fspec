@@ -147,6 +147,13 @@ impl ProfileForm {
         }
     }
 
+    /// PROV-137: paste-time single-char insert (same routing as `push_char`).
+    /// Exposed to the sibling `profile_form_paste` module which applies the
+    /// printable-ASCII gate before calling this per char.
+    pub(crate) fn push_paste_char(&mut self, c: char) {
+        self.push_char(c);
+    }
+
     /// Display value for a field index (used by the renderer).
     pub fn field_value(&self, idx: usize) -> &str {
         match idx {
@@ -243,7 +250,7 @@ pub(super) fn handle_form_key(
 }
 
 /// Persist the (possibly mutated) form back into the view's mode.
-fn restore_mode(
+pub(super) fn restore_mode(
     view: &mut ProviderSettingsView,
     provider_id: String,
     form: ProfileForm,

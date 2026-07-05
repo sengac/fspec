@@ -1,0 +1,170 @@
+{
+  "scenarios": [
+    {
+      "name": "Pasting a URL into the focused Base URL field inserts it",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "lines": "119-133",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_paste.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pasting an API key into the profile form keeps the field masked",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "lines": "138-174",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pasting a multi-line secret into the inline API-key entry strips newlines and stays masked",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "lines": "180-224",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pasting while the provider list is focused does nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs",
+          "lines": "230-262",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/paste.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_input_paste_prov137.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/profile_form_paste.rs",
+      "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+      "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+      "codelet/fspec-tui/src/views/provider_settings/paste.rs"
+    ],
+    "totalLinesCovered": 217
+  }
+}

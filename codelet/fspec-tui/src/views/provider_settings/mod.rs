@@ -2,11 +2,9 @@
 //!
 //! Feature: spec/features/rpc054-provider-settings-view.feature
 //!
-//! Full-screen mode-view that ports the TS `ProviderSettingsScreen`
-//! UX onto the Rust ratatui frontend. Mirrors the canonical
-//! RPC-026 `ResumeSessionView` pattern: `Clear.render` first, then a
-//! 4-constraint vertical Layout for title / separator / body / footer.
-//! Destructive `d` opens a `ConfirmDialog`; PROV-100 wires OpenAI profiles.
+//! Full-screen mode-view that ports the TS `ProviderSettingsScreen` UX onto
+//! the Rust ratatui frontend. Mirrors the canonical RPC-026 `ResumeSessionView`
+//! pattern. Destructive `d` opens a `ConfirmDialog`; PROV-100 wires profiles.
 
 use codelet_rpc_types::{ProfileDefinition, ProviderCredentialInfo};
 use crossterm::event::{KeyEvent, KeyModifiers};
@@ -34,7 +32,10 @@ mod oauth_confirm;
 mod oauth_copilot;
 mod oauth_login;
 mod oauth_login_render;
+mod copy;
+mod paste;
 pub mod profile_form;
+mod profile_form_paste;
 mod profile_form_render;
 pub mod profiles_config;
 pub mod projection;
@@ -47,6 +48,7 @@ pub use mode::{DetailSub, ProviderSettingsMode};
 pub use nav_item::{NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo};
 pub use status_text::DetailStatus;
 pub use test_result::{ProviderTestResult, ProviderTestStatus};
+pub(crate) use copy::mask_secret;
 
 pub const DELETE_PROVIDER_CREDS_DIALOG_ID: &str = "delete-provider-creds";
 
@@ -56,12 +58,8 @@ pub enum ProviderSettingsEvent {
     Ignored,
     Emit(Action),
     Close,
-    /// RPC-160: list-mode Tab keybind emits this variant — distinct from
-    /// `Close` and `Emit(Action)`. The Navigator translates it to the
-    /// model-settings view transition (TS analog:
-    /// `onSwitchToModels()` callback in
-    /// src/tui/inputHandlers/listModeHandler.ts lines 56-60). Pure UI
-    /// navigation event — no Action payload.
+    /// RPC-160: list-mode Tab keybind — the Navigator translates it to the
+    /// model-settings view transition. Pure UI navigation, no Action payload.
     SwitchToModels,
 }
 
@@ -174,20 +172,22 @@ impl ProviderSettingsView {
     }
 
     pub fn title_text(&self) -> String {
-        // RPC-105: count is the flat NavItem tree length (mirrors TS
-        // ProviderSettingsPanel.tsx `navItems.length`).
+        // RPC-105: count is the flat NavItem tree length (mirrors TS navItems).
         format!("Provider Settings ({} items)", self.nav_items.len())
     }
 
     pub fn footer_hint(&self) -> String {
-        // RPC-106 / PROV-110: full mode-sensitive dispatch lives in
-        // footer_hints.rs to keep this module under the 300-LoC budget.
+        // RPC-106 / PROV-110: mode-sensitive dispatch lives in footer_hints.rs.
         footer_hints::compute_footer_hint(self)
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) -> ProviderSettingsEvent {
         if self.delete_confirm.is_some() {
             return self.handle_delete_confirm_key(key);
+        }
+        // PROV-138: Ctrl+C in a text-entry mode copies the focused field.
+        if let Some(ev) = copy::intercept_ctrl_c(self, key) {
+            return ev;
         }
         if key
             .modifiers
@@ -227,6 +227,10 @@ impl ProviderSettingsView {
         }
     }
 
+    /// PROV-137: bracketed-paste sink (see `paste::handle_paste`).
+    pub fn handle_paste(&mut self, text: &str) -> ProviderSettingsEvent {
+        paste::handle_paste(self, text)
+    }
     pub fn reset_to_list(&mut self) {
         self.mode = ProviderSettingsMode::List;
         self.delete_confirm = None;
@@ -262,12 +266,8 @@ impl ProviderSettingsView {
     }
 
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        // RPC-337: render via the shared full-screen scaffold. Title +
-        // footer strings are computed up-front (owned) so the body
-        // closure can borrow `self` mutably to capture body height.
-        // RPC-350 R1: route through the title-closure scaffold variant so the
-        // provider view paints a two-span (bold-yellow name + dim-gray count)
-        // title without touching the shared blue title other views depend on.
+        // RPC-337 / RPC-350 R1: title-closure full-screen scaffold — two-span
+        // title (bold-yellow name + dim-gray count), shared blue title untouched.
         let title = "Provider Settings";
         let count = self.nav_items.len();
         let footer = self.footer_hint();

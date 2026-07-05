@@ -32,6 +32,33 @@ impl Navigator {
                 _ => EventResult::ignored(),
             };
         }
+        // PROV-137: bracketed-paste events (Event::Paste) are delivered as a
+        // single blob; forward them to the view's paste sink and translate its
+        // outcome exactly like the key path below.
+        if let Event::Paste(text) = event {
+            return match self.provider_settings.handle_paste(text) {
+                ProviderSettingsEvent::Consumed => EventResult::consumed(),
+                ProviderSettingsEvent::Ignored => EventResult::ignored(),
+                ProviderSettingsEvent::Close => {
+                    if let Some(tx) = self.action_tx.as_ref() {
+                        let _ = tx.send(Action::CloseProviderSettingsView);
+                    }
+                    EventResult::consumed()
+                }
+                ProviderSettingsEvent::Emit(action) => {
+                    if let Some(tx) = self.action_tx.as_ref() {
+                        let _ = tx.send(action);
+                    }
+                    EventResult::consumed()
+                }
+                ProviderSettingsEvent::SwitchToModels => {
+                    if let Some(tx) = self.action_tx.as_ref() {
+                        let _ = tx.send(Action::OpenModelSelectorView);
+                    }
+                    EventResult::consumed()
+                }
+            };
+        }
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };
