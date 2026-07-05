@@ -146,6 +146,8 @@ pub(super) fn handle_list_key(
             ));
             ProviderSettingsEvent::Consumed
         }
+        KeyCode::Right => super::list_actions::arrow_expand_collapse(view, true),
+        KeyCode::Left => super::list_actions::arrow_expand_collapse(view, false),
         _ => ProviderSettingsEvent::Consumed,
     }
 }

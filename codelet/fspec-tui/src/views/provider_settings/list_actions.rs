@@ -121,6 +121,25 @@ pub(super) fn enter_on_nav_item(
     }
 }
 
+/// PROV-134: directional expand/collapse for Left/Right arrows in list mode.
+/// Right expands a collapsed Provider header; Left collapses an expanded one.
+/// No-op on already-in-that-state headers and on non-Provider child rows. The
+/// cursor (selected_index) is left untouched by toggle_expansion.
+pub(super) fn arrow_expand_collapse(
+    view: &mut ProviderSettingsView,
+    expand: bool,
+) -> ProviderSettingsEvent {
+    if let Some(item) = view.focused_nav_item() {
+        if let NavItemKind::Provider { expanded } = item.kind {
+            if expand != expanded {
+                let pid = item.provider_id.clone();
+                view.toggle_expansion(&pid);
+            }
+        }
+    }
+    ProviderSettingsEvent::Consumed
+}
+
 /// Dispatch `d` for the focused NavItem. Provider / ApiKey / OAuthStatus
 /// rows open the delete-credentials confirm for the row's own provider
 /// (TS maps api-key→delete-api-key, oauth-status→disconnect-oauth; the Rust

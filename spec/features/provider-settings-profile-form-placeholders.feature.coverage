@@ -1,0 +1,271 @@
+{
+  "scenarios": [
+    {
+      "name": "Empty Context Window field shows a dim placeholder",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "lines": "109-128",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty Max Output Tokens field shows a dim placeholder",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "lines": "133-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty Compaction Threshold field shows a dim placeholder",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "lines": "157-176",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A field with a typed value shows the value not the placeholder",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "lines": "181-207",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Placeholder hints are never persisted into the saved profile",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs",
+          "lines": "212-252",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_profile_form_placeholders_prov135.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/profile_form_render.rs",
+      "codelet/fspec-tui/src/views/provider_settings/profile_form.rs"
+    ],
+    "totalLinesCovered": 302
+  }
+}

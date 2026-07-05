@@ -628,10 +628,12 @@ fn rpc094_source_shape_every_touched_module_under_300_lines() {
     //     OpenHitlDialog variant and the hitl_dialog mod decl)
     //   - COPY-007 added ≤5 lines (CopyToClipboard composer-copy variant
     //     + a 3-line doc comment)
-    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 + 5 + 5 + 8 + 25 + 55 + 5 = 1203
+    //   - PROV-136 added ≤3 lines (SaveProfile old_profile_name field + a
+    //     2-line doc addition on the existing SaveProfile stanza)
+    //   - Total budget = 802 baseline + 30 + 20 + 25 + 25 + 30 + 60 + 10 + 8 + 30 + 35 + 25 + 5 + 5 + 8 + 25 + 55 + 5 + 3 = 1206
     let n_components = line_count(&components_mod);
     assert!(
-        n_components <= 1203,
-        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381..RPC-383 + RPC-406 + RPC-411 + COPY-007 budget is +401 over baseline 802"
+        n_components <= 1206,
+        "components/mod.rs has {n_components} lines — RPC-094..RPC-366 + RPC-381..RPC-383 + RPC-406 + RPC-411 + COPY-007 + PROV-136 budget is +404 over baseline 802"
     );
 }

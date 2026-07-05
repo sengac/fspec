@@ -1,0 +1,171 @@
+{
+  "scenarios": [
+    {
+      "name": "Right arrow expands a collapsed provider header",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "lines": "75-103",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Right arrow on an already-expanded provider header does nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "lines": "108-137",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left arrow collapses an expanded provider header",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "lines": "142-171",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left arrow on an already-collapsed provider header does nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "lines": "176-204",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left arrow on a child row does nothing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs",
+          "lines": "209-238",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_arrow_expand_collapse_prov134.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/list_actions.rs",
+      "codelet/fspec-tui/src/views/provider_settings/list.rs"
+    ],
+    "totalLinesCovered": 222
+  }
+}

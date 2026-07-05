@@ -291,6 +291,18 @@ pub trait FspecService {
     /// `Ok(())`.
     async fn delete_profile(provider_id: String, profile_name: String) -> Result<(), String>;
 
+    /// PROV-136: rename a local-server profile (or in-place update when
+    /// `old_name == new_name`). Delegates through
+    /// `SessionManagerHandle::rename_profile` (single read-modify-write moving
+    /// the old key to `new_name`, preserving customModels, rejecting a
+    /// collision). Without an attached handle returns `Ok(())`.
+    async fn rename_profile(
+        provider_id: String,
+        old_name: String,
+        new_name: String,
+        definition: ProfileDefinition,
+    ) -> Result<(), String>;
+
     /// RPC-022: set the per-session thinking/reasoning level.
     /// Delegates through `SessionManagerHandle::set_thinking_level`.
     /// Returns `Err(String)` on handle error; without an attached
@@ -1366,6 +1378,20 @@ impl FspecService for FspecServiceImpl {
     ) -> Result<(), String> {
         match self.inner.session_manager() {
             Some(handle) => handle.delete_profile(&provider_id, &profile_name),
+            None => Ok(()),
+        }
+    }
+
+    async fn rename_profile(
+        self,
+        _ctx: Context,
+        provider_id: String,
+        old_name: String,
+        new_name: String,
+        definition: ProfileDefinition,
+    ) -> Result<(), String> {
+        match self.inner.session_manager() {
+            Some(handle) => handle.rename_profile(&provider_id, &old_name, &new_name, &definition),
             None => Ok(()),
         }
     }

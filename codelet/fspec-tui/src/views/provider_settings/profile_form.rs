@@ -5,8 +5,11 @@
 //! Rust port of the TS profile form (`src/tui/inputHandlers/
 //! profileFormModeHandler.ts`, `src/tui/utils/providerSettingsHelpers.ts`,
 //! `src/tui/constants/providerSettings.ts`). Pure state + parse-on-build,
-//! mirroring the model_selector `CustomModelForm` shape but with the TS
-//! name-editing gate (`is_editing_name` / `is_new`). `customModels` is
+//! mirroring the model_selector `CustomModelForm` shape. PROV-136 DIVERGES
+//! from the TS name-lock: in edit mode the name IS editable (Up from the first
+//! connection field re-enters it), so an existing profile can be renamed. The
+//! `is_editing_name` flag still gates whether keystrokes edit the name;
+//! `is_new` now only distinguishes the create-mode defaults. `customModels` is
 //! deliberately NOT a form field — that array is owned by the model-selector
 //! CRUD and preserved by the backend read-modify-write.
 
@@ -50,9 +53,11 @@ pub struct ProfileForm {
     pub compaction_threshold: String,
     /// Focused field index into [`PROFILE_FORM_FIELDS`].
     pub field_index: usize,
-    /// True while the cursor is in the (create-only) name field.
+    /// True while the cursor is in the name field (editable in both create and
+    /// edit mode since PROV-136).
     pub is_editing_name: bool,
-    /// True for create mode (enables re-entering name editing from field 0).
+    /// True for create mode. PROV-136: no longer gates name re-entry (edit mode
+    /// can rename too); retained to distinguish the create-mode default seed.
     pub is_new: bool,
 }
 
@@ -73,7 +78,9 @@ impl ProfileForm {
     }
 
     /// TS `initializeEditProfile`: prefill every field from the stored
-    /// definition; the name is shown but not edited.
+    /// definition. PROV-136: the name starts un-focused (`is_editing_name =
+    /// false`) but is now editable — Up from the first field re-enters it so
+    /// the profile can be renamed.
     pub fn from_definition(name: &str, def: &ProfileDefinition) -> Self {
         Self {
             name: name.to_string(),
@@ -116,7 +123,10 @@ impl ProfileForm {
             // Already at the top — Up is a no-op while editing the name.
         } else if self.field_index > 0 {
             self.field_index -= 1;
-        } else if self.is_new {
+        } else {
+            // PROV-136: Up from the first connection field re-enters the name
+            // field in BOTH create and edit mode (the edit-mode rename path
+            // diverges from the TS reference, which locks the name).
             self.is_editing_name = true;
         }
     }
@@ -207,11 +217,16 @@ pub(super) fn handle_form_key(
         }
         FormKey::Submit => match form.build_definition() {
             Some(definition) => {
-                let name = profile_name.unwrap_or_else(|| form.name.trim().to_string());
+                // PROV-136: the EMITTED name is the (possibly edited) form name;
+                // `old_profile_name` carries the ORIGINAL edit-mode name so the
+                // dispatch layer can detect + apply a rename. In create mode
+                // `profile_name` is None → `old_profile_name` is None.
+                let new_name = form.name.trim().to_string();
                 view.mode = ProviderSettingsMode::List;
                 ProviderSettingsEvent::Emit(Action::SaveProfile {
                     provider_id,
-                    profile_name: name,
+                    profile_name: new_name,
+                    old_profile_name: profile_name,
                     definition,
                 })
             }

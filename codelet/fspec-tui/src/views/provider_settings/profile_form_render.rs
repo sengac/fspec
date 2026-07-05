@@ -48,6 +48,19 @@ fn name_line(form: &ProfileForm) -> Line<'static> {
     Line::from(vec![Span::styled(format!("{marker}Name: "), base), value])
 }
 
+/// PROV-135: per-field dim placeholder shown when the field value is empty.
+/// Mirrors the TS reference hints (ProviderSettingsPanel.tsx). API Key (idx 1)
+/// intentionally has no hint — it keeps the generic empty fallback.
+fn placeholder_for(idx: usize) -> &'static str {
+    match idx {
+        0 => "http://localhost:8888",
+        2 => "128000",
+        3 => "16384",
+        4 => "80% or 200000",
+        _ => "(empty)",
+    }
+}
+
 /// Build one connection-field line.
 fn field_line(form: &ProfileForm, idx: usize, label: &str) -> Line<'static> {
     let active = !form.is_editing_name && idx == form.field_index;
@@ -60,7 +73,7 @@ fn field_line(form: &ProfileForm, idx: usize, label: &str) -> Line<'static> {
     let value = form.field_value(idx);
     let value_span = if value.is_empty() {
         Span::styled(
-            "(empty)".to_string(),
+            placeholder_for(idx).to_string(),
             Style::default().add_modifier(Modifier::DIM),
         )
     } else {

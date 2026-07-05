@@ -44,6 +44,7 @@ fn save_action(ev: ProviderSettingsEvent) -> Option<(String, String, ProfileDefi
         provider_id,
         profile_name,
         definition,
+        ..
     }) = ev
     {
         Some((provider_id, profile_name, definition))

@@ -86,6 +86,27 @@ pub fn delete_profile(provider_id: &str, profile_name: &str) -> std::io::Result<
     delete_profile_at(&config_path, provider_id, profile_name)
 }
 
+/// PROV-136: rename a profile (or in-place update when the name is unchanged),
+/// persisting to `~/.fspec/fspec-config.json`.
+///
+/// Resolves the config path via the `FSPEC_USER_DIR`/`HOME` convention and
+/// delegates to [`rename_profile_at`]. A non-openai call is a no-op at this
+/// layer (the `Err` is surfaced by the handle / NAPI callers).
+pub fn rename_profile(
+    provider_id: &str,
+    old_name: &str,
+    new_name: &str,
+    def: &ProfileDef,
+) -> std::io::Result<()> {
+    if !profiles_supported(provider_id) {
+        return Ok(());
+    }
+    let Some(config_path) = fspec_user_dir().map(|d| d.join("fspec-config.json")) else {
+        return Ok(());
+    };
+    rename_profile_at(&config_path, provider_id, old_name, new_name, def)
+}
+
 /// Get-or-create the child object at `key`, normalizing a non-object value to a
 /// fresh empty object. Returns `None` only if the borrow cannot be re-acquired,
 /// which never happens after the normalization above (panic-free path).
@@ -194,6 +215,63 @@ pub fn delete_profile_at(
     if profiles.remove(profile_name).is_none() {
         return Ok(());
     }
+    write_config_value(config_path, &root)
+}
+
+/// Path-injectable core of [`rename_profile`]. Renames `old_name` to `new_name`
+/// (or applies an in-place update when they are equal) in a SINGLE
+/// read-modify-write so the config never lands in a torn state.
+///
+/// An in-place update (`old_name == new_name`) delegates to [`save_profile_at`]
+/// so the existing merge path preserves `customModels` + sibling keys. A true
+/// rename MOVES the stored profile object to the new key (carrying its
+/// `customModels` and any unknown keys), applies the connection fields from
+/// `def`, and removes the old key. A rename onto an EXISTING different profile
+/// is rejected with [`std::io::ErrorKind::AlreadyExists`] and never writes.
+pub fn rename_profile_at(
+    config_path: &Path,
+    provider_id: &str,
+    old_name: &str,
+    new_name: &str,
+    def: &ProfileDef,
+) -> std::io::Result<()> {
+    if !profiles_supported(provider_id) {
+        return Ok(());
+    }
+    if old_name == new_name {
+        return save_profile_at(config_path, provider_id, new_name, def);
+    }
+    let mut root = match read_config_value(config_path) {
+        Some(value @ Value::Object(_)) => value,
+        _ => Value::Object(Map::new()),
+    };
+    let Some(root_obj) = root.as_object_mut() else {
+        return Ok(());
+    };
+    let Some(providers) = ensure_object(root_obj, "providers") else {
+        return Ok(());
+    };
+    let Some(provider) = ensure_object(providers, provider_id) else {
+        return Ok(());
+    };
+    let Some(profiles) = ensure_object(provider, "profiles") else {
+        return Ok(());
+    };
+    // Collision check: never silently overwrite a different existing profile.
+    if profiles.contains_key(new_name) {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::AlreadyExists,
+            format!("A profile named '{new_name}' already exists"),
+        ));
+    }
+    // MOVE the existing object (preserving customModels + unknown keys), or
+    // start fresh if the old profile is somehow absent.
+    let mut profile = match profiles.remove(old_name) {
+        Some(Value::Object(obj)) => obj,
+        _ => Map::new(),
+    };
+    merge_profile(&mut profile, def);
+    profiles.insert(new_name.to_string(), Value::Object(profile));
     write_config_value(config_path, &root)
 }
 

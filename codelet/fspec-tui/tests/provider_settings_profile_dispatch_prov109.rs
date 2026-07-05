@@ -95,6 +95,7 @@ async fn save_profile_writes_and_refreshes() {
     app.dispatch(Action::SaveProfile {
         provider_id: "openai".to_string(),
         profile_name: "work-vllm".to_string(),
+        old_profile_name: None,
         definition: profile_def("http://localhost:8888"),
     });
     drain_pending(&mut app).await;
@@ -142,6 +143,7 @@ async fn edit_profile_dispatches_save_with_new_settings() {
     app.dispatch(Action::SaveProfile {
         provider_id: "openai".to_string(),
         profile_name: "home".to_string(),
+        old_profile_name: None,
         definition: profile_def("http://localhost:9999"),
     });
     drain_pending(&mut app).await;
@@ -225,6 +227,7 @@ async fn failed_save_profile_surfaces_inline_error() {
     app.dispatch(Action::SaveProfile {
         provider_id: "openai".to_string(),
         profile_name: "work-vllm".to_string(),
+        old_profile_name: None,
         definition: profile_def("http://localhost:8888"),
     });
     drain_pending(&mut app).await;

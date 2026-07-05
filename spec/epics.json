@@ -1178,7 +1178,10 @@
         "PROV-132",
         "MODEL-007",
         "PROV-133",
-        "MODEL-008"
+        "MODEL-008",
+        "PROV-134",
+        "PROV-135",
+        "PROV-136"
       ]
     },
     "checkpoints-view-rust": {

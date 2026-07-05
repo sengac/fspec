@@ -1226,6 +1226,27 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             .map_err(|e| e.to_string())
     }
 
+    // PROV-136: rename (or in-place update) a profile. Guards on the openai-only
+    // predicate (single-sourced in `profile_persistence`) then delegates to the
+    // persistence-layer single read-modify-write which preserves customModels
+    // and rejects a collision with an existing different profile.
+    fn rename_profile(
+        &self,
+        provider_id: &str,
+        old_name: &str,
+        new_name: &str,
+        definition: &codelet_rpc_types::ProfileDefinition,
+    ) -> Result<(), String> {
+        if !crate::profile_persistence::profiles_supported(provider_id) {
+            return Err(crate::profile_persistence::profiles_unsupported_error(
+                provider_id,
+            ));
+        }
+        let def = crate::conversions::profile_def_from_wire(definition);
+        crate::profile_persistence::rename_profile(provider_id, old_name, new_name, &def)
+            .map_err(|e| e.to_string())
+    }
+
     fn set_thinking_level(
         &self,
         session_id: &SessionId,

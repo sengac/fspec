@@ -3,7 +3,7 @@
 //! `#[path]` module to keep `profile_persistence.rs` under the 300-LoC ceiling.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use super::{delete_profile_at, save_profile_at, ProfileDef};
+use super::{delete_profile_at, rename_profile_at, save_profile_at, ProfileDef};
 use crate::profile_sections::CompactionThreshold;
 use serde_json::{json, Value};
 use std::fs;
@@ -130,4 +130,126 @@ fn delete_absent_profile_leaves_file_identical() {
     let before = fs::read_to_string(&path).unwrap();
     delete_profile_at(&path, "openai", "does-not-exist").unwrap();
     assert_eq!(before, fs::read_to_string(&path).unwrap());
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// PROV-136 — rename (delete-old-key + write-new-key) coverage.
+// Feature: spec/features/provider-settings-profile-rename.feature
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn rename_writes_new_name_and_removes_old_name() {
+    // @step Given the config has an openai profile "work-vllm" with base URL and API key set
+    let dir = TempDir::new().unwrap();
+    let path = write(
+        &dir,
+        json!({ "providers": { "openai": { "profiles": {
+            "work-vllm": { "baseUrl": "http://h", "apiKey": "k" }
+        } } } }),
+    );
+
+    // @step When the profile is renamed to "work-vllm-2" and saved
+    rename_profile_at(
+        &path,
+        "openai",
+        "work-vllm",
+        "work-vllm-2",
+        &basic("http://h", "k"),
+    )
+    .unwrap();
+
+    let profiles = read(&path)["providers"]["openai"]["profiles"].clone();
+    // @step Then the config has a profile named "work-vllm-2"
+    assert_eq!(profiles["work-vllm-2"]["baseUrl"], "http://h");
+    // @step Then the config no longer has a profile named "work-vllm"
+    assert!(profiles.get("work-vllm").is_none());
+    // @step Then the renamed profile keeps its original base URL and API key
+    assert_eq!(profiles["work-vllm-2"]["apiKey"], "k");
+}
+
+#[test]
+fn rename_with_unchanged_name_overwrites_same_profile() {
+    // @step Given the config has an openai profile "work-vllm" with an API key
+    let dir = TempDir::new().unwrap();
+    let path = write(
+        &dir,
+        json!({ "providers": { "openai": { "profiles": {
+            "work-vllm": { "baseUrl": "http://h", "apiKey": "old" }
+        } } } }),
+    );
+
+    // @step When the profile is saved with the same name and a new API key
+    rename_profile_at(
+        &path,
+        "openai",
+        "work-vllm",
+        "work-vllm",
+        &basic("http://h", "new"),
+    )
+    .unwrap();
+
+    let profiles = read(&path)["providers"]["openai"]["profiles"]
+        .as_object()
+        .unwrap()
+        .clone();
+    // @step Then the config still has exactly one profile named "work-vllm"
+    assert_eq!(profiles.len(), 1);
+    assert!(profiles.contains_key("work-vllm"));
+    // @step Then the profile has the new API key
+    assert_eq!(profiles["work-vllm"]["apiKey"], "new");
+}
+
+#[test]
+fn rename_onto_existing_profile_name_is_rejected() {
+    // @step Given the config has openai profiles "work-vllm" and "fast"
+    let dir = TempDir::new().unwrap();
+    let path = write(
+        &dir,
+        json!({ "providers": { "openai": { "profiles": {
+            "work-vllm": { "baseUrl": "http://a", "apiKey": "k1" },
+            "fast": { "baseUrl": "http://b", "apiKey": "k2" }
+        } } } }),
+    );
+    let before = fs::read_to_string(&path).unwrap();
+
+    // @step When the profile "work-vllm" is renamed to "fast" and saved
+    let result = rename_profile_at(
+        &path,
+        "openai",
+        "work-vllm",
+        "fast",
+        &basic("http://a", "k1"),
+    );
+
+    // @step Then the rename is rejected with an error
+    assert!(result.is_err());
+    // @step Then both profiles "work-vllm" and "fast" remain unchanged
+    assert_eq!(before, fs::read_to_string(&path).unwrap());
+}
+
+#[test]
+fn rename_preserves_custom_models() {
+    // @step Given the config has an openai profile "work-vllm" with a customModels array
+    let dir = TempDir::new().unwrap();
+    let path = write(
+        &dir,
+        json!({ "providers": { "openai": { "profiles": {
+            "work-vllm": { "baseUrl": "http://h", "apiKey": "k",
+                "customModels": [ { "id": "alpha" } ] }
+        } } } }),
+    );
+
+    // @step When the profile is renamed to "work-vllm-2" and saved
+    rename_profile_at(
+        &path,
+        "openai",
+        "work-vllm",
+        "work-vllm-2",
+        &basic("http://h", "k"),
+    )
+    .unwrap();
+
+    // @step Then the profile "work-vllm-2" still has its customModels array
+    let profile = read(&path)["providers"]["openai"]["profiles"]["work-vllm-2"].clone();
+    assert_eq!(profile["customModels"][0]["id"], "alpha");
 }

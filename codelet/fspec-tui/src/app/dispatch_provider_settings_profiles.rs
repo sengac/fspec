@@ -50,11 +50,13 @@ impl App {
             Action::SaveProfile {
                 provider_id,
                 profile_name,
+                old_profile_name,
                 definition,
             } => {
                 self.handle_save_profile(
                     provider_id.clone(),
                     profile_name.clone(),
+                    old_profile_name.clone(),
                     definition.clone(),
                 );
             }
@@ -86,14 +88,19 @@ impl App {
         true
     }
 
-    /// PROV-109: persist a profile's connection settings via
-    /// `backend.save_profile` and follow up with a fresh list refresh so the
-    /// openai profile slice (reloaded inside `handle_provider_credentials_loaded`)
-    /// repaints with the new state. Mirrors `handle_save_provider_credentials`.
+    /// PROV-109/PROV-136: persist a profile's connection settings and follow up
+    /// with a fresh list refresh so the openai profile slice (reloaded inside
+    /// `handle_provider_credentials_loaded`) repaints with the new state.
+    /// When `old_profile_name` is `Some(old)` and `old != profile_name` this is
+    /// an edit-mode RENAME: it routes through `backend.rename_profile` (which
+    /// moves the old key to the new name, preserving customModels, and rejects a
+    /// collision). Otherwise it is a plain save. Mirrors
+    /// `handle_save_provider_credentials`.
     pub(crate) fn handle_save_profile(
         &mut self,
         provider_id: String,
         profile_name: String,
+        old_profile_name: Option<String>,
         definition: codelet_rpc_types::ProfileDefinition,
     ) {
         if tokio::runtime::Handle::try_current().is_err() {
@@ -101,11 +108,29 @@ impl App {
         }
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
+        let rename_from = match old_profile_name {
+            Some(old) if old != profile_name => Some(old),
+            _ => None,
+        };
         let handle: JoinHandle<()> = tokio::spawn(async move {
-            match backend
-                .save_profile(provider_id.clone(), profile_name.clone(), definition)
-                .await
-            {
+            let result = match &rename_from {
+                Some(old) => {
+                    backend
+                        .rename_profile(
+                            provider_id.clone(),
+                            old.clone(),
+                            profile_name.clone(),
+                            definition,
+                        )
+                        .await
+                }
+                None => {
+                    backend
+                        .save_profile(provider_id.clone(), profile_name.clone(), definition)
+                        .await
+                }
+            };
+            match result {
                 Ok(()) => {
                     let _ = action_tx.send(Action::ProviderSettingsStatus(format!(
                         "✓ {provider_id}: {profile_name} profile saved"

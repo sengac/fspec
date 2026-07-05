@@ -237,6 +237,25 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         Ok(())
     }
 
+    /// PROV-136: rename a local-server profile (or in-place update when
+    /// `old_name == new_name`). Default returns `Ok(())` (silent no-op) so
+    /// handles that have not wired the rename path — including the stub —
+    /// compile without per-test wiring. The codelet/sessions `SessionManager`
+    /// overrides this to delegate to `profile_persistence::rename_profile`
+    /// (moving the old key to `new_name`, preserving `customModels`, rejecting a
+    /// collision with an existing different profile), returning `Err` for a
+    /// non-openai provider.
+    fn rename_profile(
+        &self,
+        provider_id: &str,
+        old_name: &str,
+        new_name: &str,
+        definition: &ProfileDefinition,
+    ) -> Result<(), String> {
+        let _ = (provider_id, old_name, new_name, definition);
+        Ok(())
+    }
+
     /// RPC-022: set the base thinking/reasoning level for a session.
     /// Default returns `Ok(())` (silent no-op). The codelet/napi
     /// override forwards to the existing

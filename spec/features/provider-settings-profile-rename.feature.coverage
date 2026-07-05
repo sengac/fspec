@@ -1,0 +1,98 @@
+{
+  "scenarios": [
+    {
+      "name": "Up arrow re-enters the name field in edit mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
+          "lines": "82-101",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An empty name cannot be saved",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_profile_rename_prov136.rs",
+          "lines": "134-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profile_form.rs",
+              "lines": [
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_profile_rename_prov136.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/profile_form.rs"
+    ],
+    "totalLinesCovered": 87
+  }
+}

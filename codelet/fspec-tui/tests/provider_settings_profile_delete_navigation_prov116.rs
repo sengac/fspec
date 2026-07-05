@@ -363,6 +363,7 @@ async fn saving_a_profile_does_not_move_cursor_to_provider_row() {
     app.dispatch(Action::SaveProfile {
         provider_id: "openai".to_string(),
         profile_name: "fireworks".to_string(),
+        old_profile_name: None,
         definition: profile_def(),
     });
 

@@ -326,6 +326,26 @@ pub trait FspecBackend: Send + Sync {
         Ok(())
     }
 
+    /// PROV-136: rename a local-server profile (or apply an in-place update when
+    /// `old_name == new_name`). Delegates to `FspecService::rename_profile`
+    /// (the persistence-layer single read-modify-write that moves the old key to
+    /// the new name preserving `customModels`, and rejects a collision with an
+    /// existing different profile). Returns `Ok(())` (silent no-op) when no
+    /// session manager is attached; the default body lets test mocks that do not
+    /// exercise the rename surface compile unchanged (mirrors the `save_profile`
+    /// convention). The embedded + websocket transports override it with a real
+    /// delegate.
+    async fn rename_profile(
+        &self,
+        provider_id: String,
+        old_name: String,
+        new_name: String,
+        definition: ProfileDefinition,
+    ) -> Result<()> {
+        let _ = (provider_id, old_name, new_name, definition);
+        Ok(())
+    }
+
     /// RPC-022: set the per-session thinking/reasoning level.
     /// Mirrors `set_session_model` in shape.
     async fn set_thinking_level(&self, session_id: SessionId, level: ThinkingLevel) -> Result<()>;

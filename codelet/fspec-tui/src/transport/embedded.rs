@@ -351,6 +351,20 @@ impl FspecBackend for EmbeddedFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    // PROV-136: rename delegate.
+    async fn rename_profile(
+        &self,
+        provider_id: String,
+        old_name: String,
+        new_name: String,
+        definition: codelet_rpc_types::ProfileDefinition,
+    ) -> Result<()> {
+        self.client
+            .rename_profile(context::current(), provider_id, old_name, new_name, definition)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     async fn set_thinking_level(&self, session_id: SessionId, level: ThinkingLevel) -> Result<()> {
         self.client
             .set_thinking_level(context::current(), session_id, level)

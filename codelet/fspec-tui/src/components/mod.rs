@@ -773,9 +773,12 @@ pub enum Action {
     /// App::dispatch spawns `backend.save_profile(provider_id,
     /// profile_name, definition)` followed by a `list_provider_credentials`
     /// refresh so the openai profile slice repaints with the new state.
+    /// PROV-136: `old_profile_name` is `Some(original)` for an edit-mode
+    /// rename (dispatch routes to `rename_profile`), else `None`.
     SaveProfile {
         provider_id: String,
         profile_name: String,
+        old_profile_name: Option<String>,
         definition: codelet_rpc_types::ProfileDefinition,
     },
     /// PROV-109: raw delete request for a local-server profile. App::dispatch
