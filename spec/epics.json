@@ -955,7 +955,11 @@
         "RPC-405",
         "RPC-410",
         "RPC-411",
-        "RPC-412"
+        "RPC-412",
+        "BLOCK-008",
+        "BLOCK-009",
+        "BLOCK-010",
+        "BLOCK-011"
       ]
     },
     "rust-cli-port": {

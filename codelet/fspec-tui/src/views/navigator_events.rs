@@ -146,6 +146,14 @@ impl Navigator {
     /// its `BlocklistEvent` outcomes onto the action bus. Mirrors
     /// `handle_provider_settings_event`.
     pub(crate) fn handle_blocklist_event(&mut self, event: &Event) -> EventResult {
+        // BLOCK-011: route mouse-wheel events into the view's handle_mouse
+        // (previously dropped here). Key events fall through to handle_key.
+        if let Event::Mouse(mouse) = event {
+            return match self.blocklist.handle_mouse(*mouse) {
+                BlocklistEvent::Consumed => EventResult::consumed(),
+                _ => EventResult::ignored(),
+            };
+        }
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };

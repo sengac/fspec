@@ -23,7 +23,8 @@ Feature: /blocklist view + blocklist RPC surface
   app/dispatch_blocklist.rs file, mirroring the dispatch_provider_settings
   (/provider) pattern.
   3. Adding a Navigator-owned `BlocklistView` child view that paints a
-  two-pane layout (rule list + details), supports j/k navigation,
+  two-pane layout (rule list + details), supports arrow-key navigation
+  (plus PageUp/PageDown/Home/End per BLOCK-010),
   Enter/Space toggle, and Esc dismissal — full parity with
   BlocklistListView.tsx.
   4. Storing the session-disabled rule ids on `AgentViewStore.blocklist_disabled_by_session`
@@ -53,7 +54,7 @@ Feature: /blocklist view + blocklist RPC surface
   #   4. FspecBackend trait exposes async blocklist_list() -> Result<Vec<BlocklistRuleInfo>> with a default Ok(Vec::new()) impl; both EmbeddedFspecBackend and WebSocketFspecBackend forward to the tarpc client
   #   5. BlocklistRuleInfo wire type carries id, pattern, action ("block"|"allow"|"prompt"), reason, guidance, source ("system"|"project")
   #   6. SlashCommandAction::Blocklist dispatches Action::OpenBlocklistView; Navigator flips active_view to ViewMode::Blocklist
-  #   7. BlocklistView is a Navigator-owned child view with a left list pane + right details pane; j/k navigate, Enter/Space toggle, Esc closes
+  #   7. BlocklistView is a Navigator-owned child view with a left list pane + right details pane; arrow keys (plus PageUp/PageDown/Home/End per BLOCK-010) navigate, Enter/Space toggle, Esc closes
   #   8. The session-disabled set lives on AgentViewStore.blocklist_disabled_by_session (HashMap<SessionId, HashSet<String>>) so it persists across view open/close
   #   9. Category column derived from regex pattern shape: contains "/", starts with "~" or "./" → file_path; else bash
   #   10. Empty-state UX: when blocklist_list returns an empty Vec, the view paints "No blocklist rules configured." with config-path hints
@@ -84,16 +85,16 @@ Feature: /blocklist view + blocklist RPC surface
     When the view is rendered into a 120x24 buffer
     Then the rendered text contains "No blocklist rules configured"
 
-  Scenario: j and Down advance the focused row
+  Scenario: Down advances the focused row
     Given a BlocklistView seeded with three rules with selected_index 0
-    When the user presses j
+    When the user presses Down
     Then selected_index equals 1
     When the user presses Down
     Then selected_index equals 2
 
-  Scenario: k and Up retreat the focused row, clamped at 0
+  Scenario: Up retreats the focused row, clamped at 0
     Given a BlocklistView seeded with three rules with selected_index 1
-    When the user presses k
+    When the user presses Up
     Then selected_index equals 0
     When the user presses Up
     Then selected_index equals 0

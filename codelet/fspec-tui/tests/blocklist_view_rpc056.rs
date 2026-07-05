@@ -200,11 +200,11 @@ fn empty_blocklist_renders_placeholder() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: j and Down advance the focused row
+// Scenario: Down advances the focused row
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn j_and_down_advance_focused_row() {
+fn down_advances_focused_row() {
     // @step Given a BlocklistView seeded with three rules with selected_index 0
     let mut view = BlocklistView::new();
     view.set_rules(vec![
@@ -214,8 +214,8 @@ fn j_and_down_advance_focused_row() {
     ]);
     assert_eq!(view.selected_index, 0);
 
-    // @step When the user presses j
-    let _ = view.handle_key(key(KeyCode::Char('j')));
+    // @step When the user presses Down
+    let _ = view.handle_key(key(KeyCode::Down));
     // @step Then selected_index equals 1
     assert_eq!(view.selected_index, 1);
 
@@ -224,17 +224,17 @@ fn j_and_down_advance_focused_row() {
     // @step Then selected_index equals 2
     assert_eq!(view.selected_index, 2);
 
-    // Boundary: pressing j again should clamp at 2.
-    let _ = view.handle_key(key(KeyCode::Char('j')));
+    // Boundary: pressing Down again should clamp at 2.
+    let _ = view.handle_key(key(KeyCode::Down));
     assert_eq!(view.selected_index, 2);
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: k and Up retreat the focused row, clamped at 0
+// Scenario: Up retreats the focused row, clamped at 0
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn k_and_up_retreat_focused_row_clamped() {
+fn up_retreats_focused_row_clamped() {
     // @step Given a BlocklistView seeded with three rules with selected_index 1
     let mut view = BlocklistView::new();
     view.set_rules(vec![
@@ -244,8 +244,8 @@ fn k_and_up_retreat_focused_row_clamped() {
     ]);
     view.selected_index = 1;
 
-    // @step When the user presses k
-    let _ = view.handle_key(key(KeyCode::Char('k')));
+    // @step When the user presses Up
+    let _ = view.handle_key(key(KeyCode::Up));
     // @step Then selected_index equals 0
     assert_eq!(view.selected_index, 0);
 

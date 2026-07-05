@@ -190,53 +190,37 @@
       ]
     },
     {
-      "name": "j and Down advance the focused row",
+      "name": "Down advances the focused row",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
-          "lines": "196-224",
+          "lines": "206-230",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "lines": "206-230",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162
               ]
             }
           ]
@@ -244,53 +228,37 @@
       ]
     },
     {
-      "name": "k and Up retreat the focused row, clamped at 0",
+      "name": "Up retreats the focused row, clamped at 0",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
-          "lines": "228-252",
+          "lines": "236-256",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
               "lines": [
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/blocklist_view_rpc056.rs",
+          "lines": "236-256",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/blocklist/mod.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166
               ]
             }
           ]
@@ -650,6 +618,6 @@
       "codelet/fspec-tui/src/views/blocklist/mod.rs",
       "codelet/fspec-tui/src/store/agent_view/blocklist_state.rs"
     ],
-    "totalLinesCovered": 743
+    "totalLinesCovered": 727
   }
 }

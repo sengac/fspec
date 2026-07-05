@@ -1,0 +1,201 @@
+{
+  "scenarios": [
+    {
+      "name": "Wheel down moves the selection down",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "lines": "529-554",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel down clamps at the last rule",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "lines": "556-571",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel up clamps at the first rule",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "lines": "573-588",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-wheel mouse events are ignored",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "lines": "590-610",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The navigator routes wheel events to the view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/blocklist/tests.rs",
+          "lines": "612-641",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator_events.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/blocklist/tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/blocklist/mouse.rs",
+      "codelet/fspec-tui/src/views/navigator_events.rs"
+    ],
+    "totalLinesCovered": 213
+  }
+}

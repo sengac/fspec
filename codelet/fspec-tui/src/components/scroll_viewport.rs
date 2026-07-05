@@ -77,6 +77,7 @@ pub enum WheelDirection {
 /// `step` returns the magnitude (with sign) of the move the caller
 /// should apply. Velocity caps at 5 when wheel events arrive faster
 /// than every 150 ms; a 150 ms+ gap resets velocity to 1.
+#[derive(Debug, Clone)]
 pub struct WheelVelocity {
     last: Cell<Option<Instant>>,
     velocity: Cell<u32>,
