@@ -45,6 +45,7 @@ fn profile_def(base_url: &str) -> ProfileDefinition {
         max_output_tokens: None,
         compaction_threshold_type: None,
         compaction_threshold_value: None,
+        streaming: None,
     }
 }
 

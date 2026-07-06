@@ -97,6 +97,11 @@ pub struct LocalServerProfile {
         deserialize_with = "de_opt_u32_lenient"
     )]
     pub context_window: Option<u32>,
+    /// PROV-140: per-profile streaming toggle. `None` (absent) means streaming
+    /// stays enabled (the provider default); `Some(false)` selects the
+    /// non-streaming request path.
+    #[serde(rename = "streaming", default)]
+    pub streaming: Option<bool>,
 }
 
 /// A custom model declared on a profile (`profile.customModels[]`).

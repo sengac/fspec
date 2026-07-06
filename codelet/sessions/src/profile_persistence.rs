@@ -37,6 +37,10 @@ pub struct ProfileDef {
     pub context_window: Option<u32>,
     pub max_output_tokens: Option<u32>,
     pub compaction_threshold: Option<CompactionThreshold>,
+    /// PROV-139: per-profile streaming toggle. `None` (the on-disk default when
+    /// the `streaming` key is absent) means streaming is enabled; only
+    /// `Some(false)` is written to disk as `"streaming": false`.
+    pub streaming: Option<bool>,
 }
 
 /// Canonical openai-only guard predicate — the single source of truth for
@@ -156,6 +160,9 @@ fn merge_profile(profile: &mut Map<String, Value>, def: &ProfileDef) {
         Value::Object(m)
     });
     set_or_remove(profile, "compactionThreshold", compaction);
+    // PROV-139: write the streaming toggle only when explicitly set; `None`
+    // removes the key so an absent `streaming` continues to mean enabled.
+    set_or_remove(profile, "streaming", def.streaming.map(Value::from));
 }
 
 /// Path-injectable core of [`save_profile`]. Whole-file read-modify-write that

@@ -24,6 +24,7 @@ use tracing::{Instrument, Level, enabled, info_span};
 use std::str::FromStr;
 
 pub mod streaming;
+pub(crate) mod nonstreaming;
 
 /// `gpt-5.1` completion model
 pub const GPT_5_1: &str = "gpt-5.1";
@@ -1107,6 +1108,22 @@ pub struct CompletionModel<T = reqwest::Client> {
     pub model: String,
     pub strict_tools: bool,
     pub tool_result_array_content: bool,
+    /// PROV-140: when `false`, `stream()` issues a single non-streaming
+    /// `stream: false` request (no `stream_options`) and adapts the one JSON
+    /// response into the same one-item stream the multi-turn state machine
+    /// consumes. Defaults to `true` (SSE streaming) unless `OPENAI_STREAMING`
+    /// is set to `false`, preserving the historical behaviour.
+    pub stream: bool,
+}
+
+/// PROV-140: read the process-global `OPENAI_STREAMING` toggle. Streaming is
+/// enabled by default; only an explicit `false` disables it (case-insensitive).
+/// Any other value (including absent/unparseable) keeps streaming enabled.
+pub(crate) fn stream_enabled_from_env() -> bool {
+    match std::env::var("OPENAI_STREAMING") {
+        Ok(value) => !value.trim().eq_ignore_ascii_case("false"),
+        Err(_) => true,
+    }
 }
 
 impl<T> CompletionModel<T>
@@ -1119,6 +1136,7 @@ where
             model: model.into(),
             strict_tools: false,
             tool_result_array_content: false,
+            stream: stream_enabled_from_env(),
         }
     }
 
@@ -1128,7 +1146,16 @@ where
             model: model.into(),
             strict_tools: false,
             tool_result_array_content: false,
+            stream: stream_enabled_from_env(),
         }
+    }
+
+    /// PROV-140: explicitly set the streaming flag, overriding the
+    /// `OPENAI_STREAMING`-derived default. Used by `OpenAIProvider` to thread
+    /// the per-profile choice onto the model it owns.
+    pub fn with_stream(mut self, stream: bool) -> Self {
+        self.stream = stream;
+        self
     }
 
     /// Enable strict mode for tool schemas.

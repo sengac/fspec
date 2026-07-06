@@ -453,6 +453,22 @@ pub struct ProfileDefinition {
     pub max_output_tokens: Option<u32>,
     pub compaction_threshold_type: Option<String>,
     pub compaction_threshold_value: Option<u32>,
+    /// PROV-139: per-profile streaming toggle. `None` (the on-disk default when
+    /// the `streaming` key is absent) means streaming is ENABLED — see
+    /// [`ProfileDefinition::streaming_enabled`]. Carried as a flat
+    /// `Option<bool>` so the `napi(object)` projection stays a plain struct,
+    /// mirroring the compaction-threshold override fields above.
+    pub streaming: Option<bool>,
+}
+
+impl ProfileDefinition {
+    /// PROV-139: canonical "is streaming on?" predicate — the single source of
+    /// truth for the "absent ⇒ enabled" semantics. Returns `true` when
+    /// [`streaming`](Self::streaming) is `None` or `Some(true)`, `false` only
+    /// for an explicit `Some(false)`.
+    pub fn streaming_enabled(&self) -> bool {
+        self.streaming.unwrap_or(true)
+    }
 }
 
 /// One provider's display metadata plus its set of available models —

@@ -1,0 +1,162 @@
+{
+  "scenarios": [
+    {
+      "name": "Provider reports streaming disabled when the env flag is false",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/prov140_provider_streaming_flag.rs",
+          "lines": "67-88",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/openai.rs",
+              "lines": [
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider defaults to streaming enabled when the env flag is unset",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/prov140_provider_streaming_flag.rs",
+          "lines": "89-105",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/openai.rs",
+              "lines": [
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/prov140_provider_streaming_flag.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/openai.rs"
+    ],
+    "totalLinesCovered": 153
+  }
+}

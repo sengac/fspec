@@ -194,6 +194,14 @@ pub fn apply_profile_env_vars(
     if let Some(context_window) = profile.context_window {
         std::env::set_var("OPENAI_CONTEXT_WINDOW", context_window.to_string());
     }
+    // PROV-140: bridge the per-profile streaming flag. Export an explicit
+    // "true"/"false" when the profile carries the flag; when absent, REMOVE the
+    // var so a profile without the flag never forces streaming off (the
+    // provider defaults to streaming enabled).
+    match profile.streaming {
+        Some(enabled) => std::env::set_var("OPENAI_STREAMING", enabled.to_string()),
+        None => std::env::remove_var("OPENAI_STREAMING"),
+    }
 
     tracing::info!(
         target: "model_resolution",

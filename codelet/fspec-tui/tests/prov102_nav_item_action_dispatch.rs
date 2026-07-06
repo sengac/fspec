@@ -75,6 +75,7 @@ fn multi_provider_view() -> ProviderSettingsView {
             max_output_tokens: None,
             compaction_threshold_type: None,
             compaction_threshold_value: None,
+            streaming: None,
         },
     );
     view.set_profile_configs(configs);

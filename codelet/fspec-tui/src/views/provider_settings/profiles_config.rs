@@ -141,6 +141,9 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
         .get("compactionThreshold")
         .map(parse_compaction_threshold)
         .unwrap_or((None, None));
+    // PROV-139: read the optional streaming toggle; an absent key stays `None`
+    // (⇒ enabled) so older profiles are unaffected.
+    let streaming = cfg.get("streaming").and_then(Value::as_bool);
     ProfileDefinition {
         base_url,
         api_key,
@@ -148,6 +151,7 @@ fn profile_definition_from_value(cfg: &Value) -> ProfileDefinition {
         max_output_tokens,
         compaction_threshold_type,
         compaction_threshold_value,
+        streaming,
     }
 }
 

@@ -1,0 +1,123 @@
+{
+  "scenarios": [
+    {
+      "name": "Saving preserves customModels while writing the streaming key",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov139_streaming_persistence.rs",
+          "lines": "36-72",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/profile_persistence.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Loading a profile without a streaming key defaults to enabled",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov139_streaming_persistence.rs",
+          "lines": "73-112",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The wire-to-disk bridge copies the streaming flag",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/prov139_streaming_persistence.rs",
+          "lines": "113-128",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/conversions.rs",
+              "lines": [
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/prov139_streaming_persistence.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/profile_persistence.rs",
+      "codelet/fspec-tui/src/views/provider_settings/profiles_config.rs",
+      "codelet/sessions/src/conversions.rs"
+    ],
+    "totalLinesCovered": 150
+  }
+}

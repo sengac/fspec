@@ -181,5 +181,6 @@ pub fn profile_def_from_wire(
         context_window: wire.context_window,
         max_output_tokens: wire.max_output_tokens,
         compaction_threshold,
+        streaming: wire.streaming,
     }
 }

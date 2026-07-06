@@ -10,11 +10,17 @@
 //! are dropped and single-line fields stay single-line.
 
 use super::profile_form::{restore_mode, ProfileForm};
+use super::profile_form_streaming::is_streaming_field;
 use super::{ProviderSettingsEvent, ProviderSettingsView};
 
 /// Insert every gate-passing char of `text` into the focused field (or the
 /// name while `is_editing_name`). Chars outside `(' '..='~')` are dropped.
+/// PROV-139: a paste while the boolean Streaming field is focused is a no-op —
+/// that field is not text and must never accumulate pasted characters.
 fn insert_str(form: &mut ProfileForm, text: &str) {
+    if !form.is_editing_name && is_streaming_field(form.field_index) {
+        return;
+    }
     for c in text.chars() {
         if (' '..='~').contains(&c) {
             form.push_paste_char(c);

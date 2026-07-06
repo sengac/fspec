@@ -1241,6 +1241,16 @@
         "COPY-010",
         "COPY-011"
       ]
+    },
+    "profile-streaming-toggle": {
+      "id": "profile-streaming-toggle",
+      "title": "Per-Profile Streaming Toggle (OpenAI)",
+      "createdAt": "2026-07-06T09:31:05.742Z",
+      "description": "Add a 'Streaming' option (enabled by default) to the profile settings form in the Rust ratatui /provider view, persist it in the profile definition, and wire it end-to-end so disabling streaming makes the OpenAI provider issue a non-streaming (stream=false) chat completion request instead of an SSE stream.",
+      "workUnits": [
+        "PROV-139",
+        "PROV-140"
+      ]
     }
   }
 }

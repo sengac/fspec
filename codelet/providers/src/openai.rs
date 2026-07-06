@@ -67,6 +67,10 @@ pub struct OpenAIProvider {
     context_window: usize,
     /// Max output tokens (configurable via OPENAI_MAX_OUTPUT_TOKENS)
     max_output_tokens: usize,
+    /// PROV-140: per-profile streaming toggle sourced from `OPENAI_STREAMING`
+    /// (default `true`; only an explicit "false" disables). Drives
+    /// `supports_streaming()` and the rig model's request path.
+    streaming: bool,
 }
 
 impl std::fmt::Debug for OpenAIProvider {
@@ -202,6 +206,12 @@ impl OpenAIProvider {
             .and_then(|s| s.parse::<usize>().ok())
             .unwrap_or(DEFAULT_MAX_OUTPUT_TOKENS);
 
+        // PROV-140: read the per-profile streaming toggle. Streaming stays
+        // enabled unless OPENAI_STREAMING is explicitly "false".
+        let streaming = std::env::var("OPENAI_STREAMING")
+            .map(|value| !value.trim().eq_ignore_ascii_case("false"))
+            .unwrap_or(true);
+
         // Build rig completions client
         // PROV-006: Use custom base_url if provided (for vLLM, Ollama, etc.)
         // PROV-051: Apply cache optimization headers via facade when session_id is available
@@ -235,7 +245,10 @@ impl OpenAIProvider {
         };
 
         // Create completion model using the client
-        let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model);
+        // PROV-140: thread the per-profile streaming flag onto the model so its
+        // `stream()` picks the streaming vs non-streaming request path.
+        let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model)
+            .with_stream(streaming);
 
         Ok(Self {
             completion_model,
@@ -244,6 +257,7 @@ impl OpenAIProvider {
             base_url: base_url.map(String::from),
             context_window,
             max_output_tokens,
+            streaming,
         })
     }
 
@@ -420,15 +434,18 @@ impl OpenAIProvider {
             LsTool, ReadTool, RequestUserInputTool, ScheduleTool, SessionSearchTool, WebSearchTool,
             WriteTool,
         };
-        use rig::client::CompletionClient;
 
         // Build agent with all 11 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         // TOOL-012: Pass session_id to fspec and bridge tools
         // TOOL-014: All tools require session_id for worktree isolation
-        let mut agent_builder = self
-            .rig_client
-            .agent(&self.model_name)
-            .max_tokens(self.max_output_tokens as u64)
+        // PROV-140: build the completion model explicitly so the per-profile
+        // streaming flag is applied to the agent's model (not just re-read from
+        // env), keeping streaming vs non-streaming selection deterministic.
+        let mut agent_builder =
+            openai::completion::CompletionModel::new(self.rig_client.clone(), &self.model_name)
+                .with_stream(self.streaming)
+                .into_agent_builder()
+                .max_tokens(self.max_output_tokens as u64)
             .tool(ReadTool::new(session_id))
             .tool(WriteTool::new(session_id))
             .tool(EditTool::new(session_id))
@@ -518,7 +535,7 @@ impl LlmProvider for OpenAIProvider {
     }
 
     fn supports_streaming(&self) -> bool {
-        true // Streaming support via rig
+        self.streaming // PROV-140: reflects the per-profile OPENAI_STREAMING flag
     }
 
     async fn complete(&self, messages: &[Message]) -> Result<String, ProviderError> {

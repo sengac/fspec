@@ -17,29 +17,23 @@ use codelet_rpc_types::ProfileDefinition;
 use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::components::Action;
-use crate::views::model_selector::form::parse_compaction_trigger;
 
+use super::profile_form_parse::{opt_num, profile_compaction_trigger, render_threshold};
 use super::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 
 /// Default base URL for a brand-new profile (TS `DEFAULT_PROFILE_BASE_URL`).
 pub const DEFAULT_PROFILE_BASE_URL: &str = "http://localhost:8888";
 
-/// The five connection field labels in display order (TS `PROFILE_FORM_FIELDS`).
-pub const PROFILE_FORM_FIELDS: [&str; 5] = [
+/// The connection field labels in display order (TS `PROFILE_FORM_FIELDS`).
+/// PROV-139 appends the boolean "Streaming" toggle as the 6th, last entry.
+pub const PROFILE_FORM_FIELDS: [&str; 6] = [
     "Base URL",
     "API Key",
     "Context Window",
     "Max Output Tokens",
     "Compaction Threshold",
+    "Streaming",
 ];
-
-/// TS `compactionThresholdParser.ts` range constants (lines 15-21). Mirrored on
-/// the profile save path only — the shared `parse_compaction_trigger` and the
-/// model_selector custom-model form stay range-free (TS does not range-check
-/// the custom-model form).
-const MIN_PERCENTAGE: u32 = 1;
-const MAX_PERCENTAGE: u32 = 100;
-const MIN_TOKEN_THRESHOLD: u32 = 1000;
 
 /// In-progress profile form values. Number / threshold fields keep their raw
 /// typed string and are parsed on build.
@@ -51,6 +45,8 @@ pub struct ProfileForm {
     pub context_window: String,
     pub max_output_tokens: String,
     pub compaction_threshold: String,
+    /// PROV-139: the Streaming boolean toggle (true ⇒ enabled); not a text field.
+    pub streaming: bool,
     /// Focused field index into [`PROFILE_FORM_FIELDS`].
     pub field_index: usize,
     /// True while the cursor is in the name field (editable in both create and
@@ -74,6 +70,7 @@ impl ProfileForm {
             field_index: 0,
             is_editing_name: true,
             is_new: true,
+            streaming: true,
         }
     }
 
@@ -95,10 +92,12 @@ impl ProfileForm {
             field_index: 0,
             is_editing_name: false,
             is_new: false,
+            streaming: def.streaming_enabled(),
         }
     }
 
-    /// Mutable handle to the focused connection field's raw string.
+    /// Mutable handle to the focused connection field's raw string (never the
+    /// boolean Streaming field — the editing dispatch branches on it first).
     fn focused_text_mut(&mut self) -> &mut String {
         match self.field_index {
             0 => &mut self.base_url,
@@ -131,7 +130,7 @@ impl ProfileForm {
         }
     }
 
-    fn backspace(&mut self) {
+    pub(super) fn backspace(&mut self) {
         if self.is_editing_name {
             self.name.pop();
         } else {
@@ -139,7 +138,7 @@ impl ProfileForm {
         }
     }
 
-    fn push_char(&mut self, c: char) {
+    pub(super) fn push_char(&mut self, c: char) {
         if self.is_editing_name {
             self.name.push(c);
         } else {
@@ -154,14 +153,15 @@ impl ProfileForm {
         self.push_char(c);
     }
 
-    /// Display value for a field index (used by the renderer).
+    /// Display value for a field index (PROV-139: Streaming renders its label).
     pub fn field_value(&self, idx: usize) -> &str {
         match idx {
             0 => &self.base_url,
             1 => &self.api_key,
             2 => &self.context_window,
             3 => &self.max_output_tokens,
-            _ => &self.compaction_threshold,
+            4 => &self.compaction_threshold,
+            _ => super::profile_form_streaming::streaming_label(self.streaming),
         }
     }
 
@@ -180,6 +180,7 @@ impl ProfileForm {
             max_output_tokens: self.max_output_tokens.trim().parse::<u32>().ok(),
             compaction_threshold_type,
             compaction_threshold_value,
+            streaming: Some(self.streaming),
         })
     }
 }
@@ -200,9 +201,8 @@ fn route_key(form: &mut ProfileForm, key: KeyEvent) -> FormKey {
         KeyCode::Tab => {}
         KeyCode::Down => form.move_down(),
         KeyCode::Up => form.move_up(),
-        KeyCode::Backspace | KeyCode::Delete => form.backspace(),
-        KeyCode::Char(c) if (' '..='~').contains(&c) => form.push_char(c),
-        _ => {}
+        // PROV-139: remaining editing keys route through the sibling module.
+        code => super::profile_form_streaming::route_edit_key(form, code),
     }
     FormKey::Editing
 }
@@ -266,33 +266,4 @@ pub(super) fn restore_mode(
     };
 }
 
-fn opt_num(value: Option<u32>) -> String {
-    value.map(|n| n.to_string()).unwrap_or_default()
-}
 
-/// Profile-scoped compaction-trigger parse: split via the shared
-/// [`parse_compaction_trigger`], then enforce the TS range rules (percentage
-/// 1..=100 inclusive, tokens >= 1000). Out-of-range → `(None, None)` so the
-/// field is omitted from the saved profile, matching TS
-/// `parseCompactionThreshold`. The shared splitter — and therefore the
-/// model_selector custom-model form — is left range-free.
-fn profile_compaction_trigger(raw: &str) -> (Option<String>, Option<u32>) {
-    let (kind, value) = parse_compaction_trigger(raw);
-    match (kind.as_deref(), value) {
-        (Some("percentage"), Some(n)) if (MIN_PERCENTAGE..=MAX_PERCENTAGE).contains(&n) => {
-            (kind, value)
-        }
-        (Some("tokens"), Some(n)) if n >= MIN_TOKEN_THRESHOLD => (kind, value),
-        _ => (None, None),
-    }
-}
-
-/// Render a stored compaction threshold back into its raw editable string
-/// (`percentage` → `"80%"`, `tokens` → `"200000"`, otherwise empty).
-fn render_threshold(kind: Option<&str>, value: Option<u32>) -> String {
-    match (kind, value) {
-        (Some("percentage"), Some(v)) => format!("{v}%"),
-        (Some("tokens"), Some(v)) => v.to_string(),
-        _ => String::new(),
-    }
-}

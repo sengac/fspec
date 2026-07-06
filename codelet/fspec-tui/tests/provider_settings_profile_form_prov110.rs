@@ -102,6 +102,7 @@ fn edit_form_prefills_connection_fields_from_stored_profile() {
         max_output_tokens: None,
         compaction_threshold_type: None,
         compaction_threshold_value: None,
+        streaming: None,
     };
     let form = ProfileForm::from_definition("fireworks", &def);
 

@@ -112,6 +112,13 @@ where
         completion_request: CompletionRequest,
     ) -> Result<streaming::StreamingCompletionResponse<StreamingCompletionResponse>, CompletionError>
     {
+        // PROV-140: when streaming is disabled for this model, issue a single
+        // non-streaming request and adapt the JSON response into the same
+        // one-item stream the multi-turn state machine consumes.
+        if !self.stream {
+            return super::nonstreaming::stream_nonstreaming(self, completion_request).await;
+        }
+
         let request = super::CompletionRequest::try_from(OpenAIRequestParams {
             model: self.model.clone(),
             request: completion_request,

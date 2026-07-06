@@ -79,5 +79,6 @@ pub fn basic_def(base_url: &str, api_key: &str) -> ProfileDefinition {
         max_output_tokens: None,
         compaction_threshold_type: None,
         compaction_threshold_value: None,
+        streaming: None,
     }
 }
