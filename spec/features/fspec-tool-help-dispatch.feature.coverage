@@ -1,0 +1,390 @@
+{
+  "scenarios": [
+    {
+      "name": "Embedded --help flag renders the per-command usage doc",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/rpc414_help_dispatch.rs",
+          "lines": "32-68",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help_dispatch.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Embedded -h flag renders the same usage doc as --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/rpc414_help_dispatch.rs",
+          "lines": "70-91",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help_dispatch.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "help command with an args command field renders the per-command usage doc",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/rpc414_help_dispatch.rs",
+          "lines": "93-114",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help_dispatch.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "help command with no args renders general Fspec tool help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/rpc414_help_dispatch.rs",
+          "lines": "116-139",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help_dispatch.rs",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Help request for an unknown command fails naming the stripped command",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/rpc414_help_dispatch.rs",
+          "lines": "141-176",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help_dispatch.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Help request for a real command without a CONFIG degrades gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/rpc414_help_dispatch.rs",
+          "lines": "178-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help_dispatch.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Normal command dispatch is not intercepted by help routing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/rpc414_help_dispatch.rs",
+          "lines": "213-244",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/dispatch.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/rpc414_help_dispatch.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help_dispatch.rs",
+      "codelet/fspec-core/src/dispatch.rs"
+    ],
+    "totalLinesCovered": 468
+  }
+}

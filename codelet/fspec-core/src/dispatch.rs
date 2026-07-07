@@ -100,6 +100,15 @@ impl DispatchResult {
 /// `async fn run` stubs to completion; in Phase 1 every stub resolves
 /// immediately with [`FspecCoreError::NotYetPorted`].
 pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
+    // RPC-414: recognise help requests (`help`, `<cmd> --help`, `<cmd> -h`)
+    // BEFORE the canonical lookup so they never fall through to
+    // UnknownCommand. Non-help inputs return `None` here and dispatch
+    // byte-identically to before.
+    if let Some(help_result) = crate::help_dispatch::try_dispatch_help(&req.command, &req.args_json)
+    {
+        return help_result;
+    }
+
     // TODO(TOOL-019): NAPI chunk-callback delegation path will be wired in
     // the agent_loop integration step — when the NAPI chunk-callback is
     // registered, dispatch should transparently delegate back into

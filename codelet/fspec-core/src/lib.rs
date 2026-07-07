@@ -27,6 +27,8 @@ pub mod dispatch;
 pub mod error;
 pub mod generators;
 pub mod help;
+mod help_dispatch;
+mod help_dispatch_table;
 pub mod io;
 pub mod js_compat;
 pub mod types;

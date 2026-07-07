@@ -1138,7 +1138,8 @@
         "RPC-331",
         "RPC-332",
         "RPC-333",
-        "RPC-334"
+        "RPC-334",
+        "RPC-414"
       ]
     },
     "provider-settings-parity": {
