@@ -2,8 +2,9 @@
 //!
 //! RPC-012 rule [8]: `bootstrap` no longer pre-creates a session. It
 //! ONLY calls `backend.list_work_units()` and seeds the BoardStore via
-//! `Action::WorkUnitsLoaded`, then spawns the three subscriber tasks
-//! (work_units_rx / chunks_rx / logs_rx). Session creation is deferred
+//! `Action::WorkUnitsLoaded`, then spawns the five subscriber tasks
+//! (work_units_rx / chunks_rx / logs_rx / status_changes_rx /
+//! session_created_rx). Session creation is deferred
 //! until the user enters AgentView for the first time (lazy creation
 //! inside `App::dispatch` on `Action::EnterWorkUnit`).
 
@@ -17,7 +18,7 @@ use super::state::App;
 
 impl App {
     /// RPC-012 bootstrap: seed BoardStore via `backend.list_work_units()`
-    /// and spawn the three subscriber tasks. Lazy session creation is
+    /// and spawn the five subscriber tasks. Lazy session creation is
     /// deferred to the first `Action::EnterWorkUnit` / `OpenAgentView`.
     ///
     /// RPC-015 extension: additionally fire `backend.checkpoint_counts()`
@@ -131,9 +132,11 @@ impl App {
         }
     }
 
-    /// Spawn the three subscriber tasks per RPC-009 architecture note [2].
-    /// Each task runs on the host runtime (`tokio::spawn`, NEVER
-    /// `tokio::runtime::Builder` or `Runtime::new()` per RPC-005 Q9).
+    /// Spawn the five subscriber tasks per RPC-009 architecture note [2]
+    /// (work_units_rx / chunks_rx / logs_rx / status_changes_rx /
+    /// session_created_rx). Each task runs on the host runtime
+    /// (`tokio::spawn`, NEVER `tokio::runtime::Builder` or
+    /// `Runtime::new()` per RPC-005 Q9).
     pub(crate) fn spawn_subscriber_tasks(&mut self) {
         // (a) work_units_rx → Action::WorkUnitsLoaded
         let tx = self.action_tx.clone();

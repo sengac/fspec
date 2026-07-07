@@ -1,0 +1,192 @@
+{
+  "scenarios": [
+    {
+      "name": "Old subscriber loops are dead before reconnect",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
+          "lines": "80-110",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Each broadcast stream delivers a post-reconnect event to the App",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
+          "lines": "116-180",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Respawn binds subscribers to the new client receivers",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
+          "lines": "186-220",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flapping reconnects do not accumulate duplicate subscriber tasks",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/reconnect_resubscribe_rpc415.rs",
+          "lines": "226-271",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/reconnect_resubscribe_rpc415.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_reconnect.rs"
+    ],
+    "totalLinesCovered": 289
+  }
+}

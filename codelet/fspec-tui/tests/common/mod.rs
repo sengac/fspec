@@ -213,24 +213,36 @@ use tokio::sync::broadcast;
 pub struct MockBackend {
     work_units: Mutex<Vec<WorkUnitInfo>>,
     sessions: Mutex<Vec<SessionInfo>>,
-    work_units_tx: broadcast::Sender<Vec<WorkUnitInfo>>,
+    /// RPC-415: wrapped in `Mutex<Option>` (mirroring `chunks_tx`) so the
+    /// reconnect-resubscribe tests can drop the Sender via
+    /// `disconnect_all()` (subscribers observe `RecvError::Closed`) and
+    /// then install a FRESH Sender via `reconnect_all()` — modelling the
+    /// transport supervisor swapping in a brand-new RPC client whose
+    /// broadcast senders are distinct from the old (dropped) client's.
+    work_units_tx: Mutex<Option<broadcast::Sender<Vec<WorkUnitInfo>>>>,
     /// RPC-045: wrapped in `Mutex<Option>` so tests can deliberately
     /// drop the Sender via `close_chunks_tx()` to simulate a
     /// SessionManager shutdown and assert the subscriber loop exits
     /// without panicking.
     chunks_tx: Mutex<Option<broadcast::Sender<(SessionId, StreamChunk)>>>,
-    logs_tx: broadcast::Sender<LogRecord>,
+    /// RPC-415: `Mutex<Option>` for the same disconnect/reconnect swap as
+    /// `work_units_tx`.
+    logs_tx: Mutex<Option<broadcast::Sender<LogRecord>>>,
     /// RPC-045: push-driven (SessionId, SessionStatus) broadcast Sender.
     /// Tests use `push_status_change` to drive synthetic transitions
     /// without going through a real SessionManager.
-    status_changes_tx: broadcast::Sender<(SessionId, SessionStatus)>,
+    ///
+    /// RPC-415: `Mutex<Option>` for the disconnect/reconnect swap.
+    status_changes_tx: Mutex<Option<broadcast::Sender<(SessionId, SessionStatus)>>>,
     /// RPC-385: push-driven session-created broadcast Sender. Tests use
     /// `push_session_created` to drive synthetic session-creation events
     /// (e.g. an AgentManager-spawned subordinate) without a real
     /// SessionManager. The capacity is intentionally small (matching the
     /// other broadcast channels) so the lag-recovery scenario can overflow
     /// it and force `RecvError::Lagged`.
-    session_created_tx: broadcast::Sender<SessionInfo>,
+    ///
+    /// RPC-415: `Mutex<Option>` for the disconnect/reconnect swap.
+    session_created_tx: Mutex<Option<broadcast::Sender<SessionInfo>>>,
     list_work_units_calls: AtomicUsize,
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,
@@ -673,11 +685,11 @@ impl Default for MockBackend {
         Self {
             work_units: Mutex::new(Vec::new()),
             sessions: Mutex::new(Vec::new()),
-            work_units_tx,
+            work_units_tx: Mutex::new(Some(work_units_tx)),
             chunks_tx: Mutex::new(Some(chunks_tx)),
-            logs_tx,
-            status_changes_tx,
-            session_created_tx,
+            logs_tx: Mutex::new(Some(logs_tx)),
+            status_changes_tx: Mutex::new(Some(status_changes_tx)),
+            session_created_tx: Mutex::new(Some(session_created_tx)),
             list_work_units_calls: AtomicUsize::new(0),
             create_session_calls: AtomicUsize::new(0),
             send_input_calls: AtomicUsize::new(0),
@@ -920,7 +932,9 @@ impl MockBackend {
 
     /// Push a fresh work-units snapshot onto the broadcast channel.
     pub fn push_work_units(&self, units: Vec<WorkUnitInfo>) {
-        let _ = self.work_units_tx.send(units);
+        if let Some(tx) = self.work_units_tx.lock().expect("MockBackend mutex").as_ref() {
+            let _ = tx.send(units);
+        }
     }
 
     /// Script the next `create_session` call to return this SessionId.
@@ -946,7 +960,14 @@ impl MockBackend {
     /// status-subscriber tests can drive scripted transitions without
     /// touching a real SessionManager.
     pub fn push_status_change(&self, id: SessionId, status: SessionStatus) {
-        let _ = self.status_changes_tx.send((id, status));
+        if let Some(tx) = self
+            .status_changes_tx
+            .lock()
+            .expect("MockBackend mutex")
+            .as_ref()
+        {
+            let _ = tx.send((id, status));
+        }
     }
 
     /// RPC-385: push a session-created broadcast frame so the new
@@ -965,7 +986,47 @@ impl MockBackend {
             worktree_path: None,
             role: None,
         };
-        let _ = self.session_created_tx.send(info);
+        if let Some(tx) = self
+            .session_created_tx
+            .lock()
+            .expect("MockBackend mutex")
+            .as_ref()
+        {
+            let _ = tx.send(info);
+        }
+    }
+
+    /// RPC-415: drop ALL five broadcast Senders to simulate the transport
+    /// supervisor dropping the old RPC client on a WS disconnect. Every
+    /// live subscriber `Receiver` then observes `RecvError::Closed` on its
+    /// next `recv().await`, so all five App subscriber loops exit.
+    pub fn disconnect_all(&self) {
+        *self.work_units_tx.lock().expect("MockBackend mutex") = None;
+        *self.chunks_tx.lock().expect("MockBackend mutex") = None;
+        *self.logs_tx.lock().expect("MockBackend mutex") = None;
+        *self.status_changes_tx.lock().expect("MockBackend mutex") = None;
+        *self.session_created_tx.lock().expect("MockBackend mutex") = None;
+    }
+
+    /// RPC-415: install a FRESH Sender for every broadcast stream,
+    /// modelling the transport supervisor swapping in a brand-new RPC
+    /// client after a successful reconnect. The new Senders are distinct
+    /// from any dropped by `disconnect_all()`, so a subscriber that
+    /// re-subscribes now is bound to the NEW client's receivers. Any
+    /// receiver still holding an OLD Sender's `Receiver` will never see
+    /// events pushed after this call — which is exactly how we prove the
+    /// respawn rebinds to the current client.
+    pub fn reconnect_all(&self) {
+        let (work_units_tx, _) = broadcast::channel(64);
+        let (chunks_tx, _) = broadcast::channel(64);
+        let (logs_tx, _) = broadcast::channel(64);
+        let (status_changes_tx, _) = broadcast::channel(64);
+        let (session_created_tx, _) = broadcast::channel(64);
+        *self.work_units_tx.lock().expect("MockBackend mutex") = Some(work_units_tx);
+        *self.chunks_tx.lock().expect("MockBackend mutex") = Some(chunks_tx);
+        *self.logs_tx.lock().expect("MockBackend mutex") = Some(logs_tx);
+        *self.status_changes_tx.lock().expect("MockBackend mutex") = Some(status_changes_tx);
+        *self.session_created_tx.lock().expect("MockBackend mutex") = Some(session_created_tx);
     }
 
     /// RPC-045: per-call counter for `send_fspec_result`.
@@ -2304,7 +2365,17 @@ impl FspecBackend for MockBackend {
     }
 
     fn work_units_rx(&self) -> broadcast::Receiver<Vec<WorkUnitInfo>> {
-        self.work_units_tx.subscribe()
+        let guard = self.work_units_tx.lock().expect("MockBackend mutex");
+        match guard.as_ref() {
+            Some(tx) => tx.subscribe(),
+            None => {
+                // RPC-415: disconnected — hand back a pre-closed receiver
+                // so the subscriber's next recv() returns RecvError::Closed.
+                let (closed_tx, closed_rx) = broadcast::channel(1);
+                drop(closed_tx);
+                closed_rx
+            }
+        }
     }
 
     fn chunks_rx(&self) -> broadcast::Receiver<(SessionId, StreamChunk)> {
@@ -2323,15 +2394,39 @@ impl FspecBackend for MockBackend {
     }
 
     fn logs_rx(&self) -> broadcast::Receiver<LogRecord> {
-        self.logs_tx.subscribe()
+        let guard = self.logs_tx.lock().expect("MockBackend mutex");
+        match guard.as_ref() {
+            Some(tx) => tx.subscribe(),
+            None => {
+                let (closed_tx, closed_rx) = broadcast::channel(1);
+                drop(closed_tx);
+                closed_rx
+            }
+        }
     }
 
     fn status_changes_rx(&self) -> broadcast::Receiver<(SessionId, SessionStatus)> {
-        self.status_changes_tx.subscribe()
+        let guard = self.status_changes_tx.lock().expect("MockBackend mutex");
+        match guard.as_ref() {
+            Some(tx) => tx.subscribe(),
+            None => {
+                let (closed_tx, closed_rx) = broadcast::channel(1);
+                drop(closed_tx);
+                closed_rx
+            }
+        }
     }
 
     fn session_created_rx(&self) -> broadcast::Receiver<SessionInfo> {
-        self.session_created_tx.subscribe()
+        let guard = self.session_created_tx.lock().expect("MockBackend mutex");
+        match guard.as_ref() {
+            Some(tx) => tx.subscribe(),
+            None => {
+                let (closed_tx, closed_rx) = broadcast::channel(1);
+                drop(closed_tx);
+                closed_rx
+            }
+        }
     }
 
     async fn health(&self) -> Result<codelet_rpc_types::HealthInfo> {

@@ -41,45 +41,45 @@ pub struct App {
     pub(crate) should_quit: bool,
     pub(crate) should_render: bool,
     /// Subscriber-task handles (work_units_rx / chunks_rx / logs_rx),
-    /// spawned by `App::bootstrap` via `tokio::spawn` on the host runtime
-    /// per RPC-005 Q9. Aborted on Drop in a future card.
+    /// spawned by `App::bootstrap` per RPC-005 Q9.
     pub(crate) subscriber_tasks: Vec<JoinHandle<()>>,
-    /// RPC-012 test-only seam: pending tasks spawned inside
-    /// `App::dispatch` (e.g. lazy `create_session` on first
-    /// `EnterWorkUnit`). Production code never reads this; tests use
+    /// RPC-012 test-only seam: pending tasks spawned inside `App::dispatch`
+    /// (e.g. lazy `create_session` on first `EnterWorkUnit`); tests use
     /// [`App::next_pending_task`] to await deterministically.
     pub(crate) pending_tasks: Vec<JoinHandle<()>>,
-    /// Chunks-subscriber session filter (RPC-009 rule [8]). The
-    /// subscriber task reads the current value before forwarding
-    /// `Action::ChunkReceived`; `App::dispatch` publishes a new value
-    /// whenever `Action::SessionCreated` updates the AgentViewStore.
+    /// Chunks-subscriber session filter (RPC-009 rule [8]). The subscriber
+    /// task reads this before forwarding `Action::ChunkReceived`; `dispatch`
+    /// republishes on `Action::SessionCreated`.
     pub(crate) active_session_tx: watch::Sender<Option<SessionId>>,
     pub(crate) active_session_rx: watch::Receiver<Option<SessionId>>,
-    /// RPC-052: single in-flight debounced save handle for the
-    /// per-session pending-input draft. `App::handle_pending_input_changed`
-    /// aborts any previous handle then stores the fresh one so a second
-    /// edit within the 300ms debounce window cancels the previous save.
+    /// RPC-052: single in-flight debounced save handle for the per-session
+    /// pending-input draft. `App::handle_pending_input_changed` aborts any
+    /// previous handle then stores the fresh one so a second edit within the
+    /// 300ms debounce window cancels the previous save.
     pub(crate) pending_input_save_handle: Option<JoinHandle<()>>,
     /// RPC-064: single in-flight debounced abort handle for the `/search`
     /// history-search round-trip. Aborts the previous handle so rapid
     /// keystrokes inside the 150ms debounce window collapse to a single
-    /// `backend.persistence_search_history(query)` call. The `JoinHandle` is
-    /// parked on `pending_tasks` so the RPC-026 harness can await it.
+    /// `backend.persistence_search_history(query)` call.
     pub(crate) search_history_debounce_handle: Option<tokio::task::AbortHandle>,
-    /// TUI-093: per-session guard recording which sessions have already had the
-    /// persisted default thinking level applied. The Rust equivalent of the TS
-    /// `appliedToSessionRef` (`src/tui/hooks/useDefaultThinkingLevel.ts`): the
-    /// default is applied at most once per session id, so a manual `/thinking`
-    /// selection is never clobbered when that session regains focus.
+    /// TUI-093: per-session guard recording which sessions have already had
+    /// the persisted default thinking level applied (Rust equivalent of the
+    /// TS `appliedToSessionRef`), so a manual `/thinking` pick is never
+    /// clobbered when that session regains focus.
     pub(crate) applied_default_thinking: std::collections::HashSet<SessionId>,
     /// RPC-373: local port the RPC-372 viewer server bound to at bootstrap;
     /// `None` when start failed (the board `D` key then no-ops).
     pub(crate) viewer_port: Option<u16>,
-    /// RPC-373: handle to the running viewer server, retained so it shuts down
-    /// cleanly on App drop. `None` when the server failed to start.
+    /// RPC-373: handle to the running viewer server, retained so it shuts
+    /// down cleanly on App drop. `None` when the server failed to start.
     pub(crate) viewer_handle: Option<codelet_attachment_viewer::ViewerHandle>,
     /// COPY-006: OSC 52 clipboard writer (boxed; tests inject a Vec<u8>).
     pub(crate) clipboard: Osc52Clipboard<Box<dyn std::io::Write + Send>>,
+    /// RPC-416: ORIGINATING session + stable scrollback seq of the live
+    /// inline reconnect notice (replace/remove target this, not focus).
+    pub(crate) reconnect_notice: Option<(SessionId, u64)>,
+    /// RPC-416: auto-dismiss timer armed on `Reconnected`; aborted on a re-drop so a stale clear can't remove a fresh notice.
+    pub(crate) reconnect_dismiss_handle: Option<JoinHandle<()>>,
 }
 
 impl App {
@@ -123,6 +123,8 @@ impl App {
             viewer_port: None,
             viewer_handle: None,
             clipboard: Osc52Clipboard::new(Box::new(std::io::stdout())),
+            reconnect_notice: None,
+            reconnect_dismiss_handle: None,
         }
     }
 

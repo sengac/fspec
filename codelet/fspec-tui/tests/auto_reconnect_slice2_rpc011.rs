@@ -4,7 +4,7 @@
 //!
 //! Covers the second sub-slice of RPC-011: exponential backoff supervisor
 //! task + Action::Reconnecting / Action::Reconnected wiring + happy-path
-//! reconnect + create_session(None) replay + inline dialog text update +
+//! reconnect + create_session(None) replay + inline reconnect line update +
 //! ServerGoingAway observable from the client.
 //!
 //! Red phase: requires `WebSocketFspecBackend::connect_with_supervisor`,
@@ -19,13 +19,13 @@ use std::time::{Duration, Instant};
 
 use codelet_fspec_tui::transport::websocket::WebSocketFspecBackend;
 use codelet_fspec_tui::{Action, App, FspecBackend};
-use codelet_rpc_types::SessionId;
+use codelet_rpc_types::{SessionId, WorkUnitInfo};
 use tokio::sync::mpsc::unbounded_channel;
 
 mod common;
 
 use common::{
-    render_one_frame, start_ws_server_with_stats, temp_service, test_app, ws_url, MockBackend,
+    start_ws_server_with_stats, temp_service, test_app, ws_url, MockBackend,
 };
 
 /// Helper: drain the App's action bus, dispatching each Action.
@@ -35,20 +35,18 @@ fn pump_actions(app: &mut App) {
     }
 }
 
-/// Helper: render the App and return the screen as a single string.
-fn render_to_string(
-    terminal: &mut ratatui::Terminal<ratatui::backend::TestBackend>,
-    app: &mut App,
-) -> String {
-    let buf = render_one_frame(terminal, app);
-    let mut out = String::with_capacity((buf.area.width * buf.area.height) as usize);
-    for y in 0..buf.area.height {
-        for x in 0..buf.area.width {
-            out.push_str(buf[(x, y)].symbol());
-        }
-        out.push('\n');
-    }
-    out
+/// RPC-416: source texts of every scrollback chunk in session `id` whose text
+/// mentions a reconnect state ("Reconnecting" / "Reconnected"). Used by the
+/// inline-reconnect assertions that replaced the DisconnectDialog modal ones.
+fn reconnect_lines(app: &App, id: &SessionId) -> Vec<String> {
+    app.agent_view_store()
+        .session_context_for(id)
+        .map(|c| c.scrollback.visible_window(1024))
+        .unwrap_or_default()
+        .into_iter()
+        .filter_map(|c| c.source.as_ref().map(|s| s.text.clone()))
+        .filter(|t| t.contains("Reconnect"))
+        .collect()
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -140,7 +138,7 @@ async fn auto_reconnect_happy_path() {
         .await
         .expect("initial supervisor connect must succeed");
 
-    // @step And the DisconnectDialog is topmost showing "auto-reconnecting (attempt 1)…"
+    // @step And the focused session's scrollback shows an inline reconnecting line
     codelet_rpc_server::request_shutdown(&stats);
     server_join.abort();
     tokio::time::sleep(Duration::from_millis(100)).await;
@@ -176,7 +174,7 @@ async fn auto_reconnect_happy_path() {
 
     // @step Then the supervisor's next connect_async succeeds
     // @step And the supervisor re-issues list_work_units + create_session(None) on the new client
-    // @step And it respawns the three subscriber tasks against the new chunks/logs/work_units broadcasts
+    // @step And it respawns the five subscriber tasks against the new work_units/chunks/logs/status_changes/session_created broadcasts
     // @step And it emits Action::Reconnected on the App action bus
     let mut saw_reconnected = false;
     let deadline = Instant::now() + Duration::from_secs(10);
@@ -192,11 +190,91 @@ async fn auto_reconnect_happy_path() {
         "supervisor must emit Action::Reconnected after the new daemon binds"
     );
 
-    // @step And the App pops the DisconnectDialog from the Compositor
+    // RPC-415: back the "respawns the subscriber tasks" step with a REAL
+    // App-side assertion. The supervisor above proves Action::Reconnected
+    // is emitted on the bus; here we prove the App's dispatch of that
+    // action respawns the full set of subscriber tasks bound to the new
+    // client. We drive a MockBackend App through the same
+    // disconnect → reconnect → Action::Reconnected sequence and assert the
+    // live subscriber_task_count returns to the full stream count AND a
+    // post-reconnect broadcast reaches the bus (proving the loops are live,
+    // not merely counted).
+    let mock = Arc::new(MockBackend::new());
+    let app_backend: Arc<dyn FspecBackend> = mock.clone();
+    let mut app = App::new(app_backend);
+    app.bootstrap().await.expect("mock App bootstrap");
+    let full_stream_count = app.subscriber_task_count();
+    assert_eq!(
+        full_stream_count, 5,
+        "bootstrap must spawn all five subscriber tasks"
+    );
+    // RPC-416: open a focused session and drop the connection so an inline
+    // reconnecting line is showing in its scrollback (the presentation the
+    // DisconnectDialog modal used to own).
+    app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
+    app.dispatch(Action::Disconnected);
+    assert_eq!(
+        reconnect_lines(&app, &SessionId::new("s-1")).len(),
+        1,
+        "an inline reconnecting line must show in the focused session after disconnect"
+    );
+    mock.disconnect_all();
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    mock.reconnect_all();
+    app.dispatch(Action::Reconnected);
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    assert_eq!(
+        app.subscriber_task_count(),
+        full_stream_count,
+        "Action::Reconnected must respawn the full set of subscriber tasks"
+    );
+    mock.push_work_units(vec![WorkUnitInfo {
+        id: "RPC415-LIVE".to_string(),
+        title: "RPC415-LIVE".to_string(),
+        work_type: "story".to_string(),
+        status: "backlog".to_string(),
+        description: None,
+        estimate: None,
+        epic: None,
+        attachments: Vec::new(),
+        last_state_change_at: None,
+    }]);
+    let mut saw_respawned_stream = false;
+    let respawn_deadline = Instant::now() + Duration::from_millis(500);
+    while Instant::now() < respawn_deadline && !saw_respawned_stream {
+        while let Some(action) = app.try_recv_action() {
+            if let Action::WorkUnitsLoaded(units) = &action {
+                if units.iter().any(|u| u.id == "RPC415-LIVE") {
+                    saw_respawned_stream = true;
+                    break;
+                }
+            }
+        }
+        tokio::time::sleep(Duration::from_millis(5)).await;
+    }
+    assert!(
+        saw_respawned_stream,
+        "a post-reconnect work_units broadcast must reach the bus, proving the respawned \
+         subscriber tasks are live and bound to the new client"
+    );
+
+    // @step And the App replaces the inline reconnecting line with a reconnected success line in the focused session
+    let inline = reconnect_lines(&app, &SessionId::new("s-1"));
+    assert_eq!(
+        inline.len(),
+        1,
+        "the reconnect line must be replaced in place — exactly one remains, got: {inline:?}"
+    );
+    assert!(
+        inline[0].contains("Reconnected"),
+        "the inline reconnecting line must be replaced with a reconnected success line, got: {:?}",
+        inline[0]
+    );
+
     // @step And the WorkUnitsListView re-seeds from the snapshot returned by the new daemon
-    // (These two are App-level behaviours covered by the dispatch logic
-    // wired to Action::Reconnected — covered by the inline-text scenario
-    // below; here we only assert the supervisor's responsibility.)
+    // (App-level behaviour covered by the dispatch logic wired to
+    // Action::Reconnected; here we assert the supervisor's responsibility and
+    // the inline presentation swap above.)
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -257,44 +335,44 @@ async fn reconnect_reissues_create_session_and_replaces_active_session_id() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario 9: Auto-reconnect Reconnecting Action updates the dialog text inline
+// Scenario 9: Reconnecting Action updates the inline reconnecting line in place
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn auto_reconnect_reconnecting_action_updates_dialog_text_inline() {
-    // @step Given a TestBackend App with the DisconnectDialog topmost
+async fn reconnecting_action_updates_the_inline_reconnecting_line_in_place() {
+    // @step Given a TestBackend App with a focused session showing an inline reconnecting line
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
-    let (mut app, mut terminal) = test_app(backend);
+    let (mut app, _terminal) = test_app(backend);
+    app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
     app.send_action(Action::Disconnected).unwrap();
     pump_actions(&mut app);
-    let initial_layer_count = app.compositor().len();
     assert_eq!(
-        app.compositor().topmost_id(),
-        Some("disconnect-dialog".to_string()),
-        "precondition: DisconnectDialog topmost"
+        reconnect_lines(&app, &SessionId::new("s-1")).len(),
+        1,
+        "precondition: one inline reconnecting line after disconnect"
     );
 
     // @step When the action loop dispatches Action::Reconnecting(3)
     app.send_action(Action::Reconnecting(3)).unwrap();
     pump_actions(&mut app);
 
-    // @step Then the rendered Buffer contains "auto-reconnecting (attempt 3)…"
-    let rendered = render_to_string(&mut terminal, &mut app);
+    // @step Then the focused session's scrollback shows the reconnecting line updated with attempt 3
+    let lines = reconnect_lines(&app, &SessionId::new("s-1"));
+    assert_eq!(
+        lines.len(),
+        1,
+        "the update must be in place — still exactly one reconnect line, got: {lines:?}"
+    );
     assert!(
-        rendered.contains("auto-reconnecting (attempt 3)"),
-        "rendered buffer must contain 'auto-reconnecting (attempt 3)'. Got:\n{rendered}"
+        lines[0].contains("attempt 3"),
+        "the inline reconnecting line must reflect attempt 3 in place, got: {:?}",
+        lines[0]
     );
 
-    // @step And no new dialog layer is pushed (the existing DisconnectDialog mutates state)
-    assert_eq!(
-        app.compositor().len(),
-        initial_layer_count,
-        "Reconnecting must mutate existing dialog, not push a new layer"
-    );
-    assert_eq!(
-        app.compositor().topmost_id(),
-        Some("disconnect-dialog".to_string()),
-        "DisconnectDialog must still be topmost (no new layer pushed)"
+    // @step And no DisconnectDialog modal is present on the compositor
+    assert!(
+        !app.compositor().contains("disconnect-dialog"),
+        "no DisconnectDialog modal may be present in the inline reconnect flow"
     );
 }
 
@@ -338,8 +416,10 @@ async fn client_receives_server_going_away_when_daemon_shuts_down_gracefully() {
         "client must emit Action::Disconnected within 500ms of going_away"
     );
 
-    // @step And the DisconnectDialog renders the same "daemon disconnected | r to reconnect | q to quit" text
+    // @step And the focused session's scrollback shows an inline reconnecting line after the disconnect
     // @step And the supervisor starts the same 250ms-first-attempt backoff loop
-    // (Covered by scenarios 1, 2, and 6. Here we only assert the
-    // observability path: Disconnected was emitted.)
+    // (The inline presentation is asserted directly by the happy-path and
+    // Scenario 9 tests above; the backoff loop is covered by scenarios 1, 2,
+    // and 6. Here we only assert the observability path: Disconnected was
+    // emitted onto the App action bus.)
 }

@@ -39,6 +39,7 @@ pub mod dispatch_provider_settings;
 pub mod dispatch_provider_settings_copilot;
 pub mod dispatch_provider_settings_oauth;
 pub mod dispatch_provider_settings_profiles;
+pub mod dispatch_reconnect;
 pub mod dispatch_resume_search_views;
 pub mod dispatch_role_dialog;
 pub mod dispatch_scroll;

@@ -169,6 +169,16 @@ impl ScrollbackList {
         }
     }
 
+    /// RPC-416: after a caller removes a chunk directly via
+    /// `chunks_mut`, re-pin the SELECT-mode selection from its remembered
+    /// `seq` (cleared if the turn is gone) and re-anchor stick-to-bottom.
+    pub fn reanchor_after_removal(&mut self) {
+        self.resolve_selection_from_seq();
+        if self.scroll_state.stick_to_bottom {
+            self.recompute_offset_for_stick();
+        }
+    }
+
     /// Set the selected index AND remember its `seq` so the selection
     /// can be re-pinned after a chunk mutation.
     fn set_selected(&mut self, idx: Option<usize>) {

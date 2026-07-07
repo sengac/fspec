@@ -27,6 +27,7 @@ pub mod markdown_tables;
 pub mod navigation;
 pub mod pause_state;
 pub mod pending_tool_diff;
+pub mod reconnect_notice; // RPC-416
 pub mod role_state;
 pub mod session_context;
 pub mod stderr;
@@ -296,4 +297,3 @@ impl AgentViewStore {
         self.cached_history_snapshot.remove(session);
     }
 }
-// Other accessors live in store/agent_view/{chrome,role,work_unit,blocklist,supervisor}_state.rs.

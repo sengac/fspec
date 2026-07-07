@@ -1,0 +1,329 @@
+{
+  "scenarios": [
+    {
+      "name": "Disconnect shows an inline reconnecting line in the focused session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "95-121",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The DisconnectDialog modal never appears for a disconnect or reconnect flow",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "128-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Each reconnect attempt updates the same inline line in place",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "155-184",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful reconnect replaces the inline line in place with a success message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "191-220",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The success line auto-dismisses from scrollback after the short delay",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "226-255",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A re-drop during the success window cancels the dismiss and reverts to reconnecting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "262-294",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace and remove target the originating session even after focus changes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "301-344",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/reconnect_notice.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Closing the originating session before the timer fires is a silent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "351-380",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A re-drop after the originating session closed shows a fresh reconnecting line in the focused session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs",
+          "lines": "388-448",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/inline_reconnect_status_rpc416.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_reconnect.rs",
+      "codelet/fspec-tui/src/app/dispatch.rs",
+      "codelet/fspec-tui/src/store/agent_view/reconnect_notice.rs"
+    ],
+    "totalLinesCovered": 474
+  }
+}

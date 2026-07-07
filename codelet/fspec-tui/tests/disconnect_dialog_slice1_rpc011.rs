@@ -28,14 +28,15 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use codelet_fspec_tui::components::disconnect_dialog::DisconnectDialog;
 use codelet_fspec_tui::transport::websocket::WebSocketFspecBackend;
-use codelet_fspec_tui::{synth_key, Action, App, FspecBackend, Priority};
+use codelet_fspec_tui::{synth_key, Action, App, FspecBackend};
 use crossterm::event::KeyCode;
 use tokio::sync::mpsc::unbounded_channel;
 
 mod common;
 
-use common::{render_one_frame, test_app, MockBackend};
+use common::{test_app, MockBackend};
 
 /// Helper: drain the App's action bus by calling `try_recv_action` until
 /// it returns None, dispatching each Action through `app.dispatch` so
@@ -45,25 +46,6 @@ fn pump_actions(app: &mut App) {
     while let Some(action) = app.try_recv_action() {
         app.dispatch(action);
     }
-}
-
-/// Helper: render the App onto its TestBackend and collect the resulting
-/// buffer as a single concatenated string. Used to assert the literal
-/// strings "daemon disconnected", "q to quit", "r to reconnect" appear
-/// somewhere in the rendered output.
-fn render_to_string(
-    terminal: &mut ratatui::Terminal<ratatui::backend::TestBackend>,
-    app: &mut App,
-) -> String {
-    let buf = render_one_frame(terminal, app);
-    let mut out = String::with_capacity((buf.area.width * buf.area.height) as usize);
-    for y in 0..buf.area.height {
-        for x in 0..buf.area.width {
-            out.push_str(buf[(x, y)].symbol());
-        }
-        out.push('\n');
-    }
-    out
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -145,53 +127,48 @@ async fn websocketfspecbackend_surfaces_ws_disconnect_as_action_disconnected() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario 2: DisconnectDialog is pushed at Priority::Critical when
-//             Action::Disconnected fires
+// Scenario 2: Action::Disconnected pushes an inline reconnecting line, NOT
+//             the DisconnectDialog modal (RPC-416 replaced the modal)
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn disconnect_dialog_pushed_at_priority_critical_when_action_disconnected_fires() {
+async fn disconnect_pushes_inline_reconnecting_line_not_the_modal() {
     // @step Given an App driving a ratatui TestBackend with a WebSocketFspecBackend whose connection has just dropped
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
-    let (mut app, mut terminal) = test_app(backend);
-
-    // Bootstrap is not strictly required for this scenario — the
-    // disconnect path is exercised by dispatching Action::Disconnected
-    // directly onto the App's action bus, which is what the supervisor
-    // task does in production.
+    let (mut app, _terminal) = test_app(backend);
+    // RPC-416: the inline notice targets the FOCUSED session.
+    app.dispatch(Action::SessionCreated(codelet_rpc_types::SessionId::new("s-1")));
 
     // @step When the action loop processes Action::Disconnected
     app.send_action(Action::Disconnected)
         .expect("send_action must succeed");
     pump_actions(&mut app);
 
-    // @step Then the Compositor's topmost layer is a DisconnectDialog Component
-    assert_eq!(
-        app.compositor().topmost_id(),
-        Some("disconnect-dialog".to_string()),
-        "topmost layer must be the DisconnectDialog"
+    // @step Then no DisconnectDialog modal layer is pushed onto the Compositor
+    assert!(
+        !app.compositor().contains("disconnect-dialog"),
+        "RPC-416: the DisconnectDialog modal must never be auto-pushed on Disconnected"
     );
 
-    // @step And the dialog's reported priority is Priority::Critical
+    // @step And the focused session's scrollback gains a single inline reconnecting status line
+    let lines: Vec<String> = app
+        .agent_view_store()
+        .session_context_for(&codelet_rpc_types::SessionId::new("s-1"))
+        .map(|c| c.scrollback.visible_window(1024))
+        .unwrap_or_default()
+        .into_iter()
+        .filter_map(|c| c.source.as_ref().map(|s| s.text.clone()))
+        .filter(|t| t.contains("Reconnect"))
+        .collect();
     assert_eq!(
-        app.compositor().topmost_priority(),
-        Some(Priority::Critical),
-        "DisconnectDialog priority must be Critical"
-    );
-
-    // @step And the rendered Buffer contains the literal strings "daemon disconnected", "q to quit", and "r to reconnect"
-    let rendered = render_to_string(&mut terminal, &mut app);
-    assert!(
-        rendered.contains("daemon disconnected"),
-        "rendered buffer must contain 'daemon disconnected'. Got:\n{rendered}"
+        lines.len(),
+        1,
+        "exactly one inline reconnecting line expected, got: {lines:?}"
     );
     assert!(
-        rendered.contains("q to quit"),
-        "rendered buffer must contain 'q to quit'. Got:\n{rendered}"
-    );
-    assert!(
-        rendered.contains("r to reconnect"),
-        "rendered buffer must contain 'r to reconnect'. Got:\n{rendered}"
+        lines[0].contains("Reconnecting"),
+        "the inline line must be a reconnecting status, got: {:?}",
+        lines[0]
     );
 }
 
@@ -205,8 +182,10 @@ async fn disconnect_dialog_swallows_navigation_keys_while_topmost() {
     let mock = Arc::new(MockBackend::new());
     let backend: Arc<dyn FspecBackend> = mock;
     let (mut app, _terminal) = test_app(backend);
-    app.send_action(Action::Disconnected).unwrap();
-    pump_actions(&mut app);
+    // RPC-416: Disconnected no longer auto-pushes the modal, so the
+    // dialog is constructed + pushed directly to exercise its CR-1
+    // key-swallow behaviour (which still runs at events.rs Stage 1).
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     assert_eq!(
         app.compositor().topmost_id(),
         Some("disconnect-dialog".to_string()),
@@ -267,8 +246,9 @@ async fn pressing_q_in_disconnect_dialog_exits_the_client_cleanly() {
     // @step Given a TestBackend App with the DisconnectDialog currently topmost
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let (mut app, _terminal) = test_app(backend);
-    app.send_action(Action::Disconnected).unwrap();
-    pump_actions(&mut app);
+    // RPC-416: Disconnected no longer auto-pushes the modal; push it
+    // directly to exercise the CR-1 'q' quit binding.
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     assert_eq!(
         app.compositor().topmost_id(),
         Some("disconnect-dialog".to_string())
@@ -324,8 +304,9 @@ async fn pressing_r_in_disconnect_dialog_triggers_manual_reconnect_that_resets_b
     // supervisor loop is driven.
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let (mut app, _terminal) = test_app(backend);
-    app.send_action(Action::Disconnected).unwrap();
-    pump_actions(&mut app);
+    // RPC-416: Disconnected no longer auto-pushes the modal; push it
+    // directly to exercise the CR-1 'r' manual-reconnect binding.
+    app.compositor_mut().push(Box::new(DisconnectDialog::new()));
     // Advance to attempt 5 (cap reached) so the "during a 5-second sleep"
     // precondition is recorded on the dialog state.
     app.send_action(Action::Reconnecting(5)).unwrap();

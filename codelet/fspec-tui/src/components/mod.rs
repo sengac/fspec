@@ -158,14 +158,27 @@ pub enum Action {
     /// re-renders its body to "auto-reconnecting (attempt N)…".
     Reconnecting(u32),
     /// RPC-011 auto-reconnect: the supervisor successfully reconnected
-    /// AND re-issued bootstrap (list_work_units + create_session(None)
-    ///   + resubscribed three broadcasts). App.dispatch() pops the
-    ///     DisconnectDialog from the Compositor.
+    /// AND re-issued bootstrap (list_work_units + create_session(None)).
+    /// RPC-415: App.dispatch() also respawns the five broadcast subscriber
+    /// tasks (work_units / chunks / logs / status_changes / session_created)
+    /// bound to the new client's receivers, then pops the DisconnectDialog
+    /// from the Compositor.
     Reconnected,
     /// RPC-011 CR-1: the user pressed 'r' while DisconnectDialog was
     /// topmost. The supervisor cancels its current backoff sleep, tries
     /// connect immediately, and resets the backoff schedule.
     ManualReconnect,
+    /// RPC-416: fired by the auto-dismiss timer armed on `Reconnected`.
+    /// Carries the ORIGINATING session id + the stable scrollback `seq`
+    /// of the inline reconnect notice so `App::dispatch` removes exactly
+    /// that chunk (silent no-op if the session closed or the notice was
+    /// already superseded by a re-drop).
+    ClearReconnectNotice {
+        /// The session the reconnect notice was pushed into.
+        session_id: codelet_rpc_types::SessionId,
+        /// The stable scrollback seq of the notice chunk to remove.
+        seq: u64,
+    },
     /// RPC-012: BoardView emits this when the user presses Enter on a
     /// selected work unit. App::dispatch sets
     /// AgentViewStore.current_work_unit_id + status and switches the

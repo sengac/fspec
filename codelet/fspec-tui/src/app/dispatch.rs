@@ -1,6 +1,5 @@
 //! `App::dispatch` — single mutation surface for [`BoardStore`] +
 //! [`AgentViewStore`] per the RPC-009 single-task tenere pattern.
-use crate::components::disconnect_dialog::{DisconnectDialog, DISCONNECT_DIALOG_ID};
 use crate::components::Action;
 use crate::views::ViewMode;
 
@@ -36,32 +35,28 @@ impl App {
             Action::SessionStatusChanged(id, status) => {
                 self.handle_session_status_changed(id.clone(), *status);
             }
-            Action::Disconnected if !self.compositor.contains(DISCONNECT_DIALOG_ID) => {
-                self.compositor.push(Box::new(DisconnectDialog::new()));
+            Action::Disconnected => {
+                // RPC-416: push an inline reconnecting notice into the
+                // focused session (no more DisconnectDialog modal).
+                self.handle_disconnected();
+            }
+            Action::Reconnecting(n) => {
+                // RPC-416: update the inline notice in place.
+                self.handle_reconnecting(*n);
             }
             Action::ManualReconnect => {
                 self.backend.request_manual_reconnect();
             }
             Action::Reconnected => {
-                let _ = self.compositor.remove(DISCONNECT_DIALOG_ID);
-                // RPC-011 rule [5]: re-bootstrap on reconnect.
-                let backend = self.backend.clone();
-                let action_tx = self.action_tx.clone();
-                let active_session_tx = self.active_session_tx.clone();
-                tokio::spawn(async move {
-                    if let Ok(units) = backend.list_work_units().await {
-                        let _ = action_tx.send(Action::WorkUnitsLoaded(units));
-                    }
-                    if let Ok(session) = backend.create_session(None).await {
-                        // PROV-101 FIX 1: an empty id is a decline — surface it
-                        // explicitly and never seed it as the active session.
-                        crate::app::session_creation::route_bootstrap_create_session(
-                            session,
-                            &active_session_tx,
-                            &action_tx,
-                        );
-                    }
-                });
+                // RPC-415: respawn subscriber tasks bound to the new client +
+                // RPC-011 one-shot re-bootstrap (see app/dispatch_reconnect.rs).
+                // RPC-416: replace the inline notice with a success line + arm
+                // the auto-dismiss timer.
+                self.handle_reconnected();
+            }
+            Action::ClearReconnectNotice { session_id, seq } => {
+                // RPC-416: auto-dismiss timer fired — remove the notice.
+                self.handle_clear_reconnect_notice(session_id, *seq);
             }
             Action::WorkUnitsLoaded(units) => {
                 self.board_store.replace_work_units(units.clone());
