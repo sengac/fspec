@@ -5,7 +5,6 @@
 @tui
 @BLOCK-010
 Feature: BlocklistView: keyboard parity — remove vim j/k, add PageUp/PageDown/Home/End (arrows + page/home/end only)
-
   """
   BlocklistView::handle_key (views/blocklist/mod.rs) removes the vim KeyCode::Char('j'/'k') arms and adds KeyCode::PageDown/PageUp/Home/End arms. Paging helpers step the selection by visible_rows.max(1) then call adjust_scroll(), which delegates to the shared components::scroll_viewport::ensure_visible primitive (same as model_selector/provider_settings). All rules are selectable, so no header-skipping is needed. Space/Enter continue to emit Action::ToggleBlocklistRule. FOOTER_HINT in views/blocklist/render.rs is updated to drop /jk and advertise the arrow + Page/Home/End keys. All changes stay within the blocklist view; mouse-wheel support is tracked separately in BLOCK-011.
   """
@@ -30,7 +29,6 @@ Feature: BlocklistView: keyboard parity — remove vim j/k, add PageUp/PageDown/
   #   5. With a rule focused, pressing Space emits a toggle action for that rule's id
   #
   # ========================================
-
   Background: User Story
     As a keyboard user of the Rust TUI /blocklist view
     I want to navigate the rules list using only arrow keys plus PageUp/PageDown/Home/End

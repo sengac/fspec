@@ -1670,7 +1670,10 @@ impl SessionManagerHandle for StubSessionManagerHandle {
         let canned = CompactionResult {
             original_tokens: 1000,
             compacted_tokens: 500,
-            compression_ratio: 0.5,
+            // RPC-420: percent of tokens removed [0,100] — 1000 → 500
+            // is a 50% reduction, matching the real producer convention
+            // (`compression_ratio(orig, compacted) * 100.0`).
+            compression_ratio: 50.0,
             turns_summarized: 4,
             turns_kept: 2,
         };

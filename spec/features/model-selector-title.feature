@@ -4,7 +4,6 @@
 @tui
 @MODEL-008
 Feature: Model count in title renders in flat style instead of dim two-span style
-
   """
   The model browse-list title is painted via a two-span title mapping identical to the provider view: name span "Select Model" in bold Color::Yellow, and the count span " (N models)" in dim Color::DarkGray. The count N is state.total_model_count(). This replaces the previous flat single-string title_text() rendered through render_full_screen_scaffold_raw_title (cyan-bold whole string). The fix routes the browse-list title through render_full_screen_scaffold_with_title, whose title closure calls render_two_span_title(area, buf, "Select Model", count, "models") (mode_view_render.rs:41-57). The custom-model overlay path (Add/Edit/Delete) continues to use render_full_screen_scaffold_raw_title and is untouched. render_title_with_count (blue-bold) used by ResumeSession/SearchHistory is a separate helper and is unaffected (RPC-350 R5 guard). Any " (refreshing...)" status suffix is a dim annotation and never joins the bold name span.
   """
@@ -29,7 +28,6 @@ Feature: Model count in title renders in flat style instead of dim two-span styl
   #   A: The refresh suffix, when preserved, is a dim status annotation and belongs with the dim count span (never the bold name). The core fix scopes render_two_span_title to name="Select Model", count=<total>, suffix="models"; the refreshing state remains a dim-styled trailing annotation, not part of the bold name.
   #
   # ========================================
-
   Background: User Story
     As a user of the Rust TUI model selector
     I want to see the model count in the title rendered in the same dim two-span style as the provider view
@@ -41,18 +39,15 @@ Feature: Model count in title renders in flat style instead of dim two-span styl
     Then the title shows "Select Model" in bold yellow
     And the count " (12 models)" is shown in dim DarkGray
 
-
   Scenario: Single model renders singular noun in dim count span
     Given the model selector is in browse mode with 1 model available
     When the browse list is rendered
     Then the count " (1 model)" is shown in dim DarkGray using the singular noun
 
-
   Scenario: Custom-model overlay title is unaffected by the two-span title change
     Given the model selector has the Add Custom Model overlay open
     When the overlay is rendered
     Then the title shows "Add Custom Model" in its existing overlay style with no dim DarkGray count span
-
 
   Scenario: Refreshing state renders the refresh suffix in the dim count span
     Given the model selector is in browse mode with 3 models available
@@ -61,9 +56,7 @@ Feature: Model count in title renders in flat style instead of dim two-span styl
     And a refresh is in flight
     And the bold-yellow "Select Model" name span never contains the refresh suffix
 
-
   Scenario: Browse-list title uses the two-span style, not the shared blue-bold title
     Given the model selector is in browse mode with 3 models available
     When the browse list is rendered
     Then the "Select Model" name span is bold yellow, not the shared blue-bold title style
-

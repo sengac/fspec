@@ -158,6 +158,10 @@ pub(super) fn build_right_line(
         Style::default().fg(Color::DarkGray),
     ));
     let pct_text = match compaction_reduction {
+        // `.abs()` is TS parity only (SessionHeader.tsx uses Math.abs) —
+        // purely defensive. The reduction is `compression_ratio` rounded,
+        // already the percent of tokens removed [0,100] (RPC-420), so it
+        // is never legitimately negative.
         Some(r) => format!("[{}%: COMPACTED {}%]", tokens.context_fill_pct, r.abs()),
         None => format!("[{}%]", tokens.context_fill_pct),
     };

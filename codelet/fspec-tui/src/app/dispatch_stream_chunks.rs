@@ -135,13 +135,25 @@ impl App {
 
                 // RPC-100: persist the reduction percentage on the
                 // per-session slot so SessionHeader renders the
-                // `[X%: COMPACTED Y%]` badge suffix. Same formula as
-                // `format_compaction_notice` in dispatch_slash_commands.rs:290
-                // — keeping the notice line and the badge in sync.
-                let reduction =
-                    ((1.0 - compaction_result.compression_ratio) * 100.0).round() as i32;
+                // `[X%: COMPACTED Y%]` badge suffix. RPC-420: the wire
+                // `compression_ratio` is already the PERCENT of tokens
+                // removed [0,100] (every producer ships
+                // `compression_ratio(orig, compacted) * 100.0`), so it is
+                // rounded and displayed directly — same convention as
+                // `format_compaction_notice` in dispatch_slash_commands.rs,
+                // keeping the notice line and the badge in sync.
+                let reduction = compaction_result.compression_ratio.round() as i32;
                 self.agent_view_store
                     .set_compaction_reduction(session_id.clone(), reduction);
+
+                // RPC-417: arm the 10-second per-session auto-hide timer
+                // (TS TUI-044 parity). Bump the seq first so a stale fire
+                // from an earlier compaction becomes a no-op, then arm
+                // (runtime-guarded → no-op under a synchronous #[test]).
+                let seq = self
+                    .agent_view_store
+                    .bump_compaction_reduction_seq(session_id.clone());
+                self.arm_compaction_hide(session_id.clone(), seq);
 
                 let text = format_compaction_notice(compaction_result);
                 let _ = self

@@ -4,7 +4,6 @@
 @session
 @RPC-410
 Feature: HITL wire protocol parity: multi-question requests and cancel-capable structured responses
-
   """
   Dossier §3.1: codelet/rpc-types/src/lib.rs replaces single-question wire shapes with TS-parity shapes — HitlQuestion{id,header,question,options:Vec<HitlOption>}, HitlRequest{questions:Vec<HitlQuestion>}, HitlAnswer{id,selected:Vec<String>,other:Option<String>}, HitlResponse{cancelled:bool,answers:Vec<HitlAnswer>}. allow_text_input is DROPPED; serde derives match sibling wire types.
   Dossier §3.2/§3.3: handle_impl.rs get_hitl_request becomes full pass-through (every question, options None→[], delete the RPC-053 TODO); send_hitl_response becomes direct mapping (cancelled→Cancelled{true}, else Answered with HashMap keyed by answer id; tracing::warn on unknown ids is allowed but mapping must not depend on the pending request). handle_impl.rs is already >300 lines — mapping helpers extracted to a new sessions/src/hitl_mapping.rs module.
@@ -34,7 +33,6 @@ Feature: HITL wire protocol parity: multi-question requests and cancel-capable s
   #   7. The new wire shapes (HitlQuestion, multi-question HitlRequest, HitlAnswer, cancel-capable HitlResponse) round-trip through serde_json equal to the original value
   #
   # ========================================
-
   Background: User Story
     As a AI agent using the request_user_input tool
     I want to have my full multi-question HITL request delivered to the frontend and receive a structured cancel-capable response with exact selected/other answers

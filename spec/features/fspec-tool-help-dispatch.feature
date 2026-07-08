@@ -7,7 +7,6 @@
 @help-system
 @RPC-414
 Feature: Fspec tool help unreachable in TUI — Rust dispatcher returns UnknownCommand for command help requests
-
   """
   New help routing lives in a dedicated module codelet/fspec-core/src/help_dispatch.rs (under 300 LoC); dispatch_command calls it once before the canonical lookup and returns early on Some(result).
   Per-command help resolves kebab command name to its CONFIG via an explicit static name->&CommandHelpConfig table (mirroring help/configs/mod.rs) and renders with format_command_help. args_json is parsed defensively with serde_json; missing/blank/invalid => treated as no args.command.
@@ -37,7 +36,6 @@ Feature: Fspec tool help unreachable in TUI — Rust dispatcher returns UnknownC
   #   7. Calling the Fspec tool with command 'create-prefix' (no help flag) still dispatches the real create-prefix command unchanged, proving help routing does not intercept normal commands
   #
   # ========================================
-
   Background: User Story
     As a coding agent using the Fspec tool inside the codelet TUI
     I want to get command usage docs by calling the Fspec tool with a help request

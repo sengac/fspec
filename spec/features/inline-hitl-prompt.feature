@@ -7,7 +7,6 @@
 @tui
 @RPC-411
 Feature: Inline HITL prompt parity: replace Critical modal with TS-parity inline composer prompt
-
   """
   Store: per-session HITL slot in store/agent_view/hitl_state.rs (mirrors pause_state.rs) — hitl_prompt_by_session: HashMap<SessionId, HitlPromptState> where HitlPromptState holds the wire HitlRequest + the useHitlInput machine state {question_index, selected_option, answers: Vec<HitlAnswer>, other_active, show_empty_hint}. Faithful port of src/tui/hooks/useHitlInput.ts:134-262: wrap-around selection over options.len()+1 (virtual Other...), advance_or_submit accumulation, reset on clear. handle_pause_chunk's HITL arm dispatches Action::HitlPromptFetched{session_id, request} (replaces Action::OpenHitlDialog); Running/Idle (handle_pause_cleared) clears the slot.
   Rendering: views/agent/hitl_prompt.rs (mirrors pause_prompt.rs) painted from views/agent/input_area.rs — HITL slot consulted BEFORE the pause slot (TS InputTransition.tsx:385-388 priority) and before paint_input_or_spinner. Options mode: prompt_height = wrapped header rows + options + Other... + footer row; freeform/Other mode: header row (+ optional yellow hint row) + the SHARED composer MultiLineInput rendered via render_with_prompt with placeholder "Type your answer..." (draft state untouched — same TextArea). Exact TS colors/glyphs per InputTransition.tsx:393-463. AgentView caches last_hitl (session + mode) at render time like last_pause; hardware cursor visible ONLY in freeform/Other mode (inside the shared input).
@@ -40,7 +39,6 @@ Feature: Inline HITL prompt parity: replace Critical modal with TS-parity inline
   #   9. The source tree contains no hitl_dialog.rs, no HITL_DIALOG_ID, and no Action::OpenHitlDialog construction site — mirroring the RPC-406 pause-modal deletion lock
   #
   # ========================================
-
   Background: User Story
     As a user of the Rust ratatui AgentView
     I want to answer request_user_input (HITL) prompts inline in the composer slot exactly like the TypeScript Ink TUI — multi-question [n/m] flow, radio options with a virtual Other... freeform entry reusing the shared composer input, and Esc that cancels the whole request

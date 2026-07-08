@@ -5,7 +5,6 @@
 @tui
 @COPY-003
 Feature: Mouse gesture recognizer for selection (drag + long-press)
-
   """
   New module codelet/fspec-tui/src/mouse/gesture.rs. Type SelectionRecognizer with an internal state enum (Idle, Pressed{cell, at}, Selecting). Public enum SelectionGesture { Begin(Cell), Extend(Cell), Commit, Cancel }. Reuses Cell from selection.rs (COPY-002).
   crossterm mapping: Down(Left) records Pressed{cell, at:now}; Drag(Left) transitions Pressed to Selecting and returns Begin(press_cell) on the first drag, else returns Extend(cell); Up(Left) returns Commit when Selecting else clears with no gesture. Non-left buttons and wheel return None.
@@ -40,7 +39,6 @@ Feature: Mouse gesture recognizer for selection (drag + long-press)
   #   A: Yes. The recognizer exposes fn tick(&mut self, now: Instant) -> Option<SelectionGesture> that the App run loop calls on the existing 16ms render tick (App::run in app/events.rs already has a tick arm). While a button is held stationary, tick compares now against the recorded press time and emits Begin once REEnable threshold (~400ms) passes. Mouse events feed fn on_mouse(ev, now). Both paths take an injected 'now' so tests use a fake clock.
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to start a text selection by dragging or by pressing and holding the mouse over the transcript

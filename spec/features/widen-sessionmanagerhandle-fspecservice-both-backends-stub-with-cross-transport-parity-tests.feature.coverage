@@ -2041,13 +2041,40 @@
     },
     {
       "name": "clear_history emits a SessionStateChange chunk and returns Ok",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs",
+          "lines": "149-187",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/session_manager_handle.rs",
+              "lines": [
+                1653,
+                1654,
+                1655,
+                1656,
+                1657,
+                1658,
+                1659,
+                1660,
+                1661,
+                1662,
+                1663,
+                1664,
+                1665,
+                1666,
+                1667
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 20,
-    "coveredScenarios": 19,
-    "coveragePercent": 95,
+    "coveredScenarios": 20,
+    "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-tui/tests/rpc037_cross_transport_parity.rs"
     ],
@@ -2057,6 +2084,6 @@
       "codelet/rpc-server/src/server.rs",
       "codelet/fspec-tui/src/transport/mod.rs"
     ],
-    "totalLinesCovered": 3526
+    "totalLinesCovered": 3508
   }
 }

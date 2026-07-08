@@ -4,7 +4,6 @@
 @model-selection
 @ts-parity
 Feature: Local-profile model-probe resilience outside a tokio runtime
-
   """
   Fix location: codelet/sessions/src/profile_sections.rs::probe_profile_models — guard the block_in_place/Handle::current bridge with Handle::try_current()+runtime_flavor()==MultiThread; when absent, log via tracing::warn and return (Vec::new(), true) instead of panicking.
   No unwrap/expect/panic in the production path; the probe returns (discovered_ids, probe_failed) and callers already apply the MODEL-004 unreachable override in build_profile_provider_info.
@@ -25,7 +24,6 @@ Feature: Local-profile model-probe resilience outside a tokio runtime
   #   3. On a multi-thread runtime the probe still runs normally (existing RPC-338 reachable/unreachable behaviour is preserved)
   #
   # ========================================
-
   Background: User Story
     As a codelet TUI user
     I want to open the model selector even when a configured local-server profile cannot be probed

@@ -7,7 +7,6 @@
 @tui
 @COPY-010
 Feature: Text selection anchors at line-start instead of the pressed column
-
   """
   Root cause: the four view-level Begin handlers (scrollback_copy.rs:84-94, multiline_input_select.rs:120-137, turn_modal_select.rs:101-112, details_select.rs:91-104) hard-code anchor.col=0 and cursor.col=content_width; Extend only moves the cursor, so the anchor stays at column 0. The recognizer (gesture.rs) and region model (selection.rs) already carry the correct (row,col).
   Recommended fix: add SelectionGesture::BeginLine(Cell) emitted by SelectionRecognizer::tick (long-press); drag keeps emitting Begin+Extend. Each Begin handler sets anchor=cursor=press cell (precise); each BeginLine handler sets anchor col0/cursor content_width (whole line). Scrollback needs Action::SelectionBeginLine routed to a new ScrollbackList::selection_begin_line; the other three surfaces hold Selection locally. See spec/attachments/COPY-010/bug-analysis-anchor-at-pressed-column.md.
@@ -33,7 +32,6 @@ Feature: Text selection anchors at line-start instead of the pressed column
   #   6. The user presses and releases on the same cell without moving (zero-width drag); nothing is copied
   #
   # ========================================
-
   Background: User Story
     As a user selecting transcript or input text with the mouse
     I want to have my drag selection begin exactly at the cell where I press the mouse
@@ -70,4 +68,3 @@ Feature: Text selection anchors at line-start instead of the pressed column
     Given a scrollback whose visible row reads "Hello world" with mouse capture enabled
     When I press and release the left mouse button on the same cell without moving
     Then nothing is written to the clipboard
-

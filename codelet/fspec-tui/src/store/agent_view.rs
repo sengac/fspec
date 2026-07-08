@@ -102,10 +102,10 @@ pub struct AgentViewStore {
     pub(crate) supervisors_by_session: HashMap<SessionId, Vec<SessionId>>,
     pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
 
-    // ── RPC-100 per-session compaction reduction percentage ─────────────
-    // Set on `CompactionComplete`, cleared on Cleared; read by
-    // `chrome_paint.rs` (TS parity). Accessors in `chrome_state.rs`.
+    // ── RPC-100 compaction reduction pct + RPC-417 auto-hide seq guard ──
+    // Read by `chrome_paint.rs`; accessors in `chrome_state.rs`.
     pub(crate) compaction_reduction_by_session: HashMap<SessionId, i32>,
+    pub(crate) compaction_reduction_seq_by_session: HashMap<SessionId, u64>,
     // RPC-406 pause + RPC-411 HITL slots — pause_state.rs / hitl_state.rs
     pub(crate) pause_state_by_session: HashMap<SessionId, codelet_rpc_types::PauseState>,
     pub(crate) hitl_prompt_by_session: hitl_state::HitlPromptBySession,

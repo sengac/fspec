@@ -170,7 +170,7 @@ async fn clear_history_returns_ok_on_both_transports() {
         .await
         .expect("em clear_history");
     // @step Then the call returns Ok(())
-    // @step And within 1 second a StreamChunk::SessionStateChange { state: Cleared } chunk for that session is observed on chunks_rx
+    // @step And within 1 second a StreamChunk::SessionStateChange chunk with state SessionState::Cleared for that session is observed on chunks_rx (RPC-074: TS parity with TUI-066 contract; previously this was a UserNotification chunk, retired as a Rust-side invention)
     assert!(
         observe_session_state_cleared(&mut em_rx, &sid).await,
         "embedded must observe SessionStateChange {{ state: Cleared }} chunk"
@@ -232,14 +232,15 @@ async fn compact_session_canned_result_matches_across_transports() {
         .compact_session(sid.clone())
         .await
         .expect("ws compact");
-    // @step Then the call returns Ok(CompactionResult { compression_ratio: 0.5, original_tokens: 1000, compacted_tokens: 500, turns_summarized: 4, turns_kept: 2 })
+    // @step Then the call returns Ok(CompactionResult { compression_ratio: 50.0, original_tokens: 1000, compacted_tokens: 500, turns_summarized: 4, turns_kept: 2 })
     // CompactionResult has no PartialEq impl (f64 field); compare fields.
     assert!((em_res.compression_ratio - ws_res.compression_ratio).abs() < f64::EPSILON);
     assert_eq!(em_res.original_tokens, ws_res.original_tokens);
     assert_eq!(em_res.compacted_tokens, ws_res.compacted_tokens);
     assert_eq!(em_res.turns_summarized, ws_res.turns_summarized);
     assert_eq!(em_res.turns_kept, ws_res.turns_kept);
-    assert!((em_res.compression_ratio - 0.5).abs() < f64::EPSILON);
+    // RPC-420: the canned value is 50.0 — percent of tokens removed.
+    assert!((em_res.compression_ratio - 50.0).abs() < f64::EPSILON);
     assert_eq!(em_res.original_tokens, 1000);
     assert_eq!(em_res.compacted_tokens, 500);
     // @step And within 1 second a StreamChunk::CompactionComplete arrives on chunks_rx for that session carrying the same CompactionResult

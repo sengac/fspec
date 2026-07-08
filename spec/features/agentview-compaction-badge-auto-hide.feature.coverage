@@ -1,0 +1,253 @@
+{
+  "scenarios": [
+    {
+      "name": "The COMPACTED badge auto-hides after the 10-second timer fires",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "135-186",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "135-186",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_compaction_hide.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A stale auto-hide action is ignored when a newer compaction re-armed the timer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "190-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_compaction_hide.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "190-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-hiding one session's badge does not affect another session's badge",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "239-291",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_compaction_hide.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "239-291",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A /clear before 10 seconds hides the badge immediately and neutralises the pending timer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "295-351",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chrome_state.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "295-351",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_compaction_hide.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Under paused tokio time the real timer arms and emits the clear action at 10 seconds",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "355-401",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs",
+          "lines": "355-401",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_compaction_hide.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agentview_compaction_badge_auto_hide_rpc417.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+      "codelet/fspec-tui/src/app/dispatch_compaction_hide.rs",
+      "codelet/fspec-tui/src/app/dispatch.rs",
+      "codelet/fspec-tui/src/store/agent_view/chrome_state.rs"
+    ],
+    "totalLinesCovered": 609
+  }
+}

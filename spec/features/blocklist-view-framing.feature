@@ -5,7 +5,6 @@
 @tui
 @BLOCK-009
 Feature: BlocklistView: adopt full-screen shell scaffold + reference-parity framing (header count, pane divider, scroll indicator)
-
   """
   BlocklistView::render adopts the shared full_screen_shell scaffold (render_full_screen_scaffold with count-title 'Blocklist Rules'/'rules'), a [Percentage(50), Length(1), Percentage(50)] body split with diff_common::render_vertical_divider in the middle gutter, and a footer hint. (BLOCK-010 superseded the footer wording; it now reads '↑↓ Navigate | PgUp/PgDn/Home/End: Scroll | Enter/Space: Toggle Rule | Esc: Close'.) Reuses shared helpers (DRY). Preserves all RPC-056 + BLOCK-008 behaviour (categories, glyphs, session-disabled, windowed scrolling, Showing indicator, empty-state, handle_key). Files under 300 lines, clippy clean, no unwrap/expect/todo in non-test code.
   """
@@ -28,7 +27,6 @@ Feature: BlocklistView: adopt full-screen shell scaffold + reference-parity fram
   #   4. After the framing change, the RPC-056 render still shows rule ids, 'system'/'project' source tags, 'file_path'/'bash' categories, ○/● glyphs, '(disabled)' suffix, and the empty-state 'No blocklist rules configured' text
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user opening the /blocklist view
     I want to see the same framing/chrome the reference and sibling views use (rules-count header, a divider between panes, a scroll indicator, and a clear footer)

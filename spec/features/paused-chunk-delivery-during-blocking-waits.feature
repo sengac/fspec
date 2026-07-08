@@ -3,7 +3,6 @@
 @rpc
 @RPC-409
 Feature: Paused SessionStateChange chunk stranded on blocked tokio worker — inline pause prompt never appears
-
   """
   Root cause (RPC-409): tokio broadcast::Sender::send wakes the subscriber task into the current worker's non-stealable LIFO slot; the agent-loop pause/fspec/hitl handlers then block that worker in a std mpsc recv, stranding the subscriber until the wait resolves. Fix: BackgroundSession wait_for_pause_response / wait_for_fspec_response / wait_for_hitl_response wrap the blocking recv in tokio::task::block_in_place, guarded on RuntimeFlavor::MultiThread with a direct-recv fallback off-runtime. See spec/attachments/RPC-409/investigation.md.
   """
@@ -23,7 +22,6 @@ Feature: Paused SessionStateChange chunk stranded on blocked tokio worker — in
   #   3. SessionStateChange{Paused} emitted before wait_for_hitl_response is delivered while the wait is pending (same stranding pattern)
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to see the inline tool-approval prompt the moment a tool pauses for permission
@@ -35,13 +33,11 @@ Feature: Paused SessionStateChange chunk stranded on blocked tokio worker — in
     Then the subscriber receives the Paused chunk within 1 second while the pause is still pending
     And sending a pause response afterwards unblocks the handler with that response
 
-
   Scenario: Fspec request chunk reaches subscribers while the fspec wait is still pending
     Given a BackgroundSession on a multi-thread tokio runtime with a chunks broadcast subscriber
     When a tokio task emits an FspecCommandRequest chunk and blocks in wait_for_fspec_response
     Then the subscriber receives the FspecCommandRequest chunk within 1 second while the wait is still pending
     And sending an fspec result afterwards unblocks the waiter with that result
-
 
   Scenario: Paused chunk reaches subscribers while the HITL wait is still pending
     Given a BackgroundSession on a multi-thread tokio runtime with a chunks broadcast subscriber
@@ -49,9 +45,7 @@ Feature: Paused SessionStateChange chunk stranded on blocked tokio worker — in
     Then the subscriber receives the Paused chunk within 1 second while the wait is still pending
     And sending a HITL response afterwards unblocks the waiter with that response
 
-
   Scenario: Waits fall back to a direct blocking recv when called off-runtime
     Given a BackgroundSession and a plain OS thread outside any tokio runtime context
     When the thread calls wait_for_pause_response and a pause response is sent from another thread
     Then the waiter returns that response without panicking
-

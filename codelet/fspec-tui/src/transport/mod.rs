@@ -465,6 +465,9 @@ pub trait FspecBackend: Send + Sync {
         Ok(CompactionResult {
             original_tokens: 0,
             compacted_tokens: 0,
+            // RPC-420: compression_ratio is the percent of tokens
+            // removed [0,100]; 0.0 is the valid "nothing removed"
+            // sentinel and renders as `COMPACTED 0%` / `0.0% reduction`.
             compression_ratio: 0.0,
             turns_summarized: 0,
             turns_kept: 0,

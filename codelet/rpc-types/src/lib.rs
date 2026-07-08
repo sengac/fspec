@@ -894,6 +894,11 @@ pub struct IncomingMessageInput {
 pub struct CompactionResult {
     pub original_tokens: u32,
     pub compacted_tokens: u32,
+    /// PERCENT of tokens removed by compaction, range [0,100] — e.g.
+    /// 60.0 means 60% of the original tokens were eliminated. Producers
+    /// compute `interactive_helpers::compression_ratio(orig, compacted)
+    /// * 100.0`; consumers display this value directly (RPC-420 — do
+    /// NOT re-derive via `(1.0 - ratio) * 100.0`).
     pub compression_ratio: f64,
     pub turns_summarized: u32,
     pub turns_kept: u32,

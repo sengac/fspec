@@ -1,3 +1,4 @@
+@RPC-420
 @done
 @tui-component
 @slash-command
@@ -24,7 +25,7 @@ Feature: /compact slash command + compaction progress footer
   #
   # BUSINESS RULES:
   #   1. SlashCommandAction::Compact MUST call backend.compact_session(session_id) on the focused session via a spawned tokio task
-  #   2. On a successful compact_session response, a `[compaction] X.X% reduction (Y → Z tokens, T turns summarised)` line is emitted into the originating session's scrollback (X.X = (1.0 - compression_ratio)*100 to 1 decimal place)
+  #   2. On a successful compact_session response, a `[compaction] X.X% reduction (Y → Z tokens, T turns summarised)` line is emitted into the originating session's scrollback (X.X = compression_ratio rendered directly to 1 decimal place — the wire value is already the percent of tokens removed, RPC-420)
   #   3. On a failed compact_session response, a `[error] /compact failed: {reason}` line is emitted into the originating session's scrollback
   #   4. /compact with no current session is a silent no-op (backend.compact_session is never called; no notice is emitted)
   #   5. AgentViewStore tracks per-session compaction progress in a `compaction_progress_by_session: HashMap<SessionId, CompactionProgress>` accessor pair (get + set + clear)
@@ -34,7 +35,7 @@ Feature: /compact slash command + compaction progress footer
   #   9. Backend round-trip happens via tokio::spawn so it does not block the App dispatch task; spawned task dispatches Action::EmitSessionNotice(session_id, text) so the notice lands on the originating session even after a focus switch (mirrors RPC-046)
   #
   # EXAMPLES:
-  #   1. Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok(CompactionResult { compression_ratio: 0.4, original_tokens: 10000, compacted_tokens: 4000, turns_summarized: 12, turns_kept: 3 }), when SlashCommandSelected(Compact) is dispatched, then within 1 second backend.compact_session(s-1) is called exactly once
+  #   1. Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok(CompactionResult { compression_ratio: 60.0, original_tokens: 10000, compacted_tokens: 4000, turns_summarized: 12, turns_kept: 3 }), when SlashCommandSelected(Compact) is dispatched, then within 1 second backend.compact_session(s-1) is called exactly once
   #   2. Given the same Ok response, when SlashCommandSelected(Compact) is dispatched, then within 1 second s-1's scrollback contains the line `[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)`
   #   3. Given an App with an open session s-1 and a MockBackend whose compact_session returns Err("out of memory"), when SlashCommandSelected(Compact) is dispatched, then within 1 second s-1's scrollback contains `[error] /compact failed: out of memory`
   #   4. Given an App with NO current session, when SlashCommandSelected(Compact) is dispatched, then backend.compact_session is never called and no scrollback line is appended
@@ -50,12 +51,12 @@ Feature: /compact slash command + compaction progress footer
     So that the AI conversation history is summarised on the backend AND I see live progress + a final compression-ratio notice in the focused session's scrollback
 
   Scenario: /compact calls backend.compact_session for the focused session
-    Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.4, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
+    Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
     When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
     Then within 1 second backend.compact_session is called exactly once with session_id s-1
 
   Scenario: /compact emits a success notice into the originating session's scrollback on Ok
-    Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.4, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
+    Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
     When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
     Then within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)"
 
@@ -72,7 +73,7 @@ Feature: /compact slash command + compaction progress footer
 
   Scenario: /compact only affects the focused session — background sessions are untouched
     Given an App with two open sessions s-1 (focused) and s-2 (background)
-    And the MockBackend's compact_session returns Ok with compression_ratio 0.5, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1
+    And the MockBackend's compact_session returns Ok with compression_ratio 50.0, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1
     When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
     Then within 1 second backend.compact_session is called exactly once with session_id s-1
     And within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 50.0% reduction (1000 → 500 tokens, 4 turns summarised)"
@@ -92,6 +93,6 @@ Feature: /compact slash command + compaction progress footer
 
   Scenario: CompactionComplete chunk clears progress and emits a completion notice
     Given an App with an open session s-1 whose compaction_progress is Some with phase "summarising", current 3, total 10
-    When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 0.25, original_tokens 8000, compacted_tokens 2000, turns_summarized 6, turns_kept 2 is dispatched
+    When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 75.0, original_tokens 8000, compacted_tokens 2000, turns_summarized 6, turns_kept 2 is dispatched
     Then compaction_progress_for(s-1) becomes None
     And within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 75.0% reduction (8000 → 2000 tokens, 6 turns summarised)"

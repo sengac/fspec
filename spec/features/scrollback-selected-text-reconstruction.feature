@@ -5,7 +5,6 @@
 @tui
 @COPY-004
 Feature: Reconstruct selected text from scrollback, excluding scrollbar gutter
-
   """
   New function on ScrollbackList (or a free fn in a new scrollback_copy.rs, extracted to respect the 300-LoC ceiling like scrollback_select.rs). Signature: fn selected_text(&self, region: &[RowSpan]) -> String taking the RowSpans from COPY-002's Selection::spans(content_width). Reads self.chunks[].lines (Vec<Line<'static>>) and self.scroll_state.offset.
   Content width = viewport_width minus reserved gutter (reserve_gutter = 2 when overflow, per scrollback.rs render_count_visited). The caller (COPY-006) computes content_width and passes it to Selection::spans so end cols are already clamped; COPY-004 additionally clamps to each row's real char length. This double-guards the scrollbar-glyph exclusion (the TS Ink bug where │/■ were copied).
@@ -36,7 +35,6 @@ Feature: Reconstruct selected text from scrollback, excluding scrollbar gutter
   #   7. An empty region (collapsed selection) reconstructs "" (empty string)
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to copy exactly the transcript text I selected, with no scrollbar characters mixed in

@@ -6,7 +6,6 @@
 @tui
 @RPC-416
 Feature: Inline reconnect status in scrollback (replace-in-place + auto-dismiss)
-
   """
   Lost affordances decision (RPC-416): removing the DisconnectDialog drops its 'q to quit' / 'r to reconnect' (ManualReconnect) keybindings. Decision: rely entirely on the transport supervisor's automatic capped-backoff reconnect (250ms->5s) which recovers without any manual key, so no affordance is re-homed. Canonical inline line strings the implementation must emit: disconnect/retry line contains 'Reconnecting' (and '(attempt N)' once Action::Reconnecting(n) is seen); success line contains 'Reconnected'. Lines are ChunkKind::Notification chunks pushed/replaced/removed by stable seq on the ORIGINATING session (tracked as (SessionId, seq) on App state), never by current focus.
   """
@@ -36,7 +35,6 @@ Feature: Inline reconnect status in scrollback (replace-in-place + auto-dismiss)
   #   1. Transport auto-reconnect (250ms->5s capped backoff) recovers the connection without any manual key, so removing the modal's q/r keybindings does not lose required functionality
   #
   # ========================================
-
   Background: User Story
     As a fspec power-user driving the Rust TUI over WebSocket
     I want to see reconnect progress inline in my session transcript that updates in place and clears itself once reconnected
@@ -96,4 +94,3 @@ Feature: Inline reconnect status in scrollback (replace-in-place + auto-dismiss)
     When the connection drops again before the auto-dismiss delay elapses
     Then session B's scrollback shows an inline reconnecting line
     And no stale reconnect notice remains tracked for the closed session A
-

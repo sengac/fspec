@@ -4,7 +4,6 @@
 @provider-settings
 @tui
 Feature: OpenAI profile streaming flag schema
-
   """
   The per-profile streaming flag lives as a flat Option<bool> on the wire type
   ProfileDefinition (codelet/rpc-types), mirroring how the compaction-threshold

@@ -5,7 +5,6 @@
 @provider-settings
 @PROV-135
 Feature: Profile form fields lack placeholder hints for empty numeric/threshold fields
-
   """
   Placeholder rendered in profile_form_render.rs field_line via a small placeholder_for(idx) helper; DIM modifier retained; build_definition() is NOT touched so nothing is persisted. Base URL (idx 0) already prefills a real value in new_create() so its placeholder is rarely seen but kept for parity.
   """
@@ -33,7 +32,6 @@ Feature: Profile form fields lack placeholder hints for empty numeric/threshold 
   #   1. The API Key field, when empty, keeps its existing empty/(empty) treatment and does NOT get a numeric placeholder hint.
   #
   # ========================================
-
   Background: User Story
     As a provider settings user creating or editing an OpenAI profile
     I want to see example placeholder values for the numeric and threshold fields when they are empty
@@ -45,20 +43,17 @@ Feature: Profile form fields lack placeholder hints for empty numeric/threshold 
     Then the Context Window row shows the placeholder "128000"
     Then the placeholder is rendered with the dim modifier
 
-
   Scenario: Empty Max Output Tokens field shows a dim placeholder
     Given a new profile form is open with the Max Output Tokens field empty
     When the profile form is rendered
     Then the Max Output Tokens row shows the placeholder "16384"
     Then the placeholder is rendered with the dim modifier
 
-
   Scenario: Empty Compaction Threshold field shows a dim placeholder
     Given a new profile form is open with the Compaction Threshold field empty
     When the profile form is rendered
     Then the Compaction Threshold row shows the placeholder "80% or 200000"
     Then the placeholder is rendered with the dim modifier
-
 
   Scenario: A field with a typed value shows the value not the placeholder
     Given a new profile form is open
@@ -67,7 +62,6 @@ Feature: Profile form fields lack placeholder hints for empty numeric/threshold 
     Then the Max Output Tokens row shows "8192"
     Then the Max Output Tokens row does not show the placeholder "16384"
 
-
   Scenario: Placeholder hints are never persisted into the saved profile
     Given a new profile form is open with base URL and API key filled in
     Given the Context Window, Max Output Tokens, and Compaction Threshold fields are left empty
@@ -75,4 +69,3 @@ Feature: Profile form fields lack placeholder hints for empty numeric/threshold 
     Then the saved profile has no context window value
     Then the saved profile has no max output tokens value
     Then the saved profile has no compaction threshold type or value
-

@@ -132,9 +132,9 @@ fn ok_result(ratio: f64, original: u32, compacted: u32, turns: u32) -> Compactio
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn compact_calls_backend_compact_session_for_focused_session() {
-    // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.4, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
+    // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
     let mock = Arc::new(MockBackend::new());
-    mock.set_compact_session_result_ok(ok_result(0.4, 10_000, 4_000, 12));
+    mock.set_compact_session_result_ok(ok_result(60.0, 10_000, 4_000, 12));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -160,9 +160,9 @@ async fn compact_calls_backend_compact_session_for_focused_session() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn compact_emits_success_notice_into_originating_session_scrollback() {
-    // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.4, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
+    // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
     let mock = Arc::new(MockBackend::new());
-    mock.set_compact_session_result_ok(ok_result(0.4, 10_000, 4_000, 12));
+    mock.set_compact_session_result_ok(ok_result(60.0, 10_000, 4_000, 12));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -251,8 +251,8 @@ async fn compact_with_no_current_session_is_a_silent_no_op() {
 async fn compact_only_affects_focused_session_background_untouched() {
     // @step Given an App with two open sessions s-1 (focused) and s-2 (background)
     let mock = Arc::new(MockBackend::new());
-    // @step And the MockBackend's compact_session returns Ok with compression_ratio 0.5, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1
-    mock.set_compact_session_result_ok(ok_result(0.5, 1_000, 500, 4));
+    // @step And the MockBackend's compact_session returns Ok with compression_ratio 50.0, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1
+    mock.set_compact_session_result_ok(ok_result(50.0, 1_000, 500, 4));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -399,9 +399,9 @@ async fn compaction_complete_chunk_clears_progress_and_emits_notice() {
         .compaction_progress_for(&sid("s-1"))
         .is_some());
 
-    // @step When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 0.25, original_tokens 8000, compacted_tokens 2000, turns_summarized 6, turns_kept 2 is dispatched
+    // @step When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 75.0, original_tokens 8000, compacted_tokens 2000, turns_summarized 6, turns_kept 2 is dispatched
     let result = CompactionResult {
-        compression_ratio: 0.25,
+        compression_ratio: 75.0,
         original_tokens: 8_000,
         compacted_tokens: 2_000,
         turns_summarized: 6,

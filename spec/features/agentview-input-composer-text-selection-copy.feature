@@ -8,7 +8,6 @@
 @tui
 @COPY-007
 Feature: Wire selection + copy into the AgentView input composer
-
   """
   Wiring point: views/agent/multiline_input.rs currently drops Event::Mouse via `_ => Ignored`. Add a handle_mouse path on MultiLineInput (or route from AgentView dispatch.rs Event::Mouse before it reaches input) that converts mouse (col,row) into composer visual (row,col) by subtracting the input area origin + PROMPT_WIDTH + INPUT_PAD_X, then feeds the SelectionRecognizer (COPY-003).
   State: add selection: Option<Selection> to MultiLineInput (co-located with buffer + scroll_top). Recognizer + Osc52Clipboard live on AgentView/SessionContext (need action bus + stdout), same as COPY-006. Reuse COPY-002 Selection + COPY-003 recognizer + COPY-001 writer unchanged.
@@ -36,7 +35,6 @@ Feature: Wire selection + copy into the AgentView input composer
   #   5. User quickly clicks in the composer to move the cursor; nothing is selected or copied
   #
   # ========================================
-
   Background: User Story
     As a user typing in the composer
     I want to select and copy text from the input box with the mouse

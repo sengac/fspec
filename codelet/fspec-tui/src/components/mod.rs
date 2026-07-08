@@ -179,6 +179,8 @@ pub enum Action {
         /// The stable scrollback seq of the notice chunk to remove.
         seq: u64,
     },
+    /// RPC-417: 10s auto-hide timer fired — seq-guarded clear of the COMPACTED badge.
+    ClearCompactionReduction { session_id: codelet_rpc_types::SessionId, seq: u64 },
     /// RPC-012: BoardView emits this when the user presses Enter on a
     /// selected work unit. App::dispatch sets
     /// AgentViewStore.current_work_unit_id + status and switches the

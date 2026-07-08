@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "67-95",
+          "lines": "90-117",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
@@ -102,7 +102,7 @@
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "49-66",
+          "lines": "72-84",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
@@ -161,15 +161,125 @@
       ]
     },
     {
-      "name": "Local recompute applies the 90% cache discount to cache_read_input_tokens",
+      "name": "Authoritative ContextFillUpdate overrides any locally-recomputed value",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "101-119",
+          "lines": "213-234",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Local recompute preserves overshoot above 100% (RPC-100 invariant)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "239-254",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ContextFillUpdate with non-positive threshold does not wipe a previously-cached good threshold",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "258-285",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Local recompute uses the backend physical-occupancy formula including output and reasoning tokens",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "124-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
                 89,
                 90,
                 91,
@@ -186,8 +296,7 @@
                 102,
                 103,
                 104,
-                105,
-                106
+                105
               ]
             }
           ]
@@ -195,33 +304,24 @@
       ]
     },
     {
-      "name": "Authoritative ContextFillUpdate overrides any locally-recomputed value",
+      "name": "Cache-heavy TokenUpdate no longer collapses the badge (oscillation regression)",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "124-150",
+          "lines": "148-166",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
               ]
             }
           ]
@@ -229,15 +329,22 @@
       ]
     },
     {
-      "name": "Local recompute preserves overshoot above 100% (RPC-100 invariant)",
+      "name": "Local recompute truncates like the backend instead of rounding",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "154-169",
+          "lines": "170-187",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
                 100,
                 101,
                 102,
@@ -250,33 +357,53 @@
       ]
     },
     {
-      "name": "ContextFillUpdate with non-positive threshold does not wipe a previously-cached good threshold",
+      "name": "Missing optional token fields are treated as zero",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
-          "lines": "178-211",
+          "lines": "191-208",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
               "lines": [
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
               ]
             }
           ]
@@ -285,8 +412,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 6,
-    "coveredScenarios": 6,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs"
@@ -294,6 +421,6 @@
     "implFiles": [
       "codelet/fspec-tui/src/store/agent_view/token_state.rs"
     ],
-    "totalLinesCovered": 330
+    "totalLinesCovered": 446
   }
 }

@@ -5,7 +5,6 @@
 @provider-settings
 @PROV-134
 Feature: Left/Right arrow does not expand/collapse providers in /provider view
-
   """
   Uses existing view.toggle_expansion(provider_id) (unconditional flip) guarded by the focused item's current expanded state so Right only expands and Left only collapses, mirroring model_selector's directional set/clear semantics.
   """
@@ -31,7 +30,6 @@ Feature: Left/Right arrow does not expand/collapse providers in /provider view
   #   1. Left/Right only act on NavItemKind::Provider header rows; on non-provider rows they are no-ops (minimal scope, does not re-anchor to parent like model_selector). This keeps the fix header-scoped and avoids child-to-parent navigation complexity.
   #
   # ========================================
-
   Background: User Story
     As a provider settings user
     I want to expand and collapse provider rows with the Right and Left arrow keys
@@ -44,14 +42,12 @@ Feature: Left/Right arrow does not expand/collapse providers in /provider view
     Then the OpenAI provider becomes expanded
     Then the cursor remains on the OpenAI provider header row
 
-
   Scenario: Right arrow on an already-expanded provider header does nothing
     Given the provider list is showing with the OpenAI provider expanded
     Given the cursor is focused on the OpenAI provider header row
     When I press the Right arrow key
     Then the OpenAI provider remains expanded
     Then the cursor remains on the OpenAI provider header row
-
 
   Scenario: Left arrow collapses an expanded provider header
     Given the provider list is showing with the OpenAI provider expanded
@@ -60,7 +56,6 @@ Feature: Left/Right arrow does not expand/collapse providers in /provider view
     Then the OpenAI provider becomes collapsed
     Then the cursor remains on the OpenAI provider header row
 
-
   Scenario: Left arrow on an already-collapsed provider header does nothing
     Given the provider list is showing with the OpenAI provider collapsed
     Given the cursor is focused on the OpenAI provider header row
@@ -68,11 +63,9 @@ Feature: Left/Right arrow does not expand/collapse providers in /provider view
     Then the OpenAI provider remains collapsed
     Then the cursor remains on the OpenAI provider header row
 
-
   Scenario: Left arrow on a child row does nothing
     Given the provider list is showing with the OpenAI provider expanded
     Given the cursor is focused on a child row under the OpenAI provider
     When I press the Left arrow key
     Then the OpenAI provider remains expanded
     Then the cursor remains on the same child row
-

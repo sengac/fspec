@@ -519,7 +519,8 @@
         "CMPCT-020",
         "CMPCT-021",
         "CMPCT-032",
-        "CMPCT-034"
+        "CMPCT-034",
+        "CMPCT-038"
       ]
     },
     "scheduling": {
@@ -961,7 +962,12 @@
         "BLOCK-010",
         "BLOCK-011",
         "RPC-415",
-        "RPC-416"
+        "RPC-416",
+        "RPC-417",
+        "RPC-418",
+        "RPC-419",
+        "RPC-420",
+        "RPC-421"
       ]
     },
     "rust-cli-port": {

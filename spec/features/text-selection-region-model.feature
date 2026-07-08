@@ -4,7 +4,6 @@
 @tui
 @COPY-002
 Feature: Text selection region model
-
   """
   New module codelet/fspec-tui/src/mouse/selection.rs. Types: Cell { row: u16, col: u16 } and Selection { anchor: Cell, cursor: Cell }. A RowSpan { row: u16, start_col: u16, end_col: u16 } (end exclusive, half-open to match the existing rect_contains half-open convention).
   For multi-row spans the caller supplies a row width (content width) so the first/middle rows can extend to the row end. Method signature: fn spans(&self, row_width: u16) -> Vec<RowSpan>. Normalization: order (row, col) pairs lexicographically; if start==end return empty vec.
@@ -32,7 +31,6 @@ Feature: Text selection region model
   #   5. Same-row backwards drag: anchor (1,6) cursor (1,2) normalizes to one span (row 1, cols 2..6)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to get a normalized, ordered set of (row, start_col, end_col) spans from a raw anchor/cursor cell pair

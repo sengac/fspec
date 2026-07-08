@@ -6,7 +6,6 @@
 @rust
 @RPC-091
 Feature: AgentView Rust port: streaming Text accumulation + ToolCall/ToolResult/ToolProgress + Done finalisation rendering parity with TS Ink chunkProcessor
-
   """
   Add in_flight_assistant: Option<usize> to SessionContext — index into scrollback.chunks pointing at the current accumulating assistant bubble. Cleared by Done/ToolCall/Error/Interrupted (flush triggers).
   Move '● ' out of chunk_to_message and into wrap_source (or ScrollbackList::render) — apply only on lineIndex==0 for chunks tagged ChunkKind::AssistantText. Add a ChunkKind enum to ChunkSource so the renderer knows which prefix to use.
@@ -41,7 +40,6 @@ Feature: AgentView Rust port: streaming Text accumulation + ToolCall/ToolResult/
   #   6. ToolResult with isError=true attaches to the matching tool-call header and the rendered chunk carries the isError flag (renderer colours the body red)
   #
   # ========================================
-
   Background: User Story
     As a user typing into a Rust TUI session
     I want to see each StreamChunk variant render with the same accumulation, prefixes, and flush semantics as the TypeScript Ink chunkProcessor
@@ -60,9 +58,9 @@ Feature: AgentView Rust port: streaming Text accumulation + ToolCall/ToolResult/
     Given an AgentView with a fresh SessionContext for session s-1
     When the chunks subscriber forwards StreamChunk::Text { text: "first line\nsecond line" } for s-1
     Then the wrapped lines produced for that chunk are exactly:
-      | line index | visible text  |
-      | 0          | ● first line  |
-      | 1          | second line   |
+      | line index | visible text |
+      | 0          | ● first line |
+      | 1          | second line  |
     And the stored chunk.source.text is exactly "first line\nsecond line" (no bullet baked in)
 
   Scenario: Done flushes the in-flight assistant slot and emits no new chunk
@@ -150,21 +148,20 @@ Feature: AgentView Rust port: streaming Text accumulation + ToolCall/ToolResult/
   Scenario: Full round-trip: user asks, assistant thinks, calls a tool, continues, finishes
     Given an AgentView with a fresh SessionContext for session s-1
     When the chunks subscriber forwards the following chunks in order for s-1:
-      | chunk                                                                                    |
-      | UserInput { text: "what cards are open?" }                                               |
-      | Text { text: "Let me " }                                                                 |
-      | Text { text: "check the board" }                                                         |
+      | chunk                                                                                   |
+      | UserInput { text: "what cards are open?" }                                              |
+      | Text { text: "Let me " }                                                                |
+      | Text { text: "check the board" }                                                        |
       | ToolCall { tool_call: { id: "tc-1", name: "Fspec", input: "{\"command\":\"board\"}" } } |
       | ToolResult { tool_result: { tool_call_id: "tc-1", content: "ok", is_error: false } }    |
-      | Text { text: "Here are the " }                                                           |
-      | Text { text: "open work units" }                                                         |
-      | Done                                                                                     |
+      | Text { text: "Here are the " }                                                          |
+      | Text { text: "open work units" }                                                        |
+      | Done                                                                                    |
     Then the s-1 scrollback contains exactly four rendered chunks in order:
-      | index | visible text (after render) |
-      | 0     | You: what cards are open?   |
-      | 1     | ● Let me check the board    |
-      | 2     | ● Fspec(board)\nok          |
+      | index | visible text (after render)    |
+      | 0     | You: what cards are open?      |
+      | 1     | ● Let me check the board       |
+      | 2     | ● Fspec(board)\nok             |
       | 3     | ● Here are the open work units |
     And the SessionContext in_flight_assistant slot is None
     And no chunk has a bullet baked into its stored source.text
-

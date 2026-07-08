@@ -5,7 +5,6 @@
 @tui
 @COPY-005
 Feature: Render selection highlight overlay in scrollback
-
   """
   New pub(super) fn paint_selection_highlight(area, buf, spans_in_viewport, content_width) in scrollback_paint.rs, called from ScrollbackList::render_count_visited AFTER paint_chunk_rows and paint_selection_overlay (arrow bars). Iterates viewport RowSpans, and for each cell in area.x+col .. clamped to content_width sets buf[(x,y)].set_style(reversed).
   Style: Style::default().add_modifier(Modifier::REVERSED) applied via Cell::set_style so the underlying glyph is preserved and only fg/bg swap. This mirrors ratatui's standard selection-highlight approach and coexists with the DIM arrow bars from RPC-381.
@@ -33,7 +32,6 @@ Feature: Render selection highlight overlay in scrollback
   #   5. A selection whose top row is above the viewport (scrolled off) highlights only the visible portion
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to see the transcript text I am selecting highlighted as I drag

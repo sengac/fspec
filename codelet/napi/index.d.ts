@@ -9,6 +9,16 @@
 export declare function abortSession(repoPath: string, sessionId: string): void;
 
 /**
+ * Add a NEW custom model to a local-server profile (`save` with no original
+ * id → append).
+ */
+export declare function addCustomModel(
+  providerId: string,
+  profileName: string,
+  definition: CustomModelDefinition
+): Promise<void>;
+
+/**
  * Apply session changes by copying files from session worktree to main worktree
  *
  * This copies modified/added files and removes deleted files from the main worktree.
@@ -695,6 +705,13 @@ export interface DebugCommandResult {
   message: string;
 }
 
+/** DELETE a custom model from a local-server profile by id. */
+export declare function deleteCustomModel(
+  providerId: string,
+  profileName: string,
+  modelId: string
+): Promise<void>;
+
 /**
  * Delete a ghost commit checkpoint
  *
@@ -707,6 +724,12 @@ export declare function deleteGhostCheckpoint(
   workUnitId: string,
   checkpointName: string
 ): void;
+
+/** Delete a local-server profile by name. */
+export declare function deleteProfile(
+  providerId: string,
+  profileName: string
+): Promise<void>;
 
 /** Result of discarding a session */
 export interface DiscardResultJs {
@@ -1709,7 +1732,7 @@ export interface NapiProviderModels {
    * RPC-338: `Some(profile)` marks a local-server profile section
    * (mirrors `ProviderInfo.profile_name`). `None` for cloud / custom.
    */
-  profileName?: string | undefined | null;
+  profileName?: string;
   /**
    * RPC-338: `true` when the local-server profile is unreachable
    * (mirrors `ProviderInfo.is_unreachable`).
@@ -2117,6 +2140,13 @@ export interface RestoreResultJs {
   /** Files that were deleted (existed after checkpoint but not in it) */
   deletedFiles: Array<string>;
 }
+
+/** Create or update a local-server profile's connection settings. */
+export declare function saveProfile(
+  providerId: string,
+  profileName: string,
+  definition: ProfileDefinition
+): Promise<void>;
 
 /**
  * Clear the active session tracking (VIEWNV-001)
@@ -2854,6 +2884,17 @@ export declare function toggleDebug(
 ): DebugCommandResult;
 
 /**
+ * UPDATE an existing custom model in place (replace the entry named by
+ * `original_model_id`).
+ */
+export declare function updateCustomModel(
+  providerId: string,
+  profileName: string,
+  originalModelId: string,
+  definition: CustomModelDefinition
+): Promise<void>;
+
+/**
  * PROV-067: Validate a custom provider's JSON schema (missing facade,
  * invalid fields, etc.) without making network calls.
  */
@@ -2923,6 +2964,22 @@ export interface BlocklistRuleInfo {
 }
 
 /**
+ * One changed file in the working tree (RPC-355).
+ *
+ * `change_type` is a single-letter `String` ("A" | "M" | "D" | "R") to stay
+ * serde/tarpc-friendly; the UI maps the letter to a color. Mirrors the TS
+ * `FileItem` shape consumed by `ChangedFilesViewer`.
+ */
+export interface ChangedFile {
+  /** Repo-relative path. */
+  path: string;
+  /** Single-letter change type: "A" | "M" | "D" | "R". */
+  changeType: string;
+  /** true = staged (index), false = unstaged/untracked working-tree change. */
+  staged: boolean;
+}
+
+/**
  * RPC-015: paired manual + automatic checkpoint counts across all work
  * units in a workspace.
  *
@@ -2945,6 +3002,29 @@ export interface CheckpointCounts {
   auto: number;
 }
 
+/**
+ * One ghost-commit checkpoint surfaced to the Rust TUI CheckpointsView
+ * (RPC-362).
+ *
+ * Carries the `work_unit_id` + `name` pair needed to resolve the
+ * `refs/fspec-checkpoints/<work_unit_id>/<name>` ref for diff/restore/delete,
+ * the original creation `timestamp` recovered from the metadata index, and
+ * the derived `is_automatic` flag (`name` contains the `-auto-` substring).
+ */
+export interface CheckpointInfo {
+  /** Work unit identifier the checkpoint belongs to (ref namespace). */
+  workUnitId: string;
+  /** Checkpoint name (the final ref path segment). */
+  name: string;
+  /**
+   * ISO-8601 creation timestamp recovered from the metadata index,
+   * or a fallback "now" when the index is missing/malformed.
+   */
+  timestamp: string;
+  /** true when `name` contains the `-auto-` automatic-checkpoint pattern. */
+  isAutomatic: boolean;
+}
+
 export interface CompactionProgress {
   phase: string;
   current: number;
@@ -2964,6 +3044,34 @@ export interface ContextFillInfo {
   effectiveTokens: number;
   threshold: number;
   contextWindow: number;
+}
+
+/**
+ * RPC-347: transport-portable definition of a custom model declared on a
+ * local-server profile (`profile.customModels[]`, MODEL-004). Maps 1:1 to
+ * the persistence-layer `codelet_sessions::profile_sections::CustomModelDef`
+ * — the `codelet-sessions` conversion module (`custom_model_def_from_wire`)
+ * is the single place the two meet, keeping `codelet-core` /
+ * `codelet-rpc-types` free of any dependency on `codelet-sessions`.
+ *
+ * The CTX-008 compaction-threshold override is carried as two flat optional
+ * fields (`compaction_threshold_type` / `compaction_threshold_value`) rather
+ * than a nested object so the `napi(object)` projection stays a plain struct
+ * (mirroring the `session_set_model` NAPI binding's
+ * `compaction_threshold_type` / `compaction_threshold_value` parameters).
+ * `id` is the only required field; every other field is optional and, when
+ * `None`, is omitted from the persisted `CustomModelDef` JSON.
+ */
+export interface CustomModelDefinition {
+  id: string;
+  displayName?: string;
+  facade?: string;
+  contextWindow?: number;
+  maxOutputTokens?: number;
+  compactionThresholdType?: string;
+  compactionThresholdValue?: number;
+  reasoning?: boolean;
+  hasVision?: boolean;
 }
 
 export interface FspecRequest {
@@ -3052,6 +3160,19 @@ export interface HistoryMatch {
   timestampIso: string;
 }
 
+/**
+ * One structured answer for one HITL question (RPC-410: TS parity
+ * with `HitlAnswer { id, selected, other }`). Option answers carry
+ * the chosen labels in `selected` with `other: None`; freeform /
+ * "Other..." answers carry `selected: []` and the typed text in
+ * `other`.
+ */
+export interface HitlAnswer {
+  id: string;
+  selected: Array<string>;
+  other?: string;
+}
+
 /** One option presented to the user inside an HITL question. */
 export interface HitlOption {
   label: string;
@@ -3059,27 +3180,38 @@ export interface HitlOption {
 }
 
 /**
- * Single HITL question to render in the AgentView modal — wire-facing
- * slice of `codelet_tools::request_user_input::HitlQuestion`. The
- * internal type wraps multiple questions; the AgentView wire surface
- * represents one question per outgoing request.
+ * Single HITL question — wire-facing mirror of
+ * `codelet_tools::request_user_input::HitlQuestion` (RPC-410). An
+ * empty `options` vec means a pure freeform question; a question WITH
+ * options still accepts freeform text via the virtual "Other..."
+ * entry — freeform capability is derived exactly as the TypeScript
+ * frontend derives it (there is no `allow_text_input` flag).
  */
-export interface HitlRequest {
+export interface HitlQuestion {
   id: string;
-  question: string;
   header: string;
+  question: string;
   options: Array<HitlOption>;
-  allowTextInput: boolean;
 }
 
 /**
- * User's response to an `HitlRequest`. The `value` field carries
- * either the selected option label or the freeform text the user
- * entered.
+ * Active HITL request — carries the FULL array of 1–3 questions in
+ * order (RPC-410: TS parity with `HitlRequestInfo { questions }`; no
+ * first-question slicing).
+ */
+export interface HitlRequest {
+  questions: Array<HitlQuestion>;
+}
+
+/**
+ * User's response to an `HitlRequest` (RPC-410: TS parity with
+ * `{ cancelled, answers }`). Cancel (Esc) is `cancelled: true` with
+ * an empty `answers` vec; submit is `cancelled: false` with one
+ * answer per question.
  */
 export interface HitlResponse {
-  id: string;
-  value: string;
+  cancelled: boolean;
+  answers: Array<HitlAnswer>;
 }
 
 export interface IncomingMessageImage {
@@ -3209,6 +3341,14 @@ export interface ModelInfo {
   supportsReasoning: boolean;
   supportsVision: boolean;
   contextWindow: number;
+  /**
+   * Compaction threshold (tokens) — the point at which context compaction
+   * triggers. The SessionHeader size badge prefers this over
+   * `context_window` (mirrors TS `compactionThreshold ?? contextWindow` in
+   * `SessionHeader.tsx`). `0` means "unknown" → the badge falls back to
+   * `context_window`.
+   */
+  compactionThreshold: number;
 }
 
 export declare const enum NotificationSeverity {
@@ -3250,6 +3390,40 @@ export interface PauseState {
   kind: PauseKind;
   prompt: string;
   toolCallId?: string;
+}
+
+/**
+ * PROV-108: transport-portable definition of a local-server profile's
+ * connection settings (`providers.openai.profiles.<name>`, PROV-007). Maps to
+ * the on-disk profile object written by
+ * `codelet_sessions::profile_persistence::save_profile`; the
+ * `codelet-sessions` conversion (`profile_def_from_wire`) is the single place
+ * the wire shape and the on-disk shape meet, keeping `codelet-core` /
+ * `codelet-rpc-types` free of any dependency on `codelet-sessions`.
+ *
+ * `customModels` is deliberately NOT part of this definition: the
+ * custom-model write path (RPC-347, `CustomModelDefinition`) owns that array,
+ * and the profile read-modify-write preserves it. `base_url` and `api_key`
+ * are required; the CTX-008 compaction-threshold override is carried as two
+ * flat optional fields (`compaction_threshold_type` /
+ * `compaction_threshold_value`) so the `napi(object)` projection stays a
+ * plain struct (mirroring [`CustomModelDefinition`]).
+ */
+export interface ProfileDefinition {
+  baseUrl: string;
+  apiKey: string;
+  contextWindow?: number;
+  maxOutputTokens?: number;
+  compactionThresholdType?: string;
+  compactionThresholdValue?: number;
+  /**
+   * PROV-139: per-profile streaming toggle. `None` (the on-disk default when
+   * the `streaming` key is absent) means streaming is ENABLED — see
+   * [`ProfileDefinition::streaming_enabled`]. Carried as a flat
+   * `Option<bool>` so the `napi(object)` projection stays a plain struct,
+   * mirroring the compaction-threshold override fields above.
+   */
+  streaming?: boolean;
 }
 
 /**
@@ -3336,6 +3510,22 @@ export interface ProviderInfo {
   key: string;
   displayName: string;
   models: Array<ModelEntry>;
+  /**
+   * RPC-338: `Some(profile)` marks this entry as a local-server profile
+   * section (drives the 📁 icon + `"provider: profile"` label in the
+   * model selector). `None` for cloud / custom providers. Stays
+   * `Option<String>` (not an enum) because `napi(object)` does not
+   * support discriminated enums — matches the `masked_key` / `source`
+   * convention on `ProviderCredentialInfo`.
+   */
+  profileName?: string;
+  /**
+   * RPC-338: `true` when a local-server profile's `/v1/models` probe
+   * failed and it has no custom models (MODEL-004). Drives the red
+   * `(unreachable)` marker. Defaults to `false` (reachable) so
+   * `derive(Default)` stays valid.
+   */
+  isUnreachable: boolean;
 }
 
 /**

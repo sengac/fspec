@@ -5,7 +5,6 @@
 @tui
 @BLOCK-011
 Feature: BlocklistView: add mouse-wheel scroll support (parity with model_selector/provider_settings wheel handling)
-
   """
   BlocklistView gains a wheel: scroll_viewport::WheelVelocity field and a handle_mouse(MouseEvent) -> BlocklistEvent method (views/blocklist/mod.rs) that maps MouseEventKind::ScrollUp/ScrollDown to WheelDirection and repeats move_up/move_down by self.wheel.step(dir); non-wheel kinds return Ignored. move_up/move_down already reconcile scroll_offset via adjust_scroll (shared scroll_viewport::ensure_visible). navigator_events::handle_blocklist_event routes Event::Mouse into handle_mouse before the Event::Key guard, mirroring handle_model_selector_event. The WheelVelocity derive conflict with BlocklistView's #[derive(Debug, Clone, Default)] is resolved by deriving Debug+Clone on WheelVelocity (additive) or a manual Default impl on the view. Mirrors model_selector and provider_settings wheel handling; no new scroll math.
   """
@@ -29,7 +28,6 @@ Feature: BlocklistView: add mouse-wheel scroll support (parity with model_select
   #   5. A wheel event delivered through the navigator's blocklist event handler is consumed and updates the view's selection
   #
   # ========================================
-
   Background: User Story
     As a mouse user of the Rust TUI /blocklist view
     I want to scroll the blocklist rules with the mouse wheel

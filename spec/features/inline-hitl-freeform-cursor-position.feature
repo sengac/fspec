@@ -4,7 +4,6 @@
 @rust
 @RPC-412
 Feature: Inline HITL freeform cursor renders one row above the input line
-
   """
   render_hitl_prompt already returns Some(header_offset) in freeform mode; capture it in paint_input_area into a new AgentView field (e.g. last_hitl_input_offset: Option<u16>), reset each paint. cursor_position() anchors at last_input_area.y + offset when present. Column math and viewport clamp in hardware_cursor_in are preserved (offset applied to the region y before clamping so the cursor can reach the true input row).
   Parity anchors: TS src/tui/components/MultiLineInput.tsx renders the > input as a flex child below the prompt header so Ink places the inverse cursor on the input line automatically; the Rust raw set_cursor_position must reproduce that. tui-textarea (widget.rs:168) stores the painted viewport during render and derives the cursor from where the input was actually painted — apply the same principle here (anchor to the painted input row, not the region top).
@@ -30,7 +29,6 @@ Feature: Inline HITL freeform cursor renders one row above the input line
   #   6. Normal composer with no prompt: the cursor row equals input_area.y (no header offset added)
   #
   # ========================================
-
   Background: User Story
     As a TUI user answering a HITL request with freeform text
     I want to see the terminal cursor sit on the same line as the characters I type

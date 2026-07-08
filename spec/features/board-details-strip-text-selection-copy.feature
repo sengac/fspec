@@ -8,7 +8,6 @@
 @tui
 @COPY-009
 Feature: Wire selection + copy into the BoardView work-unit details strip
-
   """
   Wiring point: views/board/render.rs render_with_store already caches last_content_area etc. from `split`. Add a `last_details_area` (Cell<Option<Rect>>) on BoardView set to borders::inner_rect(split[3]) — the details_strip inner rect. In views/board/mouse.rs handle_mouse, hit-test that rect FIRST; if the event lands there, feed the MouseEvent to a SelectionRecognizer (COPY-003), converting (col,row) to strip (row,col) by subtracting the rect origin. Otherwise fall through to the existing wheel/click logic unchanged.
   State: recognizer + Osc52Clipboard live on BoardView (need action bus + stdout, like MouseTrackingToggle wiring). Selection: Option<Selection> (COPY-002) held on BoardView, cleared when the selected work unit changes (SetFocusedColumn/SelectIndexInFocused that changes selected_work_unit()) or on Esc. Reuse COPY-001/002/003 unchanged.
@@ -38,7 +37,6 @@ Feature: Wire selection + copy into the BoardView work-unit details strip
   #   6. User quickly clicks inside the details strip; nothing is selected or copied and the click is otherwise inert (strip is not a selectable column)
   #
   # ========================================
-
   Background: User Story
     As a user browsing the board
     I want to select and copy the work-unit id, title, or description text from the details strip

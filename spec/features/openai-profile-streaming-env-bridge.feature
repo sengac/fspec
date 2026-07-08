@@ -4,7 +4,6 @@
 @providers
 @provider-settings
 Feature: OpenAI profile streaming flag env-var bridge
-
   """
   apply_profile_env_vars (codelet/sessions/src/model_resolution.rs) is the
   single source of truth that exports a selected profile's connection settings

@@ -1141,20 +1141,28 @@ export const AgentView: React.FC<AgentViewProps> = ({
       }
       // RPC-101: Recompute context-fill percentage locally so the [X%]
       // badge updates at the same cadence as the tokens counters.
-      // Formula mirrors `calculateContextFillPercentage` and the
-      // backend's `emit_context_fill_from_usage` in
-      // codelet/cli/src/interactive/stream_loop.rs:108-126, with the
-      // cache discount (cache_read costs 10% of normal) baked in to
-      // match `TokenTracker.effective_tokens`. A real
-      // ContextFillUpdate from the backend will overwrite this value
-      // next (backend is authoritative when it speaks).
+      // RPC-419: The formula mirrors the backend's authoritative
+      // `emit_context_fill_from_usage` (codelet/cli/src/interactive/
+      // stream_loop.rs:119-137) and `ApiTokenUsage::total_context`
+      // (codelet/core/src/token_usage.rs:64-72): physical context
+      // occupancy = input + output + reasoning tokens. The wire
+      // inputTokens ALREADY includes cache read/creation tokens
+      // (PROV-001), so no cache term is added or subtracted here. The
+      // previous `input - 0.9*cacheRead` recompute was the RPC-419
+      // bug: the 90% cache discount belongs exclusively to
+      // compaction's cost model (`TokenTracker::effective_tokens`)
+      // and made the badge oscillate against the backend's
+      // ContextFillUpdate values. Math.trunc (not round) matches the
+      // backend's as-u32 cast. A real ContextFillUpdate from the
+      // backend will overwrite this value next (backend is
+      // authoritative whenever it speaks).
       const threshold = cachedContextThresholdRef.current;
       if (threshold > 0) {
-        const inputTokens = chunk.tokens.inputTokens ?? 0;
-        const cacheRead = chunk.tokens.cacheReadInputTokens ?? 0;
-        const cacheDiscount = Math.floor(cacheRead * 0.9);
-        const effective = Math.max(0, inputTokens - cacheDiscount);
-        const pct = Math.round((effective / threshold) * 100);
+        const effective =
+          (chunk.tokens.inputTokens ?? 0) +
+          (chunk.tokens.outputTokens ?? 0) +
+          (chunk.tokens.reasoningTokens ?? 0);
+        const pct = Math.trunc((effective / threshold) * 100);
         if (Number.isFinite(pct) && pct >= 0) {
           setContextFillPercentage(pct);
         }

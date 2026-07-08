@@ -3,7 +3,6 @@
 @tui
 @MODEL-007
 Feature: Model selector view never renders the filter input row
-
   """
   The filter row is carved off the TOP of body_area inside the browse-list body closure in model_selector/render.rs, BEFORE visible_rows is computed. When (filter_mode || !filter.is_empty()) && body_area.height > 0, a 1-line Rect is taken from the top of body_area and a Paragraph renders 'Filter: {}_' (filter_mode active, trailing cursor) or 'Filter: {}' (committed). body_area is then shrunk (y += 1, height -= 1). visible_rows is computed from the reduced body_area.height (saturating_sub(1)), so the filter line is reserved and no model row is hidden. This mirrors provider_settings/list.rs:200-223. State fields: filter: String, filter_mode: bool on ModelSelectorView.
   """
@@ -30,7 +29,6 @@ Feature: Model selector view never renders the filter input row
   #   A: Yes. ModelSelectorView has the same two fields as ProviderSettingsView: `filter: String` (mod.rs:75) and `filter_mode: bool` (mod.rs:76). crud.rs manages both (clear/pop/push filter, set filter_mode). The render should mirror provider_settings/list.rs:204-216: show the row when (filter_mode || !filter.is_empty()), with trailing '_' only when filter_mode is true.
   #
   # ========================================
-
   Background: User Story
     As a user of the Rust TUI model selector
     I want to see a "Filter: <text>_" prompt showing what I've typed
@@ -43,13 +41,11 @@ Feature: Model selector view never renders the filter input row
     And filter mode is active and the filter text is "opus"
     And only models matching "opus" are listed below the prompt
 
-
   Scenario: Committed non-empty filter renders prompt without cursor
     Given the model selector is in browse mode with models loaded
     When the model selector view is rendered
     Then the top row of the body shows "Filter: opus" without a trailing underscore
     And filter mode is not active but the filter text is "opus"
-
 
   Scenario: No filter renders no prompt row
     Given the model selector is in browse mode with models loaded
@@ -58,11 +54,9 @@ Feature: Model selector view never renders the filter input row
     And filter mode is not active and the filter text is empty
     And the model list starts at the very top of the body
 
-
   Scenario: Filter row reserves a line so no model row is hidden
     Given the model selector is in browse mode with models loaded
     When the model selector view is rendered into a fixed-height buffer
     Then visible_rows is reduced by one to reserve the filter line
     And a filter row is present because filter mode is active
     And no model row is hidden behind the filter prompt
-

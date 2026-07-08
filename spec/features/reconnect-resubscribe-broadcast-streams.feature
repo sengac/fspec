@@ -10,7 +10,6 @@
 @rust
 @RPC-415
 Feature: Live streaming dies permanently after first auto-reconnect
-
   """
   Respawn-on-Reconnected design:
   - The 5 broadcast subscriber loops (work_units, chunks, logs, status_changes, session_created) in app/bootstrap.rs each terminate on RecvError::Closed. When the transport supervisor drops the old RPC client after a WS drop, the client's broadcast Senders are dropped, so every subscriber Receiver returns Closed and all 5 tasks exit permanently. spawn_subscriber_tasks() is only called once from App::bootstrap (bootstrap.rs:52), so nothing respawns them.
@@ -36,7 +35,6 @@ Feature: Live streaming dies permanently after first auto-reconnect
   #   4. Two disconnect/reconnect cycles in a row still deliver each broadcast event exactly once (no duplicates from leaked tasks)
   #
   # ========================================
-
   Background: User Story
     As a fspec power-user driving the Rust TUI over WebSocket
     I want to keep receiving live streaming data after the connection auto-recovers from a drop
@@ -47,7 +45,6 @@ Feature: Live streaming dies permanently after first auto-reconnect
     When the backend's broadcast senders are closed so every subscriber receiver observes RecvError::Closed
     Then the original subscriber tasks have all exited and no live stream reaches the App
 
-
   Scenario: Each broadcast stream delivers a post-reconnect event to the App
     Given an App bootstrapped against a backend whose subscriber tasks have exited after a simulated disconnect
     When the App dispatches Action::Reconnected and the backend then emits one event on each of the work_units, chunks, logs, status_changes and session_created streams
@@ -56,17 +53,14 @@ Feature: Live streaming dies permanently after first auto-reconnect
     And the App receives a SessionStatusChanged action for the post-reconnect status change
     And the App receives a SessionCreated action for the post-reconnect session_created event
 
-
   Scenario: Respawn binds subscribers to the new client receivers
     Given an App bootstrapped against a backend whose original subscriber tasks have exited after a simulated disconnect
     When the App dispatches Action::Reconnected and the backend emits a work_units update from its current senders
     Then the respawned subscriber tasks are bound to the current receivers and deliver the update as a WorkUnitsLoaded action
     And the live subscriber task count returns to the full set of broadcast streams
 
-
   Scenario: Flapping reconnects do not accumulate duplicate subscriber tasks
     Given an App bootstrapped against a backend
     When the App dispatches Action::Reconnected twice in succession and the backend then emits a single work_units update
     Then the live subscriber task count equals the full set of broadcast streams and does not grow with each reconnect
     And the App receives exactly one WorkUnitsLoaded action for that update with no duplicate delivery
-

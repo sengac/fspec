@@ -4,7 +4,6 @@
 @providers
 @provider-settings
 Feature: OpenAI provider honors the per-profile streaming flag
-
   """
   OpenAIProvider (codelet/providers/src/openai.rs) gains a streaming: bool
   field sourced from the OPENAI_STREAMING environment variable in

@@ -1,3 +1,4 @@
+@RPC-420
 @work-management
 @codelet
 @done
@@ -30,7 +31,7 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
   #
   # EXAMPLES:
   #   1. send_input keeps the existing trait shape (session_id, text). A NEW method send_input_with_thinking(session_id, text, thinking: Option<ThinkingConfig>) gets a new peer FspecService::send_input_with_thinking; the trait's send_input default forwards to send_input_with_thinking(.., None). Backend trait gains send_input_with_thinking that defaults to send_input when None thinking is supplied so the WS backend keeps the same wire shape.
-  #   2. Engineer calls backend.compact_session(sid).await on either transport; with the deterministic stub the return is Ok(CompactionResult { compression_ratio: 0.5, original_tokens: 1000, compacted_tokens: 500, turns_summarized: 4, turns_kept: 2 }) and a StreamChunk::CompactionComplete arrives on chunks_rx for that session
+  #   2. Engineer calls backend.compact_session(sid).await on either transport; with the deterministic stub the return is Ok(CompactionResult { compression_ratio: 50.0, original_tokens: 1000, compacted_tokens: 500, turns_summarized: 4, turns_kept: 2 }) and a StreamChunk::CompactionComplete arrives on chunks_rx for that session
   #   3. Engineer subscribes to backend.status_changes_rx() on either transport; calls backend.send_input(sid, "hi") and then receives (sid, SessionStatus::Running) followed by (sid, SessionStatus::Idle) within 5 seconds — push-driven, no polling get_session_status
   #   4. Engineer calls backend.set_pending_input(sid, Some("draft text")) then backend.get_pending_input(sid).await returns Ok(Some("draft text")). On both transports the round-trip works identically against the same StubSessionManagerHandle
   #   5. Engineer calls backend.create_isolated_session(Some("reviewer".to_string())).await on either transport; the stub returns Ok(IsolatedSessionInfo { session_id: SessionId::new("stub-iso-1"), worktree_path: "/tmp/stub-wt-1".into(), base_commit: "abc1234".into() }) and the subsequent list_sessions includes the newly-minted session
@@ -72,7 +73,7 @@ Feature: Widen SessionManagerHandle + FspecService + both backends + stub with c
   Scenario: compact_session returns the canned CompactionResult and emits CompactionComplete
     Given an engineer subscribes to backend.chunks_rx() before calling compact_session
     When the engineer calls backend.compact_session(sid).await on either transport
-    Then the call returns Ok(CompactionResult { compression_ratio: 0.5, original_tokens: 1000, compacted_tokens: 500, turns_summarized: 4, turns_kept: 2 })
+    Then the call returns Ok(CompactionResult { compression_ratio: 50.0, original_tokens: 1000, compacted_tokens: 500, turns_summarized: 4, turns_kept: 2 })
     And within 1 second a StreamChunk::CompactionComplete arrives on chunks_rx for that session carrying the same CompactionResult
 
   Scenario: restore_session_messages and restore_session_token_state are wired through both transports

@@ -259,25 +259,85 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     }
 
     fn compact_session(&self, session_id: &SessionId) -> Result<CompactionResult, String> {
+        // RPC-418: Real in-view DAG compaction for the manual /compact path.
+        // Mirrors the NAPI reference `session_compact`
+        // (codelet/napi/src/session_bindings.rs:3038-3130): clears the
+        // conversation to system-reminders, injects the compaction
+        // instruction, resets the token tracker, then kicks the agent loop
+        // with "Continue" so it builds the hierarchical summary DAG.
+        use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
+        use std::sync::atomic::Ordering;
+
         let uuid = uuid_from(session_id);
-        match self.get_session(&uuid.to_string()) {
-            Ok(session) => {
-                // RPC-042 scope: minimal delegating impl. The real
-                // compaction pipeline is wired in RPC-047. Here we
-                // simply snapshot the current input-token count and
-                // return a 1:1 compression-ratio placeholder so
-                // downstream callers see a well-formed `Ok` result.
-                let (input_tokens, _output, _reasoning) = session.get_tokens();
-                Ok(CompactionResult {
-                    original_tokens: input_tokens,
-                    compacted_tokens: input_tokens,
-                    compression_ratio: 1.0,
-                    turns_summarized: 0,
-                    turns_kept: 0,
-                })
-            }
-            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        let session = self
+            .get_session(&uuid.to_string())
+            .map_err(|_| format!("Session not found: {}", session_id.value.as_str()))?;
+
+        // Bridge sync→async: `session.inner` is a `tokio::sync::Mutex` and
+        // `execute_compaction` is async. Mirror the block_in_place +
+        // block_on pattern used by `restore_session_messages` (requires a
+        // multi-thread runtime — see the module docs). The async block
+        // returns the captured token counts so the `inner` lock is dropped
+        // BEFORE `send_input` (the agent loop needs the lock — see the
+        // `drop(inner)` at session_bindings.rs:3097).
+        let (original_tokens, compacted_tokens): (u64, u64) = tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                let mut inner = session.inner.lock().await;
+
+                // Nothing to compact — leave the session untouched (no
+                // status change, no token snapshot).
+                if inner.messages.is_empty() {
+                    return Err("Nothing to compact - no messages yet".to_string());
+                }
+
+                session.set_status(SessionStatus::Compacting);
+
+                let original_tokens = inner.token_tracker.input_tokens;
+                session
+                    .pre_compaction_tokens
+                    .store(original_tokens as u32, Ordering::Release);
+
+                // `None` = manual/agent-initiated compaction (no resume prompt).
+                if let Err(e) =
+                    execute_compaction(&mut inner, session.compaction_in_progress.clone(), None)
+                        .await
+                {
+                    session.set_compaction_progress(None);
+                    session.set_status(SessionStatus::Idle);
+                    return Err(format!("Compaction failed: {e}"));
+                }
+
+                let compacted_tokens = inner.token_tracker.input_tokens;
+                Ok((original_tokens, compacted_tokens))
+            })
+        })?;
+
+        // Status contract: on the happy path the session intentionally stays in
+        // `Compacting` here — `send_input("Continue")` below flips it to `Running`
+        // (NAPI parity, session_bindings.rs). Only the failure paths above revert to
+        // `Idle`. Do not add an unconditional Idle reset here or the agent-loop kick
+        // would race the status.
+
+        // Lock dropped. Clear progress and kick the agent loop so it builds
+        // the DAG via SessionSearch and calls the inject_summary tool.
+        session.set_compaction_progress(None);
+
+        // Mirror NAPI: a failed `send_input` is logged, not fatal — the
+        // compaction itself already succeeded.
+        if let Err(e) = session.send_input("Continue".to_string(), None) {
+            tracing::warn!("[compact_session] Failed to send Continue to agent loop: {e}");
+            session.set_status(SessionStatus::Idle);
         }
+
+        Ok(CompactionResult {
+            original_tokens: original_tokens as u32,
+            compacted_tokens: compacted_tokens as u32,
+            compression_ratio: compression_ratio(original_tokens, compacted_tokens) * 100.0,
+            // turns_summarized/turns_kept are 0 by design: the in-view DAG flow
+            // defers real turn counts to the agent (NAPI parity).
+            turns_summarized: 0,
+            turns_kept: 0,
+        })
     }
 
     fn restore_session_messages(

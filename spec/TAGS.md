@@ -636,6 +636,7 @@ Tags tracking development status of features.
 | `@rpc-376` | Work unit identifier for RPC-376 — heading anchor IDs and in-page anchor navigation in the Rust markdown viewer |
 | `@rpc-377` | Work unit identifier for RPC-377 — client-side viewer parity (Prism, copy/badge, theme toggle, font controls) in the Rust markdown viewer |
 | `@rpc-408` | Work unit identifier tag for RPC-408 — send_hitl_response wire-to-internal answer mapping fix |
+| `@rpc-419` | Work unit identifier tag for RPC-419 — context-fill badge oscillation fix: local recompute switched from the compaction cost proxy (input − 0.9·cache_read, round) to the backend physical-occupancy formula trunc((input+output+reasoning)/threshold*100) |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -947,7 +948,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-07-03T23:50:52.772Z_
+_Last updated: 2026-07-08T04:49:33.192Z_
 
 **Update Command**: `fspec tag-stats`
 

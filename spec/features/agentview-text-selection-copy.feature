@@ -8,7 +8,6 @@
 @tui
 @COPY-006
 Feature: Wire selection + copy into AgentView scrollback end-to-end
-
   """
   Wiring point: views/agent/mouse_dispatch.rs handle_scrollback_mouse. Feed the MouseEvent to a SelectionRecognizer (COPY-003) held on the AgentView (or the focused SessionContext) BEFORE the existing ScrollUp/ScrollDown wheel branch. Non-selection wheel events keep emitting Action::ScrollbackMouseWheelUp/Down. Down/Drag/Up drive selection.
   State: add selection: Option<Selection> to ScrollbackList (co-located with scroll + turn-selection state, same rationale as scrollback_select.rs). The recognizer + Osc52Clipboard live on the AgentView/SessionContext (they need the action bus + stdout). Mouse coords are converted to scrollback (row,col) by subtracting last_scrollback_area.x/y (the cached rect already used by handle_scrollback_mouse).
@@ -48,7 +47,6 @@ Feature: Wire selection + copy into AgentView scrollback end-to-end
   #   A: Confirmed. Esc cascade order in dispatch.rs: (1) if a text selection is active -> SelectionClear and consume; (2) else if turn-select mode -> exit turn-select and consume (existing RPC-381 level); (3) else the normal AgentEscPressed cascade. Text selection is the most transient/foreground state so it clears first.
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to drag or long-press over the transcript to select text and have it copied to my clipboard on release, with scroll and click still working

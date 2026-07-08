@@ -5,7 +5,6 @@
 @clipboard
 @COPY-001
 Feature: OSC 52 clipboard writer
-
   """
   New module codelet/fspec-tui/src/mouse/clipboard.rs (or clipboard/mod.rs). Public type Osc52Clipboard<W: Write + Send = std::io::Stdout>, mirroring the MouseTrackingToggle testing pattern (generic writer + with_stdout() production ctor + new(writer) test ctor).
   Encoding: use the base64 crate's STANDARD engine (base64::engine::general_purpose::STANDARD.encode(bytes)) on text.as_bytes(). Add base64 as a dependency to fspec-tui/Cargo.toml if not already present.
@@ -34,7 +33,6 @@ Feature: OSC 52 clipboard writer
   #   5. The production constructor writes to std::io::stdout(); the test constructor writes to a Vec<u8>
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to have selected transcript text written to my system clipboard even while the TUI holds mouse capture and over SSH

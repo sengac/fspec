@@ -1,10 +1,13 @@
 /**
  * Feature: spec/features/context-window-fill-percentage-indicator.feature
+ * Feature: spec/features/context-fill-percentage-realtime-recompute.feature
+ * Feature: spec/features/context-fill-percentage-realtime-recompute-ui.feature
  *
  * Tests for Context window fill percentage indicator in agent modal header
  *
  * These tests verify the context fill percentage calculation and color-coded display
- * in the AgentView header.
+ * in the AgentView header, including the RPC-101 real-time recompute on every
+ * TokenUpdate with the RPC-419-corrected physical-occupancy formula.
  */
 
 import React from 'react';
@@ -409,10 +412,9 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     });
   });
 
-  describe('Scenario: Percentage calculation uses effective tokens with cache discount', () => {
-    it('should calculate percentage from effective tokens not raw tokens', async () => {
-      // @step Given I am in a conversation with 150000 raw input tokens
-      // @step And 80000 tokens are cache read tokens
+  describe("Scenario: Percentage displays the backend's physical-occupancy calculation verbatim", () => {
+    it('should display the backend-supplied fill percentage verbatim', async () => {
+      // @step Given the backend has computed a fill percentage of 43 from 78000 total context tokens (input + cache + output + reasoning, with no cache discount) against a threshold of 180000 tokens
       const { lastFrame, stdin } = render(
         <AgentView onExit={() => {}} />
       );
@@ -424,15 +426,10 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step And the context window threshold is 180000 tokens
-      // @step When the effective token count is calculated
-      // Effective = 150000 - (80000 * 0.9) = 150000 - 72000 = 78000
-      // Percentage = (78000 / 180000) * 100 = 43.3%
-
-      // @step Then the effective tokens should be 78000
-      // @step And I should see "[43%]" displayed in the header
+      // @step When the backend emits ContextFillUpdate with fill_percentage=43
       await simulateContextFillUpdate(43, 78000, 180000, 200000);
 
+      // @step Then the frontend displays the backend-supplied "[43%]" verbatim in the header
       const frame = lastFrame();
       expect(frame).toContain('[43%]');
 
@@ -533,6 +530,14 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
   // the badge freezes mid-stream (backend may emit ContextFillUpdate
   // only at end-of-turn) and after Esc interrupt (terminal
   // ContextFillUpdate never arrives).
+  //
+  // RPC-419: the recompute formula is the backend's physical-occupancy
+  // formula pct = trunc((inputTokens + outputTokens + reasoningTokens)
+  // / threshold * 100) — no 0.9 cache discount (wire inputTokens
+  // already includes cache tokens per PROV-001), truncation not
+  // rounding, missing optional fields treated as 0.
+  // Features: spec/features/context-fill-percentage-realtime-recompute.feature
+  //           spec/features/context-fill-percentage-realtime-recompute-ui.feature
   describe('Scenario: Badge updates in real-time on TokenUpdate (RPC-101)', () => {
     it('should recompute percentage from cached threshold on every TokenUpdate', async () => {
       const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
@@ -552,7 +557,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       // 45000 / 100000 = 45%
       injectTestChunk('mock-session-id', {
         type: 'TokenUpdate',
-        tokens: { inputTokens: 45_000, outputTokens: 800 },
+        tokens: { inputTokens: 45_000, outputTokens: 0 },
       });
       await waitForFrame(80);
 
@@ -565,7 +570,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       // 90000 / 100000 = 90%
       injectTestChunk('mock-session-id', {
         type: 'TokenUpdate',
-        tokens: { inputTokens: 90_000, outputTokens: 1_200 },
+        tokens: { inputTokens: 90_000, outputTokens: 0 },
       });
       await waitForFrame(80);
 
@@ -604,7 +609,12 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       await endStreaming();
     });
 
-    it('should apply 90% cache discount when recomputing on TokenUpdate', async () => {
+    it('should NOT apply any cache discount when recomputing on TokenUpdate (RPC-419)', async () => {
+      // RPC-419: wire inputTokens is ALREADY total_input (raw +
+      // cache_read + cache_creation, PROV-001) — the old 0.9 discount
+      // subtracted from a value that already included 100% of the
+      // cache reads and produced [32%] here. The corrected formula
+      // yields trunc(50000/100000*100) = [50%].
       const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(100);
@@ -613,12 +623,8 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step Given a session with cached threshold=100000 tokens (from a prior ContextFillUpdate)
       await simulateContextFillUpdate(0, 0, 100_000, 132_000);
 
-      // @step When a TokenUpdate with input_tokens=50000 and cache_read_input_tokens=20000 arrives
-      // effective = 50000 - (20000 * 0.9) = 50000 - 18000 = 32000
-      // pct = round(32000 / 100000 * 100) = 32
       injectTestChunk('mock-session-id', {
         type: 'TokenUpdate',
         tokens: {
@@ -629,9 +635,127 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       });
       await waitForFrame(80);
 
-      // @step Then the SessionHeader badge MUST display [32%] computed as effective=50000-(20000*0.9)=32000 and pct=round(32000/100000*100)=32 (matches TokenTracker.effective_tokens)
       const frame = lastFrame();
-      expect(frame).toContain('[32%]');
+      expect(frame).toContain('[50%]');
+      expect(frame).not.toContain('[32%]');
+
+      await endStreaming();
+    });
+
+    it('should include output and reasoning tokens in the recomputed percentage (RPC-419)', async () => {
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
+
+      await waitForFrame(100);
+      stdin.write('test message');
+      await waitForFrame(50);
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step Given a session with cached threshold=100000 tokens
+      await simulateContextFillUpdate(0, 0, 100_000, 132_000);
+
+      // @step When a TokenUpdate with input_tokens=50000, output_tokens=3000 and reasoning_tokens=2000 arrives during streaming
+      injectTestChunk('mock-session-id', {
+        type: 'TokenUpdate',
+        tokens: {
+          inputTokens: 50_000,
+          outputTokens: 3_000,
+          reasoningTokens: 2_000,
+        },
+      });
+      await waitForFrame(80);
+
+      // @step Then the SessionHeader renders [55%] with no cache discount applied
+      const frame = lastFrame();
+      expect(frame).toContain('[55%]');
+
+      await endStreaming();
+    });
+
+    it('should not collapse the badge on a cache-heavy TokenUpdate (RPC-419 oscillation regression)', async () => {
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
+
+      await waitForFrame(100);
+      stdin.write('test message');
+      await waitForFrame(50);
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step Given a session with cached threshold=168000 tokens and an authoritative ContextFillUpdate showing 110%
+      await simulateContextFillUpdate(110, 186_000, 168_000, 200_000);
+      let frame = lastFrame();
+      expect(frame).toContain('[110%]');
+
+      // @step When a bare TokenUpdate arrives with input_tokens=175000 (including cache_read_input_tokens=150000 and cache_creation_input_tokens=5000), output_tokens=3000 and reasoning_tokens=8000
+      injectTestChunk('mock-session-id', {
+        type: 'TokenUpdate',
+        tokens: {
+          inputTokens: 175_000,
+          outputTokens: 3_000,
+          cacheReadInputTokens: 150_000,
+          cacheCreationInputTokens: 5_000,
+          reasoningTokens: 8_000,
+        },
+      });
+      await waitForFrame(80);
+
+      // @step Then the SessionHeader badge MUST remain [110%] computed as trunc(186000/168000*100) instead of collapsing to [24%]
+      frame = lastFrame();
+      expect(frame).toContain('[110%]');
+      expect(frame).not.toContain('[24%]');
+
+      await endStreaming();
+    });
+
+    it('should truncate the recomputed percentage like the backend instead of rounding (RPC-419)', async () => {
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
+
+      await waitForFrame(100);
+      stdin.write('test message');
+      await waitForFrame(50);
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step Given a session with cached threshold=100000 tokens
+      await simulateContextFillUpdate(0, 0, 100_000, 132_000);
+
+      // @step When a TokenUpdate with input_tokens=45900 and no output or reasoning tokens arrives
+      injectTestChunk('mock-session-id', {
+        type: 'TokenUpdate',
+        tokens: { inputTokens: 45_900, outputTokens: 0 },
+      });
+      await waitForFrame(80);
+
+      // @step Then the SessionHeader badge MUST display [45%] (truncation matching the backend's `as u32` cast, not [46%] from rounding)
+      const frame = lastFrame();
+      expect(frame).toContain('[45%]');
+      expect(frame).not.toContain('[46%]');
+
+      await endStreaming();
+    });
+
+    it('should treat missing optional token fields as zero (RPC-419)', async () => {
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
+
+      await waitForFrame(100);
+      stdin.write('test message');
+      await waitForFrame(50);
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step Given a session with cached threshold=100000 tokens
+      await simulateContextFillUpdate(0, 0, 100_000, 132_000);
+
+      // @step When a TokenUpdate with input_tokens=40000, output_tokens=1000 and absent reasoning and cache fields arrives
+      injectTestChunk('mock-session-id', {
+        type: 'TokenUpdate',
+        tokens: { inputTokens: 40_000, outputTokens: 1_000 },
+      });
+      await waitForFrame(80);
+
+      // @step Then the SessionHeader badge MUST display [41%] without error
+      const frame = lastFrame();
+      expect(frame).toContain('[41%]');
 
       await endStreaming();
     });
@@ -648,26 +772,30 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       // @step Given a session with cached threshold=100000 tokens after a ContextFillUpdate{fill_percentage=5}
       await simulateContextFillUpdate(5, 5_000, 100_000, 132_000);
 
-      // @step Given a TokenUpdate with input_tokens=50000 has locally recomputed the badge to [50%]
+      // @step And a TokenUpdate with input_tokens=50000 has locally recomputed the badge to [50%]
       injectTestChunk('mock-session-id', {
         type: 'TokenUpdate',
-        tokens: { inputTokens: 50_000, outputTokens: 500 },
+        tokens: { inputTokens: 50_000, outputTokens: 0 },
       });
       await waitForFrame(80);
       let frame = lastFrame();
       expect(frame).toContain('[50%]');
 
-      // @step When the backend emits an authoritative ContextFillUpdate{fill_percentage=62} (it knows about reasoning_tokens the local recompute does not model)
+      // @step When the backend emits an authoritative ContextFillUpdate{fill_percentage=62} (the backend remains authoritative whenever it speaks)
       await simulateContextFillUpdate(62, 62_000, 100_000, 132_000);
 
       // @step Then the SessionHeader badge MUST display [62%] (backend value wins)
       frame = lastFrame();
       expect(frame).toContain('[62%]');
 
-      // @step Then the cached threshold MUST remain at 100000 tokens for subsequent TokenUpdates
-      // (Verified indirectly: a TokenUpdate after the override still computes against 100000.
-      // We could send another TokenUpdate here but the override behavior + recompute interplay
-      // is also exercised by the Rust-side `backend_context_fill_update_overrides_local_recompute` test.)
+      // @step And the cached threshold MUST remain at 100000 tokens for subsequent TokenUpdates
+      injectTestChunk('mock-session-id', {
+        type: 'TokenUpdate',
+        tokens: { inputTokens: 70_000, outputTokens: 0 },
+      });
+      await waitForFrame(80);
+      frame = lastFrame();
+      expect(frame).toContain('[70%]');
 
       await endStreaming();
     });

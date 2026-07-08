@@ -4,7 +4,6 @@
 @provider-settings
 @persistence
 Feature: OpenAI profile streaming flag persistence
-
   """
   The streaming flag round-trips through the on-disk ProfileDef
   (codelet/sessions/src/profile_persistence.rs) and the wire-to-disk bridge

@@ -5,7 +5,6 @@
 @tui
 @PROV-127
 Feature: Cloud section assembly drops empty cloud sections (TS parity)
-
   """
   PROV-127 unit layer for the section-assembly rule. The pure helper
   codelet/sessions/src/profile_sections.rs::retain_populated_cloud_sections

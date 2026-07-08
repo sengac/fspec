@@ -5,7 +5,6 @@
 @rust
 @PROV-138
 Feature: Copy support for /provider view input areas (Ctrl+C copies focused field via OSC 52), API key copies masked
-
   """
   Ctrl+C copy uses the dominant Action-emit pattern: the provider input handler returns ProviderSettingsEvent::Emit(Action::CopyToClipboard(text)) which the existing App::handle_copy_to_clipboard (app/dispatch_scroll.rs) performs via self.clipboard.copy — no new App wiring, and the set_clipboard_writer_for_test seam already covers it. The masking transform ('•'.repeat(value.chars().count()), shared with the render in detail.rs/profile_form_render.rs) is applied in the VIEW before building the action, so the plaintext secret never enters the action bus. Ctrl+C is intercepted in the CreateProfile/EditProfile/EditApiKey input modes BEFORE mod.rs's blanket CONTROL/ALT consume (mod.rs:192-197). Depends on PROV-137 for the view plumbing.
   """
@@ -28,7 +27,6 @@ Feature: Copy support for /provider view input areas (Ctrl+C copies focused fiel
   #   4. Ctrl+C on the provider List copies no field value
   #
   # ========================================
-
   Background: User Story
     As a Provider Settings user entering credentials
     I want to press Ctrl+C to copy the focused input field's value to the clipboard
@@ -39,21 +37,17 @@ Feature: Copy support for /provider view input areas (Ctrl+C copies focused fiel
     When I press Ctrl+C
     Then the clipboard receives "https://api.example.com"
 
-
   Scenario: Copying the profile form API Key field copies the masked value
     Given the profile create form is open with the API Key field focused and containing "sk-secret123"
     When I press Ctrl+C
     Then the clipboard receives 12 bullet dots and not the plaintext secret
-
 
   Scenario: Copying the inline API-key entry copies the masked draft
     Given the inline API-key entry is open with the draft "sk-abcdef"
     When I press Ctrl+C
     Then the clipboard receives 9 bullet dots and not the plaintext secret
 
-
   Scenario: Pressing Ctrl+C on the provider list copies no field value
     Given the provider list is focused with no input field open
     When I press Ctrl+C
     Then no field value is copied to the clipboard
-

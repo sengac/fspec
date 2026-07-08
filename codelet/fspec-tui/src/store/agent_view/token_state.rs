@@ -78,20 +78,25 @@ impl TokenState {
         // skip entirely when the user presses Esc mid-stream),
         // leaving a stale percentage visible for the rest of the turn.
         //
-        // Formula mirrors `emit_context_fill_from_usage` in
-        // codelet/cli/src/interactive/stream_loop.rs:108-126 and the
-        // TS reference `calculateContextFillPercentage` in
-        // src/tui/utils/tokenStateUtils.ts:103-117. Threshold is
-        // captured from the last ContextFillUpdate (which IS the
-        // authoritative source for context_window - max_output_reservation);
-        // a real ContextFillUpdate will overwrite this value next.
+        // RPC-419 — the formula mirrors the backend's authoritative
+        // `emit_context_fill_from_usage` (codelet/cli/src/interactive/
+        // stream_loop.rs:119-137) and `ApiTokenUsage::total_context`
+        // (codelet/core/src/token_usage.rs:64-72): physical context
+        // occupancy = input + output + reasoning tokens. The wire
+        // `input_tokens` ALREADY includes cache read/creation tokens
+        // (PROV-001), so no cache term is added or subtracted here.
+        // The previous `input - 0.9*cache_read` recompute was the
+        // RPC-419 bug: that 90% cache discount belongs exclusively to
+        // compaction's cost model (`TokenTracker::effective_tokens`,
+        // codelet/core/src/compaction/model.rs:90-96) and made the
+        // badge oscillate against the backend's ContextFillUpdate
+        // values. Truncation (not rounding) matches the backend's
+        // `as u32` cast. Threshold is captured from the last
+        // ContextFillUpdate; a real ContextFillUpdate will overwrite
+        // this value next (backend authoritative whenever it speaks).
         if self.context_threshold_tokens > 0 {
-            // Cache discount: cache_read tokens cost 10% of normal
-            // (matches `TokenTracker::effective_tokens` in
-            // codelet/core/src/compaction/model.rs:90-96).
-            let cache_discount = ((self.cache_read_input_tokens as f64) * 0.9) as u64;
-            let effective = self.input_tokens.saturating_sub(cache_discount);
-            let pct = ((effective as f64 / self.context_threshold_tokens as f64) * 100.0).round();
+            let effective = self.input_tokens + self.output_tokens + self.reasoning_tokens;
+            let pct = (effective as f64 / self.context_threshold_tokens as f64) * 100.0;
             self.context_fill_pct = if pct.is_finite() && pct >= 0.0 {
                 pct.min(u16::MAX as f64) as u16
             } else {

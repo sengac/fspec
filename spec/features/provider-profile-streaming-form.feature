@@ -5,7 +5,6 @@
 @tui
 @keyboard-navigation
 Feature: OpenAI profile streaming toggle in the Provider Settings form
-
   """
   The Rust ratatui /provider Provider Settings profile create/edit form
   (codelet/fspec-tui/src/views/provider_settings/profile_form.rs) exposes a

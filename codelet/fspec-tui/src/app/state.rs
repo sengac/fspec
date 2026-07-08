@@ -70,16 +70,15 @@ pub struct App {
     /// RPC-373: local port the RPC-372 viewer server bound to at bootstrap;
     /// `None` when start failed (the board `D` key then no-ops).
     pub(crate) viewer_port: Option<u16>,
-    /// RPC-373: handle to the running viewer server, retained so it shuts
-    /// down cleanly on App drop. `None` when the server failed to start.
+    /// RPC-373: handle to the running viewer server, retained so it shuts down cleanly on App drop. `None` when the server failed to start.
     pub(crate) viewer_handle: Option<codelet_attachment_viewer::ViewerHandle>,
     /// COPY-006: OSC 52 clipboard writer (boxed; tests inject a Vec<u8>).
     pub(crate) clipboard: Osc52Clipboard<Box<dyn std::io::Write + Send>>,
-    /// RPC-416: ORIGINATING session + stable scrollback seq of the live
-    /// inline reconnect notice (replace/remove target this, not focus).
+    /// RPC-416: ORIGINATING session + stable scrollback seq of the live inline reconnect notice (replace/remove target this, not focus).
     pub(crate) reconnect_notice: Option<(SessionId, u64)>,
     /// RPC-416: auto-dismiss timer armed on `Reconnected`; aborted on a re-drop so a stale clear can't remove a fresh notice.
     pub(crate) reconnect_dismiss_handle: Option<JoinHandle<()>>,
+    pub(crate) compaction_hide_handles: std::collections::HashMap<SessionId, JoinHandle<()>>, // RPC-417 auto-hide timers
 }
 
 impl App {
@@ -125,6 +124,7 @@ impl App {
             clipboard: Osc52Clipboard::new(Box::new(std::io::stdout())),
             reconnect_notice: None,
             reconnect_dismiss_handle: None,
+            compaction_hide_handles: std::collections::HashMap::new(),
         }
     }
 

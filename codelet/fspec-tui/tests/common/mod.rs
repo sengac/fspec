@@ -746,7 +746,9 @@ impl Default for MockBackend {
             compact_session_result: Mutex::new(Ok(CompactionResult {
                 original_tokens: 0,
                 compacted_tokens: 0,
-                compression_ratio: 1.0,
+                // RPC-420: compression_ratio is the PERCENT of tokens
+                // removed [0,100]; 0.0 is the "nothing removed" sentinel.
+                compression_ratio: 0.0,
                 turns_summarized: 0,
                 turns_kept: 0,
             })),
@@ -932,7 +934,12 @@ impl MockBackend {
 
     /// Push a fresh work-units snapshot onto the broadcast channel.
     pub fn push_work_units(&self, units: Vec<WorkUnitInfo>) {
-        if let Some(tx) = self.work_units_tx.lock().expect("MockBackend mutex").as_ref() {
+        if let Some(tx) = self
+            .work_units_tx
+            .lock()
+            .expect("MockBackend mutex")
+            .as_ref()
+        {
             let _ = tx.send(units);
         }
     }

@@ -5,7 +5,6 @@
 @rust
 @providers
 Feature: OpenAI non-streaming request and multi-turn loop
-
   """
   When streaming is disabled, the OpenAI chat completion request body sets
   stream=false and omits stream_options; when enabled it sets stream=true with

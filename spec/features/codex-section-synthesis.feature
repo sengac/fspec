@@ -4,7 +4,6 @@
 @providers
 @PROV-129
 Feature: Synthesize Codex (ChatGPT) section by re-parenting + allowlist-filtering OpenAI cloud models (TS parity)
-
   """
   Fix location: codelet/sessions/src/handle_impl.rs list_providers() — insert a Codex synthesis step over the assembled cloud sections BEFORE retain_populated_cloud_sections (PROV-127) and before local profiles are appended.
   New: codelet/sessions/src/codex_allowlist.rs ports src/tui/services/codexAllowlistService.ts (matchesCodexAllowlist/filterByCodexAllowlist). Allowlist SOURCE is the bundled default src/tui/data/codex-models.json embedded via include_str! (single source of truth with the TS build), with a ~/.fspec/codex-models.json user override. Matching = exact slug OR slug + '-' + date suffix (YYYY-MM-DD or YYYYMMDD), visibility must equal 'list'; results sorted by ascending priority.
@@ -31,7 +30,6 @@ Feature: Synthesize Codex (ChatGPT) section by re-parenting + allowlist-filterin
   #   5. A hidden allowlist entry (visibility='hide', e.g. gpt-5.1-codex) does not match, so that model is excluded from Codex (ChatGPT) even though its slug is in the allowlist
   #
   # ========================================
-
   Background: User Story
     As a developer signed in with Codex (ChatGPT) OAuth
     I want to see my available OpenAI models grouped under a single Codex (ChatGPT) section

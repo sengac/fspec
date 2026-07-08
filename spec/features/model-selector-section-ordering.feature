@@ -4,7 +4,6 @@
 @providers
 @PROV-130
 Feature: Provider section ordering + default-model selection parity (profiles/custom before cloud)
-
   """
   Fix location: codelet/sessions/src/handle_impl.rs list_providers() (~L957-1023) — partition mapped ProviderInfo into cloud vs custom by the source p.is_custom flag; apply PROV-129 synthesize_codex_section + PROV-127 retain_populated_cloud_sections to the cloud group; assemble final order as build_local_profile_sections() ++ custom_sections ++ cloud_sections (TS modelInitializationService.ts:196-200).
   Codex-leads-cloud-group: codelet/sessions/src/cloud_models.rs synthesize_codex_section() prepends the synthesized Codex section to the FRONT of the cloud sections (TS cloudSectionBuilder.ts:150-155 pushes codex first, then remaining), instead of filling the codex header in place. PROV-129 tests assert presence/contents only (not position), so they remain green.
@@ -25,7 +24,6 @@ Feature: Provider section ordering + default-model selection parity (profiles/cu
   #   3. With Codex OAuth credentials and no profiles/customs, the Codex (ChatGPT) section leads the cloud group so it appears before other cloud sections such as Anthropic.
   #
   # ========================================
-
   Background: User Story
     As a fspec developer
     I want to have the /model provider sections ordered profiles-first then custom then cloud

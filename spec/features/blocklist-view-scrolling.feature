@@ -5,7 +5,6 @@
 @tui
 @BLOCK-008
 Feature: BlocklistView: implement viewport scrolling (parity with model_selector/changed_files scroll pattern)
-
   """
   render_left_pane paints only rules[scroll_offset..(scroll_offset+visible_rows).min(len)] and reserves a 1-column scrollbar gutter (reusing the shared scrollbar helper) when rules.len() > visible_rows. A 'Showing X-Y of N' indicator reflects the visible range. Must not regress RPC-056 behaviour (category tags, ○/● glyphs, (disabled) suffix, empty-state, Esc close). File stays under 300 lines — split into blocklist/ sibling modules if needed. Clippy clean, no unwrap/expect/todo in non-test code.
   """
@@ -31,7 +30,6 @@ Feature: BlocklistView: implement viewport scrolling (parity with model_selector
   #   6. An overflowing list renders a scrollbar gutter column in the left pane; a list that fits entirely renders no scrollbar
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user viewing a long blocklist
     I want to scroll the rule list so the focused rule always stays visible

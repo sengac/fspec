@@ -5,7 +5,6 @@
 @provider-settings
 @PROV-136
 Feature: Cannot edit the name of an existing custom OpenAI profile
-
   """
   Rename is implemented as delete-old-key + write-new-key in the profile persistence layer (read-modify-write of fspec-config.json), preserving customModels and sibling profiles. Collision check happens before the write: if the new name already exists as a different profile, reject.
   This deliberately DIVERGES from the TS reference which locks the name in edit mode. The name-editing gate flags (is_editing_name/is_new) and the 'name fixed' comments in profile_form.rs and mode.rs must be updated. EditProfile mode must track the original profile_name so rename can be detected on save.
@@ -35,7 +34,6 @@ Feature: Cannot edit the name of an existing custom OpenAI profile
   #   6. In edit mode, press Up from the Base URL field to move into the name field, type to append to the name
   #
   # ========================================
-
   Background: User Story
     As a provider settings user editing an existing OpenAI profile
     I want to change the profile's name and save the rename
@@ -49,10 +47,8 @@ Feature: Cannot edit the name of an existing custom OpenAI profile
     When I type the character "2"
     Then the profile name becomes "work-vllm2"
 
-
   Scenario: An empty name cannot be saved
     Given the edit profile form is open for the profile "work-vllm"
     When the name is cleared and the form is submitted
     Then no save is performed
     Then the form stays open
-

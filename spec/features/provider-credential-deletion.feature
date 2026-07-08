@@ -3,7 +3,6 @@
 @providers
 @PROV-133
 Feature: Pressing 'd' in provider settings does not actually remove credentials
-
   """
   Authoritative multi-source credential delete (Option A). backend.delete_provider_credentials (sessions/handle_impl.rs:1383) must clear EVERY source the availability projection reads (management.rs:114-143 list_providers_info -> ProviderCredentials::detect, credentials.rs:103-236). Three sources: (1) credentials.json via credentials::delete_credential/writer.rs:106-119 (already done); (2) the process env var(s) — add resolver::remove_provider_env_vars(provider_id) mirroring update_all_provider_env_vars (resolver.rs:240-249), removing every name from get_provider_env_vars (resolver.rs:16-38) plus CLAUDE_CODE_OAUTH_TOKEN for anthropic; (3) the OAuth auth file for anthropic/codex/github-copilot — reuse copilot::auth::delete_copilot_auth (auth.rs:221) and add fs::remove_file for get_claude_auth_path()/codex get_auth_path(). Missing file/absent provider = no-op success. Only the targeted provider is affected; confirm-dialog + dispatch wiring unchanged. Tested via redirected $HOME/FSPEC_HOME temp home with a seeded credentials.json, env var, and fake auth file; assert list_provider_credentials reports configured=false for the target and unchanged for others.
   """
@@ -34,7 +33,6 @@ Feature: Pressing 'd' in provider settings does not actually remove credentials
   #   A: Safe as the exact mirror of the existing set_var path. The provider->env-var-names mapping is get_provider_env_vars (resolver.rs:16-38): openai->[OPENAI_API_KEY]; gemini->[GOOGLE_GENERATIVE_AI_API_KEY,GEMINI_API_KEY]; zai->[ZAI_API_KEY,ZAI_PLAN_API_KEY]; huggingface->[HUGGINGFACE_API_KEY,HF_TOKEN]; anthropic->[ANTHROPIC_API_KEY] plus CLAUDE_CODE_OAUTH_TOKEN (set at resolver.rs:196). Remove ALL names for the targeted provider only (never other providers'). Integration tests will set the var then assert std::env::var(...) is Err after delete.
   #
   # ========================================
-
   Background: User Story
     As a user of the Rust TUI provider settings view
     I want to press 'd' on a provider and have the credential actually removed so the provider becomes unconfigured
@@ -66,4 +64,3 @@ Feature: Pressing 'd' in provider settings does not actually remove credentials
     When I confirm delete for OpenAI
     Then the delete succeeds without error
     And the provider list reports OpenAI as not configured
-

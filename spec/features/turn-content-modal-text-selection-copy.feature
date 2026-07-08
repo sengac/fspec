@@ -8,7 +8,6 @@
 @tui
 @COPY-008
 Feature: Wire selection + copy into the turn-content (message selection) modal
-
   """
   Wiring point: views/agent/mouse_dispatch.rs handle_turn_modal_mouse (lines ~79-92). When turn_modal_seq.is_some(), feed the MouseEvent to a SelectionRecognizer (COPY-003) BEFORE the ScrollUp/ScrollDown branch. The modal is a fixed centered full-screen rect from dialog_theme_rows::turn_modal_geometry / fixed_dialog_rect; convert mouse (col,row) to body (row,col) by subtracting that rect's inner origin (border + padding). Non-selection wheel keeps emitting Action::TurnModalScrollUp/Down.
   State: hold selection on AgentView (e.g. turn_modal_selection: Option<Selection>) alongside turn_modal_seq/turn_modal_offset. The rows are the modal's styled_rows() (diff_decode::style_modal_lines) windowed by turn_modal_offset; the same windowing is shared by highlight and copy so they agree. Recognizer + Osc52Clipboard on AgentView (action bus + stdout). Reuse COPY-002/003/001 unchanged; reuse COPY-004's gutter-exclusion reader against the modal body width from turn_modal_geometry.
@@ -38,7 +37,6 @@ Feature: Wire selection + copy into the turn-content (message selection) modal
   #   6. User quickly clicks in the modal body; nothing is selected and nothing is copied
   #
   # ========================================
-
   Background: User Story
     As a user reading a message in the turn-content modal
     I want to select and copy part or all of the message body with the mouse

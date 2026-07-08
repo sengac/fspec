@@ -58,6 +58,11 @@ impl App {
                 // RPC-416: auto-dismiss timer fired — remove the notice.
                 self.handle_clear_reconnect_notice(session_id, *seq);
             }
+            Action::ClearCompactionReduction { session_id, seq } => {
+                // RPC-417: 10-second auto-hide timer fired — clear the
+                // COMPACTED badge iff the seq still matches (seq-guard).
+                self.handle_clear_compaction_reduction(session_id, *seq);
+            }
             Action::WorkUnitsLoaded(units) => {
                 self.board_store.replace_work_units(units.clone());
             }

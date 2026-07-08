@@ -7,7 +7,6 @@
 @tui
 @COPY-011
 Feature: A click does not clear the active text selection
-
   """
   Root cause: recognizer (gesture.rs) emits NO gesture for a quick click (Up from Pressed returns empty, never the Cancel variant), and no wiring site clears the prior selection on a bare click. All four apply_*_gestures handlers already have a Cancel arm that clears.
   Recommended fix: in gesture.rs on_mouse, a left Up while state==Pressed (quick click, no drag/long-press) emits SelectionGesture::Cancel and returns to Idle. This routes through the existing Cancel arms on all four surfaces to clear the selection+highlight. Update the recognizer unit test a_quick_click_produces_no_selection_gesture to expect [Cancel]. Do COPY-011 AFTER COPY-010. See spec/attachments/COPY-011/bug-analysis-click-clears-selection.md.
@@ -33,7 +32,6 @@ Feature: A click does not clear the active text selection
   #   6. With no active selection, the user quickly clicks a line; nothing is selected and nothing is copied
   #
   # ========================================
-
   Background: User Story
     As a user who has made a text selection with the mouse
     I want to have a plain click clear my existing selection

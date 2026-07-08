@@ -97,7 +97,7 @@
       ]
     },
     {
-      "name": "CompactionComplete adds the COMPACTED suffix with reduction computed from (1 - compression_ratio) * 100",
+      "name": "CompactionComplete adds the COMPACTED suffix with reduction taken directly from the percent-unit compression_ratio",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs",

@@ -2362,6 +2362,10 @@
           "description": "Work unit identifier tag for RPC-408 — send_hitl_response wire-to-internal answer mapping fix"
         },
         {
+          "name": "@rpc-419",
+          "description": "Work unit identifier tag for RPC-419 — context-fill badge oscillation fix: local recompute switched from the compaction cost proxy (input − 0.9·cache_read, round) to the backend physical-occupancy formula trunc((input+output+reasoning)/threshold*100)"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
@@ -2822,7 +2826,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-07-03T23:50:52.772Z",
+    "lastUpdated": "2026-07-08T04:49:33.192Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

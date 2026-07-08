@@ -1,3 +1,4 @@
+@RPC-419
 @done
 @tui
 @header
@@ -5,25 +6,24 @@
 @TUI-033
 Feature: Context Window Fill Percentage Indicator
   """
-
   Implementation Architecture:
-  - Backend (Rust): Add ContextFillUpdate event to stream types in codelet/core/src/stream/types.rs
-  - Stream Loop: Calculate and emit context fill in codelet/cli/src/interactive/stream_loop.rs after token updates
+  - Backend (Rust): ContextFillUpdate event in stream types (codelet/core/src/stream/types.rs)
+  - Stream Loop: emit_context_fill_from_usage in codelet/cli/src/interactive/stream_loop.rs calculates and emits context fill after token updates
   - NAPI Bridge: Expose ContextFillUpdate via codelet/napi/src/streaming.rs bindings
-  - Frontend (React): Handle event in src/tui/components/AgentModal.tsx, add color-coded display
+  - Frontend (React): Handle event in src/tui/components/AgentView.tsx, add color-coded display
 
-  Data Flow:
-  - TokenTracker tracks cumulative tokens in session
-  - Effective tokens = input_tokens - (cache_read_tokens * 0.9)
-  - Threshold = context_window * 0.9 (compaction trigger)
-  - Percentage = (effective_tokens / threshold) * 100
+  Data Flow (corrected by RPC-419):
+  - The backend's emit_context_fill_from_usage emits effective_tokens = ApiTokenUsage::total_context() = input + cache_read + cache_creation + output + reasoning tokens — physical context-window occupancy with NO cache discount
+  - Percentage = trunc((total_context / threshold) * 100)
+  - Threshold = context_window * 0.9 (compaction trigger), from calculate_compaction_threshold()
+  - The 0.9 cache-read discount belongs EXCLUSIVELY to compaction's TokenTracker::effective_tokens (compaction scheduling heuristic in codelet/core/src/compaction/model.rs); it plays no part in the fill percentage
+  - The frontend displays the backend-supplied fill percentage verbatim
 
   Dependencies:
   - Existing TokenTracker infrastructure (codelet/core/src/compaction/model.rs)
   - Existing calculate_compaction_threshold() function (codelet/cli/src/compaction_threshold.rs)
   - NAPI streaming event system
   - Ink React components (Box, Text)
-
   """
 
   # ========================================
@@ -88,15 +88,6 @@ Feature: Context Window Fill Percentage Indicator
     Then I should see "[90%]" displayed in the header
     And the percentage should be colored red
 
-  Scenario: Percentage calculation uses effective tokens with cache discount
-    Given I am in a conversation with 150000 raw input tokens
-    And 80000 tokens are cache read tokens
-    And the context window threshold is 180000 tokens
-    When the effective token count is calculated
-    Then the effective tokens should be 78000
-    And I should see "[43%]" displayed in the header
-    And the percentage should be colored green
-
   Scenario: Percentage resets after compaction
     Given I am in a conversation that has just been compacted
     And the new effective token count is 50000
@@ -110,3 +101,9 @@ Feature: Context Window Fill Percentage Indicator
     When the AgentModal header renders
     Then the percentage indicator should appear after the token count display
     And the percentage indicator should appear before the Tab Switch component
+
+  Scenario: Percentage displays the backend's physical-occupancy calculation verbatim
+    Given the backend has computed a fill percentage of 43 from 78000 total context tokens (input + cache + output + reasoning, with no cache discount) against a threshold of 180000 tokens
+    When the backend emits ContextFillUpdate with fill_percentage=43
+    Then the frontend displays the backend-supplied "[43%]" verbatim in the header
+    And the percentage should be colored green

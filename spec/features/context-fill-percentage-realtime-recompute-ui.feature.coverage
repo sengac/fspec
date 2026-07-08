@@ -5,7 +5,7 @@
       "testMappings": [
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
-          "lines": "537-578",
+          "lines": "542-582",
           "implMappings": [
             {
               "file": "src/tui/components/AgentView.tsx",
@@ -71,7 +71,15 @@
                 1172,
                 1173,
                 1174,
-                1175
+                1175,
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183
               ]
             }
           ]
@@ -83,7 +91,7 @@
       "testMappings": [
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
-          "lines": "579-606",
+          "lines": "584-610",
           "implMappings": [
             {
               "file": "src/tui/components/AgentView.tsx",
@@ -107,43 +115,15 @@
                 1158,
                 1159,
                 1160,
-                1161
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Local recompute applies the 90% cache discount to cache_read_input_tokens",
-      "testMappings": [
-        {
-          "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
-          "lines": "607-638",
-          "implMappings": [
-            {
-              "file": "src/tui/components/AgentView.tsx",
-              "lines": [
-                1142,
-                1143,
-                1144,
-                1145,
-                1146,
-                1147,
-                1148,
-                1149,
-                1150,
-                1151,
-                1152,
-                1153,
-                1154,
-                1155,
-                1156,
-                1157,
-                1158,
-                1159,
-                1160,
-                1161
+                1161,
+                1162,
+                1163,
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169
               ]
             }
           ]
@@ -155,11 +135,14 @@
       "testMappings": [
         {
           "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
-          "lines": "639-677",
+          "lines": "763-801",
           "implMappings": [
             {
               "file": "src/tui/components/AgentView.tsx",
               "lines": [
+                1159,
+                1160,
+                1161,
                 1162,
                 1163,
                 1164,
@@ -173,7 +156,59 @@
                 1172,
                 1173,
                 1174,
-                1175
+                1175,
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Badge shows physical occupancy including output and reasoning during streaming",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/context-window-fill-percentage.test.tsx",
+          "lines": "645-673",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151,
+                1152,
+                1153,
+                1154,
+                1155,
+                1156,
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1163,
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169
               ]
             }
           ]
@@ -191,6 +226,6 @@
     "implFiles": [
       "src/tui/components/AgentView.tsx"
     ],
-    "totalLinesCovered": 257
+    "totalLinesCovered": 287
   }
 }

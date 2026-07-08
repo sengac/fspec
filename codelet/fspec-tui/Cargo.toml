@@ -112,6 +112,11 @@ serial_test.workspace = true
 # RPC-107: catalog unit tests reach into the static CANONICAL_PROVIDERS
 # slice exposed by codelet-providers.
 codelet-providers.workspace = true
+# RPC-420: the producer-truth display-contract test feeds the REAL
+# producer formula (interactive_helpers::compression_ratio * 100.0)
+# into the CompactionComplete display pipeline. Already in the dep
+# graph via codelet-sessions.
+codelet-cli.workspace = true
 
 [lints]
 workspace = true

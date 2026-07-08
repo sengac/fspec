@@ -84,7 +84,8 @@ impl AgentViewStore {
     }
 
     /// Persist `reduction` (already computed as
-    /// `((1.0 - compression_ratio) * 100.0).round() as i32`) so the
+    /// `compression_ratio.round() as i32` — the wire value is the
+    /// percent of tokens removed [0,100], RPC-420) so the
     /// SessionHeader can render `[X%: COMPACTED {reduction}%]` on the
     /// next frame. Called by `dispatch_stream_chunks.rs` on
     /// `StreamChunk::CompactionComplete`.
@@ -96,7 +97,34 @@ impl AgentViewStore {
     /// Drop the cached compaction-reduction entry for `session_id`.
     /// Called on `SessionStateChange { state: Cleared }` so the
     /// SessionHeader drops the COMPACTED suffix after a `/clear`.
+    ///
+    /// RPC-417: ALSO bumps the per-session auto-hide seq so any still
+    /// pending 10-second timer becomes a stale no-op — a `/clear` before
+    /// 10s must neutralise the queued `Action::ClearCompactionReduction`.
     pub fn clear_compaction_reduction(&mut self, session_id: &SessionId) {
         self.compaction_reduction_by_session.remove(session_id);
+        self.bump_compaction_reduction_seq(session_id.clone());
+    }
+
+    // ── RPC-417 per-session compaction auto-hide seq accessors ─────────
+
+    /// Current per-session auto-hide seq (default 0 when never armed).
+    pub fn compaction_reduction_seq_for(&self, session_id: &SessionId) -> u64 {
+        self.compaction_reduction_seq_by_session
+            .get(session_id)
+            .copied()
+            .unwrap_or(0)
+    }
+
+    /// Increment `session_id`'s auto-hide seq and return the NEW value.
+    /// Called on `CompactionComplete` (arm) and inside
+    /// `clear_compaction_reduction` (invalidate pending timers).
+    pub fn bump_compaction_reduction_seq(&mut self, session_id: SessionId) -> u64 {
+        let entry = self
+            .compaction_reduction_seq_by_session
+            .entry(session_id)
+            .or_insert(0);
+        *entry = entry.wrapping_add(1);
+        *entry
     }
 }

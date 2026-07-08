@@ -6,7 +6,6 @@
 @rust
 @PROV-125
 Feature: Cloud providers show empty model lists due to slug/models.dev-id key mismatch
-
   """
   Fix lives in codelet/sessions/src/cloud_models.rs: canonical_to_models_dev() must map every canonical slug whose models.dev key differs. Confirmed divergences from live models.dev/api.json: gemini->google (existing), together->togetherai, moonshot->moonshotai. Verify against the cached catalog keys, do not guess.
   cloud_model_entries() currently swallows registry.list_models() errors with `Err(_) => return Vec::new()`. Replace with a branch that distinguishes a genuine absence (return empty) from a diagnosable miss by logging via the crate's tracing/log facility before returning empty. Do not use println!/eprintln! (production code).
@@ -32,7 +31,6 @@ Feature: Cloud providers show empty model lists due to slug/models.dev-id key mi
   #   5. Given a credentialed canonical slug that is not in the known-absent set and misses the registry, when the model list is built, a tracing warning is emitted and an empty list is returned
   #
   # ========================================
-
   Background: User Story
     As a fspec user selecting a cloud model
     I want to see every credentialed provider's tool-capable models in the model selector

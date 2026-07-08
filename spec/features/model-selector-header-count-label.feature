@@ -5,7 +5,6 @@
 @tui
 @PROV-127
 Feature: Model selector header count pluralization (TS parity)
-
   """
   PROV-127 pluralization rule. The shared helper
   codelet/fspec-tui/src/views/model_selector/rows.rs::model_count_label renders

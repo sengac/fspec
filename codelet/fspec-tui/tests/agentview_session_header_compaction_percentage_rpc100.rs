@@ -219,14 +219,14 @@ fn context_fill_update_above_100_renders_raw_value_not_clamped() {
     );
 }
 
-/// Scenario: CompactionComplete adds the COMPACTED suffix with reduction computed from (1 - compression_ratio) * 100
+/// Scenario: CompactionComplete adds the COMPACTED suffix with reduction taken directly from the percent-unit compression_ratio
 #[test]
 fn compaction_complete_adds_compacted_suffix_with_correct_reduction_formula() {
     // @step Given session "s-1" is open in AgentView with "s-1" focused
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
 
-    // @step And Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate { context_fill: ContextFillInfo { fill_percentage: 80, ... } }) has been dispatched
+    // @step And Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate { context_fill: ContextFillInfo { fill_percentage: 80, effective_tokens: 0.0, threshold: 0.0, context_window: 0.0 } }) has been dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::ContextFillUpdate {
@@ -234,11 +234,11 @@ fn compaction_complete_adds_compacted_suffix_with_correct_reduction_formula() {
         },
     ));
 
-    // @step When Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compaction_result: CompactionResult { original_tokens: 10000, compacted_tokens: 4000, compression_ratio: 0.4, turns_summarized: 12 } }) is dispatched
+    // @step When Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compaction_result: CompactionResult { original_tokens: 10000, compacted_tokens: 4000, compression_ratio: 60.0, turns_summarized: 12 } }) is dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::CompactionComplete {
-            compaction_result: compaction_result(10000, 4000, 0.4),
+            compaction_result: compaction_result(10000, 4000, 60.0),
         },
     ));
 
@@ -250,7 +250,7 @@ fn compaction_complete_adds_compacted_suffix_with_correct_reduction_formula() {
     // @step Then the SessionHeader text contains "[80%: COMPACTED 60%]"
     assert!(
         header.contains("[80%: COMPACTED 60%]"),
-        "header should show '[80%: COMPACTED 60%]' (reduction = (1-0.4)*100 = 60), got: {header:?}"
+        "header should show '[80%: COMPACTED 60%]' (wire 60.0 is already percent removed — RPC-420), got: {header:?}"
     );
 }
 
@@ -261,25 +261,25 @@ fn compaction_reduction_is_per_session_and_does_not_leak() {
     let (mut app, _mock) = agent_app_with_two_sessions();
     focus_s1(&mut app);
 
-    // @step And Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate { fill_percentage: 50, ... }) has been dispatched
+    // @step And Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate { context_fill: ContextFillInfo { fill_percentage: 50, effective_tokens: 0.0, threshold: 0.0, context_window: 0.0 } }) has been dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::ContextFillUpdate {
             context_fill: context_fill(50),
         },
     ));
-    // @step And Action::ChunkReceived("s-2", StreamChunk::ContextFillUpdate { fill_percentage: 50, ... }) has been dispatched
+    // @step And Action::ChunkReceived("s-2", StreamChunk::ContextFillUpdate { context_fill: ContextFillInfo { fill_percentage: 50, effective_tokens: 0.0, threshold: 0.0, context_window: 0.0 } }) has been dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-2"),
         StreamChunk::ContextFillUpdate {
             context_fill: context_fill(50),
         },
     ));
-    // @step And Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compression_ratio: 0.3, ... }) has been dispatched
+    // @step And Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compaction_result: CompactionResult { original_tokens: 10000, compacted_tokens: 3000, compression_ratio: 70.0, turns_summarized: 8 } }) has been dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::CompactionComplete {
-            compaction_result: compaction_result(10000, 3000, 0.3),
+            compaction_result: compaction_result(10000, 3000, 70.0),
         },
     ));
     drain_actions(&mut app);
@@ -291,7 +291,7 @@ fn compaction_reduction_is_per_session_and_does_not_leak() {
     // @step Then the SessionHeader text contains "COMPACTED 70%"
     assert!(
         header.contains("COMPACTED 70%"),
-        "s-1 header should show 'COMPACTED 70%' (reduction = (1-0.3)*100 = 70), got: {header:?}"
+        "s-1 header should show 'COMPACTED 70%' (wire 70.0 is already percent removed — RPC-420), got: {header:?}"
     );
 
     // @step When the App dispatches Action::SessionNext to focus "s-2" and re-renders
@@ -331,25 +331,25 @@ fn session_state_change_cleared_resets_fill_tokens_and_compaction_reduction() {
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
 
-    // @step And Action::ChunkReceived("s-1", StreamChunk::TokenUpdate { tokens: TokenTracker { input_tokens: 5000, output_tokens: 1200, ... } }) has been dispatched
+    // @step And Action::ChunkReceived("s-1", StreamChunk::TokenUpdate { tokens: TokenTracker { input_tokens: 5000, output_tokens: 1200, reasoning_tokens: None, tokens_per_second: None, cache_read_input_tokens: Some(0), cache_creation_input_tokens: Some(0) } }) has been dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::TokenUpdate {
             tokens: token_tracker(5000, 1200),
         },
     ));
-    // @step And Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate { context_fill: ContextFillInfo { fill_percentage: 45, ... } }) has been dispatched
+    // @step And Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate { context_fill: ContextFillInfo { fill_percentage: 45, effective_tokens: 0.0, threshold: 0.0, context_window: 0.0 } }) has been dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::ContextFillUpdate {
             context_fill: context_fill(45),
         },
     ));
-    // @step And Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compression_ratio: 0.3, ... }) has been dispatched
+    // @step And Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compaction_result: CompactionResult { original_tokens: 10000, compacted_tokens: 3000, compression_ratio: 70.0, turns_summarized: 8 } }) has been dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::CompactionComplete {
-            compaction_result: compaction_result(10000, 3000, 0.3),
+            compaction_result: compaction_result(10000, 3000, 70.0),
         },
     ));
     drain_actions(&mut app);
@@ -391,11 +391,11 @@ fn compaction_notice_line_and_header_badge_agree_on_reduction_percentage() {
     let (mut app, _mock) = agent_app_with_single_session();
     focus_s1(&mut app);
 
-    // @step When Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compression_ratio: 0.4, ... }) is dispatched
+    // @step When Action::ChunkReceived("s-1", StreamChunk::CompactionComplete { compression_ratio: 60.0, ... }) is dispatched
     app.dispatch(Action::ChunkReceived(
         sid("s-1"),
         StreamChunk::CompactionComplete {
-            compaction_result: compaction_result(10000, 4000, 0.4),
+            compaction_result: compaction_result(10000, 4000, 60.0),
         },
     ));
     // Drain the queued Action::EmitSessionNotice so the scrollback gets

@@ -284,8 +284,11 @@ impl App {
 /// ```text
 /// [compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)
 /// ```
+///
+/// RPC-420: `compression_ratio` is already the PERCENT of tokens removed
+/// [0,100]; render it directly — never `(1.0 - ratio) * 100.0`.
 pub(crate) fn format_compaction_notice(result: &CompactionResult) -> String {
-    let reduction_pct = (1.0 - result.compression_ratio) * 100.0;
+    let reduction_pct = result.compression_ratio;
     format!(
         "[compaction] {reduction:.1}% reduction ({orig} \u{2192} {compacted} tokens, {turns} turns summarised)",
         reduction = reduction_pct,
