@@ -147,5 +147,8 @@ fn empty_name_cannot_be_saved() {
     // @step Then no save is performed
     assert!(save_action(ev).is_none());
     // @step Then the form stays open
-    assert!(matches!(view.mode, ProviderSettingsMode::EditProfile { .. }));
+    assert!(matches!(
+        view.mode,
+        ProviderSettingsMode::EditProfile { .. }
+    ));
 }

@@ -425,6 +425,11 @@ impl CodexProvider {
             .tool(request_user_input) // BUG-116: Codex-native HITL facade
             .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
 
+        // CONT-002: done() is registered only while auto-continue is armed
+        if codelet_tools::is_continue_armed(session_id) {
+            agent_builder = agent_builder.tool(codelet_tools::DoneTool::new(session_id));
+        }
+
         // The Codex backend API REQUIRES non-empty `instructions` in every
         // Responses API request.  The rig layer maps preamble → instructions,
         // so we must ALWAYS set a preamble.  Base instructions are always

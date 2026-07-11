@@ -44,7 +44,10 @@ struct SharedWriter(Arc<Mutex<Vec<u8>>>);
 
 impl Write for SharedWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.0.lock().expect("clipboard buffer mutex").extend_from_slice(buf);
+        self.0
+            .lock()
+            .expect("clipboard buffer mutex")
+            .extend_from_slice(buf);
         Ok(buf.len())
     }
     fn flush(&mut self) -> std::io::Result<()> {
@@ -194,7 +197,11 @@ fn dragging_across_two_lines_copies_their_text_and_keeps_the_highlight() {
         rect_y + 1,
     ));
     drain(&mut app);
-    let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 79, rect_y + 1));
+    let _ = app.handle_event(&mouse(
+        MouseEventKind::Up(MouseButton::Left),
+        79,
+        rect_y + 1,
+    ));
     drain(&mut app);
 
     // @step Then the two lines of text without any scrollbar glyphs are written to the clipboard
@@ -233,7 +240,11 @@ fn long_pressing_a_line_selects_and_copies_it() {
     let rect_y = 1u16;
 
     // @step When I press and hold on a line for about half a second and release
-    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 2, rect_y + 3));
+    let _ = app.handle_event(&mouse(
+        MouseEventKind::Down(MouseButton::Left),
+        2,
+        rect_y + 3,
+    ));
     drain(&mut app);
     // The recognizer's long-press threshold is ~400ms (real Instant); wait
     // past it, then poll the tick seam so the Begin gesture fires.
@@ -299,7 +310,11 @@ fn a_quick_click_does_not_select_or_copy() {
 
     // @step When I quickly click a line without dragging
     // Down then immediate Up, with NO drag and NO long-press tick between.
-    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 4, rect_y + 2));
+    let _ = app.handle_event(&mouse(
+        MouseEventKind::Down(MouseButton::Left),
+        4,
+        rect_y + 2,
+    ));
     drain(&mut app);
     let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 4, rect_y + 2));
     drain(&mut app);
@@ -357,10 +372,7 @@ fn esc_clears_an_active_selection_without_copying() {
     );
 
     // @step And nothing is written to the clipboard by the Esc press
-    assert!(
-        clip_bytes(&clip).is_empty(),
-        "Esc must not copy anything"
-    );
+    assert!(clip_bytes(&clip).is_empty(), "Esc must not copy anything");
 }
 
 // ---------------------------------------------------------------------
@@ -485,7 +497,11 @@ fn mouse_capture_remains_enabled_throughout_selection_and_copy() {
         rect_y + 1,
     ));
     drain(&mut app);
-    let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 79, rect_y + 1));
+    let _ = app.handle_event(&mouse(
+        MouseEventKind::Up(MouseButton::Left),
+        79,
+        rect_y + 1,
+    ));
     drain(&mut app);
 
     // @step Then mouse capture was never disabled during the flow

@@ -1,0 +1,395 @@
+{
+  "scenarios": [
+    {
+      "name": "Chrome continue state syncs into the inner session and arms the registry",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "52-86",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "52-86",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A goal alone arms the registry and registers the goal spec",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "89-133",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "89-133",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Neither continue nor goal leaves the registry disarmed",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "136-167",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "136-167",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A new real user turn resets the zero-progress nudge counter",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "170-194",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "170-194",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clearing the chrome goal clears the inner goal and disarms the registry",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "199-247",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "199-247",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unchanged chrome goal is not re-applied",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "251-289",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "251-289",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both agent-loop twins call the shared sync helper at the dispatch site",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/cont009_completion_contract_sync.rs",
+          "lines": "348-396",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_loop.rs",
+              "lines": [
+                602,
+                603,
+                604,
+                605,
+                606,
+                607,
+                608
+              ]
+            },
+            {
+              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "lines": [
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/cont009_completion_contract_sync.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/background_session.rs",
+      "codelet/napi/src/agent_loop.rs",
+      "codelet/agent-loop/src/agent_loop.rs"
+    ],
+    "totalLinesCovered": 729
+  }
+}

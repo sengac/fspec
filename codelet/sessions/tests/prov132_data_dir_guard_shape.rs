@@ -97,9 +97,7 @@ fn extract_fn_bodies(stripped_src: &str) -> Vec<(String, bool, String)> {
         let name_start = fn_kw + 3;
         // Parse the identifier.
         let mut j = name_start;
-        while j < bytes.len()
-            && (bytes[j].is_ascii_alphanumeric() || bytes[j] == b'_')
-        {
+        while j < bytes.len() && (bytes[j].is_ascii_alphanumeric() || bytes[j] == b'_') {
             j += 1;
         }
         let name = stripped_src[name_start..j].to_string();
@@ -314,11 +312,10 @@ fn offending_files_are_guarded_so_full_suite_is_deterministic() {
             violations.push(format!("{file}: no `static DATA_DIR_GUARD` declared"));
         }
         for (name, is_test, body) in extract_fn_bodies(&stripped) {
-            if is_test
-                && body_touches_global_data_dir(&body)
-                && !body_acquires_guard(&body)
-            {
-                violations.push(format!("{file}::{name}: touches global data dir without the guard"));
+            if is_test && body_touches_global_data_dir(&body) && !body_acquires_guard(&body) {
+                violations.push(format!(
+                    "{file}::{name}: touches global data dir without the guard"
+                ));
             }
         }
     }

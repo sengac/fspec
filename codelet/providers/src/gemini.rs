@@ -213,6 +213,11 @@ impl GeminiProvider {
             .tool(RequestUserInputTool::new(session_id)) // TOOL-017: HITL tool
             .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
 
+        // CONT-002: done() is registered only while auto-continue is armed
+        if codelet_tools::is_continue_armed(session_id) {
+            agent_builder = agent_builder.tool(codelet_tools::DoneTool::new(session_id));
+        }
+
         // Build complete system prompt using model-aware builder
         // This combines:
         // 1. Base Gemini system prompt (from opencode) with examples showing simple questions → simple answers

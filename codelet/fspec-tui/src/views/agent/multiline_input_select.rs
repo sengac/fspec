@@ -163,7 +163,10 @@ impl MultiLineInput {
         let out: Vec<String> = spans
             .iter()
             .map(|span| {
-                let text = rows.get(span.row as usize).map(|r| r.text.as_str()).unwrap_or("");
+                let text = rows
+                    .get(span.row as usize)
+                    .map(|r| r.text.as_str())
+                    .unwrap_or("");
                 slice_chars(text, span.start_col, span.end_col)
             })
             .collect();

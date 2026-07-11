@@ -186,8 +186,8 @@ fn copying_the_profile_form_api_key_field_copies_the_masked_value() {
     let ev = view.handle_key(ctrl_c());
 
     // @step Then the clipboard receives 12 bullet dots and not the plaintext secret
-    let text = copied_text(&ev)
-        .unwrap_or_else(|| panic!("expected CopyToClipboard emit, got {ev:?}"));
+    let text =
+        copied_text(&ev).unwrap_or_else(|| panic!("expected CopyToClipboard emit, got {ev:?}"));
     assert_eq!(text, "•".repeat(12), "API key must copy 12 bullet dots");
     assert!(
         !text.contains("sk-secret123"),
@@ -237,8 +237,8 @@ fn copying_the_inline_api_key_entry_copies_the_masked_draft() {
     let ev = view.handle_key(ctrl_c());
 
     // @step Then the clipboard receives 9 bullet dots and not the plaintext secret
-    let text = copied_text(&ev)
-        .unwrap_or_else(|| panic!("expected CopyToClipboard emit, got {ev:?}"));
+    let text =
+        copied_text(&ev).unwrap_or_else(|| panic!("expected CopyToClipboard emit, got {ev:?}"));
     assert_eq!(text, "•".repeat(9), "inline draft must copy 9 bullet dots");
     assert!(
         !text.contains("sk-abcdef"),
@@ -247,7 +247,9 @@ fn copying_the_inline_api_key_entry_copies_the_masked_draft() {
 
     // App-level end-to-end OSC 52 byte assertion.
     let (mut app, clip) = app_in_provider_view();
-    app.navigator_mut().provider_settings.set_providers(vec![pinfo("anthropic")]);
+    app.navigator_mut()
+        .provider_settings
+        .set_providers(vec![pinfo("anthropic")]);
     app.navigator_mut().provider_settings.mode = ProviderSettingsMode::Detail {
         provider_id: "anthropic".to_string(),
         sub: DetailSub::EditApiKey {
@@ -289,7 +291,9 @@ fn pressing_ctrl_c_on_the_provider_list_copies_no_field_value() {
 
     // App-level: nothing must land on the clipboard sink.
     let (mut app, clip) = app_in_provider_view();
-    app.navigator_mut().provider_settings.set_providers(vec![pinfo("anthropic")]);
+    app.navigator_mut()
+        .provider_settings
+        .set_providers(vec![pinfo("anthropic")]);
     app.navigator_mut().provider_settings.mode = ProviderSettingsMode::List;
     let _ = app.handle_event(&Event::Key(ctrl_c()));
     drain(&mut app);

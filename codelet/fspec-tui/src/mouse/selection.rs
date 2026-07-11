@@ -62,13 +62,12 @@ impl Selection {
     /// multi-row selection extend to the row end (linewise semantics).
     /// A collapsed selection (`anchor == cursor`) yields an empty vec.
     pub fn spans(&self, row_width: u16) -> Vec<RowSpan> {
-        let (start, end) = if (self.anchor.row, self.anchor.col)
-            <= (self.cursor.row, self.cursor.col)
-        {
-            (self.anchor, self.cursor)
-        } else {
-            (self.cursor, self.anchor)
-        };
+        let (start, end) =
+            if (self.anchor.row, self.anchor.col) <= (self.cursor.row, self.cursor.col) {
+                (self.anchor, self.cursor)
+            } else {
+                (self.cursor, self.anchor)
+            };
 
         if start == end {
             return Vec::new();

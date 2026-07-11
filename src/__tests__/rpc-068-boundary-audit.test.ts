@@ -36,7 +36,7 @@ const PRE_RPC030_BASELINE = 'ea0ed0a0';
 
 describe('Feature: Final TS-frontend regression + boundary audit', () => {
   describe('Scenario: Dependency-rule regression tests pass across every forbidden crate', () => {
-    it('should run cargo test --workspace --test no_napi_dependency with 10/10 passing', () => {
+    it('should run the package-scoped no_napi_dependency suites with 10/10 passing', () => {
       // @step Given the RPC-030 chain has landed
       // Source-shape preconditions — a regression here surfaces as a
       // clear precondition failure rather than as a cargo-test red.
@@ -50,14 +50,27 @@ describe('Feature: Final TS-frontend regression + boundary audit', () => {
         existsSync(join(CODELET, 'napi', 'src', 'session_manager.rs'))
       ).toBe(false);
 
-      // @step When I run `cargo test --workspace --test no_napi_dependency`
+      // @step When I run `cargo test -p codelet-core -p codelet-sessions -p codelet-rpc-types -p codelet-fspec -p codelet-fspec-tui --test no_napi_dependency`
+      // NOTE (2026-07-10): package-scoped on purpose. An unscoped
+      // `--workspace` run in codelet/ compiles 944 test binaries with
+      // full DWARF (1.4-2 GB each), has filled the disk to 302 GB and
+      // crashed the machine. See codelet/Cargo.toml (RPC-043 + incident
+      // note). This scoped invocation builds only the five
+      // no_napi_dependency targets and is behaviourally identical.
       const output = execSync(
-        'cargo test --workspace --test no_napi_dependency 2>&1',
+        'cargo test -p codelet-core -p codelet-sessions -p codelet-rpc-types -p codelet-fspec -p codelet-fspec-tui --test no_napi_dependency 2>&1',
         {
           cwd: CODELET,
           encoding: 'utf-8',
           maxBuffer: 32 * 1024 * 1024,
           shell: '/bin/bash',
+          // Keep the five test binaries small (no DWARF debug info) —
+          // part of the RPC-043 / 2026-07-10 disk-bloat mitigation.
+          env: {
+            ...process.env,
+            CARGO_PROFILE_DEV_DEBUG: '0',
+            CARGO_PROFILE_TEST_DEBUG: '0',
+          },
         }
       );
 

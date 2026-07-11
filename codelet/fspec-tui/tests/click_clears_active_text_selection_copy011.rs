@@ -20,8 +20,8 @@ mod common;
 #[path = "common/text_selection_anchor_copy010_helpers.rs"]
 mod sb;
 use sb::{
-    app_with_clipboard, clip_bytes, drain, highlight_spans, mouse, osc52, render_app,
-    seed_line, selection_active,
+    app_with_clipboard, clip_bytes, drain, highlight_spans, mouse, osc52, render_app, seed_line,
+    selection_active,
 };
 
 #[path = "common/turn_content_modal_copy008_helpers.rs"]
@@ -57,7 +57,10 @@ fn a_quick_click_clears_an_active_scrollback_selection() {
     assert!(selection_active(&app), "precondition: selection is active");
     assert!(highlight_spans(&app) > 0, "precondition: highlight painted");
     let clip_before = clip_bytes(&clip);
-    assert!(!clip_before.is_empty(), "precondition: original copy happened");
+    assert!(
+        !clip_before.is_empty(),
+        "precondition: original copy happened"
+    );
 
     // @step When I quickly click a line without dragging
     // Down then immediate Up on the SAME cell, no drag, no long-press tick.
@@ -111,9 +114,18 @@ fn a_quick_click_clears_an_active_input_composer_selection() {
     let mut input = MultiLineInput::new();
     input.set_value("the quick brown fox");
     let area = Rect::new(0, 0, 60, 6);
-    let _ = input.handle_mouse(cmouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 0), area);
-    let _ = input.handle_mouse(cmouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 8, 0), area);
-    let _ = input.handle_mouse(cmouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 8, 0), area);
+    let _ = input.handle_mouse(
+        cmouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 0),
+        area,
+    );
+    let _ = input.handle_mouse(
+        cmouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 8, 0),
+        area,
+    );
+    let _ = input.handle_mouse(
+        cmouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 8, 0),
+        area,
+    );
     assert!(
         input.text_selection_active(),
         "precondition: composer selection is active"
@@ -121,8 +133,14 @@ fn a_quick_click_clears_an_active_input_composer_selection() {
 
     // @step When I quickly click without dragging
     // Down then immediate Up on the SAME cell, no drag in between.
-    let _ = input.handle_mouse(cmouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 2, 0), area);
-    let _ = input.handle_mouse(cmouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 2, 0), area);
+    let _ = input.handle_mouse(
+        cmouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 2, 0),
+        area,
+    );
+    let _ = input.handle_mouse(
+        cmouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 2, 0),
+        area,
+    );
 
     // @step Then the composer selection is cleared
     assert!(
@@ -145,7 +163,11 @@ fn a_quick_click_clears_an_active_turn_content_modal_selection() {
     let body = "MLINE0\nMLINE1\nMLINE2\nMLINE3";
     let (mut app, clip) = open_modal_app(body, 80, 24);
     let r = modal_body_rect(80, 24, body);
-    let _ = app.handle_event(&modal::mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
+    let _ = app.handle_event(&modal::mouse(
+        MouseEventKind::Down(MouseButton::Left),
+        r.x,
+        r.y,
+    ));
     drain_app(&mut app);
     let _ = app.handle_event(&modal::mouse(
         MouseEventKind::Drag(MouseButton::Left),
@@ -209,7 +231,10 @@ fn a_quick_click_clears_an_active_board_details_strip_selection() {
     let units = vec![wu("RPC-014", "Board grid", "backlog", None)];
     let (view, store, mut rx, _clip) = board_with_clipboard(units, 120, 30);
     let r = details_rect(120, 30);
-    let _ = view.handle_event(&board::mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y), &store);
+    let _ = view.handle_event(
+        &board::mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y),
+        &store,
+    );
     bdrain(&mut rx);
     let _ = view.handle_event(
         &board::mouse(MouseEventKind::Drag(MouseButton::Left), r.x + 6, r.y),
@@ -271,11 +296,23 @@ fn starting_a_new_drag_replaces_the_old_selection() {
 
     // @step When I press and drag to select different text and release
     // A fresh Down → Drag → Up over the SECOND row ("Second line").
-    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), 0, rect_y + 1));
+    let _ = app.handle_event(&mouse(
+        MouseEventKind::Down(MouseButton::Left),
+        0,
+        rect_y + 1,
+    ));
     drain(&mut app);
-    let _ = app.handle_event(&mouse(MouseEventKind::Drag(MouseButton::Left), 79, rect_y + 1));
+    let _ = app.handle_event(&mouse(
+        MouseEventKind::Drag(MouseButton::Left),
+        79,
+        rect_y + 1,
+    ));
     drain(&mut app);
-    let _ = app.handle_event(&mouse(MouseEventKind::Up(MouseButton::Left), 79, rect_y + 1));
+    let _ = app.handle_event(&mouse(
+        MouseEventKind::Up(MouseButton::Left),
+        79,
+        rect_y + 1,
+    ));
     drain(&mut app);
 
     // @step Then the old selection is replaced by the new one

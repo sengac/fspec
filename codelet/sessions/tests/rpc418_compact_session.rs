@@ -137,7 +137,10 @@ async fn compact_populated_clears_conversation_and_kicks_agent_loop() {
     // @step Given a session with several user and assistant messages
     let sid = fresh_session(&manager).await;
     let seeded = seed_populated(&manager, &sid).await;
-    assert!(seeded >= 5, "expected several seeded messages, got {seeded}");
+    assert!(
+        seeded >= 5,
+        "expected several seeded messages, got {seeded}"
+    );
 
     // @step When I compact the session through the handle
     let handle: &dyn SessionManagerHandle = &*manager;
@@ -162,31 +165,29 @@ async fn compact_populated_clears_conversation_and_kicks_agent_loop() {
     assert!(
         !original_conversation_present,
         "original conversation messages must be cleared, found survivors: {:?}",
-        inner
-            .messages
-            .iter()
-            .map(message_text)
-            .collect::<Vec<_>>()
+        inner.messages.iter().map(message_text).collect::<Vec<_>>()
     );
 
     // @step And the compaction instruction is injected as a user message
     let has_instruction = inner.messages.iter().any(|m| {
-        matches!(m, Message::User { .. })
-            && message_text(m).contains("hierarchical summary DAG")
+        matches!(m, Message::User { .. }) && message_text(m).contains("hierarchical summary DAG")
     });
     assert!(
         has_instruction,
         "compaction instruction must be injected as a user message; non-reminder messages: {:?}",
-        non_reminder.iter().map(|m| message_text(m)).collect::<Vec<_>>()
+        non_reminder
+            .iter()
+            .map(|m| message_text(m))
+            .collect::<Vec<_>>()
     );
     drop(inner);
 
     // @step And a "Continue" input is sent to the agent loop to start DAG construction
     // `send_input` emits a UserInput("Continue") StreamChunk and flips status to Running.
     let chunks = drain_chunks_for(&mut chunks_rx, &sid.value, Duration::from_secs(2)).await;
-    let continue_sent = chunks.iter().any(|c| {
-        matches!(c, StreamChunk::UserInput { text } if text == "Continue")
-    });
+    let continue_sent = chunks
+        .iter()
+        .any(|c| matches!(c, StreamChunk::UserInput { text } if text == "Continue"));
     assert!(
         continue_sent,
         "expected a UserInput(\"Continue\") chunk from send_input; got: {chunks:?}"
@@ -252,7 +253,10 @@ async fn compact_populated_reports_real_token_counts() {
     // @step Given a session with several user and assistant messages
     let sid = fresh_session(&manager).await;
     let seeded = seed_populated(&manager, &sid).await;
-    assert!(seeded >= 5, "expected several seeded messages, got {seeded}");
+    assert!(
+        seeded >= 5,
+        "expected several seeded messages, got {seeded}"
+    );
 
     // @step When I compact the session through the handle
     let handle: &dyn SessionManagerHandle = &*manager;
@@ -266,12 +270,25 @@ async fn compact_populated_reports_real_token_counts() {
         compaction.original_tokens
     );
 
-    // @step And the returned CompactionResult compacted_tokens is less than original_tokens
-    assert!(
-        compaction.compacted_tokens < compaction.original_tokens,
-        "expected compacted_tokens ({}) < original_tokens ({})",
-        compaction.compacted_tokens,
-        compaction.original_tokens
+    // RPC-421: the old assertion `compacted_tokens < original_tokens` locked
+    // the premature trough measurement in as passing behaviour. The result is
+    // now an acknowledgement — final numbers ship on the CompactionComplete
+    // chunk (CMPCT-038 apply-site emission), not on the RPC return.
+
+    // @step And the returned CompactionResult compacted_tokens is the acknowledgement sentinel 0
+    assert_eq!(
+        compaction.compacted_tokens, 0,
+        "compacted_tokens must be the acknowledgement sentinel 0 (the DAG \
+         summary does not exist yet at RPC-return time), got {}",
+        compaction.compacted_tokens
+    );
+
+    // @step And the returned CompactionResult compression_ratio is the acknowledgement sentinel 0.0
+    assert_eq!(
+        compaction.compression_ratio, 0.0,
+        "compression_ratio must be the acknowledgement sentinel 0.0, never a \
+         fabricated trough-measured reduction, got {}",
+        compaction.compression_ratio
     );
 }
 

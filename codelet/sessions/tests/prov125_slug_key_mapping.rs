@@ -57,19 +57,28 @@ fn together_provider_resolves_its_models_dev_catalog_despite_a_differing_key() {
     // @step When the cloud model list is built for "together"
     let entries = cloud_model_entries(&registry, "together", has_creds);
     // @step Then the returned model list is not empty
-    assert!(!entries.is_empty(), "together must resolve togetherai models");
+    assert!(
+        !entries.is_empty(),
+        "together must resolve togetherai models"
+    );
     assert_eq!(canonical_to_models_dev("together"), "togetherai");
     // @step And every returned model is tool-call-capable and not deprecated
     // (registry key togetherai exposes only tool_call, non-deprecated models;
     // cloud_model_entries filters via is_selectable so any non-empty result is
     // guaranteed tool-call-capable and not deprecated)
-    let togetherai = registry.list_models("togetherai").expect("togetherai present");
+    let togetherai = registry
+        .list_models("togetherai")
+        .expect("togetherai present");
     for entry in &entries {
         let model = togetherai
             .iter()
             .find(|m| m.id == entry.id)
             .expect("entry maps back to a togetherai model");
-        assert!(model.tool_call, "entry {} must be tool-call-capable", entry.id);
+        assert!(
+            model.tool_call,
+            "entry {} must be tool-call-capable",
+            entry.id
+        );
         assert_ne!(
             model.status,
             Some(codelet_providers::models::ModelStatus::Deprecated),
@@ -88,16 +97,25 @@ fn moonshot_provider_resolves_its_models_dev_catalog_despite_a_differing_key() {
     // @step When the cloud model list is built for "moonshot"
     let entries = cloud_model_entries(&registry, "moonshot", has_creds);
     // @step Then the returned model list is not empty
-    assert!(!entries.is_empty(), "moonshot must resolve moonshotai models");
+    assert!(
+        !entries.is_empty(),
+        "moonshot must resolve moonshotai models"
+    );
     assert_eq!(canonical_to_models_dev("moonshot"), "moonshotai");
     // @step And every returned model is tool-call-capable and not deprecated
-    let moonshotai = registry.list_models("moonshotai").expect("moonshotai present");
+    let moonshotai = registry
+        .list_models("moonshotai")
+        .expect("moonshotai present");
     for entry in &entries {
         let model = moonshotai
             .iter()
             .find(|m| m.id == entry.id)
             .expect("entry maps back to a moonshotai model");
-        assert!(model.tool_call, "entry {} must be tool-call-capable", entry.id);
+        assert!(
+            model.tool_call,
+            "entry {} must be tool-call-capable",
+            entry.id
+        );
         assert_ne!(
             model.status,
             Some(codelet_providers::models::ModelStatus::Deprecated),
@@ -124,13 +142,19 @@ fn gemini_provider_still_resolves_via_the_existing_gemini_to_google_mapping() {
 fn a_provider_absent_from_models_dev_yields_an_empty_list_without_warning() {
     // @step Given the "codex" provider is not present in the models.dev registry
     let registry = divergent_key_registry();
-    assert!(registry.list_models("codex").is_err(), "codex must be absent");
+    assert!(
+        registry.list_models("codex").is_err(),
+        "codex must be absent"
+    );
     // @step And credentials are configured for the "codex" provider
     let has_creds = true;
     // @step When the cloud model list is built for "codex"
     let entries = cloud_model_entries(&registry, "codex", has_creds);
     // @step Then the returned model list is empty
-    assert!(entries.is_empty(), "codex is known-absent and must yield empty");
+    assert!(
+        entries.is_empty(),
+        "codex is known-absent and must yield empty"
+    );
     // @step And no diagnostic warning is logged
     // codex is in the known-not-on-models.dev set, so cloud_model_entries returns
     // empty SILENTLY (no tracing::warn!). Reaching here with an empty Vec proves

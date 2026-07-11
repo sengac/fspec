@@ -24,6 +24,7 @@ pub mod bridge_relay;
 pub mod chrome_browser;
 pub mod dart_lang;
 pub mod deep_search;
+pub mod done; // CONT-002: auto-continue done() tool + armed/acceptance registries
 pub mod edit;
 pub mod error;
 pub mod facade;
@@ -134,6 +135,11 @@ pub use deep_search::{
     set_deep_search_handler, split_scope, sub_agent_tool_names, DeepSearchArgs, DeepSearchHandler,
     DeepSearchTool, DEFAULT_DEEP_SEARCH_MAX_DEPTH, DEFAULT_MAX_RECURSION_DEPTH,
     SUB_AGENT_TOOL_COUNT, SUB_AGENT_TOOL_NAMES,
+};
+pub use done::{
+    clear_done_acceptance, done_rejection_count, get_session_goal, is_continue_armed,
+    set_continue_armed, set_session_goal, set_verify_timeout_for_tests, take_done_acceptance,
+    DoneArgs, DoneTool, GoalSpec, DONE_TOOL_NAME,
 };
 pub use edit::EditTool;
 pub use footer_cwd::{get_footer_cwd, unregister_footer_cwd, update_footer_cwd};

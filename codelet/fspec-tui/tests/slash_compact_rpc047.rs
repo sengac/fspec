@@ -154,30 +154,54 @@ async fn compact_calls_backend_compact_session_for_focused_session() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: /compact emits a success notice into the originating session's
-// scrollback on Ok
+// Scenario: /compact Ok emits no success notice until the CompactionComplete
+// chunk arrives (amended by RPC-421 — the RPC result is an acknowledgement;
+// the notice is single-sourced from the chunk handler)
 // ─────────────────────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn compact_emits_success_notice_into_originating_session_scrollback() {
-    // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
+async fn compact_ok_emits_no_success_notice_until_compaction_complete_chunk() {
+    // @step Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.0, original_tokens 10000, compacted_tokens 0, turns_summarized 0, turns_kept 0
     let mock = Arc::new(MockBackend::new());
-    mock.set_compact_session_result_ok(ok_result(60.0, 10_000, 4_000, 12));
+    mock.set_compact_session_result_ok(ok_result(0.0, 10_000, 0, 0));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
 
-    // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
+    // @step When SlashCommandSelected(SlashCommandAction::Compact) is dispatched and the round-trip drains
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
-
     drain_pending(&mut app).await;
 
-    // @step Then within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)"
+    // @step Then s-1's scrollback contains no chunk whose text starts with "[compaction]"
+    let text = session_scrollback_text(&app, &sid("s-1"));
+    assert!(
+        text.lines().all(|l| !l.starts_with("[compaction]")),
+        "the Ok branch must NOT emit a success notice from the RPC result \
+         (RPC-421), got {text:?}",
+    );
+
+    // @step When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3 is dispatched
+    app.dispatch(Action::ChunkReceived(
+        sid("s-1"),
+        StreamChunk::CompactionComplete {
+            compaction_result: CompactionResult {
+                compression_ratio: 60.0,
+                original_tokens: 10_000,
+                compacted_tokens: 4_000,
+                turns_summarized: 12,
+                turns_kept: 3,
+            },
+        },
+    ));
+    drain_pending(&mut app).await;
+
+    // @step Then s-1's scrollback contains exactly one chunk whose text equals "[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)"
     let text = session_scrollback_text(&app, &sid("s-1"));
     let expected = "[compaction] 60.0% reduction (10000 \u{2192} 4000 tokens, 12 turns summarised)";
-    assert!(
-        text.lines().any(|l| l == expected),
-        "expected `{expected}` line in s-1 scrollback, got {text:?}",
+    assert_eq!(
+        text.lines().filter(|l| *l == expected).count(),
+        1,
+        "expected exactly one `{expected}` line in s-1 scrollback, got {text:?}",
     );
 }
 
@@ -251,8 +275,8 @@ async fn compact_with_no_current_session_is_a_silent_no_op() {
 async fn compact_only_affects_focused_session_background_untouched() {
     // @step Given an App with two open sessions s-1 (focused) and s-2 (background)
     let mock = Arc::new(MockBackend::new());
-    // @step And the MockBackend's compact_session returns Ok with compression_ratio 50.0, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1
-    mock.set_compact_session_result_ok(ok_result(50.0, 1_000, 500, 4));
+    // @step And the MockBackend's compact_session returns Ok with compression_ratio 0.0, original_tokens 1000, compacted_tokens 0, turns_summarized 0, turns_kept 0
+    mock.set_compact_session_result_ok(ok_result(0.0, 1_000, 0, 0));
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -274,12 +298,28 @@ async fn compact_only_affects_focused_session_background_untouched() {
 
     drain_pending(&mut app).await;
 
-    // @step And within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 50.0% reduction (1000 → 500 tokens, 4 turns summarised)"
+    // @step When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 50.0, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1 is dispatched
+    app.dispatch(Action::ChunkReceived(
+        sid("s-1"),
+        StreamChunk::CompactionComplete {
+            compaction_result: CompactionResult {
+                compression_ratio: 50.0,
+                original_tokens: 1_000,
+                compacted_tokens: 500,
+                turns_summarized: 4,
+                turns_kept: 1,
+            },
+        },
+    ));
+    drain_pending(&mut app).await;
+
+    // @step Then s-1's scrollback contains exactly one chunk whose text equals "[compaction] 50.0% reduction (1000 → 500 tokens, 4 turns summarised)"
     let s1_text = session_scrollback_text(&app, &sid("s-1"));
     let expected = "[compaction] 50.0% reduction (1000 \u{2192} 500 tokens, 4 turns summarised)";
-    assert!(
-        s1_text.lines().any(|l| l == expected),
-        "expected `{expected}` in s-1 scrollback, got {s1_text:?}",
+    assert_eq!(
+        s1_text.lines().filter(|l| *l == expected).count(),
+        1,
+        "expected exactly one `{expected}` in s-1 scrollback, got {s1_text:?}",
     );
 
     // @step And s-2's scrollback does NOT contain any chunk whose text starts with "[compaction]"
@@ -322,6 +362,7 @@ fn session_footer_renders_compaction_progress_when_some() {
         workspace: Some(&workspace),
         compaction_progress: Some(&progress),
         supervisor_pending_count: 0,
+        continue_indicator: None,
     }
     .render(buf.area, &mut buf);
 
@@ -359,6 +400,7 @@ fn session_footer_omits_compaction_segment_when_none() {
         workspace: Some(&workspace),
         compaction_progress: None,
         supervisor_pending_count: 0,
+        continue_indicator: None,
     }
     .render(buf.area, &mut buf);
 

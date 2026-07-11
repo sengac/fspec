@@ -17,11 +17,13 @@
 //!     `App::render` / `App::run` (terminal + crossterm + render-tick).
 
 pub mod bootstrap;
+pub mod continue_parser; // CONT-002: /continue subcommand parser + indicator
 pub mod dispatch;
 pub mod dispatch_agent_exit;
 pub mod dispatch_blocklist;
 pub mod dispatch_changed_files;
-pub mod dispatch_checkpoint_delete;pub mod dispatch_checkpoint_restore;
+pub mod dispatch_checkpoint_delete;
+pub mod dispatch_checkpoint_restore;
 pub mod dispatch_checkpoints;
 pub mod dispatch_compaction_hide;
 pub mod dispatch_create_session_dialog;
@@ -47,7 +49,9 @@ pub mod dispatch_session_chrome;
 pub mod dispatch_session_cycle;
 pub mod dispatch_slash_clear;
 pub mod dispatch_slash_commands;
+pub mod dispatch_slash_continue; // CONT-002: /continue apply + backend round-trip
 pub mod dispatch_slash_debug;
+pub mod dispatch_slash_goal; // CONT-003: /goal apply + backend round-trip
 pub mod dispatch_slash_loop;
 pub mod dispatch_slash_schedule;
 pub mod dispatch_stream_chunks;
@@ -55,6 +59,7 @@ pub mod dispatch_supervisor_links;
 pub mod dispatch_viewer;
 pub mod dispatch_work_unit_binding;
 pub mod events;
+pub mod goal_parser; // CONT-003: /goal subcommand parser + indicator
 pub mod loop_parser;
 pub mod schedule_parser;
 pub mod session_creation;

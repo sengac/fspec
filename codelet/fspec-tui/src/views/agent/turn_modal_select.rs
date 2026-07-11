@@ -40,7 +40,14 @@ impl AgentView {
     ) {
         self.cache_turn_modal_layout(area, store);
         let sel = self.turn_modal_selection.as_ref();
-        render_turn_modal(area, buf, self.turn_modal_seq, self.turn_modal_offset, store, sel);
+        render_turn_modal(
+            area,
+            buf,
+            self.turn_modal_seq,
+            self.turn_modal_offset,
+            store,
+            sel,
+        );
     }
 
     /// COPY-008: refresh the cached modal body layout (plain-text visual

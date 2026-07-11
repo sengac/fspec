@@ -15,8 +15,6 @@ use crate::components::help_dialog::HelpDialog;
 use crate::components::Action;
 use crate::views::agent::slash_commands::SlashCommandAction;
 
-use codelet_rpc_types::CompactionResult;
-
 use super::slash_parser::{parse_slash_command, SlashCommandParse};
 use super::state::App;
 
@@ -65,18 +63,20 @@ impl App {
                 self.handle_open_role_dialog();
             }
             SlashCommandAction::Compact => {
-                // RPC-047: parity with the TS handleCompactCommand path
-                // (src/tui/views/AgentView.tsx line ~2673). Wire the
-                // slash action to backend.compact_session(session_id):
+                // RPC-047 wiring, amended by RPC-421:
                 //
                 // 1. Bare /compact with no current session is a silent
                 //    no-op (no backend call, no notice emitted).
-                // 2. Spawn a tokio task that awaits the round-trip and
-                //    routes the response into the originating session's
-                //    scrollback via Action::EmitSessionNotice — so the
-                //    notice lands on the right SessionContext even if
-                //    the user switched tabs while the RPC was in
-                //    flight (RPC-046 pattern).
+                // 2. Spawn a tokio task that awaits the round-trip
+                //    (RPC-046 pattern). The Ok branch is SILENT — the
+                //    RPC result is an acknowledgement whose numbers are
+                //    measured before DAG injection; the `[compaction]`
+                //    success notice is single-sourced from the
+                //    StreamChunk::CompactionComplete handler in
+                //    dispatch_stream_chunks.rs, which carries the honest
+                //    post-injection numbers. Only the Err branch emits,
+                //    via Action::EmitSessionNotice so the error lands on
+                //    the originating session even after a focus switch.
                 let Some(session_id) = self.agent_view_store.current_session().cloned() else {
                     return;
                 };
@@ -86,11 +86,12 @@ impl App {
                 let backend = self.backend.clone();
                 let action_tx = self.action_tx.clone();
                 let handle = tokio::spawn(async move {
-                    let text = match backend.compact_session(session_id.clone()).await {
-                        Ok(result) => format_compaction_notice(&result),
-                        Err(e) => format!("[error] /compact failed: {e}"),
-                    };
-                    let _ = action_tx.send(Action::EmitSessionNotice(session_id, text));
+                    if let Err(e) = backend.compact_session(session_id.clone()).await {
+                        let _ = action_tx.send(Action::EmitSessionNotice(
+                            session_id,
+                            format!("[error] /compact failed: {e}"),
+                        ));
+                    }
                 });
                 self.pending_tasks.push(handle);
             }
@@ -129,6 +130,16 @@ impl App {
             SlashCommandAction::Loop => {
                 // RPC-059: dispatch_slash_loop.rs::handle_slash_loop_help.
                 self.handle_slash_loop_help();
+            }
+            SlashCommandAction::Continue => {
+                // CONT-002: bare palette pick toggles auto-continue.
+                // Handler body lives in dispatch_slash_continue.rs.
+                self.handle_continue_subcommand(super::continue_parser::ContinueSubcommand::Toggle);
+            }
+            SlashCommandAction::Goal => {
+                // CONT-003: bare palette pick shows the contract state.
+                // Handler body lives in dispatch_slash_goal.rs.
+                self.handle_goal_subcommand(super::goal_parser::GoalSubcommand::Show);
             }
             SlashCommandAction::Isolation => {
                 // RPC-060: routed via try_dispatch_create_session_dialog in app/dispatch.rs.
@@ -236,6 +247,18 @@ impl App {
                 let _ = self.action_tx.send(Action::LoopSubcommandParsed(sub));
                 return;
             }
+            SlashCommandParse::ContinueSubcommand(sub) => {
+                // CONT-002: apply directly in this dispatch tick —
+                // handler body lives in dispatch_slash_continue.rs.
+                self.handle_continue_subcommand(sub);
+                return;
+            }
+            SlashCommandParse::GoalSubcommand(sub) => {
+                // CONT-003: apply directly in this dispatch tick —
+                // handler body lives in dispatch_slash_goal.rs.
+                self.handle_goal_subcommand(sub);
+                return;
+            }
             SlashCommandParse::NotASlashCommand => {}
         }
 
@@ -273,27 +296,4 @@ impl App {
         // snapshot from disk.
         self.handle_input_submitted_persistence(session, text);
     }
-}
-
-/// RPC-047: format a `CompactionResult` into the user-facing scrollback
-/// notice line. Single-sourced so the `/compact` success branch AND the
-/// `StreamChunk::CompactionComplete` handler (in `dispatch_stream_chunks.rs`)
-/// produce byte-identical output.
-///
-/// Example output:
-/// ```text
-/// [compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)
-/// ```
-///
-/// RPC-420: `compression_ratio` is already the PERCENT of tokens removed
-/// [0,100]; render it directly — never `(1.0 - ratio) * 100.0`.
-pub(crate) fn format_compaction_notice(result: &CompactionResult) -> String {
-    let reduction_pct = result.compression_ratio;
-    format!(
-        "[compaction] {reduction:.1}% reduction ({orig} \u{2192} {compacted} tokens, {turns} turns summarised)",
-        reduction = reduction_pct,
-        orig = result.original_tokens,
-        compacted = result.compacted_tokens,
-        turns = result.turns_summarized,
-    )
 }

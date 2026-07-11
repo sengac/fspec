@@ -226,6 +226,8 @@ fn matched_current_model_seeds_cursor_and_enter_selects() {
             assert_eq!(pkey, "anthropic");
             assert_eq!(mid, "claude-sonnet");
         }
-        other => panic!("expected Emit(ModelSelected(Some(..), .., \"claude-sonnet\")), got {other:?}"),
+        other => {
+            panic!("expected Emit(ModelSelected(Some(..), .., \"claude-sonnet\")), got {other:?}")
+        }
     }
 }

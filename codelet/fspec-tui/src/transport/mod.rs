@@ -377,6 +377,52 @@ pub trait FspecBackend: Send + Sync {
         Ok(())
     }
 
+    /// CONT-002: set the session's auto-continue state (`/continue`).
+    /// Both transports delegate to `FspecService::set_continue_state`.
+    /// Default impl is `Ok(())` (silent no-op) so mock/test backends
+    /// compile unchanged — mirrors `set_thinking_level_default`.
+    async fn set_continue_state(
+        &self,
+        session_id: SessionId,
+        enabled: bool,
+        budget: u32,
+    ) -> Result<()> {
+        let _ = (session_id, enabled, budget);
+        Ok(())
+    }
+
+    /// CONT-002: read the session's auto-continue state as
+    /// `(enabled, budget)`. Default impl returns `(false, 10)` (off,
+    /// default budget) so mock/test backends compile unchanged.
+    async fn get_continue_state(&self, session_id: SessionId) -> Result<(bool, u32)> {
+        let _ = session_id;
+        Ok((false, 10))
+    }
+
+    /// CONT-003: set or clear the session's goal chrome state (`/goal`)
+    /// as `(text, verify)`. Both transports delegate to
+    /// `FspecService::set_goal_state`. Default impl is `Ok(())` (silent
+    /// no-op) so mock/test backends compile unchanged.
+    async fn set_goal_state(
+        &self,
+        session_id: SessionId,
+        goal: Option<(String, Option<String>)>,
+    ) -> Result<()> {
+        let _ = (session_id, goal);
+        Ok(())
+    }
+
+    /// CONT-003: read the session's goal chrome state as
+    /// `(text, verify)`. Default impl returns `None` so mock/test
+    /// backends compile unchanged.
+    async fn get_goal_state(
+        &self,
+        session_id: SessionId,
+    ) -> Result<Option<(String, Option<String>)>> {
+        let _ = session_id;
+        Ok(None)
+    }
+
     /// RPC-022: read the session's current role overlay text. Both
     /// transports delegate to `FspecService::get_session_role`.
     /// Returns `Ok(None)` when no role is active OR when no session

@@ -357,7 +357,7 @@ fn scenario_cargo_test_workspace_passes_after_all_rpc_067_changes() {
     // proven the workspace compiles; the runtime assertion below
     // confirms the five regression-test files exist on disk.)
 
-    // @step When I run `cargo test --workspace --tests --no-fail-fast`
+    // @step When I run `cargo test -p codelet-core -p codelet-rpc-types -p codelet-fspec -p codelet-fspec-tui -p codelet-sessions --test no_napi_dependency --no-fail-fast`
     // @step Then the command exits with code 0
     // @step And all five no_napi_dependency.rs test binaries (codelet-core, codelet-rpc-types, codelet-fspec, codelet-fspec-tui, codelet-sessions) report green
     for rel in [

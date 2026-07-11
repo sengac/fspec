@@ -168,7 +168,11 @@ async fn each_reconnect_attempt_updates_the_same_inline_line_in_place() {
 
     // @step Then the same inline line updates in place to show the attempt count
     let lines = reconnect_lines(&app, &sid("s-1"));
-    assert_eq!(lines.len(), 1, "still exactly one reconnect line, got: {lines:?}");
+    assert_eq!(
+        lines.len(),
+        1,
+        "still exactly one reconnect line, got: {lines:?}"
+    );
     assert!(
         lines[0].contains("attempt 3") || lines[0].contains("(attempt 3)"),
         "the inline line must reflect attempt 3 in place, got: {:?}",
@@ -204,7 +208,11 @@ async fn successful_reconnect_replaces_the_inline_line_in_place_with_a_success_m
 
     // @step Then the same inline line is replaced in place with a reconnected success message
     let lines = reconnect_lines(&app, &sid("s-1"));
-    assert_eq!(lines.len(), 1, "still exactly one reconnect line, got: {lines:?}");
+    assert_eq!(
+        lines.len(),
+        1,
+        "still exactly one reconnect line, got: {lines:?}"
+    );
     assert!(
         lines[0].contains("Reconnected"),
         "the inline line must be replaced with a reconnected success message, got: {:?}",
@@ -276,7 +284,11 @@ async fn a_re_drop_during_the_success_window_cancels_the_dismiss_and_reverts_to_
 
     // @step Then the inline line reverts to a reconnecting status
     let reverted = reconnect_lines(&app, &sid("s-1"));
-    assert_eq!(reverted.len(), 1, "still exactly one reconnect line, got: {reverted:?}");
+    assert_eq!(
+        reverted.len(),
+        1,
+        "still exactly one reconnect line, got: {reverted:?}"
+    );
     assert!(
         reverted[0].contains("Reconnecting") && !reverted[0].contains("Reconnected"),
         "the line must revert to a reconnecting status, got: {:?}",
@@ -370,7 +382,9 @@ async fn closing_the_originating_session_before_the_timer_fires_is_a_silent_no_o
 
     // @step Then no panic occurs and no stale reconnect line remains
     assert!(
-        app.agent_view_store().session_context_for(&sid("A")).is_none(),
+        app.agent_view_store()
+            .session_context_for(&sid("A"))
+            .is_none(),
         "session A must remain closed — the clear must be a silent no-op"
     );
     assert_eq!(
@@ -393,7 +407,7 @@ async fn a_re_drop_after_the_originating_session_closed_shows_a_fresh_reconnecti
     // Keep the reconnect re-bootstrap's create_session(None) idempotent (A is
     // already open) so it never spawns a spurious session or steals focus.
     mock.script_create_session(sid("A"));
-    let backend: Arc<dyn FspecBackend> = mock.clone();
+    let backend: Arc<dyn FspecBackend> = mock;
     let mut app = App::new(backend);
     app.dispatch(Action::SessionCreated(sid("A")));
     app.dispatch(Action::Disconnected);

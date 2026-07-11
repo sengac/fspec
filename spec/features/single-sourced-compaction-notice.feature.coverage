@@ -1,0 +1,225 @@
+{
+  "scenarios": [
+    {
+      "name": "/compact Ok emits no immediate success notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "lines": "111-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exactly one compaction notice lands when the CompactionComplete chunk arrives after /compact",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "lines": "148-196",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/compact failure still emits the error notice and no compaction notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "lines": "203-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-compaction emits exactly one notice without a preceding /compact",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs",
+          "lines": "242-273",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/single_sourced_compaction_notice_rpc421.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_slash_commands.rs",
+      "codelet/fspec-tui/src/app/dispatch_stream_chunks.rs"
+    ],
+    "totalLinesCovered": 289
+  }
+}

@@ -610,7 +610,13 @@ impl FspecBackend for WebSocketFspecBackend {
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
         client
             .client()
-            .rename_profile(context::current(), provider_id, old_name, new_name, definition)
+            .rename_profile(
+                context::current(),
+                provider_id,
+                old_name,
+                new_name,
+                definition,
+            )
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
@@ -640,6 +646,60 @@ impl FspecBackend for WebSocketFspecBackend {
             .set_thinking_level_default(context::current(), session_id, level)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // CONT-002: auto-continue state — routed through the matching tarpc
+    // methods (mirrors set_thinking_level in shape).
+    async fn set_continue_state(
+        &self,
+        session_id: SessionId,
+        enabled: bool,
+        budget: u32,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_continue_state(context::current(), session_id, enabled, budget)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_continue_state(&self, session_id: SessionId) -> Result<(bool, u32)> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_continue_state(context::current(), session_id)
+            .await?)
+    }
+
+    // CONT-003: goal chrome state — routed through the matching tarpc
+    // methods (mirrors set_continue_state in shape).
+    async fn set_goal_state(
+        &self,
+        session_id: SessionId,
+        goal: Option<(String, Option<String>)>,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_goal_state(context::current(), session_id, goal)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_goal_state(
+        &self,
+        session_id: SessionId,
+    ) -> Result<Option<(String, Option<String>)>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_goal_state(context::current(), session_id)
+            .await?)
     }
 
     async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {

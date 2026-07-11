@@ -14,6 +14,17 @@ pub(super) async fn run_agent_with_interruption(
     input_queue: &mut InputQueue,
     is_interrupted: Arc<AtomicBool>,
 ) -> Result<()> {
+    // CONT-002: this is a real user message — reset the zero-progress nudge
+    // count, and capture the armed state before the provider-manager borrow.
+    // CONT-003: a goal implies auto-continue (derived mode Goal), and the
+    // goal is synced into the done() registry alongside the armed flag.
+    crate::interactive::auto_continue::reset_for_new_user_turn(session);
+    let continue_armed = session.continue_enabled || session.goal.is_some();
+    let goal_spec = session.goal.as_ref().map(|g| codelet_tools::GoalSpec {
+        text: g.text.clone(),
+        verify: g.verify.clone(),
+    });
+
     // Get provider name before mutable borrow (to satisfy borrow checker)
     let provider_name = session.current_provider_name().to_string();
     let manager = session.provider_manager_mut();
@@ -30,6 +41,13 @@ pub(super) async fn run_agent_with_interruption(
     // but we still need a session_id for API consistency. Tools will fail
     // gracefully with "handler not configured" if invoked.
     let session_id = uuid::Uuid::new_v4();
+
+    // CONT-002: sync the per-session armed registry immediately before
+    // create_rig_agent so done() is registered only while armed.
+    // CONT-003: sync the goal at the same dispatch site so DoneTool's
+    // definition() and Tier 1/2 checks see it.
+    codelet_tools::set_continue_armed(session_id, continue_armed);
+    codelet_tools::set_session_goal(session_id, goal_spec);
 
     // Macro to eliminate code duplication across provider branches (DRY principle)
     // PROV-006: Pass preamble to enable cache_control for API key mode
@@ -60,7 +78,7 @@ pub(super) async fn run_agent_with_interruption(
     // PROV-006: For now pass None - preamble comes from session.messages as user messages
     // Future enhancement: extract CLAUDE.md content as preamble for API key mode
     // PROV-051: get_openai requires session_id for cache optimization headers
-    match provider_name.as_str() {
+    let result = match provider_name.as_str() {
         "claude" => run_with_provider!(get_claude, None),
         "openai" => {
             let provider = manager.get_openai(session_id)?;
@@ -82,5 +100,15 @@ pub(super) async fn run_agent_with_interruption(
         "codex" => run_with_provider!(get_codex, None),
         "gemini" => run_with_provider!(get_gemini, None),
         _ => Err(anyhow::anyhow!("Unknown provider")),
-    }
+    };
+
+    // CONT-002: clear the per-message armed-registry entry at stream end
+    // (the CLI generates a fresh session_id per message; this also clears
+    // any unread done() acceptance for that id).
+    // CONT-003: clear the per-message goal entry too — Session.goal is the
+    // source of truth and is re-synced on the next dispatch.
+    codelet_tools::set_continue_armed(session_id, false);
+    codelet_tools::set_session_goal(session_id, None);
+
+    result
 }

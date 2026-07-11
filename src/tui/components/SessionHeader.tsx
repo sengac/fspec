@@ -128,7 +128,11 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
 
   const percentText =
     compactionReduction !== null
-      ? `[${formatPercentage(contextFillPercentage)}%: COMPACTED ${formatPercentage(Math.abs(compactionReduction))}%]`
+      ? // CMPCT-040: render compactionReduction verbatim — no Math.abs.
+        // Writers clamp to >= 0 (AgentView.tsx sessionCompact write sites
+        // use Math.max(0, ...)); a negative must never be sign-flipped
+        // into a fake positive badge.
+        `[${formatPercentage(contextFillPercentage)}%: COMPACTED ${formatPercentage(compactionReduction)}%]`
       : `[${formatPercentage(contextFillPercentage)}%]`;
 
   // TUI-054: Show thinking level badge only when level > Off

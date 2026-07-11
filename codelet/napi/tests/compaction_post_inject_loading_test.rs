@@ -16,10 +16,10 @@ use std::sync::{Arc, Mutex};
 // Scenario 1: on_injected emits SessionStateChange Running before CompactionComplete
 // ============================================================================
 
-/// Tests the REAL `emit_post_injection_events` function — the same function
-/// called by the on_injected closure in session_manager's agent_loop.
-///
-/// Captures the StreamChunk emission order to verify that
+/// Tests the REAL production emission pipeline. CMPCT-038 moved the
+/// `CompactionComplete` emission from the on_injected closure (which only
+/// knows the summary size) to `apply_pending_dag_and_emit` (which knows the
+/// recalculated post-injection total). The ordering property is unchanged:
 /// SessionStateChange(Running) is emitted BEFORE CompactionComplete.
 #[test]
 fn test_on_injected_callback_emits_running_before_compaction_complete() {
@@ -46,18 +46,13 @@ fn test_on_injected_callback_emits_running_before_compaction_complete() {
         emissions_for_emit.lock().unwrap().push(type_name);
     };
 
-    // Build real inject_summary handler with on_injected that calls
-    // the REAL emit_post_injection_events (same as session_manager production code).
-    let pre_compaction_tokens = Arc::new(AtomicU32::new(50_000));
-    let pre_tokens = pre_compaction_tokens.clone();
+    // CMPCT-038: on_injected is non-emitting in production — it only clears
+    // the compaction progress spinner. Track that it fired.
+    let on_injected_fired = Arc::new(AtomicBool::new(false));
+    let fired = on_injected_fired.clone();
     let on_injected: codelet_napi::inject_summary_handler::OnInjectedCallback =
-        Arc::new(move |injected_tokens: u32| {
-            let original_tokens = pre_tokens.load(Ordering::Acquire);
-            codelet_napi::inject_summary_handler::emit_post_injection_events(
-                &record_emit,
-                original_tokens,
-                injected_tokens,
-            );
+        Arc::new(move |_injected_tokens: u32| {
+            fired.store(true, Ordering::SeqCst);
         });
 
     let handler = codelet_napi::inject_summary_handler::create_handler(
@@ -73,12 +68,37 @@ fn test_on_injected_callback_emits_running_before_compaction_complete() {
         "# D2: Architecture\n- JWT auth\n# D1: Arc\n- Building login".to_string(),
     );
     assert!(result.is_ok(), "inject_summary should succeed");
+    assert!(
+        on_injected_fired.load(Ordering::SeqCst),
+        "on_injected must fire when the DAG is stored"
+    );
+    assert!(
+        emissions.lock().unwrap().is_empty(),
+        "on_injected must NOT emit any chunks (CMPCT-038 — emission happens at the apply site)"
+    );
+
+    // Production then applies the DAG after the stream — same call as the
+    // agent_loop apply site (apply_pending_dag_and_emit).
+    let pre_compaction_tokens = Arc::new(AtomicU32::new(50_000));
+    let provider_manager = codelet_providers::ProviderManager::new()
+        .or_else(|_| codelet_providers::ProviderManager::with_provider("gemini"))
+        .or_else(|_| codelet_providers::ProviderManager::with_provider("zai"))
+        .or_else(|_| codelet_providers::ProviderManager::with_provider("claude"))
+        .expect("Need at least one API key for tests");
+    let mut session = codelet_cli::session::Session::from_provider_manager(provider_manager);
+    let applied = codelet_napi::inject_summary_handler::apply_pending_dag_and_emit(
+        &mut session,
+        &pending_dag,
+        pre_compaction_tokens.load(Ordering::Acquire),
+        &record_emit,
+    );
+    assert!(applied.is_some(), "DAG must be applied");
 
     // @step Then a SessionStateChange with state Running must be emitted before CompactionComplete
     let emitted = emissions.lock().unwrap();
     assert!(
         emitted.len() >= 2,
-        "on_injected must emit at least 2 events, got: {:?}",
+        "apply_pending_dag_and_emit must emit at least 2 events, got: {:?}",
         emitted
     );
 
@@ -108,7 +128,7 @@ fn test_on_injected_callback_emits_running_before_compaction_complete() {
         !emitted
             .iter()
             .any(|e| e.contains("Idle") || e.contains("Done")),
-        "on_injected must NOT emit Idle or Done. Emissions: {:?}",
+        "the emission pipeline must NOT emit Idle or Done. Emissions: {:?}",
         *emitted
     );
 }

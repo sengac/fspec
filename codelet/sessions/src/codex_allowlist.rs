@@ -114,10 +114,7 @@ fn entry_matches(entry: &CodexModelEntry, model_id: &str) -> bool {
         return true;
     }
     match model_id.strip_prefix(&entry.slug) {
-        Some(rest) => rest
-            .strip_prefix('-')
-            .map(is_date_suffix)
-            .unwrap_or(false),
+        Some(rest) => rest.strip_prefix('-').map(is_date_suffix).unwrap_or(false),
         None => false,
     }
 }
@@ -175,7 +172,9 @@ mod tests {
             "the bundled codex-models.json must contain entries",
         );
         assert!(
-            allowlist.iter().any(|e| e.slug == "gpt-5.4" && e.visibility == "list"),
+            allowlist
+                .iter()
+                .any(|e| e.slug == "gpt-5.4" && e.visibility == "list"),
             "bundled allowlist must list gpt-5.4",
         );
     }
@@ -186,8 +185,14 @@ mod tests {
         // exact list slug matches
         assert!(matches_codex_allowlist("gpt-5.4", &allowlist));
         // dated variant of a list slug matches
-        assert!(matches_codex_allowlist("gpt-5.2-codex-2026-03-01", &allowlist));
-        assert!(matches_codex_allowlist("gpt-5.2-codex-20260301", &allowlist));
+        assert!(matches_codex_allowlist(
+            "gpt-5.2-codex-2026-03-01",
+            &allowlist
+        ));
+        assert!(matches_codex_allowlist(
+            "gpt-5.2-codex-20260301",
+            &allowlist
+        ));
         // hidden slug never matches
         assert!(!matches_codex_allowlist("gpt-5.1-codex", &allowlist));
         assert!(!matches_codex_allowlist("gpt-5", &allowlist));

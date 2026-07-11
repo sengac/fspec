@@ -1,13 +1,10 @@
 // Feature: spec/features/add-attachment-rust-port.feature
 //
 // Validates the acceptance criteria for the Rust port of `add-attachment`
-// (RPC-170). Each scenario maps to exactly one #[test] function with @step
-// comments mirroring the Gherkin steps verbatim.
-//
-// Red phase: these tests MUST fail today because
-// `codelet/fspec-core/src/commands/add_attachment.rs` is still a
-// NotYetPorted stub and the dispatcher routes the command through
-// `run_stub` rather than `run_ported`.
+// (RPC-170, hardened by BUG-151). Each scenario maps to exactly one #[test]
+// function with @step comments mirroring the Gherkin steps verbatim. The
+// port is complete: the dispatcher routes `add-attachment` to
+// `codelet/fspec-core/src/commands/add_attachment.rs::run`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -550,4 +547,315 @@ fn validates_md_mermaid_fences_and_accepts_fence_free_markdown() {
         b"# Just markdown\n\nNo diagrams here.\n",
         "copied markdown must be byte-identical"
     );
+}
+
+// ───────────────────────── BUG-151 scenarios ─────────────────────────
+//
+// Feature: spec/features/add-attachment-rust-port.feature (BUG-151
+// scenarios, mirrored from the TS-side work-unit-attachments.feature)
+//
+// BUG-151: add-attachment truncates the source file to 0 bytes when it
+// already lives in spec/attachments/<ID>/. std::fs::copy opens the
+// destination with truncation, so copying a file onto itself destroys it.
+// The fix: canonicalized source==destination guard (register-only path)
+// and the duplicate-registration check moved BEFORE any filesystem
+// mutation.
+
+#[test]
+fn bug_151_self_copy_registers_without_truncating_the_file() {
+    // @step Given I have a work unit "TEST-001"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("TEST-001", "specifying", None));
+
+    // @step And a file "spec/attachments/TEST-001/notes.md" with content "important research"
+    let notes = write_file(
+        tmp.path(),
+        "spec/attachments/TEST-001/notes.md",
+        b"important research",
+    );
+
+    // @step When I add the attachment "spec/attachments/TEST-001/notes.md" to work unit "TEST-001"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "TEST-001", "filePath": "spec/attachments/TEST-001/notes.md"}),
+    ));
+
+    // @step Then the command should succeed
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step And the file "spec/attachments/TEST-001/notes.md" should still contain "important research"
+    let content = fs::read(&notes).expect("read notes.md after add-attachment");
+    assert_eq!(
+        content,
+        b"important research",
+        "BUG-151: self-copy must NOT truncate the file (got {} bytes)",
+        content.len()
+    );
+
+    // @step And the work unit should track "spec/attachments/TEST-001/notes.md" as an attachment
+    let on_disk = read_work_units(tmp.path());
+    let arr = on_disk["workUnits"]["TEST-001"]["attachments"]
+        .as_array()
+        .expect("attachments array");
+    assert_eq!(
+        arr.iter().filter_map(Value::as_str).collect::<Vec<_>>(),
+        vec!["spec/attachments/TEST-001/notes.md"],
+    );
+}
+
+#[test]
+fn bug_151_duplicate_registration_rejected_without_touching_the_file() {
+    // @step Given I have a work unit "TEST-001" with attachment "spec/attachments/TEST-001/notes.md" containing "important research"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &work_units_with(
+            "TEST-001",
+            "specifying",
+            Some(&["spec/attachments/TEST-001/notes.md"]),
+        ),
+    );
+    let notes = write_file(
+        tmp.path(),
+        "spec/attachments/TEST-001/notes.md",
+        b"important research",
+    );
+    let json_before = fs::read(work_units_path(tmp.path())).expect("read pre");
+
+    // @step When I add the attachment "spec/attachments/TEST-001/notes.md" to work unit "TEST-001" again
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "TEST-001", "filePath": "spec/attachments/TEST-001/notes.md"}),
+    ));
+
+    // @step Then the command should fail with an "already exists" error
+    assert!(!result.success, "expected error; got {result:?}");
+    let msg = result.error.as_ref().expect("error");
+    assert!(
+        msg.contains("Attachment 'notes.md' already exists for work unit 'TEST-001'"),
+        "error: {msg}"
+    );
+
+    // @step And the file "spec/attachments/TEST-001/notes.md" should still contain "important research"
+    let content = fs::read(&notes).expect("read notes.md after duplicate add");
+    assert_eq!(
+        content,
+        b"important research",
+        "BUG-151: duplicate registration must NOT touch the file (got {} bytes)",
+        content.len()
+    );
+
+    // work-units.json byte-equal to its pre-call state
+    let json_after = fs::read(work_units_path(tmp.path())).expect("read post");
+    assert_eq!(json_before, json_after, "work-units.json must NOT change");
+}
+
+#[test]
+fn bug_151_attachments_root_source_still_moved_into_work_unit_directory() {
+    // @step Given I have a work unit "TEST-001"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("TEST-001", "specifying", None));
+
+    // @step And a file "spec/attachments/analysis.md" with content "root analysis"
+    write_file(tmp.path(), "spec/attachments/analysis.md", b"root analysis");
+
+    // @step When I add the attachment "spec/attachments/analysis.md" to work unit "TEST-001"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "TEST-001", "filePath": "spec/attachments/analysis.md"}),
+    ));
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step Then the file should exist at "spec/attachments/TEST-001/analysis.md" with content "root analysis"
+    let moved = tmp.path().join("spec/attachments/TEST-001/analysis.md");
+    assert_eq!(
+        fs::read(&moved).expect("read moved file"),
+        b"root analysis",
+        "BUG-055: root file must be copied into the per-WU directory"
+    );
+
+    // @step And the file "spec/attachments/analysis.md" should no longer exist
+    assert!(
+        !tmp.path().join("spec/attachments/analysis.md").exists(),
+        "BUG-055: root copy must be removed"
+    );
+
+    // @step And the work unit should track "spec/attachments/TEST-001/analysis.md" as an attachment
+    let on_disk = read_work_units(tmp.path());
+    let arr = on_disk["workUnits"]["TEST-001"]["attachments"]
+        .as_array()
+        .expect("attachments array");
+    assert_eq!(
+        arr.iter().filter_map(Value::as_str).collect::<Vec<_>>(),
+        vec!["spec/attachments/TEST-001/analysis.md"],
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn bug_151_symlink_alias_of_destination_does_not_truncate_it() {
+    // @step Given I have a work unit "TEST-001"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("TEST-001", "specifying", None));
+
+    // @step And a file "spec/attachments/TEST-001/notes.md" with content "important research"
+    let notes = write_file(
+        tmp.path(),
+        "spec/attachments/TEST-001/notes.md",
+        b"important research",
+    );
+
+    // @step And a symlink outside the attachments directory pointing at "spec/attachments/TEST-001/notes.md"
+    let alias_dir = tmp.path().join("alias");
+    fs::create_dir_all(&alias_dir).expect("mkdir alias");
+    let alias = alias_dir.join("notes.md");
+    std::os::unix::fs::symlink(&notes, &alias).expect("create symlink");
+
+    // @step When I add the attachment via the symlink path to work unit "TEST-001"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "TEST-001", "filePath": "alias/notes.md"}),
+    ));
+    assert!(result.success, "expected success; got {result:?}");
+
+    // @step Then the file "spec/attachments/TEST-001/notes.md" should still contain "important research"
+    let content = fs::read(&notes).expect("read notes.md after symlink add");
+    assert_eq!(
+        content,
+        b"important research",
+        "BUG-151: symlink alias must NOT truncate the destination (got {} bytes)",
+        content.len()
+    );
+
+    // @step And the work unit should track "spec/attachments/TEST-001/notes.md" as an attachment
+    let on_disk = read_work_units(tmp.path());
+    let arr = on_disk["workUnits"]["TEST-001"]["attachments"]
+        .as_array()
+        .expect("attachments array");
+    assert_eq!(
+        arr.iter().filter_map(Value::as_str).collect::<Vec<_>>(),
+        vec!["spec/attachments/TEST-001/notes.md"],
+    );
+}
+
+#[test]
+#[allow(clippy::permissions_set_readonly_false)]
+fn bug_151_read_only_self_source_registers_without_attempting_a_copy() {
+    // @step Given I have a work unit "TEST-001"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(tmp.path(), &work_units_with("TEST-001", "specifying", None));
+
+    // @step And a read-only file "spec/attachments/TEST-001/notes.md" with content "important research"
+    let notes = write_file(
+        tmp.path(),
+        "spec/attachments/TEST-001/notes.md",
+        b"important research",
+    );
+    let mut perms = fs::metadata(&notes).expect("metadata").permissions();
+    perms.set_readonly(true);
+    fs::set_permissions(&notes, perms).expect("set read-only");
+    assert!(
+        fs::metadata(&notes)
+            .expect("metadata")
+            .permissions()
+            .readonly(),
+        "precondition: notes.md must be read-only"
+    );
+
+    // @step When I add the attachment "spec/attachments/TEST-001/notes.md" to work unit "TEST-001"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "TEST-001", "filePath": "spec/attachments/TEST-001/notes.md"}),
+    ));
+
+    // @step Then the command should succeed
+    // Meaningful guard proof: an attempted std::fs::copy onto the read-only
+    // self would fail with a permission error (dest opened for write), so
+    // success here proves the register-only path skipped the copy entirely.
+    assert!(
+        result.success,
+        "register-only path must not attempt a copy onto the read-only self; got {result:?}"
+    );
+
+    // @step And the file "spec/attachments/TEST-001/notes.md" should still contain "important research"
+    let content = fs::read(&notes).expect("read notes.md after add-attachment");
+    assert_eq!(
+        content,
+        b"important research",
+        "BUG-151: read-only self-source must NOT be truncated (got {} bytes)",
+        content.len()
+    );
+    assert!(
+        fs::metadata(&notes)
+            .expect("metadata")
+            .permissions()
+            .readonly(),
+        "file permissions must be untouched (still read-only)"
+    );
+
+    // @step And the work unit should track "spec/attachments/TEST-001/notes.md" as an attachment
+    let on_disk = read_work_units(tmp.path());
+    let arr = on_disk["workUnits"]["TEST-001"]["attachments"]
+        .as_array()
+        .expect("attachments array");
+    assert_eq!(
+        arr.iter().filter_map(Value::as_str).collect::<Vec<_>>(),
+        vec!["spec/attachments/TEST-001/notes.md"],
+    );
+
+    // Restore writability so TempDir cleanup succeeds on all platforms.
+    let mut perms = fs::metadata(&notes).expect("metadata").permissions();
+    perms.set_readonly(false);
+    fs::set_permissions(&notes, perms).expect("restore writable");
+}
+
+#[test]
+fn bug_151_duplicate_from_different_source_does_not_overwrite_registered_attachment() {
+    // @step Given I have a work unit "TEST-001" with attachment "spec/attachments/TEST-001/notes.md" containing "important research"
+    let tmp = TempDir::new().expect("tempdir");
+    write_work_units(
+        tmp.path(),
+        &work_units_with(
+            "TEST-001",
+            "specifying",
+            Some(&["spec/attachments/TEST-001/notes.md"]),
+        ),
+    );
+    let notes = write_file(
+        tmp.path(),
+        "spec/attachments/TEST-001/notes.md",
+        b"important research",
+    );
+    let json_before = fs::read(work_units_path(tmp.path())).expect("read pre");
+
+    // @step And a file "other/notes.md" with content "different content"
+    write_file(tmp.path(), "other/notes.md", b"different content");
+
+    // @step When I add the attachment "other/notes.md" to work unit "TEST-001"
+    let result = dispatch_command(req(
+        tmp.path(),
+        json!({"workUnitId": "TEST-001", "filePath": "other/notes.md"}),
+    ));
+
+    // @step Then the command should fail with an "already exists" error
+    assert!(!result.success, "expected error; got {result:?}");
+    let msg = result.error.as_ref().expect("error");
+    assert!(
+        msg.contains("Attachment 'notes.md' already exists for work unit 'TEST-001'"),
+        "error: {msg}"
+    );
+
+    // @step And the file "spec/attachments/TEST-001/notes.md" should still contain "important research"
+    // (i.e. the registered attachment was NOT overwritten by "different content")
+    let content = fs::read(&notes).expect("read notes.md after duplicate add");
+    assert_eq!(
+        content,
+        b"important research",
+        "BUG-151: duplicate guard must fire BEFORE the copy — the registered \
+         attachment must NOT be overwritten by the different source"
+    );
+
+    // @step And the work unit's registered attachments must be unchanged on disk
+    let json_after = fs::read(work_units_path(tmp.path())).expect("read post");
+    assert_eq!(json_before, json_after, "work-units.json must NOT change");
 }

@@ -137,7 +137,9 @@ async fn disconnect_pushes_inline_reconnecting_line_not_the_modal() {
     let backend: Arc<dyn FspecBackend> = Arc::new(MockBackend::new());
     let (mut app, _terminal) = test_app(backend);
     // RPC-416: the inline notice targets the FOCUSED session.
-    app.dispatch(Action::SessionCreated(codelet_rpc_types::SessionId::new("s-1")));
+    app.dispatch(Action::SessionCreated(codelet_rpc_types::SessionId::new(
+        "s-1",
+    )));
 
     // @step When the action loop processes Action::Disconnected
     app.send_action(Action::Disconnected)

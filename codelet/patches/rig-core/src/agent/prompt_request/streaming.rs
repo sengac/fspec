@@ -761,6 +761,14 @@ where
                     }
                 }
 
+                // CONT-001: Per-turn tool activity, captured BEFORE the buffers are
+                // consumed below. The chunk-order-sensitive `did_call_tool` flag is
+                // reset by trailing Text/Reasoning chunks (lines ~564/719/723), so a
+                // turn that executed tools but ended with stop_reason "stop"/"end_turn"
+                // and trailing text would otherwise exit the loop with unanswered tool
+                // results (failure mode F).
+                let turn_called_tools = !tool_calls.is_empty();
+
                 // Add (parallel) tool calls to chat history
                 // When thinking is enabled, reasoning blocks MUST come before tool_use blocks
                 if !tool_calls.is_empty() {
@@ -799,7 +807,12 @@ where
                     None => unreachable!("Chat history should never be empty at this point"),
                 };
 
-                if !did_call_tool {
+                // CONT-001: Exit only when the turn produced NO tool calls. A turn
+                // that executed tools must always continue so the tool results are
+                // fed back to the model, regardless of last_stop_reason and trailing
+                // Text/Reasoning chunks. The max_depth guard at the top of the loop
+                // still bounds continuation.
+                if !did_call_tool && !turn_called_tools {
                     let current_span = tracing::Span::current();
                     current_span.record("gen_ai.usage.input_tokens", aggregated_usage.input_tokens);
                     current_span.record("gen_ai.usage.output_tokens", aggregated_usage.output_tokens);

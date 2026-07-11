@@ -123,13 +123,19 @@ where
         .token_tracker
         .update_display_only(&turn_usage, current_display.output_tokens);
 
-    let continuation_token_state = Arc::new(Mutex::new(TokenState {
-        input_tokens: session.token_tracker.input_tokens,
-        cache_read_input_tokens: current_display.cache_read_tokens,
-        cache_creation_input_tokens: current_display.cache_creation_tokens,
-        output_tokens: current_display.output_tokens,
-        compaction_needed: false,
-    }));
+    // CMPCT-042 invariant: `session.token_tracker.input_tokens` is
+    // cache-INCLUSIVE after `update_display_only` above (PROV-001), so this
+    // TRACKER-BASIS seed must route through the audited
+    // `from_cache_inclusive_total` constructor which zeroes the cache fields
+    // ('Don't double count', mirroring the turn-start seed in
+    // stream_loop.rs). Feeding the display's non-zero cache fields alongside
+    // the tracker total would inflate `TokenState::total()` and let the
+    // CompactionHook trigger compaction early; pinned by
+    // cmpct042_gemini_continuation_token_state_test.rs.
+    let continuation_token_state = Arc::new(Mutex::new(TokenState::from_cache_inclusive_total(
+        session.token_tracker.input_tokens,
+        current_display.output_tokens,
+    )));
     let continuation_hook = CompactionHook::new(Arc::clone(&continuation_token_state), threshold);
 
     debug!(
@@ -149,6 +155,12 @@ where
     let mut continuation_text = String::new();
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
+    // CMPCT-041 invariant: this is a DISPLAY-BASIS re-seed — `current_display`
+    // is a TokenDisplayUpdate snapshot carrying raw input + separate cache
+    // fields, so the raw `::new` constructor is correct here. It MUST NOT be
+    // fed tracker cache-INCLUSIVE totals (those go through
+    // `from_cache_inclusive_total`); pinned by the wiring guard in
+    // cmpct041_seed_cache_double_count_test.rs.
     let mut display = StreamingTokenDisplay::new(
         current_display.input_tokens,
         current_display.output_tokens,
@@ -328,6 +340,12 @@ where
 
                     tool_calls_buffer.clear();
                     *last_tool_name = None;
+                    // CMPCT-041 invariant: DISPLAY-BASIS re-seed from the
+                    // `cont_final` TokenDisplayUpdate snapshot (raw input +
+                    // separate cache fields) — the raw `::new` is correct
+                    // here and MUST NOT be fed tracker cache-INCLUSIVE
+                    // totals; pinned by the wiring guard in
+                    // cmpct041_seed_cache_double_count_test.rs.
                     *display = StreamingTokenDisplay::new(
                         cont_final.input_tokens,
                         cont_final.output_tokens,

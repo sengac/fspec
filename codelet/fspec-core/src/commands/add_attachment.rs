@@ -15,17 +15,30 @@
 //! 3. Validate the source file exists. The error uses the **ORIGINAL
 //!    caller-supplied path** (TS line 41), not any canonicalised form:
 //!    `Source file '<filePath>' does not exist`.
-//! 4. `mkdir -p spec/attachments/<workUnitId>/`.
-//! 5. Copy source → dest (`spec/attachments/<workUnitId>/<basename>`).
-//! 6. **BUG-055 dedup**: if the source file's parent directory equals
-//!    `<project_root>/spec/attachments`, delete the source after copy.
-//! 7. Compute the project-relative path of the dest. Always rendered with
-//!    forward slashes as `spec/attachments/<workUnitId>/<basename>`.
-//! 8. Initialise the attachments array if absent; check for duplicate
-//!    relativePath — error: `Attachment '<basename>' already exists for
-//!    work unit '<workUnitId>'`. Note: matches TS, the duplicate check
-//!    runs **AFTER** the copy. Subsequent calls with the same source will
-//!    over-write the destination but leave the work-units.json unchanged.
+//! 4. Compute the project-relative dest path. Always rendered with forward
+//!    slashes as `spec/attachments/<workUnitId>/<basename>`.
+//! 5. **BUG-151 duplicate guard (BEFORE any filesystem mutation)**: if the
+//!    relativePath is already registered, error: `Attachment '<basename>'
+//!    already exists for work unit '<workUnitId>'` — without creating the
+//!    directory, copying, or unlinking anything. The pre-existing file and
+//!    work-units.json are left byte-identical. (Matches the fixed TS
+//!    ordering; the original TS/Rust ports checked AFTER the copy, which
+//!    destroyed the destination on duplicate calls.)
+//! 6. `mkdir -p spec/attachments/<workUnitId>/`.
+//! 7. **BUG-151 self-copy guard**: canonicalise source and destination
+//!    (`std::fs::canonicalize`, defeating symlink aliasing) and compare.
+//!    The fallback is both-or-neither (TS parity): if EITHER side fails to
+//!    canonicalise, the lexically-resolved forms of BOTH are compared —
+//!    a canonical form is never compared to a lexical one. When the source
+//!    IS the destination (it already lives in the per-work-unit dir, or is
+//!    a symlink alias of it), the copy is skipped entirely — register-only,
+//!    no copy, no unlink. `std::fs::copy` truncates the destination on
+//!    open, so an unguarded self-copy destroys the file (0 bytes).
+//! 8. Otherwise copy source → dest, then **BUG-055 dedup**: if the source
+//!    file's parent directory equals `<project_root>/spec/attachments`,
+//!    delete the source after copy. An unlink failure is propagated as an
+//!    error (TS parity — `await unlink(...)` rejects). This unlink can
+//!    never fire on the register-only path (step 7 returns before it).
 //! 9. Push the relativePath onto attachments.
 //! 10. Bump `updatedAt`, set `meta.lastUpdated` if `meta` exists.
 //! 11. Single `write_json_atomic` write at the end.
@@ -141,7 +154,33 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         })?
         .to_string();
 
-    // Create per-WU attachments directory and copy.
+    // Project-relative path with forward slashes, matching the TS output.
+    let relative_path = format!("spec/attachments/{}/{}", args.work_unit_id, file_name);
+
+    // BUG-151: duplicate-registration check BEFORE any filesystem mutation,
+    // so a duplicate add-attachment errors without touching the file. The
+    // pre-fix ordering (check after copy) over-wrote — and on a self-copy
+    // TRUNCATED — the destination before erroring.
+    let already_registered = data
+        .work_units
+        .get(&args.work_unit_id)
+        .and_then(|wu| wu.extra.get("attachments"))
+        .and_then(Value::as_array)
+        .is_some_and(|arr| {
+            arr.iter()
+                .any(|v| v.as_str() == Some(relative_path.as_str()))
+        });
+    if already_registered {
+        return Err(FspecCoreError::InvalidArgs {
+            command: "add-attachment",
+            reason: format!(
+                "Attachment '{}' already exists for work unit '{}'",
+                file_name, args.work_unit_id
+            ),
+        });
+    }
+
+    // Create per-WU attachments directory.
     let attachments_dir = project_root
         .join("spec")
         .join("attachments")
@@ -154,31 +193,58 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
         ),
     })?;
     let dest_path = attachments_dir.join(&file_name);
-    std::fs::copy(&source_abs, &dest_path).map_err(|e| FspecCoreError::InvalidArgs {
-        command: "add-attachment",
-        reason: format!(
-            "failed to copy {} → {}: {e}",
-            source_abs.display(),
-            dest_path.display()
-        ),
-    })?;
 
-    // BUG-055: if the source lives DIRECTLY in spec/attachments/ (i.e. its
-    // parent equals project_root/spec/attachments), unlink the source so
-    // it isn't duplicated. Canonicalise both sides for a robust equality
-    // check; fall back to the absolute parent when canonicalisation fails
-    // (e.g. tests with symlink-quirky tempdirs).
-    let attachments_root = project_root.join("spec").join("attachments");
-    let src_parent_canon = source_abs
-        .parent()
-        .and_then(|p| std::fs::canonicalize(p).ok());
-    let att_root_canon = std::fs::canonicalize(&attachments_root).ok();
-    if src_parent_canon.is_some() && src_parent_canon == att_root_canon {
-        let _ = std::fs::remove_file(&source_abs);
+    // BUG-151: guard source == destination. Canonicalise both sides
+    // (std::fs::canonicalize resolves symlink aliases). The fallback is
+    // both-or-neither (TS parity, add-attachment.ts): if EITHER side fails
+    // to canonicalise, compare the lexically-resolved absolute forms of
+    // BOTH — never a canonical form against a lexical one, which could
+    // yield a false "not self-copy" and re-introduce the truncation. When
+    // the source IS the destination, register-only: no copy, no unlink —
+    // std::fs::copy truncates the destination on open, so an unguarded
+    // self-copy destroys the file.
+    let (canonical_source, canonical_dest) = match (
+        std::fs::canonicalize(&source_abs),
+        std::fs::canonicalize(&attachments_dir),
+    ) {
+        (Ok(src), Ok(dest_dir)) => (src, dest_dir.join(&file_name)),
+        _ => (source_abs.clone(), dest_path.clone()),
+    };
+    let is_self_copy = canonical_source == canonical_dest;
+
+    if !is_self_copy {
+        std::fs::copy(&source_abs, &dest_path).map_err(|e| FspecCoreError::InvalidArgs {
+            command: "add-attachment",
+            reason: format!(
+                "failed to copy {} → {}: {e}",
+                source_abs.display(),
+                dest_path.display()
+            ),
+        })?;
+
+        // BUG-055: if the source lives DIRECTLY in spec/attachments/ (i.e. its
+        // parent equals project_root/spec/attachments), unlink the source so
+        // it isn't duplicated. Canonicalise both sides for a robust equality
+        // check; fall back to the absolute parent when canonicalisation fails
+        // (e.g. tests with symlink-quirky tempdirs). Never runs on the
+        // register-only (self-copy) path above.
+        let attachments_root = project_root.join("spec").join("attachments");
+        let src_parent_canon = source_abs
+            .parent()
+            .and_then(|p| std::fs::canonicalize(p).ok());
+        let att_root_canon = std::fs::canonicalize(&attachments_root).ok();
+        if src_parent_canon.is_some() && src_parent_canon == att_root_canon {
+            // TS parity: `await unlink(resolvedPath)` rejects on failure, so
+            // the Rust port propagates the error rather than swallowing it.
+            std::fs::remove_file(&source_abs).map_err(|e| FspecCoreError::InvalidArgs {
+                command: "add-attachment",
+                reason: format!(
+                    "failed to remove source {} after BUG-055 dedup move: {e}",
+                    source_abs.display()
+                ),
+            })?;
+        }
     }
-
-    // Project-relative path with forward slashes, matching the TS output.
-    let relative_path = format!("spec/attachments/{}/{}", args.work_unit_id, file_name);
 
     // Mutate the attachments array.
     {
@@ -208,23 +274,9 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             None => unreachable!("just coerced to array"),
         };
 
-        // Duplicate guard (after copy, per TS). On error we do NOT write
-        // the JSON back — work-units.json is byte-equal to its pre-call
-        // state. The destination file on disk MAY have been over-written;
-        // that mirrors TS behaviour.
-        if arr
-            .iter()
-            .any(|v| v.as_str() == Some(relative_path.as_str()))
-        {
-            return Err(FspecCoreError::InvalidArgs {
-                command: "add-attachment",
-                reason: format!(
-                    "Attachment '{}' already exists for work unit '{}'",
-                    file_name, args.work_unit_id
-                ),
-            });
-        }
-
+        // BUG-151: the duplicate guard now runs BEFORE any filesystem
+        // mutation (see above) — by the time we get here the relativePath
+        // is guaranteed not to be registered yet.
         arr.push(Value::String(relative_path.clone()));
         wu.updated_at = iso8601_now();
     }

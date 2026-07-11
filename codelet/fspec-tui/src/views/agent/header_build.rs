@@ -158,11 +158,12 @@ pub(super) fn build_right_line(
         Style::default().fg(Color::DarkGray),
     ));
     let pct_text = match compaction_reduction {
-        // `.abs()` is TS parity only (SessionHeader.tsx uses Math.abs) —
-        // purely defensive. The reduction is `compression_ratio` rounded,
-        // already the percent of tokens removed [0,100] (RPC-420), so it
-        // is never legitimately negative.
-        Some(r) => format!("[{}%: COMPACTED {}%]", tokens.context_fill_pct, r.abs()),
+        // CMPCT-040: render the stored reduction verbatim — no `.abs()`.
+        // The single writer (dispatch_stream_chunks.rs CompactionComplete
+        // handler) clamps to >= 0, so the display layer needs no defense;
+        // if a negative ever slipped through it must be shown honestly,
+        // never sign-flipped into a fake positive badge.
+        Some(r) => format!("[{}%: COMPACTED {r}%]", tokens.context_fill_pct),
         None => format!("[{}%]", tokens.context_fill_pct),
     };
     spans.push(Span::styled(

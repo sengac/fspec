@@ -104,6 +104,11 @@ impl CopilotProvider {
             .tool(RequestUserInputTool::new(session_id))
             .tool(ScheduleTool::new(session_id));
 
+        // CONT-002: done() is registered only while auto-continue is armed
+        if codelet_tools::is_continue_armed(session_id) {
+            agent_builder = agent_builder.tool(codelet_tools::DoneTool::new(session_id));
+        }
+
         // Match OpenAIProvider's BUG-120 behaviour: always prepend fspec
         // guidance so the agent loop has a stable system prompt contract
         // regardless of whether the caller supplied a role preamble.

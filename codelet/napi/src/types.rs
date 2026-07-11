@@ -355,6 +355,18 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
             "type": "debugStateChange",
             "enabled": enabled,
         }),
+        StreamChunk::ContinueStateUpdate { continue_state } => json!({
+            "type": "continueStateUpdate",
+            "continueState": {
+                "enabled": continue_state.enabled,
+                "budget": continue_state.budget,
+                "nudgesUsed": continue_state.nudges_used,
+                "goalActive": continue_state.goal_active,
+                "effectiveBudget": continue_state.effective_budget,
+                "goalCleared": continue_state.goal_cleared,
+                "doneRejections": continue_state.done_rejections,
+            },
+        }),
     }
 }
 

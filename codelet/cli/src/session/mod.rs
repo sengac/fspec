@@ -59,6 +59,36 @@ pub struct Session {
     /// PROV-041: Current session-level thinking level for progressive degradation.
     /// Starts at High and downgrades on repeated cross-turn exhaustion events.
     pub session_thinking_level: codelet_tools::facade::ThinkingLevel,
+
+    /// CONT-002: /continue toggle (auto-continue mode). Persisted across turns.
+    pub continue_enabled: bool,
+
+    /// CONT-002: Max zero-progress nudges per user-turn. Set via `/continue <n>`.
+    /// Default DEFAULT_CONTINUE_BUDGET (10).
+    pub continue_budget: u32,
+
+    /// CONT-002: Zero-progress nudges consumed this user-turn. Reset on each
+    /// real user message.
+    pub continue_nudges_used: u32,
+
+    /// CONT-003: Active goal (Some ⟺ effective mode Goal). Independent of
+    /// `continue_enabled` — mode is derived, never stored.
+    pub goal: Option<SessionGoal>,
+
+    /// CONT-003: done() rejections recorded for the current goal. Resets when
+    /// the goal is set/replaced/cleared — NOT on nudges.
+    pub done_rejections: u32,
+}
+
+/// CONT-003: the user-set goal driving conditional done() acceptance.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SessionGoal {
+    /// The goal text.
+    pub text: String,
+    /// Optional shell command; exit 0 = verified (Tier 2).
+    pub verify: Option<String>,
+    /// When the goal was set.
+    pub set_at: std::time::SystemTime,
 }
 
 impl Session {
@@ -84,6 +114,11 @@ impl Session {
             annotations: std::collections::HashMap::new(),
             thinking_exhaustion_cross_turn_count: 0,
             session_thinking_level: codelet_tools::facade::ThinkingLevel::High,
+            continue_enabled: false,
+            continue_budget: crate::interactive::auto_continue::DEFAULT_CONTINUE_BUDGET,
+            continue_nudges_used: 0,
+            goal: None,
+            done_rejections: 0,
         })
     }
 
@@ -105,6 +140,11 @@ impl Session {
             annotations: std::collections::HashMap::new(),
             thinking_exhaustion_cross_turn_count: 0,
             session_thinking_level: codelet_tools::facade::ThinkingLevel::High,
+            continue_enabled: false,
+            continue_budget: crate::interactive::auto_continue::DEFAULT_CONTINUE_BUDGET,
+            continue_nudges_used: 0,
+            goal: None,
+            done_rejections: 0,
         }
     }
 
@@ -169,6 +209,53 @@ impl Session {
     pub fn add_system_reminder(&mut self, reminder_type: SystemReminderType, content: &str) {
         // Use existing add_system_reminder function which implements deduplication
         self.messages = add_system_reminder(&self.messages, reminder_type, content);
+    }
+
+    /// CONT-003: Set or replace the session goal.
+    ///
+    /// Resets done_rejections and continue_nudges_used (doc §3), and injects
+    /// the compaction-proof CompletionContract system reminder carrying the
+    /// goal text, verify command (if any), and the done() evidence
+    /// requirement.
+    pub fn set_goal(&mut self, text: &str, verify: Option<&str>) {
+        self.goal = Some(SessionGoal {
+            text: text.to_string(),
+            verify: verify.map(str::to_string),
+            set_at: std::time::SystemTime::now(),
+        });
+        self.done_rejections = 0;
+        self.continue_nudges_used = 0;
+        self.refresh_goal_reminder();
+    }
+
+    /// CONT-003: Drop the session goal (fall back to the continue toggle).
+    ///
+    /// Resets done_rejections and removes the CompletionContract system
+    /// reminder from the conversation.
+    pub fn clear_goal(&mut self) {
+        self.goal = None;
+        self.done_rejections = 0;
+        self.messages = system_reminders::remove_system_reminders_of_type(
+            &self.messages,
+            SystemReminderType::CompletionContract,
+        );
+    }
+
+    /// CONT-003: (Re-)inject the CompletionContract reminder from the current
+    /// goal state (also used when the verify command is attached/replaced).
+    pub fn refresh_goal_reminder(&mut self) {
+        if let Some(goal) = &self.goal {
+            let verify_line = match &goal.verify {
+                Some(cmd) => format!("\nVerify command: {cmd}"),
+                None => String::new(),
+            };
+            let content = format!(
+                "Active goal: {}{}\ndone() requires evidence and a goal_assessment \
+                 demonstrating this goal is met.",
+                goal.text, verify_line
+            );
+            self.add_system_reminder(SystemReminderType::CompletionContract, &content);
+        }
     }
 
     /// Inject context reminders at session start (CLI-016)

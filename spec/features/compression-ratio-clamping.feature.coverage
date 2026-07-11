@@ -1,0 +1,174 @@
+{
+  "scenarios": [
+    {
+      "name": "Helper clamps a context-growth ratio to zero",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "55-74",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive_helpers.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Helper reports a normal reduction unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "81-94",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive_helpers.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Helper returns zero when the original token count is zero",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "101-114",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive_helpers.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Helper returns zero when compacted tokens equal original tokens",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "121-134",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive_helpers.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "compact_session RPC result never ships a negative ratio when context grows",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "147-186",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI session_compact result never ships a negative ratio when context grows",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/cmpct039_ratio_clamp_test.rs",
+          "lines": "199-236",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_bindings.rs",
+              "lines": [
+                3131,
+                3132,
+                3133,
+                3134,
+                3135,
+                3136,
+                3137,
+                3138,
+                3139,
+                3140,
+                3141,
+                3142,
+                3143,
+                3144,
+                3145,
+                3146
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/cmpct039_ratio_clamp_test.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive_helpers.rs",
+      "codelet/sessions/src/handle_impl.rs",
+      "codelet/napi/src/session_bindings.rs"
+    ],
+    "totalLinesCovered": 200
+  }
+}

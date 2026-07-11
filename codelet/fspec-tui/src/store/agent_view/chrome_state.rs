@@ -16,6 +16,22 @@ use codelet_rpc_types::{ModelInfo, SessionId, StreamChunk, ThinkingLevel, Worksp
 
 use super::{AgentViewStore, TokenState};
 
+/// CONT-007: live continue/goal counter snapshot for the footer
+/// indicator, folded from `StreamChunk::ContinueStateUpdate`. Cleared by
+/// the `/continue` and `/goal` dispatches (their state changes never flow
+/// through an active stream) — the next TurnStart emission re-syncs it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ContinueLiveState {
+    pub nudges_used: u32,
+    /// Display budget: `max(explicit, 15)` while a goal is active,
+    /// the explicit `/continue` budget otherwise.
+    pub effective_budget: u32,
+    pub goal_active: bool,
+    /// CONT-008: done() rejection count from the live snapshot — drives
+    /// the bare `/goal` "rejections: n" display (no more hard-coded 0).
+    pub done_rejections: u32,
+}
+
 impl AgentViewStore {
     pub fn model_info_for(&self, session_id: &SessionId) -> Option<&ModelInfo> {
         self.model_info_by_session.get(session_id)
@@ -46,6 +62,69 @@ impl AgentViewStore {
 
     pub fn set_thinking_level(&mut self, session_id: SessionId, level: ThinkingLevel) {
         self.thinking_level_by_session.insert(session_id, level);
+    }
+
+    // ── CONT-002 per-session auto-continue accessors ───────────────────
+
+    /// Cached `(enabled, budget)` auto-continue state for the session.
+    /// Defaults to `(false, 10)` (off, default budget) when never set.
+    pub fn continue_state_for(&self, session_id: &SessionId) -> (bool, u32) {
+        self.continue_state_by_session
+            .get(session_id)
+            .copied()
+            .unwrap_or((false, 10))
+    }
+
+    /// Cache the `(enabled, budget)` auto-continue state after a
+    /// `/continue` apply or a backend load.
+    pub fn set_continue_state(&mut self, session_id: SessionId, enabled: bool, budget: u32) {
+        self.continue_state_by_session
+            .insert(session_id, (enabled, budget));
+    }
+
+    // ── CONT-007 per-session live counter accessors ─────────────────────
+
+    /// Live counter snapshot for the session, if a stream has pushed one
+    /// since the last `/continue` / `/goal` change.
+    pub fn continue_live_for(&self, session_id: &SessionId) -> Option<ContinueLiveState> {
+        self.continue_live_by_session.get(session_id).copied()
+    }
+
+    /// Fold a `ContinueStateUpdate` chunk's live counter into the cache.
+    pub fn set_continue_live(&mut self, session_id: SessionId, live: ContinueLiveState) {
+        self.continue_live_by_session.insert(session_id, live);
+    }
+
+    /// Drop the (now stale) live counter after a `/continue` or `/goal`
+    /// apply — the footer falls back to the cached `(enabled, budget)`
+    /// pair with 0 nudges until the next TurnStart emission.
+    pub fn clear_continue_live(&mut self, session_id: &SessionId) {
+        self.continue_live_by_session.remove(session_id);
+    }
+
+    // ── CONT-003 per-session goal accessors ─────────────────────────────
+
+    /// Cached `(text, verify)` goal state for the session. `None` when no
+    /// goal is active.
+    pub fn goal_state_for(&self, session_id: &SessionId) -> Option<(String, Option<String>)> {
+        self.goal_state_by_session.get(session_id).cloned()
+    }
+
+    /// Cache (or clear, with `None`) the goal state after a `/goal` apply
+    /// or a backend load.
+    pub fn set_goal_state(
+        &mut self,
+        session_id: SessionId,
+        goal: Option<(String, Option<String>)>,
+    ) {
+        match goal {
+            Some(state) => {
+                self.goal_state_by_session.insert(session_id, state);
+            }
+            None => {
+                self.goal_state_by_session.remove(&session_id);
+            }
+        }
     }
 
     pub fn token_state_for(&self, session_id: &SessionId) -> Option<&TokenState> {

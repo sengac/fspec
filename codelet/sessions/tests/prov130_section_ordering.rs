@@ -170,8 +170,7 @@ async fn local_profile_section_precedes_cloud_and_is_default() {
     );
 
     // @step And the auto-selected default model resolves to the profile section's first model
-    let resolved =
-        resolve_startup_model(&providers, None).expect("a default model must resolve");
+    let resolved = resolve_startup_model(&providers, None).expect("a default model must resolve");
     assert_eq!(
         resolved.model_string, "openai:work-vllm/Qwen3-80B",
         "PROV-130: the default must be the profile section's first model (TS selectDefaultModel)",
@@ -226,8 +225,7 @@ async fn no_profiles_default_comes_from_first_cloud_section() {
     );
 
     // @step And the auto-selected default model resolves to the first populated cloud section's first model
-    let resolved =
-        resolve_startup_model(&providers, None).expect("a default model must resolve");
+    let resolved = resolve_startup_model(&providers, None).expect("a default model must resolve");
     assert_eq!(
         resolved.model_string, "openai/o3",
         "PROV-130: with no profiles the default is the first cloud section's first model",
@@ -271,7 +269,9 @@ async fn synthesized_codex_section_leads_the_cloud_group() {
     let anthropic_pos = keys
         .iter()
         .position(|k| *k == "anthropic")
-        .unwrap_or_else(|| panic!("PROV-130: 'anthropic' cloud section must be present; keys: {keys:?}"));
+        .unwrap_or_else(|| {
+            panic!("PROV-130: 'anthropic' cloud section must be present; keys: {keys:?}")
+        });
     assert!(
         codex_pos < anthropic_pos,
         "PROV-130: the synthesized Codex section must lead the cloud group (before anthropic); keys: {keys:?}",

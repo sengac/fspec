@@ -26,7 +26,7 @@ Feature: Final TS-frontend regression + boundary audit
   #   8. A markdown audit report MUST be committed at spec/attachments/RPC-068/boundary-audit-report.md so future agents can verify the invariants
   #
   # EXAMPLES:
-  #   1. Running `cargo test --workspace --test no_napi_dependency` exercises all five no-`napi` dependency-rule tests (core, sessions, rpc-types, fspec, fspec-tui) and reports 10/10 passing
+  #   1. Running `cargo test -p codelet-core -p codelet-sessions -p codelet-rpc-types -p codelet-fspec -p codelet-fspec-tui --test no_napi_dependency` exercises all five no-`napi` dependency-rule tests (core, sessions, rpc-types, fspec, fspec-tui) and reports 10/10 passing
   #   2. Grepping for `static GLOBAL_CHUNK_CALLBACK` across codelet/ returns zero matches in executable code (only comments/tests reference the name as a historical marker)
   #   3. Diffing `codelet/napi/index.d.ts` exports against the pre-RPC-030 baseline `ea0ed0a0` shows 191 baseline exports preserved and 5 additive exports (countCheckpoints, getModelInfo, getWorkspaceInfo, moveWorkUnitUp, moveWorkUnitDown) — no removals
   #   4. Listing `codelet/napi/src/persistence/` shows exactly `mod.rs` and `napi_bindings.rs`; all six pure-Rust persistence types (`message_envelope`, `messages`, `manifest`, `blob`, `blob_processing`, `history`) live in `codelet/core/src/persistence/`
@@ -41,7 +41,7 @@ Feature: Final TS-frontend regression + boundary audit
 
   Scenario: Dependency-rule regression tests pass across every forbidden crate
     Given the RPC-030 chain has landed
-    When I run `cargo test --workspace --test no_napi_dependency`
+    When I run `cargo test -p codelet-core -p codelet-sessions -p codelet-rpc-types -p codelet-fspec -p codelet-fspec-tui --test no_napi_dependency`
     Then the suite picks up the no_napi_dependency.rs target from `codelet-core`, `codelet-sessions`, `codelet-rpc-types`, `codelet-fspec`, and `codelet-fspec-tui`
     And each target reports 2 / 2 passing tests
     And the aggregate result is 10 / 10 passing tests across all five targets

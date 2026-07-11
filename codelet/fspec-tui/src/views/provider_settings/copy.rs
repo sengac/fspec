@@ -11,9 +11,7 @@
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use super::{
-    Action, DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
-};
+use super::{Action, DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
 
 /// PROV-138: single source of truth for secret masking. The on-screen mask
 /// (profile form API-key field + inline EditApiKey draft) and the Ctrl+C copy

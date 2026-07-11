@@ -171,14 +171,25 @@ pub fn collect_items<T: Clone>(content: &OneOrMany<T>) -> Vec<T> {
 
 /// Calculate compression ratio from pre/post compaction token counts.
 ///
-/// Returns a value between 0.0 and 1.0 representing the fraction of
+/// Returns a value clamped to [0.0, 1.0] representing the fraction of
 /// tokens removed. E.g. 0.7 means 70% of tokens were eliminated.
 ///
-/// Used by stream_loop (pre-prompt and post-loop compaction),
-/// repl_loop (/compact command), and NAPI session_compact.
+/// CMPCT-039: the result is clamped in THIS helper so no caller can ever
+/// receive a negative ratio. When `compacted_tokens > original_tokens`
+/// (tiny sessions where surviving reminders plus the injected compaction
+/// instruction exceed the original context) the ratio is 0.0 — context
+/// growth stays recoverable from the original/compacted token fields that
+/// the CompactionComplete producers ship alongside the ratio.
+/// `original_tokens == 0` also yields 0.0 via the division guard.
+///
+/// Used by stream_loop (pre-prompt and post-loop compaction) and both
+/// inject_summary_handler twins. RPC-421: the compact_session RPC twins
+/// and repl_loop no longer call it — their trough measurement is an
+/// acknowledgement, not a reduction, so they ship the 0.0 sentinel
+/// directly.
 pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {
     if original_tokens > 0 {
-        1.0 - (compacted_tokens as f64 / original_tokens as f64)
+        (1.0 - (compacted_tokens as f64 / original_tokens as f64)).clamp(0.0, 1.0)
     } else {
         0.0
     }

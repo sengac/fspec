@@ -265,8 +265,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // conversation to system-reminders, injects the compaction
         // instruction, resets the token tracker, then kicks the agent loop
         // with "Continue" so it builds the hierarchical summary DAG.
-        use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
-        use std::sync::atomic::Ordering;
+        use codelet_cli::interactive_helpers::execute_compaction;
 
         let uuid = uuid_from(session_id);
         let session = self
@@ -280,7 +279,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         // returns the captured token counts so the `inner` lock is dropped
         // BEFORE `send_input` (the agent loop needs the lock — see the
         // `drop(inner)` at session_bindings.rs:3097).
-        let (original_tokens, compacted_tokens): (u64, u64) = tokio::task::block_in_place(|| {
+        let original_tokens: u64 = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
                 let mut inner = session.inner.lock().await;
 
@@ -293,9 +292,10 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                 session.set_status(SessionStatus::Compacting);
 
                 let original_tokens = inner.token_tracker.input_tokens;
-                session
-                    .pre_compaction_tokens
-                    .store(original_tokens as u32, Ordering::Release);
+                // CMPCT-041: route the manual tracker-based snapshot through
+                // the shared BackgroundSession accessor (basis unification
+                // with the AUTO CompactionStarted writers).
+                session.store_pre_compaction_tokens(original_tokens as u32);
 
                 // `None` = manual/agent-initiated compaction (no resume prompt).
                 if let Err(e) =
@@ -307,8 +307,10 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     return Err(format!("Compaction failed: {e}"));
                 }
 
-                let compacted_tokens = inner.token_tracker.input_tokens;
-                Ok((original_tokens, compacted_tokens))
+                // RPC-421: do NOT read the tracker here — it measures the
+                // post-clear trough (reminders + compaction instruction),
+                // not a real reduction. The DAG summary does not exist yet.
+                Ok(original_tokens)
             })
         })?;
 
@@ -329,12 +331,19 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             session.set_status(SessionStatus::Idle);
         }
 
+        // RPC-421: acknowledgement-shaped success on the unchanged wire
+        // schema. The final compacted size is unknowable at RPC-return time —
+        // the agent builds the DAG asynchronously after the "Continue" kick —
+        // so this result answers only "did compaction start successfully?".
+        // original_tokens is the real pre-compaction snapshot; every other
+        // field is the 0-valued sentinel. Consumers MUST NOT present these
+        // fields as a reduction: the StreamChunk::CompactionComplete emission
+        // (CMPCT-038 apply-site) is the single source of truth for the
+        // numbers. NAPI twin: session_bindings.rs session_compact.
         Ok(CompactionResult {
             original_tokens: original_tokens as u32,
-            compacted_tokens: compacted_tokens as u32,
-            compression_ratio: compression_ratio(original_tokens, compacted_tokens) * 100.0,
-            // turns_summarized/turns_kept are 0 by design: the in-view DAG flow
-            // defers real turn counts to the agent (NAPI parity).
+            compacted_tokens: 0,
+            compression_ratio: 0.0,
             turns_summarized: 0,
             turns_kept: 0,
         })
@@ -1044,8 +1053,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     // registry, gated on configured credentials.
                     if !is_custom && models.is_empty() {
                         if let Some(registry) = cloud_registry.as_ref() {
-                            let has_creds =
-                                crate::cloud_models::provider_has_credentials(&p.name);
+                            let has_creds = crate::cloud_models::provider_has_credentials(&p.name);
                             models = crate::cloud_models::cloud_model_entries(
                                 registry, &p.name, has_creds,
                             );
@@ -1320,6 +1328,57 @@ impl codelet_core::SessionManagerHandle for SessionManager {
             }
             Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
         }
+    }
+
+    // CONT-002: auto-continue state — delegates to the BackgroundSession's
+    // atomic chrome fields; the agent loop syncs them into the inner
+    // session before each dispatched user message.
+    fn set_continue_state(
+        &self,
+        session_id: &SessionId,
+        enabled: bool,
+        budget: u32,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.set_continue_state(enabled, budget);
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn get_continue_state(&self, session_id: &SessionId) -> (bool, u32) {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|session| session.get_continue_state())
+            .unwrap_or((false, 10))
+    }
+
+    // CONT-003: goal chrome state — delegates to the BackgroundSession's
+    // goal Mutex; the agent loop syncs it into the inner session before
+    // each dispatched user message.
+    fn set_goal_state(
+        &self,
+        session_id: &SessionId,
+        goal: Option<(String, Option<String>)>,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.set_goal_state(goal);
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn get_goal_state(&self, session_id: &SessionId) -> Option<(String, Option<String>)> {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .ok()
+            .and_then(|session| session.get_goal_state())
     }
 
     fn get_role(&self, session_id: &SessionId) -> Option<String> {

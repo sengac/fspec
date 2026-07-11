@@ -1858,6 +1858,10 @@
           "description": "RPC-155 — Provider settings api-key edit: Delete key removes draft chars source-shape coverage"
         },
         {
+          "name": "@rpc-421",
+          "description": "RPC-421: single-sourced compaction notice + honest compact_session acknowledgement"
+        },
+        {
           "name": "@runtime",
           "description": "Runtime behavior and dynamic configuration"
         },
@@ -2256,6 +2260,42 @@
         {
           "name": "@bug-fix",
           "description": "Marks bug fixes and corrections to existing functionality"
+        },
+        {
+          "name": "@cmpct-039",
+          "description": "Work unit identifier tag for CMPCT-039 — clamp compression_ratio to [0,1] in the shared helper so no producer ships a negative ratio on the wire"
+        },
+        {
+          "name": "@cmpct-040",
+          "description": "Work unit identifier tag for CMPCT-040 — COMPACTED badge sign-masking removal: clamp at writers, render verbatim in both header twins"
+        },
+        {
+          "name": "@cmpct-041",
+          "description": "Work unit identifier tag for CMPCT-041 — turn-start seed cache double-count root fix and pre_compaction_tokens basis unification across auto/manual writers in both twins"
+        },
+        {
+          "name": "@cont-002",
+          "description": "Work unit identifier tag for CONT-002 — auto-continue engine: done() tool and /continue toggle with nudge budget"
+        },
+        {
+          "name": "@cont-005",
+          "description": "Work unit identifier tag for CONT-005 — done() immediate termination: ToolResult-arm early exit via DONE_ACCEPTANCE registry with shared FinishWithSummary teardown"
+        },
+        {
+          "name": "@cont-006",
+          "description": "Work unit identifier tag for CONT-006 — /goal immediate termination: goal-mode early exit at the ToolResult arm with atomic goal teardown through the shared FinishWithSummary helper"
+        },
+        {
+          "name": "@cont-007",
+          "description": "Work unit identifier tag for CONT-007 — live status-bar updates for the auto-continue/goal nudge counter via a push ContinueStateUpdate chunk"
+        },
+        {
+          "name": "@cont-008",
+          "description": "Work unit identifier tag for CONT-008 — goal state back-sync to chrome: goal-satisfied write-back, resurrection guard, TUI goal cache clear and live /goal counters"
+        },
+        {
+          "name": "@cont-009",
+          "description": "Work unit identifier tag for CONT-009 — NAPI agent_loop dispatch-site arming: shared BackgroundSession completion-contract sync helper called by both agent-loop twins"
         },
         {
           "name": "@deprecated",
@@ -2826,7 +2866,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-07-08T04:49:33.192Z",
+    "lastUpdated": "2026-07-10T07:02:20.022Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

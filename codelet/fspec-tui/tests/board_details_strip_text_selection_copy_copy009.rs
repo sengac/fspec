@@ -22,17 +22,15 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use crossterm::event::{
-    Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEventKind,
-};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEventKind};
 
 mod common;
 
 #[path = "common/board_details_strip_copy009_helpers.rs"]
 mod helpers;
 use helpers::{
-    board_with_clipboard, buffer_row_text, clip_bytes, details_rect, mouse, osc52, render, wu,
-    strip_selection_active,
+    board_with_clipboard, buffer_row_text, clip_bytes, details_rect, mouse, osc52, render,
+    strip_selection_active, wu,
 };
 
 use codelet_fspec_tui::Action;
@@ -71,15 +69,26 @@ fn dragging_across_the_id_and_title_row_copies_its_visible_text() {
     );
 
     // @step When I drag across the id and title row of the details strip and release
-    let _ = view.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y), &store);
-    let _ = drain(&mut rx);
     let _ = view.handle_event(
-        &mouse(MouseEventKind::Drag(MouseButton::Left), r.x + r.width - 1, r.y),
+        &mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y),
         &store,
     );
     let _ = drain(&mut rx);
     let _ = view.handle_event(
-        &mouse(MouseEventKind::Up(MouseButton::Left), r.x + r.width - 1, r.y),
+        &mouse(
+            MouseEventKind::Drag(MouseButton::Left),
+            r.x + r.width - 1,
+            r.y,
+        ),
+        &store,
+    );
+    let _ = drain(&mut rx);
+    let _ = view.handle_event(
+        &mouse(
+            MouseEventKind::Up(MouseButton::Left),
+            r.x + r.width - 1,
+            r.y,
+        ),
         &store,
     );
     let _ = drain(&mut rx);
@@ -258,7 +267,10 @@ fn changing_the_selected_work_unit_clears_an_active_strip_selection() {
     let (view, mut store, mut rx, _clip) = board_with_clipboard(units, 120, 30);
     let r = details_rect(120, 30);
     // Open a live (committed) strip selection via Down + Drag + Up.
-    let _ = view.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y), &store);
+    let _ = view.handle_event(
+        &mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y),
+        &store,
+    );
     let _ = drain(&mut rx);
     let _ = view.handle_event(
         &mouse(MouseEventKind::Drag(MouseButton::Left), r.x + 6, r.y),
@@ -315,7 +327,10 @@ fn esc_clears_an_active_strip_selection_without_copying() {
     let units = vec![wu("RPC-014", "Board grid", "backlog", None)];
     let (view, store, mut rx, clip) = board_with_clipboard(units, 120, 30);
     let r = details_rect(120, 30);
-    let _ = view.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y), &store);
+    let _ = view.handle_event(
+        &mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y),
+        &store,
+    );
     let _ = drain(&mut rx);
     let _ = view.handle_event(
         &mouse(MouseEventKind::Drag(MouseButton::Left), r.x + 6, r.y),

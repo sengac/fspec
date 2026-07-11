@@ -124,7 +124,7 @@ Feature: Dependency-rule regression tests for fspec, fspec-tui, sessions
     # NOTE: the file asserts wider invariants beyond the no-napi rule
   Scenario: cargo test --workspace passes after all RPC-067 changes
     Given all RPC-067 source changes are applied to the workspace
-    When I run `cargo test --workspace --tests --no-fail-fast`
+    When I run `cargo test -p codelet-core -p codelet-rpc-types -p codelet-fspec -p codelet-fspec-tui -p codelet-sessions --test no_napi_dependency --no-fail-fast`
     Then the command exits with code 0
     And all five no_napi_dependency.rs test binaries (codelet-core, codelet-rpc-types, codelet-fspec, codelet-fspec-tui, codelet-sessions) report green
 

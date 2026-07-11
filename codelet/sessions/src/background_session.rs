@@ -392,6 +392,35 @@ pub struct BackgroundSession {
     /// Effective level = max(base_thinking_level, detected_level_from_text)
     base_thinking_level: AtomicU8,
 
+    /// CONT-002: Auto-continue toggle (/continue). Synced into the inner
+    /// session by the agent loop before each dispatched user message.
+    continue_enabled: AtomicBool,
+
+    /// CONT-002: Zero-progress nudge budget (default 10). Set via
+    /// `/continue <n>`.
+    continue_budget: AtomicU32,
+
+    /// CONT-003: Goal chrome state `(text, verify)` set via `/goal`. Synced
+    /// into the inner session by the agent loop before each dispatched user
+    /// message (Mutex analogue of the CONT-002 atomic pair).
+    goal_state: std::sync::Mutex<Option<(String, Option<String>)>>,
+
+    /// CONT-008: generation stamp for `goal_state`. Bumped by every
+    /// [`Self::set_goal_state`] (user-initiated chrome writes). Makes the
+    /// chrome↔inner goal sync direction-safe:
+    /// - the dispatch sync applies chrome→inner ONLY when the generation
+    ///   changed since the last sync (a satisfied goal can never be
+    ///   resurrected by a stale chrome copy), and
+    /// - the engine write-back clears chrome ONLY when the generation is
+    ///   unchanged since the last sync (a mid-turn `/goal` replacement
+    ///   wins over the write-back).
+    goal_generation: AtomicU64,
+
+    /// CONT-008: the value of [`Self::goal_generation`] at the last
+    /// completed dispatch-site sync
+    /// ([`Self::sync_completion_contract_for_user_turn`]).
+    goal_synced_generation: AtomicU64,
+
     /// PERF-002: Current compaction progress information
     compaction_progress: RwLock<Option<CompactionProgress>>,
 
@@ -513,6 +542,11 @@ impl BackgroundSession {
             hitl_response_rx: std::sync::Mutex::new(hitl_response_rx),
             hitl_request: RwLock::new(None),
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
+            continue_enabled: AtomicBool::new(false), // CONT-002: auto-continue off by default
+            continue_budget: AtomicU32::new(10),   // CONT-002: DEFAULT_CONTINUE_BUDGET
+            goal_state: std::sync::Mutex::new(None), // CONT-003: no goal by default
+            goal_generation: AtomicU64::new(0),      // CONT-008: no chrome writes yet
+            goal_synced_generation: AtomicU64::new(0), // CONT-008: in sync at creation
             compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
             work_unit_context: RwLock::new(None),  // TUI-059: No work unit context initially
             // TUI-059: Store base environment content for composing with work unit later
@@ -774,6 +808,37 @@ impl BackgroundSession {
             .store(input_tokens, Ordering::Release);
         self.cached_output_tokens
             .store(output_tokens, Ordering::Release);
+    }
+
+    /// Store the pre-compaction token snapshot (CMPCT-041).
+    ///
+    /// Single audited write point for `pre_compaction_tokens`: the manual
+    /// compaction writers (`sessions/src/handle_impl.rs` and
+    /// `napi/src/session_bindings.rs`) pass their tracker-based
+    /// `original_tokens` through here, and the AUTO twins go through
+    /// [`Self::snapshot_pre_compaction_tokens`], so all four writers share
+    /// one store site and basis drift is structurally impossible.
+    pub fn store_pre_compaction_tokens(&self, tokens: u32) {
+        self.pre_compaction_tokens.store(tokens, Ordering::Release);
+    }
+
+    /// AUTO-path pre-compaction snapshot (CMPCT-041).
+    ///
+    /// The AUTO `CompactionStarted` arms (agent-loop `background_output.rs`
+    /// and NAPI `agent_loop.rs` twins) cannot read `inner.token_tracker`
+    /// mid-stream — `inner` is a `tokio::sync::Mutex` held by the streaming
+    /// agent loop for the whole turn (see `pending_dag_content`) — so they
+    /// snapshot the cached display basis instead. After the CMPCT-041 seed
+    /// fix (`StreamingTokenDisplay::from_cache_inclusive_total`) the cached
+    /// value equals the tracker basis in the seed window, so the AUTO and
+    /// manual writers agree; the equivalence is pinned by the auto/manual
+    /// parity test in `cmpct041_pre_compaction_basis_test.rs`.
+    ///
+    /// Returns the snapshotted value.
+    pub fn snapshot_pre_compaction_tokens(&self) -> u32 {
+        let current = self.cached_input_tokens.load(Ordering::Acquire);
+        self.store_pre_compaction_tokens(current);
+        current
     }
 
     /// Update cached reasoning token count
@@ -1134,6 +1199,156 @@ impl BackgroundSession {
     pub fn set_base_thinking_level(&self, level: u8) {
         let clamped = level.min(3);
         self.base_thinking_level.store(clamped, Ordering::Release);
+    }
+
+    // =========================================================================
+    // CONT-002: Auto-continue state methods
+    // =========================================================================
+
+    /// Get the auto-continue state as `(enabled, budget)` (CONT-002).
+    pub fn get_continue_state(&self) -> (bool, u32) {
+        (
+            self.continue_enabled.load(Ordering::Acquire),
+            self.continue_budget.load(Ordering::Acquire),
+        )
+    }
+
+    /// Set the auto-continue state (CONT-002). Applied to the inner session
+    /// by the agent loop before the next dispatched user message.
+    pub fn set_continue_state(&self, enabled: bool, budget: u32) {
+        self.continue_enabled.store(enabled, Ordering::Release);
+        self.continue_budget.store(budget.max(1), Ordering::Release);
+    }
+
+    /// CONT-003: Get the goal chrome state as `(text, verify)`, if any.
+    pub fn get_goal_state(&self) -> Option<(String, Option<String>)> {
+        self.goal_state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .clone()
+    }
+
+    /// CONT-003: Set or clear the goal chrome state (`/goal`). Applied to
+    /// the inner session by the agent loop before the next dispatched user
+    /// message.
+    ///
+    /// CONT-008: every user-initiated chrome write bumps the goal
+    /// generation, which is what entitles the NEXT dispatch sync to apply
+    /// chrome→inner (and shields the write against the engine-side
+    /// goal-satisfied write-back racing a mid-turn replacement).
+    pub fn set_goal_state(&self, goal: Option<(String, Option<String>)>) {
+        // Bump under the lock so a concurrent write-back's
+        // generation check and clear cannot interleave with this write.
+        let mut guard = self
+            .goal_state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        self.goal_generation.fetch_add(1, Ordering::AcqRel);
+        *guard = goal;
+    }
+
+    /// CONT-008: engine-side goal-satisfied write-back, called by BOTH
+    /// BackgroundOutput twins when they map a
+    /// `ContinueStateReason::GoalSatisfied` snapshot (the shared done()
+    /// teardown cleared an active goal on the inner session).
+    ///
+    /// Clears the chrome goal state ONLY when the goal generation is
+    /// unchanged since the last dispatch sync — i.e. the chrome copy is
+    /// exactly the goal the engine just satisfied. A mid-turn `/goal`
+    /// replacement (generation bumped) WINS and survives untouched; the
+    /// next dispatch sync applies it to the inner session.
+    ///
+    /// The clear intentionally does NOT bump the generation: the chrome
+    /// and inner copies are both `None` afterwards, so the next dispatch
+    /// sync correctly skips the goal apply.
+    ///
+    /// TIMING CONTRACT (delayed-write-back race): correctness relies on
+    /// the `GoalSatisfied` emission being SYNCHRONOUS while the twin holds
+    /// the inner-session lock — i.e. this write-back runs serialized
+    /// against `sync_completion_contract_for_user_turn(&mut inner)`, so a
+    /// `/goal` replacement is either (a) applied before the turn (generation
+    /// consumed → generations equal → the engine satisfies THAT goal and the
+    /// clear is correct) or (b) still pending (generation bumped → the check
+    /// fails → the replacement survives). If the emission ever becomes
+    /// async-queued (processed after the twin releases the lock), a LATE
+    /// clear could observe an already-re-synced replacement goal with equal
+    /// generations and wrongly wipe it — do not decouple the emission from
+    /// the locked turn without revisiting this guard.
+    pub fn clear_goal_state_if_unchanged_since_sync(&self) {
+        let mut guard = self
+            .goal_state
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let generation = self.goal_generation.load(Ordering::Acquire);
+        let synced = self.goal_synced_generation.load(Ordering::Acquire);
+        if generation == synced {
+            *guard = None;
+        }
+    }
+
+    /// CONT-009: shared CONT-002/CONT-003 dispatch-site sync, called by BOTH
+    /// agent-loop twins (codelet/napi/src/agent_loop.rs and
+    /// codelet/agent-loop/src/agent_loop.rs) for every real dispatched user
+    /// message, between re-acquiring the inner-session lock and creating the
+    /// BackgroundOutput handler — immediately before `create_rig_agent` so
+    /// done() is registered only while armed.
+    ///
+    /// The block was previously inlined only in the extracted twin, leaving
+    /// the production NAPI/TUI surface with a never-armed done() registry
+    /// (auto-continue and /goal silently inert). Keeping it here — the one
+    /// crate both twins depend on in production — makes divergence
+    /// impossible; a twin-parity shape test pins both call sites.
+    ///
+    /// Behaviour (parity with the original CONT-002/003 block):
+    /// - syncs the /continue chrome state into the inner session and resets
+    ///   the per-turn zero-progress nudge count (CONT-002);
+    /// - syncs the /goal chrome state into the inner session, applying only
+    ///   on change — `Session::set_goal` resets the rejection/nudge counters
+    ///   and (re-)injects the CompletionContract reminder (CONT-003);
+    /// - CONT-008: the goal apply is generation-gated — chrome→inner runs
+    ///   ONLY when a user-initiated `set_goal_state` happened since the
+    ///   last sync. This is the resurrection guard: after the engine
+    ///   satisfies a goal (inner cleared by the shared done() teardown),
+    ///   an untouched chrome copy can never re-apply it, even if the
+    ///   GoalSatisfied write-back was lost;
+    /// - arms the per-session done() registry iff the continue toggle is on
+    ///   OR a goal is set (derived mode Goal), and syncs the goal spec into
+    ///   the registry so DoneTool's definition() and Tier 1/2 checks see it.
+    pub fn sync_completion_contract_for_user_turn(
+        &self,
+        inner_session: &mut codelet_cli::session::Session,
+    ) {
+        let (continue_enabled, continue_budget) = self.get_continue_state();
+        inner_session.continue_enabled = continue_enabled;
+        inner_session.continue_budget = continue_budget;
+        codelet_cli::interactive::auto_continue::reset_for_new_user_turn(inner_session);
+        // CONT-008: snapshot the generation BEFORE reading the goal so a
+        // concurrent set_goal_state cannot slip a newer goal past the
+        // stored synced generation (the next sync would re-apply it).
+        let generation = self.goal_generation.load(Ordering::Acquire);
+        let generation_changed = generation != self.goal_synced_generation.load(Ordering::Acquire);
+        let chrome_goal = self.get_goal_state();
+        let inner_goal_pair = inner_session
+            .goal
+            .as_ref()
+            .map(|g| (g.text.clone(), g.verify.clone()));
+        if generation_changed && chrome_goal != inner_goal_pair {
+            match &chrome_goal {
+                Some((text, verify)) => inner_session.set_goal(text, verify.as_deref()),
+                None => inner_session.clear_goal(),
+            }
+        }
+        self.goal_synced_generation
+            .store(generation, Ordering::Release);
+        let goal_spec = inner_session
+            .goal
+            .as_ref()
+            .map(|g| codelet_tools::GoalSpec {
+                text: g.text.clone(),
+                verify: g.verify.clone(),
+            });
+        codelet_tools::set_continue_armed(self.id, continue_enabled || goal_spec.is_some());
+        codelet_tools::set_session_goal(self.id, goal_spec);
     }
 
     /// PERF-002: Get current compaction progress information

@@ -1,0 +1,185 @@
+{
+  "scenarios": [
+    {
+      "name": "Overflow-recovery snapshot in the seed window records the true context total",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "lines": "121-155",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                779,
+                780,
+                781,
+                782,
+                783,
+                784,
+                785,
+                786,
+                787,
+                788,
+                789,
+                790,
+                791,
+                792,
+                793,
+                794,
+                795,
+                796,
+                797,
+                798,
+                799,
+                800,
+                801,
+                802,
+                803,
+                804,
+                805,
+                806,
+                807,
+                808
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "lines": "121-155",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/background_output.rs",
+              "lines": [
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto and manual compaction snapshots agree on the same basis across both twins",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "lines": "162-225",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/background_session.rs",
+              "lines": [
+                779,
+                780,
+                781,
+                782,
+                783,
+                784,
+                785,
+                786,
+                787,
+                788,
+                789,
+                790,
+                791,
+                792,
+                793,
+                794,
+                795,
+                796,
+                797,
+                798,
+                799,
+                800,
+                801,
+                802,
+                803,
+                804,
+                805,
+                806,
+                807,
+                808
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "lines": "162-225",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_loop.rs",
+              "lines": [
+                1692,
+                1693,
+                1694,
+                1695,
+                1696,
+                1697,
+                1698,
+                1699
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "lines": "162-225",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                294,
+                295,
+                296,
+                297,
+                298
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs",
+          "lines": "162-225",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_bindings.rs",
+              "lines": [
+                3051,
+                3052,
+                3053,
+                3054,
+                3055,
+                3056
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/agent-loop/tests/cmpct041_pre_compaction_basis_test.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/background_session.rs",
+      "codelet/agent-loop/src/background_output.rs",
+      "codelet/napi/src/agent_loop.rs",
+      "codelet/sessions/src/handle_impl.rs",
+      "codelet/napi/src/session_bindings.rs"
+    ],
+    "totalLinesCovered": 415
+  }
+}

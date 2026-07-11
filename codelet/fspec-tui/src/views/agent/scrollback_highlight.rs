@@ -78,7 +78,10 @@ mod tests {
 
         // @step Then the buffer cells at row 3 columns 0 to 5 carry the reversed style
         for col in 0..5 {
-            assert!(is_reversed(&buf, col, 3), "cell (col {col}, row 3) reversed");
+            assert!(
+                is_reversed(&buf, col, 3),
+                "cell (col {col}, row 3) reversed"
+            );
         }
         assert!(!is_reversed(&buf, 5, 3), "col 5 (past end) not reversed");
     }
@@ -99,9 +102,18 @@ mod tests {
         paint_selection_highlight(area, &mut buf, &spans, content_width);
 
         // @step Then the reserved gutter column is left un-highlighted
-        assert!(is_reversed(&buf, content_width - 1, 2), "last content col reversed");
-        assert!(!is_reversed(&buf, content_width, 2), "gutter col not reversed");
-        assert!(!is_reversed(&buf, area.width - 1, 2), "rightmost gutter col not reversed");
+        assert!(
+            is_reversed(&buf, content_width - 1, 2),
+            "last content col reversed"
+        );
+        assert!(
+            !is_reversed(&buf, content_width, 2),
+            "gutter col not reversed"
+        );
+        assert!(
+            !is_reversed(&buf, area.width - 1, 2),
+            "rightmost gutter col not reversed"
+        );
     }
 
     #[test]
@@ -117,7 +129,10 @@ mod tests {
         // @step Then every cell keeps its original style and no cell is reversed
         for y in 0..area.height {
             for x in 0..area.width {
-                assert!(!is_reversed(&buf, x, y), "cell ({x},{y}) must not be reversed");
+                assert!(
+                    !is_reversed(&buf, x, y),
+                    "cell ({x},{y}) must not be reversed"
+                );
             }
         }
     }
@@ -150,7 +165,10 @@ mod tests {
         paint_selection_highlight(area, &mut buf, &spans, content_width);
 
         // @step Then the first row is highlighted from its start column to the content width
-        assert!(!is_reversed(&buf, 3, 0), "first row before start not reversed");
+        assert!(
+            !is_reversed(&buf, 3, 0),
+            "first row before start not reversed"
+        );
         for col in 4..content_width {
             assert!(is_reversed(&buf, col, 0), "first row col {col} reversed");
         }
@@ -159,7 +177,10 @@ mod tests {
         for col in 0..content_width {
             assert!(is_reversed(&buf, col, 1), "middle row col {col} reversed");
         }
-        assert!(!is_reversed(&buf, content_width, 1), "middle row gutter not reversed");
+        assert!(
+            !is_reversed(&buf, content_width, 1),
+            "middle row gutter not reversed"
+        );
 
         // @step And the last row is highlighted up to its end column
         for col in 0..6 {
@@ -198,12 +219,21 @@ mod tests {
 
         // @step Then only the visible rows of the selection carry the reversed style
         for col in 0..5 {
-            assert!(is_reversed(&buf, col, 0), "visible row 0 col {col} reversed");
-            assert!(is_reversed(&buf, col, 1), "visible row 1 col {col} reversed");
+            assert!(
+                is_reversed(&buf, col, 0),
+                "visible row 0 col {col} reversed"
+            );
+            assert!(
+                is_reversed(&buf, col, 1),
+                "visible row 1 col {col} reversed"
+            );
         }
         for y in 2..area.height {
             for x in 0..area.width {
-                assert!(!is_reversed(&buf, x, y), "off-region cell ({x},{y}) not reversed");
+                assert!(
+                    !is_reversed(&buf, x, y),
+                    "off-region cell ({x},{y}) not reversed"
+                );
             }
         }
     }

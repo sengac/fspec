@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "Continuation TokenState reports the true total when the tracker total is cache-inclusive",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
+          "lines": "77-98",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction_hook.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CompactionHook does not trigger early during a Gemini continuation",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
+          "lines": "104-128",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CompactionHook still triggers when the true total genuinely exceeds the threshold",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
+          "lines": "135-157",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction_hook.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Continuation TokenState construction site routes through the audited constructor",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
+          "lines": "164-189",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nested continuation TokenState keeps its display-basis seeding unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct042_gemini_continuation_token_state_test.rs",
+          "lines": "196-234",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "lines": [
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/cmpct042_gemini_continuation_token_state_test.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/compaction_hook.rs",
+      "codelet/cli/src/interactive/gemini_continuation.rs"
+    ],
+    "totalLinesCovered": 210
+  }
+}

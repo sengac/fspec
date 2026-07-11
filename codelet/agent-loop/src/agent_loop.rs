@@ -492,6 +492,14 @@ pub async fn agent_loop(
             // Re-acquire lock for the rest of processing
             let mut inner_session = session.inner.lock().await;
 
+            // CONT-002/CONT-003 (CONT-009): this is a real dispatched user
+            // message — run the shared completion-contract sync (inner
+            // continue/goal sync, per-turn nudge reset, done() registry
+            // arm + goal) immediately before create_rig_agent so done() is
+            // registered only while armed. The block lives on
+            // BackgroundSession so both agent-loop twins share one copy.
+            session.sync_completion_contract_for_user_turn(&mut inner_session);
+
             // REFAC-007: Create output handler with provider for message persistence
             let session_for_output = session.clone();
             let output =
@@ -682,22 +690,21 @@ pub async fn agent_loop(
             }
 
             // Register inject_summary handler — stores DAG in pending_dag_content
-            // and fires on_injected to emit CompactionComplete immediately.
+            // and fires on_injected to clear the compaction progress spinner.
+            // CMPCT-038: on_injected does NOT emit CompactionComplete — only the
+            // summary size is known here. The honest chunk (compacted_tokens =
+            // recalculated post-injection tracker total) is emitted after the
+            // stream by apply_pending_dag_and_emit below.
             {
                 let context_window = inner_session.provider_manager().context_window() as u64;
                 let session_for_inject = session.clone();
                 let on_injected: crate::inject_summary_handler::OnInjectedCallback =
                     Arc::new(move |injected_tokens: u32| {
-                        let original_tokens = session_for_inject
-                            .pre_compaction_tokens
-                            .load(Ordering::Acquire);
                         session_for_inject.set_compaction_progress(None);
-                        // Emit Running BEFORE CompactionComplete via extracted helper
-                        // (ordering is tested in inject_summary_handler tests)
-                        crate::inject_summary_handler::emit_post_injection_events(
-                            &|chunk| session_for_inject.handle_output(chunk),
-                            original_tokens,
-                            injected_tokens,
+                        tracing::debug!(
+                            "[AGENT-LOOP] inject_summary stored DAG ({} summary tokens) — \
+                             CompactionComplete deferred to apply_pending_dag_and_emit",
+                            injected_tokens
                         );
                     });
                 let inject_handler = crate::inject_summary_handler::create_handler(
@@ -1238,10 +1245,16 @@ pub async fn agent_loop(
 
             persist_pending_annotations(&session.id, &mut inner_session);
 
-            // Apply pending DAG content from inject_summary (deferred because handler can't lock session.inner)
-            if let Some(dag_nodes) = crate::inject_summary_handler::apply_pending_dag(
+            // Apply pending DAG content from inject_summary (deferred because handler can't lock session.inner).
+            // CMPCT-038: this is also the CompactionComplete emit site — the tracker is
+            // recalculated by the apply, so compacted_tokens reflects the real
+            // post-injection context (reminders + summary), not the summary alone.
+            let pre_compaction_tokens = session.pre_compaction_tokens.load(Ordering::Acquire);
+            if let Some(dag_nodes) = crate::inject_summary_handler::apply_pending_dag_and_emit(
                 &mut inner_session,
                 &session.pending_dag_content,
+                pre_compaction_tokens,
+                &|chunk| session.handle_output(chunk),
             ) {
                 tracing::info!(
                     "[AGENT-LOOP] Applied pending DAG for session {} — messages_len={}, tokens={}, dag_nodes={}",
@@ -1296,9 +1309,10 @@ pub async fn agent_loop(
                     });
                 }
 
-                // CompactionComplete was already emitted by emit_post_injection_events
-                // during the stream (in on_injected). We only need to transition to Idle
-                // now that the DAG has been applied and the agent loop is finishing.
+                // CompactionComplete was emitted by apply_pending_dag_and_emit above
+                // (CMPCT-038: Running → CompactionComplete with the recalculated
+                // basis). We only need to transition to Idle now that the DAG has
+                // been applied and the agent loop is finishing.
                 session.set_status(SessionStatus::Idle);
                 session.set_compaction_progress(None);
             }

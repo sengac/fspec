@@ -42,6 +42,28 @@ impl TokenState {
         }
     }
 
+    /// Create TokenState from a cache-INCLUSIVE context total (CMPCT-042)
+    ///
+    /// PROV-001: `TokenTracker::input_tokens` stores the TOTAL context
+    /// (input + cache_read + cache_creation) after `update_from_usage` /
+    /// `update_display_only`. Seeding a TokenState from that total alongside
+    /// non-zero cache fields would make [`Self::total`] count cache twice
+    /// and could trigger compaction early. This constructor zeroes the cache
+    /// fields (the 'Don't double count' invariant from the turn-start seed
+    /// in stream_loop.rs) so the CompactionHook sees the true total.
+    ///
+    /// Use the struct literal (raw input + separate cache fields) only for
+    /// display-basis seeds where the input value is genuinely cache-EXCLUSIVE.
+    pub fn from_cache_inclusive_total(total_context: u64, output_tokens: u64) -> Self {
+        Self {
+            input_tokens: total_context,    // Already includes cache
+            cache_read_input_tokens: 0,     // Don't double count
+            cache_creation_input_tokens: 0, // Don't double count
+            output_tokens,
+            compaction_needed: false,
+        }
+    }
+
     /// Convert to ApiTokenUsage for calculations
     pub fn as_usage(&self) -> ApiTokenUsage {
         ApiTokenUsage::new(

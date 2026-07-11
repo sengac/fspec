@@ -20,11 +20,18 @@ use codelet_tools::inject_summary::{InjectSummaryHandler, InjectSummaryResult};
 use uuid::Uuid;
 
 /// Callback invoked after inject_summary stores the DAG and clears the
-/// compaction flag. Used by the NAPI session manager to emit
-/// `CompactionComplete` immediately so the TUI drops the compaction
-/// indicator without waiting for the stream to finish.
+/// compaction flag. Used by the NAPI session manager for non-emitting
+/// side effects (e.g. clearing the compaction progress spinner) as soon
+/// as the agent calls inject_summary.
 ///
-/// Arguments: (injected_tokens: u32)
+/// CMPCT-038: this callback MUST NOT emit `CompactionComplete` — at this
+/// point only the DAG summary size is known, not the real post-injection
+/// context size. The honest chunk is emitted later by
+/// [`apply_pending_dag_and_emit`] once the token tracker has been
+/// recalculated from the rebuilt message list (reminders + summary).
+///
+/// Arguments: (injected_tokens: u32) — the token count of the wrapped
+/// DAG summary alone, useful for logging only.
 pub type OnInjectedCallback = Arc<dyn Fn(u32) + Send + Sync>;
 
 /// Create an inject_summary handler for a specific session.
@@ -71,9 +78,10 @@ pub fn create_handler(
         // SessionSearch will stop trimming from this point
         compaction_flag.store(false, Ordering::SeqCst);
 
-        // Step 5: Fire on_injected callback to emit CompactionComplete immediately.
-        // This lets the TUI drop the compaction indicator as soon as inject_summary
-        // runs, instead of waiting for the stream to end and apply_pending_dag.
+        // Step 5: Fire on_injected callback for non-emitting side effects
+        // (clears the compaction progress spinner as soon as inject_summary
+        // runs). CMPCT-038: the CompactionComplete chunk is emitted later by
+        // apply_pending_dag_and_emit with the recalculated basis.
         if let Some(ref cb) = on_injected {
             cb(injected_tokens as u32);
         }
@@ -94,14 +102,26 @@ pub fn create_handler(
 ///
 /// Extracted from the on_injected closure in session_manager so the
 /// emission order is testable without BackgroundSession infrastructure.
+///
+/// CMPCT-038: `compacted_tokens` is the session's recalculated
+/// post-injection total (reminders + summary — see
+/// [`apply_pending_dag_and_emit`]), NOT the DAG summary size alone.
+/// The ratio is percent-of-tokens-removed (RPC-420 contract) clamped
+/// to `>= 0.0` — tiny sessions where surviving reminders exceed the
+/// original count must never ship a negative ratio.
 pub fn emit_post_injection_events(
     emit: &dyn Fn(crate::types::StreamChunk),
     original_tokens: u32,
-    injected_tokens: u32,
+    compacted_tokens: u32,
 ) {
     use codelet_cli::interactive_helpers::compression_ratio;
 
-    let ratio = compression_ratio(original_tokens as u64, injected_tokens as u64) * 100.0;
+    // CMPCT-039: compression_ratio() itself now clamps to [0.0, 1.0], so the
+    // .max(0.0) here is redundant — kept deliberately as belt-and-braces to
+    // pin the CMPCT-038 wire contract at this emit site regardless of any
+    // future helper changes.
+    let ratio =
+        (compression_ratio(original_tokens as u64, compacted_tokens as u64) * 100.0).max(0.0);
     // Step 1: Emit Running BEFORE CompactionComplete
     emit(crate::types::StreamChunk::session_state_change(
         crate::types::SessionState::Running,
@@ -110,7 +130,7 @@ pub fn emit_post_injection_events(
     emit(crate::types::StreamChunk::compaction_complete(
         crate::types::CompactionResult {
             original_tokens,
-            compacted_tokens: injected_tokens,
+            compacted_tokens,
             compression_ratio: ratio,
             turns_summarized: 0,
             turns_kept: 0,
@@ -329,6 +349,41 @@ pub fn apply_pending_dag(
     Some(dag_nodes)
 }
 
+/// Apply pending DAG content and emit the post-injection events with the
+/// HONEST measurement basis (CMPCT-038).
+///
+/// This is the production emit site for `CompactionComplete`: it calls
+/// [`apply_pending_dag`] (which rebuilds the message list to reminders +
+/// summary and runs `recalculate_token_tracker`), then reads the
+/// recalculated `session.token_tracker.input_tokens` as `compacted_tokens`
+/// and emits `SessionStateChange(Running)` followed by `CompactionComplete`
+/// via [`emit_post_injection_events`].
+///
+/// Race-free by construction: the tracker is recalculated BEFORE the chunk
+/// is emitted, so `compacted_tokens` reflects the real post-injection
+/// context (a true ~60% reduction reports ~60, not the ~99% the
+/// summary-only basis produced).
+///
+/// Kept in lock-step with the codelet-agent-loop twin
+/// (`codelet/agent-loop/src/inject_summary_handler.rs`) — identical inputs
+/// MUST produce identical `CompactionResult` values on both frontends.
+///
+/// Returns the parsed DAG nodes if a DAG was applied, or `None` (emitting
+/// nothing) if nothing was pending.
+pub fn apply_pending_dag_and_emit(
+    session: &mut codelet_cli::session::Session,
+    pending_dag: &Arc<std::sync::Mutex<Option<String>>>,
+    original_tokens: u32,
+    emit: &dyn Fn(crate::types::StreamChunk),
+) -> Option<Vec<codelet_core::compaction::DagNodeMeta>> {
+    let dag_nodes = apply_pending_dag(session, pending_dag)?;
+
+    let compacted_tokens = u32::try_from(session.token_tracker.input_tokens).unwrap_or(u32::MAX);
+    emit_post_injection_events(emit, original_tokens, compacted_tokens);
+
+    Some(dag_nodes)
+}
+
 #[cfg(test)]
 mod tests {
     //! Feature: spec/features/in-view-dag-compaction.feature
@@ -417,8 +472,14 @@ mod tests {
     #[test]
     fn test_apply_pending_dag_no_content() {
         let pending_dag = Arc::new(std::sync::Mutex::new(None));
-        let provider_manager =
-            codelet_providers::ProviderManager::new().expect("Need at least one API key for tests");
+        // CMPCT-038 drive-by: fall back to an explicit provider so the test
+        // also runs in multi-credential environments (ProviderManager::new()
+        // errors when several providers are credentialed but none selected).
+        let provider_manager = codelet_providers::ProviderManager::new()
+            .or_else(|_| codelet_providers::ProviderManager::with_provider("gemini"))
+            .or_else(|_| codelet_providers::ProviderManager::with_provider("zai"))
+            .or_else(|_| codelet_providers::ProviderManager::with_provider("claude"))
+            .expect("Need at least one API key for tests");
         let mut session = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
         let applied = apply_pending_dag(&mut session, &pending_dag);

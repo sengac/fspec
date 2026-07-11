@@ -96,9 +96,7 @@ fn loading_profile_without_streaming_key_defaults_to_enabled() {
     let loaded = ProfileDefinition {
         base_url: profile["baseUrl"].as_str().unwrap().to_string(),
         api_key: profile["apiKey"].as_str().unwrap().to_string(),
-        streaming: profile
-            .get("streaming")
-            .and_then(Value::as_bool),
+        streaming: profile.get("streaming").and_then(Value::as_bool),
         ..ProfileDefinition::default()
     };
 

@@ -2,9 +2,8 @@
 //! 078/094). Viewport-slice paint; `offset` in VISUAL ROWS. SELECT-mode
 //! lives in `scrollback_select`, live text-selection (COPY-006) in `copy`.
 //!
-//! Feature: spec/features/rpc019-scrollback.feature
-//!          spec/features/agentview-scrollback-wrap.feature
-//!          spec/features/rpc094-agentview-scrollback-scroll.feature
+//! Features: rpc019-scrollback, agentview-scrollback-wrap,
+//! rpc094-agentview-scrollback-scroll.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -16,8 +15,7 @@ use crate::store::agent_view::chunk_wrap::wrap_source;
 
 pub use select::{SelectionMode, TurnDir};
 
-/// Scroll state for `ScrollbackList`. `stick_to_bottom = true` is the
-/// chat-log default; PageUp drops out, End/PageDown re-enters.
+/// Scroll state. `stick_to_bottom = true` is the chat-log default; PageUp drops out, End/PageDown re-enters.
 #[derive(Debug, Clone, Copy)]
 pub struct ScrollState {
     /// First visible visual row index (across all wrapped Lines).
@@ -28,7 +26,10 @@ pub struct ScrollState {
 
 impl Default for ScrollState {
     fn default() -> Self {
-        Self { offset: 0, stick_to_bottom: true }
+        Self {
+            offset: 0,
+            stick_to_bottom: true,
+        }
     }
 }
 
@@ -51,8 +52,7 @@ pub struct ScrollbackList {
     selection_highlight_spans: Vec<crate::mouse::selection::RowSpan>,
     /// COPY-006: live text selection (anchor/cursor); None when inactive.
     selection: Option<crate::mouse::selection::Selection>,
-    /// COPY-006: content width (viewport minus gutter) cached at last
-    /// render — the single clamp shared by highlight + copy.
+    /// COPY-006: content width (viewport minus gutter) cached at last render — shared clamp.
     content_width: u16,
 }
 
@@ -68,15 +68,13 @@ impl ScrollbackList {
         self.rewrap_after_mutation(idx);
     }
 
-    /// Insert at `idx`, shifting subsequent chunks right (RPC-093:
-    /// `chunk_processor::append_thinking` splices a thinking block).
+    /// Insert at `idx`, shifting right (RPC-093: `append_thinking` splices a thinking block).
     pub fn insert(&mut self, idx: usize, chunk: RenderedChunk) {
         self.chunks.insert(idx, chunk);
         self.rewrap_after_mutation(idx);
     }
 
-    /// Shared post-mutation hook for `push` / `insert`: rewrap the
-    /// touched chunk if width is known, re-anchor stick, re-pin select.
+    /// Post-mutation hook for `push`/`insert`: rewrap touched chunk, re-anchor stick, re-pin select.
     fn rewrap_after_mutation(&mut self, idx: usize) {
         if self.viewport_width != 0 {
             if let Some(c) = self.chunks.get_mut(idx) {
@@ -103,8 +101,7 @@ impl ScrollbackList {
         &mut self.chunks
     }
 
-    /// Re-wrap a single chunk at index `i` (or 80 cols pre-render).
-    /// **RPC-091**.
+    /// Re-wrap a single chunk at index `i` (or 80 cols pre-render). **RPC-091**.
     pub fn rewrap_at(&mut self, i: usize) {
         let width = if self.viewport_width != 0 {
             self.viewport_width
@@ -196,16 +193,16 @@ impl ScrollbackList {
     }
 
     /// RPC-020: drop every chunk and reset scroll state to default.
-    pub fn reset(&mut self) {        self.chunks.clear();
+    pub fn reset(&mut self) {
+        self.chunks.clear();
         self.scroll_state = ScrollState::default();
         self.viewport_height = 0;
         self.viewport_width = 0;
         self.clear_selection(); // RPC-381.
     }
 
-    /// Render the visible window into `area`. Returns chunks visited.
-    /// RPC-078 fills from the TOP, stick on overflow; RPC-094 reserves a
-    /// 2-col gutter + scrollbar on overflow.
+    /// Render the visible window into `area`; returns chunks visited. RPC-078
+    /// fills from the TOP; RPC-094 reserves a 2-col gutter + scrollbar on overflow.
     pub fn render_count_visited(&mut self, area: Rect, buf: &mut Buffer) -> usize {
         // Pass 1: wrap at full width to detect overflow.
         self.set_viewport_width(area.width);
@@ -243,7 +240,12 @@ impl ScrollbackList {
         // RPC-381: in Item mode, frame the selected turn with ▼/▲ bars.
         self.paint_selection_overlay(area, buf, content_width, skip_rows);
         // COPY-005: overlay the live text-selection region (REVERSED).
-        super::scrollback_paint::paint_selection_highlight(area, buf, &self.selection_highlight_spans, content_width);
+        super::scrollback_paint::paint_selection_highlight(
+            area,
+            buf,
+            &self.selection_highlight_spans,
+            content_width,
+        );
         if reserve_gutter && total_rows > vh {
             paint_scrollbar(area, buf, vh, total_rows, self.scroll_state);
         }
@@ -275,8 +277,7 @@ impl ScrollbackList {
     }
 }
 
-/// Re-derive `chunk.lines` from `chunk.source` for the given width.
-/// No-op when the chunk has no `ChunkSource`.
+/// Re-derive `chunk.lines` from `chunk.source` for `width`; no-op without `ChunkSource`.
 fn rewrap_chunk(chunk: &mut RenderedChunk, width: u16) {
     if let Some(source) = chunk.source.as_ref() {
         chunk.lines = wrap_source(source, width);
@@ -289,10 +290,10 @@ impl Widget for &mut ScrollbackList {
     }
 }
 
-#[path = "scrollback_select.rs"]
-mod select;
 #[path = "scrollback_copy.rs"]
 mod copy;
+#[path = "scrollback_select.rs"]
+mod select;
 #[cfg(test)]
 #[path = "scrollback_tests.rs"]
 mod tests;

@@ -1,4 +1,4 @@
-import { mkdir, copyFile, access, unlink } from 'fs/promises';
+import { mkdir, copyFile, access, unlink, realpath } from 'fs/promises';
 import { join, basename, relative, dirname, resolve } from 'path';
 import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
@@ -60,39 +60,59 @@ export async function addAttachment(
 
   const workUnit = data.workUnits[options.workUnitId];
 
-  // Create attachments directory for this work unit
+  // Attachments directory and destination path for this work unit
   const attachmentsDir = join(cwd, 'spec', 'attachments', options.workUnitId);
-  await mkdir(attachmentsDir, { recursive: true });
-
-  // Copy file to attachments directory (use resolved path for the actual file)
   const fileName = basename(resolvedPath);
   const destPath = join(attachmentsDir, fileName);
-  await copyFile(resolvedPath, destPath);
-
-  // BUG-055: Check if source file is in spec/attachments/ root directory
-  // If so, delete it after successful copy to prevent duplication
-  const sourceAbsPath = resolve(resolvedPath);
-  const attachmentsRootDir = resolve(cwd, 'spec', 'attachments');
-  const sourceDir = dirname(sourceAbsPath);
-
-  if (sourceDir === attachmentsRootDir) {
-    // Source is in spec/attachments/ root - delete it to prevent duplication
-    await unlink(resolvedPath);
-  }
 
   // Get relative path from project root
   const relativePath = relative(cwd, destPath);
 
-  // Initialize attachments array if it doesn't exist
-  if (!workUnit.attachments) {
-    workUnit.attachments = [];
-  }
-
-  // Check if attachment already exists
-  if (workUnit.attachments.includes(relativePath)) {
+  // BUG-151: Duplicate-registration check BEFORE any filesystem mutation,
+  // so a duplicate add-attachment throws without touching the file
+  if (workUnit.attachments?.includes(relativePath)) {
     throw new Error(
       `Attachment '${fileName}' already exists for work unit '${options.workUnitId}'`
     );
+  }
+
+  await mkdir(attachmentsDir, { recursive: true });
+
+  // BUG-151: Guard source === destination. Canonicalize both paths via
+  // realpath (defeats symlink aliasing); fall back to resolve() if
+  // canonicalization fails. When equal, register-only: no copy, no unlink —
+  // copying a file onto itself truncates it to 0 bytes on some platforms.
+  let canonicalSource: string;
+  let canonicalDestDir: string;
+  try {
+    canonicalSource = await realpath(resolvedPath);
+    canonicalDestDir = await realpath(attachmentsDir);
+  } catch {
+    canonicalSource = resolve(resolvedPath);
+    canonicalDestDir = resolve(attachmentsDir);
+  }
+  const isSelfCopy = canonicalSource === join(canonicalDestDir, fileName);
+
+  if (!isSelfCopy) {
+    // Copy file to attachments directory (use resolved path for the actual file)
+    await copyFile(resolvedPath, destPath);
+
+    // BUG-055: Check if source file is in spec/attachments/ root directory
+    // If so, delete it after successful copy to prevent duplication.
+    // Never runs on the register-only (self-copy) path.
+    const sourceAbsPath = resolve(resolvedPath);
+    const attachmentsRootDir = resolve(cwd, 'spec', 'attachments');
+    const sourceDir = dirname(sourceAbsPath);
+
+    if (sourceDir === attachmentsRootDir) {
+      // Source is in spec/attachments/ root - delete it to prevent duplication
+      await unlink(resolvedPath);
+    }
+  }
+
+  // Initialize attachments array if it doesn't exist
+  if (!workUnit.attachments) {
+    workUnit.attachments = [];
   }
 
   // Add the attachment path

@@ -26,7 +26,6 @@ use codelet_rpc_types::{
     ToolCallInfo, ToolProgressInfo, ToolResultInfo,
 };
 use codelet_sessions::background_session::BackgroundSession;
-use std::sync::atomic::Ordering;
 
 use crate::inject_summary_handler::should_idle_on_done;
 use crate::persist::{
@@ -277,10 +276,10 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             // UX-002: Structured compaction events
             StreamEvent::CompactionStarted => {
                 self.session.set_status(SessionStatus::Compacting);
-                let current = self.session.cached_input_tokens.load(Ordering::Acquire);
-                self.session
-                    .pre_compaction_tokens
-                    .store(current, Ordering::Release);
+                // CMPCT-041: snapshot through the shared BackgroundSession
+                // accessor so both AUTO twins and the manual writers agree
+                // on an equivalent basis (see the accessor docs).
+                self.session.snapshot_pre_compaction_tokens();
                 StreamChunk::session_state_change(SessionState::Compacting)
             }
             StreamEvent::CompactionProgress(progress) => {
@@ -321,6 +320,29 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             StreamEvent::CompactionContinuing => {
                 self.session.set_status(SessionStatus::Running);
                 StreamChunk::session_state_change(SessionState::Running)
+            }
+            // CONT-007: live continue/goal counter snapshot — map to the
+            // state-only chunk, DROPPING the CLI-only transition reason.
+            // CONT-008: EXCEPT GoalSatisfied — the engine cleared an active
+            // goal (shared done() teardown), so this twin, which owns the
+            // BackgroundSession, writes the chrome goal state back through
+            // the shared guarded helper and marks the wire chunk with
+            // goalCleared so the TUI drops its 🎯 cache.
+            StreamEvent::ContinueState(cs) => {
+                let goal_cleared = cs.reason
+                    == codelet_cli::interactive::ContinueStateReason::GoalSatisfied;
+                if goal_cleared {
+                    self.session.clear_goal_state_if_unchanged_since_sync();
+                }
+                StreamChunk::continue_state_update(codelet_rpc_types::ContinueStateInfo {
+                    enabled: cs.enabled,
+                    budget: cs.budget,
+                    nudges_used: cs.nudges_used,
+                    goal_active: cs.goal_active,
+                    effective_budget: cs.effective_budget,
+                    goal_cleared,
+                    done_rejections: cs.done_rejections,
+                })
             }
         };
 

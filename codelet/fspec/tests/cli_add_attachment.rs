@@ -3,12 +3,9 @@
 //!
 //! Feature: spec/features/add-attachment-cli-subcommand.feature
 //!
-//! Red phase: these tests MUST fail today because:
-//!   - `codelet/fspec/src/main.rs` does not yet register an `add-attachment`
-//!     clap subcommand (clap returns exit code 2 for "unrecognized
-//!     subcommand").
-//!   - `codelet/fspec-core/src/commands/add_attachment.rs` is still a
-//!     NotYetPorted stub.
+//! The port is complete: `codelet/fspec/src/main.rs` registers the
+//! `add-attachment` clap subcommand, which bridges into
+//! `codelet/fspec-core/src/commands/add_attachment.rs::run`.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 

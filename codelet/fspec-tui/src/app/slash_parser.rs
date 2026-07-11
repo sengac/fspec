@@ -13,6 +13,8 @@
 
 use codelet_rpc_types::ThinkingLevel;
 
+use super::continue_parser::{parse_continue_command, ContinueSubcommand};
+use super::goal_parser::{parse_goal_command, GoalSubcommand};
 use super::loop_parser::{parse_loop_command, LoopSubcommand};
 use super::schedule_parser::{parse_schedule_command, ScheduleSubcommand};
 
@@ -52,6 +54,15 @@ pub enum SlashCommandParse {
     /// (Add / Cancel / List / Help) so the dispatcher can fan out to
     /// the matching handle_loop_* helper without re-parsing.
     LoopSubcommand(LoopSubcommand),
+    /// `/continue …` — CONT-002. Carries the parsed
+    /// [`ContinueSubcommand`] (Toggle / On / Off / SetBudget /
+    /// RejectZero / Invalid) so the dispatcher can apply the toggle and
+    /// round-trip the new state to the backend without re-parsing.
+    ContinueSubcommand(ContinueSubcommand),
+    /// `/goal …` — CONT-003. Carries the parsed [`GoalSubcommand`]
+    /// (Set / Show / Verify / Clear) so the dispatcher can apply the
+    /// goal state and round-trip it to the backend without re-parsing.
+    GoalSubcommand(GoalSubcommand),
     /// Anything else — forward to `backend.send_input` as before.
     NotASlashCommand,
 }
@@ -122,6 +133,17 @@ pub fn parse_slash_command(text: &str) -> SlashCommandParse {
     // parser. Bare `/loop` resolves to `LoopSubcommand::Help`.
     if trimmed == "/loop" || trimmed.starts_with("/loop ") {
         return SlashCommandParse::LoopSubcommand(parse_loop_command(trimmed));
+    }
+    // CONT-002: route the entire `/continue …` family through the
+    // dedicated parser. Bare `/continue` resolves to
+    // `ContinueSubcommand::Toggle`.
+    if trimmed == "/continue" || trimmed.starts_with("/continue ") {
+        return SlashCommandParse::ContinueSubcommand(parse_continue_command(trimmed));
+    }
+    // CONT-003: route the entire `/goal …` family through the dedicated
+    // parser. Bare `/goal` resolves to `GoalSubcommand::Show`.
+    if trimmed == "/goal" || trimmed.starts_with("/goal ") {
+        return SlashCommandParse::GoalSubcommand(parse_goal_command(trimmed));
     }
     SlashCommandParse::NotASlashCommand
 }

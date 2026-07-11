@@ -219,8 +219,7 @@ pub fn synthesize_codex_section(
     // (PROV-130) without duplicating the header. A local-server OpenAI *profile*
     // section (`profile_name` Some(..)) is never a cloud section and is preserved.
     sections.retain(|s| {
-        !(s.profile_name.is_none()
-            && (s.key == OPENAI_PROVIDER_ID || s.key == CODEX_PROVIDER_ID))
+        !(s.profile_name.is_none() && (s.key == OPENAI_PROVIDER_ID || s.key == CODEX_PROVIDER_ID))
     });
 
     // PROV-130: the synthesized Codex section LEADS the cloud group — TS

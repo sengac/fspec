@@ -1,0 +1,118 @@
+{
+  "scenarios": [
+    {
+      "name": "TS SessionHeader renders a negative compactionReduction honestly",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/compaction-badge-sign-integrity.test.tsx",
+          "lines": "73-92",
+          "implMappings": [
+            {
+              "file": "src/tui/components/SessionHeader.tsx",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TS raw sessionCompact writers clamp a negative compressionRatio at both write sites",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/compaction-badge-sign-integrity.test.tsx",
+          "lines": "94-135",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                2766,
+                2767,
+                2768,
+                2769
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/compaction-badge-sign-integrity.test.tsx",
+          "lines": "94-135",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5611,
+                5612,
+                5613
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/compaction-badge-sign-integrity.test.tsx",
+          "lines": "94-135",
+          "implMappings": [
+            {
+              "file": "src/tui/components/SessionHeader.tsx",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TS positive compactionReduction still renders unchanged without Math.abs",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/compaction-badge-sign-integrity.test.tsx",
+          "lines": "137-153",
+          "implMappings": [
+            {
+              "file": "src/tui/components/SessionHeader.tsx",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/compaction-badge-sign-integrity.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/SessionHeader.tsx",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 194
+  }
+}

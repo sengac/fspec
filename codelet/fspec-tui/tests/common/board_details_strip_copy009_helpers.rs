@@ -72,7 +72,12 @@ pub fn board_with_clipboard(
     units: Vec<WorkUnitInfo>,
     w: u16,
     h: u16,
-) -> (BoardView, BoardStore, UnboundedReceiver<Action>, Arc<Mutex<Vec<u8>>>) {
+) -> (
+    BoardView,
+    BoardStore,
+    UnboundedReceiver<Action>,
+    Arc<Mutex<Vec<u8>>>,
+) {
     let mut store = BoardStore::default();
     store.replace_work_units(units);
     store.set_focused_column("backlog");

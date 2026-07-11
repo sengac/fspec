@@ -69,15 +69,27 @@ fn dragging_across_a_wrapped_composer_row_copies_its_text_without_the_prompt() {
     let area = input_rect();
 
     // @step When I drag across the second wrapped row of the input and release
-    let _ = input.handle_mouse(mouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 1), area);
-    let _ = input.handle_mouse(mouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 40, 1), area);
+    let _ = input.handle_mouse(
+        mouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 1),
+        area,
+    );
+    let _ = input.handle_mouse(
+        mouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 40, 1),
+        area,
+    );
     let text = input
-        .handle_mouse(mouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 40, 1), area)
+        .handle_mouse(
+            mouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 40, 1),
+            area,
+        )
         .expect("Commit must return the selected text");
 
     // @step Then that row's text without the "> " prompt is written to the clipboard
     let second_row: String = draft.chars().skip(56).collect();
-    assert_eq!(text, second_row, "copied text is the second wrapped row, prompt-free");
+    assert_eq!(
+        text, second_row,
+        "copied text is the second wrapped row, prompt-free"
+    );
     assert!(!text.contains('>'), "the '> ' prompt must be excluded");
     assert_eq!(
         osc52_bytes_for(&text),
@@ -110,17 +122,26 @@ fn long_pressing_a_composer_line_selects_and_copies_it() {
     // @step When I press and hold on a composer line for about half a second and release
     // Press on visual row 0 ("hello"); wait past the ~400ms long-press
     // threshold and poll the tick seam so Begin fires; then release.
-    let _ = input.handle_mouse(mouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 2, 0), area);
+    let _ = input.handle_mouse(
+        mouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 2, 0),
+        area,
+    );
     std::thread::sleep(std::time::Duration::from_millis(450));
     let begin = input.poll_selection_tick(area);
     assert!(begin.is_none(), "a bare Begin never commits text");
     let text = input
-        .handle_mouse(mouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 2, 0), area)
+        .handle_mouse(
+            mouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 2, 0),
+            area,
+        )
         .expect("Commit must return the selected line");
 
     // @step Then that line becomes selected and its text is written to the clipboard
     assert!(input.text_selection_active(), "the line is selected");
-    assert_eq!(text, "hello", "long-press copies the whole line under the press");
+    assert_eq!(
+        text, "hello",
+        "long-press copies the whole line under the press"
+    );
     assert_eq!(
         osc52_bytes_for(&text),
         expected_osc52("hello"),
@@ -139,16 +160,28 @@ fn typing_while_a_selection_is_active_clears_it_and_inserts_the_character() {
     let mut input = MultiLineInput::new();
     input.set_value("abcdef");
     let area = input_rect();
-    let _ = input.handle_mouse(mouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 0), area);
-    let _ = input.handle_mouse(mouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 3, 0), area);
-    assert!(input.text_selection_active(), "precondition: selection active");
+    let _ = input.handle_mouse(
+        mouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 0),
+        area,
+    );
+    let _ = input.handle_mouse(
+        mouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 3, 0),
+        area,
+    );
+    assert!(
+        input.text_selection_active(),
+        "precondition: selection active"
+    );
     let before = input.value();
 
     // @step When I type a character
     let outcome = input.handle_key(KeyCode::Char('X'), KeyModifiers::NONE);
 
     // @step Then the composer selection is cleared
-    assert!(!input.text_selection_active(), "typing clears the selection (rule [5])");
+    assert!(
+        !input.text_selection_active(),
+        "typing clears the selection (rule [5])"
+    );
 
     // @step And the character is inserted into the input normally
     assert!(matches!(outcome, InputEventOutcome::Continued));
@@ -167,9 +200,18 @@ fn esc_clears_an_active_composer_selection_without_copying_or_submitting() {
     let mut input = MultiLineInput::new();
     input.set_value("draft text");
     let area = input_rect();
-    let _ = input.handle_mouse(mouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 0), area);
-    let _ = input.handle_mouse(mouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 4, 0), area);
-    assert!(input.text_selection_active(), "precondition: selection active");
+    let _ = input.handle_mouse(
+        mouse(MouseEventKind::Down(MouseButton::Left), BODY_X, 0),
+        area,
+    );
+    let _ = input.handle_mouse(
+        mouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 4, 0),
+        area,
+    );
+    assert!(
+        input.text_selection_active(),
+        "precondition: selection active"
+    );
     let before = input.value();
 
     // @step When I press Esc
@@ -188,7 +230,11 @@ fn esc_clears_an_active_composer_selection_without_copying_or_submitting() {
     // (No Commit gesture fired, so no text was ever produced to copy.)
 
     // @step And the input is not submitted or cleared
-    assert_eq!(input.value(), before, "the draft is neither submitted nor cleared");
+    assert_eq!(
+        input.value(),
+        before,
+        "the draft is neither submitted nor cleared"
+    );
 }
 
 // ---------------------------------------------------------------------
@@ -204,11 +250,20 @@ fn a_quick_click_in_the_composer_does_not_select_or_copy() {
 
     // @step When I quickly click in the composer to move the cursor
     // Down then immediate Up with NO drag and NO long-press tick between.
-    let down = input.handle_mouse(mouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 2, 0), area);
-    let up = input.handle_mouse(mouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 2, 0), area);
+    let down = input.handle_mouse(
+        mouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 2, 0),
+        area,
+    );
+    let up = input.handle_mouse(
+        mouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 2, 0),
+        area,
+    );
 
     // @step Then nothing is selected and nothing is written to the clipboard
     assert!(down.is_none(), "Down alone produces no text");
     assert!(up.is_none(), "a quick click commits nothing");
-    assert!(!input.text_selection_active(), "a quick click makes no selection");
+    assert!(
+        !input.text_selection_active(),
+        "a quick click makes no selection"
+    );
 }

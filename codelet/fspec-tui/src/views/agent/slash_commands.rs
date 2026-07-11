@@ -36,6 +36,8 @@ pub enum SlashCommandAction {
     MergeWorktree,
     Schedule,
     Loop,
+    Continue,
+    Goal,
 }
 
 impl SlashCommandAction {
@@ -61,6 +63,8 @@ impl SlashCommandAction {
             SlashCommandAction::MergeWorktree => "merge-worktree",
             SlashCommandAction::Schedule => "schedule",
             SlashCommandAction::Loop => "loop",
+            SlashCommandAction::Continue => "continue",
+            SlashCommandAction::Goal => "goal",
         }
     }
 }
@@ -150,6 +154,14 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
     SlashCommand {
         action: SlashCommandAction::Loop,
         description: "Quick recurring schedule (session-scoped)",
+    },
+    SlashCommand {
+        action: SlashCommandAction::Continue,
+        description: "Toggle auto-continue mode (nudge until done())",
+    },
+    SlashCommand {
+        action: SlashCommandAction::Goal,
+        description: "Set a goal gating done() acceptance",
     },
 ];
 

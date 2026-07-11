@@ -975,6 +975,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // per NAPI type system, but the local StreamChunk interface marks it optional
       // since it's a flat union. Guard to prevent runtime crash if undefined.
       if (result) {
+        // CMPCT-040 note: this chunk-path write site is intentionally NOT
+        // clamped here — the wire compressionRatio is upstream-clamped to
+        // >= 0 by the shared compression_ratio() helper per CMPCT-039.
         setCompactionReductionRef.current?.(Math.round(result.compressionRatio));
       }
       // CMPCT-034: Removed compactionRef.current.endCompaction() — Rust sets
@@ -2760,7 +2763,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
           // UX-002: Don't add success message to conversation
           // Compaction completion is handled by state transition
 
-          setCompactionReduction(result.compressionRatio);
+          // CMPCT-040: clamp at the writer so compactionReduction >= 0
+          // even against a stale/unclamped backend — SessionHeader
+          // renders the value verbatim (no Math.abs).
+          setCompactionReduction(Math.max(0, result.compressionRatio));
         } catch (err) {
           const errorMessage =
             err instanceof Error ? err.message : 'Failed to compact';
@@ -5602,7 +5608,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
                 .performManualCompaction(currentSessionId)
                 .then(result => {
                   // UX-002: Don't add success message to conversation on retry
-                  setCompactionReduction(result.compressionRatio);
+                  // CMPCT-040: clamp at the writer (see manual /compact
+                  // handler) — SessionHeader renders verbatim.
+                  setCompactionReduction(Math.max(0, result.compressionRatio));
                   setTokenUsage(prev => ({
                     ...prev,
                     inputTokens: result.compactedTokens,

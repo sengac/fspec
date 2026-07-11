@@ -11,16 +11,17 @@ concrete patterns every contributor should follow.
 1. [Philosophy](#philosophy)
 2. [Test Runners & Configuration](#test-runners--configuration)
 3. [Running Tests](#running-tests)
-4. [Test Pyramid](#test-pyramid)
-5. [Filesystem Helpers & Fixtures](#filesystem-helpers--fixtures)
-6. [TUI Component Testing (ink-testing-library)](#tui-component-testing-ink-testing-library)
-7. [Terminal E2E Testing (@microsoft/tui-test)](#terminal-e2e-testing-microsofttui-test)
-8. [Integration Tests Without Mocks](#integration-tests-without-mocks)
-9. [When Mocks Are Appropriate](#when-mocks-are-appropriate)
-10. [Builder / Factory Fixtures](#builder--factory-fixtures)
-11. [ACDD Test Structure Convention](#acdd-test-structure-convention)
-12. [Animation & Timer Testing](#animation--timer-testing)
-13. [Troubleshooting](#troubleshooting)
+4. [Rust Workspace Tests (codelet/) — Read Before Running](#rust-workspace-tests-codelet--read-before-running)
+5. [Test Pyramid](#test-pyramid)
+6. [Filesystem Helpers & Fixtures](#filesystem-helpers--fixtures)
+7. [TUI Component Testing (ink-testing-library)](#tui-component-testing-ink-testing-library)
+8. [Terminal E2E Testing (@microsoft/tui-test)](#terminal-e2e-testing-microsofttui-test)
+9. [Integration Tests Without Mocks](#integration-tests-without-mocks)
+10. [When Mocks Are Appropriate](#when-mocks-are-appropriate)
+11. [Builder / Factory Fixtures](#builder--factory-fixtures)
+12. [ACDD Test Structure Convention](#acdd-test-structure-convention)
+13. [Animation & Timer Testing](#animation--timer-testing)
+14. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -93,6 +94,44 @@ We use **three** separate test runners, each with its own configuration.
 
 > **All commands except `test:watch` run `npm run build` first.** Tests run
 > against the compiled bundle, not raw TypeScript.
+
+---
+
+## Rust Workspace Tests (codelet/) — Read Before Running
+
+> ⚠️ **NEVER run `cargo test --workspace` (or a bare `cargo test`) from
+> `codelet/`.**
+>
+> **Incident 2026-07-10:** a plain `cargo test --workspace` compiled all 944
+> integration-test binaries in the workspace with full DWARF debug info —
+> **1.4–2 GB per binary**, because every test binary statically links the full
+> crate graph (arrow, datafusion, lance, tantivy). `target/debug/deps` grew to
+> **299 GB** and the machine crashed mid-link.
+
+### Safe invocation patterns
+
+| Goal | Command |
+|------|---------|
+| One crate's test target (preferred) | `cargo test -p <crate> --test <name>` |
+| One whole crate | `cargo test -p <crate>` |
+| Several crates | `CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 cargo test -p <a> -p <b> -j 12 --no-fail-fast` |
+| CI-style bounded run | `cargo test --profile ci-test -p <crate>` |
+
+Rules of thumb:
+
+1. **Always scope with `-p`** — never let cargo expand to the whole workspace.
+2. **Drop debug info for broad runs** with
+   `CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0` (both are needed:
+   deps build under the `dev` profile, test binaries under `test`).
+3. **Tee output to a file** (`cargo test ... 2>&1 | tee /tmp/test-out.txt`)
+   and read the file — never re-run an expensive suite just to see a
+   different slice of the output.
+4. The disk-bloat background, the `ci-test` profile, and
+   `incremental = false` on `[profile.test]` are documented in
+   `codelet/Cargo.toml` (RPC-043 + the 2026-07-10 incident note).
+5. These rules are enforced at runtime by `~/.fspec/blocklist.json`
+   (`cargo-test-workspace-block` blocks `--workspace`/`--all`;
+   `cargo-test-unscoped-prompt` prompts on a bare `cargo test`).
 
 ---
 

@@ -127,8 +127,8 @@ pub struct AgentView {
     pub(crate) last_hitl: Option<(codelet_rpc_types::SessionId, hitl_keys::HitlKeyMode)>,
     /// RPC-412: freeform HITL header offset (rows to the "> " input line).
     pub(crate) last_hitl_input_offset: Option<u16>,
-    /// COPY-006: scrollback drag / long-press selection recognizer.
-    pub(crate) recognizer: crate::mouse::gesture::SelectionRecognizer,    pub(crate) text_selection_active: bool, // COPY-006: live scrollback selection.
+    pub(crate) recognizer: crate::mouse::gesture::SelectionRecognizer, // COPY-006
+    pub(crate) text_selection_active: bool, // COPY-006: live scrollback selection.
 }
 
 impl AgentView {

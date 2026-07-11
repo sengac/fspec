@@ -65,8 +65,15 @@ fn create_session_with_messages(
     num_system_reminders: usize,
     num_conversation_pairs: usize,
 ) -> Session {
-    let mut session =
-        Session::from_provider_manager(codelet_providers::ProviderManager::new().unwrap());
+    // CMPCT-038 drive-by: fall back to an explicit provider so the test
+    // also runs in multi-credential environments (ProviderManager::new()
+    // errors when several providers are credentialed but none selected).
+    let provider_manager = codelet_providers::ProviderManager::new()
+        .or_else(|_| codelet_providers::ProviderManager::with_provider("gemini"))
+        .or_else(|_| codelet_providers::ProviderManager::with_provider("zai"))
+        .or_else(|_| codelet_providers::ProviderManager::with_provider("claude"))
+        .expect("Need at least one API key for tests");
+    let mut session = Session::from_provider_manager(provider_manager);
 
     let reminder_types = [
         SystemReminderType::Environment,

@@ -3,18 +3,14 @@
 //! ▰▰▰▰▰▱▱▱▱▱` chip on the left when a compaction is in flight for the
 //! focused session.
 //!
-//! Feature files:
-//!   - spec/features/rpc018-agent-chrome.feature
-//!   - spec/features/rpc029-agent-structure-alignment.feature
-//!   - spec/features/slash-command-compact.feature (RPC-047)
+//! Features: rpc018-agent-chrome, rpc029-agent-structure-alignment,
+//! slash-command-compact (RPC-047).
 //!
 //! RPC-029: structural rewrite matches the TS Ink original
-//! (`src/tui/components/SessionFooter.tsx`). Row paints a dark-grey
-//! `#333333` background on every cell and is padded horizontally by
-//! 1 column on both sides. The right side is split into TWO spans:
-//! the cwd in dark-grey (matching TS `chalk.dim`) and the bracketed
-//! branch suffix in cyan. The branch glyph is `⎇` (U+2387). cwd
-//! shortening replaces a `$HOME` prefix with `~`.
+//! (`src/tui/components/SessionFooter.tsx`). Dark-grey `#333333` row
+//! background, 1-column horizontal padding. Right side is two spans:
+//! dark-grey cwd (TS `chalk.dim`) + cyan bracketed `⎇` branch suffix.
+//! cwd shortening replaces a `$HOME` prefix with `~`.
 
 use std::path::PathBuf;
 
@@ -39,15 +35,16 @@ const COMPACTION_BAR_WIDTH: u16 = 10;
 /// (RPC-047) the optional `CompactionProgress` for the focused session.
 pub struct SessionFooter<'a> {
     pub workspace: Option<&'a WorkspaceInfo>,
-    /// When `Some`, the left side paints `[compacting: <phase> <c>/<t>]`
-    /// + a 10-cell `▰▰▰▰▰▱▱▱▱▱` bar. When `None`, only the right-aligned
-    ///   `cwd [⎇ branch]` is painted (RPC-029 behaviour).
+    /// When `Some`, the left side paints `[compacting: <phase> <c>/<t>]` +
+    /// a 10-cell bar; `None` paints only the right-aligned `cwd [⎇ branch]`.
     pub compaction_progress: Option<&'a CompactionProgress>,
-    /// RPC-061: per-session pending-supervisor count. When > 0, the
-    /// SessionFooter paints `[N pending from supervisor]` (yellow) in
-    /// the left-aligned slot, suppressing the compaction chip for that
-    /// frame (the supervisor signal is more urgent).
+    /// RPC-061: per-session pending-supervisor count. When > 0, paints
+    /// `[N pending from supervisor]` (yellow) in the left-aligned slot,
+    /// suppressing the compaction chip (supervisor signal is more urgent).
     pub supervisor_pending_count: usize,
+    /// CONT-002: `⏩ auto-continue (n/N)` indicator while armed; painted in
+    /// the left-aligned slot when no supervisor/compaction chip claims it.
+    pub continue_indicator: Option<String>,
 }
 
 impl<'a> Widget for SessionFooter<'a> {
@@ -69,6 +66,16 @@ impl<'a> Widget for SessionFooter<'a> {
             );
         } else if let Some(progress) = self.compaction_progress {
             paint_left_aligned(inner, buf, build_left_compaction_line(progress));
+        } else if let Some(indicator) = self.continue_indicator {
+            // CONT-002: auto-continue indicator while armed (cyan).
+            paint_left_aligned(
+                inner,
+                buf,
+                Line::from(vec![Span::styled(
+                    indicator,
+                    Style::default().fg(Color::Cyan),
+                )]),
+            );
         }
         let right_line = self
             .workspace
@@ -160,8 +167,13 @@ fn paint_right_aligned(inner: Rect, buf: &mut Buffer, line: Line<'static>) {
 }
 
 /// RPC-047: paint `line` left-aligned, truncating to inner width.
+///
+/// CONT-007: measures DISPLAY width (`Line::width`, unicode-aware) rather
+/// than `chrome::line_width`'s char count — the `⏩`/`🎯` continue/goal
+/// indicators contain double-width glyphs, and a char-count Rect clipped
+/// their closing paren.
 fn paint_left_aligned(inner: Rect, buf: &mut Buffer, line: Line<'static>) {
-    let width = line_width(&line);
+    let width = line.width();
     if width == 0 {
         return;
     }

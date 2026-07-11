@@ -24,9 +24,7 @@ use tokio::sync::mpsc::unbounded_channel;
 
 mod common;
 
-use common::{
-    start_ws_server_with_stats, temp_service, test_app, ws_url, MockBackend,
-};
+use common::{start_ws_server_with_stats, temp_service, test_app, ws_url, MockBackend};
 
 /// Helper: drain the App's action bus, dispatching each Action.
 fn pump_actions(app: &mut App) {

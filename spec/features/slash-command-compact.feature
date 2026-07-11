@@ -16,7 +16,7 @@ Feature: /compact slash command + compaction progress footer
   CompactionComplete StreamChunk handler lives in dispatch_stream_chunks.rs::handle_stream_chunk_state_updates. A new arm for StreamChunk::CompactionComplete clears the per-session compaction_progress entry AND dispatches Action::EmitSessionNotice via self.action_tx so the notice lands in the originating session's scrollback regardless of focus.
   AgentViewStore extension: new pub(crate) compaction_progress_by_session: HashMap<SessionId, CompactionProgress> field + accessors get_compaction_progress / set_compaction_progress / clear_compaction_progress. Accessors live in store/agent_view/isolation_state.rs (existing per-session push-state sub-module) to keep agent_view.rs under its 300-LoC ceiling per the RPC-025 source-shape invariant.
   SessionFooter widget gains a `compaction_progress: Option<&CompactionProgress>` field, painted left-aligned BEFORE the existing right-aligned cwd/branch block. Bar uses U+25B0 (▰) for filled and U+25B1 (▱) for empty, fixed 10 cells. Caller (views/agent.rs::render_with_store) reads agent_view_store.compaction_progress_for(current_session).
-  Notice-line format constant: helper `format_compaction_notice(result: &CompactionResult) -> String` lives in app/dispatch_slash_commands.rs (next to the /compact handler). Used by BOTH the slash-handler success branch AND the CompactionComplete chunk handler in dispatch_stream_chunks.rs so the formatting stays single-sourced.
+  Notice-line format constant: helper `format_compaction_notice(result: &CompactionResult) -> String` was MOVED by RPC-421 from app/dispatch_slash_commands.rs to app/dispatch_stream_chunks.rs (:242-251). Its SOLE caller is the CompactionComplete chunk handler in the same file (:166) — the slash-handler Ok branch emits NO success notice from the RPC result (whose numbers are measured before DAG injection and are therefore an acknowledgement, not a reduction). Exactly one `[compaction] ...` line lands per compaction, sourced from the chunk.
   """
 
   # ========================================
@@ -55,10 +55,12 @@ Feature: /compact slash command + compaction progress footer
     When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
     Then within 1 second backend.compact_session is called exactly once with session_id s-1
 
-  Scenario: /compact emits a success notice into the originating session's scrollback on Ok
-    Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3
-    When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
-    Then within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)"
+  Scenario: /compact Ok emits no success notice until the CompactionComplete chunk arrives
+    Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Ok with compression_ratio 0.0, original_tokens 10000, compacted_tokens 0, turns_summarized 0, turns_kept 0
+    When SlashCommandSelected(SlashCommandAction::Compact) is dispatched and the round-trip drains
+    Then s-1's scrollback contains no chunk whose text starts with "[compaction]"
+    When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 60.0, original_tokens 10000, compacted_tokens 4000, turns_summarized 12, turns_kept 3 is dispatched
+    Then s-1's scrollback contains exactly one chunk whose text equals "[compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)"
 
   Scenario: /compact emits an error notice into the originating session's scrollback on Err
     Given an App with an open session s-1 wired to a MockBackend whose compact_session returns Err("out of memory")
@@ -73,10 +75,11 @@ Feature: /compact slash command + compaction progress footer
 
   Scenario: /compact only affects the focused session — background sessions are untouched
     Given an App with two open sessions s-1 (focused) and s-2 (background)
-    And the MockBackend's compact_session returns Ok with compression_ratio 50.0, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1
+    And the MockBackend's compact_session returns Ok with compression_ratio 0.0, original_tokens 1000, compacted_tokens 0, turns_summarized 0, turns_kept 0
     When SlashCommandSelected(SlashCommandAction::Compact) is dispatched
     Then within 1 second backend.compact_session is called exactly once with session_id s-1
-    And within 1 second s-1's scrollback contains a chunk whose text equals "[compaction] 50.0% reduction (1000 → 500 tokens, 4 turns summarised)"
+    When ChunkReceived(s-1, StreamChunk::CompactionComplete) with compression_ratio 50.0, original_tokens 1000, compacted_tokens 500, turns_summarized 4, turns_kept 1 is dispatched
+    Then s-1's scrollback contains exactly one chunk whose text equals "[compaction] 50.0% reduction (1000 → 500 tokens, 4 turns summarised)"
     And s-2's scrollback does NOT contain any chunk whose text starts with "[compaction]"
 
   Scenario: SessionFooter renders the compaction progress segment when progress is Some

@@ -1,5 +1,5 @@
 use super::agent_runner::run_agent_with_interruption;
-use crate::interactive_helpers::{compression_ratio, execute_compaction};
+use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::{
@@ -91,9 +91,13 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
             let compaction_flag = Arc::new(AtomicBool::new(false));
             match execute_compaction(session, compaction_flag, None).await {
                 Ok(()) => {
+                    // RPC-421: this reads the post-clear trough (reminders +
+                    // compaction instruction) — a real measurement of an
+                    // intermediate state, NOT a reduction. The DAG summary
+                    // does not exist yet, so it feeds diagnostics only
+                    // (BUG-134 debug capture + tracing) and is NEVER printed
+                    // as a compression result.
                     let compacted_tokens = session.token_tracker.input_tokens;
-                    let ratio = compression_ratio(original_tokens, compacted_tokens);
-                    let compression_pct = ratio * 100.0;
 
                     // Capture compaction.manual.complete event
                     capture_event(
@@ -103,16 +107,14 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                             "type": "in-view-dag",
                             "originalTokens": original_tokens,
                             "compactedTokens": compacted_tokens,
-                            "compressionRatio": ratio,
                         }),
                     );
 
                     println!(
-                        "[Context compacted: {original_tokens}→{compacted_tokens} tokens, {compression_pct:.0}% compression]"
+                        "[Compaction started — agent will build the summary DAG via SessionSearch; no reduction numbers until it lands]\n"
                     );
-                    println!("[In-view DAG flow — agent will build summary via SessionSearch]\n");
                     info!(
-                        "/compact: {original_tokens}→{compacted_tokens} tokens ({compression_pct:.0}% compression, in-view DAG flow)"
+                        "/compact: context cleared to {compacted_tokens} trough tokens (from {original_tokens}); in-view DAG flow — final numbers unavailable on this path"
                     );
                 }
                 Err(e) => {
@@ -128,6 +130,56 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                     error!("/compact failed: {}", e);
                 }
             }
+            continue;
+        }
+
+        // CONT-003: Handle /goal BEFORE the provider-switch catch-all.
+        // Grammar: `/goal <text>` set/replace | bare `/goal` show state |
+        // `/goal verify <cmd>` attach verify | `/goal clear` drop goal.
+        if input == "/goal" || input.starts_with("/goal ") {
+            use crate::interactive::goal::{apply_goal_command, parse_goal_command};
+            let cmd = parse_goal_command(input);
+            let outcome = apply_goal_command(session, &cmd);
+            capture_event(
+                "command.executed",
+                serde_json::json!({
+                    "command": "/goal",
+                    "goalActive": session.goal.is_some(),
+                    "changed": outcome.changed,
+                }),
+            );
+            println!("{}\n", outcome.message);
+            continue;
+        }
+
+        // CONT-002: Handle /continue BEFORE the provider-switch catch-all.
+        // Grammar: bare toggle | on | off | <n> (n >= 1); 0 rejected with a
+        // hint; anything else errors with state unchanged. New state printed.
+        if input == "/continue" || input.starts_with("/continue ") {
+            use crate::interactive::auto_continue::{
+                apply_continue_command, parse_continue_command,
+            };
+            let cmd = parse_continue_command(input);
+            let outcome = apply_continue_command(
+                session.continue_enabled,
+                session.continue_budget,
+                session.goal.is_some(),
+                &cmd,
+            );
+            if outcome.changed {
+                session.continue_enabled = outcome.enabled;
+                session.continue_budget = outcome.budget;
+            }
+            capture_event(
+                "command.executed",
+                serde_json::json!({
+                    "command": "/continue",
+                    "enabled": outcome.enabled,
+                    "budget": outcome.budget,
+                    "changed": outcome.changed,
+                }),
+            );
+            println!("{}\n", outcome.message);
             continue;
         }
 

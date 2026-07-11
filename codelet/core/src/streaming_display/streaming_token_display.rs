@@ -134,6 +134,46 @@ impl StreamingTokenDisplay {
         }
     }
 
+    /// Seed from tracker-style CACHE-INCLUSIVE totals (CMPCT-041).
+    ///
+    /// `TokenTracker::update_from_usage` stores `usage.total_input()` — raw +
+    /// cache_read + cache_creation (PROV-001 "store TOTAL context") — in
+    /// `input_tokens` ALONGSIDE the non-zero cache fields. Seeding
+    /// [`Self::new`] with those values directly makes every emit re-add the
+    /// cache via [`TokenDisplayUpdate::total_input`], inflating a true 180k
+    /// context (30k raw + 150k cache_read) to 330k for the whole
+    /// [turn start → first Usage event] window.
+    ///
+    /// This constructor de-overlaps the seed instead: raw = total − cache,
+    /// keeping the cache split, so that
+    /// (a) the emitted total equals `total_input` exactly once,
+    /// (b) a pre-compaction flush bills only the raw portion into
+    ///     `cumulative_billed_input`, and
+    /// (c) cache values stay visible in the display.
+    ///
+    /// When the cache split is inconsistent with the total (e.g. stale cache
+    /// fields next to a freshly recalculated post-compaction estimate), the
+    /// total is trusted and the stale split is dropped.
+    ///
+    /// All turn-start seed/re-seed sites in `stream_loop.rs` MUST use this
+    /// constructor rather than [`Self::new`] — pinned by
+    /// `cmpct041_seed_cache_double_count_test.rs`.
+    pub fn from_cache_inclusive_total(
+        total_input: u64,
+        prev_output: u64,
+        cache_read: u64,
+        cache_creation: u64,
+    ) -> Self {
+        let cache = cache_read.saturating_add(cache_creation);
+        if cache <= total_input {
+            Self::new(total_input - cache, prev_output, cache_read, cache_creation)
+        } else {
+            // Inconsistent split (stale cache larger than the recalculated
+            // total): trust the total, drop the stale cache values.
+            Self::new(total_input, prev_output, 0, 0)
+        }
+    }
+
     /// Create with a custom throttle interval.
     pub fn with_throttle_interval(
         prev_input: u64,

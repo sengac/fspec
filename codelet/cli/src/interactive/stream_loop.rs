@@ -293,6 +293,18 @@ where
     let request_id = Uuid::new_v4().to_string();
     let api_start_time = Instant::now();
 
+    // CONT-007: TurnStart continue-state snapshot. The per-turn nudge
+    // reset already ran (agent_runner::reset_for_new_user_turn on the
+    // CLI path; the CONT-009 shared sync helper on the background
+    // twins), so this emission re-syncs the TUI bar to (0/N) — and also
+    // refreshes it after /continue and /goal changes, which never emit
+    // themselves (no stream is active when they apply).
+    super::continue_state::emit_continue_state(
+        session,
+        output,
+        super::output::ContinueStateReason::TurnStart,
+    );
+
     // HOOK-BASED COMPACTION (CTX-002: Optimized compaction trigger)
     let context_window = session.provider_manager().context_window() as u64;
     let max_output_tokens = session.provider_manager().max_output_tokens() as u64;
@@ -573,6 +585,17 @@ where
     let mut turn_tool_infos: Vec<ToolCallInfo> = Vec::new();
     let mut previous_turn_tool_infos: Vec<ToolCallInfo> = Vec::new();
 
+    // CONT-002: Auto-continue accounting. Counts tool calls in the segment
+    // that followed the most recent nudge (a nudge followed by >= 1 tool call
+    // is refunded — zero-progress budget), and tracks whether a nudge is
+    // awaiting its refund check at the next clean FinalResponse settle point.
+    let mut auto_continue_segment_tool_calls: usize = 0;
+    let mut auto_continue_nudge_pending_refund = false;
+
+    // CONT-003: consecutive nudged segments with zero activity (no tool
+    // calls, no done()) — the Goal-mode stall fast-path escalates at 2.
+    let mut goal_consecutive_zero_activity_nudges: u32 = 0;
+
     // Track previous session state for initial display
     let prev_input_tokens = session.token_tracker.input_tokens;
     let prev_output_tokens = session.token_tracker.output_tokens;
@@ -587,7 +610,12 @@ where
     // - Output token tracking (estimated vs authoritative)
     // - Tok/s rate calculation with EMA smoothing
     // - Display throttling to prevent UI flicker
-    let mut streaming_display = StreamingTokenDisplay::new(
+    // CMPCT-041: prev_input_tokens is ALREADY the cache-inclusive total
+    // (PROV-001), so the seed must de-overlap the cache split instead of
+    // handing total + cache to the display — otherwise the seed emit below
+    // re-adds cache via TokenInfo::from/total_input() and a true 180k
+    // context is emitted (and cached downstream) as 330k.
+    let mut streaming_display = StreamingTokenDisplay::from_cache_inclusive_total(
         prev_input_tokens,
         prev_output_tokens,
         prev_cache_read,
@@ -726,7 +754,9 @@ where
             turn_tool_infos.clear();
             tool_execution_in_progress = false;
 
-            streaming_display = StreamingTokenDisplay::new(
+            // CMPCT-041: audited seed constructor (cache args are 0 here —
+            // post-compaction tracker cache fields are reset/stale).
+            streaming_display = StreamingTokenDisplay::from_cache_inclusive_total(
                 session.token_tracker.input_tokens,
                 0,
                 0,
@@ -907,6 +937,10 @@ where
                         success: true, // Assume success until result arrives
                     });
 
+                    // CONT-002: Tool activity in the current segment refunds
+                    // a pending auto-continue nudge at the settle point.
+                    auto_continue_segment_tool_calls += 1;
+
                     // AMGR-016-FIX: Mark tool execution in progress — the next stream.next()
                     // will block on tool execution. Stall timeout must be disabled until
                     // the ToolResult chunk arrives.
@@ -986,6 +1020,53 @@ where
                         *g = None;
                     }
                     tool_execution_in_progress = false;
+
+                    // CONT-005/CONT-006: done() immediate termination
+                    // (Option D). An accepted done() is identified via the
+                    // DONE_ACCEPTANCE registry (rig's ToolResult has no tool
+                    // name). The consult runs AFTER handle_tool_result has
+                    // pushed both halves of the tool_use/tool_result pair
+                    // into session.messages, and rig executes tools strictly
+                    // sequentially, so breaking here strands nothing.
+                    // CONT-006 lifted CONT-005's goal-mode deferral: the
+                    // consult no longer gates on goal state, and the shared
+                    // teardown's goal branch performs the full atomic goal
+                    // teardown (🎯 announcement, session + registry goal
+                    // clear, CompletionContract reminder removal, rejection
+                    // resets). The FinalResponse acceptance check remains as
+                    // fallback for a race with natural stream end.
+                    if let Some(summary) = super::done_early_exit::decide_tool_result_early_exit(
+                        || codelet_tools::take_done_acceptance(session_id),
+                    ) {
+                        // Flush pending assistant text into history
+                        // (interrupt-path pattern) before closing the turn.
+                        if !assistant_text.is_empty() {
+                            handle_final_response(&assistant_text, &mut session.messages)?;
+                            assistant_text.clear();
+                        }
+
+                        // Clean-exit parity with the FinalResponse and
+                        // stream-end paths: process this turn's annotations.
+                        process_turn_annotations(
+                            session,
+                            &mut turn_tool_infos,
+                            &mut previous_turn_tool_infos,
+                        );
+
+                        // The ONE shared FinishWithSummary teardown (status
+                        // line + nudge counter reset) used by both exit sites.
+                        super::done_early_exit::apply_finish_with_summary(
+                            session,
+                            session_id,
+                            &summary,
+                            output,
+                        );
+
+                        output.emit_done_with_stop_reason(Some(
+                            super::done_early_exit::DONE_EARLY_EXIT_STOP_REASON.to_string(),
+                        ));
+                        break;
+                    }
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
                     // NET-001: Reset network retry counter on successful data receipt
@@ -1336,15 +1417,16 @@ where
                                 tool_execution_in_progress = false;
 
                                 // STREAMING-DISPLAY: Reset display for retry
-                                streaming_display = StreamingTokenDisplay::new(
-                                    session.token_tracker.input_tokens,
-                                    session.token_tracker.output_tokens,
-                                    session.token_tracker.cache_read_input_tokens.unwrap_or(0),
-                                    session
-                                        .token_tracker
-                                        .cache_creation_input_tokens
-                                        .unwrap_or(0),
-                                );
+                                streaming_display =
+                                    StreamingTokenDisplay::from_cache_inclusive_total(
+                                        session.token_tracker.input_tokens,
+                                        session.token_tracker.output_tokens,
+                                        session.token_tracker.cache_read_input_tokens.unwrap_or(0),
+                                        session
+                                            .token_tracker
+                                            .cache_creation_input_tokens
+                                            .unwrap_or(0),
+                                    );
 
                                 debug!("[stream_loop] PROV-041: Created new stream for thinking exhaustion retry");
                                 continue;
@@ -1415,6 +1497,196 @@ where
                         );
                         in_loop_compaction_restart!(policy);
                         continue;
+                    }
+
+                    // CONT-002: Auto-continue decision at the clean
+                    // FinalResponse settle point. ONLY this emit site may
+                    // nudge — the interrupt, stall-timeout, and error emit
+                    // sites never consult the continuation decision.
+                    // Truncation stops were already handled above by the
+                    // PROV-040/041 recoveries (which `continue` the loop),
+                    // and the decision function independently returns Finish
+                    // for max_tokens/length stops.
+                    {
+                        use super::auto_continue::{
+                            apply_segment_outcome, ContinueDecision, AUTO_CONTINUE_NUDGE_PROMPT,
+                        };
+
+                        // done() acceptance signal recorded by the tool
+                        // handler for this session, if any.
+                        let done_summary = codelet_tools::take_done_acceptance(session_id);
+
+                        // Refund accounting: a nudge followed by >= 1 tool
+                        // call in this segment did real work — refund it.
+                        // (`mem::take` reads AND clears the pending flag.)
+                        // CONT-003: the same read drives the stall fast-path
+                        // counter — a nudged segment with zero activity (no
+                        // tool calls, no done()) increments it; any activity
+                        // resets it.
+                        if std::mem::take(&mut auto_continue_nudge_pending_refund) {
+                            session.continue_nudges_used = apply_segment_outcome(
+                                session.continue_nudges_used,
+                                auto_continue_segment_tool_calls,
+                            );
+                            if auto_continue_segment_tool_calls == 0 && done_summary.is_none() {
+                                goal_consecutive_zero_activity_nudges =
+                                    goal_consecutive_zero_activity_nudges.saturating_add(1);
+                            } else {
+                                goal_consecutive_zero_activity_nudges = 0;
+                            }
+                            // CONT-007: surface the settled counter (a
+                            // refund was previously invisible EVERYWHERE).
+                            super::continue_state::emit_continue_state(
+                                session,
+                                output,
+                                super::output::ContinueStateReason::RefundSettled,
+                            );
+                        }
+
+                        // CONT-003: Goal mode wins the derived mode — consult
+                        // the Goal decision function while a goal is active;
+                        // CONT-002 AutoContinue behavior is unchanged.
+                        let goal_active = session.goal.is_some();
+                        let decision = if goal_active {
+                            // Sync the rejection count from the done()
+                            // registry for the >= 4 escalation threshold.
+                            session.done_rejections =
+                                codelet_tools::done_rejection_count(session_id);
+                            super::auto_continue::decide_goal_continuation(
+                                done_summary.as_deref(),
+                                final_stop_reason.as_deref(),
+                                session.continue_nudges_used,
+                                super::goal::effective_goal_budget(session),
+                                session.done_rejections,
+                                goal_consecutive_zero_activity_nudges,
+                                is_interrupted.load(Acquire),
+                            )
+                        } else {
+                            super::auto_continue::decide_continuation(
+                                session.continue_enabled,
+                                done_summary.as_deref(),
+                                final_stop_reason.as_deref(),
+                                session.continue_nudges_used,
+                                session.continue_budget,
+                                is_interrupted.load(Acquire),
+                            )
+                        };
+                        match decision {
+                            ContinueDecision::Finish => {}
+                            ContinueDecision::FinishWithSummary(summary) => {
+                                // CONT-005/CONT-006: fallback exit site
+                                // (acceptance raced with natural stream
+                                // end). Routes through the SAME shared
+                                // teardown as the ToolResult-arm early exit
+                                // so the two sites cannot diverge — in goal
+                                // mode both run the identical atomic goal
+                                // teardown. `goal_active` (captured above)
+                                // equals `session.goal.is_some()` here —
+                                // nothing mutates the goal between.
+                                super::done_early_exit::apply_finish_with_summary(
+                                    session, session_id, &summary, output,
+                                );
+                            }
+                            ContinueDecision::FinishWithWarning(warning) => {
+                                // Budget exhausted: finish with a visible
+                                // warning; session stays interactive and the
+                                // toggle stays on (doc §2, option b).
+                                // CONT-007: the bar shows exhaustion
+                                // naturally as (N/N); the warning stays in
+                                // chat (terminal event).
+                                output.emit_status(&warning);
+                                super::continue_state::emit_continue_state(
+                                    session,
+                                    output,
+                                    super::output::ContinueStateReason::BudgetExhausted,
+                                );
+                            }
+                            ContinueDecision::Escalate(message) => {
+                                // CONT-003: stop the world for human review.
+                                // Emit the prominent blocked message FIRST
+                                // (plain CLI repl has no pause handler and
+                                // pause_for_user returns Resumed
+                                // immediately), then raise the HITL pause —
+                                // surfaces with a registered handler block
+                                // here until the user resumes. The goal
+                                // stays active.
+                                output.emit_status(&message);
+                                let _resolution =
+                                    super::goal::raise_goal_escalation(session_id, &message);
+                            }
+                            ContinueDecision::Nudge => {
+                                session.continue_nudges_used += 1;
+                                auto_continue_nudge_pending_refund = true;
+                                auto_continue_segment_tool_calls = 0;
+                                info!(
+                                    "CONT-002: auto-continue nudge {}/{} (stop_reason={:?})",
+                                    session.continue_nudges_used,
+                                    session.continue_budget,
+                                    final_stop_reason.as_deref()
+                                );
+                                // CONT-007: the per-nudge chat print is
+                                // REMOVED — the counter belongs in the bar.
+                                // This snapshot replaces the old
+                                // emit_status; CliOutput renders the same
+                                // stdout line from it (now with the
+                                // effective Goal budget instead of
+                                // continue_budget), and the TUI folds it
+                                // into the footer indicator.
+                                super::continue_state::emit_continue_state(
+                                    session,
+                                    output,
+                                    super::output::ContinueStateReason::NudgeConsumed,
+                                );
+
+                                // PROV-041 re-prompt recipe: fresh token
+                                // state + hook, restart stream, push the
+                                // nudge as a plain user message, reset
+                                // per-stream locals, continue the loop.
+                                let nudge_token_state = Arc::new(Mutex::new(TokenState {
+                                    input_tokens: session.token_tracker.input_tokens,
+                                    cache_read_input_tokens: 0,
+                                    cache_creation_input_tokens: 0,
+                                    output_tokens: 0,
+                                    compaction_needed: false,
+                                }));
+                                let nudge_hook =
+                                    CompactionHook::new(Arc::clone(&nudge_token_state), threshold);
+
+                                stream = agent
+                                    .prompt_streaming_with_history_and_hook(
+                                        AUTO_CONTINUE_NUDGE_PROMPT,
+                                        &mut session.messages,
+                                        nudge_hook,
+                                    )
+                                    .await;
+
+                                session.messages.push(Message::User {
+                                    content: OneOrMany::one(UserContent::text(
+                                        AUTO_CONTINUE_NUDGE_PROMPT,
+                                    )),
+                                });
+
+                                // Reset per-stream tracking for the nudged segment
+                                assistant_text.clear();
+                                accumulated_reasoning.clear();
+                                final_stop_reason = None;
+                                tool_calls_buffer.clear();
+                                last_tool_name = None;
+                                turn_tool_infos.clear();
+                                tool_execution_in_progress = false;
+                                streaming_display =
+                                    StreamingTokenDisplay::from_cache_inclusive_total(
+                                        session.token_tracker.input_tokens,
+                                        session.token_tracker.output_tokens,
+                                        session.token_tracker.cache_read_input_tokens.unwrap_or(0),
+                                        session
+                                            .token_tracker
+                                            .cache_creation_input_tokens
+                                            .unwrap_or(0),
+                                    );
+                                continue;
+                            }
+                        }
                     }
 
                     // PROV-039: Emit done with stop_reason for truncation detection
@@ -1702,7 +1974,7 @@ where
                             tool_execution_in_progress = false;
 
                             // STREAMING-DISPLAY: Reset display for retry
-                            streaming_display = StreamingTokenDisplay::new(
+                            streaming_display = StreamingTokenDisplay::from_cache_inclusive_total(
                                 session.token_tracker.input_tokens,
                                 session.token_tracker.output_tokens,
                                 session.token_tracker.cache_read_input_tokens.unwrap_or(0),
@@ -1806,7 +2078,7 @@ where
                             tool_execution_in_progress = false;
 
                             // Reset streaming display for retry
-                            streaming_display = StreamingTokenDisplay::new(
+                            streaming_display = StreamingTokenDisplay::from_cache_inclusive_total(
                                 session.token_tracker.input_tokens,
                                 session.token_tracker.output_tokens,
                                 session.token_tracker.cache_read_input_tokens.unwrap_or(0),

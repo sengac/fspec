@@ -1,0 +1,264 @@
+{
+  "scenarios": [
+    {
+      "name": "Turn-start seed emit reports the true cache-inclusive total exactly once",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "lines": "82-103",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "lines": "82-103",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                590,
+                591,
+                592,
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pre-compaction flush in the no-usage-event window preserves tracker and billing integrity",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "lines": "183-213",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "lines": "183-213",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/recovery_compaction.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inconsistent stale cache split falls back to the trusted total",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "lines": "219-245",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "lines": [
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mid-stream Usage self-heal behavior is unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs",
+          "lines": "251-291",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/streaming_display/streaming_token_display.rs",
+              "lines": [
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/cmpct041_seed_cache_double_count_test.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/streaming_display/streaming_token_display.rs",
+      "codelet/cli/src/interactive/stream_loop.rs",
+      "codelet/cli/src/interactive/recovery_compaction.rs"
+    ],
+    "totalLinesCovered": 334
+  }
+}

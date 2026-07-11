@@ -152,6 +152,7 @@ impl SessionContext {
             | StreamChunk::SupervisorPendingInjection { .. }
             | StreamChunk::CompactionComplete { .. }
             | StreamChunk::TokenUpdate { .. }
+            | StreamChunk::ContinueStateUpdate { .. }
             | StreamChunk::ContextFillUpdate { .. } => {}
         }
     }

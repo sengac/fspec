@@ -134,10 +134,7 @@ impl AgentView {
             // COPY-006 rule [10]: Esc first clears an active text
             // selection (the most transient/foreground state), BEFORE the
             // RPC-381 turn-select exit and the AgentEscPressed cascade.
-            if self.text_selection_active
-                && key.code == KeyCode::Esc
-                && key.modifiers.is_empty()
-            {
+            if self.text_selection_active && key.code == KeyCode::Esc && key.modifiers.is_empty() {
                 self.text_selection_active = false;
                 self.emit(Action::SelectionClear);
                 return EventResult::consumed();

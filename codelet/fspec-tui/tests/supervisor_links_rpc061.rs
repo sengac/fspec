@@ -400,6 +400,7 @@ fn supervisor_pending_chip_suppresses_compaction_chip() {
         workspace: Some(&workspace),
         compaction_progress: Some(&progress),
         supervisor_pending_count: 1,
+        continue_indicator: None,
     }
     .render(buf.area, &mut buf);
     let row = row_text(&buf, 0);

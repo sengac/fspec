@@ -218,7 +218,10 @@ fn normal_command_dispatch_is_not_intercepted_by_help_routing() {
 
     // @step When I dispatch a command "create-prefix" with valid create-prefix args
     // create-prefix requires a prefix + description; supply them positionally.
-    let result = dispatch_command(req_with_args("create-prefix", "{\"_\":[\"TEST\",\"desc\"]}"));
+    let result = dispatch_command(req_with_args(
+        "create-prefix",
+        "{\"_\":[\"TEST\",\"desc\"]}",
+    ));
 
     // @step Then help routing does not intercept the command
     // RED-phase reasoning: help routing does not yet exist, so this already

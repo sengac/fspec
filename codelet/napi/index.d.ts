@@ -3034,6 +3034,13 @@ export interface CompactionProgress {
 export interface CompactionResult {
   originalTokens: number;
   compactedTokens: number;
+  /**
+   * PERCENT of tokens removed by compaction, range [0,100] — e.g.
+   * 60.0 means 60% of the original tokens were eliminated. Producers
+   * compute `interactive_helpers::compression_ratio(orig, compacted)
+   * * 100.0`; consumers display this value directly (RPC-420 — do
+   * NOT re-derive via `(1.0 - ratio) * 100.0`).
+   */
   compressionRatio: number;
   turnsSummarized: number;
   turnsKept: number;
@@ -3044,6 +3051,40 @@ export interface ContextFillInfo {
   effectiveTokens: number;
   threshold: number;
   contextWindow: number;
+}
+
+/**
+ * CONT-007: live auto-continue / goal counter snapshot pushed by the
+ * engine at every counter transition (nudge consumed/refunded, turn
+ * reset, budget exhaustion, accepted done()). Pure state — carries no
+ * transition reason; the TUI folds it into the chrome cache so the
+ * footer indicator paints the REAL `nudges_used`.
+ */
+export interface ContinueStateInfo {
+  enabled: boolean;
+  budget: number;
+  nudgesUsed: number;
+  goalActive: boolean;
+  /**
+   * Display budget: `max(explicit, 15)` while a goal is active,
+   * the explicit `/continue` budget otherwise.
+   */
+  effectiveBudget: number;
+  /**
+   * CONT-008: true ONLY on the goal-satisfied teardown snapshot — the
+   * engine cleared an active goal via an accepted done(). Consumers
+   * (BackgroundOutput write-back, TUI goal cache) must key off THIS
+   * flag, never off an incidental `goal_active: false` (every non-goal
+   * snapshot carries that). `#[serde(default)]` keeps older payloads
+   * deserializable.
+   */
+  goalCleared: boolean;
+  /**
+   * CONT-008: done() rejection count for the session, registry-synced
+   * at the FinalResponse settle point (may lag one in-flight segment).
+   * Drives the bare `/goal` "rejections: n" display on the TUI.
+   */
+  doneRejections: number;
 }
 
 /**
@@ -3772,7 +3813,8 @@ export type StreamChunk =
       isGitRepo: boolean;
       branch?: string;
     }
-  | { type: 'DebugStateChange'; enabled: boolean };
+  | { type: 'DebugStateChange'; enabled: boolean }
+  | { type: 'ContinueStateUpdate'; continueState: ContinueStateInfo };
 
 export interface SupervisorPendingInjectionInfo {
   urgent: boolean;

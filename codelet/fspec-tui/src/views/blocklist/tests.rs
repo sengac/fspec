@@ -30,7 +30,14 @@ fn rule(id: &str, pattern: &str, action: &str, source: &str) -> BlocklistRuleInf
 /// Build `n` block rules with ids `rule000..`.
 fn rules(n: usize) -> Vec<BlocklistRuleInfo> {
     (0..n)
-        .map(|i| rule(&format!("rule{i:03}"), &format!("^cmd{i}"), "block", "system"))
+        .map(|i| {
+            rule(
+                &format!("rule{i:03}"),
+                &format!("^cmd{i}"),
+                "block",
+                "system",
+            )
+        })
         .collect()
 }
 
@@ -612,8 +619,8 @@ fn non_wheel_mouse_events_are_ignored() {
 // Feature: spec/features/blocklist-view-mouse-scroll.feature
 #[test]
 fn the_navigator_routes_wheel_events_to_the_view() {
-    use crate::views::navigator::{Navigator, ViewMode};
     use crate::theme::Theme;
+    use crate::views::navigator::{Navigator, ViewMode};
     use crossterm::event::{Event, MouseEventKind};
     use std::sync::Arc;
     use tokio::sync::mpsc::unbounded_channel;
@@ -646,7 +653,12 @@ fn rpc056_rendering_behaviour_is_preserved_after_the_framing_change() {
     // @step Given a BlocklistView seeded with rules [git-checkout-block(system, block), cat-block(project, block)]
     let mut view = BlocklistView::new();
     view.set_rules(vec![
-        rule("git-checkout-block", "^git\\s+checkout\\b", "block", "system"),
+        rule(
+            "git-checkout-block",
+            "^git\\s+checkout\\b",
+            "block",
+            "system",
+        ),
         rule("cat-block", "^cat\\s+", "block", "project"),
     ]);
     // @step And the focused session's blocklist_disabled set contains "git-checkout-block"

@@ -122,6 +122,53 @@ pub struct CompactionProgressInfo {
     pub total: u32,
 }
 
+/// CONT-007: which counter transition produced a [`ContinueStateEvent`].
+///
+/// The reason exists on the CLI-side event so `CliOutput` can render
+/// the stdout nudging line for a consumed nudge (preserving CLI repl
+/// behavior); the background twins DROP it when mapping to the pure-state
+/// `StreamChunk::ContinueStateUpdate` — except `GoalSatisfied`, which they
+/// translate to `goalCleared: true` after performing the CONT-008 chrome
+/// goal write-back.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ContinueStateReason {
+    /// A new real user turn started (counters just reset).
+    TurnStart,
+    /// The refund accounting for a nudged segment settled.
+    RefundSettled,
+    /// A zero-progress nudge was consumed.
+    NudgeConsumed,
+    /// The zero-progress budget is exhausted.
+    BudgetExhausted,
+    /// An accepted done() ran the shared FinishWithSummary teardown
+    /// without an active goal.
+    DoneAccepted,
+    /// CONT-008: an accepted done() satisfied and cleared an ACTIVE goal
+    /// in the shared teardown — the dedicated goal-cleared signal. The
+    /// background twins write the chrome goal state back and set
+    /// `goalCleared: true` on the wire so the TUI drops its 🎯 cache.
+    GoalSatisfied,
+}
+
+/// CONT-007: live auto-continue / goal counter snapshot emitted at every
+/// counter transition. Mirrors `codelet_rpc_types::ContinueStateInfo`
+/// plus the CLI-only [`ContinueStateReason`].
+#[derive(Debug, Clone)]
+pub struct ContinueStateEvent {
+    pub enabled: bool,
+    pub budget: u32,
+    pub nudges_used: u32,
+    pub goal_active: bool,
+    /// Display budget: `max(explicit, 15)` while a goal is active,
+    /// the explicit `/continue` budget otherwise.
+    pub effective_budget: u32,
+    /// CONT-008: done() rejection count (`session.done_rejections`,
+    /// registry-synced at the settle point). Carried to the TUI so bare
+    /// `/goal` shows real rejections instead of a hard-coded 0.
+    pub done_rejections: u32,
+    pub reason: ContinueStateReason,
+}
+
 /// UX-002: Compaction completion result for structured events
 #[derive(Debug, Clone)]
 pub struct CompactionCompleteInfo {
@@ -174,6 +221,9 @@ pub enum StreamEvent {
     CompactionFailed { reason: String },
     /// UX-002: Continuing after compaction (informational for CLI)
     CompactionContinuing,
+    /// CONT-007: live continue/goal counter snapshot (state-only for the
+    /// TUI bar; CLI renders the nudging stdout line on NudgeConsumed).
+    ContinueState(ContinueStateEvent),
 }
 
 /// Stream output handler trait
@@ -498,6 +548,21 @@ impl StreamOutput for CliOutput {
                 // UX-002: Display continuation message for CLI
                 print!("[Continuing with compacted context...]\r\n");
                 std::io::stdout().flush().ok();
+            }
+            StreamEvent::ContinueState(cs) => {
+                // CONT-007: the CLI repl has no status bar — preserve the
+                // stdout nudging line for a CONSUMED nudge only (moved
+                // here from the stream loop's emit_status). The line now
+                // prints the effective budget (max(explicit, 15) in goal
+                // mode) instead of continue_budget. All other transitions
+                // render nothing on stdout.
+                if cs.reason == ContinueStateReason::NudgeConsumed {
+                    print!(
+                        "\u{23E9} auto-continue: nudging ({}/{})\r\n",
+                        cs.nudges_used, cs.effective_budget
+                    );
+                    std::io::stdout().flush().ok();
+                }
             }
         }
     }

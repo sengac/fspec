@@ -76,36 +76,35 @@ pub struct AgentViewStore {
     /// Action::HistoryPrev, cleared on Action::InputSubmitted.
     cached_history_snapshot: HashMap<SessionId, Vec<String>>,
 
-    // ── RPC-022 per-session role overlay state ──────────────────────────
+    // ── RPC-022 per-session role overlay state — role_state.rs ──────────
     /// Optional role overlay text per session. Populated by
-    /// `Action::SessionRoleLoaded` / `Action::SetSessionRole`. Accessors
-    /// live in `store/agent_view/role_state.rs`.
+    /// `Action::SessionRoleLoaded` / `Action::SetSessionRole`.
     role_by_session: HashMap<SessionId, String>,
 
-    // ── RPC-045 per-session push-driven state ───────────────────────────
-    // Accessors in `isolation_state.rs`.
+    // ── RPC-045 per-session push-driven state — isolation_state.rs ──────
     pub(crate) session_status_by_session: HashMap<SessionId, SessionStatus>,
     pub(crate) isolation_state_by_session: HashMap<SessionId, IsolationState>,
     pub(crate) debug_enabled_by_session: HashMap<SessionId, bool>,
     /// RPC-047: per-session live compaction progress.
     pub(crate) compaction_progress_by_session: HashMap<SessionId, CompactionProgress>,
 
-    // ── RPC-050 per-session work-unit binding ───────────────────────────
-    // Accessors live in `store/agent_view/work_unit_state.rs`.
+    // ── RPC-050 per-session work-unit binding — work_unit_state.rs ──────
     pub(crate) work_unit_context_by_session: HashMap<SessionId, WorkUnitContext>,
 
-    // ── RPC-056 per-session blocklist-disabled set ──────────────────────
-    // Accessors live in `store/agent_view/blocklist_state.rs`.
+    // ── RPC-056 per-session blocklist-disabled set — blocklist_state.rs ─
     pub(crate) blocklist_disabled_by_session: HashMap<SessionId, std::collections::HashSet<String>>,
 
     // RPC-061 supervisor state — accessors in `supervisor_state.rs`.
     pub(crate) supervisors_by_session: HashMap<SessionId, Vec<SessionId>>,
     pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
 
-    // ── RPC-100 compaction reduction pct + RPC-417 auto-hide seq guard ──
-    // Read by `chrome_paint.rs`; accessors in `chrome_state.rs`.
+    // ── RPC-100 reduction pct + RPC-417 seq guard — chrome_state.rs ─────
     pub(crate) compaction_reduction_by_session: HashMap<SessionId, i32>,
     pub(crate) compaction_reduction_seq_by_session: HashMap<SessionId, u64>,
+    // CONT-002/003/007 status-bar state — accessors in `chrome_state.rs`.
+    pub(crate) continue_state_by_session: HashMap<SessionId, (bool, u32)>,
+    pub(crate) goal_state_by_session: HashMap<SessionId, (String, Option<String>)>,
+    pub(crate) continue_live_by_session: HashMap<SessionId, chrome_state::ContinueLiveState>,
     // RPC-406 pause + RPC-411 HITL slots — pause_state.rs / hitl_state.rs
     pub(crate) pause_state_by_session: HashMap<SessionId, codelet_rpc_types::PauseState>,
     pub(crate) hitl_prompt_by_session: hitl_state::HitlPromptBySession,

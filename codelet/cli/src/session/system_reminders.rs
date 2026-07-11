@@ -33,6 +33,9 @@ pub enum SystemReminderType {
     TokenStatus,
     /// TUI-059: fspec workflow context (current work unit)
     FspecWorkflow,
+    /// CONT-003: active goal completion contract (goal text, verify command,
+    /// done() evidence requirement) — compaction-proof goal persistence
+    CompletionContract,
 }
 
 impl SystemReminderType {
@@ -44,6 +47,7 @@ impl SystemReminderType {
             Self::GitStatus => "gitStatus",
             Self::TokenStatus => "tokenStatus",
             Self::FspecWorkflow => "fspecWorkflow",
+            Self::CompletionContract => "completionContract",
         }
     }
 
@@ -55,6 +59,7 @@ impl SystemReminderType {
             "gitStatus" => Some(Self::GitStatus),
             "tokenStatus" => Some(Self::TokenStatus),
             "fspecWorkflow" => Some(Self::FspecWorkflow),
+            "completionContract" => Some(Self::CompletionContract),
             _ => None,
         }
     }
@@ -343,6 +348,30 @@ pub fn add_system_reminder(
     let mut result = messages.to_vec();
     result.push(reminder_message);
     result
+}
+
+/// Removes ALL system reminders of the specified type from the conversation.
+///
+/// CONT-003: `add_system_reminder` is append-only (CLI-013 prompt-cache
+/// design) so goal clearing / acceptance needs an explicit removal API for
+/// the `CompletionContract` reminder. Other reminder types and regular
+/// messages are untouched.
+///
+/// # Arguments
+/// * `messages` - Current conversation history
+/// * `reminder_type` - The type of system reminder to remove
+///
+/// # Returns
+/// New message array without any reminders of the given type
+pub fn remove_system_reminders_of_type(
+    messages: &[Message],
+    reminder_type: SystemReminderType,
+) -> Vec<Message> {
+    messages
+        .iter()
+        .filter(|msg| !is_system_reminder_of_type(msg, reminder_type))
+        .cloned()
+        .collect()
 }
 
 #[cfg(test)]

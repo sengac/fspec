@@ -42,11 +42,7 @@ fn dragging_across_modal_body_lines_copies_their_text_and_keeps_the_highlight() 
     // @step When I drag across three body lines and release
     // Down at the start of MLINE0, drag to the far content edge of MLINE2,
     // release — a linewise three-row selection.
-    let _ = app.handle_event(&mouse(
-        MouseEventKind::Down(MouseButton::Left),
-        r.x,
-        r.y,
-    ));
+    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
     drain_app(&mut app);
     let _ = app.handle_event(&mouse(
         MouseEventKind::Drag(MouseButton::Left),
@@ -109,11 +105,7 @@ fn selection_tracks_the_visible_rows_after_scrolling_the_modal() {
     // @step When I drag to select across the currently visible body rows
     // Select the FIRST visible body row (top of the viewport after
     // scrolling) — that is `ROW{off:02}`.
-    let _ = app.handle_event(&mouse(
-        MouseEventKind::Down(MouseButton::Left),
-        r.x,
-        r.y,
-    ));
+    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
     drain_app(&mut app);
     let _ = app.handle_event(&mouse(
         MouseEventKind::Drag(MouseButton::Left),
@@ -170,11 +162,7 @@ fn copying_a_wide_line_abutting_the_modal_scrollbar_excludes_the_scrollbar_glyph
     // @step When I select that wide line and release
     // Down at the start of the wide line, drag PAST its content edge into
     // the reserved gutter column, release.
-    let _ = app.handle_event(&mouse(
-        MouseEventKind::Down(MouseButton::Left),
-        r.x,
-        r.y,
-    ));
+    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
     drain_app(&mut app);
     let _ = app.handle_event(&mouse(
         MouseEventKind::Drag(MouseButton::Left),
@@ -218,11 +206,7 @@ fn wheel_scrolling_clears_an_active_modal_selection_and_scrolls_normally() {
     let (mut app, _clip) = open_modal_app(&body, 80, 24);
     let r = modal_body_rect(80, 24, &body);
     // Open a live (uncommitted) selection via Down + Drag.
-    let _ = app.handle_event(&mouse(
-        MouseEventKind::Down(MouseButton::Left),
-        r.x,
-        r.y,
-    ));
+    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
     drain_app(&mut app);
     let _ = app.handle_event(&mouse(
         MouseEventKind::Drag(MouseButton::Left),
@@ -265,11 +249,7 @@ fn first_esc_clears_the_selection_and_a_second_esc_closes_the_modal() {
     let body = "MLINE0\nMLINE1\nMLINE2\nMLINE3";
     let (mut app, clip) = open_modal_app(body, 80, 24);
     let r = modal_body_rect(80, 24, body);
-    let _ = app.handle_event(&mouse(
-        MouseEventKind::Down(MouseButton::Left),
-        r.x,
-        r.y,
-    ));
+    let _ = app.handle_event(&mouse(MouseEventKind::Down(MouseButton::Left), r.x, r.y));
     drain_app(&mut app);
     let _ = app.handle_event(&mouse(
         MouseEventKind::Drag(MouseButton::Left),
@@ -309,11 +289,7 @@ fn first_esc_clears_the_selection_and_a_second_esc_closes_the_modal() {
     drain_app(&mut app);
 
     // @step Then the modal closes
-    assert_eq!(
-        modal_seq(&app),
-        None,
-        "the second Esc must close the modal"
-    );
+    assert_eq!(modal_seq(&app), None, "the second Esc must close the modal");
 }
 
 // ─────────────────────────────────────────────────────────────────────

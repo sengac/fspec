@@ -53,7 +53,8 @@ Feature: Rust TUI /compact command lands on a no-op stub - no real compaction pe
     Given a session with several user and assistant messages
     When I compact the session through the handle
     Then the returned CompactionResult original_tokens is greater than zero
-    And the returned CompactionResult compacted_tokens is less than original_tokens
+    And the returned CompactionResult compacted_tokens is the acknowledgement sentinel 0
+    And the returned CompactionResult compression_ratio is the acknowledgement sentinel 0.0
 
   Scenario: Compacting an unknown session id returns a not-found error
     Given a session id that does not exist

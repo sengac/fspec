@@ -31,7 +31,7 @@ use crate::types::{
 // debug-capture helpers (used by `session_compact`, `toggle_debug`,
 // `session_toggle_debug`, `session_update_debug_metadata`).
 use codelet_cli::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
-use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
+use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{handle_debug_command_with_dir, SessionMetadata};
 // RPC-039 / RPC-043: PauseState shape flows over the NAPI boundary as
 // `NapiPauseState`; the JS callbacks dispatch via the `PauseKind` /
@@ -3050,9 +3050,10 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
 
     let original_tokens = inner.token_tracker.input_tokens;
     let total_messages = inner.messages.len() as u32;
-    session
-        .pre_compaction_tokens
-        .store(original_tokens as u32, Ordering::Release);
+    // CMPCT-041: route the manual tracker-based snapshot through the shared
+    // BackgroundSession accessor (basis unification with the AUTO
+    // CompactionStarted writers).
+    session.store_pre_compaction_tokens(original_tokens as u32);
 
     // BUG-134: Capture compaction.manual.start event using per-session debug capture
     if let Ok(mut manager) = session.debug_capture.lock() {
@@ -3091,6 +3092,10 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         }
     }
 
+    // RPC-421: this reads the post-clear trough (reminders + compaction
+    // instruction) — a real measurement of an intermediate state that never
+    // survives, NOT a reduction. It feeds the BUG-134 debug capture below
+    // (diagnostics only) and MUST NOT ship on the CompactionResult.
     let compacted_tokens = inner.token_tracker.input_tokens;
 
     // Drop the inner lock BEFORE sending input — agent_loop needs it.
@@ -3123,10 +3128,18 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         session.set_status(SessionStatus::Idle);
     }
 
+    // RPC-421: acknowledgement-shaped success on the unchanged wire schema
+    // (twin of sessions/src/handle_impl.rs compact_session). The final
+    // compacted size is unknowable here — the agent builds the DAG
+    // asynchronously after the "Continue" kick — so original_tokens is the
+    // real pre-compaction snapshot and every other field is the 0-valued
+    // sentinel. Consumers MUST NOT present these fields as a reduction: the
+    // StreamChunk::CompactionComplete emission (CMPCT-038 apply-site) is the
+    // single source of truth for the numbers.
     Ok(CompactionResult {
         original_tokens: original_tokens as u32,
-        compacted_tokens: compacted_tokens as u32,
-        compression_ratio: compression_ratio(original_tokens, compacted_tokens) * 100.0,
+        compacted_tokens: 0,
+        compression_ratio: 0.0,
         turns_summarized: 0,
         turns_kept: 0,
     })

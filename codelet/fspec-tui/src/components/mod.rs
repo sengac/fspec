@@ -179,19 +179,19 @@ pub enum Action {
         /// The stable scrollback seq of the notice chunk to remove.
         seq: u64,
     },
-    /// RPC-417: 10s auto-hide timer fired — seq-guarded clear of the COMPACTED badge.
-    ClearCompactionReduction { session_id: codelet_rpc_types::SessionId, seq: u64 },
-    /// RPC-012: BoardView emits this when the user presses Enter on a
-    /// selected work unit. App::dispatch sets
-    /// AgentViewStore.current_work_unit_id + status and switches the
-    /// Navigator's active_view to Agent.
+    /// RPC-417: 10s auto-hide fired — seq-guarded COMPACTED badge clear.
+    ClearCompactionReduction {
+        session_id: codelet_rpc_types::SessionId,
+        seq: u64,
+    },
+    /// RPC-012: BoardView emits this on Enter on a selected work unit.
+    /// App::dispatch sets AgentViewStore.current_work_unit_id + status
+    /// and switches the Navigator's active_view to Agent.
     EnterWorkUnit(String),
-    /// RPC-012: BoardView emits this when the user presses Shift+Right.
-    /// `Some(sid)` requests navigation to the attached session;
-    /// `None` requests the create-session dialog.
+    /// RPC-012: BoardView emits this on Shift+Right. `Some(sid)` = navigate
+    /// to the attached session; `None` = create-session dialog.
     OpenAgentView(Option<codelet_rpc_types::SessionId>),
-    /// RPC-012: AgentView emits this on ESC. Navigator flips
-    /// active_view back to Board.
+    /// RPC-012: AgentView emits this on ESC — Navigator flips back to Board.
     BackToBoard,
     /// RPC-012: programmatic navigation-target set/clear (used by
     /// future slices to script navigation without a keystroke).

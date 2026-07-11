@@ -12,8 +12,9 @@
 //! napi-derive v3 is expected to honor `#[serde(rename)]` on
 //! `#[napi(object)]` fields and produce the same camelCase TS surface.
 //!
-//! These tests cover the bug pre/post fix, the structural shape of the
-//! diff, the dependency cleanliness invariants, and the TS surface
+//! These tests cover the bug pre/post fix, the content shape of the
+//! fixed on-disk source (BUG-150: formerly a time-bound git-diff pin),
+//! the dependency cleanliness invariants, and the TS surface
 //! preservation requirement.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -34,10 +35,6 @@ fn workspace_root() -> PathBuf {
         .parent()
         .expect("rpc-types parent")
         .to_path_buf()
-}
-
-fn repo_root() -> PathBuf {
-    workspace_root().parent().expect("repo root").to_path_buf()
 }
 
 fn lib_rs_path() -> PathBuf {
@@ -327,15 +324,14 @@ fn scenario_post_fix_rpc036_tests_pass_with_napi_feature() {
     let src = read(&lib_rs_path());
     assert!(fix_is_applied(&src), "BUG-146: fix not applied");
 
-    // @step When I run `cargo test -p codelet-rpc-types --features napi`
+    // @step When I type-check the test suite with the napi feature enabled via `cargo check -p codelet-rpc-types --features napi --tests`
     //
-    // PRAGMATIC NOTE: `cargo test --features napi` requires LINKING the
-    // test binary against the napi/Node.js runtime, which is not present
-    // at host-side test execution time (those tests would only run under
-    // node-with-napi-loaded). We therefore use `cargo check --tests` to
-    // verify the COMPILATION of the rpc036 test still succeeds with the
-    // napi feature enabled — equivalent to "the type system + serde +
-    // napi_derive macros all expand and type-check cleanly".
+    // RATIONALE (BUG-150 W2): `cargo test --features napi` would require
+    // LINKING the test binary against the napi/Node.js runtime, which is
+    // not present at host-side test execution time (those tests would only
+    // run under node-with-napi-loaded). The Gherkin therefore specifies a
+    // type-check of the test suite: the type system + serde + napi_derive
+    // macros must all expand and type-check cleanly.
     let out = run_cargo(&[
         "check",
         "-p",
@@ -347,7 +343,7 @@ fn scenario_post_fix_rpc036_tests_pass_with_napi_feature() {
     let stdout = String::from_utf8_lossy(&out.stdout);
     let stderr = String::from_utf8_lossy(&out.stderr);
 
-    // @step Then every test passes
+    // @step Then the type check succeeds with exit code 0
     assert!(
         out.status.success(),
         "BUG-146: `cargo check -p codelet-rpc-types --features napi --tests` failed; stderr tail:\n{}\nstdout tail:\n{}",
@@ -355,9 +351,7 @@ fn scenario_post_fix_rpc036_tests_pass_with_napi_feature() {
         tail(&stdout, 4000),
     );
 
-    // @step And the test result line reports `0 failed`
-    // (no test was actually run — `cargo check` only type-checks. We
-    // verify the absence of errors instead.)
+    // @step And the output contains no compile errors
     assert!(
         !stderr.contains("error[E") && !stderr.contains("error: "),
         "BUG-146: stderr must NOT contain compile errors; stderr tail:\n{}",
@@ -366,200 +360,124 @@ fn scenario_post_fix_rpc036_tests_pass_with_napi_feature() {
 }
 
 // ===========================================================================
-// Scenario: The fix replaces every field-level napi(js_name) with serde(rename) and touches no other line
+// Scenario: The fix replaces every field-level napi(js_name) with serde(rename) in the on-disk source
 // ===========================================================================
 
+/// BUG-150: this scenario formerly pinned the shape of the UNCOMMITTED git
+/// working-tree diff of lib.rs (exactly 34 added `serde(rename` lines and
+/// 33-34 removed `cfg_attr...napi(js_name` lines). That was a time-bound
+/// git-state assertion: it only held in the specific tree where the BUG-146
+/// fix sat uncommitted, and went red on any diverging tree (after the fix
+/// was committed, or when CONT-007/CONT-008 added new legitimate
+/// `serde(rename` lines). It is now a content-based pin on the on-disk
+/// source: git is never consulted, so the outcome is independent of git
+/// state while still failing if any documented BUG-146 rename regresses.
 #[test]
 fn scenario_fix_replaces_field_level_attrs_and_no_other_changes() {
     // @step Given the fix has been applied to codelet/rpc-types/src/lib.rs
     let src = read(&lib_rs_path());
     assert!(fix_is_applied(&src), "BUG-146: fix not applied");
 
-    // @step When I run `git diff codelet/rpc-types/src/lib.rs --stat`
-    let stat = Command::new("git")
-        .args(["diff", "--stat", "codelet/rpc-types/src/lib.rs"])
-        .current_dir(repo_root())
-        .output()
-        .expect("git diff --stat");
-    let stat_stdout = String::from_utf8_lossy(&stat.stdout);
+    // @step When I inspect the on-disk contents of codelet/rpc-types/src/lib.rs
+    let code_lines: Vec<&str> = src
+        .lines()
+        .filter(|l| !l.trim_start().starts_with("//"))
+        .collect();
 
-    // @step Then the stat output reports 34 insertions and 34 deletions
-    // If the working tree contains unrelated pre-existing changes to
-    // rpc-types/src/lib.rs, this stat will show a LARGER set of changes.
-    // For the strict assertion to hold the file must contain exactly the
-    // BUG-146 fix and nothing else. We tolerate larger diffs only when
-    // every line that mentions "cfg_attr...napi(js_name" has been
-    // removed and every line that contains "serde(rename" has been
-    // added — the structural invariants below are the real check.
-    let has_exact_stat =
-        stat_stdout.contains("34 insertions(+)") && stat_stdout.contains("34 deletions(-)");
-    if !has_exact_stat {
-        eprintln!(
-            "BUG-146 NOTE: git diff --stat shows more than 34/34 changes (working tree has \
-             unrelated pre-existing changes to rpc-types/src/lib.rs). Falling back to \
-             structural assertions only. Stat was:\n{stat_stdout}",
-        );
+    // @step Then the source contains zero field-level `napi(js_name` attributes outside comments
+    let offending: Vec<&str> = code_lines
+        .iter()
+        .filter(|l| l.contains("napi(js_name"))
+        .copied()
+        .collect();
+    assert!(
+        offending.is_empty(),
+        "BUG-146/BUG-150: lib.rs must contain ZERO non-comment `napi(js_name` attributes; offending lines:\n{}",
+        offending.join("\n"),
+    );
+
+    // @step And each of the 34 documented renames X appears as `#[serde(rename = "X")]` with at least its documented multiplicity
+    //
+    // The 34 documented field sites map onto 25 distinct names; three names
+    // are renamed at multiple sites (correlationId x5,
+    // observedCorrelationIds x5, toolCallId x2; 22 names x1 → 34 sites).
+    // Later legitimate work may ADD renames, so the pin is "at least the
+    // documented multiplicity" — it never goes stale on correct trees but
+    // still fails if a documented rename is removed or reverted.
+    let documented_multiplicity = |name: &str| -> usize {
+        match name {
+            "correlationId" | "observedCorrelationIds" => 5,
+            "toolCallId" => 2,
+            _ => 1,
+        }
+    };
+    // BUG-150 O1: count over `code_lines` (comment lines filtered), matching
+    // the zero-`napi(js_name` check above — a `//` comment mentioning a
+    // rename must neither satisfy nor inflate the pin.
+    let mut violations: Vec<String> = Vec::new();
+    for name in EXPECTED_CAMEL_CASE_NAMES {
+        let needle = format!("#[serde(rename = \"{name}\"");
+        let count: usize = code_lines
+            .iter()
+            .map(|l| l.matches(needle.as_str()).count())
+            .sum();
+        let want = documented_multiplicity(name);
+        if count < want {
+            violations.push(format!(
+                "rename \"{name}\": expected at least {want} `{needle}...` occurrence(s) in lib.rs, found {count}"
+            ));
+        }
     }
+    assert!(
+        violations.is_empty(),
+        "BUG-146/BUG-150: documented serde rename(s) regressed:\n{}",
+        violations.join("\n"),
+    );
 
-    // @step When I inspect the diff
-    let diff = Command::new("git")
-        .args(["diff", "codelet/rpc-types/src/lib.rs"])
-        .current_dir(repo_root())
-        .output()
-        .expect("git diff");
-    let diff_stdout = String::from_utf8_lossy(&diff.stdout);
-
-    // Filter for lines that actually contain the BUG-146 markers — this
-    // gives us the structural set we care about, regardless of any
-    // unrelated pre-existing changes to lib.rs.
-    let added_bug146: Vec<&str> = diff_stdout
-        .lines()
-        .filter(|l| l.starts_with('+') && !l.starts_with("+++") && l.contains("serde(rename"))
-        .collect();
-    let removed_bug146: Vec<&str> = diff_stdout
-        .lines()
-        .filter(|l| {
-            l.starts_with('-')
-                && !l.starts_with("---")
-                && l.contains("cfg_attr(feature = \"napi\", napi(js_name")
-        })
-        .collect();
-
-    // @step Then the only changed lines are the 34 field-level cfg_attr sites
-    //
-    // PRAGMATIC NOTE: working tree may already contain UNCOMMITTED
-    // changes from RPC-036/RPC-007 work in progress. We compare against
-    // HEAD, so some BUG-146-rewritten lines appear ONLY as additions
-    // (their original `cfg_attr` form was itself uncommitted and never
-    // reached HEAD, so git compares a non-existent line against the
-    // BUG-146 rewrite). The correctness invariant is therefore:
-    //
-    //   (a) the file contains EXACTLY 34 `#[serde(rename = "X")]` lines
-    //       at field positions
-    //   (b) the file contains ZERO `#[cfg_attr(feature = "napi", napi(js_name`
-    //       lines (every site has been converted)
-    //   (c) the added-vs-HEAD diff matches that invariant
-    let src = read(&lib_rs_path());
-    let serde_rename_count = src.matches("#[serde(rename = ").count();
+    // @step And the source contains at least 34 `#[serde(rename = ` attributes in total
+    // BUG-150 O1: same comment-line filtering as the per-name counts above.
+    let serde_rename_count: usize = code_lines
+        .iter()
+        .map(|l| l.matches("#[serde(rename = ").count())
+        .sum();
     assert!(
         serde_rename_count >= 34,
         "BUG-146: lib.rs must contain at least 34 `#[serde(rename = ` lines (got {serde_rename_count})",
     );
-    let leftover_napi_js_name = src
-        .matches("cfg_attr(feature = \"napi\", napi(js_name")
-        .count();
-    assert_eq!(
-        leftover_napi_js_name, 0,
-        "BUG-146: lib.rs must contain ZERO `cfg_attr(feature = \"napi\", napi(js_name` occurrences after the fix; got {leftover_napi_js_name}",
-    );
 
-    // The diff-added set must contain exactly 34 `serde(rename` lines.
-    assert_eq!(
-        added_bug146.len(),
-        34,
-        "BUG-146: expected exactly 34 added `serde(rename` lines; got {}:\n{}",
-        added_bug146.len(),
-        added_bug146.join("\n"),
-    );
-
-    // The diff-removed set contains 33 or 34 `cfg_attr...napi(js_name` lines
-    // depending on whether the baseCommit (or any other) rename was part
-    // of an uncommitted RPC-036 chunk in the working tree.
+    // @step And NO `use napi_derive::napi;` import is present in the source
     assert!(
-        (33..=34).contains(&removed_bug146.len()),
-        "BUG-146: expected 33 or 34 removed `cfg_attr...napi(js_name` lines; got {}:\n{}",
-        removed_bug146.len(),
-        removed_bug146.join("\n"),
+        !code_lines
+            .iter()
+            .any(|l| l.contains("use napi_derive::napi")),
+        "BUG-146: lib.rs must NOT contain `use napi_derive::napi;`",
     );
 
-    let added = added_bug146;
-    let removed = removed_bug146;
-
-    // @step And each changed line shows `napi(js_name = "X")` replaced by `serde(rename = "X")` for the same X
-    let _ = has_exact_stat;
-    for rem in &removed {
-        assert!(
-            rem.contains("cfg_attr(feature = \"napi\", napi(js_name"),
-            "BUG-146: every removed line must be a field-level napi(js_name) cfg_attr; offending line:\n{rem}",
-        );
-    }
-    for add in &added {
-        assert!(
-            add.contains("serde(rename"),
-            "BUG-146: every added line must contain `serde(rename`; offending line:\n{add}",
-        );
-    }
-
-    // Verify EVERY X value present in removed lines has a matching added line.
-    let extract_x_from_napi = |line: &str| -> Option<String> {
-        // form: `#[cfg_attr(feature = "napi", napi(js_name = "X"))]`
-        // first literal is "napi", second is "X"
-        let after_first_quote = line.find('"')? + 1;
-        let after_close = line[after_first_quote..].find('"')? + after_first_quote + 1;
-        let after_second_quote = line[after_close..].find('"')? + after_close + 1;
-        let close_x = line[after_second_quote..].find('"')?;
-        Some(line[after_second_quote..after_second_quote + close_x].to_string())
-    };
-    let extract_x_from_serde = |line: &str| -> Option<String> {
-        // form: `#[serde(rename = "X")]`
-        let first = line.find('"')? + 1;
-        let close = line[first..].find('"')?;
-        Some(line[first..first + close].to_string())
-    };
-
-    let removed_xs: Vec<String> = removed
-        .iter()
-        .filter_map(|l| extract_x_from_napi(l))
-        .collect();
-    let added_xs: Vec<String> = added
-        .iter()
-        .filter_map(|l| extract_x_from_serde(l))
-        .collect();
-
-    for rem_x in &removed_xs {
-        assert!(
-            added_xs.contains(rem_x),
-            "BUG-146: removed napi(js_name = \"{rem_x}\") must be replaced by a `serde(rename = \"{rem_x}\")` somewhere in the diff",
-        );
-    }
-
-    // @step And NO `use napi_derive::napi;` is added
+    // @step And the struct-level `napi_derive::napi(object)` decorations remain in place
+    let object_decorations = src.matches("napi_derive::napi(object)").count();
     assert!(
-        !diff_stdout.contains("+use napi_derive::napi"),
-        "BUG-146: fix must NOT add `use napi_derive::napi;`",
+        object_decorations >= 40,
+        "BUG-146: struct-level `napi_derive::napi(object)` decorations must remain (documented ~40 sites; got {object_decorations})",
     );
 
-    // @step And NO struct-level `napi_derive::napi(object)` site is modified
-    for line in removed.iter().chain(added.iter()) {
-        assert!(
-            !line.contains("napi_derive::napi("),
-            "BUG-146: struct-level `napi_derive::napi(...)` site must NOT be modified; offending line:\n{line}",
-        );
-    }
+    // @step When I inspect the on-disk contents of codelet/rpc-types/Cargo.toml
+    let toml = read(&crate_root().join("Cargo.toml"));
 
-    // @step And codelet/rpc-types/Cargo.toml is unchanged
-    //
-    // PRAGMATIC NOTE: working tree may contain unrelated RPC-036 changes
-    // to Cargo.toml. The BUG-146 fix itself does NOT touch Cargo.toml —
-    // we verify this by checking that the diff does not introduce any
-    // `napi` or `napi-derive` entry alterations (which would be the only
-    // BUG-146-related Cargo.toml change).
-    let toml_diff = Command::new("git")
-        .args(["diff", "codelet/rpc-types/Cargo.toml"])
-        .current_dir(repo_root())
-        .output()
-        .expect("git diff Cargo.toml");
-    let toml_stdout = String::from_utf8_lossy(&toml_diff.stdout);
-    let added_lines: Vec<&str> = toml_stdout
+    // @step Then the napi and napi-derive dependencies remain optional and gated behind the napi feature
+    assert!(
+        toml.contains("napi = [\"dep:napi\", \"dep:napi-derive\"]"),
+        "BUG-146: Cargo.toml must keep the `napi` feature gating `dep:napi` and `dep:napi-derive`",
+    );
+    let napi_dep_optional = toml
         .lines()
-        .filter(|l| l.starts_with('+') && !l.starts_with("+++"))
-        .collect();
-    for line in &added_lines {
-        assert!(
-            !line.contains("napi") || line.contains("# RPC-"),
-            "BUG-146: Cargo.toml must NOT introduce any new napi-related entry; offending line:\n{line}",
-        );
-    }
+        .any(|l| l.trim_start().starts_with("napi = {") && l.contains("optional = true"));
+    let napi_derive_optional = toml
+        .lines()
+        .any(|l| l.trim_start().starts_with("napi-derive = {") && l.contains("optional = true"));
+    assert!(
+        napi_dep_optional && napi_derive_optional,
+        "BUG-146: napi and napi-derive must remain optional dependencies in Cargo.toml",
+    );
 }
 
 // ===========================================================================

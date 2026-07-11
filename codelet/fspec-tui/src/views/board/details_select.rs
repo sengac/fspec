@@ -50,7 +50,6 @@ pub(super) fn is_selection_nav_key(code: crossterm::event::KeyCode) -> bool {
     )
 }
 
-
 impl BoardView {
     /// COPY-009: feed a left press/drag/release to the strip selection
     /// recognizer using STRIP-local coordinates (subtract the cached
@@ -92,17 +91,14 @@ impl BoardView {
                 SelectionGesture::Begin(cell) => {
                     // COPY-010: anchor precisely at the pressed cell so a
                     // drag copies from the press column, not line start.
-                    *self.details_selection.borrow_mut() =
-                        Some(Selection::collapsed(*cell));
-                    *self.selection_unit_id.borrow_mut() =
-                        selected.map(|u| u.id.clone());
+                    *self.details_selection.borrow_mut() = Some(Selection::collapsed(*cell));
+                    *self.selection_unit_id.borrow_mut() = selected.map(|u| u.id.clone());
                 }
                 SelectionGesture::BeginLine(cell) => {
                     // COPY-010: long-press selects the WHOLE line.
                     *self.details_selection.borrow_mut() =
                         Some(Selection::whole_line(cell.row, cw));
-                    *self.selection_unit_id.borrow_mut() =
-                        selected.map(|u| u.id.clone());
+                    *self.selection_unit_id.borrow_mut() = selected.map(|u| u.id.clone());
                 }
                 SelectionGesture::Extend(cell) => {
                     if let Some(sel) = self.details_selection.borrow_mut().as_mut() {
@@ -164,10 +160,7 @@ impl BoardView {
         };
         let spans = sel.spans(rect.width);
         crate::views::agent::scrollback_paint::paint_selection_highlight(
-            rect,
-            buf,
-            &spans,
-            rect.width,
+            rect, buf, &spans, rect.width,
         );
     }
 }

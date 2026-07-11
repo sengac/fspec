@@ -865,6 +865,39 @@ pub struct SupervisorPendingInjectionInfo {
     pub content: String,
 }
 
+/// CONT-007: live auto-continue / goal counter snapshot pushed by the
+/// engine at every counter transition (nudge consumed/refunded, turn
+/// reset, budget exhaustion, accepted done()). Pure state — carries no
+/// transition reason; the TUI folds it into the chrome cache so the
+/// footer indicator paints the REAL `nudges_used`.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ContinueStateInfo {
+    pub enabled: bool,
+    pub budget: u32,
+    #[serde(rename = "nudgesUsed")]
+    pub nudges_used: u32,
+    #[serde(rename = "goalActive")]
+    pub goal_active: bool,
+    /// Display budget: `max(explicit, 15)` while a goal is active,
+    /// the explicit `/continue` budget otherwise.
+    #[serde(rename = "effectiveBudget")]
+    pub effective_budget: u32,
+    /// CONT-008: true ONLY on the goal-satisfied teardown snapshot — the
+    /// engine cleared an active goal via an accepted done(). Consumers
+    /// (BackgroundOutput write-back, TUI goal cache) must key off THIS
+    /// flag, never off an incidental `goal_active: false` (every non-goal
+    /// snapshot carries that). `#[serde(default)]` keeps older payloads
+    /// deserializable.
+    #[serde(rename = "goalCleared", default)]
+    pub goal_cleared: bool,
+    /// CONT-008: done() rejection count for the session, registry-synced
+    /// at the FinalResponse settle point (may lag one in-flight segment).
+    /// Drives the bare `/goal` "rejections: n" display on the TUI.
+    #[serde(rename = "doneRejections", default)]
+    pub done_rejections: u32,
+}
+
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct IncomingMessageImage {
@@ -1302,6 +1335,13 @@ pub enum StreamChunk {
     DebugStateChange {
         enabled: bool,
     },
+    /// CONT-007: state-only live continue/goal counter snapshot —
+    /// consumed by the TUI chrome cache, never rendered into the
+    /// transcript.
+    ContinueStateUpdate {
+        #[serde(rename = "continueState")]
+        continue_state: ContinueStateInfo,
+    },
 }
 
 impl StreamChunk {
@@ -1529,6 +1569,11 @@ impl StreamChunk {
     /// BUG-134: Debug state change - emitted when session debug capture toggles
     pub fn debug_state_change(enabled: bool) -> Self {
         Self::DebugStateChange { enabled }
+    }
+
+    /// CONT-007: live continue/goal counter snapshot (state-only).
+    pub fn continue_state_update(continue_state: ContinueStateInfo) -> Self {
+        Self::ContinueStateUpdate { continue_state }
     }
 }
 

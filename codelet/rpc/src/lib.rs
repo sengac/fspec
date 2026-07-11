@@ -309,6 +309,33 @@ pub trait FspecService {
     /// handle returns `Ok(())`.
     async fn set_thinking_level(session_id: SessionId, level: ThinkingLevel) -> Result<(), String>;
 
+    /// CONT-002: set the session's auto-continue state (`/continue`).
+    /// Delegates through `SessionManagerHandle::set_continue_state`.
+    /// Without an attached handle returns `Ok(())`.
+    async fn set_continue_state(
+        session_id: SessionId,
+        enabled: bool,
+        budget: u32,
+    ) -> Result<(), String>;
+
+    /// CONT-002: read the session's auto-continue state as
+    /// `(enabled, budget)`. Without an attached handle returns
+    /// `(false, 10)`.
+    async fn get_continue_state(session_id: SessionId) -> (bool, u32);
+
+    /// CONT-003: set or clear the session's goal chrome state (`/goal`)
+    /// as `(text, verify)`. Delegates through
+    /// `SessionManagerHandle::set_goal_state`. Without an attached
+    /// handle returns `Ok(())`.
+    async fn set_goal_state(
+        session_id: SessionId,
+        goal: Option<(String, Option<String>)>,
+    ) -> Result<(), String>;
+
+    /// CONT-003: read the session's goal chrome state as
+    /// `(text, verify)`. Without an attached handle returns `None`.
+    async fn get_goal_state(session_id: SessionId) -> Option<(String, Option<String>)>;
+
     /// RPC-022: read the session's current role overlay text.
     /// Delegates through `SessionManagerHandle::get_role`. Without an
     /// attached handle returns `None`.
@@ -1406,6 +1433,53 @@ impl FspecService for FspecServiceImpl {
         match self.inner.session_manager() {
             Some(handle) => handle.set_thinking_level(&session_id, level),
             None => Ok(()),
+        }
+    }
+
+    async fn set_continue_state(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        enabled: bool,
+        budget: u32,
+    ) -> Result<(), String> {
+        // CONT-002: delegate through the optional SessionManagerHandle.
+        match self.inner.session_manager() {
+            Some(handle) => handle.set_continue_state(&session_id, enabled, budget),
+            None => Ok(()),
+        }
+    }
+
+    async fn get_continue_state(self, _ctx: Context, session_id: SessionId) -> (bool, u32) {
+        // CONT-002: delegate through the optional SessionManagerHandle.
+        match self.inner.session_manager() {
+            Some(handle) => handle.get_continue_state(&session_id),
+            None => (false, 10),
+        }
+    }
+
+    async fn set_goal_state(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        goal: Option<(String, Option<String>)>,
+    ) -> Result<(), String> {
+        // CONT-003: delegate through the optional SessionManagerHandle.
+        match self.inner.session_manager() {
+            Some(handle) => handle.set_goal_state(&session_id, goal),
+            None => Ok(()),
+        }
+    }
+
+    async fn get_goal_state(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+    ) -> Option<(String, Option<String>)> {
+        // CONT-003: delegate through the optional SessionManagerHandle.
+        match self.inner.session_manager() {
+            Some(handle) => handle.get_goal_state(&session_id),
+            None => None,
         }
     }
 

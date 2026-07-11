@@ -130,6 +130,10 @@ serial_test = "3"
 wiremock = "0.6.5"
 reqwest = "0.12"
 base64 = "0.22"
+# CMPCT-038: twin-parity test — the NAPI twin's apply_pending_dag_and_emit
+# must produce the identical CompactionResult to the agent-loop twin.
+# Dev-only: production codelet-napi must NOT depend on codelet-agent-loop.
+codelet-agent-loop = { path = "../agent-loop" }
 
 [build-dependencies]
 napi-build = "2"
@@ -158,6 +162,24 @@ required-features = ["__full_runtime"]
 
 [[test]]
 name = "compaction_post_inject_loading_test"
+required-features = ["__full_runtime"]
+
+# CMPCT-038: twin-parity measurement-basis tests exercise both the napi and
+# agent-loop inject_summary handlers plus real Session construction.
+[[test]]
+name = "cmpct038_measurement_basis_test"
+required-features = ["__full_runtime"]
+
+# CMPCT-039: producer-level growth-case coverage for the NAPI session_compact
+# binding — compression_ratio must never ship negative to JavaScript.
+[[test]]
+name = "cmpct039_ratio_clamp_test"
+required-features = ["__full_runtime"]
+
+# RPC-421: compact_session must return an acknowledgement-shaped result
+# (no fabricated trough-measured reduction) — both twins + repl_loop shape.
+[[test]]
+name = "rpc421_honest_ack_test"
 required-features = ["__full_runtime"]
 
 [[test]]

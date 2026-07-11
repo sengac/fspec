@@ -265,5 +265,3 @@ pub(super) fn restore_mode(
         None => ProviderSettingsMode::CreateProfile { provider_id, form },
     };
 }
-
-

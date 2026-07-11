@@ -272,7 +272,10 @@ mod tests {
             ticked,
             vec![SelectionGesture::BeginLine(Cell { row: 5, col: 3 })]
         );
-        assert_eq!(drag, vec![SelectionGesture::Extend(Cell { row: 7, col: 2 })]);
+        assert_eq!(
+            drag,
+            vec![SelectionGesture::Extend(Cell { row: 7, col: 2 })]
+        );
         assert_eq!(up, vec![SelectionGesture::Commit]);
     }
 }

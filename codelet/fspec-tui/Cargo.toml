@@ -117,6 +117,14 @@ codelet-providers.workspace = true
 # into the CompactionComplete display pipeline. Already in the dep
 # graph via codelet-sessions.
 codelet-cli.workspace = true
+# CONT-008: goal back-sync tests drive the REAL agent-loop
+# BackgroundOutput twin (StreamEvent::ContinueState → chrome write-back
+# → StreamChunk::ContinueStateUpdate) against a real BackgroundSession.
+# agent-loop is napi-free (its no_napi_dependency contract), so no cycle.
+codelet-agent-loop.workspace = true
+# CONT-008: resurrection tests inspect the done() registry
+# (is_continue_armed / get_session_goal) after the dispatch sync.
+codelet-tools.workspace = true
 
 [lints]
 workspace = true

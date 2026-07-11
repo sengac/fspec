@@ -99,10 +99,36 @@ pub fn paint_footer(
     let supervisor_pending_count = sid
         .map(|s| store.supervisor_pending_count_for(s))
         .unwrap_or(0);
+    // CONT-002: `⏩ auto-continue (n/N)` only while armed for the focused
+    // session. CONT-003: `🎯 goal (n/N)` REPLACES the auto-continue
+    // indicator while a goal is active (N = effective Goal budget,
+    // max(explicit, 15)). CONT-007: `n` is the REAL nudge counter from the
+    // live `ContinueStateUpdate` cache; without a live snapshot (between
+    // turns / after a slash change) the cached (enabled, budget) pair
+    // paints with 0 nudges. Passing the live effective budget as the
+    // explicit budget is display-exact: goal_status_indicator computes
+    // max(explicit, 15) in goal mode and the live value is already >= 15.
+    let continue_indicator = sid.and_then(|s| {
+        let (enabled, budget) = store.continue_state_for(s);
+        let live = store.continue_live_for(s);
+        let goal_active = live
+            .map(|l| l.goal_active)
+            .unwrap_or_else(|| store.goal_state_for(s).is_some());
+        let (nudges_used, display_budget) = live
+            .map(|l| (l.nudges_used, l.effective_budget))
+            .unwrap_or((0, budget));
+        crate::app::goal_parser::goal_status_indicator(
+            goal_active,
+            enabled,
+            nudges_used,
+            display_budget,
+        )
+    });
     SessionFooter {
         workspace: store.workspace(),
         compaction_progress,
         supervisor_pending_count,
+        continue_indicator,
     }
     .render(areas.footer, buf);
 }

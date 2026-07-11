@@ -236,10 +236,7 @@ impl App {
     /// Not `#[cfg(test)]` — integration tests compile without that cfg,
     /// matching the existing `next_pending_task` / `try_recv_action`
     /// pub test-seam convention on `App`.
-    pub fn set_clipboard_writer_for_test(
-        &mut self,
-        writer: Box<dyn std::io::Write + Send>,
-    ) {
+    pub fn set_clipboard_writer_for_test(&mut self, writer: Box<dyn std::io::Write + Send>) {
         self.clipboard = crate::mouse::clipboard::Osc52Clipboard::new(writer);
     }
 

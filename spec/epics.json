@@ -520,7 +520,11 @@
         "CMPCT-021",
         "CMPCT-032",
         "CMPCT-034",
-        "CMPCT-038"
+        "CMPCT-038",
+        "CMPCT-039",
+        "CMPCT-040",
+        "CMPCT-041",
+        "CMPCT-042"
       ]
     },
     "scheduling": {
@@ -1259,6 +1263,22 @@
       "workUnits": [
         "PROV-139",
         "PROV-140"
+      ]
+    },
+    "completion-contract": {
+      "id": "completion-contract",
+      "title": "Completion Contract (done tool, /continue, /goal)",
+      "createdAt": "2026-07-09T05:50:07.649Z",
+      "description": "Prevent premature agent stops via an explicit done() confirmation tool, a /continue auto-continue toggle with parameterized nudge budget, and a /goal mode that conditionally accepts done() against a user-set goal. Includes the structural rig-core fix for stop_reason=stop with pending tool calls.",
+      "workUnits": [
+        "CONT-001",
+        "CONT-002",
+        "CONT-003",
+        "CONT-005",
+        "CONT-006",
+        "CONT-007",
+        "CONT-008",
+        "CONT-009"
       ]
     }
   }

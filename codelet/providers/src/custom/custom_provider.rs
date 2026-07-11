@@ -262,7 +262,7 @@ fn build_rig_agent(
         for adapter in iter {
             simple = simple.tool(RhaiToolWrapper::new(adapter, session_id));
         }
-        simple
+        let simple = simple
             .tool(AstGrepRefactorTool::new(session_id))
             .tool(SessionSearchTool::new(session_id))
             .tool(GraphSearchTool::new(session_id))
@@ -273,14 +273,20 @@ fn build_rig_agent(
             .tool(ScheduleTool::new(session_id))
             .tool(ConnectMcpTool::new(session_id))
             .tool(fspec_tool)
-            .tool(bridge_tool)
-            .build()
+            .tool(bridge_tool);
+        // CONT-002: done() is registered only while auto-continue is armed
+        let simple = if codelet_tools::is_continue_armed(session_id) {
+            simple.tool(codelet_tools::DoneTool::new(session_id))
+        } else {
+            simple
+        };
+        simple.build()
     } else {
         // No Rhai-defined tools at all — wire the infrastructure tools
         // on their own. This branch should be rare (an empty
         // `define_tools` return) but we must still expose the native
         // surface so the agent has something to work with.
-        agent_builder
+        let builder = agent_builder
             .tool(AstGrepRefactorTool::new(session_id))
             .tool(SessionSearchTool::new(session_id))
             .tool(GraphSearchTool::new(session_id))
@@ -291,8 +297,14 @@ fn build_rig_agent(
             .tool(ScheduleTool::new(session_id))
             .tool(ConnectMcpTool::new(session_id))
             .tool(fspec_tool)
-            .tool(bridge_tool)
-            .build()
+            .tool(bridge_tool);
+        // CONT-002: done() is registered only while auto-continue is armed
+        let builder = if codelet_tools::is_continue_armed(session_id) {
+            builder.tool(codelet_tools::DoneTool::new(session_id))
+        } else {
+            builder
+        };
+        builder.build()
     }
 }
 

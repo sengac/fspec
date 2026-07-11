@@ -573,9 +573,15 @@ fails. The intercept short-circuits via `std::process::exit(0)` semantics
 ### Build / test runner gotchas
 
 - **Never `cargo test` the full workspace.** It compiles fspec-tui's massive
-  dependency tree (lance, tantivy, datafusion) — 20+ minutes minimum.
+  dependency tree (lance, tantivy, datafusion) — 20+ minutes minimum, and
+  worse: with full debug info the 944 test binaries reach 1.4–2 GB EACH.
+  On 2026-07-10 a `cargo test --workspace` run grew `target/` to 302 GB and
+  **crashed the machine** (see the incident note in `codelet/Cargo.toml`).
   Always target: `cargo test -p codelet-fspec --test cli_<name>` or
-  `cargo test -p codelet-fspec-core --test <name>`.
+  `cargo test -p codelet-fspec-core --test <name>`. For multi-crate runs,
+  prepend `CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0` and bound
+  parallelism with `-j 12`. `~/.fspec/blocklist.json` now blocks
+  `--workspace`/`--all` outright and prompts on bare `cargo test`.
 - **`tee` test output**, never `head`/`tail`/`grep`. Tests are expensive;
   re-running to see different output slices wastes time.
   Pattern: `cargo test … 2>&1 | tee /tmp/test-out.txt` then `Read /tmp/test-out.txt`.
@@ -715,7 +721,9 @@ RULES:
       | tee /tmp/test-<name>-$(date +%s).txt
 - After running, REPLY with: (a) the tee filename, (b) exit code,
   (c) a 5–10 line summary of pass/fail counts.
-- NEVER run full-workspace `cargo test` (pulls fspec-tui deps, 20+ min).
+- NEVER run full-workspace `cargo test` (pulls fspec-tui deps, 20+ min —
+  and on 2026-07-10 a `--workspace` run produced 302 GB of test binaries
+  and crashed the machine; it is now blocked by ~/.fspec/blocklist.json).
   Always target -p <crate> --test <test_binary>.
 - NEVER pipe cargo output through head/tail/grep — tee then Read.
 ```

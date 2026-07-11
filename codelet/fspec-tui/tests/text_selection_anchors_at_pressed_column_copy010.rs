@@ -19,8 +19,8 @@ mod common;
 #[path = "common/text_selection_anchor_copy010_helpers.rs"]
 mod sb;
 use sb::{
-    app_with_clipboard, clip_bytes, drain, highlight_spans, mouse, osc52, render_app,
-    seed_line, selection_active,
+    app_with_clipboard, clip_bytes, drain, highlight_spans, mouse, osc52, render_app, seed_line,
+    selection_active,
 };
 
 #[path = "common/turn_content_modal_copy008_helpers.rs"]
@@ -111,10 +111,19 @@ fn dragging_from_a_mid_word_column_in_the_input_composer_copies_from_that_column
     // @step When I press the left mouse button at the start of "brown" and drag to the end of "fox" and release
     // "the quick brown fox": 'b' of "brown" is at char index 10; the row
     // ends at char index 19. Press at body col 10, drag to body col 19.
-    let _ = input.handle_mouse(cmouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 10, 0), area);
-    let _ = input.handle_mouse(cmouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 19, 0), area);
+    let _ = input.handle_mouse(
+        cmouse(MouseEventKind::Down(MouseButton::Left), BODY_X + 10, 0),
+        area,
+    );
+    let _ = input.handle_mouse(
+        cmouse(MouseEventKind::Drag(MouseButton::Left), BODY_X + 19, 0),
+        area,
+    );
     let text = input
-        .handle_mouse(cmouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 19, 0), area)
+        .handle_mouse(
+            cmouse(MouseEventKind::Up(MouseButton::Left), BODY_X + 19, 0),
+            area,
+        )
         .expect("Commit must return the selected text");
 
     // @step Then the clipboard receives "brown fox"
@@ -210,17 +219,29 @@ fn dragging_from_a_mid_title_column_in_the_board_details_strip_copies_from_that_
 
     // @step When I press the left mouse button at a mid-title column of the id and title row and drag to the end of the title and release
     let _ = view.handle_event(
-        &board::mouse(MouseEventKind::Down(MouseButton::Left), r.x + press_col, r.y),
+        &board::mouse(
+            MouseEventKind::Down(MouseButton::Left),
+            r.x + press_col,
+            r.y,
+        ),
         &store,
     );
     bdrain(&mut rx);
     let _ = view.handle_event(
-        &board::mouse(MouseEventKind::Drag(MouseButton::Left), r.x + r.width - 1, r.y),
+        &board::mouse(
+            MouseEventKind::Drag(MouseButton::Left),
+            r.x + r.width - 1,
+            r.y,
+        ),
         &store,
     );
     bdrain(&mut rx);
     let _ = view.handle_event(
-        &board::mouse(MouseEventKind::Up(MouseButton::Left), r.x + r.width - 1, r.y),
+        &board::mouse(
+            MouseEventKind::Up(MouseButton::Left),
+            r.x + r.width - 1,
+            r.y,
+        ),
         &store,
     );
     bdrain(&mut rx);

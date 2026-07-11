@@ -4,8 +4,12 @@
 //! Based on OpenAI codex architecture with tokio::select! pattern.
 
 mod agent_runner;
+pub mod auto_continue; // CONT-002: auto-continue decision fn + /continue grammar
+pub mod continue_state; // CONT-007: live continue/goal counter snapshot builders
+pub mod done_early_exit; // CONT-005: done() immediate termination — early-exit decision + shared teardown
 mod error_classifiers;
 mod gemini_continuation;
+pub mod goal; // CONT-003: goal mode — derived mode, /goal grammar, escalation
 mod message_helpers;
 mod multimodal;
 pub mod output;
@@ -26,8 +30,8 @@ pub use error_classifiers::{
 };
 pub use multimodal::{build_user_content_with_images, BridgeImage};
 pub use output::{
-    CliOutput, ContextFillInfo, StreamEvent, StreamOutput, TokenInfo, ToolCallEvent,
-    ToolResultEvent,
+    CliOutput, ContextFillInfo, ContinueStateEvent, ContinueStateReason, StreamEvent, StreamOutput,
+    TokenInfo, ToolCallEvent, ToolResultEvent,
 };
 pub use recovery_compaction::{
     begin_compaction_recovery, build_compaction_budget_exhausted_message, compaction_retry_prompt,

@@ -283,6 +283,48 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         Ok(())
     }
 
+    /// CONT-002: set the session's auto-continue state (`/continue`).
+    /// `budget` is the zero-progress nudge budget (>= 1). Default returns
+    /// `Ok(())` (silent no-op) so handles that have not wired auto-continue
+    /// — including the stub — compile without per-test wiring.
+    fn set_continue_state(
+        &self,
+        session_id: &SessionId,
+        enabled: bool,
+        budget: u32,
+    ) -> Result<(), String> {
+        let _ = (session_id, enabled, budget);
+        Ok(())
+    }
+
+    /// CONT-002: read the session's auto-continue state as
+    /// `(enabled, budget)`. Default returns `(false, 10)` (off, default
+    /// budget) so unwired handles compile unchanged.
+    fn get_continue_state(&self, session_id: &SessionId) -> (bool, u32) {
+        let _ = session_id;
+        (false, 10)
+    }
+
+    /// CONT-003: set or clear the session's goal chrome state (`/goal`) as
+    /// `(text, verify)`. Default returns `Ok(())` (silent no-op) so handles
+    /// that have not wired goal state — including the stub — compile without
+    /// per-test wiring.
+    fn set_goal_state(
+        &self,
+        session_id: &SessionId,
+        goal: Option<(String, Option<String>)>,
+    ) -> Result<(), String> {
+        let _ = (session_id, goal);
+        Ok(())
+    }
+
+    /// CONT-003: read the session's goal chrome state as `(text, verify)`.
+    /// Default returns `None` so unwired handles compile unchanged.
+    fn get_goal_state(&self, session_id: &SessionId) -> Option<(String, Option<String>)> {
+        let _ = session_id;
+        None
+    }
+
     /// RPC-022: read the session's current role overlay text. Default
     /// returns `None` so handles that have not yet wired role state —
     /// including the stub — compile without per-test wiring. The

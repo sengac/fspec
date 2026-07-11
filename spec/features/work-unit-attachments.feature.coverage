@@ -1,0 +1,262 @@
+{
+  "scenarios": [
+    {
+      "name": "Register a file that already lives in the work unit attachments directory",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts",
+          "lines": "66-100",
+          "implMappings": [
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Duplicate registration is rejected without touching the file",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts",
+          "lines": "104-135",
+          "implMappings": [
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Register a read-only file already in the attachments directory without attempting a copy",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts",
+          "lines": "139-177",
+          "implMappings": [
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Duplicate registration from a different source file does not overwrite the registered attachment",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts",
+          "lines": "181-218",
+          "implMappings": [
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "File in the attachments root is still moved into the work unit directory",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts",
+          "lines": "222-259",
+          "implMappings": [
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Symlink alias of the destination file does not truncate it",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts",
+          "lines": "263-300",
+          "implMappings": [
+            {
+              "file": "src/commands/add-attachment.ts",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/bug-151-attachment-self-copy-truncation.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/add-attachment.ts"
+    ],
+    "totalLinesCovered": 370
+  }
+}

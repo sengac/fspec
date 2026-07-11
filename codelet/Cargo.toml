@@ -382,5 +382,29 @@ opt-level = 0
 # Per the Cargo book: "Incremental compilation is only used for
 # workspace members and 'path' dependencies" — i.e. exactly the
 # crates whose 89-binary fan-out is hurting us.
+#
+# ─────────────────────────────────────────────────────────────────────
+# INCIDENT 2026-07-10: NEVER run an unscoped `cargo test` or
+# `cargo test --workspace` in this workspace.
+#
+# A plain `cargo test --workspace` compiled all 944 integration-test
+# binaries with full DWARF debug info (1.4–2 GB PER BINARY — each one
+# statically links the whole crate graph including arrow, datafusion,
+# lance and tantivy). target/debug/deps grew to 299 GB (5,185 files,
+# 239 binaries over 500 MB) and the machine crashed mid-link.
+#
+# Safe invocation patterns instead:
+#   1. Scope by package + target (preferred):
+#        cargo test -p <crate> --test <name>
+#   2. Broader runs: list packages explicitly, drop debug info, bound
+#      link parallelism:
+#        CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0 \
+#          cargo test -p <crate-a> -p <crate-b> -j 12 --no-fail-fast
+#   3. Or use the dedicated profile below:
+#        cargo test --profile ci-test -p <crate>
+#
+# The agent-side guard for this lives in ~/.fspec/blocklist.json
+# (rules: cargo-test-workspace-block, cargo-test-unscoped-prompt).
+# ─────────────────────────────────────────────────────────────────────
 [profile.test]
 incremental = false

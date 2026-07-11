@@ -115,8 +115,7 @@ fn empty_context_window_field_shows_dim_placeholder() {
     let buf = render_to_buffer(&mut view);
 
     // @step Then the Context Window row shows the placeholder "128000"
-    let ry = find_row(&buf, "Context Window")
-        .expect("Context Window row should render");
+    let ry = find_row(&buf, "Context Window").expect("Context Window row should render");
     let row = row_string(&buf, ry);
     assert!(
         row.contains("128000"),
@@ -139,8 +138,7 @@ fn empty_max_output_tokens_field_shows_dim_placeholder() {
     let buf = render_to_buffer(&mut view);
 
     // @step Then the Max Output Tokens row shows the placeholder "16384"
-    let ry = find_row(&buf, "Max Output Tokens")
-        .expect("Max Output Tokens row should render");
+    let ry = find_row(&buf, "Max Output Tokens").expect("Max Output Tokens row should render");
     let row = row_string(&buf, ry);
     assert!(
         row.contains("16384"),
@@ -163,8 +161,8 @@ fn empty_compaction_threshold_field_shows_dim_placeholder() {
     let buf = render_to_buffer(&mut view);
 
     // @step Then the Compaction Threshold row shows the placeholder "80% or 200000"
-    let ry = find_row(&buf, "Compaction Threshold")
-        .expect("Compaction Threshold row should render");
+    let ry =
+        find_row(&buf, "Compaction Threshold").expect("Compaction Threshold row should render");
     let row = row_string(&buf, ry);
     assert!(
         row.contains("80% or 200000"),
@@ -191,8 +189,7 @@ fn typed_value_shows_value_not_placeholder() {
     let buf = render_to_buffer(&mut view);
 
     // @step Then the Max Output Tokens row shows "8192"
-    let ry = find_row(&buf, "Max Output Tokens")
-        .expect("Max Output Tokens row should render");
+    let ry = find_row(&buf, "Max Output Tokens").expect("Max Output Tokens row should render");
     let row = row_string(&buf, ry);
     assert!(
         row.contains("8192"),

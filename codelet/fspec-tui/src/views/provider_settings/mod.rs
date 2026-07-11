@@ -18,6 +18,7 @@ use crate::views::agent::confirm_dialog::ConfirmDialog;
 use crate::views::agent::slash_commands::SlashCommandAction;
 
 mod body_render;
+mod copy;
 mod detail;
 pub mod footer_hints;
 pub mod icons;
@@ -32,11 +33,10 @@ mod oauth_confirm;
 mod oauth_copilot;
 mod oauth_login;
 mod oauth_login_render;
-mod copy;
 mod paste;
 pub mod profile_form;
-mod profile_form_paste;
 mod profile_form_parse;
+mod profile_form_paste;
 mod profile_form_render;
 mod profile_form_streaming;
 pub mod profiles_config;
@@ -46,11 +46,11 @@ mod row_segments;
 mod status_text;
 mod test_result;
 
+pub(crate) use copy::mask_secret;
 pub use mode::{DetailSub, ProviderSettingsMode};
 pub use nav_item::{NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo};
 pub use status_text::DetailStatus;
 pub use test_result::{ProviderTestResult, ProviderTestStatus};
-pub(crate) use copy::mask_secret;
 
 pub const DELETE_PROVIDER_CREDS_DIALOG_ID: &str = "delete-provider-creds";
 

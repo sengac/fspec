@@ -283,6 +283,11 @@ impl ZAIProvider {
             .tool(RequestUserInputTool::new(session_id)) // TOOL-017: HITL tool
             .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
 
+        // CONT-002: done() is registered only while auto-continue is armed
+        if codelet_tools::is_continue_armed(session_id) {
+            agent_builder = agent_builder.tool(codelet_tools::DoneTool::new(session_id));
+        }
+
         // BUG-120: Always set a system prompt with fspec guidance.
         // When a role is provided, it is appended after fspec guidance.
         // Uses the same transform as OpenAISystemPromptFacade for consistency.

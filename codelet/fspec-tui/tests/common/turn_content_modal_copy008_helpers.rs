@@ -18,9 +18,7 @@ use codelet_fspec_tui::components::dialog_theme_rows::{fixed_dialog_rect, turn_m
 use codelet_fspec_tui::views::agent::rendered_chunk::ChunkSource;
 use codelet_fspec_tui::{Action, App, ChunkKind, FspecBackend, RenderedChunk, ViewMode};
 use codelet_rpc_types::SessionId;
-use crossterm::event::{
-    Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind,
-};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::backend::TestBackend;
 use ratatui::layout::Rect;
 use ratatui::style::Color;
