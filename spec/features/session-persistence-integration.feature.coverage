@@ -1,0 +1,325 @@
+{
+  "scenarios": [
+    {
+      "name": "Session creation persists manifest to disk before creating BackgroundSession",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "lines": "37-86",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session creation persists manifest with provider information",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "lines": "92-117",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session destruction removes manifest from disk",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "lines": "123-153",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session listing includes both in-memory and persisted sessions",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "lines": "159-195",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resume session loads messages from persistence layer",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "lines": "202-253",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            },
+            {
+              "file": "codelet/core/src/persistence/manifest.rs",
+              "lines": [
+                969,
+                970,
+                971,
+                972,
+                973,
+                974,
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982,
+                983,
+                984,
+                985,
+                986,
+                987,
+                988,
+                989,
+                990,
+                991,
+                992,
+                993,
+                994,
+                995,
+                996,
+                997,
+                998,
+                999,
+                1000,
+                1001,
+                1002,
+                1003,
+                1004,
+                1005,
+                1006,
+                1007,
+                1008,
+                1009,
+                1010,
+                1011,
+                1012,
+                1013,
+                1014,
+                1015,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session creation fails gracefully when persistence fails",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc422_session_persistence.rs",
+          "lines": "289-324",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/rpc422_session_persistence.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/session_manager.rs",
+      "codelet/sessions/src/handle_impl.rs",
+      "codelet/core/src/persistence/manifest.rs"
+    ],
+    "totalLinesCovered": 438
+  }
+}

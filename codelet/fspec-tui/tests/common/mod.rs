@@ -992,6 +992,7 @@ impl MockBackend {
             is_isolated: false,
             worktree_path: None,
             role: None,
+            updated_at_ms: None,
         };
         if let Some(tx) = self
             .session_created_tx

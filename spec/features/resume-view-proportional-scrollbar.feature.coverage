@@ -1,0 +1,130 @@
+{
+  "scenarios": [
+    {
+      "name": "Scrollbar appears when session count exceeds visible rows",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui097_proportional_scrollbar.rs",
+          "lines": "39-68",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No scrollbar when session count fits in visible area",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui097_proportional_scrollbar.rs",
+          "lines": "73-99",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scrollbar thumb position is proportional to scroll offset",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui097_proportional_scrollbar.rs",
+          "lines": "104-134",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scrollbar uses DIM styled glyphs for thumb and track",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/tui097_proportional_scrollbar.rs",
+          "lines": "139-163",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/mode_view_render.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/tui097_proportional_scrollbar.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/mode_view_render.rs"
+    ],
+    "totalLinesCovered": 163
+  }
+}

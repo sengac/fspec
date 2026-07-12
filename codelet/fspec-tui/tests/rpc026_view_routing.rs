@@ -47,6 +47,7 @@ fn fake_session(id: &str) -> SessionInfo {
         is_isolated: false,
         worktree_path: None,
         role: None,
+        updated_at_ms: None,
     }
 }
 

@@ -1,0 +1,103 @@
+{
+  "scenarios": [
+    {
+      "name": "Sessions ordered by most recently updated first",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/tui099_session_list_ordering.rs",
+          "lines": "70-147",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sessions with identical timestamps are ordered by session ID",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/tui099_session_list_ordering.rs",
+          "lines": "153-234",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sessions without a timestamp appear at the end",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/tui099_session_list_ordering.rs",
+          "lines": "240-324",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/tui099_session_list_ordering.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 284
+  }
+}

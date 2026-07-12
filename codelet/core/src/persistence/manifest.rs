@@ -990,18 +990,31 @@ pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, St
                 "_synthetic": true,
                 "_compactionSummary": true
             });
-            envelopes.push(serde_json::to_string(&synthetic).unwrap_or_default());
+            envelopes.push(serde_json::to_string(&synthetic)
+                .map_err(|e| format!("Failed to serialize synthetic envelope: {}", e))?);
             continue;
         }
 
-        let metadata_value = serde_json::Value::Object(
-            stored_msg
-                .metadata
-                .into_iter()
-                .collect::<serde_json::Map<String, serde_json::Value>>(),
-        );
-        let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
-        let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&envelope_json)?;
+        // RPC-422: Construct a proper MessageEnvelope from StoredMessage fields.
+        // When messages are stored via append_message(), metadata is empty,
+        // so we must build the envelope from the StoredMessage's own fields.
+        let envelope_json = serde_json::json!({
+            "uuid": stored_msg.id.to_string(),
+            "parentUuid": null,
+            "timestamp": stored_msg.created_at.to_rfc3339(),
+            "type": stored_msg.role,
+            "provider": stored_msg.metadata.get("provider")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown"),
+            "message": {
+                "role": stored_msg.role,
+                "content": [{"type": "text", "text": stored_msg.content}]
+            },
+            "requestId": null
+        });
+        let envelope_str = serde_json::to_string(&envelope_json)
+            .map_err(|e| format!("Failed to serialize envelope: {}", e))?;
+        let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&envelope_str)?;
         envelopes.push(rehydrated);
     }
 

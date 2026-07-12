@@ -1,0 +1,240 @@
+{
+  "scenarios": [
+    {
+      "name": "Double-click on a session row immediately resumes that session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "lines": "659-710",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Two clicks separated by more than 300ms are treated as independent single-clicks",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "lines": "713-764",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Quick clicks on different rows are treated as independent single-clicks",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "lines": "767-815",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The footer hint text indicates double-click resumes a session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc028_popup_scroll.rs",
+          "lines": "817-839",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/resume_session_view.rs",
+              "lines": [
+                281
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc028_popup_scroll.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/resume_session_view.rs"
+    ],
+    "totalLinesCovered": 336
+  }
+}

@@ -107,6 +107,62 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         SessionId::new(id_string)
     }
 
+    /// RPC-422: Resume a persisted session by first creating it in memory,
+    /// then restoring messages and token state.
+    ///
+    /// This override ensures the BackgroundSession exists in the in-memory
+    /// session map before `restore_session_messages` tries to look it up.
+    fn resume_session(&self, session_id: &SessionId) -> Result<(), String> {
+        let uuid = uuid::Uuid::parse_str(&session_id.value)
+            .map_err(|e| format!("invalid session id: {e}"))?;
+
+        // Load the manifest from persistence
+        let manifest = codelet_core::persistence::load_session(uuid)
+            .map_err(|e| format!("Failed to load session manifest: {}", e))?;
+
+        // Check if the session already exists in memory
+        let already_exists = self.get_session(&session_id.value).is_ok();
+
+        // If not in memory, create it via create_session_with_id
+        if !already_exists {
+            let project = manifest.project.to_string_lossy().to_string();
+            let name = manifest.name.clone();
+            let model = if manifest.provider.is_empty() {
+                self.get_default_model()
+                    .ok_or("No default model set and manifest has no provider")?
+            } else {
+                manifest.provider.clone()
+            };
+            tokio::task::block_in_place(|| {
+                tokio::runtime::Handle::current()
+                    .block_on(async {
+                        SessionManager::create_session_with_id(
+                            self,
+                            &session_id.value,
+                            &model,
+                            &project,
+                            &name,
+                        )
+                        .await
+                    })
+            })?;
+        }
+
+        // Now restore messages and token state
+        let envelopes = codelet_core::persistence::get_session_message_envelopes(uuid)?;
+        let state = TokenRestoreState {
+            current_context: manifest.token_usage.current_context_tokens as i64,
+            cumulative_billed_output: manifest.token_usage.cumulative_billed_output as i64,
+            cache_read: manifest.token_usage.cache_read_tokens as i64,
+            cache_creation: manifest.token_usage.cache_creation_tokens as i64,
+            cumulative_billed_input: manifest.token_usage.cumulative_billed_input as i64,
+            cumulative_billed_output_second: manifest.token_usage.cumulative_billed_output as i64,
+        };
+        self.restore_session_messages(session_id, envelopes)?;
+        self.restore_session_token_state(session_id, state)?;
+        Ok(())
+    }
+
     fn send_input(&self, session_id: &SessionId, text: String) {
         let uuid = uuid_from(session_id);
         if let Ok(session) = self.get_session(&uuid.to_string()) {

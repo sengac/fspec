@@ -354,14 +354,73 @@ impl SessionManager {
         Ok(id.to_string())
     }
 
-    /// List all sessions
+    /// List all sessions — merges in-memory sessions with persisted sessions from disk.
+    /// RPC-422: Previously returned only in-memory sessions; now also includes
+    /// persisted sessions that are not currently in memory (e.g., from a previous
+    /// process run).
     pub fn list_sessions(&self) -> Vec<SessionInfo> {
-        self.sessions
+        let in_memory: Vec<SessionInfo> = self
+            .sessions
             .read()
             .expect("sessions lock poisoned")
             .values()
             .map(|s| s.get_info())
-            .collect()
+            .collect();
+
+        // Merge with persisted sessions that are not already in memory.
+        let persisted: Vec<SessionInfo> = match codelet_core::persistence::list_all_sessions() {
+            Ok(manifests) => {
+                let in_memory_ids: std::collections::HashSet<String> = in_memory
+                    .iter()
+                    .map(|s| s.id.clone())
+                    .collect();
+                manifests
+                    .into_iter()
+                    .filter(|m| !in_memory_ids.contains(&m.id.to_string()))
+                    .map(|m| SessionInfo {
+                        id: m.id.to_string(),
+                        name: m.name,
+                        status: "idle".to_string(),
+                        project: m.project.to_string_lossy().to_string(),
+                        message_count: m.messages.len() as u32,
+                        provider_id: if m.provider.is_empty() {
+                            None
+                        } else {
+                            Some(m.provider.split('/').next().unwrap_or(&m.provider).to_string())
+                        },
+                        model_id: if m.provider.is_empty() {
+                            None
+                        } else {
+                            m.provider.split('/').nth(1).map(|s| s.to_string())
+                        },
+                        is_isolated: false,
+                        worktree_path: None,
+                        role: None,
+                        updated_at_ms: Some(m.updated_at.timestamp_millis()),
+                    })
+                    .collect()
+            }
+            Err(_) => Vec::new(),
+        };
+
+        let mut all = in_memory;
+        all.extend(persisted);
+
+        // TUI-099: Sort by updated_at_ms descending (most recent first),
+        // with session ID as alphabetical tiebreaker. Sessions without
+        // a timestamp (None) appear at the end.
+        all.sort_by(|a, b| {
+            match (a.updated_at_ms, b.updated_at_ms) {
+                (Some(ts_a), Some(ts_b)) => {
+                    ts_b.cmp(&ts_a).then_with(|| a.id.cmp(&b.id))
+                }
+                (Some(_), None) => std::cmp::Ordering::Less,
+                (None, Some(_)) => std::cmp::Ordering::Greater,
+                (None, None) => a.id.cmp(&b.id),
+            }
+        });
+
+        all
     }
 
     /// VIEWNV-001: Set the active (currently viewed) session
@@ -493,6 +552,24 @@ impl SessionManager {
         }
 
         let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
+
+        // RPC-422: Persist session manifest to disk BEFORE creating BackgroundSession.
+        // Mirrors TypeScript sessionService.ts two-step pattern:
+        // 1. persistenceCreateSessionWithProvider() creates manifest on disk
+        // 2. sessionManagerCreateWithId() creates BackgroundSession
+        //
+        // CRITICAL: We must use the UUID passed in (`uuid`) for the manifest,
+        // NOT let create_session_with_provider() generate its own UUID.
+        // So we construct the manifest manually and save it.
+        let project_path = std::path::PathBuf::from(project);
+        let mut manifest = codelet_core::persistence::SessionManifest::with_provider(
+            name,
+            project_path.clone(),
+            model,
+        );
+        manifest.id = uuid;
+        codelet_core::persistence::save_session(&manifest)
+            .map_err(|e| format!("Failed to persist session manifest: {}", e))?;
 
         // Load environment variables from .env file (if present)
         let _ = dotenvy::dotenv();
@@ -1088,6 +1165,16 @@ impl SessionManager {
             codelet_tools::unregister_bash_abort_flag(uuid);
             codelet_tools::unregister_footer_cwd(uuid);
             codelet_tools::broadcast_metadata_update();
+
+            // RPC-422: Remove the persisted session manifest from disk.
+            // Mirrors TypeScript destroySession which also cleans up persistence.
+            if let Err(e) = codelet_core::persistence::delete_session(uuid) {
+                tracing::warn!(
+                    "RPC-422: Failed to delete session manifest from disk: {}",
+                    e
+                );
+            }
+
             Ok(())
         } else {
             Err(format!("Session not found: {}", id))

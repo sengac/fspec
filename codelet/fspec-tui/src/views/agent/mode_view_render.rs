@@ -7,6 +7,9 @@
 //! ProviderSettingsView can reuse them. The title helper takes a
 //! `suffix` parameter so different views can label the count
 //! correctly (sessions: "available", providers: "configured").
+//!
+//! TUI-096: `render_session_rows` now renders a 2-line format per
+//! session (name line + detail line) with `format_time_ago` helper.
 
 use codelet_rpc_types::SessionInfo;
 use ratatui::buffer::Buffer;
@@ -82,7 +85,50 @@ pub(crate) fn render_footer_hint(area: Rect, buf: &mut Buffer, text: &str) {
     Paragraph::new(text.to_string()).render(area, buf);
 }
 
-pub(super) fn render_session_rows(
+/// TUI-096: Format a time delta (in seconds) as a human-readable "time ago"
+/// string. Thresholds:
+///   < 60s       → "just now"
+///   < 60m       → "{m}m ago"
+///   < 24h       → "{h}h ago"
+///   < 7d        → "{d}d ago"
+///   < 30d       → "{w}w ago"
+///   >= 30d      → "{mo}mo ago"
+pub fn format_time_ago(seconds: i64) -> String {
+    if seconds < 60 {
+        return "just now".to_string();
+    }
+    let minutes = seconds / 60;
+    if minutes < 60 {
+        return format!("{minutes}m ago");
+    }
+    let hours = minutes / 60;
+    if hours < 24 {
+        return format!("{hours}h ago");
+    }
+    let days = hours / 24;
+    if days < 7 {
+        return format!("{days}d ago");
+    }
+    let weeks = days / 7;
+    if weeks < 4 {
+        return format!("{weeks}w ago");
+    }
+    let months = weeks / 4;
+    format!("{months}mo ago")
+}
+
+/// TUI-096: Render session rows in a 2-line format per session.
+///
+/// Each session occupies 2 visual rows:
+///   Line 1: "▸ Session Name" (or "  Session Name" if unselected)
+///   Line 2: "    N messages | provider/model | time ago"
+///
+/// Selected rows use REVERSED+BOLD style for both lines.
+///
+/// TUI-097: When session count exceeds visible area, a proportional
+/// scrollbar is rendered on the rightmost column and content width
+/// is reduced by 1 column.
+pub fn render_session_rows(
     area: Rect,
     buf: &mut Buffer,
     sessions: &[SessionInfo],
@@ -102,31 +148,105 @@ pub(super) fn render_session_rows(
             .render(row, buf);
         return;
     }
+
     let visible_rows = area.height as usize;
     if visible_rows == 0 {
         return;
     }
-    let end = (scroll_offset + visible_rows).min(sessions.len());
-    for (row_idx, info) in sessions[scroll_offset..end].iter().enumerate() {
-        let global_idx = scroll_offset + row_idx;
-        let marker = if global_idx == selected_index {
-            "▸"
-        } else {
-            " "
-        };
-        let label = format!(" {marker} {} ({})", info.id, info.status);
-        let style = if global_idx == selected_index {
+
+    // TUI-096: Each session takes 2 visual rows
+    let visible_sessions = visible_rows / 2;
+
+    // TUI-097: Determine if scrollbar is needed
+    let show_scrollbar = sessions.len() > visible_sessions;
+    let content_width = if show_scrollbar {
+        area.width.saturating_sub(1)
+    } else {
+        area.width
+    };
+
+    let end = (scroll_offset + visible_sessions).min(sessions.len());
+
+    for (session_idx, info) in sessions[scroll_offset..end].iter().enumerate() {
+        let global_idx = scroll_offset + session_idx;
+        let is_selected = global_idx == selected_index;
+
+        let style = if is_selected {
             Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
         } else {
             Style::default()
         };
-        let y = area.y + row_idx as u16;
-        let row_area = Rect {
+
+        // Line 1: Name line with selection marker
+        let marker = if is_selected { "▸" } else { " " };
+        let name_line = format!(" {marker} {}", info.name);
+        let y1 = area.y + (session_idx * 2) as u16;
+        let row_area1 = Rect {
             x: area.x,
-            y,
-            width: area.width,
+            y: y1,
+            width: content_width,
             height: 1,
         };
-        Paragraph::new(Line::from(Span::styled(label, style))).render(row_area, buf);
+        Paragraph::new(Line::from(Span::styled(name_line, style)))
+            .render(row_area1, buf);
+
+        // Line 2: Detail line with message count, provider, time ago
+        let provider_str = info
+            .provider_id
+            .as_deref()
+            .map(|p| {
+                if let Some(model) = &info.model_id {
+                    format!("{p}/{model}")
+                } else {
+                    p.to_string()
+                }
+            })
+            .unwrap_or_else(|| "unknown".to_string());
+
+        let time_str = info
+            .updated_at_ms
+            .map(|ts| {
+                let now_ms = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_millis() as i64)
+                    .unwrap_or(0);
+                let delta = now_ms - ts;
+                if delta < 0 {
+                    "just now".to_string()
+                } else {
+                    format_time_ago(delta / 1000)
+                }
+            })
+            .unwrap_or_else(|| "unknown".to_string());
+
+        let detail_line = format!(
+            "    {} messages | {} | {}",
+            info.message_count, provider_str, time_str
+        );
+        let y2 = y1 + 1;
+        let row_area2 = Rect {
+            x: area.x,
+            y: y2,
+            width: content_width,
+            height: 1,
+        };
+        Paragraph::new(Line::from(Span::styled(detail_line, style)))
+            .render(row_area2, buf);
+    }
+
+    // TUI-097: Render proportional scrollbar when overflow
+    if show_scrollbar {
+        crate::components::list_scrollbar::render_list_scrollbar(
+            Rect {
+                x: area.x + content_width,
+                y: area.y,
+                width: 1,
+                height: area.height,
+            },
+            buf,
+            scroll_offset,
+            visible_sessions,
+            sessions.len(),
+        );
     }
 }

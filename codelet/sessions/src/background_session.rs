@@ -1580,6 +1580,8 @@ impl BackgroundSession {
             // None so the lifted shape is satisfied without changing TS
             // behaviour.
             role: None,
+            // TUI-096: Populate updated_at_ms from current time
+            updated_at_ms: Some(chrono::Utc::now().timestamp_millis()),
         }
     }
 }

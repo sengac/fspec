@@ -1493,6 +1493,7 @@ impl SessionManagerHandle for StubSessionManagerHandle {
                 is_isolated: r.is_isolated,
                 worktree_path: r.worktree_path.clone(),
                 role: r.role.clone(),
+                updated_at_ms: None,
             })
             .collect()
     }

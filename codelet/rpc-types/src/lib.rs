@@ -251,6 +251,8 @@ pub struct SessionInfo {
     pub worktree_path: Option<String>,
     /// RPC-007: optional role string the session was created with.
     pub role: Option<String>,
+    /// TUI-096: optional timestamp (epoch milliseconds) for time-ago display.
+    pub updated_at_ms: Option<i64>,
 }
 
 /// Structured log event payload pushed to subscribers via the

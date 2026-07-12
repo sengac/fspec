@@ -1,29 +1,11 @@
 //! RPC-026 — ResumeSessionView: full-screen session picker.
-//!
-//! Feature: spec/features/rpc026-resume-and-search-mode-views.feature
-//!
-//! Mode view rendered when the user types `/resume` (slash command) —
-//! replaces the legacy popup-style resume picker. Paints into the
-//! ENTIRE area Rect, hiding AgentView's normal header/scrollback/
-//! input/footer layout. Mirrors TS AgentView.tsx resume mode
-//! (lines 1336-1398, 5002-5191).
-//!
-//! Behaviour:
-//!   * ↑/↓ navigate with wrap-around AND scroll-window updates so the
-//!     selected row stays visible inside the terminal height.
-//!   * Enter emits `Selected(SessionId)`.
-//!   * D opens a `ConfirmDialog` overlay scoped to this view.
-//!   * Esc emits `Dismiss`.
-//!   * Inside the delete-confirm dialog: Enter on Primary emits
-//!     `ConfirmedDelete`; Esc / Cancel emits `CancelledDelete`.
-//!
-//! Forbidden imports (per source-shape regression): this widget does
-//! NOT depend on the legacy floating-popup machinery.
+//! Mode view for `/resume`. ↑/↓ navigate, Enter/Double-click emits `Selected`.
 
 use codelet_rpc_types::{SessionId, SessionInfo};
 use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
+use std::time::{Duration, Instant};
 
 use super::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 use super::mode_view_render::render_session_rows;
@@ -32,8 +14,38 @@ use crate::components::scroll_viewport::{
 };
 
 const CHROME_ROWS: u16 = 3;
+const DOUBLE_CLICK_TIMEOUT: Duration = Duration::from_millis(300);
 
-/// Outcome of routing a single key event through the resume view.
+/// Detects double-clicks: two left-button-down events on the same row
+/// within `DOUBLE_CLICK_TIMEOUT` (300ms).
+struct DoubleClickDetector {
+    last_click_row: Option<usize>,
+    last_click_time: Option<Instant>,
+}
+
+impl DoubleClickDetector {
+    fn new() -> Self {
+        Self {
+            last_click_row: None,
+            last_click_time: None,
+        }
+    }
+
+    /// Returns `true` if the click on `row` at `now` is a double-click.
+    fn record_click(&mut self, row: usize, now: Instant) -> bool {
+        let is_double = match (self.last_click_row, self.last_click_time) {
+            (Some(last_row), Some(last_time)) => {
+                last_row == row && now.duration_since(last_time) <= DOUBLE_CLICK_TIMEOUT
+            }
+            _ => false,
+        };
+        self.last_click_row = Some(row);
+        self.last_click_time = Some(now);
+        is_double
+    }
+}
+
+/// Outcome of routing a key or mouse event through the resume view.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResumeSessionViewOutcome {
     Selected(SessionId),
@@ -52,6 +64,7 @@ pub struct ResumeSessionView {
     scroll_offset: usize,
     delete_confirm: Option<ConfirmDialog>,
     wheel: WheelVelocity,
+    double_click: DoubleClickDetector,
 }
 
 impl Default for ResumeSessionView {
@@ -68,6 +81,7 @@ impl ResumeSessionView {
             scroll_offset: 0,
             delete_confirm: None,
             wheel: WheelVelocity::new(),
+            double_click: DoubleClickDetector::new(),
         }
     }
 
@@ -95,18 +109,20 @@ impl ResumeSessionView {
         self.delete_confirm.as_ref()
     }
 
-    /// Replace the session list. Selection + scroll are reset.
+    /// Replace the session list.
     pub fn set_sessions(&mut self, sessions: Vec<SessionInfo>) {
         self.sessions = sessions;
         self.selected_index = 0;
         self.scroll_offset = 0;
     }
 
+    /// TUI-096: Each session occupies 2 visual rows.
     fn adjust_scroll(&mut self, visible_rows: usize) {
+        let visible_sessions = visible_rows / 2;
         ensure_visible(
             &mut self.scroll_offset,
             self.selected_index,
-            visible_rows,
+            visible_sessions,
             self.sessions.len(),
         );
     }
@@ -119,8 +135,7 @@ impl ResumeSessionView {
         self.adjust_scroll(visible_rows);
     }
 
-    /// Hit-test `ev` against `body_rect` — returns true when the event
-    /// falls inside the rect.
+    /// Hit-test `ev` against `body_rect`.
     fn rect_contains(ev: MouseEvent, body_rect: Rect) -> bool {
         ev.column >= body_rect.x
             && ev.column < body_rect.x + body_rect.width
@@ -152,6 +167,15 @@ impl ResumeSessionView {
             MouseEventKind::Down(crossterm::event::MouseButton::Left) => {
                 let candidate = self.scroll_offset + (ev.row - body_rect.y) as usize;
                 if candidate < self.sessions.len() {
+                    let now = Instant::now();
+                    if self.double_click.record_click(candidate, now) {
+                        // Double-click: resume session immediately
+                        let info = &self.sessions[candidate];
+                        return ResumeSessionViewOutcome::Selected(SessionId::new(
+                            info.id.clone(),
+                        ));
+                    }
+                    // Single-click: move selection
                     self.selected_index = candidate;
                     self.adjust_scroll(visible_rows);
                     ResumeSessionViewOutcome::Continued
@@ -163,12 +187,7 @@ impl ResumeSessionView {
         }
     }
 
-    /// Route a single key event through the view.
-    ///
-    /// `visible_rows` is the body height the view will receive on the
-    /// next render — used to keep `scroll_offset` aligned. Passing 0
-    /// effectively disables the scroll-window math (selection still
-    /// advances).
+    /// Route a key event through the view.
     pub fn handle_key(
         &mut self,
         code: KeyCode,
@@ -251,10 +270,7 @@ impl ResumeSessionView {
         }
     }
 
-    /// Paint the view into the FULL area Rect. The first statement is
-    /// `Clear.render(area, buf)` so the underlying AgentView pixels are
-    /// fully overwritten. When `delete_confirm` is `Some`, the dialog
-    /// overlay is painted on top after the base paint.
+    /// Paint the view into the FULL area Rect.
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
         crate::views::full_screen_shell::render_full_screen_scaffold(
             area,
@@ -262,7 +278,7 @@ impl ResumeSessionView {
             "Resume Session",
             self.sessions.len(),
             "available",
-            "Enter Select | ↑↓ Navigate | D Delete | Esc Cancel",
+            "DblClick Resume | Enter Select | ↑↓ Navigate | D Delete | Esc Cancel",
             |body_area, buf| {
                 render_session_rows(
                     body_area,
@@ -276,9 +292,7 @@ impl ResumeSessionView {
         );
     }
 
-    /// Heuristic visible-row hint used by AgentView when computing
-    /// `handle_key`'s `visible_rows` argument. Subtracts the title +
-    /// separator + footer chrome from `area.height`.
+    /// Heuristic visible-row hint for `handle_key`'s `visible_rows` argument.
     pub fn visible_rows_for(area: Rect) -> usize {
         area.height.saturating_sub(CHROME_ROWS) as usize
     }
