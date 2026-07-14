@@ -47,6 +47,7 @@ use codelet_tools::{
     clear_all_agent_manager_handlers, set_agent_manager_async_handler, set_agent_manager_handler,
     AgentManagerAction, AgentManagerResult, AwaitOutcome, SessionIdParam,
 };
+use codelet_core::persistence::reset_stores_for_tests;
 use uuid::Uuid;
 
 /// Trimmed offline models.dev catalog (anthropic/openai/google), shared with
@@ -80,6 +81,11 @@ fn owning_manager() -> Result<(tempfile::TempDir, Arc<SessionManager>), String> 
     let cache_dir = data_dir.path().join("cache");
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
+    // RPC-423: reset stores BEFORE setting data directory so init_session_store()
+    // creates a fresh SessionStore pointing to the new temp dir. Without this,
+    // the SESSION_STORE singleton still points to the old data dir and
+    // save_session() fails with "No such file or directory".
+    reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     // ASSUMED API: the fix wraps the manager in Arc via a constructor that
     // stamps a `Weak<Self>` self-reference so created sessions can carry an
@@ -441,6 +447,8 @@ async fn napi_path_falls_back_to_singleton_when_no_owning_manager() -> Result<()
     let cache_dir = data_dir.path().join("cache");
     std::fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).map_err(|e| e.to_string())?;
+    // RPC-423: reset stores BEFORE setting data directory
+    reset_stores_for_tests();
     codelet_common::set_data_directory(data_dir.path().to_path_buf())?;
     SessionManager::instance().set_default_model("anthropic/claude-opus-4-5");
 

@@ -25,7 +25,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use tracing::warn;
+use tracing::{debug, info, warn};
 use uuid::Uuid;
 
 use crate::persistence::messages::{MessageRef, MessageSource, MessageStore, StoredMessage};
@@ -232,6 +232,10 @@ impl SessionStore {
     /// Load all sessions from disk.
     fn load_all(&mut self) -> Result<(), String> {
         if !self.sessions_dir.exists() {
+            debug!(
+                sessions_dir = %self.sessions_dir.display(),
+                "SessionStore::load_all: sessions directory does not exist, nothing to load"
+            );
             return Ok(());
         }
 
@@ -263,6 +267,12 @@ impl SessionStore {
             }
         }
 
+        info!(
+            sessions_dir = %self.sessions_dir.display(),
+            loaded_count = self.cache.len(),
+            "SessionStore::load_all: finished loading sessions from disk"
+        );
+
         Ok(())
     }
 
@@ -283,6 +293,12 @@ impl SessionStore {
         provider: &str,
     ) -> Result<SessionManifest, String> {
         let session = SessionManifest::with_provider(name, project.to_path_buf(), provider);
+        info!(
+            session_id = %session.id,
+            provider = %provider,
+            name = %name,
+            "SessionStore::create_with_provider: created new session manifest"
+        );
         self.save(&session)?;
         self.last_session.insert(project.to_path_buf(), session.id);
         self.cache.insert(session.id, session.clone());
@@ -294,10 +310,26 @@ impl SessionStore {
         let filename = format!("{}.json", session.id);
         let path = self.sessions_dir.join(&filename);
 
+        tracing::info!(
+            session_id = %session.id,
+            session_name = %session.name,
+            provider = %session.provider,
+            project = %session.project.display(),
+            message_count = session.messages.len(),
+            save_path = %path.display(),
+            "SessionStore::save: persisting session manifest to disk"
+        );
+
         let json = serde_json::to_string_pretty(session)
             .map_err(|e| format!("Failed to serialize session: {e}"))?;
 
         fs::write(&path, json).map_err(|e| format!("Failed to write session file: {e}"))?;
+
+        tracing::info!(
+            session_id = %session.id,
+            save_path = %path.display(),
+            "SessionStore::save: session manifest written to disk successfully"
+        );
 
         self.cache.insert(session.id, session.clone());
         self.last_session
@@ -996,8 +1028,26 @@ pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, St
         }
 
         // RPC-422: Construct a proper MessageEnvelope from StoredMessage fields.
-        // When messages are stored via append_message(), metadata is empty,
-        // so we must build the envelope from the StoredMessage's own fields.
+        // When messages are stored via persist_assistant_message_internal, the
+        // metadata contains the original structured message content (with
+        // thinking/text/tool_use blocks). Use that when available so the
+        // restore path preserves the original block structure.
+        // When metadata is empty (simple append_message), fall back to
+        // constructing from StoredMessage's own fields.
+        let message_content = stored_msg
+            .metadata
+            .get("message")
+            .and_then(|m| m.get("content"))
+            .cloned();
+
+        let content_value = match message_content {
+            Some(c) => c,
+            None => {
+                // No structured metadata — fall back to single text block.
+                serde_json::json!([{"type": "text", "text": stored_msg.content}])
+            }
+        };
+
         let envelope_json = serde_json::json!({
             "uuid": stored_msg.id.to_string(),
             "parentUuid": null,
@@ -1008,7 +1058,7 @@ pub fn get_session_message_envelopes(session_id: Uuid) -> Result<Vec<String>, St
                 .unwrap_or("unknown"),
             "message": {
                 "role": stored_msg.role,
-                "content": [{"type": "text", "text": stored_msg.content}]
+                "content": content_value
             },
             "requestId": null
         });

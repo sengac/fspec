@@ -1,0 +1,158 @@
+{
+  "scenarios": [
+    {
+      "name": "Session manifest preserves full provider string after creation",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "lines": "129-164",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/hooks.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecAgentHooks does not overwrite the session manifest",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "lines": "59-116",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/hooks.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session resume restores the correct model from persisted manifest",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "lines": "199-224",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/hooks.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing duplicate manifest creation does not break agent loop persistence",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs",
+          "lines": "234-272",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/hooks.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/agent-loop/tests/rpc423_duplicate_manifest_removal.rs"
+    ],
+    "implFiles": [
+      "codelet/agent-loop/src/hooks.rs"
+    ],
+    "totalLinesCovered": 237
+  }
+}

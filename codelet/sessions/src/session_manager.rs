@@ -367,14 +367,23 @@ impl SessionManager {
             .map(|s| s.get_info())
             .collect();
 
+        tracing::debug!(
+            in_memory_count = in_memory.len(),
+            "list_sessions: collected in-memory sessions"
+        );
+
         // Merge with persisted sessions that are not already in memory.
         let persisted: Vec<SessionInfo> = match codelet_core::persistence::list_all_sessions() {
             Ok(manifests) => {
+                tracing::info!(
+                    persisted_on_disk = manifests.len(),
+                    "list_sessions: loaded persisted session manifests from disk"
+                );
                 let in_memory_ids: std::collections::HashSet<String> = in_memory
                     .iter()
                     .map(|s| s.id.clone())
                     .collect();
-                manifests
+                let result: Vec<SessionInfo> = manifests
                     .into_iter()
                     .filter(|m| !in_memory_ids.contains(&m.id.to_string()))
                     .map(|m| SessionInfo {
@@ -398,9 +407,20 @@ impl SessionManager {
                         role: None,
                         updated_at_ms: Some(m.updated_at.timestamp_millis()),
                     })
-                    .collect()
+                    .collect();
+                tracing::info!(
+                    persisted_new = result.len(),
+                    "list_sessions: merged persisted sessions not in memory"
+                );
+                result
             }
-            Err(_) => Vec::new(),
+            Err(e) => {
+                tracing::warn!(
+                    error = %e,
+                    "list_sessions: failed to load persisted sessions from disk"
+                );
+                Vec::new()
+            }
         };
 
         let mut all = in_memory;
@@ -419,6 +439,11 @@ impl SessionManager {
                 (None, None) => a.id.cmp(&b.id),
             }
         });
+
+        tracing::debug!(
+            total_count = all.len(),
+            "list_sessions: returning merged session list"
+        );
 
         all
     }
@@ -539,13 +564,30 @@ impl SessionManager {
     ) -> Result<(), String> {
         let uuid = Uuid::parse_str(id).map_err(|e| format!("Invalid session ID: {}", e))?;
 
+        tracing::info!(
+            session_id = %uuid,
+            model = %model,
+            project = %project,
+            name = %name,
+            "create_session_with_id: starting session creation"
+        );
+
         {
             let sessions = self.sessions.read().expect("sessions lock poisoned");
+            tracing::debug!(
+                session_count = sessions.len(),
+                max_sessions = MAX_SESSIONS,
+                "create_session_with_id: checking session limits"
+            );
             if sessions.len() >= MAX_SESSIONS {
                 return Err(format!("Maximum sessions ({}) reached", MAX_SESSIONS));
             }
             if sessions.contains_key(&uuid) {
                 drop(sessions);
+                tracing::info!(
+                    session_id = %uuid,
+                    "create_session_with_id: session already exists in memory, reactivating"
+                );
                 self.set_active_session(uuid);
                 return Ok(());
             }
@@ -568,8 +610,19 @@ impl SessionManager {
             model,
         );
         manifest.id = uuid;
+        tracing::info!(
+            session_id = %uuid,
+            manifest_provider = %manifest.provider,
+            manifest_name = %manifest.name,
+            manifest_project = %manifest.project.display(),
+            "create_session_with_id: constructed manifest, about to persist to disk"
+        );
         codelet_core::persistence::save_session(&manifest)
             .map_err(|e| format!("Failed to persist session manifest: {}", e))?;
+        tracing::info!(
+            session_id = %uuid,
+            "create_session_with_id: manifest persisted to disk successfully"
+        );
 
         // Load environment variables from .env file (if present)
         let _ = dotenvy::dotenv();
@@ -613,6 +666,13 @@ impl SessionManager {
         let (provider_id, model_id) = (
             Some(registry_provider.to_string()),
             Some(model_part.to_string()),
+        );
+
+        tracing::info!(
+            session_id = %uuid,
+            provider_id = ?provider_id,
+            model_id = ?model_id,
+            "create_session_with_id: resolved provider and model"
         );
 
         // Resolve credentials internally using the lifted credentials module.
@@ -774,6 +834,10 @@ impl SessionManager {
         // into the map, so the session-created broadcast can carry it.
         let created_info = session.get_info();
 
+        tracing::info!(
+            session_id = %uuid,
+            "create_session_with_id: inserting session into in-memory map"
+        );
         self.sessions
             .write()
             .expect("sessions lock poisoned")
@@ -784,6 +848,10 @@ impl SessionManager {
         // sessions it did not itself initiate (spawned subordinates). A send
         // error (no subscribers) is benign and ignored.
         let _ = self.session_created_tx.send(created_info);
+        tracing::debug!(
+            session_id = %uuid,
+            "create_session_with_id: session-created broadcast sent"
+        );
 
         self.set_default_model(model);
         self.set_active_session(uuid);
@@ -802,6 +870,303 @@ impl SessionManager {
             .spawn_footer_poller(id.to_string(), project.to_string(), None);
 
         codelet_tools::broadcast_metadata_update();
+
+        tracing::info!(
+            session_id = %uuid,
+            model = %model,
+            project = %project,
+            name = %name,
+            "create_session_with_id: session creation complete"
+        );
+
+        Ok(())
+    }
+
+    /// RPC-422: Create a BackgroundSession from an existing manifest WITHOUT
+    /// persisting a blank manifest to disk.
+    ///
+    /// Used by `resume_session` to restore a session that was persisted on disk
+    /// but is not currently in memory. This avoids the bug where
+    /// `create_session_with_id` overwrites the manifest with 0 messages.
+    pub async fn create_session_from_manifest(
+        &self,
+        manifest: &codelet_core::persistence::SessionManifest,
+        model: &str,
+    ) -> Result<(), String> {
+        let uuid = manifest.id;
+
+        tracing::info!(
+            session_id = %uuid,
+            model = %model,
+            manifest_name = %manifest.name,
+            manifest_message_count = manifest.messages.len(),
+            "create_session_from_manifest: starting session creation from existing manifest"
+        );
+
+        {
+            let sessions = self.sessions.read().expect("sessions lock poisoned");
+            if sessions.len() >= MAX_SESSIONS {
+                return Err(format!("Maximum sessions ({}) reached", MAX_SESSIONS));
+            }
+            if sessions.contains_key(&uuid) {
+                drop(sessions);
+                tracing::info!(
+                    session_id = %uuid,
+                    "create_session_from_manifest: session already exists in memory, reactivating"
+                );
+                self.set_active_session(uuid);
+                return Ok(());
+            }
+        }
+
+        let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
+
+        // RPC-422: DO NOT save a blank manifest to disk.
+        // The manifest already exists on disk with the correct message references.
+        // We only need to create the in-memory BackgroundSession.
+
+        // Load environment variables from .env file (if present)
+        let _ = dotenvy::dotenv();
+
+        if !model.contains('/') || model.is_empty() {
+            return Err(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            ));
+        }
+
+        let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
+        let is_codex_model = model.starts_with("codex/");
+
+        let (registry_provider, model_part) = if is_profile_model {
+            let colon_idx = model
+                .find(':')
+                .ok_or_else(|| format!("Invalid profile model string '{}': missing ':'", model))?;
+            let provider = &model[..colon_idx];
+            let slash_idx = model
+                .find('/')
+                .ok_or_else(|| format!("Invalid profile model string '{}': missing '/'", model))?;
+            let model_id = &model[slash_idx + 1..];
+            (provider, model_id)
+        } else {
+            let parts: Vec<&str> = model.splitn(2, '/').collect();
+            (parts[0], parts.get(1).copied().unwrap_or(""))
+        };
+
+        if registry_provider.is_empty() || model_part.is_empty() {
+            return Err(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            ));
+        }
+
+        let is_custom_model = !is_profile_model
+            && !is_codex_model
+            && codelet_providers::custom_provider_registered(registry_provider);
+
+        let (provider_id, model_id) = (
+            Some(registry_provider.to_string()),
+            Some(model_part.to_string()),
+        );
+
+        tracing::info!(
+            session_id = %uuid,
+            provider_id = ?provider_id,
+            model_id = ?model_id,
+            "create_session_from_manifest: resolved provider and model"
+        );
+
+        // Resolve credentials internally using the lifted credentials module.
+        let project_path = manifest.project.clone();
+        if let Err(e) = crate::credentials::resolve_and_set_env_var(
+            registry_provider,
+            Some(project_path.as_path()),
+        ) {
+            tracing::error!(
+                "Failed to resolve credentials for provider {}: {}",
+                registry_provider,
+                e
+            );
+        }
+
+        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
+            .await
+            .map_err(|e| format!("Failed to create provider manager: {}", e))?;
+
+        if is_profile_model {
+            tracing::info!(
+                "PROV-007: Profile model detected, using set_model_direct for {}",
+                model
+            );
+        } else if is_codex_model {
+            tracing::info!(
+                "PROV-018: Codex model detected, using set_model_direct for {}",
+                model
+            );
+        } else if is_custom_model {
+            tracing::info!(
+                "PROV-096: Custom provider '{}' detected, using set_model_direct for {}",
+                registry_provider,
+                model
+            );
+        }
+
+        // RPC-343: apply the selection via the shared resolver so creation and
+        // the mid-session set_model path can never drift.
+        let resolved =
+            crate::model_resolution::apply_model_selection(&mut provider_manager, model)?;
+
+        let initial_context_window = resolved.context_window;
+        let initial_max_output_tokens = resolved.max_output_tokens;
+
+        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
+        inner.inject_context_reminders();
+
+        let lifecycle_hooks =
+            match load_lifecycle_hooks(Some(&project_path), dirs::home_dir().as_deref()) {
+                Ok(Some(compiled)) => Some(Arc::new(compiled)),
+                Ok(None) => None,
+                Err(e) => {
+                    tracing::warn!(
+                        "[HOOK-013] Failed to load lifecycle hooks: {} - continuing without",
+                        e
+                    );
+                    None
+                }
+            };
+
+        let name = manifest.name.clone();
+        let project = manifest.project.to_string_lossy().to_string();
+
+        let session = Arc::new(BackgroundSession::new(
+            uuid,
+            name,
+            project.clone(),
+            provider_id,
+            model_id,
+            inner,
+            input_tx,
+            None,
+            None,
+            lifecycle_hooks.clone(),
+            self.chunks_tx.clone(),
+            self.status_changes_tx.clone(),
+        ));
+
+        // RPC-386: stamp the owning-manager back-reference BEFORE spawning the
+        // agent loop, so the AgentManager handler the loop registers binds to
+        // THIS manager.
+        session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default());
+
+        // TUI-002: re-apply the persisted default thinking level
+        let restored_thinking_level =
+            crate::default_thinking_level_persistence::load_default_thinking_level();
+        tracing::debug!(
+            level = restored_thinking_level as u8,
+            "create_session_from_manifest: applying persisted default thinking level"
+        );
+        session.set_base_thinking_level(restored_thinking_level as u8);
+
+        let initial_model_id = session
+            .model_id
+            .read()
+            .expect("model_id lock poisoned")
+            .clone();
+        let initial_compaction_threshold =
+            codelet_cli::compaction_threshold::resolve_compaction_threshold(
+                initial_context_window as u64,
+                initial_max_output_tokens as u64,
+                initial_model_id.as_deref(),
+                None,
+            ) as u32;
+        session.set_model_limits(
+            initial_context_window,
+            initial_max_output_tokens,
+            initial_compaction_threshold,
+        );
+
+        if let Some(ref hooks) = lifecycle_hooks {
+            if !hooks.pre_tool_use.is_empty() {
+                let hooks_for_pre = hooks.clone();
+                let session_for_pre = session.clone();
+                let pre_handler: PreToolHookHandler = std::sync::Arc::new(
+                    move |_sid, tool_name, tool_input| {
+                        let ctx = session_for_pre.hook_context();
+                        let hooks = hooks_for_pre.clone();
+                        let name = tool_name.to_string();
+                        let input = tool_input.clone();
+                        let outcome = tokio::task::block_in_place(|| {
+                            tokio::runtime::Handle::current()
+                                .block_on(run_pre_tool(&hooks, &ctx, &name, &input))
+                        });
+                        match outcome.decision {
+                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Allow => {
+                                PreToolHookDecision::Allow
+                            }
+                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Deny => {
+                                PreToolHookDecision::Deny(
+                                    outcome
+                                        .reason
+                                        .unwrap_or_else(|| "Denied by pre_tool_use hook".to_string()),
+                                )
+                            }
+                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Continue => {
+                                PreToolHookDecision::Continue
+                            }
+                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Ask => {
+                                PreToolHookDecision::Continue
+                            }
+                        }
+                    },
+                );
+                register_pre_tool_hook(uuid, pre_handler);
+            }
+        }
+
+        let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);
+
+        // RPC-040: agent_loop spawning is delegated to the hooks impl
+        self.hooks()
+            .spawn_agent_loop(session.clone(), input_rx, mcp_injection_rx);
+
+        // RPC-385: capture the SessionInfo BEFORE the insert
+        let created_info = session.get_info();
+
+        tracing::info!(
+            session_id = %uuid,
+            "create_session_from_manifest: inserting session into in-memory map"
+        );
+        self.sessions
+            .write()
+            .expect("sessions lock poisoned")
+            .insert(uuid, session);
+
+        // RPC-385: fire the session-created broadcast
+        let _ = self.session_created_tx.send(created_info);
+
+        self.set_default_model(model);
+        self.set_active_session(uuid);
+        self.maybe_start_scheduler(&project);
+
+        // RPC-041: Emit IsolationStateChange directly on the manager-owned chunks_tx
+        let session_id_str = uuid.to_string();
+        let _ = self.chunks_tx.send((
+            codelet_rpc_types::SessionId::from(session_id_str.clone()),
+            codelet_rpc_types::StreamChunk::isolation_state_change(false, None),
+        ));
+
+        // TUI-091: footer poller via the hooks.
+        self.hooks()
+            .spawn_footer_poller(session_id_str, project.clone(), None);
+
+        codelet_tools::broadcast_metadata_update();
+
+        tracing::info!(
+            session_id = %uuid,
+            model = %model,
+            project = %project,
+            "create_session_from_manifest: session creation complete (manifest preserved on disk)"
+        );
 
         Ok(())
     }
@@ -1147,6 +1512,11 @@ impl SessionManager {
     pub fn destroy_session(&self, id: &str) -> Result<(), String> {
         let uuid = Uuid::parse_str(id).map_err(|e| format!("Invalid session ID: {}", e))?;
 
+        tracing::info!(
+            session_id = %uuid,
+            "destroy_session: starting session destruction"
+        );
+
         self.chain_of_command.cleanup_subordinate(uuid);
         self.chain_of_command.remove_supervisor(uuid);
 
@@ -1157,6 +1527,10 @@ impl SessionManager {
             .shift_remove(&uuid);
 
         if let Some(session) = session {
+            tracing::info!(
+                session_id = %uuid,
+                "destroy_session: session removed from in-memory map"
+            );
             session.interrupt();
             self.hooks().stop_footer_poller(id);
             self.hooks().cleanup_session_loops(uuid);
@@ -1168,15 +1542,33 @@ impl SessionManager {
 
             // RPC-422: Remove the persisted session manifest from disk.
             // Mirrors TypeScript destroySession which also cleans up persistence.
+            tracing::info!(
+                session_id = %uuid,
+                "destroy_session: deleting session manifest from disk"
+            );
             if let Err(e) = codelet_core::persistence::delete_session(uuid) {
                 tracing::warn!(
                     "RPC-422: Failed to delete session manifest from disk: {}",
                     e
                 );
+            } else {
+                tracing::info!(
+                    session_id = %uuid,
+                    "destroy_session: session manifest deleted from disk"
+                );
             }
+
+            tracing::info!(
+                session_id = %uuid,
+                "destroy_session: session destruction complete"
+            );
 
             Ok(())
         } else {
+            tracing::warn!(
+                session_id = %uuid,
+                "destroy_session: session not found in memory"
+            );
             Err(format!("Session not found: {}", id))
         }
     }

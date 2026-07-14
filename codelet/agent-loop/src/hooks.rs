@@ -6,6 +6,12 @@
 //! drains the per-session `input_rx`, dispatches to the session's selected
 //! `LlmProvider`, and emits `StreamChunk::Text` + `StreamChunk::Done` back
 //! through `BackgroundSession::handle_output`.
+//!
+//! **Session manifest creation** is handled by
+//! `SessionManager::create_session_with_id` (codelet-sessions) which saves
+//! the manifest with the full provider/model string (e.g., "anthropic/claude-sonnet-4")
+//! BEFORE calling `spawn_agent_loop`. The hooks implementation does NOT create
+//! or overwrite the manifest — that responsibility was removed by RPC-423.
 
 use std::sync::Arc;
 
@@ -41,56 +47,6 @@ impl SessionManagerHooks for FspecAgentHooks {
         input_rx: mpsc::Receiver<PromptInput>,
         mcp_injection_rx: mpsc::Receiver<McpInjection>,
     ) {
-        // RPC-072 FIX: Create the persistence manifest for this session
-        // BEFORE the agent_loop starts. Without this, every persist call
-        // (persist_user_message / persist_assistant_message_internal /
-        // persist_tool_result_internal / persist_token_state) inside the
-        // agent loop fails with "Session not found" because
-        // `load_session(session.id)` only consults the on-disk session
-        // store and there is no manifest file to load.
-        //
-        // In the napi build, the TypeScript shell calls
-        // `persistence_create_session_with_provider(name, project, provider)`
-        // and then `sessionCreateSessionWithId(manifest.id, model, ...)`
-        // so the manifest UUID matches the BackgroundSession's UUID. The
-        // fspec daemon has no TypeScript shell, so the equivalent has to
-        // happen here, at the only point we know both the session.id
-        // and the provider name.
-        {
-            let provider = session
-                .provider_id
-                .read()
-                .ok()
-                .and_then(|g| g.clone())
-                .unwrap_or_default();
-            let project = std::path::PathBuf::from(&session.project);
-            let name = session
-                .name
-                .read()
-                .ok()
-                .map(|g| g.clone())
-                .unwrap_or_default();
-            let mut manifest = codelet_core::persistence::SessionManifest::with_provider(
-                &name, project, &provider,
-            );
-            // Override the auto-generated UUID with the BackgroundSession UUID
-            // so persist_user_message / load_session can find it.
-            manifest.id = session.id;
-            if let Err(e) = codelet_core::persistence::save_session(&manifest) {
-                tracing::warn!(
-                    "[RPC-072] FspecAgentHooks: failed to create persistence manifest for session {}: {} (agent loop will still run but message history will not persist)",
-                    session.id,
-                    e,
-                );
-            } else {
-                tracing::debug!(
-                    "[RPC-072] FspecAgentHooks: created persistence manifest for session {} (provider={})",
-                    session.id,
-                    provider,
-                );
-            }
-        }
-
         // RPC-072: handle off to the NAPI-free agent loop. The future
         // is parked on whatever runtime is current at session-creation
         // time — that's the same tokio runtime SharedFspecService spawns
