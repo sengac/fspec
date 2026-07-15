@@ -20,8 +20,8 @@ pub const FSPEC_WORKFLOW_GUIDANCE: &str = r#"<system-reminder>
 ```
 command: "help"                              # Get documentation for all commands
 command: "board"                             # View Kanban board
-command: "show-work-unit", args: {"_": ["AUTH-001"]}
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "specifying"]}
+command: "show-work-unit", args: {"workUnitId": "AUTH-001"}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "specifying"}
 ```
 
 **Use `command: "<command-name> --help"` for detailed documentation on any command.**
@@ -72,7 +72,7 @@ BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
 - Any state → specifying: Fundamental misunderstanding
 
 ```
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "specifying"]}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "specifying"}
 ```
 
 ---
@@ -87,14 +87,14 @@ command: "update-work-unit-status", args: {"_": ["AUTH-001", "specifying"]}
 command: "discover-foundation"
 # Creates foundation.json.draft with [QUESTION:] and [DETECTED:] placeholders
 
-command: "update-foundation", args: {"_": ["projectName", "My Project"]}
-command: "update-foundation", args: {"_": ["projectVision", "A tool that..."]}
+command: "update-foundation", args: {"key": "projectName", "value": "My Project"}
+command: "update-foundation", args: {"key": "projectVision", "value": "A tool that..."}
 
-command: "add-capability", args: {"_": ["User Authentication", "Login and session management"]}
-command: "remove-capability", args: {"_": ["[QUESTION: What can users DO?]"]}
+command: "add-capability", args: {"capability": "User Authentication", "description": "Login and session management"}
+command: "remove-capability", args: {"capability": "[QUESTION: What can users DO?]"}
 
-command: "add-persona", args: {"_": ["Developer"], "description": "Builds features", "goal": "Ship quality code faster"}
-command: "remove-persona", args: {"_": ["[QUESTION: Who uses this?]"]}
+command: "add-persona", args: {"name": "Developer"}, "description": "Builds features", "goal": "Ship quality code faster"
+command: "remove-persona", args: {"name": "[QUESTION: Who uses this?]"}
 
 command: "discover-foundation", args: {"finalize": true}
 # Validates and creates foundation.json + FOUNDATION.md
@@ -107,16 +107,16 @@ command: "discover-foundation", args: {"finalize": true}
 **After foundation discovery completes:**
 
 ```
-command: "add-foundation-bounded-context", args: {"_": ["Work Management"]}
-command: "add-foundation-bounded-context", args: {"_": ["Specification"]}
+command: "add-foundation-bounded-context", args: {"name": "Work Management"}
+command: "add-foundation-bounded-context", args: {"name": "Specification"}
 
-command: "add-aggregate-to-foundation", args: {"_": ["Work Management", "WorkUnit"]}
-command: "add-aggregate-to-foundation", args: {"_": ["Work Management", "Epic"]}
+command: "add-aggregate-to-foundation", args: {"context": "Work Management", "aggregate": "WorkUnit"}
+command: "add-aggregate-to-foundation", args: {"context": "Work Management", "aggregate": "Epic"}
 
-command: "add-domain-event-to-foundation", args: {"_": ["Work Management", "WorkUnitCreated"]}
-command: "add-domain-event-to-foundation", args: {"_": ["Work Management", "WorkUnitStatusChanged"]}
+command: "add-domain-event-to-foundation", args: {"context": "Work Management", "event": "WorkUnitCreated"}
+command: "add-domain-event-to-foundation", args: {"context": "Work Management", "event": "WorkUnitStatusChanged"}
 
-command: "add-command-to-foundation", args: {"_": ["Work Management", "CreateWorkUnit"]}
+command: "add-command-to-foundation", args: {"context": "Work Management", "command": "CreateWorkUnit"}
 
 command: "show-foundation-event-storm"
 command: "show-foundation-event-storm", args: {"type": "bounded-context"}
@@ -154,27 +154,27 @@ command: "research", args: {"tool": "ast", "pattern": "interface $NAME", "lang":
 
 **Event Storm commands:**
 ```
-command: "discover-event-storm", args: {"_": ["AUTH-001"]}
+command: "discover-event-storm", args: {"workUnitId": "AUTH-001"}
 
-command: "add-domain-event", args: {"_": ["AUTH-001", "UserRegistered"]}
-command: "add-domain-event", args: {"_": ["AUTH-001", "EmailVerified"]}
+command: "add-domain-event", args: {"workUnitId": "AUTH-001", "event": "UserRegistered"}
+command: "add-domain-event", args: {"workUnitId": "AUTH-001", "event": "EmailVerified"}
 
-command: "add-command", args: {"_": ["AUTH-001", "RegisterUser"]}
-command: "add-command", args: {"_": ["AUTH-001", "VerifyEmail"]}
+command: "add-command", args: {"workUnitId": "AUTH-001", "command": "RegisterUser"}
+command: "add-command", args: {"workUnitId": "AUTH-001", "command": "VerifyEmail"}
 
-command: "add-policy", args: {"_": ["AUTH-001", "Send welcome email"], "when": "UserRegistered", "then": "SendWelcomeEmail"}
+command: "add-policy", args: {"workUnitId": "AUTH-001", "policy": "Send welcome email"}, "when": "UserRegistered", "then": "SendWelcomeEmail"
 
-command: "add-hotspot", args: {"_": ["AUTH-001", "Email timeout"], "concern": "How long to wait for verification?"}
+command: "add-hotspot", args: {"workUnitId": "AUTH-001", "hotspot": "Email timeout"}, "concern": "How long to wait for verification?"
 
-command: "add-aggregate", args: {"_": ["AUTH-001", "User"], "responsibilities": "Manage credentials, Track sessions"}
+command: "add-aggregate", args: {"workUnitId": "AUTH-001", "name": "User"}, "responsibilities": "Manage credentials, Track sessions"
 
-command: "add-bounded-context", args: {"_": ["AUTH-001", "Authentication"]}
+command: "add-bounded-context", args: {"workUnitId": "AUTH-001", "name": "Authentication"}
 
-command: "add-external-system", args: {"_": ["AUTH-001", "Email Service"], "type": "REST_API"}
+command: "add-external-system", args: {"workUnitId": "AUTH-001", "name": "Email Service"}, "type": "REST_API"
 
-command: "show-event-storm", args: {"_": ["AUTH-001"]}
+command: "show-event-storm", args: {"workUnitId": "AUTH-001"}
 
-command: "generate-example-mapping-from-event-storm", args: {"_": ["AUTH-001"]}
+command: "generate-example-mapping-from-event-storm", args: {"workUnitId": "AUTH-001"}
 # Converts: Policies → Rules, Events → Examples, Hotspots → Questions
 ```
 
@@ -184,33 +184,33 @@ command: "generate-example-mapping-from-event-storm", args: {"_": ["AUTH-001"]}
 
 ```
 # Yellow Card - User Story
-command: "set-user-story", args: {"_": ["AUTH-001"], "role": "user", "action": "log in securely", "benefit": "access my account"}
+command: "set-user-story", args: {"workUnitId": "AUTH-001", "role": "user", "action": "log in securely", "benefit": "access my account"}
 
 # Blue Cards - Rules
-command: "add-rule", args: {"_": ["AUTH-001", "Password must be 8+ characters"]}
-command: "add-rule", args: {"_": ["AUTH-001", "Account locks after 3 failed attempts"]}
-command: "remove-rule", args: {"_": ["AUTH-001", "0"]}
+command: "add-rule", args: {"workUnitId": "AUTH-001", "rule": "Password must be 8+ characters"}
+command: "add-rule", args: {"workUnitId": "AUTH-001", "rule": "Account locks after 3 failed attempts"}
+command: "remove-rule", args: {"workUnitId": "AUTH-001", "id": "0"}
 
 # Green Cards - Examples
-command: "add-example", args: {"_": ["AUTH-001", "User enters valid credentials and sees dashboard"]}
-command: "add-example", args: {"_": ["AUTH-001", "User enters wrong password and sees error message"]}
-command: "remove-example", args: {"_": ["AUTH-001", "0"]}
+command: "add-example", args: {"workUnitId": "AUTH-001", "example": "User enters valid credentials and sees dashboard"}
+command: "add-example", args: {"workUnitId": "AUTH-001", "example": "User enters wrong password and sees error message"}
+command: "remove-example", args: {"workUnitId": "AUTH-001", "id": "0"}
 
 # Red Cards - Questions
-command: "add-question", args: {"_": ["AUTH-001", "@human: What happens after 3 failed attempts?"]}
-command: "answer-question", args: {"_": ["AUTH-001", "0"], "answer": "Account locked for 15 minutes", "addTo": "rule"}
-command: "remove-question", args: {"_": ["AUTH-001", "0"]}
+command: "add-question", args: {"workUnitId": "AUTH-001", "question": "@human: What happens after 3 failed attempts?"}
+command: "answer-question", args: {"workUnitId": "AUTH-001", "id": "0"}, "answer": "Account locked for 15 minutes", "addTo": "rule"
+command: "remove-question", args: {"workUnitId": "AUTH-001", "id": "0"}
 
 # Assumptions
-command: "add-assumption", args: {"_": ["AUTH-001", "Email verification handled by external service"]}
+command: "add-assumption", args: {"workUnitId": "AUTH-001", "assumption": "Email verification handled by external service"}
 
 # Architecture Notes (Work Unit Level)
-command: "add-architecture-note", args: {"_": ["AUTH-001", "Uses bcrypt for password hashing"]}
-command: "add-architecture-note", args: {"_": ["AUTH-001", "Sessions stored in Redis with 24h TTL"]}
-command: "remove-architecture-note", args: {"_": ["AUTH-001", "0"]}
+command: "add-architecture-note", args: {"workUnitId": "AUTH-001", "note": "Uses bcrypt for password hashing"}
+command: "add-architecture-note", args: {"workUnitId": "AUTH-001", "note": "Sessions stored in Redis with 24h TTL"}
+command: "remove-architecture-note", args: {"workUnitId": "AUTH-001", "id": "0"}
 
 # View work unit with all Example Mapping data
-command: "show-work-unit", args: {"_": ["AUTH-001"]}
+command: "show-work-unit", args: {"workUnitId": "AUTH-001"}
 ```
 
 **Stop when:** No red cards remain and scope is clear (~25 minutes per story).
@@ -230,8 +230,8 @@ command: "research", args: {"tool": "stakeholder", "platform": "teams", "questio
 ### Import/Export Example Maps
 
 ```
-command: "export-example-map", args: {"_": ["AUTH-001", "examples.json"]}
-command: "import-example-map", args: {"_": ["AUTH-001", "examples.json"]}
+command: "export-example-map", args: {"workUnitId": "AUTH-001", "output": "examples.json"}
+command: "import-example-map", args: {"workUnitId": "AUTH-001", "input": "examples.json"}
 ```
 
 ---
@@ -240,8 +240,8 @@ command: "import-example-map", args: {"_": ["AUTH-001", "examples.json"]}
 ### Generate Scenarios from Example Map
 
 ```
-command: "generate-scenarios", args: {"_": ["AUTH-001"]}
-command: "generate-scenarios", args: {"_": ["AUTH-001"], "feature": "user-authentication"}
+command: "generate-scenarios", args: {"workUnitId": "AUTH-001"}
+command: "generate-scenarios", args: {"workUnitId": "AUTH-001", "feature": "user-authentication"}
 ```
 
 **CRITICAL - File Naming (Capability-Based):**
@@ -254,22 +254,22 @@ Files are **living documentation** - name them by WHAT they describe, not the ta
 ### Manual Feature Creation
 
 ```
-command: "create-feature", args: {"_": ["User Authentication"]}
+command: "create-feature", args: {"name": "User Authentication"}
 
-command: "add-scenario", args: {"_": ["user-authentication", "Login with valid credentials"]}
-command: "update-scenario", args: {"_": ["user-authentication", "Old Name", "New Name"]}
-command: "delete-scenario", args: {"_": ["user-authentication", "Deprecated scenario"]}
+command: "add-scenario", args: {"feature": "user-authentication", "scenario": "Login with valid credentials"}
+command: "update-scenario", args: {"feature": "user-authentication", "oldName": "Old Name", "newName": "New Name"}
+command: "delete-scenario", args: {"feature": "user-authentication", "scenario": "Deprecated scenario"}
 
-command: "add-step", args: {"_": ["user-authentication", "Login with valid credentials", "given", "I am on the login page"]}
-command: "add-step", args: {"_": ["user-authentication", "Login with valid credentials", "when", "I enter valid credentials"]}
-command: "add-step", args: {"_": ["user-authentication", "Login with valid credentials", "then", "I should see the dashboard"]}
+command: "add-step", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "keyword": "given", "text": "I am on the login page"}
+command: "add-step", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "keyword": "when", "text": "I enter valid credentials"}
+command: "add-step", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "keyword": "then", "text": "I should see the dashboard"}
 
-command: "update-step", args: {"_": ["user-authentication", "Login with valid credentials", "old step text"], "text": "new step text", "keyword": "when"}
-command: "delete-step", args: {"_": ["user-authentication", "Login with valid credentials", "step text to delete"]}
+command: "update-step", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "oldText": "old step text"}, "text": "new step text", "keyword": "when"
+command: "delete-step", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "text": "step text to delete"}
 
-command: "add-background", args: {"_": ["user-authentication", "As a user\nI want to log in\nSo that I can access my account"]}
+command: "add-background", args: {"feature": "user-authentication", "text": "As a user\nI want to log in\nSo that I can access my account"}
 
-command: "add-architecture", args: {"_": ["user-authentication", "Uses JWT tokens. Sessions expire after 24 hours."]}
+command: "add-architecture", args: {"feature": "user-authentication", "text": "Uses JWT tokens. Sessions expire after 24 hours."}
 ```
 
 ### Feature Queries
@@ -278,8 +278,8 @@ command: "add-architecture", args: {"_": ["user-authentication", "Uses JWT token
 command: "list-features"
 command: "list-features", args: {"tag": "@critical"}
 
-command: "show-feature", args: {"_": ["user-authentication"]}
-command: "show-feature", args: {"_": ["user-authentication"], "format": "json"}
+command: "show-feature", args: {"feature": "user-authentication"}
+command: "show-feature", args: {"feature": "user-authentication", "format": "json"}
 
 command: "get-scenarios", args: {"tag": "@critical", "format": "json"}
 command: "show-acceptance-criteria", args: {"tag": "@critical", "format": "markdown"}
@@ -295,13 +295,13 @@ command: "delete-scenarios-by-tag", args: {"tag": "@obsolete", "dryRun": true}
 ### Feature-Level Tag Operations
 
 ```
-command: "add-tag-to-feature", args: {"_": ["spec/features/user-auth.feature", "@critical"], "validateRegistry": true}
-command: "remove-tag-from-feature", args: {"_": ["spec/features/user-auth.feature", "@wip"]}
-command: "list-feature-tags", args: {"_": ["spec/features/user-auth.feature"], "showCategories": true}
+command: "add-tag-to-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@critical"}, "validateRegistry": true
+command: "remove-tag-from-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@wip"}
+command: "list-feature-tags", args: {"feature": "spec/features/user-auth.feature"}, "showCategories": true
 
-command: "add-tag-to-scenario", args: {"_": ["user-auth.feature", "Login with valid credentials", "@smoke"]}
-command: "remove-tag-from-scenario", args: {"_": ["user-auth.feature", "Login with valid credentials", "@smoke"]}
-command: "list-scenario-tags", args: {"_": ["user-auth.feature", "Login with valid credentials"]}
+command: "add-tag-to-scenario", args: {"feature": "user-auth.feature", "scenario": "Login with valid credentials", "tag": "@smoke"}
+command: "remove-tag-from-scenario", args: {"feature": "user-auth.feature", "scenario": "Login with valid credentials", "tag": "@smoke"}
+command: "list-scenario-tags", args: {"feature": "user-auth.feature", "scenario": "Login with valid credentials"}
 ```
 
 ### Prefill Detection
@@ -362,7 +362,7 @@ describe('Feature: User Authentication', () => {
 ### Link Coverage (After Writing Tests)
 
 ```
-command: "link-coverage", args: {"_": ["user-authentication"], "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "testLines": "45-62"}
+command: "link-coverage", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "testLines": "45-62"}
 ```
 
 Tests MUST FAIL at this point (red phase) - proving they test real behavior.
@@ -374,7 +374,7 @@ Tests MUST FAIL at this point (red phase) - proving they test real behavior.
 Write code to make tests pass. Then link implementation to coverage:
 
 ```
-command: "link-coverage", args: {"_": ["user-authentication"], "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "implFile": "src/auth/login.ts", "implLines": "10-24"}
+command: "link-coverage", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "implFile": "src/auth/login.ts", "implLines": "10-24"}
 ```
 
 **IMPLEMENTATION = CREATION + CONNECTION**
@@ -390,9 +390,9 @@ command: "validate"                    # Gherkin syntax
 command: "validate-tags"               # Tag registry compliance
 command: "check"                       # All validation checks
 
-command: "show-coverage", args: {"_": ["user-authentication"]}
+command: "show-coverage", args: {"feature": "user-authentication"}
 command: "show-coverage"               # Project-wide
-command: "audit-coverage", args: {"_": ["user-authentication"], "fix": true}
+command: "audit-coverage", args: {"feature": "user-authentication", "fix": true}
 ```
 
 Run ALL tests (not just new ones) to ensure nothing broke.
@@ -402,10 +402,10 @@ Run ALL tests (not just new ones) to ensure nothing broke.
 ## Phase 5: DONE
 
 ```
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "done"]}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "done"}
 
-command: "remove-tag-from-feature", args: {"_": ["spec/features/user-auth.feature", "@wip"]}
-command: "add-tag-to-feature", args: {"_": ["spec/features/user-auth.feature", "@done"]}
+command: "remove-tag-from-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@wip"}
+command: "add-tag-to-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@done"}
 ```
 
 **Auto-compact triggers** when moving to done - permanently removes soft-deleted items.
@@ -431,10 +431,10 @@ command: "add-tag-to-feature", args: {"_": ["spec/features/user-auth.feature", "
 ### Estimation Commands
 
 ```
-command: "update-work-unit-estimate", args: {"_": ["AUTH-001", "5"]}
+command: "update-work-unit-estimate", args: {"workUnitId": "AUTH-001", "estimate": "5"}
 
 # Re-estimate when scope changes
-command: "update-work-unit-estimate", args: {"_": ["AUTH-001", "8"]}
+command: "update-work-unit-estimate", args: {"workUnitId": "AUTH-001", "estimate": "8"}
 ```
 
 ### Estimation Validation
@@ -447,7 +447,7 @@ command: "update-work-unit-estimate", args: {"_": ["AUTH-001", "8"]}
 
 ```
 command: "query-estimate-accuracy"
-command: "query-estimation-guide", args: {"_": ["AUTH-001"]}
+command: "query-estimation-guide", args: {"workUnitId": "AUTH-001"}
 command: "query-metrics", args: {"format": "json"}
 ```
 
@@ -479,27 +479,27 @@ If estimate > 13 points:
 command: "generate-coverage"                    # Create/update all .coverage files
 command: "generate-coverage", args: {"dryRun": true}
 
-command: "link-coverage", args: {"_": ["user-auth"], "scenario": "Login", "testFile": "test.ts", "testLines": "45-62"}
+command: "link-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts", "testLines": "45-62"}
 
-command: "link-coverage", args: {"_": ["user-auth"], "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts", "implLines": "10-24"}
+command: "link-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts", "implLines": "10-24"}
 
-command: "unlink-coverage", args: {"_": ["user-auth"], "scenario": "Login", "all": true}
-command: "unlink-coverage", args: {"_": ["user-auth"], "scenario": "Login", "testFile": "test.ts"}
-command: "unlink-coverage", args: {"_": ["user-auth"], "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts"}
+command: "unlink-coverage", args: {"feature": "user-auth", "scenario": "Login", "all": true}
+command: "unlink-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts"}
+command: "unlink-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts"}
 
 command: "show-coverage"                        # All features
-command: "show-coverage", args: {"_": ["user-auth"]}
-command: "show-coverage", args: {"_": ["user-auth"], "format": "json"}
+command: "show-coverage", args: {"feature": "user-auth"}
+command: "show-coverage", args: {"feature": "user-auth", "format": "json"}
 
-command: "audit-coverage", args: {"_": ["user-auth"]}
-command: "audit-coverage", args: {"_": ["user-auth"], "fix": true}
+command: "audit-coverage", args: {"feature": "user-auth"}
+command: "audit-coverage", args: {"feature": "user-auth", "fix": true}
 ```
 
 ### Reverse ACDD Coverage
 
 For existing codebases, use `--skip-validation`:
 ```
-command: "link-coverage", args: {"_": ["legacy-feature"], "scenario": "Existing behavior", "testFile": "test.ts", "testLines": "10-20", "skipValidation": true}
+command: "link-coverage", args: {"feature": "legacy-feature", "scenario": "Existing behavior", "testFile": "test.ts", "testLines": "10-20", "skipValidation": true}
 ```
 
 ---
@@ -510,7 +510,7 @@ fspec compares file timestamps against state entry times to prevent **retroactiv
 
 **Escape hatch for reverse ACDD:**
 ```
-command: "update-work-unit-status", args: {"_": ["LEGACY-001", "testing"], "skipTemporalValidation": true}
+command: "update-work-unit-status", args: {"workUnitId": "LEGACY-001", "status": "testing"}, "skipTemporalValidation": true}
 ```
 
 ---
@@ -519,9 +519,9 @@ command: "update-work-unit-status", args: {"_": ["LEGACY-001", "testing"], "skip
 ### Creating Work Units
 
 ```
-command: "create-story", args: {"_": ["AUTH", "User Login"], "description": "Allow users to log in", "epic": "authentication"}
-command: "create-bug", args: {"_": ["AUTH", "Login fails on mobile"], "description": "iOS Safari issue", "epic": "authentication"}
-command: "create-task", args: {"_": ["INFRA", "Setup CI pipeline"], "description": "GitHub Actions"}
+command: "create-story", args: {"prefix": "AUTH", "title": "User Login"}, "description": "Allow users to log in", "epic": "authentication"}
+command: "create-bug", args: {"prefix": "AUTH", "title": "Login fails on mobile"}, "description": "iOS Safari issue", "epic": "authentication"}
+command: "create-task", args: {"prefix": "INFRA", "title": "Setup CI pipeline"}, "description": "GitHub Actions"}
 ```
 
 ### Querying Work Units
@@ -532,7 +532,7 @@ command: "list-work-units", args: {"status": "backlog"}
 command: "list-work-units", args: {"status": "implementing", "prefix": "AUTH"}
 command: "list-work-units", args: {"epic": "authentication"}
 
-command: "show-work-unit", args: {"_": ["AUTH-001"]}
+command: "show-work-unit", args: {"workUnitId": "AUTH-001"}
 
 command: "query-work-units", args: {"status": "implementing", "format": "json"}
 command: "query-work-units", args: {"tag": "@critical", "format": "table"}
@@ -541,31 +541,31 @@ command: "query-work-units", args: {"tag": "@critical", "format": "table"}
 ### Updating Work Units
 
 ```
-command: "update-work-unit", args: {"_": ["AUTH-001"], "title": "New Title"}
-command: "update-work-unit", args: {"_": ["AUTH-001"], "description": "Updated description"}
-command: "update-work-unit", args: {"_": ["AUTH-001"], "epic": "new-epic"}
-command: "update-work-unit", args: {"_": ["AUTH-001"], "parent": "AUTH-000"}
+command: "update-work-unit", args: {"workUnitId": "AUTH-001", "title": "New Title"}
+command: "update-work-unit", args: {"workUnitId": "AUTH-001", "description": "Updated description"}
+command: "update-work-unit", args: {"workUnitId": "AUTH-001", "epic": "new-epic"}
+command: "update-work-unit", args: {"workUnitId": "AUTH-001", "parent": "AUTH-000"}
 
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "specifying"]}
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "blocked"], "blockedReason": "Waiting for API docs"}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "specifying"}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "blocked"}, "blockedReason": "Waiting for API docs"}
 
-command: "update-work-unit-estimate", args: {"_": ["AUTH-001", "5"]}
+command: "update-work-unit-estimate", args: {"workUnitId": "AUTH-001", "estimate": "5"}
 ```
 
 ### Prioritization
 
 ```
-command: "prioritize-work-unit", args: {"_": ["AUTH-003"], "position": "top"}
-command: "prioritize-work-unit", args: {"_": ["AUTH-003"], "position": "bottom"}
-command: "prioritize-work-unit", args: {"_": ["AUTH-003"], "position": "2"}
-command: "prioritize-work-unit", args: {"_": ["AUTH-001"], "before": "AUTH-002"}
-command: "prioritize-work-unit", args: {"_": ["AUTH-001"], "after": "AUTH-002"}
+command: "prioritize-work-unit", args: {"workUnitId": "AUTH-003", "position": "top"}
+command: "prioritize-work-unit", args: {"workUnitId": "AUTH-003", "position": "bottom"}
+command: "prioritize-work-unit", args: {"workUnitId": "AUTH-003", "position": "2"}
+command: "prioritize-work-unit", args: {"workUnitId": "AUTH-001", "before": "AUTH-002"}
+command: "prioritize-work-unit", args: {"workUnitId": "AUTH-001", "after": "AUTH-002"}
 ```
 
 ### Deletion & Maintenance
 
 ```
-command: "delete-work-unit", args: {"_": ["AUTH-001"]}
+command: "delete-work-unit", args: {"workUnitId": "AUTH-001"}
 command: "repair-work-units"           # Fix state inconsistencies
 command: "validate-work-units"         # Validate against schema
 ```
@@ -1364,5 +1364,144 @@ mod tests {
         assert!(guidance.contains("Parallelization"));
         assert!(guidance.contains("spawn"));
         assert!(guidance.contains("subordinate"));
+    }
+
+    // Feature: spec/features/fspec-workflow-guidance-named-keys.feature
+    //
+    // Tests that the guidance uses named keys instead of positional `_` args.
+    // These tests verify the fix for TOOL-020.
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_update_work_unit_status() {
+        // @step Given the fspec workflow guidance file exists at codelet/tools/src/fspec_workflow_guidance.rs
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the update-work-unit-status examples
+        // @step Then I should see "workUnitId" as a named key
+        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for update-work-unit-status");
+
+        // @step And I should NOT see "_": ["AUTH-001", "specifying"] positional pattern
+        assert!(!guidance.contains("\"_\": [\"AUTH-001\", \"specifying\""), "Guidance should NOT use positional _ args for update-work-unit-status");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_show_work_unit() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the show-work-unit examples
+        // @step Then I should see "workUnitId" as a named key
+        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key");
+
+        // @step And I should NOT see "_": ["AUTH-001"] positional pattern
+        assert!(!guidance.contains("\"_\": [\"AUTH-001\"]"), "Guidance should NOT use positional _ args for show-work-unit");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_create_story() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the create-story examples
+        // @step Then I should see "prefix" and "title" as named keys
+        assert!(guidance.contains("\"prefix\""), "Guidance should use 'prefix' named key for create-story");
+        assert!(guidance.contains("\"title\""), "Guidance should use 'title' named key for create-story");
+
+        // @step And I should NOT see "_": ["AUTH", "User Login"] positional pattern
+        assert!(!guidance.contains("\"_\": [\"AUTH\""), "Guidance should NOT use positional _ args for create-story");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_add_rule() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the add-rule examples
+        // @step Then I should see "workUnitId" and "rule" as named keys
+        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-rule");
+        assert!(guidance.contains("\"rule\""), "Guidance should use 'rule' named key for add-rule");
+
+        // @step And I should NOT see "_": ["AUTH-001", "rule text"] positional pattern
+        assert!(!guidance.contains("\"_\": [\"AUTH-001\", \"rule text\""), "Guidance should NOT use positional _ args for add-rule");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_add_example() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the add-example examples
+        // @step Then I should see "workUnitId" and "example" as named keys
+        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-example");
+        assert!(guidance.contains("\"example\""), "Guidance should use 'example' named key for add-example");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_add_dependency() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the add-dependency examples
+        // @step Then I should see "workUnitId" and "dependsOn" as named keys
+        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-dependency");
+        assert!(guidance.contains("dependsOn"), "Guidance should use 'dependsOn' named key for add-dependency");
+
+        // @step And I should NOT see "_": ["AUTH-002", "AUTH-001"] positional pattern
+        assert!(!guidance.contains("\"_\": [\"AUTH-002\", \"AUTH-001\""), "Guidance should NOT use positional _ args for add-dependency");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_add_attachment() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the add-attachment examples
+        // @step Then I should see "workUnitId" and "filePath" as named keys
+        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for add-attachment");
+        assert!(guidance.contains("filePath"), "Guidance should use 'filePath' named key for add-attachment");
+
+        // @step And I should NOT see "_": ["AUTH-001", "file.png"] positional pattern
+        assert!(!guidance.contains("\"_\": [\"AUTH-001\", \"file.png\""), "Guidance should NOT use positional _ args for add-attachment");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_set_user_story() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the set-user-story examples
+        // @step Then I should see "workUnitId" as a named key
+        assert!(guidance.contains("workUnitId"), "Guidance should use 'workUnitId' named key for set-user-story");
+
+        // @step And I should NOT see "_": ["AUTH-001"] positional pattern for work unit ID
+        assert!(!guidance.contains("\"_\": [\"AUTH-001\"]"), "Guidance should NOT use positional _ args for set-user-story");
+    }
+
+    #[test]
+    fn test_guidance_does_not_use_positional_args_for_link_coverage() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I inspect the link-coverage examples
+        // @step Then I should see "feature" as a named key
+        assert!(guidance.contains("feature"), "Guidance should use 'feature' named key for link-coverage");
+
+        // @step And I should NOT see "_": ["user-auth"] positional pattern
+        assert!(!guidance.contains("\"_\": [\"user-auth\""), "Guidance should NOT use positional _ args for link-coverage");
+    }
+
+    #[test]
+    fn test_guidance_has_no_positional_args_patterns() {
+        // @step Given the fspec workflow guidance file exists
+        let guidance = get_fspec_workflow_guidance();
+
+        // @step When I count all occurrences of "_": [ positional pattern
+        // @step Then the count should be zero
+        let count = guidance.matches("\"_\": [").count();
+        assert_eq!(count, 0, "Guidance should have zero positional _ patterns, but found {count}");
+
+        // @step And every command example should use named keys matching Rust Args structs
+        assert!(guidance.contains("workUnitId"), "Guidance should use named keys");
+        assert!(guidance.contains("workUnitId"), "Named keys should match Rust Args structs");
     }
 }

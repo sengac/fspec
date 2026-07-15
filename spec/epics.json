@@ -1157,7 +1157,8 @@
         "RPC-332",
         "RPC-333",
         "RPC-334",
-        "RPC-414"
+        "RPC-414",
+        "TOOL-020"
       ]
     },
     "provider-settings-parity": {

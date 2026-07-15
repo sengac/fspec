@@ -1,0 +1,114 @@
+{
+  "scenarios": [
+    {
+      "name": "Guidance uses named keys for update-work-unit-status",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1375-1382",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for show-work-unit",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1384-1391",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for create-story",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1393-1401",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for add-rule",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1414-1425",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for add-example",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1425-1434",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for add-dependency",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1436-1448",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for set-user-story",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1464-1475",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for add-attachment",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1450-1462",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for link-coverage",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1477-1488",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Guidance uses named keys for all 80+ command examples",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+          "lines": "1490-1502",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/fspec_workflow_guidance.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 110
+  }
+}
