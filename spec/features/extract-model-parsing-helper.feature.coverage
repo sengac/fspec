@@ -1,0 +1,364 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse standard provider/model string",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/model_parsing.rs",
+          "lines": "114-131",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_parsing.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse profile model string with colon prefix",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/model_parsing.rs",
+          "lines": "135-149",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_parsing.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse codex model string",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/model_parsing.rs",
+          "lines": "153-167",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_parsing.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject invalid model string without slash",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/model_parsing.rs",
+          "lines": "171-184",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_parsing.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject empty model string",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/model_parsing.rs",
+          "lines": "188-200",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/model_parsing.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All three call sites use the shared helper",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/src/model_parsing.rs",
+          "lines": "235-275",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                595,
+                596,
+                597,
+                598,
+                599,
+                600
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/src/model_parsing.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/model_parsing.rs",
+      "codelet/sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 367
+  }
+}

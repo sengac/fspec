@@ -61,6 +61,9 @@ use codelet_tools::pre_tool_hook::{
 use codelet_tools::McpInjection;
 
 use crate::background_session::{BackgroundSession, PromptInput, SUPERVISOR_BROADCAST_CAPACITY};
+use crate::session_creation_helper::{
+    create_background_session_inner, ParsedModelInfo, SessionCreationParams,
+};
 
 /// Maximum concurrent sessions.
 pub const MAX_SESSIONS: usize = 10;
@@ -593,16 +596,6 @@ impl SessionManager {
             }
         }
 
-        let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
-
-        // RPC-422: Persist session manifest to disk BEFORE creating BackgroundSession.
-        // Mirrors TypeScript sessionService.ts two-step pattern:
-        // 1. persistenceCreateSessionWithProvider() creates manifest on disk
-        // 2. sessionManagerCreateWithId() creates BackgroundSession
-        //
-        // CRITICAL: We must use the UUID passed in (`uuid`) for the manifest,
-        // NOT let create_session_with_provider() generate its own UUID.
-        // So we construct the manifest manually and save it.
         let project_path = std::path::PathBuf::from(project);
         let mut manifest = codelet_core::persistence::SessionManifest::with_provider(
             name,
@@ -624,55 +617,17 @@ impl SessionManager {
             "create_session_with_id: manifest persisted to disk successfully"
         );
 
-        // Load environment variables from .env file (if present)
-        let _ = dotenvy::dotenv();
-
-        if !model.contains('/') || model.is_empty() {
-            return Err(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            ));
-        }
-
-        let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
-        let is_codex_model = model.starts_with("codex/");
-
-        let (registry_provider, model_part) = if is_profile_model {
-            let colon_idx = model
-                .find(':')
-                .ok_or_else(|| format!("Invalid profile model string '{}': missing ':'", model))?;
-            let provider = &model[..colon_idx];
-            let slash_idx = model
-                .find('/')
-                .ok_or_else(|| format!("Invalid profile model string '{}': missing '/'", model))?;
-            let model_id = &model[slash_idx + 1..];
-            (provider, model_id)
-        } else {
-            let parts: Vec<&str> = model.splitn(2, '/').collect();
-            (parts[0], parts.get(1).copied().unwrap_or(""))
-        };
-
-        if registry_provider.is_empty() || model_part.is_empty() {
-            return Err(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            ));
-        }
-
-        let is_custom_model = !is_profile_model
-            && !is_codex_model
-            && codelet_providers::custom_provider_registered(registry_provider);
+        // RPC-424: Parse model string using shared helper
+        let parsed = crate::model_parsing::parse_model_string(model)?;
+        let registry_provider = parsed.registry_provider;
+        let model_part = parsed.model_part;
+        let is_profile_model = parsed.is_profile_model;
+        let is_codex_model = parsed.is_codex_model;
+        let is_custom_model = parsed.is_custom_model;
 
         let (provider_id, model_id) = (
             Some(registry_provider.to_string()),
             Some(model_part.to_string()),
-        );
-
-        tracing::info!(
-            session_id = %uuid,
-            provider_id = ?provider_id,
-            model_id = ?model_id,
-            "create_session_with_id: resolved provider and model"
         );
 
         // Resolve credentials internally using the lifted credentials module.
@@ -688,142 +643,37 @@ impl SessionManager {
             );
         }
 
-        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
+        // RPC-425: Use shared session creation helper
+        let parsed_model = ParsedModelInfo {
+            model,
+            registry_provider,
+            is_profile_model,
+            is_codex_model,
+            is_custom_model,
+        };
+        let params = SessionCreationParams {
+            uuid,
+            name,
+            project,
+            project_path: project_path.as_path(),
+            parsed_model,
+            provider_id,
+            model_id,
+            worktree_path: None,
+            base_commit: None,
+            isolation: None,
+            chunks_tx: self.chunks_tx.clone(),
+            status_changes_tx: self.status_changes_tx.clone(),
+        };
+
+        let provider_manager = codelet_providers::ProviderManager::with_model_support()
             .await
             .map_err(|e| format!("Failed to create provider manager: {}", e))?;
 
-        if is_profile_model {
-            tracing::info!(
-                "PROV-007: Profile model detected, using set_model_direct for {}",
-                model
-            );
-        } else if is_codex_model {
-            tracing::info!(
-                "PROV-018: Codex model detected, using set_model_direct for {}",
-                model
-            );
-        } else if is_custom_model {
-            tracing::info!(
-                "PROV-096: Custom provider '{}' detected, using set_model_direct for {}",
-                registry_provider,
-                model
-            );
-        }
-
-        // RPC-343: apply the selection via the shared resolver so creation and
-        // the mid-session set_model path can never drift.
-        let resolved =
-            crate::model_resolution::apply_model_selection(&mut provider_manager, model)?;
-
-        let initial_context_window = resolved.context_window;
-        let initial_max_output_tokens = resolved.max_output_tokens;
-
-        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
-        inner.inject_context_reminders();
-
-        let lifecycle_hooks =
-            match load_lifecycle_hooks(Some(&project_path), dirs::home_dir().as_deref()) {
-                Ok(Some(compiled)) => Some(Arc::new(compiled)),
-                Ok(None) => None,
-                Err(e) => {
-                    tracing::warn!(
-                        "[HOOK-013] Failed to load lifecycle hooks: {} - continuing without",
-                        e
-                    );
-                    None
-                }
-            };
-
-        let session = Arc::new(BackgroundSession::new(
-            uuid,
-            name.to_string(),
-            project.to_string(),
-            provider_id,
-            model_id,
-            inner,
-            input_tx,
-            None,
-            None,
-            lifecycle_hooks.clone(),
-            self.chunks_tx.clone(),
-            self.status_changes_tx.clone(),
-        ));
-
-        // RPC-386: stamp the owning-manager back-reference BEFORE spawning the
-        // agent loop, so the AgentManager handler the loop registers binds to
-        // THIS manager. An empty self-weak (the singleton) leaves the session's
-        // back-reference empty, preserving the `instance()` fallback.
-        session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default());
-
-        // TUI-002: re-apply the persisted default thinking level to every new
-        // session so the first idle SessionHeader render shows `[T:<level>]`
-        // (parity with the TS `useDefaultThinkingLevel` hook). A missing/invalid
-        // persisted value resolves to `Off`, leaving the badge hidden.
-        let restored_thinking_level =
-            crate::default_thinking_level_persistence::load_default_thinking_level();
-        tracing::debug!(
-            level = restored_thinking_level as u8,
-            "create_session: applying persisted default thinking level to new session"
-        );
-        session.set_base_thinking_level(restored_thinking_level as u8);
-
-        let initial_model_id = session
-            .model_id
-            .read()
-            .expect("model_id lock poisoned")
-            .clone();
-        let initial_compaction_threshold =
-            codelet_cli::compaction_threshold::resolve_compaction_threshold(
-                initial_context_window as u64,
-                initial_max_output_tokens as u64,
-                initial_model_id.as_deref(),
-                None,
-            ) as u32;
-        session.set_model_limits(
-            initial_context_window,
-            initial_max_output_tokens,
-            initial_compaction_threshold,
-        );
-
-        if let Some(ref hooks) = lifecycle_hooks {
-            if !hooks.pre_tool_use.is_empty() {
-                let hooks_for_pre = hooks.clone();
-                let session_for_pre = session.clone();
-                let pre_handler: PreToolHookHandler = std::sync::Arc::new(
-                    move |_sid, tool_name, tool_input| {
-                        let ctx = session_for_pre.hook_context();
-                        let hooks = hooks_for_pre.clone();
-                        let name = tool_name.to_string();
-                        let input = tool_input.clone();
-                        let outcome = tokio::task::block_in_place(|| {
-                            tokio::runtime::Handle::current()
-                                .block_on(run_pre_tool(&hooks, &ctx, &name, &input))
-                        });
-                        match outcome.decision {
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Allow => {
-                                PreToolHookDecision::Allow
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Deny => {
-                                PreToolHookDecision::Deny(
-                                    outcome
-                                        .reason
-                                        .unwrap_or_else(|| "Denied by pre_tool_use hook".to_string()),
-                                )
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Continue => {
-                                PreToolHookDecision::Continue
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Ask => {
-                                PreToolHookDecision::Continue
-                            }
-                        }
-                    },
-                );
-                register_pre_tool_hook(uuid, pre_handler);
-            }
-        }
-
-        let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);
+        let result = create_background_session_inner(params, provider_manager).await?;
+        let session = result.session;
+        let input_rx = result.input_rx;
+        let mcp_injection_rx = result.mcp_injection_rx;
 
         // RPC-040: agent_loop spawning is delegated to the hooks impl so
         // codelet-sessions has no transitive napi dependency.
@@ -919,61 +769,21 @@ impl SessionManager {
             }
         }
 
-        let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
-
         // RPC-422: DO NOT save a blank manifest to disk.
         // The manifest already exists on disk with the correct message references.
         // We only need to create the in-memory BackgroundSession.
 
-        // Load environment variables from .env file (if present)
-        let _ = dotenvy::dotenv();
-
-        if !model.contains('/') || model.is_empty() {
-            return Err(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            ));
-        }
-
-        let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
-        let is_codex_model = model.starts_with("codex/");
-
-        let (registry_provider, model_part) = if is_profile_model {
-            let colon_idx = model
-                .find(':')
-                .ok_or_else(|| format!("Invalid profile model string '{}': missing ':'", model))?;
-            let provider = &model[..colon_idx];
-            let slash_idx = model
-                .find('/')
-                .ok_or_else(|| format!("Invalid profile model string '{}': missing '/'", model))?;
-            let model_id = &model[slash_idx + 1..];
-            (provider, model_id)
-        } else {
-            let parts: Vec<&str> = model.splitn(2, '/').collect();
-            (parts[0], parts.get(1).copied().unwrap_or(""))
-        };
-
-        if registry_provider.is_empty() || model_part.is_empty() {
-            return Err(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            ));
-        }
-
-        let is_custom_model = !is_profile_model
-            && !is_codex_model
-            && codelet_providers::custom_provider_registered(registry_provider);
+        // RPC-424: Parse model string using shared helper
+        let parsed = crate::model_parsing::parse_model_string(model)?;
+        let registry_provider = parsed.registry_provider;
+        let model_part = parsed.model_part;
+        let is_profile_model = parsed.is_profile_model;
+        let is_codex_model = parsed.is_codex_model;
+        let is_custom_model = parsed.is_custom_model;
 
         let (provider_id, model_id) = (
             Some(registry_provider.to_string()),
             Some(model_part.to_string()),
-        );
-
-        tracing::info!(
-            session_id = %uuid,
-            provider_id = ?provider_id,
-            model_id = ?model_id,
-            "create_session_from_manifest: resolved provider and model"
         );
 
         // Resolve credentials internally using the lifted credentials module.
@@ -989,141 +799,45 @@ impl SessionManager {
             );
         }
 
-        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
-            .await
-            .map_err(|e| format!("Failed to create provider manager: {}", e))?;
-
-        if is_profile_model {
-            tracing::info!(
-                "PROV-007: Profile model detected, using set_model_direct for {}",
-                model
-            );
-        } else if is_codex_model {
-            tracing::info!(
-                "PROV-018: Codex model detected, using set_model_direct for {}",
-                model
-            );
-        } else if is_custom_model {
-            tracing::info!(
-                "PROV-096: Custom provider '{}' detected, using set_model_direct for {}",
-                registry_provider,
-                model
-            );
-        }
-
-        // RPC-343: apply the selection via the shared resolver so creation and
-        // the mid-session set_model path can never drift.
-        let resolved =
-            crate::model_resolution::apply_model_selection(&mut provider_manager, model)?;
-
-        let initial_context_window = resolved.context_window;
-        let initial_max_output_tokens = resolved.max_output_tokens;
-
-        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
-        inner.inject_context_reminders();
-
-        let lifecycle_hooks =
-            match load_lifecycle_hooks(Some(&project_path), dirs::home_dir().as_deref()) {
-                Ok(Some(compiled)) => Some(Arc::new(compiled)),
-                Ok(None) => None,
-                Err(e) => {
-                    tracing::warn!(
-                        "[HOOK-013] Failed to load lifecycle hooks: {} - continuing without",
-                        e
-                    );
-                    None
-                }
-            };
-
         let name = manifest.name.clone();
         let project = manifest.project.to_string_lossy().to_string();
 
-        let session = Arc::new(BackgroundSession::new(
+        // RPC-425: Use shared session creation helper
+        let parsed_model = ParsedModelInfo {
+            model,
+            registry_provider,
+            is_profile_model,
+            is_codex_model,
+            is_custom_model,
+        };
+        let params = SessionCreationParams {
             uuid,
-            name,
-            project.clone(),
+            name: &name,
+            project: &project,
+            project_path: project_path.as_path(),
+            parsed_model,
             provider_id,
             model_id,
-            inner,
-            input_tx,
-            None,
-            None,
-            lifecycle_hooks.clone(),
-            self.chunks_tx.clone(),
-            self.status_changes_tx.clone(),
-        ));
+            worktree_path: None,
+            base_commit: None,
+            isolation: None,
+            chunks_tx: self.chunks_tx.clone(),
+            status_changes_tx: self.status_changes_tx.clone(),
+        };
+
+        let provider_manager = codelet_providers::ProviderManager::with_model_support()
+            .await
+            .map_err(|e| format!("Failed to create provider manager: {}", e))?;
+
+        let result = create_background_session_inner(params, provider_manager).await?;
+        let session = result.session;
+        let input_rx = result.input_rx;
+        let mcp_injection_rx = result.mcp_injection_rx;
 
         // RPC-386: stamp the owning-manager back-reference BEFORE spawning the
         // agent loop, so the AgentManager handler the loop registers binds to
         // THIS manager.
         session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default());
-
-        // TUI-002: re-apply the persisted default thinking level
-        let restored_thinking_level =
-            crate::default_thinking_level_persistence::load_default_thinking_level();
-        tracing::debug!(
-            level = restored_thinking_level as u8,
-            "create_session_from_manifest: applying persisted default thinking level"
-        );
-        session.set_base_thinking_level(restored_thinking_level as u8);
-
-        let initial_model_id = session
-            .model_id
-            .read()
-            .expect("model_id lock poisoned")
-            .clone();
-        let initial_compaction_threshold =
-            codelet_cli::compaction_threshold::resolve_compaction_threshold(
-                initial_context_window as u64,
-                initial_max_output_tokens as u64,
-                initial_model_id.as_deref(),
-                None,
-            ) as u32;
-        session.set_model_limits(
-            initial_context_window,
-            initial_max_output_tokens,
-            initial_compaction_threshold,
-        );
-
-        if let Some(ref hooks) = lifecycle_hooks {
-            if !hooks.pre_tool_use.is_empty() {
-                let hooks_for_pre = hooks.clone();
-                let session_for_pre = session.clone();
-                let pre_handler: PreToolHookHandler = std::sync::Arc::new(
-                    move |_sid, tool_name, tool_input| {
-                        let ctx = session_for_pre.hook_context();
-                        let hooks = hooks_for_pre.clone();
-                        let name = tool_name.to_string();
-                        let input = tool_input.clone();
-                        let outcome = tokio::task::block_in_place(|| {
-                            tokio::runtime::Handle::current()
-                                .block_on(run_pre_tool(&hooks, &ctx, &name, &input))
-                        });
-                        match outcome.decision {
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Allow => {
-                                PreToolHookDecision::Allow
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Deny => {
-                                PreToolHookDecision::Deny(
-                                    outcome
-                                        .reason
-                                        .unwrap_or_else(|| "Denied by pre_tool_use hook".to_string()),
-                                )
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Continue => {
-                                PreToolHookDecision::Continue
-                            }
-                            codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Ask => {
-                                PreToolHookDecision::Continue
-                            }
-                        }
-                    },
-                );
-                register_pre_tool_hook(uuid, pre_handler);
-            }
-        }
-
-        let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);
 
         // RPC-040: agent_loop spawning is delegated to the hooks impl
         self.hooks()
@@ -1208,37 +922,12 @@ impl SessionManager {
         let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
         let _ = dotenvy::dotenv();
 
-        if !model.contains('/') || model.is_empty() {
-            return Err(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            ));
-        }
-
-        let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
-        let is_codex_model = model.starts_with("codex/");
-
-        let (registry_provider, model_part) = if is_profile_model {
-            let colon_idx = model
-                .find(':')
-                .ok_or_else(|| format!("Invalid profile model string '{}': missing ':'", model))?;
-            let provider = &model[..colon_idx];
-            let slash_idx = model
-                .find('/')
-                .ok_or_else(|| format!("Invalid profile model string '{}': missing '/'", model))?;
-            let model_id = &model[slash_idx + 1..];
-            (provider, model_id)
-        } else {
-            let parts: Vec<&str> = model.splitn(2, '/').collect();
-            (parts[0], parts.get(1).copied().unwrap_or(""))
-        };
-
-        if registry_provider.is_empty() || model_part.is_empty() {
-            return Err(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            ));
-        }
+        // RPC-424: Parse model string using shared helper
+        let parsed = crate::model_parsing::parse_model_string(model)?;
+        let registry_provider = parsed.registry_provider;
+        let model_part = parsed.model_part;
+        let is_profile_model = parsed.is_profile_model;
+        let is_codex_model = parsed.is_codex_model;
 
         let (provider_id, model_id) = (
             Some(registry_provider.to_string()),

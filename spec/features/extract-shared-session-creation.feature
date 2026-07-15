@@ -1,3 +1,4 @@
+@done
 @RPC-425
 Feature: Extract shared session creation logic into common helper
 
