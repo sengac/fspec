@@ -6,7 +6,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1375-1382",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [23, 24]
+            }
+          ]
         }
       ]
     },
@@ -16,7 +21,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1384-1391",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [23, 535, 986, 1008]
+            }
+          ]
         }
       ]
     },
@@ -26,7 +36,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1393-1401",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [522]
+            }
+          ]
         }
       ]
     },
@@ -36,7 +51,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1414-1425",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [190, 191, 1013]
+            }
+          ]
         }
       ]
     },
@@ -46,7 +66,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1425-1434",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [195, 196, 1014]
+            }
+          ]
         }
       ]
     },
@@ -56,7 +81,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1436-1448",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [646, 647, 648, 649, 650, 651, 652]
+            }
+          ]
         }
       ]
     },
@@ -66,7 +96,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1464-1475",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [187, 1012]
+            }
+          ]
         }
       ]
     },
@@ -76,7 +111,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1450-1462",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [722, 723]
+            }
+          ]
         }
       ]
     },
@@ -86,7 +126,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1477-1488",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": [1025, 1029]
+            }
+          ]
         }
       ]
     },
@@ -96,7 +141,12 @@
         {
           "file": "codelet/tools/src/fspec_workflow_guidance.rs",
           "lines": "1490-1502",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec_workflow_guidance.rs",
+              "lines": "588-1045"
+            }
+          ]
         }
       ]
     }
@@ -108,7 +158,9 @@
     "testFiles": [
       "codelet/tools/src/fspec_workflow_guidance.rs"
     ],
-    "implFiles": [],
+    "implFiles": [
+      "codelet/tools/src/fspec_workflow_guidance.rs"
+    ],
     "totalLinesCovered": 110
   }
 }

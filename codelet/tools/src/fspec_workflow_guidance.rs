@@ -295,8 +295,8 @@ command: "delete-scenarios-by-tag", args: {"tag": "@obsolete", "dryRun": true}
 ### Feature-Level Tag Operations
 
 ```
-command: "add-tag-to-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@critical"}, "validateRegistry": true
-command: "remove-tag-from-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@wip"}
+command: "add-tag-to-feature", args: {"file": "spec/features/user-auth.feature", "tags": ["@critical"], "validateRegistry": true}
+command: "remove-tag-from-feature", args: {"file": "spec/features/user-auth.feature", "tags": ["@wip"]}
 command: "list-feature-tags", args: {"feature": "spec/features/user-auth.feature"}, "showCategories": true
 
 command: "add-tag-to-scenario", args: {"feature": "user-auth.feature", "scenario": "Login with valid credentials", "tag": "@smoke"}
@@ -362,7 +362,7 @@ describe('Feature: User Authentication', () => {
 ### Link Coverage (After Writing Tests)
 
 ```
-command: "link-coverage", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "testLines": "45-62"}
+command: "link-coverage", args: {"featureName": "user-authentication", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "testLines": "45-62"}
 ```
 
 Tests MUST FAIL at this point (red phase) - proving they test real behavior.
@@ -374,7 +374,7 @@ Tests MUST FAIL at this point (red phase) - proving they test real behavior.
 Write code to make tests pass. Then link implementation to coverage:
 
 ```
-command: "link-coverage", args: {"feature": "user-authentication", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "implFile": "src/auth/login.ts", "implLines": "10-24"}
+command: "link-coverage", args: {"featureName": "user-authentication", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "implFile": "src/auth/login.ts", "implLines": "10-24"}
 ```
 
 **IMPLEMENTATION = CREATION + CONNECTION**
@@ -390,9 +390,9 @@ command: "validate"                    # Gherkin syntax
 command: "validate-tags"               # Tag registry compliance
 command: "check"                       # All validation checks
 
-command: "show-coverage", args: {"feature": "user-authentication"}
+command: "show-coverage", args: {"featureName": "user-authentication"}
 command: "show-coverage"               # Project-wide
-command: "audit-coverage", args: {"feature": "user-authentication", "fix": true}
+command: "audit-coverage", args: {"featureName": "user-authentication", "fix": true}
 ```
 
 Run ALL tests (not just new ones) to ensure nothing broke.
@@ -404,8 +404,8 @@ Run ALL tests (not just new ones) to ensure nothing broke.
 ```
 command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "done"}
 
-command: "remove-tag-from-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@wip"}
-command: "add-tag-to-feature", args: {"feature": "spec/features/user-auth.feature", "tag": "@done"}
+command: "remove-tag-from-feature", args: {"file": "spec/features/user-auth.feature", "tags": ["@wip"]}
+command: "add-tag-to-feature", args: {"file": "spec/features/user-auth.feature", "tags": ["@done"]}
 ```
 
 **Auto-compact triggers** when moving to done - permanently removes soft-deleted items.
@@ -479,27 +479,27 @@ If estimate > 13 points:
 command: "generate-coverage"                    # Create/update all .coverage files
 command: "generate-coverage", args: {"dryRun": true}
 
-command: "link-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts", "testLines": "45-62"}
+command: "link-coverage", args: {"featureName": "user-auth", "scenario": "Login", "testFile": "test.ts", "testLines": "45-62"}
 
-command: "link-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts", "implLines": "10-24"}
+command: "link-coverage", args: {"featureName": "user-auth", "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts", "implLines": "10-24"}
 
-command: "unlink-coverage", args: {"feature": "user-auth", "scenario": "Login", "all": true}
-command: "unlink-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts"}
-command: "unlink-coverage", args: {"feature": "user-auth", "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts"}
+command: "unlink-coverage", args: {"featureName": "user-auth", "scenario": "Login", "all": true}
+command: "unlink-coverage", args: {"featureName": "user-auth", "scenario": "Login", "testFile": "test.ts"}
+command: "unlink-coverage", args: {"featureName": "user-auth", "scenario": "Login", "testFile": "test.ts", "implFile": "login.ts"}
 
 command: "show-coverage"                        # All features
-command: "show-coverage", args: {"feature": "user-auth"}
-command: "show-coverage", args: {"feature": "user-auth", "format": "json"}
+command: "show-coverage", args: {"featureName": "user-auth"}
+command: "show-coverage", args: {"featureName": "user-auth", "format": "json"}
 
-command: "audit-coverage", args: {"feature": "user-auth"}
-command: "audit-coverage", args: {"feature": "user-auth", "fix": true}
+command: "audit-coverage", args: {"featureName": "user-auth"}
+command: "audit-coverage", args: {"featureName": "user-auth", "fix": true}
 ```
 
 ### Reverse ACDD Coverage
 
 For existing codebases, use `--skip-validation`:
 ```
-command: "link-coverage", args: {"feature": "legacy-feature", "scenario": "Existing behavior", "testFile": "test.ts", "testLines": "10-20", "skipValidation": true}
+command: "link-coverage", args: {"featureName": "legacy-feature", "scenario": "Existing behavior", "testFile": "test.ts", "testLines": "10-20", "skipValidation": true}
 ```
 
 ---
@@ -588,30 +588,30 @@ When removed, items are marked `deleted: true` (soft-delete) instead of being er
 ### View Deleted Items
 
 ```
-command: "show-deleted", args: {"_": ["AUTH-001"]}
+command: "show-deleted", args: {"workUnitId": "AUTH-001"}
 ```
 
 ### Restore Deleted Items
 
 ```
-command: "restore-rule", args: {"_": ["AUTH-001", "2"]}
-command: "restore-rule", args: {"_": ["AUTH-001"], "ids": "2,5,7"}
+command: "restore-rule", args: {"workUnitId": "AUTH-001", "index": "2"}
+command: "restore-rule", args: {"workUnitId": "AUTH-001", "ids": "2,5,7"}
 
-command: "restore-example", args: {"_": ["AUTH-001", "3"]}
-command: "restore-example", args: {"_": ["AUTH-001"], "ids": "1,3,5"}
+command: "restore-example", args: {"workUnitId": "AUTH-001", "index": "3"}
+command: "restore-example", args: {"workUnitId": "AUTH-001", "ids": "1,3,5"}
 
-command: "restore-question", args: {"_": ["AUTH-001", "0"]}
-command: "restore-question", args: {"_": ["AUTH-001"], "ids": "0,2"}
+command: "restore-question", args: {"workUnitId": "AUTH-001", "index": "0"}
+command: "restore-question", args: {"workUnitId": "AUTH-001", "ids": "0,2"}
 
-command: "restore-architecture-note", args: {"_": ["AUTH-001", "1"]}
-command: "restore-architecture-note", args: {"_": ["AUTH-001"], "ids": "1,2"}
+command: "restore-architecture-note", args: {"workUnitId": "AUTH-001", "index": "1"}
+command: "restore-architecture-note", args: {"workUnitId": "AUTH-001", "ids": "1,2"}
 ```
 
 ### Compact (Permanent Deletion)
 
 ```
-command: "compact-work-unit", args: {"_": ["AUTH-001"]}
-command: "compact-work-unit", args: {"_": ["AUTH-001"], "force": true}
+command: "compact-work-unit", args: {"workUnitId": "AUTH-001"}
+command: "compact-work-unit", args: {"workUnitId": "AUTH-001", "force": true}
 ```
 
 **Note:** Auto-compact triggers when moving to `done` status.
@@ -621,10 +621,10 @@ command: "compact-work-unit", args: {"_": ["AUTH-001"], "force": true}
 ## Epic Management
 
 ```
-command: "create-epic", args: {"_": ["authentication", "AUTH", "User authentication features"]}
+command: "create-epic", args: {"epicId": "authentication", "title": "AUTH", "description": "User authentication features"}
 command: "list-epics"
-command: "show-epic", args: {"_": ["authentication"]}
-command: "delete-epic", args: {"_": ["old-epic"]}
+command: "show-epic", args: {"epicId": "authentication"}
+command: "delete-epic", args: {"epicId": "old-epic"}
 ```
 
 ---
@@ -632,8 +632,8 @@ command: "delete-epic", args: {"_": ["old-epic"]}
 ## Prefix Management
 
 ```
-command: "create-prefix", args: {"_": ["AUTH", "Authentication features"]}
-command: "update-prefix", args: {"_": ["AUTH", "Updated description"]}
+command: "create-prefix", args: {"prefix": "AUTH", "description": "Authentication features"}
+command: "update-prefix", args: {"prefix": "AUTH", "description": "Updated description"}
 command: "list-prefixes"
 ```
 
@@ -643,24 +643,21 @@ command: "list-prefixes"
 
 ```
 # Shorthand: AUTH-002 depends on AUTH-001
-command: "add-dependency", args: {"_": ["AUTH-002", "AUTH-001"]}
+command: "add-dependency", args: {"workUnitId": "AUTH-002", "dependsOn": "AUTH-001"}
 
 # Explicit relationships
-command: "add-dependency", args: {"_": ["AUTH-002"], "blocks": "API-001"}
-command: "add-dependency", args: {"_": ["UI-001"], "blockedBy": "API-001"}
-command: "add-dependency", args: {"_": ["AUTH-002"], "dependsOn": "AUTH-001"}
-command: "add-dependency", args: {"_": ["AUTH-002"], "relatesTo": "AUTH-003"}
-
-# Multiple dependencies
-command: "add-dependencies", args: {"_": ["DASH-001", "AUTH-001", "AUTH-002"]}
+command: "add-dependency", args: {"workUnitId": "AUTH-002", "blocks": "API-001"}
+command: "add-dependency", args: {"workUnitId": "UI-001", "blockedBy": "API-001"}
+command: "add-dependency", args: {"workUnitId": "AUTH-002", "dependsOn": "AUTH-001"}
+command: "add-dependency", args: {"workUnitId": "AUTH-002", "relatesTo": "AUTH-003"}
 
 # Remove
-command: "remove-dependency", args: {"_": ["AUTH-002", "AUTH-001"]}
-command: "remove-dependency", args: {"_": ["AUTH-002"], "blocks": "API-001"}
-command: "clear-dependencies", args: {"_": ["AUTH-002"]}
+command: "remove-dependency", args: {"workUnitId": "AUTH-002", "dependsOn": "AUTH-001"}
+command: "remove-dependency", args: {"workUnitId": "AUTH-002", "blocks": "API-001"}
+command: "clear-dependencies", args: {"workUnitId": "AUTH-002"}
 
 # Query
-command: "dependencies", args: {"_": ["AUTH-002"]}
+command: "dependencies", args: {"workUnitId": "AUTH-002"}
 command: "show-dependency-graph"
 command: "validate-dependencies"       # Check for cycles
 
@@ -677,13 +674,13 @@ command: "query-dependency-stats"
 ### Tag Registry
 
 ```
-command: "register-tag", args: {"_": ["@security", "Technical Tags", "Security-sensitive features"]}
+command: "register-tag", args: {"tag": "@security", "category": "Technical Tags", "description": "Security-sensitive features"}
 
-command: "update-tag", args: {"_": ["@security"], "description": "Updated description"}
-command: "update-tag", args: {"_": ["@security"], "category": "New Category"}
+command: "update-tag", args: {"tag": "@security", "description": "Updated description"}
+command: "update-tag", args: {"tag": "@security", "category": "New Category"}
 
-command: "delete-tag", args: {"_": ["@deprecated"], "dryRun": true}
-command: "delete-tag", args: {"_": ["@deprecated"], "force": true}
+command: "delete-tag", args: {"tag": "@deprecated", "dryRun": true}
+command: "delete-tag", args: {"tag": "@deprecated", "force": true}
 
 command: "list-tags"
 command: "list-tags", args: {"category": "Technical Tags"}
@@ -703,14 +700,14 @@ command: "retag", args: {"from": "@old-tag", "to": "@new-tag"}
 ### Feature-Level Architecture
 
 ```
-command: "add-architecture", args: {"_": ["user-authentication", "Uses JWT tokens. Sessions stored in Redis."]}
+command: "add-architecture", args: {"feature": "user-authentication", "text": "Uses JWT tokens. Sessions stored in Redis."}
 ```
 
 ### Mermaid Diagrams (Foundation)
 
 ```
-command: "add-diagram", args: {"_": ["Architecture", "System Overview", "graph TD\n  A[Client] --> B[API]\n  B --> C[Database]"]}
-command: "delete-diagram", args: {"_": ["Architecture", "Old Diagram"]}
+command: "add-diagram", args: {"section": "Architecture", "title": "System Overview", "code": "graph TD\n  A[Client] --> B[API]\n  B --> C[Database]"}
+command: "delete-diagram", args: {"section": "Architecture", "title": "Old Diagram"}
 ```
 
 Mermaid diagrams are validated before storage.
@@ -722,13 +719,13 @@ Mermaid diagrams are validated before storage.
 Link supporting files (mockups, diagrams, API contracts) to work units:
 
 ```
-command: "add-attachment", args: {"_": ["AUTH-001", "diagrams/auth-flow.png"], "description": "Auth flow diagram"}
-command: "add-attachment", args: {"_": ["UI-002", "mockups/dashboard.png"]}
+command: "add-attachment", args: {"workUnitId": "AUTH-001", "filePath": "diagrams/auth-flow.png", "description": "Auth flow diagram"}
+command: "add-attachment", args: {"workUnitId": "UI-002", "filePath": "mockups/dashboard.png"}
 
-command: "list-attachments", args: {"_": ["AUTH-001"]}
+command: "list-attachments", args: {"workUnitId": "AUTH-001"}
 
-command: "remove-attachment", args: {"_": ["AUTH-001", "old-diagram.png"]}
-command: "remove-attachment", args: {"_": ["AUTH-001", "important.pdf"], "keepFile": true}
+command: "remove-attachment", args: {"workUnitId": "AUTH-001", "fileName": "old-diagram.png"}
+command: "remove-attachment", args: {"workUnitId": "AUTH-001", "fileName": "important.pdf", "keepFile": true}
 ```
 
 Files stored in `spec/attachments/<work-unit-id>/`.
@@ -768,8 +765,8 @@ Configure in `spec/fspec-hooks.json`:
 command: "list-hooks"
 command: "validate-hooks"
 
-command: "add-hook", args: {"_": ["pre-implementing", "lint"], "command": "spec/hooks/lint.sh", "blocking": true, "timeout": 30}
-command: "remove-hook", args: {"_": ["pre-implementing", "lint"]}
+command: "add-hook", args: {"event": "pre-implementing", "name": "lint", "command": "spec/hooks/lint.sh", "blocking": true, "timeout": 30}
+command: "remove-hook", args: {"event": "pre-implementing", "name": "lint"}
 ```
 
 ---
@@ -779,13 +776,13 @@ command: "remove-hook", args: {"_": ["pre-implementing", "lint"]}
 Ephemeral quality gates scoped to single work unit:
 
 ```
-command: "add-virtual-hook", args: {"_": ["AUTH-001", "post-implementing", "npm test"], "blocking": true}
-command: "add-virtual-hook", args: {"_": ["AUTH-001", "pre-validating", "eslint"], "gitContext": true, "blocking": true}
+command: "add-virtual-hook", args: {"workUnitId": "AUTH-001", "event": "post-implementing", "command": "npm test", "blocking": true}
+command: "add-virtual-hook", args: {"workUnitId": "AUTH-001", "event": "pre-validating", "command": "eslint", "gitContext": true, "blocking": true}
 
-command: "list-virtual-hooks", args: {"_": ["AUTH-001"]}
+command: "list-virtual-hooks", args: {"workUnitId": "AUTH-001"}
 
-command: "remove-virtual-hook", args: {"_": ["AUTH-001", "eslint"]}
-command: "clear-virtual-hooks", args: {"_": ["AUTH-001"]}
+command: "remove-virtual-hook", args: {"workUnitId": "AUTH-001", "hookName": "eslint"}
+command: "clear-virtual-hooks", args: {"workUnitId": "AUTH-001"}
 
 command: "copy-virtual-hooks", args: {"from": "AUTH-001", "to": "AUTH-002"}
 command: "copy-virtual-hooks", args: {"from": "AUTH-001", "to": "AUTH-002", "hookName": "eslint"}
@@ -802,15 +799,15 @@ command: "copy-virtual-hooks", args: {"from": "AUTH-001", "to": "AUTH-002", "hoo
 Safe experimentation with automatic save points:
 
 ```
-command: "checkpoint", args: {"_": ["AUTH-001", "before-refactor"]}
-command: "checkpoint", args: {"_": ["AUTH-001", "baseline"]}
+command: "checkpoint", args: {"workUnitId": "AUTH-001", "checkpointName": "before-refactor"}
+command: "checkpoint", args: {"workUnitId": "AUTH-001", "checkpointName": "baseline"}
 
-command: "list-checkpoints", args: {"_": ["AUTH-001"]}
+command: "list-checkpoints", args: {"workUnitId": "AUTH-001"}
 # Shows: 🤖 auto checkpoints, 📌 manual checkpoints
 
-command: "restore-checkpoint", args: {"_": ["AUTH-001", "baseline"]}
+command: "restore-checkpoint", args: {"workUnitId": "AUTH-001", "checkpointName": "baseline"}
 
-command: "cleanup-checkpoints", args: {"_": ["AUTH-001"], "keepLast": 5}
+command: "cleanup-checkpoints", args: {"workUnitId": "AUTH-001", "keepLast": 5}
 ```
 
 **Automatic checkpoints** created on status transitions (if uncommitted changes exist).
@@ -856,7 +853,7 @@ command: "reverse", args: {"complete": true}
 ### Recording Metrics
 
 ```
-command: "record-iteration", args: {"_": ["AUTH-001"]}
+command: "record-iteration", args: {"workUnitId": "AUTH-001"}
 ```
 
 ### Querying Metrics
@@ -867,7 +864,7 @@ command: "query-metrics", args: {"format": "json"}
 command: "query-metrics", args: {"metric": "velocity"}
 
 command: "query-estimate-accuracy"
-command: "query-estimation-guide", args: {"_": ["AUTH-001"]}
+command: "query-estimation-guide", args: {"workUnitId": "AUTH-001"}
 
 command: "query-example-mapping-stats"
 command: "query-dependency-stats"
@@ -929,7 +926,7 @@ command: "board", args: {"limit": 50}
 command: "auto-advance", args: {"dryRun": true}
 command: "auto-advance"
 
-command: "workflow-automation", args: {"_": ["AUTH-001"]}
+command: "workflow-automation", args: {"workUnitId": "AUTH-001"}
 ```
 
 ---
@@ -939,7 +936,7 @@ command: "workflow-automation", args: {"_": ["AUTH-001"]}
 ### Version Sync
 
 ```
-command: "--sync-version", args: {"_": ["0.9.3"]}
+command: "--sync-version", args: {"version": "0.9.3"}
 ```
 
 ### Tool Configuration
@@ -963,10 +960,10 @@ command: "configure-tools", args: {"reconfigure": true}
 ```
 command: "validate"                    # Gherkin syntax
 command: "validate", args: {"verbose": true}
-command: "validate", args: {"_": ["spec/features/login.feature"]}
+command: "validate", args: {"file": "spec/features/login.feature"}
 
 command: "format"                      # Format all feature files
-command: "format", args: {"_": ["spec/features/login.feature"]}
+command: "format", args: {"file": "spec/features/login.feature"}
 
 command: "check"                       # All validation checks
 command: "check", args: {"verbose": true}
@@ -986,12 +983,12 @@ command: "validate-hooks"              # Hook configuration
 
 2. **Pick work from backlog:**
    ```
-   command: "show-work-unit", args: {"_": ["AUTH-001"]}
+   command: "show-work-unit", args: {"workUnitId": "AUTH-001"}
    ```
 
 3. **Move to specifying:**
    ```
-   command: "update-work-unit-status", args: {"_": ["AUTH-001", "specifying"]}
+   command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "specifying"}
    ```
 
 4. **Follow ACDD phases in order**
@@ -1008,39 +1005,39 @@ command: "discover-foundation"
 ```
 # 1. SELECT WORK
 command: "board"
-command: "show-work-unit", args: {"_": ["AUTH-001"]}
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "specifying"]}
+command: "show-work-unit", args: {"workUnitId": "AUTH-001"}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "specifying"}
 
 # 2. DISCOVERY
-command: "set-user-story", args: {"_": ["AUTH-001"], "role": "user", "action": "log in", "benefit": "access my account"}
-command: "add-rule", args: {"_": ["AUTH-001", "Password must be 8+ characters"]}
-command: "add-example", args: {"_": ["AUTH-001", "User enters valid credentials and sees dashboard"]}
-command: "add-question", args: {"_": ["AUTH-001", "@human: What happens after 3 failed attempts?"]}
-command: "answer-question", args: {"_": ["AUTH-001", "0"], "answer": "Account locked for 15 minutes", "addTo": "rule"}
+command: "set-user-story", args: {"workUnitId": "AUTH-001", "role": "user", "action": "log in", "benefit": "access my account"}
+command: "add-rule", args: {"workUnitId": "AUTH-001", "rule": "Password must be 8+ characters"}
+command: "add-example", args: {"workUnitId": "AUTH-001", "example": "User enters valid credentials and sees dashboard"}
+command: "add-question", args: {"workUnitId": "AUTH-001", "question": "@human: What happens after 3 failed attempts?"}
+command: "answer-question", args: {"workUnitId": "AUTH-001", "index": "0", "answer": "Account locked for 15 minutes", "addTo": "rule"}
 
 # 3. SPECIFY
-command: "generate-scenarios", args: {"_": ["AUTH-001"]}
-command: "add-tag-to-feature", args: {"_": ["spec/features/user-login.feature", "@wip"]}
+command: "generate-scenarios", args: {"workUnitId": "AUTH-001"}
+command: "add-tag-to-feature", args: {"file": "spec/features/user-login.feature", "tags": ["@wip"]}
 command: "validate"
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "testing"]}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "testing"}
 
 # 4. TEST (Write tests with @step comments, run, verify they FAIL)
-command: "link-coverage", args: {"_": ["user-login"], "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "testLines": "45-62"}
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "implementing"]}
+command: "link-coverage", args: {"featureName": "user-login", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "testLines": "45-62"}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "implementing"}
 
 # 5. IMPLEMENT (Write code, run tests, verify they PASS)
-command: "link-coverage", args: {"_": ["user-login"], "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "implFile": "src/auth/login.ts", "implLines": "10-24"}
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "validating"]}
+command: "link-coverage", args: {"featureName": "user-login", "scenario": "Login with valid credentials", "testFile": "src/__tests__/auth.test.ts", "implFile": "src/auth/login.ts", "implLines": "10-24"}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "validating"}
 
 # 6. VALIDATE
-command: "show-coverage", args: {"_": ["user-login"]}
+command: "show-coverage", args: {"featureName": "user-login"}
 command: "validate"
 command: "validate-tags"
-command: "update-work-unit-status", args: {"_": ["AUTH-001", "done"]}
+command: "update-work-unit-status", args: {"workUnitId": "AUTH-001", "status": "done"}
 
 # 7. COMPLETE
-command: "remove-tag-from-feature", args: {"_": ["spec/features/user-login.feature", "@wip"]}
-command: "add-tag-to-feature", args: {"_": ["spec/features/user-login.feature", "@done"]}
+command: "remove-tag-from-feature", args: {"file": "spec/features/user-login.feature", "tags": ["@wip"]}
+command: "add-tag-to-feature", args: {"file": "spec/features/user-login.feature", "tags": ["@done"]}
 command: "board"
 ```
 
