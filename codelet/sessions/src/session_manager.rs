@@ -675,6 +675,13 @@ impl SessionManager {
         let input_rx = result.input_rx;
         let mcp_injection_rx = result.mcp_injection_rx;
 
+        // BUG-154: stamp the owning-manager back-reference BEFORE spawning the
+        // agent loop, so the AgentManager handler the loop registers binds to
+        // THIS manager instead of the global singleton. Mirrors the call in
+        // create_session_from_manifest (line 840) and
+        // create_isolated_session_with_id (line 1050).
+        session.set_owning_manager(self.self_weak.get().cloned().unwrap_or_default());
+
         // RPC-040: agent_loop spawning is delegated to the hooks impl so
         // codelet-sessions has no transitive napi dependency.
         self.hooks()

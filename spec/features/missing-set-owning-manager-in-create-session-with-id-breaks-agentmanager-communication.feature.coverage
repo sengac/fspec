@@ -1,0 +1,85 @@
+{
+  "scenarios": [
+    {
+      "name": "create_session_with_id sets owning_manager before spawning agent loop",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/bug154_set_owning_manager_in_create_session_with_id.rs",
+          "lines": "58-82",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AgentManager handler receives non-None owning_manager from create_session_with_id",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/bug154_set_owning_manager_in_create_session_with_id.rs",
+          "lines": "85-120",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create_session_with_id and create_session_from_manifest set owning_manager consistently",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/bug154_set_owning_manager_in_create_session_with_id.rs",
+          "lines": "123-180",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/bug154_set_owning_manager_in_create_session_with_id.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 140
+  }
+}

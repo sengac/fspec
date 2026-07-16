@@ -19,10 +19,16 @@
 
 use std::sync::Arc;
 
+use codelet_core::persistence::reset_stores_for_tests;
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_sessions::background_session::BackgroundSession;
 use codelet_sessions::SessionManager;
 use tokio::sync::Mutex;
+
+/// Trimmed offline models.dev catalog (anthropic/openai/google), shared with
+/// the sessions-crate PROV-101 / PROV-118 tests. Seeding it into the temp data
+/// dir's cache keeps registry validation fully offline.
+const MODELS_FIXTURE: &str = include_str!("fixtures/prov101_models.json");
 
 /// PROV-132 precedent: serialize tests that swap the process-global data
 /// directory so a parallel test cannot swap the pointer out from under
@@ -30,14 +36,33 @@ use tokio::sync::Mutex;
 static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
 /// Create a fresh BackgroundSession via the SessionManagerHandle bridge.
+/// Seeds the offline models cache so `ProviderManager::with_model_support()`
+/// validates against the registry without a network call. Calls
+/// `reset_stores_for_tests()` before `set_data_directory()` (RPC-423 precedent).
 /// Noop hooks ensure no agent loop is spawned for the session.
 async fn fresh_session() -> (tempfile::TempDir, Arc<SessionManager>, Arc<BackgroundSession>) {
+    // @step Given the fresh_session() helper in cont009_completion_contract_sync.rs
+    // @step When the helper creates a temp data directory
     let data_dir = tempfile::tempdir().expect("tempdir");
-    let _ = codelet_common::set_data_directory(data_dir.path().to_path_buf());
+    // @step Then it must create a cache/ subdirectory inside the temp data dir
+    let cache_dir = data_dir.path().join("cache");
+    std::fs::create_dir_all(&cache_dir).expect("create cache dir");
+    // @step And it must write the prov101_models.json fixture content to cache/models.json
+    std::fs::write(cache_dir.join("models.json"), MODELS_FIXTURE).expect("write models.json");
+    // @step And it must call reset_stores_for_tests() before setting the data directory
+    // RPC-423: reset stores BEFORE setting data directory so init_session_store()
+    // creates a fresh SessionStore pointing to the new temp dir.
+    reset_stores_for_tests();
+    codelet_common::set_data_directory(data_dir.path().to_path_buf()).expect("set data dir");
     let manager = Arc::new(SessionManager::new());
     manager.set_default_model("anthropic/claude-opus-4-5");
     let handle: &dyn SessionManagerHandle = manager.as_ref();
     let sid = handle.create_session(None);
+    // @step And the subsequent create_session() call must return a valid non-empty session ID
+    assert!(
+        !sid.value.is_empty(),
+        "create_session must return a non-empty session id once the default model is set and the cache is seeded"
+    );
     let session = manager
         .get_session(&sid.value)
         .expect("session must exist after create_session");
