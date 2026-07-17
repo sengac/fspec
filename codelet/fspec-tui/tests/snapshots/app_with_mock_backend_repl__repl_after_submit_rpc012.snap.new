@@ -1,0 +1,29 @@
+---
+source: fspec-tui/tests/app_with_mock_backend_repl.rs
+assertion_line: 164
+expression: rows
+---
+- " #1 (AUTH-002): Agent                                        tokens: 0↓ 0↑ [0%] "
+- "You: hi                                                                         "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- " > Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' session "

@@ -1289,6 +1289,15 @@
         "CONT-008",
         "CONT-009"
       ]
+    },
+    "tooling": {
+      "id": "tooling",
+      "title": "TOOL",
+      "createdAt": "2026-07-17T00:54:28.757Z",
+      "description": "Tool invocation and execution improvements",
+      "workUnits": [
+        "TOOL-021"
+      ]
     }
   }
 }

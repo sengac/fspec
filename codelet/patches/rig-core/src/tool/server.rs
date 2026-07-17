@@ -52,7 +52,7 @@ impl ToolServer {
 
     /// Add a static tool to the agent
     pub fn tool(mut self, tool: impl Tool + 'static) -> Self {
-        let toolname = tool.name();
+        let toolname = tool.name().to_lowercase();
         self.toolset.add_tool(tool);
         self.static_tool_names.push(toolname);
         self
@@ -66,7 +66,7 @@ impl ToolServer {
         let toolname = tool.name.clone();
         self.toolset
             .add_tool(McpTool::from_mcp_server(tool, client));
-        self.static_tool_names.push(toolname.to_string());
+        self.static_tool_names.push(toolname.to_lowercase());
         self
     }
 
@@ -113,7 +113,7 @@ impl ToolServer {
 
         match data {
             ToolServerRequestMessageKind::AddTool(tool) => {
-                self.static_tool_names.push(tool.name());
+                self.static_tool_names.push(tool.name().to_lowercase());
                 self.toolset.add_tool_boxed(tool);
                 let _ = callback_channel.send(ToolServerResponse::ToolAdded);
             }
@@ -122,7 +122,8 @@ impl ToolServer {
                 let _ = callback_channel.send(ToolServerResponse::ToolAdded);
             }
             ToolServerRequestMessageKind::RemoveTool { tool_name } => {
-                self.static_tool_names.retain(|x| *x != tool_name);
+                let normalized = tool_name.to_lowercase();
+                self.static_tool_names.retain(|x| *x != normalized);
                 self.toolset.delete_tool(&tool_name);
                 let _ = callback_channel.send(ToolServerResponse::ToolDeleted);
             }
@@ -426,5 +427,34 @@ mod tests {
         let res = handle.get_tool_defs(None).await.unwrap();
 
         assert_eq!(res.len(), 0);
+    }
+
+    #[tokio::test]
+    pub async fn test_toolserver_call_case_insensitive() {
+        let server = ToolServer::new();
+        let handle = server.run();
+        handle.add_tool(Adder).await.unwrap();
+
+        // Tool registered as "add", call with "Add" should succeed
+        let json_args = serde_json::to_string(&serde_json::json!({"x": 3, "y": 4})).unwrap();
+        let res = handle.call_tool("Add", &json_args).await.unwrap();
+        assert_eq!(res, "7");
+
+        let res = handle.call_tool("ADD", &json_args).await.unwrap();
+        assert_eq!(res, "7");
+    }
+
+    #[tokio::test]
+    pub async fn test_toolserver_remove_case_insensitive() {
+        let server = ToolServer::new();
+        let handle = server.run();
+        handle.add_tool(Adder).await.unwrap();
+        let defs = handle.get_tool_defs(None).await.unwrap();
+        assert_eq!(defs.len(), 1);
+
+        // Remove with mixed casing should remove the tool
+        handle.remove_tool("ADD").await.unwrap();
+        let defs = handle.get_tool_defs(None).await.unwrap();
+        assert_eq!(defs.len(), 0);
     }
 }

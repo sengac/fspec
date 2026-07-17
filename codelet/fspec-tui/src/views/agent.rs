@@ -81,9 +81,11 @@ pub use turn_modal::TurnContentModal;
 /// RPC-013 placeholder footer hints.
 pub const PLACEHOLDER_FOOTER_HINTS: &str = "Enter=send  Ctrl+C=interrupt  ESC=back";
 
-/// RPC-019 placeholder hint. RPC-402: 'Shift+Enter' leads to survive 80-col truncation.
+/// RPC-019 placeholder hint. RPC-426: 'Ctrl+J' is the universal newline
+/// binding (Emacs-style) — works on every terminal. 'Shift+Enter' is
+/// best-effort (only on terminals with keyboard enhancement).
 pub const INPUT_PLACEHOLDER_HINT: &str =
-    "Type a message... 'Shift+Enter' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns";
+    "Type a message... 'Ctrl+J' newline, 'Shift+↑/↓' history, 'Shift+←/→' sessions, 'Tab' turns";
 
 /// RPC-029: paint `color` over every cell of `area` (RPC-405: moved
 /// to `chrome.rs`; re-exported so `super::paint_row_bg` callers work).

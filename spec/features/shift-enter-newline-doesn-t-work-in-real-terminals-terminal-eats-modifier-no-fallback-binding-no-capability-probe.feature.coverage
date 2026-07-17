@@ -1,0 +1,229 @@
+{
+  "scenarios": [
+    {
+      "name": "Ctrl+J inserts a newline and grows the input area",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "1-46",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+J mid-word splits the line at cursor position",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "48-88",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Plain Enter submits the multi-line buffer and resets the input",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "90-130",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Enter inserts a newline on enhanced terminals",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "132-164",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Enter submits on non-enhanced terminals (modifier eaten)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "166-200",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Alt+Enter inserts a newline as legacy fallback",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "202-233",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+J is swallowed while the session is compacting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "235-273",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input placeholder shows Ctrl+J as the primary newline hint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs",
+          "lines": "275-292",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agent_input_newline_bindings_rpc426.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/multiline_input_enter.rs",
+      "codelet/fspec-tui/src/views/agent.rs"
+    ],
+    "totalLinesCovered": 369
+  }
+}

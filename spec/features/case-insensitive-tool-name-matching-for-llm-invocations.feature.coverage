@@ -1,0 +1,128 @@
+{
+  "scenarios": [
+    {
+      "name": "Lookup tool with different casing than registration",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/tool/mod.rs",
+          "lines": "686-702",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/tool/mod.rs",
+              "lines": [
+                436,
+                437,
+                438,
+                439
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Call tool with mixed casing",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/tool/mod.rs",
+          "lines": "718-731",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/tool/mod.rs",
+              "lines": [
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete tool with different casing",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/tool/mod.rs",
+          "lines": "745-757",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/tool/mod.rs",
+              "lines": [
+                452,
+                453,
+                454
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contains check with mixed casing",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/tool/mod.rs",
+          "lines": "704-716",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/tool/mod.rs",
+              "lines": [
+                461,
+                462,
+                463
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error message preserves original casing",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/tool/mod.rs",
+          "lines": "733-743",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/tool/mod.rs",
+              "lines": [
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/patches/rig-core/src/tool/mod.rs"
+    ],
+    "implFiles": [
+      "codelet/patches/rig-core/src/tool/mod.rs"
+    ],
+    "totalLinesCovered": 100
+  }
+}

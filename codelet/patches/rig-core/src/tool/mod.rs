@@ -435,22 +435,22 @@ impl ToolSet {
 
     /// Check if the toolset contains a tool with the given name
     pub fn contains(&self, toolname: &str) -> bool {
-        self.tools.contains_key(toolname)
+        self.tools.contains_key(&toolname.to_lowercase())
     }
 
     /// Add a tool to the toolset
     pub fn add_tool(&mut self, tool: impl ToolDyn + 'static) {
         self.tools
-            .insert(tool.name(), ToolType::Simple(Box::new(tool)));
+            .insert(tool.name().to_lowercase(), ToolType::Simple(Box::new(tool)));
     }
 
     /// Adds a boxed tool to the toolset. Useful for situations when dynamic dispatch is required.
     pub fn add_tool_boxed(&mut self, tool: Box<dyn ToolDyn>) {
-        self.tools.insert(tool.name(), ToolType::Simple(tool));
+        self.tools.insert(tool.name().to_lowercase(), ToolType::Simple(tool));
     }
 
     pub fn delete_tool(&mut self, tool_name: &str) {
-        let _ = self.tools.remove(tool_name);
+        let _ = self.tools.remove(&tool_name.to_lowercase());
     }
 
     /// Merge another toolset into this one
@@ -459,7 +459,7 @@ impl ToolSet {
     }
 
     pub(crate) fn get(&self, toolname: &str) -> Option<&ToolType> {
-        self.tools.get(toolname)
+        self.tools.get(&toolname.to_lowercase())
     }
 
     pub async fn get_tool_definitions(&self) -> Result<Vec<ToolDefinition>, ToolSetError> {
@@ -473,10 +473,10 @@ impl ToolSet {
 
     /// Call a tool with the given name and arguments
     pub async fn call(&self, toolname: &str, args: String) -> Result<String, ToolSetError> {
-        if let Some(tool) = self.tools.get(toolname) {
+        if let Some(tool) = self.tools.get(&toolname.to_lowercase()) {
             tracing::debug!(target: "rig",
                 "Calling tool {toolname} with args:\n{}",
-                serde_json::to_string_pretty(&args).unwrap()
+                serde_json::to_string_pretty(&args).unwrap_or_else(|_| args.clone())
             );
             Ok(tool.call(args).await?)
         } else {
@@ -562,7 +562,7 @@ impl ToolSetBuilder {
             tools: self
                 .tools
                 .into_iter()
-                .map(|tool| (tool.name(), tool))
+                .map(|tool| (tool.name().to_lowercase(), tool))
                 .collect(),
         }
     }
@@ -570,22 +570,24 @@ impl ToolSetBuilder {
 
 #[cfg(test)]
 mod tests {
+    // Feature: spec/features/case-insensitive-tool-name-matching-for-llm-invocations.feature
+    // This test module validates case-insensitive tool name matching in ToolSet and ToolServer.
     use serde_json::json;
 
     use super::*;
 
+    #[derive(Deserialize)]
+    struct OperationArgs {
+        x: i32,
+        y: i32,
+    }
+
+    #[derive(Debug, thiserror::Error)]
+    #[error("Math error")]
+    struct MathError;
+
     fn get_test_toolset() -> ToolSet {
         let mut toolset = ToolSet::default();
-
-        #[derive(Deserialize)]
-        struct OperationArgs {
-            x: i32,
-            y: i32,
-        }
-
-        #[derive(Debug, thiserror::Error)]
-        #[error("Math error")]
-        struct MathError;
 
         #[derive(Deserialize, Serialize)]
         struct Adder;
@@ -679,5 +681,139 @@ mod tests {
         toolset.delete_tool("add");
         assert!(!toolset.contains("add"));
         assert_eq!(toolset.tools.len(), 1);
+    }
+
+    #[test]
+    fn test_case_insensitive_contains() {
+        // @step Given a tool named "fspec" is registered in the ToolSet
+        let toolset = get_test_toolset();
+        // @step When I look up the tool as "Fspec"
+        // @step Then the tool should be found
+        assert!(toolset.contains("Add"));
+        // @step And I look up the tool as "FSPEC"
+        // @step Then the tool should be found
+        assert!(toolset.contains("ADD"));
+        assert!(toolset.contains("aDd"));
+
+        // Non-existent tool should not be found regardless of casing
+        assert!(!toolset.contains("multiply"));
+        assert!(!toolset.contains("Multiply"));
+        assert!(!toolset.contains("MULTIPLY"));
+    }
+
+    #[test]
+    fn test_case_insensitive_get() {
+        // @step Given a tool named "fspec" is registered in the ToolSet
+        let toolset = get_test_toolset();
+        // @step When I check if "Fspec" exists
+        // @step Then the ToolSet should contain the tool
+        assert!(toolset.get("Add").is_some());
+        assert!(toolset.get("ADD").is_some());
+
+        // Non-existent tool should return None regardless of casing
+        assert!(toolset.get("multiply").is_none());
+        assert!(toolset.get("Multiply").is_none());
+    }
+
+    #[tokio::test]
+    async fn test_case_insensitive_call() {
+        // @step Given a tool named "add" is registered in the ToolSet
+        let toolset = get_test_toolset();
+        // @step When I call the tool with name "Add"
+        // @step Then the call should succeed
+        let result = toolset.call("Add", r#"{"x": 2, "y": 3}"#.to_string()).await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "5");
+
+        let result = toolset.call("ADD", r#"{"x": 10, "y": 20}"#.to_string()).await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "30");
+    }
+
+    #[tokio::test]
+    async fn test_case_insensitive_call_nonexistent_preserves_original_casing_in_error() {
+        // @step Given a ToolSet with no tools registered
+        let toolset = ToolSet::default();
+        // @step When I try to call a tool named "NonExistent"
+        let result = toolset.call("NonExistent", r#"{}"#.to_string()).await;
+        // @step Then the error should mention "NonExistent" in the error message
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("NonExistent"));
+    }
+
+    #[test]
+    fn test_case_insensitive_delete() {
+        // @step Given a tool named "fspec" is registered in the ToolSet
+        let mut toolset = get_test_toolset();
+        assert!(toolset.contains("add"));
+
+        // @step When I delete the tool with name "FSPEC"
+        toolset.delete_tool("ADD");
+        // @step Then the tool should no longer exist in the ToolSet
+        assert!(!toolset.contains("add"));
+        assert!(!toolset.contains("ADD"));
+        assert!(!toolset.contains("Add"));
+    }
+
+    #[test]
+    fn test_from_tools_normalizes_names() {
+        #[derive(Deserialize, Serialize)]
+        struct Echo;
+
+        impl Tool for Echo {
+            const NAME: &'static str = "echo";
+            type Error = MathError;
+            type Args = OperationArgs;
+            type Output = i32;
+
+            async fn definition(&self, _prompt: String) -> ToolDefinition {
+                ToolDefinition {
+                    name: "echo".to_string(),
+                    description: "Echo tool".to_string(),
+                    parameters: json!({}),
+                }
+            }
+
+            async fn call(&self, _args: Self::Args) -> Result<Self::Output, Self::Error> {
+                Ok(0)
+            }
+        }
+
+        let toolset = ToolSet::from_tools(vec![Echo]);
+        // Should be stored with lowercase key
+        assert!(toolset.contains("echo"));
+        assert!(toolset.contains("Echo"));
+        assert!(toolset.contains("ECHO"));
+    }
+
+    #[test]
+    fn test_toolset_builder_normalizes_names() {
+        #[derive(Deserialize, Serialize)]
+        struct Ping;
+
+        impl Tool for Ping {
+            const NAME: &'static str = "ping";
+            type Error = MathError;
+            type Args = OperationArgs;
+            type Output = i32;
+
+            async fn definition(&self, _prompt: String) -> ToolDefinition {
+                ToolDefinition {
+                    name: "ping".to_string(),
+                    description: "Ping tool".to_string(),
+                    parameters: json!({}),
+                }
+            }
+
+            async fn call(&self, _args: Self::Args) -> Result<Self::Output, Self::Error> {
+                Ok(0)
+            }
+        }
+
+        let toolset = ToolSet::builder().static_tool(Ping).build();
+        assert!(toolset.contains("ping"));
+        assert!(toolset.contains("Ping"));
+        assert!(toolset.contains("PING"));
     }
 }
