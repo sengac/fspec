@@ -167,10 +167,19 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                         *is_diff = true;
                     }
                 } else {
-                    let sanitized = info.content.replace('\t', "  ");
-                    if !sanitized.trim().is_empty() {
-                        source.text.push('\n');
-                        source.text.push_str(&sanitized);
+                    // Only append result content if ToolProgress hasn't already
+                    // streamed it into the body. ToolProgress always arrives
+                    // before ToolResult (the readers stream during execution,
+                    // the result is emitted after process exit). If the body
+                    // is non-empty, the content is already there — skip to
+                    // avoid duplication.
+                    let body = source.text.split('\n').skip(1).collect::<Vec<_>>().join("\n");
+                    if body.is_empty() {
+                        let sanitized = info.content.replace('\t', "  ");
+                        if !sanitized.trim().is_empty() {
+                            source.text.push('\n');
+                            source.text.push_str(&sanitized);
+                        }
                     }
                 }
                 // RPC-389/RPC-399: a ToolResult settles the card — clear the
