@@ -20,7 +20,7 @@ static DATA_DIR_GUARD: Mutex<()> = Mutex::const_new(());
 
 /// Helper: create a temp data directory and return its path.
 fn make_temp_data_dir() -> PathBuf {
-    tempfile::tempdir().expect("tempdir").into_path()
+    tempfile::tempdir().expect("tempdir").keep()
 }
 
 /// Helper: set the data directory and return a guard that cleans it up.
@@ -119,11 +119,11 @@ async fn create_session_with_provider_persists_provider_field() {
 }
 
 // ============================================================================
-// Scenario: Session destruction removes manifest from disk
+// Scenario: Session destruction removes from memory but preserves manifest
 // ============================================================================
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn destroy_session_removes_manifest_from_disk() {
+async fn destroy_session_removes_from_memory_preserves_manifest() {
     let _guard = DATA_DIR_GUARD.lock().await;
 
     // @step Given a SessionManager with a persisted session manifest on disk
@@ -141,16 +141,55 @@ async fn destroy_session_removes_manifest_from_disk() {
     handle.destroy_session(&sid).expect("destroy should succeed");
 
     // @step Then the session should be removed from the in-memory session map
-    let sessions = manager.list_sessions();
     assert!(
-        sessions.iter().all(|s| s.id != sid.value),
+        manager.get_session(&sid.value).is_err(),
         "session should not be in memory after destroy"
     );
 
-    // @step And the manifest file at {data_dir}/sessions/{uuid}.json should no longer exist
+    // @step And the manifest file at {data_dir}/sessions/{uuid}.json should still exist on disk
+    // (destroy_session only kills the in-memory session; it does NOT delete
+    // the manifest. The manifest persists so the user can resume later via /resume.
+    // Manifest deletion is a separate operation: persistence_delete_session.)
+    assert!(
+        manifest_path.exists(),
+        "manifest file should still exist after destroy_session — \
+         destroy only kills the in-memory session, it does not delete the manifest"
+    );
+
+    // @step And the session should still appear in list_sessions via persisted merge
+    let sessions = manager.list_sessions();
+    assert!(
+        sessions.iter().any(|s| s.id == sid.value),
+        "session should still appear in list_sessions via persisted merge"
+    );
+}
+
+// ============================================================================
+// Scenario: persistence_delete_session removes manifest from disk
+// ============================================================================
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn persistence_delete_session_removes_manifest_from_disk() {
+    let _guard = DATA_DIR_GUARD.lock().await;
+
+    // @step Given a SessionManager with a persisted session manifest on disk
+    let data_dir = set_temp_data_dir(make_temp_data_dir());
+    let manager = Arc::new(SessionManager::new());
+    manager.set_default_model("anthropic/claude-sonnet-4");
+    let handle: &dyn SessionManagerHandle = &*manager;
+    let sid = handle.create_session(None);
+
+    let uuid = Uuid::parse_str(&sid.value).expect("valid UUID");
+    let manifest_path = data_dir.join("sessions").join(format!("{uuid}.json"));
+    assert!(manifest_path.exists(), "manifest should exist before delete");
+
+    // @step When I call persistence_delete_session with that session's UUID
+    codelet_core::persistence::delete_session(uuid).expect("delete should succeed");
+
+    // @step Then the manifest file at {data_dir}/sessions/{uuid}.json should no longer exist
     assert!(
         !manifest_path.exists(),
-        "manifest file should be deleted from disk"
+        "manifest file should be deleted by persistence_delete_session"
     );
 }
 
@@ -163,7 +202,7 @@ async fn list_sessions_includes_persisted_sessions() {
     let _guard = DATA_DIR_GUARD.lock().await;
 
     // @step Given a SessionManager with one in-memory session
-    let data_dir = set_temp_data_dir(make_temp_data_dir());
+    let _data_dir = set_temp_data_dir(make_temp_data_dir());
     let manager = Arc::new(SessionManager::new());
     manager.set_default_model("anthropic/claude-sonnet-4");
     let handle: &dyn SessionManagerHandle = &*manager;
@@ -205,7 +244,7 @@ async fn resume_session_restores_messages_and_token_state() {
     let _guard = DATA_DIR_GUARD.lock().await;
 
     // @step Given a persisted session manifest with two stored messages
-    let data_dir = set_temp_data_dir(make_temp_data_dir());
+    let _data_dir = set_temp_data_dir(make_temp_data_dir());
     let project_path = std::env::current_dir().expect("current dir");
 
     // Create a session via persistence layer
@@ -333,7 +372,7 @@ async fn resume_session_preserves_manifest_message_references() {
     let _guard = DATA_DIR_GUARD.lock().await;
 
     // @step Given I have a session with 102 messages persisted on disk
-    let data_dir = set_temp_data_dir(make_temp_data_dir());
+    let _data_dir = set_temp_data_dir(make_temp_data_dir());
     let project_path = std::env::current_dir().expect("current dir");
 
     // Create a session via persistence layer
@@ -408,7 +447,7 @@ async fn resume_empty_session_preserves_empty_manifest() {
     let _guard = DATA_DIR_GUARD.lock().await;
 
     // @step Given I have a session with zero messages persisted on disk
-    let data_dir = set_temp_data_dir(make_temp_data_dir());
+    let _data_dir = set_temp_data_dir(make_temp_data_dir());
     let project_path = std::env::current_dir().expect("current dir");
 
     let manifest = codelet_core::persistence::create_session_with_provider(
@@ -464,7 +503,7 @@ async fn resume_session_already_in_memory_preserves_messages() {
     let _guard = DATA_DIR_GUARD.lock().await;
 
     // @step Given I have a session with messages that is currently active in memory
-    let data_dir = set_temp_data_dir(make_temp_data_dir());
+    let _data_dir = set_temp_data_dir(make_temp_data_dir());
     let manager = Arc::new(SessionManager::new());
     manager.set_default_model("anthropic/claude-sonnet-4");
     let handle: &dyn SessionManagerHandle = &*manager;

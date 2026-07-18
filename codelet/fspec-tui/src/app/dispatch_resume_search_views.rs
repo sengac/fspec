@@ -68,8 +68,20 @@ impl App {
     /// Fold a backend list_sessions result into the open resume_view.
     /// No-op when the view is closed.
     pub(crate) fn handle_session_list_loaded(&mut self, sessions: Vec<SessionInfo>) {
+        tracing::info!(
+            session_count = sessions.len(),
+            session_ids = ?sessions.iter().map(|s| s.id.as_str()).collect::<Vec<_>>(),
+            "TUI: handle_session_list_loaded: received session list from backend"
+        );
         if let Some(v) = self.navigator.agent.resume_view.as_mut() {
             v.set_sessions(sessions);
+            tracing::debug!(
+                "TUI: handle_session_list_loaded: folded into resume_view"
+            );
+        } else {
+            tracing::debug!(
+                "TUI: handle_session_list_loaded: resume_view not open, discarding"
+            );
         }
     }
 
@@ -86,6 +98,10 @@ impl App {
     /// the task dispatches `Action::EmitSessionNotice` so the failure
     /// is surfaced into the originating session's scrollback.
     pub(crate) fn handle_attach_to_session(&mut self, session: SessionId) {
+        tracing::info!(
+            session_id = %session.value,
+            "TUI: handle_attach_to_session: closing resume view and attaching to session"
+        );
         self.navigator.agent.resume_view = None;
         let existing_idx = self
             .agent_view_store
@@ -94,9 +110,18 @@ impl App {
             .position(|c| c.id == session);
         match existing_idx {
             Some(idx) => {
+                tracing::debug!(
+                    session_id = %session.value,
+                    index = idx,
+                    "TUI: handle_attach_to_session: session already in open_sessions, focusing"
+                );
                 self.agent_view_store.focus_session_index(idx);
             }
             None => {
+                tracing::debug!(
+                    session_id = %session.value,
+                    "TUI: handle_attach_to_session: session not in open_sessions, appending"
+                );
                 self.agent_view_store
                     .append_session(SessionContext::new(session.clone()));
             }
@@ -123,11 +148,24 @@ impl App {
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
+            tracing::info!(
+                session_id = %session.value,
+                "TUI: spawning backend.resume_session round-trip"
+            );
             match backend.resume_session(session.clone()).await {
                 Ok(()) => {
+                    tracing::info!(
+                        session_id = %session.value,
+                        "TUI: backend.resume_session succeeded, dispatching SessionResumeComplete"
+                    );
                     let _ = action_tx.send(Action::SessionResumeComplete(session));
                 }
                 Err(e) => {
+                    tracing::error!(
+                        session_id = %session.value,
+                        error = %e,
+                        "TUI: backend.resume_session failed"
+                    );
                     let _ = action_tx.send(Action::EmitSessionNotice(
                         session,
                         format!("[error] /resume failed: {e}"),

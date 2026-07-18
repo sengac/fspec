@@ -23,11 +23,17 @@ Feature: Session Persistence Integration
     When I call create_session_with_id with model "anthropic/claude-sonnet-4"
     Then the persisted manifest should have provider field set to "anthropic/claude-sonnet-4"
 
-  Scenario: Session destruction removes manifest from disk
+  Scenario: Session destruction removes from memory but preserves manifest
     Given a SessionManager with a persisted session manifest on disk
     When I call destroy_session with that session's UUID
     Then the session should be removed from the in-memory session map
-    And the manifest file at {data_dir}/sessions/{uuid}.json should no longer exist
+    And the manifest file at {data_dir}/sessions/{uuid}.json should still exist on disk
+    And the session should still appear in list_sessions via persisted merge
+
+  Scenario: Persistence delete removes manifest from disk
+    Given a SessionManager with a persisted session manifest on disk
+    When I call persistence_delete_session with that session's UUID
+    Then the manifest file at {data_dir}/sessions/{uuid}.json should no longer exist
 
   Scenario: Session listing includes both in-memory and persisted sessions
     Given a SessionManager with one in-memory session

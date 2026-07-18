@@ -787,8 +787,23 @@ pub fn delete_session(id: Uuid) -> Result<(), String> {
     let sessions_dir = codelet_common::get_data_dir()?.join("sessions");
     let path = sessions_dir.join(format!("{id}.json"));
     if path.exists() {
+        tracing::info!(
+            session_id = %id,
+            manifest_path = %path.display(),
+            "delete_session: removing session manifest from disk"
+        );
         fs::remove_file(&path)
             .map_err(|e| format!("Failed to delete session file {}: {e}", path.display()))?;
+        tracing::info!(
+            session_id = %id,
+            "delete_session: session manifest removed from disk"
+        );
+    } else {
+        tracing::debug!(
+            session_id = %id,
+            manifest_path = %path.display(),
+            "delete_session: manifest file does not exist, nothing to delete"
+        );
     }
 
     // (2) Best-effort in-memory cache eviction if the singleton happens
@@ -799,9 +814,20 @@ pub fn delete_session(id: Uuid) -> Result<(), String> {
         if let Some(store) = store.as_mut() {
             let removed = store.cache.remove(&id);
             if let Some(session) = removed {
+                tracing::info!(
+                    session_id = %id,
+                    session_name = %session.name,
+                    project = %session.project.display(),
+                    "delete_session: evicted session from in-memory cache"
+                );
                 if store.last_session.get(&session.project) == Some(&id) {
                     store.last_session.remove(&session.project);
                 }
+            } else {
+                tracing::debug!(
+                    session_id = %id,
+                    "delete_session: session not found in in-memory cache"
+                );
             }
         }
     }

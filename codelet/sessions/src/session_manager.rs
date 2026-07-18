@@ -448,6 +448,14 @@ impl SessionManager {
             "list_sessions: returning merged session list"
         );
 
+        // DEBUG: Log the IDs of all sessions returned so callers can trace
+        // which sessions are included in the merge result.
+        let ids: Vec<String> = all.iter().map(|s| s.id.clone()).collect();
+        tracing::debug!(
+            session_ids = ?ids,
+            "list_sessions: session IDs in merged result"
+        );
+
         all
     }
 
@@ -1222,6 +1230,12 @@ impl SessionManager {
             .expect("sessions lock poisoned")
             .shift_remove(&uuid);
 
+        tracing::info!(
+            session_id = %uuid,
+            session_removed = session.is_some(),
+            "destroy_session: shift_remove completed"
+        );
+
         if let Some(session) = session {
             tracing::info!(
                 session_id = %uuid,
@@ -1236,23 +1250,16 @@ impl SessionManager {
             codelet_tools::unregister_footer_cwd(uuid);
             codelet_tools::broadcast_metadata_update();
 
-            // RPC-422: Remove the persisted session manifest from disk.
-            // Mirrors TypeScript destroySession which also cleans up persistence.
-            tracing::info!(
-                session_id = %uuid,
-                "destroy_session: deleting session manifest from disk"
-            );
-            if let Err(e) = codelet_core::persistence::delete_session(uuid) {
-                tracing::warn!(
-                    "RPC-422: Failed to delete session manifest from disk: {}",
-                    e
-                );
-            } else {
-                tracing::info!(
-                    session_id = %uuid,
-                    "destroy_session: session manifest deleted from disk"
-                );
-            }
+            // PARITY FIX: Do NOT delete the session manifest from disk.
+            // The TypeScript reference implementation's "Close Session" (exit dialog)
+            // calls sessionManagerDestroy() which only kills the in-memory session.
+            // The manifest persists on disk so the user can resume later via /resume.
+            //
+            // Manifest deletion is a separate operation: "Delete This Session" from
+            // the resume view calls persistenceDeleteSession() which maps to
+            // backend.persistence_delete_session() → codelet_core::persistence::delete_session().
+            //
+            // See: src/tui/services/sessionService.ts destroySession() vs persistenceDeleteSession()
 
             tracing::info!(
                 session_id = %uuid,

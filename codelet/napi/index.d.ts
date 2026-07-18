@@ -3666,6 +3666,8 @@ export interface SessionInfo {
   worktreePath?: string;
   /** RPC-007: optional role string the session was created with. */
   role?: string;
+  /** TUI-096: optional timestamp (epoch milliseconds) for time-ago display. */
+  updatedAtMs?: number;
 }
 
 /**
