@@ -345,9 +345,9 @@ npm test
 npm run format
 
 # Run fspec CLI (after build)
-./dist/index.js validate
-./dist/index.js format
-./dist/index.js list-features
+fspec validate
+fspec format
+fspec list-features
 ```
 
 ---
