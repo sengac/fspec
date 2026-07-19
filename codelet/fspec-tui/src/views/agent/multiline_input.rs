@@ -62,6 +62,10 @@ pub struct MultiLineInput {
     pub(super) selection: Option<crate::mouse::selection::Selection>,
     /// COPY-007: drag / long-press gesture recognizer for the composer.
     pub(super) recognizer: crate::mouse::gesture::SelectionRecognizer,
+    /// RPC-429: cached body width from the last `sync_viewport()` call.
+    /// Used by the Up/Down boundary check to compute visual-row geometry
+    /// instead of logical-line count. `None` until the first viewport sync.
+    pub(super) last_body_width: Option<u16>,
 }
 
 impl Default for MultiLineInput {
@@ -92,6 +96,7 @@ impl MultiLineInput {
             scroll_top: 0,
             selection: None,
             recognizer: crate::mouse::gesture::SelectionRecognizer::new(),
+            last_body_width: None,
         }
     }
 
@@ -123,6 +128,7 @@ impl MultiLineInput {
         ta.move_cursor(tui_textarea::CursorMove::End);
         self.textarea = ta;
         self.selection = None; // COPY-007: set_value clears any selection.
+        self.last_body_width = None;
     }
 
     /// Number of logical lines (including the trailing empty line if
@@ -148,6 +154,7 @@ impl MultiLineInput {
         self.textarea = ta;
         self.scroll_top = 0;
         self.selection = None; // COPY-007: reset clears any selection.
+        self.last_body_width = None;
     }
 
     /// The logical buffer lines (RPC-405: consumed by the wrap-aware
@@ -232,14 +239,30 @@ impl MultiLineInput {
         {
             return InputEventOutcome::Ignored;
         }
-        // Up/Down on the boundary of the textarea (first/last line) →
-        // Ignored so a future RPC can layer scrollback nav on top.
+        // Up/Down on the visual boundary of the textarea → Ignored so
+        // AgentView can layer scrollback nav on top. Uses cached
+        // body_width from `sync_viewport` for visual-row geometry;
+        // falls back to logical-line check when width is unknown.
         if matches!(code, KeyCode::Up | KeyCode::Down) {
-            let (row, _col) = self.cursor();
-            let line_count = self.line_count();
-            let at_top = code == KeyCode::Up && row == 0;
-            let at_bottom = code == KeyCode::Down && row + 1 >= line_count;
-            if at_top || at_bottom {
+            let at_boundary = if let Some(body_width) = self.last_body_width {
+                let (vrow, _) = self.cursor_visual(body_width);
+                let total = super::multiline_wrap::total_visual_rows(self.lines(), body_width);
+                match code {
+                    KeyCode::Up => vrow == 0,
+                    KeyCode::Down => vrow + 1 >= total,
+                    _ => false,
+                }
+            } else {
+                // Fallback: logical-line check (same as before)
+                let (row, _col) = self.cursor();
+                let line_count = self.line_count();
+                match code {
+                    KeyCode::Up => row == 0,
+                    KeyCode::Down => row + 1 >= line_count,
+                    _ => false,
+                }
+            };
+            if at_boundary {
                 return InputEventOutcome::Ignored;
             }
         }

@@ -10,13 +10,15 @@
 //! - preserved doc strings (`"""`), tags (each on its own line)
 //! - a blank line before each feature child and before each Examples block
 //! - a single trailing newline
+//! - **comment preservation** — re-extracted from raw source (the parser discards
+//!   them, so we scan the source ourselves)
 //!
 //! ## Parity caveats (Rust gherkin crate vs `@cucumber/messages`)
 //!
 //! The Rust `gherkin-0.16.0` AST is structurally leaner than the TS
 //! `@cucumber/messages` AST:
-//!   - It does NOT retain comments → comment re-insertion is a no-op (the TS
-//!     `commentMap` machinery has nothing to feed it for re-parsed files).
+//!   - It does NOT retain comments → we extract them from raw source text
+//!     (same technique used for `extract_description_verbatim`).
 //!   - Step keywords are stored WITHOUT a trailing space; we re-add the single
 //!     space between keyword and value to match TS `${step.keyword}${step.text}`
 //!     (TS keyword carries the trailing space).
@@ -31,6 +33,75 @@ use gherkin::{Background, Examples, Feature, Rule, Scenario, Step, Table};
 
 const INDENT: &str = "  ";
 
+/// A comment extracted from the raw source, keyed by its 1-based line number.
+struct CommentEntry {
+    line: usize,
+    text: String,
+}
+
+/// Extract all `#` comment lines from `source` into a map keyed by 1-based
+/// line number. Mirrors the `ast.comments` array that `@cucumber/gherkin`
+/// produces — each entry carries its original text (including indentation).
+///
+/// The Rust `gherkin-0.16.0` parser consumes comments as whitespace and
+/// discards them entirely. We re-extract them from the raw source so the
+/// formatter can re-insert them at the correct positions.
+fn extract_comments(source: &str) -> Vec<CommentEntry> {
+    let mut entries: Vec<CommentEntry> = Vec::new();
+    for (idx, line) in source.split('\n').enumerate() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with('#') {
+            entries.push(CommentEntry {
+                line: idx + 1, // 1-based
+                text: line.to_string(),
+            });
+        }
+    }
+    entries
+}
+
+/// Find the 1-based line number of the first tag (`@...`) line in `source`
+/// within the range `[start_idx..end_idx]` (0-based, exclusive). Returns
+/// `None` when no tag line is found.
+///
+/// The Rust `gherkin-0.16.0` AST stores tags as plain `String` (just the
+/// name), with no position information. We scan the raw source to locate
+/// where the tags sit so comments can be inserted before them.
+fn find_first_tag_line(source: &str, start_idx: usize, end_idx: usize) -> Option<usize> {
+    let lines: Vec<&str> = source.split('\n').collect();
+    for (idx, line) in lines.iter().enumerate() {
+        if idx < start_idx || idx >= end_idx {
+            continue;
+        }
+        if line.trim_start().starts_with('@') {
+            return Some(idx + 1); // 1-based
+        }
+    }
+    None
+}
+
+/// Insert all comments whose line number is strictly less than `before_line`,
+/// removing them from `comment_map` so they are emitted exactly once.
+///
+/// Mirrors TS `insertCommentsBeforeLine()`.
+fn insert_comments_before(
+    before_line: usize,
+    comment_map: &mut Vec<CommentEntry>,
+    lines: &mut Vec<String>,
+) {
+    // Iterate in order; comments are already sorted by line number.
+    let mut i = 0usize;
+    while i < comment_map.len() {
+        if comment_map[i].line < before_line {
+            lines.push(comment_map[i].text.clone());
+            comment_map.remove(i);
+            // Don't increment i — next comment shifted into slot i.
+        } else {
+            i += 1;
+        }
+    }
+}
+
 /// Format a parsed [`Feature`] back to canonical feature-file text with a
 /// single trailing newline.
 ///
@@ -42,9 +113,14 @@ const INDENT: &str = "  ";
 /// lines we re-extract each feature/scenario/Background/Rule description
 /// verbatim from `source` (mirroring
 /// `commands::show_acceptance_criteria::extract_description_verbatim`).
+///
+/// `source` is also used to re-extract comments (which the parser discards)
+/// so they are re-inserted at the correct positions during formatting.
 pub fn format_feature(feature: &Feature, source: &str) -> String {
     let mut lines: Vec<String> = Vec::new();
-    format_feature_into(feature, source, &mut lines);
+    let comments = extract_comments(source);
+    let mut comment_map = comments;
+    format_feature_into(feature, source, &mut lines, &mut comment_map);
     let mut out = lines.join("\n");
     out.push('\n');
     out
@@ -135,11 +211,32 @@ fn format_description_block(
     }
 }
 
-fn format_feature_into(feature: &Feature, source: &str, lines: &mut Vec<String>) {
+fn format_feature_into(
+    feature: &Feature,
+    source: &str,
+    lines: &mut Vec<String>,
+    comment_map: &mut Vec<CommentEntry>,
+) {
+    // Insert comments before tags (or before feature keyword if no tags).
+    // Tags appear before the feature keyword line. Scan source to find them.
+    if !feature.tags.is_empty() {
+        let first_tag_line = find_first_tag_line(source, 0, feature.position.line.saturating_sub(1));
+        if let Some(tag_line) = first_tag_line {
+            insert_comments_before(tag_line, comment_map, lines);
+        } else {
+            insert_comments_before(feature.position.line, comment_map, lines);
+        }
+    } else {
+        insert_comments_before(feature.position.line, comment_map, lines);
+    }
+
     // Tags — each on its own line (no indentation at feature level).
     for tag in &feature.tags {
         lines.push(format!("@{tag}"));
     }
+
+    // Insert comments before Feature keyword.
+    insert_comments_before(feature.position.line, comment_map, lines);
 
     // Feature keyword and name.
     lines.push(format!("Feature: {}", feature.name));
@@ -170,17 +267,43 @@ fn format_feature_into(feature: &Feature, source: &str, lines: &mut Vec<String>)
     // blank line before EVERY feature child, so we do the same unconditionally.
     if let Some(bg) = &feature.background {
         push_blank_before_child(lines);
-        format_background(bg, source, lines, 0);
+        // Insert comments before Background.
+        insert_comments_before(bg.position.line, comment_map, lines);
+        format_background(bg, source, lines, 0, comment_map);
     }
 
     for scenario in &feature.scenarios {
         push_blank_before_child(lines);
-        format_scenario(scenario, source, lines, 0);
+        // Insert comments before scenario (tags or keyword line).
+        let scenario_line = if !scenario.tags.is_empty() {
+            find_first_tag_line(
+                source,
+                scenario.position.line.saturating_sub(20),
+                scenario.position.line.saturating_sub(1),
+            )
+            .unwrap_or(scenario.position.line)
+        } else {
+            scenario.position.line
+        };
+        insert_comments_before(scenario_line, comment_map, lines);
+        format_scenario(scenario, source, lines, 0, comment_map);
     }
 
     for rule in &feature.rules {
         push_blank_before_child(lines);
-        format_rule(rule, source, lines, 0);
+        // Insert comments before rule (tags or keyword line).
+        let rule_line = if !rule.tags.is_empty() {
+            find_first_tag_line(
+                source,
+                rule.position.line.saturating_sub(20),
+                rule.position.line.saturating_sub(1),
+            )
+            .unwrap_or(rule.position.line)
+        } else {
+            rule.position.line
+        };
+        insert_comments_before(rule_line, comment_map, lines);
+        format_rule(rule, source, lines, 0, comment_map);
     }
 }
 
@@ -189,7 +312,13 @@ fn push_blank_before_child(lines: &mut Vec<String>) {
     lines.push(String::new());
 }
 
-fn format_background(bg: &Background, source: &str, lines: &mut Vec<String>, base_indent: usize) {
+fn format_background(
+    bg: &Background,
+    source: &str,
+    lines: &mut Vec<String>,
+    base_indent: usize,
+    comment_map: &mut Vec<CommentEntry>,
+) {
     let ind = indent(base_indent + 1);
     lines.push(format!("{ind}Background: {}", bg.name));
 
@@ -204,11 +333,17 @@ fn format_background(bg: &Background, source: &str, lines: &mut Vec<String>, bas
     );
 
     for step in &bg.steps {
-        format_step(step, lines, base_indent + 2);
+        format_step(step, lines, base_indent + 2, comment_map);
     }
 }
 
-fn format_scenario(scenario: &Scenario, source: &str, lines: &mut Vec<String>, base_indent: usize) {
+fn format_scenario(
+    scenario: &Scenario,
+    source: &str,
+    lines: &mut Vec<String>,
+    base_indent: usize,
+    comment_map: &mut Vec<CommentEntry>,
+) {
     let ind = indent(base_indent + 1);
 
     // Tags.
@@ -240,17 +375,23 @@ fn format_scenario(scenario: &Scenario, source: &str, lines: &mut Vec<String>, b
     );
 
     for step in &scenario.steps {
-        format_step(step, lines, base_indent + 2);
+        format_step(step, lines, base_indent + 2, comment_map);
     }
 
     // Examples (Scenario Outline).
     for examples in &scenario.examples {
         lines.push(String::new()); // Blank line before Examples.
-        format_examples(examples, lines, base_indent + 2);
+        format_examples(examples, lines, base_indent + 2, comment_map);
     }
 }
 
-fn format_rule(rule: &Rule, source: &str, lines: &mut Vec<String>, base_indent: usize) {
+fn format_rule(
+    rule: &Rule,
+    source: &str,
+    lines: &mut Vec<String>,
+    base_indent: usize,
+    comment_map: &mut Vec<CommentEntry>,
+) {
     let ind = indent(base_indent + 1);
 
     for tag in &rule.tags {
@@ -283,7 +424,8 @@ fn format_rule(rule: &Rule, source: &str, lines: &mut Vec<String>, base_indent: 
         if idx > 0 || has_desc {
             lines.push(String::new());
         }
-        format_background(bg, source, lines, base_indent + 1);
+        insert_comments_before(bg.position.line, comment_map, lines);
+        format_background(bg, source, lines, base_indent + 1, comment_map);
         idx += 1;
     }
 
@@ -291,13 +433,32 @@ fn format_rule(rule: &Rule, source: &str, lines: &mut Vec<String>, base_indent: 
         if idx > 0 || has_desc {
             lines.push(String::new());
         }
-        format_scenario(scenario, source, lines, base_indent + 1);
+        let scenario_line = if !scenario.tags.is_empty() {
+            find_first_tag_line(
+                source,
+                scenario.position.line.saturating_sub(20),
+                scenario.position.line.saturating_sub(1),
+            )
+            .unwrap_or(scenario.position.line)
+        } else {
+            scenario.position.line
+        };
+        insert_comments_before(scenario_line, comment_map, lines);
+        format_scenario(scenario, source, lines, base_indent + 1, comment_map);
         idx += 1;
     }
 }
 
-fn format_step(step: &Step, lines: &mut Vec<String>, indent_level: usize) {
+fn format_step(
+    step: &Step,
+    lines: &mut Vec<String>,
+    indent_level: usize,
+    comment_map: &mut Vec<CommentEntry>,
+) {
     let ind = indent(indent_level);
+
+    // Insert comments before step.
+    insert_comments_before(step.position.line, comment_map, lines);
 
     // Rust keyword has no trailing space; TS keyword includes one. Re-add a
     // single separating space.
@@ -312,8 +473,16 @@ fn format_step(step: &Step, lines: &mut Vec<String>, indent_level: usize) {
     }
 }
 
-fn format_examples(examples: &Examples, lines: &mut Vec<String>, indent_level: usize) {
+fn format_examples(
+    examples: &Examples,
+    lines: &mut Vec<String>,
+    indent_level: usize,
+    comment_map: &mut Vec<CommentEntry>,
+) {
     let ind = indent(indent_level);
+
+    // Insert comments before Examples.
+    insert_comments_before(examples.position.line, comment_map, lines);
 
     for tag in &examples.tags {
         lines.push(format!("{ind}@{tag}"));
@@ -714,5 +883,124 @@ mod tests {
             once, twice,
             "multi-paragraph description formatting must be idempotent"
         );
+    }
+
+    // ====================================================================
+    // Comment Preservation
+    //
+    // The Rust gherkin-0.16.0 parser discards comments entirely. We re-extract
+    // them from raw source text and re-insert them at the correct positions
+    // during formatting, mirroring the TypeScript `commentMap` machinery.
+    // ====================================================================
+
+    #[test]
+    fn preserves_comment_before_feature_keyword() {
+        // @step Given a feature file with a comment before the Feature keyword
+        let src = "# This is a comment\nFeature: One\n\n  Scenario: A\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the comment is preserved in the output
+        assert!(
+            out.contains("# This is a comment"),
+            "comment before feature was lost, got:\n{out}"
+        );
+        // Comment must appear before the Feature keyword
+        let comment_pos = out.find("# This is a comment").expect("comment must exist");
+        let feature_pos = out.find("Feature: One").expect("feature must exist");
+        assert!(
+            comment_pos < feature_pos,
+            "comment must appear before Feature keyword, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn preserves_comment_block_before_scenario() {
+        // @step Given a feature file with a comment block before a Scenario
+        let src = "Feature: One\n\n# Comment before scenario\n  Scenario: A\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the comment block is preserved in the output
+        assert!(
+            out.contains("# Comment before scenario"),
+            "comment block before scenario was lost, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn preserves_multiple_comments_before_steps() {
+        // @step Given a feature file with comments between steps
+        let src = "Feature: One\n\n  Scenario: A\n    Given x\n# Comment before When\n    When y\n    Then z\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then all comments are preserved in the output
+        assert!(
+            out.contains("# Comment before When"),
+            "comment before step was lost, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn preserves_example_mapping_comment_block() {
+        // @step Given a feature file with an EXAMPLE MAPPING CONTEXT comment block
+        let src = "Feature: Example Mapping\n\n# EXAMPLE MAPPING CONTEXT\n# Rules:\n#   1. Password must be 8+ characters\n# Examples:\n#   1. User enters valid credentials\n\n  Scenario: Login\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the entire comment block is preserved
+        assert!(
+            out.contains("# EXAMPLE MAPPING CONTEXT"),
+            "EXAMPLE MAPPING CONTEXT header was lost, got:\n{out}"
+        );
+        assert!(
+            out.contains("# Rules:"),
+            "Rules comment was lost, got:\n{out}"
+        );
+        assert!(
+            out.contains("#   1. Password must be 8+ characters"),
+            "Rule detail comment was lost, got:\n{out}"
+        );
+        assert!(
+            out.contains("# Examples:"),
+            "Examples comment was lost, got:\n{out}"
+        );
+        assert!(
+            out.contains("#   1. User enters valid credentials"),
+            "Example detail comment was lost, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn preserves_indented_comments_before_steps() {
+        // @step Given a feature file with indented comments before steps
+        let src = "Feature: One\n\n  Scenario: A\n    # Indented comment\n    Given x\n";
+
+        // @step When the formatter formats the feature file
+        let out = format_feature(&parse(src), src);
+
+        // @step Then the indented comment is preserved with its original indentation
+        assert!(
+            out.contains("    # Indented comment"),
+            "indented comment was lost or had wrong indentation, got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn comment_preservation_is_idempotent() {
+        // @step Given a feature file with comments that has been formatted once
+        let src = "# Header comment\nFeature: One\n\n# Before scenario\n  Scenario: A\n    # Before step\n    Given x\n";
+        let once = format_feature(&parse(src), src);
+
+        // @step When the formatter formats the output a second time
+        let twice = format_feature(&parse(&once), &once);
+
+        // @step Then the second formatting is byte-identical to the first
+        assert_eq!(once, twice, "comment preservation must be idempotent");
     }
 }

@@ -82,8 +82,11 @@ impl MultiLineInput {
     /// RPC-405 — run the cursor-follow algorithm in visual-row space
     /// and clamp to the content. The AgentView calls this from
     /// `render_with_store` BEFORE the immutable paint so `render`
-    /// stays `&self`.
+    /// stays `&self`. RPC-429: caches `body_width` into
+    /// `last_body_width` so the Up/Down boundary check can use visual
+    /// row geometry.
     pub fn sync_viewport(&mut self, body_width: u16, height: u16) {
+        self.last_body_width = Some(body_width);
         let height = height as usize;
         let total = total_visual_rows(self.lines(), body_width);
         let (cursor_row, _) = self.cursor_visual(body_width);
