@@ -30,6 +30,7 @@ pub mod pending_tool_diff;
 pub mod reconnect_notice; // RPC-416
 pub mod role_state;
 pub mod session_context;
+pub mod sanitize;
 pub mod stderr;
 pub mod supervisor_state;
 pub mod token_state;

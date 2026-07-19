@@ -11,6 +11,7 @@ use ratatui::style::Color;
 
 use super::markdown_tables::format_markdown_tables;
 use super::pending_tool_diff::{capture_pending_diff, produce_diff_strings};
+use super::sanitize::sanitize_for_terminal;
 use super::session_context::SessionContext;
 use super::stderr::maybe_mark;
 use super::tool_args::extract_tool_args_display;
@@ -175,7 +176,7 @@ pub fn handle_tool_result(ctx: &mut SessionContext, info: &ToolResultInfo) {
                     // avoid duplication.
                     let body = source.text.split('\n').skip(1).collect::<Vec<_>>().join("\n");
                     if body.is_empty() {
-                        let sanitized = info.content.replace('\t', "  ");
+                        let sanitized = sanitize_for_terminal(&info.content);
                         if !sanitized.trim().is_empty() {
                             source.text.push('\n');
                             source.text.push_str(&sanitized);
@@ -226,7 +227,9 @@ pub fn handle_tool_progress(ctx: &mut SessionContext, info: &ToolProgressInfo) {
                 }
                 // RPC-400: an is_stderr chunk is prefixed per line with
                 // STDERR_MARKER so it renders red; is_stderr=false verbatim.
-                let marked = maybe_mark(&info.output_chunk, info.is_stderr);
+                // TUI-100: sanitize before marking to strip ANSI/control chars.
+                let sanitized = sanitize_for_terminal(&info.output_chunk);
+                let marked = maybe_mark(&sanitized, info.is_stderr);
                 source.text.push_str(marked.trim_end_matches('\n'));
                 // RPC-389: live progress keeps the card streaming (last-10
                 // tail window) until a ToolResult settles it.

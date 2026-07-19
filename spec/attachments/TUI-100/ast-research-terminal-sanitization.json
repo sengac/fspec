@@ -1,0 +1,79 @@
+{
+  "workUnitId": "TUI-100",
+  "title": "AST Research for Terminal Sanitization in fspec-tui",
+  "timestamp": "2026-07-19T12:10:00Z",
+  "findings": {
+    "typescript_reference": {
+      "file": "src/tui/utils/stringWidth.ts",
+      "function": "sanitizeForTerminal",
+      "description": "Strips ANSI escape sequences, replaces tabs with spaces, removes carriage returns, removes control characters (0x00-0x08, 0x0B, 0x0C, 0x0E-0x1F, 0x7F)",
+      "regex_ansi": "/\\x1b(?:\\[[0-9;]*[A-Za-z]|\\][^\\x07]*\\x07|[^\\x1b])/g",
+      "regex_control": "/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g",
+      "called_from": [
+        "conversationUtils.ts:wrapMessageToLines() - line 75",
+        "textWrap.ts:wrapText() - line 87"
+      ]
+    },
+    "rust_target": {
+      "chunk_processor": {
+        "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+        "functions": {
+          "handle_tool_result": "Line 140 - Appends tool result content to scrollback. Currently only replaces tabs (line 178). NEEDS sanitization.",
+          "handle_tool_progress": "Line 210 - Folds streaming progress chunks. NEEDS sanitization.",
+          "append_assistant_text": "Line 21 - Appends assistant text. Could contain ANSI from tool output echoed back."
+        }
+      },
+      "chunk_wrap": {
+        "file": "codelet/fspec-tui/src/store/agent_view/chunk_wrap.rs",
+        "functions": {
+          "wrap_source": "Line 53 - Converts ChunkSource into pre-wrapped Lines. No sanitization applied.",
+          "wrap_tool_call": "Line 129 - Renders tool call bodies. Strips STDERR_MARKER but no ANSI stripping."
+        }
+      },
+      "text_wrap": {
+        "file": "codelet/fspec-tui/src/views/agent/text_wrap.rs",
+        "functions": {
+          "wrap_to_width": "Line 30 - Wraps text to width. No sanitization applied."
+        }
+      },
+      "existing_normalization": {
+        "file": "codelet/fspec-tui/src/text_normalize.rs",
+        "functions": {
+          "normalize_line_endings": "Line 18 - Only normalizes CRLF/CR to LF. No ANSI/control char stripping."
+        }
+      }
+    },
+    "module_structure": {
+      "directory": "codelet/fspec-tui/src/store/agent_view/",
+      "existing_modules": [
+        "chunk_processor.rs",
+        "chunk_wrap.rs",
+        "session_context.rs",
+        "stderr.rs",
+        "tool_args.rs",
+        "markdown_tables.rs",
+        "pending_tool_diff.rs",
+        "diff_codec.rs",
+        "diff_decode.rs",
+        "diff_format.rs",
+        "chrome_state.rs",
+        "pause_state.rs",
+        "hitl_state.rs",
+        "supervisor_state.rs",
+        "token_state.rs",
+        "isolation_state.rs",
+        "reconnect_notice.rs"
+      ],
+      "new_module": "sanitize.rs - will contain sanitize_for_terminal() and strip_ansi()"
+    },
+    "cargo_deps": {
+      "regex": "Already a workspace dependency (used in codelet/fspec-core)",
+      "unicode_width": "Not needed - sanitize only needs basic char filtering"
+    },
+    "integration_points": [
+      "chunk_processor.rs:handle_tool_result() - sanitize info.content before appending",
+      "chunk_processor.rs:handle_tool_progress() - sanitize info.output_chunk before appending",
+      "mod.rs - add `mod sanitize;` to module declarations"
+    ]
+  }
+}
