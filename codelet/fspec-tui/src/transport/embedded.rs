@@ -72,8 +72,8 @@ impl FspecBackend for EmbeddedFspecBackend {
         Ok(self.client.list_work_units(context::current()).await?)
     }
 
-    async fn list_sessions(&self) -> Result<Vec<SessionInfo>> {
-        Ok(self.client.list_sessions(context::current()).await?)
+    async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>> {
+        Ok(self.client.list_sessions(context::current(), project_path).await?)
     }
 
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {

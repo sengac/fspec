@@ -359,7 +359,10 @@ fn find_root_parent(session_manager: &SessionManager, session_id: Uuid) -> Uuid 
 
 /// Handle the `list` action — return all sessions with relationships
 fn handle_list(session_manager: &SessionManager) -> AgentManagerResult {
-    let sessions_info = session_manager.list_sessions();
+    let project_path = std::env::current_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let sessions_info = session_manager.list_sessions(&project_path);
     let mut entries = Vec::with_capacity(sessions_info.len());
 
     for info in &sessions_info {

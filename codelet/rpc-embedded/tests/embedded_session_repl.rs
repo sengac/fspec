@@ -64,7 +64,7 @@ async fn scenario_embedded_list_sessions_matches_underlying_session_manager() {
 
     // @step When a Rust caller invokes FspecServiceClient::list_sessions(context::current()) over the embedded transport
     let listed: Vec<SessionInfo> = client
-        .list_sessions(context::current())
+        .list_sessions(context::current(), std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .await
         .expect("list_sessions must succeed");
 

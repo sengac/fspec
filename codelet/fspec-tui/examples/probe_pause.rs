@@ -16,7 +16,7 @@ async fn main() -> anyhow::Result<()> {
     let url = Url::parse(&url_str)?;
     let backend = WebSocketFspecBackend::connect(url).await?;
 
-    let sessions = backend.list_sessions().await?;
+    let sessions = backend.list_sessions(String::new()).await?;
     println!("sessions: {}", sessions.len());
     for s in &sessions {
         println!(

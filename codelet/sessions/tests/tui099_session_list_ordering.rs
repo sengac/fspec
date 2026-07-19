@@ -79,31 +79,28 @@ async fn sessions_ordered_by_most_recently_updated_first() {
 
     // Create sessions
     let sid_a = handle.create_session(None);
-    let _info_a = manager
-        .list_sessions()
+    let _info_a = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .iter()
         .find(|s| s.id == sid_a.value)
         .cloned()
         .expect("session A should exist");
 
     let sid_b = handle.create_session(None);
-    let _info_b = manager
-        .list_sessions()
+    let _info_b = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .iter()
         .find(|s| s.id == sid_b.value)
         .cloned()
         .expect("session B should exist");
 
     let sid_c = handle.create_session(None);
-    let _info_c = manager
-        .list_sessions()
+    let _info_c = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .iter()
         .find(|s| s.id == sid_c.value)
         .cloned()
         .expect("session C should exist");
 
     // @step When I open the /resume view
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
 
     // @step Then the sessions are displayed in descending order by updated_at_ms
     assert!(
@@ -190,7 +187,7 @@ async fn sessions_with_identical_timestamps_ordered_by_session_id() {
     let handle: &dyn SessionManagerHandle = &*manager;
     let _sid1 = handle.create_session(None);
     let _sid2 = handle.create_session(None);
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
 
     // Verify the overall list is sorted
     for i in 1..sessions.len() {
@@ -284,7 +281,7 @@ async fn sessions_without_timestamp_appear_at_end() {
     manager.set_default_model("anthropic/claude-sonnet-4");
     let handle: &dyn SessionManagerHandle = &*manager;
     let _sid = handle.create_session(None);
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
 
     // Verify all sessions from list_sessions() are properly sorted
     for i in 1..sessions.len() {

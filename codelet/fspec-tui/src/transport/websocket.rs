@@ -185,10 +185,13 @@ impl FspecBackend for WebSocketFspecBackend {
         Ok(client.client().list_work_units(context::current()).await?)
     }
 
-    async fn list_sessions(&self) -> Result<Vec<SessionInfo>> {
+    async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>> {
         let guard = self.client.read().await;
         let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
-        Ok(client.client().list_sessions(context::current()).await?)
+        Ok(client
+            .client()
+            .list_sessions(context::current(), project_path)
+            .await?)
     }
 
     async fn create_session(&self, role: Option<String>) -> Result<SessionId> {

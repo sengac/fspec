@@ -87,7 +87,7 @@ impl FspecBackend for HistoryMockBackend {
     async fn list_work_units(&self) -> Result<Vec<WorkUnitInfo>> {
         Ok(Vec::new())
     }
-    async fn list_sessions(&self) -> Result<Vec<SessionInfo>> {
+    async fn list_sessions(&self, _project_path: String) -> Result<Vec<SessionInfo>> {
         Ok(Vec::new())
     }
     async fn create_session(&self, _role: Option<String>) -> Result<SessionId> {

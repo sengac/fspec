@@ -29,7 +29,7 @@ const SEARCH_DEBOUNCE_MS: u64 = 150;
 
 impl App {
     /// Open AgentView's resume mode view AND spawn a
-    /// `backend.list_sessions()` task that dispatches
+    /// `backend.list_sessions(project_path)` task that dispatches
     /// `Action::SessionListLoaded` on success.
     pub(crate) fn handle_open_resume_view(&mut self) {
         self.navigator.agent.resume_view = Some(ResumeSessionView::new());
@@ -271,10 +271,13 @@ impl App {
     }
 
     /// Spawn `backend.persistence_delete_session(id)`; on success spawn
-    /// a follow-up `backend.list_sessions()` so the resume_view
+    /// a follow-up `backend.list_sessions(project_path)` so the resume_view
     /// repaints without the deleted session. The resume_view's
     /// `delete_confirm` is cleared by the widget itself when the
     /// Primary outcome fires.
+    ///
+    /// RPC-427: resolves current project path and passes it to
+    /// `list_sessions()` so the refreshed list remains project-filtered.
     pub(crate) fn handle_confirm_delete_session(&mut self, id: SessionId) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
@@ -282,11 +285,14 @@ impl App {
         // If the deleted session is currently open, remove it from
         // open_sessions and clamp the index.
         self.agent_view_store.remove_session_if_open(&id);
+        let project_path = std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default();
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
             if backend.persistence_delete_session(id).await.is_ok() {
-                if let Ok(sessions) = backend.list_sessions().await {
+                if let Ok(sessions) = backend.list_sessions(project_path).await {
                     let _ = action_tx.send(Action::SessionListLoaded(sessions));
                 }
             }
@@ -294,14 +300,20 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
+    /// RPC-427: resolve current project path and pass it to
+    /// `backend.list_sessions(project_path)` so the resume list is
+    /// filtered to the current project.
     fn spawn_list_sessions(&mut self) {
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
+        let project_path = std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default();
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let handle = tokio::spawn(async move {
-            if let Ok(sessions) = backend.list_sessions().await {
+            if let Ok(sessions) = backend.list_sessions(project_path).await {
                 let _ = action_tx.send(Action::SessionListLoaded(sessions));
             }
         });

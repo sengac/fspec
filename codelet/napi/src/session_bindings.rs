@@ -1360,7 +1360,11 @@ impl From<codelet_rpc_types::IsolatedSessionInfo> for IsolatedSessionResult {
 /// List all background sessions
 #[napi]
 pub fn session_manager_list() -> Vec<SessionInfo> {
-    SessionManager::instance().list_sessions()
+    let sm = SessionManager::instance();
+    let project_path = std::env::current_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default();
+    sm.list_sessions(&project_path)
 }
 
 /// Destroy a background session
@@ -1371,7 +1375,7 @@ pub fn session_manager_destroy(session_id: String) -> Result<()> {
         .map_err(napi::Error::from_reason)?;
 
     // KGRAPH-002: Close graph database when no sessions remain to avoid Lance corruption
-    let session_count = sm.list_sessions().len();
+    let session_count = sm.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).len();
     if session_count == 0 {
         crate::graph::close_graph_db();
     }

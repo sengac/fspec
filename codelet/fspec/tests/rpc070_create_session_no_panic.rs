@@ -407,7 +407,7 @@ fn scenario_pre_existing_handle_impl_tests_still_pass() {
     let handle: Arc<dyn SessionManagerHandle> = Arc::new(manager) as Arc<dyn SessionManagerHandle>;
 
     // @step Then scenario_session_manager_satisfies_trait_object passes
-    let sessions = handle.list_sessions();
+    let sessions = handle.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.is_empty(),
         "trait-object cast must still yield an empty list_sessions() — proves RPC-042 invariant held",

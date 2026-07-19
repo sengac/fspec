@@ -69,11 +69,11 @@ async fn scenario_ws_list_sessions_matches_embedded() {
     // @step When the client calls FspecServiceClient::list_sessions(context::current()) over the WebSocket transport
     let ws_listed: Vec<SessionInfo> = ws_client
         .client()
-        .list_sessions(context::current())
+        .list_sessions(context::current(), std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .await
         .expect("WS list_sessions must succeed");
     let embedded_listed: Vec<SessionInfo> = embedded_client
-        .list_sessions(context::current())
+        .list_sessions(context::current(), std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .await
         .expect("embedded list_sessions must succeed");
 

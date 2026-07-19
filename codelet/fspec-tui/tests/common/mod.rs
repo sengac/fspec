@@ -296,6 +296,10 @@ pub struct MockBackend {
     /// RPC-026: capture of the last id passed to
     /// `persistence_delete_session`.
     last_deleted_session: Mutex<Option<SessionId>>,
+    /// RPC-427: capture of the last project_path passed to
+    /// `list_sessions`. Tests use `list_sessions_project()` to
+    /// assert that the TUI passes the current working directory.
+    last_list_sessions_project: Mutex<Option<String>>,
     /// RPC-026: scripted history-search results returned by
     /// `persistence_search_history`. Indexed by query string.
     history_search_results: Mutex<Vec<codelet_rpc_types::HistoryMatch>>,
@@ -718,6 +722,7 @@ impl Default for MockBackend {
             file_search_results: Mutex::new(Vec::new()),
             delete_session_calls: AtomicUsize::new(0),
             last_deleted_session: Mutex::new(None),
+            last_list_sessions_project: Mutex::new(None),
             history_search_results: Mutex::new(Vec::new()),
             search_history_calls: AtomicUsize::new(0),
             last_history_query: Mutex::new(None),
@@ -947,6 +952,14 @@ impl MockBackend {
     /// Script the next `create_session` call to return this SessionId.
     pub fn script_create_session(&self, id: SessionId) {
         *self.scripted_session.lock().expect("MockBackend mutex") = Some(id);
+    }
+
+    /// RPC-427: Return the last project_path passed to `list_sessions()`.
+    pub fn list_sessions_project(&self) -> Option<String> {
+        self.last_list_sessions_project
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
     }
 
     /// Push a chunk onto the chunks broadcast (RPC-009 test helper).
@@ -2334,7 +2347,8 @@ impl FspecBackend for MockBackend {
         Ok(self.work_units.lock().expect("MockBackend mutex").clone())
     }
 
-    async fn list_sessions(&self) -> Result<Vec<SessionInfo>> {
+    async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>> {
+        *self.last_list_sessions_project.lock().expect("MockBackend mutex") = Some(project_path);
         Ok(self.sessions.lock().expect("MockBackend mutex").clone())
     }
 

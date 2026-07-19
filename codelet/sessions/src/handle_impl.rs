@@ -69,8 +69,8 @@ fn uuid_from(id: &SessionId) -> Uuid {
 /// message than the pre-RPC-070 "Cannot start a runtime from within
 /// a runtime" nested-runtime panic.
 impl codelet_core::SessionManagerHandle for SessionManager {
-    fn list_sessions(&self) -> Vec<SessionInfo> {
-        SessionManager::list_sessions(self)
+    fn list_sessions(&self, project_path: &str) -> Vec<SessionInfo> {
+        SessionManager::list_sessions(self, project_path)
     }
 
     /// Create a new session, returning its freshly-minted `SessionId`.
@@ -1871,7 +1871,7 @@ impl codelet_core::SessionManagerHandle for SessionManager {
         let repo_path = std::env::current_dir().map_err(|e| format!("current_dir: {e}"))?;
         // The active-session set is sourced from the live SessionManager.
         let active: std::collections::HashSet<String> =
-            self.list_sessions().into_iter().map(|s| s.id).collect();
+            self.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).into_iter().map(|s| s.id).collect();
         codelet_git::prune_orphaned(&repo_path, &active)
             .map(|r| r.pruned)
             .map_err(|e| format!("{e}"))

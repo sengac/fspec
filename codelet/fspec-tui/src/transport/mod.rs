@@ -65,8 +65,10 @@ pub trait FspecBackend: Send + Sync {
     /// List all known work units. Mirrors `FspecService::list_work_units`.
     async fn list_work_units(&self) -> Result<Vec<WorkUnitInfo>>;
 
-    /// List all known sessions. Mirrors `FspecService::list_sessions`.
-    async fn list_sessions(&self) -> Result<Vec<SessionInfo>>;
+    /// List all known sessions, filtered by `project_path`. Mirrors
+    /// `FspecService::list_sessions`. RPC-427: added `project_path` parameter
+    /// so `/resume` only shows sessions belonging to the current project.
+    async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>>;
 
     /// Create a new session with an optional role overlay.
     async fn create_session(&self, role: Option<String>) -> Result<SessionId>;

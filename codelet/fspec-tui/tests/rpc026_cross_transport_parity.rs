@@ -67,9 +67,9 @@ async fn embedded_and_websocket_list_sessions_byte_identical() {
         Arc::new(WebSocketFspecBackend::connect(url).await.expect("connect"));
 
     // @step When EmbeddedFspecBackend.list_sessions().await is called against the service
-    let embedded_list = embedded.list_sessions().await.expect("embedded list");
+    let embedded_list = embedded.list_sessions(String::new()).await.expect("embedded list");
     // @step And WebSocketFspecBackend.list_sessions().await is called against the same service over a loopback daemon
-    let websocket_list = websocket.list_sessions().await.expect("ws list");
+    let websocket_list = websocket.list_sessions(String::new()).await.expect("ws list");
     // @step Then both backends return Vec<SessionInfo> of the same length with the same id field in the same order
     let embedded_ids: Vec<&str> = embedded_list.iter().map(|i| i.id.as_str()).collect();
     let websocket_ids: Vec<&str> = websocket_list.iter().map(|i| i.id.as_str()).collect();
@@ -159,7 +159,7 @@ async fn embedded_and_websocket_delete_session_byte_identical() {
         .await
         .expect("embedded delete");
     // @step And then calls EmbeddedFspecBackend.list_sessions()
-    let embedded_after = embedded.list_sessions().await.expect("embedded list");
+    let embedded_after = embedded.list_sessions(String::new()).await.expect("embedded list");
     // @step Then the result equals ["s-1", "s-3"]
     // (On-disk: s-2 manifest is removed.)
     assert!(!sessions_dir.join(format!("{s2}.json")).exists());
@@ -174,7 +174,7 @@ async fn embedded_and_websocket_delete_session_byte_identical() {
         .await
         .expect("ws delete");
     // @step And then calls WebSocketFspecBackend.list_sessions()
-    let websocket_after = websocket.list_sessions().await.expect("ws list");
+    let websocket_after = websocket.list_sessions(String::new()).await.expect("ws list");
     // @step Then the result equals ["s-1", "s-3"]
     // (On-disk: s-1 manifest is removed by the WebSocket round-trip.)
     assert!(!sessions_dir.join(format!("{s1}.json")).exists());

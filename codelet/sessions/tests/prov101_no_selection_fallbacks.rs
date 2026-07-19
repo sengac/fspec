@@ -78,7 +78,7 @@ async fn create_session_declines_when_no_default_model() -> Result<(), String> {
 
     // @step And no session exists in the manager
     assert!(
-        manager.list_sessions().is_empty(),
+        manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).is_empty(),
         "no session must be created when the default model is missing"
     );
     Ok(())
@@ -142,7 +142,7 @@ async fn create_isolated_session_errors_when_no_default_model() -> Result<(), St
 
     // @step And no session exists in the manager
     assert!(
-        manager.list_sessions().is_empty(),
+        manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).is_empty(),
         "no session must be created when the default model is missing"
     );
     Ok(())

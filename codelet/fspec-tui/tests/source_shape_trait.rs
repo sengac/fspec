@@ -48,10 +48,10 @@ fn fspec_backend_trait_surface_exposes_5_rpc_methods_and_3_broadcast_subscriptio
         "FspecBackend must declare list_work_units returning Result<Vec<WorkUnitInfo>>"
     );
 
-    // @step And the trait declares async fn list_sessions returning Result<Vec<SessionInfo>>
+    // @step And the trait declares async fn list_sessions(project_path: String) returning Result<Vec<SessionInfo>>
     assert!(
-        src.contains("async fn list_sessions(&self) -> Result<Vec<SessionInfo>>"),
-        "FspecBackend must declare list_sessions returning Result<Vec<SessionInfo>>"
+        src.contains("async fn list_sessions(&self, project_path: String) -> Result<Vec<SessionInfo>>"),
+        "FspecBackend must declare list_sessions(project_path: String) returning Result<Vec<SessionInfo>>"
     );
 
     // @step And the trait declares async fn create_session(role: Option<String>) returning Result<SessionId>

@@ -115,7 +115,7 @@ async fn resume_session_through_app_dispatch_preserves_session() {
     );
 
     // @step Then list_sessions includes the session
-    let sessions_before = backend.list_sessions().await.expect("list_sessions before");
+    let sessions_before = backend.list_sessions(String::new()).await.expect("list_sessions before");
     let found_before = sessions_before
         .iter()
         .any(|s| s.id == session_id.value);
@@ -144,7 +144,7 @@ async fn resume_session_through_app_dispatch_preserves_session() {
     drain_pending(&mut app).await;
 
     // @step Then list_sessions should STILL include the session
-    let sessions_after = backend.list_sessions().await.expect("list_sessions after");
+    let sessions_after = backend.list_sessions(String::new()).await.expect("list_sessions after");
     let found_after = sessions_after
         .iter()
         .any(|s| s.id == session_id.value);
@@ -230,7 +230,7 @@ async fn multiple_resume_cycles_preserve_sessions() {
     drain_pending(&mut app).await;
 
     // @step Then both sessions should still exist
-    let sessions = backend.list_sessions().await.expect("list_sessions");
+    let sessions = backend.list_sessions(String::new()).await.expect("list_sessions");
     let ids: Vec<&str> = sessions.iter().map(|s| s.id.as_str()).collect();
 
     tracing::info!(
@@ -286,7 +286,7 @@ async fn resume_then_explicit_destroy_removes_session() {
 
     // @step Then the session should exist
     let sessions_after_resume =
-        backend.list_sessions().await.expect("list_sessions after resume");
+        backend.list_sessions(String::new()).await.expect("list_sessions after resume");
     assert!(
         sessions_after_resume
             .iter()
@@ -304,7 +304,7 @@ async fn resume_then_explicit_destroy_removes_session() {
     // @step Then the session should STILL appear in list_sessions (via persisted merge)
     // because destroy_session does NOT delete the manifest
     let sessions_after_destroy =
-        backend.list_sessions().await.expect("list_sessions after destroy");
+        backend.list_sessions(String::new()).await.expect("list_sessions after destroy");
     let found_after_destroy = sessions_after_destroy
         .iter()
         .any(|s| s.id == session_id.value);
@@ -329,7 +329,7 @@ async fn resume_then_explicit_destroy_removes_session() {
 
     // @step Then the session should be gone from list_sessions
     let sessions_after_delete =
-        backend.list_sessions().await.expect("list_sessions after delete");
+        backend.list_sessions(String::new()).await.expect("list_sessions after delete");
     let found_after_delete = sessions_after_delete
         .iter()
         .any(|s| s.id == session_id.value);
@@ -390,7 +390,7 @@ async fn resume_session_from_disk_preserves_session() {
     drain_pending(&mut app).await;
 
     // @step Then the session should still exist in list_sessions
-    let sessions_after = backend.list_sessions().await.expect("list_sessions after");
+    let sessions_after = backend.list_sessions(String::new()).await.expect("list_sessions after");
     let found = sessions_after.iter().any(|s| s.id == session_id.value);
 
     tracing::info!(

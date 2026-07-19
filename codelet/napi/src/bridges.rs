@@ -195,7 +195,10 @@ pub(crate) fn init_bridge_metadata_providers() {
     // Session list provider — returns a Vec<serde_json::Value> of session objects
     let session_list_provider: codelet_tools::SessionListProvider = std::sync::Arc::new(|| {
         let sm = SessionManager::instance();
-        sm.list_sessions()
+        let project_path = std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default();
+        sm.list_sessions(&project_path)
             .into_iter()
             .map(|info| {
                 let wu_ctx = sm
@@ -220,7 +223,10 @@ pub(crate) fn init_bridge_metadata_providers() {
     // or the first session's provider/model if none are running.
     let model_info_provider: codelet_tools::ModelInfoProvider = std::sync::Arc::new(|| {
         let sm = SessionManager::instance();
-        let sessions = sm.list_sessions();
+        let project_path = std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let sessions = sm.list_sessions(&project_path);
         // Prefer a running session's model info
         let running = sessions.iter().find(|s| s.status == "running");
         let info = running.or_else(|| sessions.first());
@@ -248,7 +254,10 @@ pub(crate) fn init_bridge_session_and_terminal_creators() {
         let model = sm
             .get_default_model()
             .or_else(|| {
-                sm.list_sessions().into_iter().find_map(|info| {
+                let project_path = std::env::current_dir()
+                    .map(|p| p.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                sm.list_sessions(&project_path).into_iter().find_map(|info| {
                     match (info.provider_id, info.model_id) {
                         (Some(p), Some(m)) => Some(format!("{p}/{m}")),
                         _ => None,

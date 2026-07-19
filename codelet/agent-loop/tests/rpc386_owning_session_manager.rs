@@ -160,8 +160,7 @@ async fn spawn_creates_subordinate_in_owning_manager_not_singleton() -> Result<(
     };
 
     // @step Then the subordinate appears in M.list_sessions()
-    let in_m = manager
-        .list_sessions()
+    let in_m = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -170,8 +169,7 @@ async fn spawn_creates_subordinate_in_owning_manager_not_singleton() -> Result<(
     );
 
     // @step And the subordinate does not appear in SessionManager::instance().list_sessions()
-    let in_singleton = SessionManager::instance()
-        .list_sessions()
+    let in_singleton = SessionManager::instance().list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -408,8 +406,7 @@ async fn spawner_can_list_get_status_and_close_on_owning_manager() -> Result<(),
         R::Closed { closed, .. } => assert!(closed, "close must succeed"),
         other => panic!("expected Closed, got: {other:?}"),
     }
-    let still_in_m = manager
-        .list_sessions()
+    let still_in_m = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(
@@ -482,8 +479,7 @@ async fn napi_path_falls_back_to_singleton_when_no_owning_manager() -> Result<()
     };
 
     // @step Then the subordinate is created on SessionManager::instance()
-    let in_singleton = SessionManager::instance()
-        .list_sessions()
+    let in_singleton = SessionManager::instance().list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default())
         .into_iter()
         .any(|s| s.id == subordinate_id);
     assert!(

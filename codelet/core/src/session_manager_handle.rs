@@ -66,8 +66,10 @@ fn status_str(status: SessionStatus) -> &'static str {
 /// machinery (LLM streams, tool execution, compaction) is owned by
 /// the implementation and runs on the host runtime.
 pub trait SessionManagerHandle: Send + Sync + 'static {
-    /// Return public metadata for every session currently tracked.
-    fn list_sessions(&self) -> Vec<SessionInfo>;
+    /// Return public metadata for every session currently tracked, filtered by
+    /// `project_path`. RPC-427: added `project_path` parameter so `/resume` only
+    /// shows sessions belonging to the current project.
+    fn list_sessions(&self, project_path: &str) -> Vec<SessionInfo>;
 
     /// Create a new session with an optional role. Returns the
     /// freshly-minted [`SessionId`].
@@ -1475,7 +1477,7 @@ impl StubSessionManagerHandle {
 }
 
 impl SessionManagerHandle for StubSessionManagerHandle {
-    fn list_sessions(&self) -> Vec<SessionInfo> {
+    fn list_sessions(&self, _project_path: &str) -> Vec<SessionInfo> {
         let sessions = match self.sessions.lock() {
             Ok(sessions) => sessions,
             Err(_) => return Vec::new(),

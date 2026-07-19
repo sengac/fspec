@@ -80,7 +80,7 @@ async fn create_session_persists_manifest_to_disk() {
     assert!(messages.as_array().unwrap().is_empty(), "messages should be empty");
 
     // @step And the in-memory session map should contain the BackgroundSession with the same UUID
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.iter().any(|s| s.id == sid.value),
         "session should be in memory"
@@ -157,7 +157,7 @@ async fn destroy_session_removes_from_memory_preserves_manifest() {
     );
 
     // @step And the session should still appear in list_sessions via persisted merge
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.iter().any(|s| s.id == sid.value),
         "session should still appear in list_sessions via persisted merge"
@@ -219,7 +219,7 @@ async fn list_sessions_includes_persisted_sessions() {
     .expect("create persisted session");
 
     // @step When I call list_sessions
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
 
     // @step Then the result should contain both sessions
     assert!(
@@ -274,7 +274,7 @@ async fn resume_session_restores_messages_and_token_state() {
     assert!(result.is_ok(), "resume_session should succeed: {:?}", result);
 
     // @step And the session's inner messages should contain the restored messages
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.iter().any(|s| s.id == session_id.value),
         "session should be in memory after resume"
@@ -352,7 +352,7 @@ async fn create_session_fails_gracefully_when_persistence_fails() {
 
     // @step Then the error should propagate and the BackgroundSession should not be created
     // The session ID should be empty (PROV-101 decline on error) or the session should not exist
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.is_empty(),
         "no session should be created when persistence fails"
@@ -426,7 +426,7 @@ async fn resume_session_preserves_manifest_message_references() {
     );
 
     // Verify the session is in memory with correct message count
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     let session_info = sessions
         .iter()
         .find(|s| s.id == session_id.value)
@@ -487,7 +487,7 @@ async fn resume_empty_session_preserves_empty_manifest() {
     );
 
     // @step And the session should be functional for new messages
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.iter().any(|s| s.id == session_id.value),
         "session should be in memory after resume"

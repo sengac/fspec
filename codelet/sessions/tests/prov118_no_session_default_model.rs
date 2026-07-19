@@ -62,7 +62,7 @@ async fn set_default_model_via_handle_unblocks_create_session() -> Result<(), St
     let (_data_dir, manager) = manager_with_seeded_cache()?;
     let handle: &dyn SessionManagerHandle = manager.as_ref();
     assert!(
-        manager.list_sessions().is_empty(),
+        manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default()).is_empty(),
         "precondition: no session exists"
     );
     assert!(

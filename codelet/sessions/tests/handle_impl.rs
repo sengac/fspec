@@ -68,7 +68,7 @@ async fn scenario_session_manager_satisfies_trait_object() {
     // (Reaching this line proves the cast compiled.)
 
     // @step And calling "handle.list_sessions()" on the trait object returns an empty "Vec<SessionInfo>"
-    let sessions = handle.list_sessions();
+    let sessions = handle.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.is_empty(),
         "expected empty session list, got {} entries",

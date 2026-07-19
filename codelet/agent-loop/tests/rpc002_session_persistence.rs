@@ -92,7 +92,7 @@ async fn full_round_trip_persist_and_restore_messages() {
     assert!(result.is_ok(), "resume_session should succeed: {:?}", result);
 
     // @step Then the session is in memory with restored messages
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.iter().any(|s| s.id == sid.value),
         "session should be in memory after resume"
@@ -273,7 +273,7 @@ async fn multiple_sessions_persist_independently() {
     assert_eq!(manifest2.messages.len(), 1, "session 2 should still have 1 message");
 
     // Verify sessions are independent (no cross-contamination)
-    let sessions = manager.list_sessions();
+    let sessions = manager.list_sessions(&std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_default());
     assert!(
         sessions.iter().any(|s| s.id == sid1.value),
         "session 1 should be in memory"

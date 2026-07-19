@@ -357,11 +357,13 @@ impl SessionManager {
         Ok(id.to_string())
     }
 
-    /// List all sessions — merges in-memory sessions with persisted sessions from disk.
-    /// RPC-422: Previously returned only in-memory sessions; now also includes
-    /// persisted sessions that are not currently in memory (e.g., from a previous
-    /// process run).
-    pub fn list_sessions(&self) -> Vec<SessionInfo> {
+    /// List sessions, filtering persisted sessions by `project_path`.
+    ///
+    /// RPC-427: Added `project_path` parameter so `/resume` only shows sessions
+    /// belonging to the current project. In-memory sessions are inherently
+    /// project-scoped (created with `std::env::current_dir()`), so only
+    /// persisted sessions require explicit filtering.
+    pub fn list_sessions(&self, project_path: &str) -> Vec<SessionInfo> {
         let in_memory: Vec<SessionInfo> = self
             .sessions
             .read()
@@ -375,8 +377,11 @@ impl SessionManager {
             "list_sessions: collected in-memory sessions"
         );
 
-        // Merge with persisted sessions that are not already in memory.
-        let persisted: Vec<SessionInfo> = match codelet_core::persistence::list_all_sessions() {
+        // RPC-427: Filter persisted sessions by project path instead of loading all.
+        let persisted: Vec<SessionInfo> =
+            match codelet_core::persistence::list_sessions_for_project(
+                std::path::Path::new(project_path),
+            ) {
             Ok(manifests) => {
                 tracing::info!(
                     persisted_on_disk = manifests.len(),

@@ -65,8 +65,10 @@ pub trait FspecService {
     /// Return every work unit currently known to the shared service impl.
     async fn list_work_units() -> Vec<WorkUnitInfo>;
 
-    /// Return public metadata for every session currently tracked.
-    async fn list_sessions() -> Vec<SessionInfo>;
+    /// Return public metadata for every session currently tracked, filtered by
+    /// `project_path`. RPC-427: added project_path parameter so `/resume` only
+    /// shows sessions belonging to the current project.
+    async fn list_sessions(project_path: String) -> Vec<SessionInfo>;
 
     /// Create a new session with optional role. Returns the freshly-minted
     /// session id.
@@ -942,9 +944,9 @@ impl FspecService for FspecServiceImpl {
         self.inner.list_work_units_snapshot()
     }
 
-    async fn list_sessions(self, _ctx: Context) -> Vec<SessionInfo> {
+    async fn list_sessions(self, _ctx: Context, project_path: String) -> Vec<SessionInfo> {
         match self.inner.session_manager() {
-            Some(handle) => handle.list_sessions(),
+            Some(handle) => handle.list_sessions(&project_path),
             None => Vec::new(),
         }
     }
