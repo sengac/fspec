@@ -11,6 +11,7 @@
 //! characters with a literal `...` suffix.
 
 use serde_json::Value;
+use unicode_width::UnicodeWidthStr;
 
 /// Collapse the raw JSON `input_json` for a `ToolCallInfo` to a
 /// human-readable one-line summary keyed by `tool_name`.
@@ -102,7 +103,7 @@ fn format_part(key: &str, value: &Value) -> String {
 /// Cap a display value at 100 characters, appending `...` when longer.
 /// Uses `chars().take(100)` for char-boundary safety on multi-byte UTF-8.
 fn cap_value(s: &str) -> String {
-    if s.chars().count() > 100 {
+    if s.width() > 100 {
         let truncated: String = s.chars().take(100).collect();
         format!("{truncated}...")
     } else {

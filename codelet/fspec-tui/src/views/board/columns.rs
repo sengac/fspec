@@ -12,6 +12,7 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
+use unicode_width::UnicodeWidthStr;
 
 use crate::store::{BoardStore, COLUMN_ORDER};
 use crate::theme::Theme;
@@ -50,7 +51,7 @@ pub(crate) fn paint_column_headers(
 /// Pad `s` with trailing spaces (or truncate it) so the resulting
 /// string has exactly `width` user-perceived characters.
 pub(crate) fn pad_to_width(s: &str, width: usize) -> String {
-    let count = s.chars().count();
+    let count = s.width();
     if count >= width {
         let mut out = String::with_capacity(width);
         for ch in s.chars().take(width) {

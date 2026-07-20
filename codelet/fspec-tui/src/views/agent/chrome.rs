@@ -15,6 +15,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::Color;
 use ratatui::text::Line;
+use unicode_width::UnicodeWidthStr;
 
 /// RPC-029: paint `color` over every cell of `area`.
 pub(crate) fn paint_row_bg(area: Rect, buf: &mut Buffer, color: Color) {
@@ -46,11 +47,11 @@ pub(crate) fn horizontal_pad(area: Rect, pad: u16) -> Rect {
     }
 }
 
-/// Sum of `chars().count()` across every span in `line`. Used by the
+/// Sum of display width across every span in `line`. Used by the
 /// row-strip widgets to right-align or truncate a `Line` to fit its
 /// inner area.
 pub(crate) fn line_width(line: &Line<'_>) -> usize {
-    line.spans.iter().map(|s| s.content.chars().count()).sum()
+    line.spans.iter().map(|s| s.content.width()).sum()
 }
 
 #[cfg(test)]

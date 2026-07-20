@@ -9,16 +9,15 @@
 //! visual row instead of being clipped at the right edge by
 //! ratatui's `Paragraph` no-wrap default.
 //!
-//! `char` count is used as the visual-width proxy. The set of inputs
-//! that flow through scrollback is ASCII-dominant; full Unicode East
-//! Asian Width handling can be layered on with the `unicode-width`
-//! crate in a later RPC if a multibyte-prefix variant is added.
-//!
-//! Paragraphs that already fit within `width` are passed through
+//! `unicode_width::UnicodeWidthStr::width()` is used for display-width
+//! measurements so wide characters (CJK, emojis) are correctly accounted
+//! for. Paragraphs that already fit within `width` are passed through
 //! VERBATIM (internal whitespace preserved) — parity with
 //! `textWrap.ts` (lines 104-109). This keeps rendered table grid rows
 //! and their column padding intact instead of word-collapsing them;
 //! only over-width paragraphs are word-wrapped.
+
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 /// Wrap `text` so every returned `String` has at most `width` chars.
 ///
@@ -36,11 +35,11 @@ pub fn wrap_to_width(text: &str, width: usize) -> Vec<String> {
             continue;
         }
         // Parity with `textWrap.ts` (lines 104-109): a paragraph whose
-        // visual width (here the `char` count proxy) fits within `width`
-        // is emitted VERBATIM, preserving internal whitespace. This keeps
-        // rendered table grid rows (column padding) intact instead of
-        // word-collapsing them. Only over-width paragraphs are wrapped.
-        if paragraph.chars().count() <= width {
+        // display width fits within `width` is emitted VERBATIM, preserving
+        // internal whitespace. This keeps rendered table grid rows (column
+        // padding) intact instead of word-collapsing them. Only over-width
+        // paragraphs are wrapped.
+        if paragraph.width() <= width {
             out.push(paragraph.to_string());
             continue;
         }
@@ -60,7 +59,7 @@ fn wrap_paragraph(paragraph: &str, width: usize, out: &mut Vec<String>) {
     let mut current_len: usize = 0;
 
     for word in paragraph.split_whitespace() {
-        let word_len = word.chars().count();
+        let word_len = word.width();
         if word_len > width {
             // Preserve the inter-word space at the end of the
             // current line when room allows — this keeps the
@@ -74,18 +73,22 @@ fn wrap_paragraph(paragraph: &str, width: usize, out: &mut Vec<String>) {
                 out.push(std::mem::take(&mut current));
                 current_len = 0;
             }
-            // Slice the long word into `width`-char rows.
-            let mut buf: Vec<char> = Vec::with_capacity(width);
+            // Slice the long word into `width`-display-width rows.
+            let mut buf = String::new();
+            let mut buf_width: usize = 0;
             for ch in word.chars() {
+                let ch_width = ch.width().unwrap_or(1);
                 buf.push(ch);
-                if buf.len() == width {
-                    out.push(buf.iter().collect());
+                buf_width += ch_width;
+                if buf_width >= width {
+                    out.push(buf.clone());
                     buf.clear();
+                    buf_width = 0;
                 }
             }
             if !buf.is_empty() {
-                current = buf.iter().collect();
-                current_len = current.chars().count();
+                current = buf;
+                current_len = current.width();
             }
             continue;
         }

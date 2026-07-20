@@ -31,6 +31,7 @@
 
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
+use unicode_width::UnicodeWidthStr;
 
 use super::diff_codec::parse_line;
 use super::diff_decode::style_row_lines;
@@ -207,7 +208,7 @@ fn wrap_tool_call(
 /// Wrap a tool-call header line, accounting for the `● ` prefix width on
 /// the first visual row.
 fn wrap_header(header: &str, width: u16, prefix: &str) -> Vec<String> {
-    let first_width = (width as usize).saturating_sub(prefix.chars().count());
+    let first_width = (width as usize).saturating_sub(prefix.width());
     let mut wrapped = wrap_to_width(header, first_width.max(1));
     if wrapped.is_empty() {
         wrapped.push(String::new());

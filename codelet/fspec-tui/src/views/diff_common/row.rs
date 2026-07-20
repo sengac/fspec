@@ -11,6 +11,7 @@
 use codelet_rpc_types::ChangedFile;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
+use unicode_width::UnicodeWidthStr;
 
 /// Map a single-letter change type to its UI color.
 ///
@@ -29,7 +30,7 @@ pub fn status_color(change_type: &str) -> Color {
 /// Truncate `path` to fit `max_width` columns, appending an ellipsis
 /// when it overflows. `max_width == 0` yields an empty string.
 pub fn truncate_path(path: &str, max_width: usize) -> String {
-    let len = path.chars().count();
+    let len = path.width();
     if max_width == 0 {
         return String::new();
     }

@@ -12,6 +12,7 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::widgets::{Paragraph, Widget};
+use unicode_width::UnicodeWidthStr;
 
 use super::{Component, Priority};
 
@@ -60,7 +61,7 @@ impl Component for HelloComponent {
 
         // Horizontal centering: pad left + right leaves a single
         // Length(N) column band sized to the greeting.
-        let len = HELLO_TEXT.chars().count() as u16;
+        let len = HELLO_TEXT.width() as u16;
         let [_left, center, _right] = Layout::horizontal([
             Constraint::Min(0),
             Constraint::Length(len),

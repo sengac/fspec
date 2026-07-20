@@ -4,9 +4,11 @@
 //!
 //! Ports the TS `renderParsedTable` / `parseAlignment` / `padText`
 //! (`src/tui/utils/markdown-table-formatter.ts`) into Rust. Column width
-//! uses the char-count visual-width proxy, consistent with `text_wrap.rs`.
+//! uses the display-width proxy, consistent with `text_wrap.rs`.
 //! No ANSI/bold codes are emitted — the scrollback wrap path renders plain
 //! spans. Entry point `format_markdown_tables` lives in `markdown_tables.rs`.
+
+use unicode_width::UnicodeWidthStr;
 
 /// Per-column horizontal alignment derived from separator-row colons.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -52,7 +54,7 @@ fn parse_alignment(separator_cell: &str) -> Align {
 
 /// Pad `text` to `width` chars within its column per `align`.
 fn pad_text(text: &str, width: usize, align: Align) -> String {
-    let pad = width.saturating_sub(text.chars().count());
+    let pad = width.saturating_sub(text.width());
     if pad == 0 {
         return text.to_string();
     }
@@ -118,14 +120,14 @@ pub(super) fn push_table_block(out: &mut String, block: &[&str]) {
         data.push(cells);
     }
 
-    // Column widths = max char count across header + data per column.
+    // Column widths = max display width across header + data per column.
     let mut widths = vec![0usize; cols];
     for (j, cell) in header.iter().enumerate() {
-        widths[j] = widths[j].max(cell.chars().count());
+        widths[j] = widths[j].max(cell.width());
     }
     for row in &data {
         for (j, cell) in row.iter().enumerate() {
-            widths[j] = widths[j].max(cell.chars().count());
+            widths[j] = widths[j].max(cell.width());
         }
     }
 

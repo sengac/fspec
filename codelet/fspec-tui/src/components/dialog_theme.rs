@@ -13,6 +13,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
 use ratatui::widgets::{Block, BorderType, Borders, Clear, Widget};
+use unicode_width::UnicodeWidthStr;
 
 use super::dialog_theme_rows::{paint_left_aligned, paint_text};
 
@@ -72,7 +73,7 @@ pub const MARKER_UNSELECTED: &str = "  ";
 pub const FOOTER_SEPARATOR: &str = " │ ";
 
 fn span_width(span: &Span<'_>) -> u16 {
-    span.content.chars().count() as u16
+    span.content.width() as u16
 }
 
 fn row_width(row: &DialogRow) -> u16 {
@@ -80,7 +81,7 @@ fn row_width(row: &DialogRow) -> u16 {
 }
 
 fn line_width(line: &str) -> u16 {
-    line.chars().count() as u16
+    line.width() as u16
 }
 
 fn inner_content_width(dialog: &FspecDialog<'_>) -> u16 {

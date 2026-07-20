@@ -27,6 +27,7 @@ use ratatui::layout::Rect;
 use ratatui::style::Color;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
+use unicode_width::UnicodeWidthStr;
 
 use crate::store::TokenState;
 use codelet_rpc_types::{ModelInfo, ThinkingLevel};
@@ -155,7 +156,7 @@ fn truncate_line(line: Line<'static>, budget: usize) -> Line<'static> {
     let mut remaining = budget;
     let mut out: Vec<Span<'static>> = Vec::new();
     for span in line.spans {
-        let span_len = span.content.chars().count();
+        let span_len = span.content.width();
         if span_len <= remaining {
             remaining -= span_len;
             out.push(span);

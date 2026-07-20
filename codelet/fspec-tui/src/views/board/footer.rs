@@ -13,6 +13,7 @@ use ratatui::layout::Rect;
 use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
+use unicode_width::UnicodeWidthStr;
 
 use crate::theme::Theme;
 
@@ -25,7 +26,7 @@ pub(crate) fn render(area: Rect, buf: &mut Buffer, theme: &Theme) {
     let style = Style::default().fg(theme.fg);
     let text =
         "← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back";
-    let text_len = text.chars().count() as u16;
+    let text_len = text.width() as u16;
     let inner = if text_len < area.width {
         let pad = (area.width - text_len) / 2;
         Rect {

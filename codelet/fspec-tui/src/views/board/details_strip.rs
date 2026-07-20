@@ -23,6 +23,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
+use unicode_width::UnicodeWidthStr;
 
 /// Render the 5-row work-unit details strip into `area`.
 ///
@@ -118,13 +119,14 @@ pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>) {
 fn render_placeholder(area: Rect, buf: &mut Buffer) {
     let middle_y = area.y + area.height / 2;
     let text = "No work unit selected";
+    let text_w = text.width();
     let centered_x = area
         .x
-        .saturating_add(area.width.saturating_sub(text.chars().count() as u16) / 2);
+        .saturating_add(area.width.saturating_sub(text_w as u16) / 2);
     let rect = Rect {
         x: centered_x,
         y: middle_y,
-        width: text.chars().count() as u16,
+        width: text_w as u16,
         height: 1,
     };
     Paragraph::new(Line::from(Span::raw(text))).render(rect, buf);
@@ -228,7 +230,7 @@ fn truncate_to(s: String, max_chars: usize) -> String {
     if max_chars == 0 {
         return String::new();
     }
-    if s.chars().count() <= max_chars {
+    if s.width() <= max_chars {
         return s;
     }
     let mut out = String::with_capacity(max_chars);
@@ -263,7 +265,7 @@ fn build_attachments_line(unit: &WorkUnitInfo, width: u16) -> Line<'static> {
         })
         .collect();
     let joined = basenames.join(", ");
-    let max_chars = width.saturating_sub(prefix.chars().count() as u16) as usize;
+    let max_chars = width.saturating_sub(prefix.width() as u16) as usize;
     let display = truncate_to(joined, max_chars);
     Line::from(vec![
         Span::styled(prefix.to_string(), dim),

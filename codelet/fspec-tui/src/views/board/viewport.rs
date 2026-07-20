@@ -20,6 +20,7 @@ use codelet_rpc_types::WorkUnitInfo;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
+use unicode_width::UnicodeWidthStr;
 
 use crate::store::{BoardStore, COLUMN_ORDER};
 use crate::theme::Theme;
@@ -127,7 +128,7 @@ fn arrow_style(theme: &Theme) -> Style {
 }
 
 fn center_glyph(glyph: &str, width: u16) -> String {
-    let count = glyph.chars().count();
+    let count = glyph.width();
     if (width as usize) <= count {
         return glyph.to_string();
     }

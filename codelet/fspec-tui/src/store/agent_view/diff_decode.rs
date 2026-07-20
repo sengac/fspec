@@ -22,6 +22,7 @@
 
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
+use unicode_width::UnicodeWidthStr;
 
 use super::diff_codec::{pad_left, parse_line};
 use super::diff_format::DiffDisplayRow;
@@ -129,7 +130,7 @@ fn changed_bar_row(
     width: usize,
 ) -> Vec<Span<'static>> {
     let gutter = format!("{} ", gutter_num(line_no));
-    let gutter_w = gutter.chars().count();
+    let gutter_w = gutter.width();
     let bar = pad_to_width(format!("{glyph} {text}"), width.saturating_sub(gutter_w));
     vec![
         Span::styled(gutter, gutter_style()),
@@ -168,7 +169,7 @@ fn changed_lines(
     bg: Color,
     width: usize,
 ) -> Vec<Vec<Span<'static>>> {
-    let gutter_w = format!("{} ", gutter_num(line_no)).chars().count();
+    let gutter_w = format!("{} ", gutter_num(line_no)).width();
     let content = format!("{glyph} {text}");
     // The bar occupies the columns after the gutter. When the viewport is too
     // narrow to hold even the gutter (`width <= gutter_w`, incl. `width == 0`)
@@ -207,7 +208,7 @@ fn changed_lines(
 /// (no background, no gutter).
 fn context_lines(line_no: usize, text: &str, width: usize) -> Vec<Vec<Span<'static>>> {
     let gutter = format!("{}   ", gutter_num(line_no));
-    let gutter_w = gutter.chars().count();
+    let gutter_w = gutter.width();
     let content_width = width.saturating_sub(gutter_w).max(1);
     let mut frags = wrap_to_width(text, content_width);
     if frags.is_empty() {
@@ -259,10 +260,10 @@ fn gutter_style() -> Style {
 }
 
 /// Right-pad `text` with spaces to `width` DISPLAY columns (the
-/// `chars().count()` proxy shared with `wrap_to_width`). Already-wide content
+/// `width()` proxy shared with `wrap_to_width`). Already-wide content
 /// is returned unchanged; saturating — `width == 0` adds nothing.
 fn pad_to_width(text: String, width: usize) -> String {
-    let pad = width.saturating_sub(text.chars().count());
+    let pad = width.saturating_sub(text.width());
     if pad == 0 {
         return text;
     }

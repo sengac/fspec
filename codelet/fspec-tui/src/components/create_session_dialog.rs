@@ -14,6 +14,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
 use tokio::sync::mpsc::UnboundedSender;
+use unicode_width::UnicodeWidthStr;
 
 use codelet_rpc_types::WorkUnitContext;
 
@@ -255,12 +256,12 @@ impl Component for CreateSessionDialog {
         // dialog_theme::inner_content_width's max() computation so the
         // leading pad equals (final_body_w - raw_row_w)/2.
         let title_text = self.title();
-        let raw_w: usize = spans.iter().map(|s| s.content.chars().count()).sum();
+        let raw_w: usize = spans.iter().map(|s| s.content.width()).sum();
         let body_w = [
-            title_text.chars().count(),
-            description_text.chars().count(),
+            title_text.width(),
+            description_text.width(),
             raw_w,
-            FOOTER.chars().count(),
+            FOOTER.width(),
             MIN_WIDTH as usize,
         ]
         .into_iter()

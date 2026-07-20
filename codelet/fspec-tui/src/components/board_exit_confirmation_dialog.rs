@@ -21,6 +21,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::Span;
 use tokio::sync::mpsc::UnboundedSender;
+use unicode_width::UnicodeWidthStr;
 
 use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
 use super::{Action, Callback, Component, EventResult, Priority};
@@ -242,12 +243,12 @@ impl Component for BoardExitConfirmationDialog {
         spans.push(Span::styled(" ".to_string(), dim_style));
 
         // Centre the button row within the body content width.
-        let raw_w: usize = spans.iter().map(|s| s.content.chars().count()).sum();
+        let raw_w: usize = spans.iter().map(|s| s.content.width()).sum();
         let body_w = [
-            TITLE.chars().count(),
-            DESCRIPTION.chars().count(),
+            TITLE.width(),
+            DESCRIPTION.width(),
             raw_w,
-            FOOTER.chars().count(),
+            FOOTER.width(),
             MIN_WIDTH as usize,
         ]
         .into_iter()
