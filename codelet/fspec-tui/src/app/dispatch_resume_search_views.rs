@@ -139,6 +139,10 @@ impl App {
         // of a stale (possibly empty) one.
         self.spawn_load_supervisors(session.clone());
 
+        // RPC-430: hydrate debug state from the backend so the [DEBUG]
+        // badge reflects the ground-truth on session attach.
+        self.spawn_hydrate_debug_state(session.clone());
+
         // RPC-049: spawn the durable-restore round-trip. Honour the
         // synchronous unit-test path so tests that don't drive a tokio
         // runtime can still observe the open_sessions move/append.

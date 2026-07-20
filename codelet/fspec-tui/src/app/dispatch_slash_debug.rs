@@ -11,14 +11,30 @@
 //!
 //! TS parity reference: `AgentView.tsx:2643` —
 //! `sessionToggleDebug(currentSessionId, debugDir)` when a session is
-//! active, else `toggleDebug(debugDir)` (pre-session global). The
-//! pre-session global path is reachable via the new
-//! `backend.set_debug_directory(path)` RPC method but no slash command
-//! currently wires it (out of scope for this slice).
+//! active, else `toggleDebug(debugDir)` (pre-session global).
+//!
+//! RPC-430: resolves debug directory to `~/.fspec` (matching TS
+//! `getFspecUserDir()`) and supports pre-session toggle when no session
+//! is active (mirrors TS `AgentView.tsx:2713-2715`).
 
 use crate::components::Action;
 
 use super::state::App;
+
+/// Resolve the debug-capture directory.
+///
+/// RPC-430: matches TypeScript's `getFspecUserDir()` — prefers the
+/// `FSPEC_DEBUG_DIR` environment variable override, falls back to
+/// `~/.fspec` derived from `HOME`, then a bare `.fspec` fallback.
+fn resolve_debug_dir() -> String {
+    if let Ok(custom) = std::env::var("FSPEC_DEBUG_DIR") {
+        return custom;
+    }
+    if let Ok(home) = std::env::var("HOME") {
+        return format!("{}/.fspec", home);
+    }
+    ".fspec".to_string()
+}
 
 impl App {
     /// Spawn `backend.toggle_debug(session_id, debug_dir)` for the
@@ -26,22 +42,31 @@ impl App {
     /// session's scrollback as a `[debug] capture toggled → {path}`
     /// notice on Ok or a `[error] /debug failed: {reason}` notice on Err.
     ///
-    /// `debug_dir` resolves to the value of the `FSPEC_DEBUG_DIR`
-    /// environment variable, falling back to `".fspec/debug"` when
-    /// unset.
+    /// `debug_dir` resolves via [`resolve_debug_dir`] — `FSPEC_DEBUG_DIR`
+    /// override, then `~/.fspec`, then `.fspec` fallback.
     ///
-    /// With NO current session this is a silent no-op — no backend
-    /// call, no notice. Mirrors the `/clear` no-session behaviour from
-    /// RPC-046.
+    /// RPC-430: when there is NO current session the handler toggles
+    /// `pre_session_debug_enabled` and emits a scrollback notice (mirrors
+    /// TypeScript's pre-session `toggleDebug(debugDir)` path).
     pub(crate) fn handle_slash_debug(&mut self) {
+        let debug_dir = resolve_debug_dir();
+
+        // RPC-430: pre-session toggle path — mirrors TS AgentView.tsx:2713-2715
         let Some(session_id) = self.agent_view_store.current_session().cloned() else {
+            // No active session: toggle the pre-session flag and emit notice.
+            self.pre_session_debug_enabled = !self.pre_session_debug_enabled;
+            let text = format!("[debug] capture toggled \u{2192} {}", debug_dir);
+            // Emit notice to a placeholder session so the user sees feedback.
+            // The notice is emitted via Custom action since there's no session.
+            let _ = self
+                .action_tx
+                .send(Action::Custom(format!("[notice] {}", text)));
             return;
         };
+
         if tokio::runtime::Handle::try_current().is_err() {
             return;
         }
-        let debug_dir =
-            std::env::var("FSPEC_DEBUG_DIR").unwrap_or_else(|_| ".fspec/debug".to_string());
         let backend = self.backend.clone();
         let action_tx = self.action_tx.clone();
         let session_for_send = session_id;

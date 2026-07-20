@@ -156,7 +156,20 @@ impl App {
         }
         self.refresh_session_chrome(session.clone());
         self.spawn_hydrate_pending_input(session.clone()); // RPC-052
-        self.spawn_load_supervisors(session); // RPC-061
+        self.spawn_load_supervisors(session.clone()); // RPC-061
+
+        // RPC-430: propagate pre-session debug state to the new session
+        // if the user toggled /debug before any session existed.
+        if self.pre_session_debug_enabled {
+            let backend = self.backend.clone();
+            let action_tx = self.action_tx.clone();
+            let sid = session.clone();
+            let handle = tokio::spawn(async move {
+                let _ = backend.set_debug_enabled(sid.clone(), true).await;
+                let _ = action_tx.send(Action::DebugEnabledLoaded(sid, true));
+            });
+            self.pending_tasks.push(handle);
+        }
     }
 
     /// PROV-101 FIX 1: surface a declined `create_session` (empty SessionId,

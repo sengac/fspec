@@ -95,4 +95,24 @@ impl App {
         self.pending_tasks.push(handle);
         true
     }
+
+    /// RPC-430: spawn `backend.get_debug_enabled(session_id)` to hydrate
+    /// the debug state when attaching to a session. On success dispatches
+    /// `Action::DebugEnabledLoaded(session_id, enabled)` so the `[DEBUG]`
+    /// badge reflects the ground-truth. Mirrors TypeScript's
+    /// `applyPendingDebugState()` fallback.
+    pub(crate) fn spawn_hydrate_debug_state(&mut self, session: SessionId) {
+        if tokio::runtime::Handle::try_current().is_err() {
+            return;
+        }
+        let backend = self.backend.clone();
+        let action_tx = self.action_tx.clone();
+        let sid = session.clone();
+        let handle = tokio::spawn(async move {
+            if let Ok(enabled) = backend.get_debug_enabled(sid.clone()).await {
+                let _ = action_tx.send(Action::DebugEnabledLoaded(sid, enabled));
+            }
+        });
+        self.pending_tasks.push(handle);
+    }
 }

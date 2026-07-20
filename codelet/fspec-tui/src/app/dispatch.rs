@@ -274,6 +274,11 @@ impl App {
                 self.handle_emit_session_notice(sid, text.clone())
             }
             Action::SessionResumeComplete(id) => self.handle_session_resume_complete(id.clone()),
+            Action::DebugEnabledLoaded(session_id, enabled) => {
+                // RPC-430: fold debug state from backend hydration into the store.
+                self.agent_view_store
+                    .set_debug_enabled(session_id.clone(), *enabled);
+            }
             // Capability dispatchers: try_dispatch_* fallbacks (keep <300 LoC).
             _ => {
                 let _ = self.try_dispatch_model_selector(&action)

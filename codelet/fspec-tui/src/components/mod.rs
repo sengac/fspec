@@ -464,6 +464,12 @@ pub enum Action {
     /// chunk)` — so the resumed session's scrollback is seeded from
     /// the backend's replay buffer.
     SessionResumeComplete(codelet_rpc_types::SessionId),
+    /// RPC-430: emitted by the debug-hydration task spawned during
+    /// session attach (`handle_attach_to_session`) or by the debug
+    /// propagation task spawned during session creation. Carries the
+    /// session id and the resolved debug-capture flag. App::dispatch
+    /// stores the value in `AgentViewStore.set_debug_enabled`.
+    DebugEnabledLoaded(codelet_rpc_types::SessionId, bool),
     /// RPC-050: emitted by BoardView's Enter handler (and the explicit
     /// "attach" path) to bind the supplied work-unit id to the
     /// currently-focused AgentView session. App::dispatch routes this

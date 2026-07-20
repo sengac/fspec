@@ -78,6 +78,10 @@ pub struct App {
     pub(crate) reconnect_notice: Option<(SessionId, u64)>,
     /// RPC-416: auto-dismiss timer armed on `Reconnected`; aborted on a re-drop so a stale clear can't remove a fresh notice.
     pub(crate) reconnect_dismiss_handle: Option<JoinHandle<()>>,
+    /// RPC-430: pre-session debug-capture toggle. When no session is
+    /// active, `/debug` toggles this flag instead of calling the backend.
+    /// On session creation the flag is propagated to the new session.
+    pub(crate) pre_session_debug_enabled: bool,
     pub(crate) compaction_hide_handles: std::collections::HashMap<SessionId, JoinHandle<()>>, // RPC-417 auto-hide timers
 }
 
@@ -125,6 +129,7 @@ impl App {
             reconnect_notice: None,
             reconnect_dismiss_handle: None,
             compaction_hide_handles: std::collections::HashMap::new(),
+            pre_session_debug_enabled: false,
         }
     }
 
@@ -295,5 +300,15 @@ impl App {
     /// RPC-009/RPC-011 tests).
     pub fn current_session(&self) -> Option<SessionId> {
         self.agent_view_store.current_session().cloned()
+    }
+
+    /// RPC-430: read the pre-session debug-capture toggle flag.
+    pub fn pre_session_debug_enabled(&self) -> bool {
+        self.pre_session_debug_enabled
+    }
+
+    /// RPC-430: set the pre-session debug-capture toggle flag.
+    pub fn set_pre_session_debug_enabled(&mut self, val: bool) {
+        self.pre_session_debug_enabled = val;
     }
 }

@@ -585,6 +585,15 @@ pub struct MockBackend {
     /// RPC-055: when `Some`, `set_debug_directory` returns
     /// `Err(anyhow!(message))`.
     set_debug_directory_error: Mutex<Option<String>>,
+    // ── RPC-430 debug hydration / propagation tracking ────────────────
+    /// RPC-430: per-call counter for `get_debug_enabled`.
+    get_debug_enabled_calls: AtomicUsize,
+    /// RPC-430: scripted result returned by `get_debug_enabled`.
+    get_debug_enabled_result: Mutex<Result<bool, String>>,
+    /// RPC-430: per-call counter for `set_debug_enabled`.
+    set_debug_enabled_calls: AtomicUsize,
+    /// RPC-430: capture of the last `(SessionId, bool)` passed to `set_debug_enabled`.
+    last_set_debug_enabled: Mutex<Option<(SessionId, bool)>>,
     // ── RPC-056 blocklist surface ────────────────────────────────────
     /// RPC-056: in-memory rule list returned by `blocklist_list`.
     blocklist_rules: Mutex<Vec<BlocklistRuleInfo>>,
@@ -867,6 +876,11 @@ impl Default for MockBackend {
             set_debug_directory_calls: AtomicUsize::new(0),
             last_set_debug_directory: Mutex::new(None),
             set_debug_directory_error: Mutex::new(None),
+            // ── RPC-430 ────────────────────────────────────────────────
+            get_debug_enabled_calls: AtomicUsize::new(0),
+            get_debug_enabled_result: Mutex::new(Ok(false)),
+            set_debug_enabled_calls: AtomicUsize::new(0),
+            last_set_debug_enabled: Mutex::new(None),
             // ── RPC-056 ──────────────────────────────────────────────
             blocklist_rules: Mutex::new(Vec::new()),
             blocklist_list_calls: AtomicUsize::new(0),
@@ -2043,6 +2057,35 @@ impl MockBackend {
     /// RPC-055: the last path passed to `set_debug_directory`.
     pub fn last_set_debug_directory(&self) -> Option<String> {
         self.last_set_debug_directory
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    // ── RPC-430 debug hydration / propagation helpers ──────────────────
+
+    /// RPC-430: how many times `get_debug_enabled` was awaited.
+    pub fn get_debug_enabled_calls(&self) -> usize {
+        self.get_debug_enabled_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-430: script the next `get_debug_enabled` call to return
+    /// `Ok(val)`.
+    pub fn set_get_debug_enabled_result_ok(&self, val: bool) {
+        *self
+            .get_debug_enabled_result
+            .lock()
+            .expect("MockBackend mutex") = Ok(val);
+    }
+
+    /// RPC-430: how many times `set_debug_enabled` was awaited.
+    pub fn set_debug_enabled_calls(&self) -> usize {
+        self.set_debug_enabled_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-430: the last `(SessionId, bool)` passed to `set_debug_enabled`.
+    pub fn last_set_debug_enabled(&self) -> Option<(SessionId, bool)> {
+        self.last_set_debug_enabled
             .lock()
             .expect("MockBackend mutex")
             .clone()
@@ -3337,6 +3380,27 @@ impl FspecBackend for MockBackend {
         {
             return Err(anyhow::anyhow!("{msg}"));
         }
+        Ok(())
+    }
+
+    // ── RPC-430 debug hydration / propagation ──────────────────────────
+
+    async fn get_debug_enabled(&self, _session_id: SessionId) -> Result<bool> {
+        self.get_debug_enabled_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .get_debug_enabled_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(val) => Ok(val),
+            Err(msg) => Err(anyhow::anyhow!("{msg}")),
+        }
+    }
+
+    async fn set_debug_enabled(&self, session_id: SessionId, enabled: bool) -> Result<()> {
+        self.set_debug_enabled_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_set_debug_enabled.lock().expect("MockBackend mutex") = Some((session_id, enabled));
         Ok(())
     }
 
