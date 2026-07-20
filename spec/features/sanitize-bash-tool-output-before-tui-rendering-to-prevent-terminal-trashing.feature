@@ -1,3 +1,4 @@
+@done
 @TUI-100
 Feature: Sanitize bash tool output before TUI rendering to prevent terminal trashing
 

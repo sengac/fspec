@@ -6,34 +6,10 @@
         {
           "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "99-112",
-          "implMappings": []
-        },
-        {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-          "lines": "99-112",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+              "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
         }
@@ -45,34 +21,10 @@
         {
           "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "149-162",
-          "implMappings": []
-        },
-        {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-          "lines": "149-162",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+              "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
         }
@@ -84,34 +36,10 @@
         {
           "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "186-199",
-          "implMappings": []
-        },
-        {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-          "lines": "186-199",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+              "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
         }
@@ -123,34 +51,10 @@
         {
           "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "223-236",
-          "implMappings": []
-        },
-        {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-          "lines": "223-236",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+              "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
         }
@@ -162,34 +66,10 @@
         {
           "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "284-297",
-          "implMappings": []
-        },
-        {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-          "lines": "284-297",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+              "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
         }
@@ -201,34 +81,10 @@
         {
           "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "320-333",
-          "implMappings": []
-        },
-        {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-          "lines": "320-333",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-              "lines": [
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41,
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50
-              ]
+              "lines": [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
             }
           ]
         }
@@ -240,21 +96,10 @@
         {
           "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
           "lines": "373-386",
-          "implMappings": []
-        },
-        {
-          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
-          "lines": "373-386",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
-              "lines": [
-                229,
-                230,
-                231,
-                232,
-                233
-              ]
+              "lines": [229, 230, 231, 232, 233]
             }
           ]
         }
@@ -262,13 +107,24 @@
     },
     {
       "name": "LLM receives raw unsanitized output while TUI gets sanitized",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
+          "lines": "425-438",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs",
+              "lines": [179, 180, 181, 182, 183]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 8,
-    "coveredScenarios": 7,
-    "coveragePercent": 88,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-tui/src/store/agent_view/sanitize.rs"
     ],
@@ -276,6 +132,6 @@
       "codelet/fspec-tui/src/store/agent_view/sanitize.rs",
       "codelet/fspec-tui/src/store/agent_view/chunk_processor.rs"
     ],
-    "totalLinesCovered": 309
+    "totalLinesCovered": 328
   }
 }
