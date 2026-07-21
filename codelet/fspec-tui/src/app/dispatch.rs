@@ -243,6 +243,12 @@ impl App {
             }
             Action::ScrollbackMouseWheelUp(velocity) => self.scroll_focused(-(*velocity as i64)),
             Action::ScrollbackMouseWheelDown(velocity) => self.scroll_focused(*velocity as i64),
+            // TUI-102: scrollbar click/drag jumps to the computed offset and exits stick mode.
+            Action::ScrollbackJumpToOffset(offset) => {
+                if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+                    ctx.scrollback.jump_to_offset(*offset);
+                }
+            }
             Action::SelectionBegin(cell) => self.handle_selection_begin(*cell),
             Action::SelectionBeginLine(cell) => self.handle_selection_begin_line(*cell),
             Action::SelectionExtend(cell) => self.handle_selection_extend(*cell),

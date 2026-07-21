@@ -69,7 +69,7 @@ fn render_paints_title_body_and_footer() {
 #[test]
 fn empty_session_list_paints_placeholder() {
     // @step Given resume_view is open
-    let v = ResumeSessionView::new();
+    let mut v = ResumeSessionView::new();
     let mut buf = Buffer::empty(Rect::new(0, 0, 80, 24));
     // @step When Action::SessionListLoaded with an empty Vec is folded in
     // (set_sessions with empty Vec)

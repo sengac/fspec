@@ -7,17 +7,77 @@
 //! `Emit(LoadFileDiff)` path is shared); a click over the Diff pane only
 //! focuses it. Clicks on empty space below the last file or outside both
 //! pane rects change nothing.
+//!
+//! TUI-101: scrollbar click-and-drag navigation for both panes.
 
 use super::{ChangedFilesEvent, ChangedFilesView, Pane};
 use crate::components::scroll_viewport::WheelDirection;
-use crossterm::event::{MouseEvent, MouseEventKind};
+use crate::mouse::rect_contains;
+use crate::mouse::scrollbar_drag::ScrollbarGeometry;
+use crossterm::event::{MouseButton, MouseEvent, MouseEventKind};
 
 impl ChangedFilesView {
     /// Route a mouse event. `Down` left-clicks select a row (delegated to
     /// `handle_click`); scroll-wheel events scroll the pane under the
     /// cursor (or the focused pane when outside both rects). Called from
     /// `handle_event` in the parent module.
+    ///
+    /// TUI-101: scrollbar click-and-drag events are handled when the cursor
+    /// lands on a scrollbar gutter.
     pub(super) fn handle_mouse(&mut self, ev: MouseEvent) -> ChangedFilesEvent {
+        // TUI-101: handle scrollbar click-and-drag first.
+        if matches!(
+            ev.kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        ) {
+            // Hit-test files scrollbar
+            if let Some(sb_rect) = self.last_files_sb_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let visible = self.last_files_rect.map(|r| r.height as usize).unwrap_or(0);
+                    let total = self.files.len();
+                    if total > visible {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: self.file_scroll,
+                        };
+                        if let Some(offset) = self.files_scrollbar_drag.on_mouse(ev, geom) {
+                            self.file_scroll = offset;
+                        }
+                        return ChangedFilesEvent::Consumed;
+                    }
+                }
+            }
+            // Hit-test diff scrollbar
+            if let Some(sb_rect) = self.last_diff_sb_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let visible = self.last_diff_rect.map(|r| r.height as usize).unwrap_or(0);
+                    let total = self.diff_lines.len();
+                    if total > visible {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: self.diff_scroll,
+                        };
+                        if let Some(offset) = self.diff_scrollbar_drag.on_mouse(ev, geom) {
+                            self.diff_scroll = offset;
+                        }
+                        return ChangedFilesEvent::Consumed;
+                    }
+                }
+            }
+            // Click outside scrollbar: reset drag states on Up
+            if matches!(ev.kind, MouseEventKind::Up(MouseButton::Left)) {
+                self.files_scrollbar_drag.reset();
+                self.diff_scrollbar_drag.reset();
+            }
+            // Fall through to click handling
+        }
+
         if let MouseEventKind::Down(_) = ev.kind {
             return self.handle_click(ev.column, ev.row);
         }

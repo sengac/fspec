@@ -131,6 +131,12 @@ pub struct AgentView {
     pub(crate) last_hitl_input_offset: Option<u16>,
     pub(crate) recognizer: crate::mouse::gesture::SelectionRecognizer, // COPY-006
     pub(crate) text_selection_active: bool, // COPY-006: live scrollback selection.
+    /// TUI-102: scrollbar click-and-drag state machine for the scrollback area.
+    pub(crate) scrollback_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    /// TUI-102: cached total visual rows from last render for ScrollbarGeometry.
+    pub(crate) last_scrollback_total_rows: usize,
+    /// TUI-102: cached scroll offset from last render for accurate thumb position.
+    pub(crate) last_scrollback_scroll_offset: usize,
 }
 
 impl AgentView {
@@ -231,11 +237,11 @@ impl AgentView {
     /// RPC-029 layout. Mode views early-return; otherwise paints chrome + input + popups.
     pub fn render_with_store(&mut self, area: Rect, buf: &mut Buffer, store: &mut AgentViewStore) {
         self.last_render_area = Some(area);
-        if let Some(v) = self.resume_view.as_ref() {
+        if let Some(v) = self.resume_view.as_mut() {
             v.render(area, buf);
             return;
         }
-        if let Some(v) = self.search_view.as_ref() {
+        if let Some(v) = self.search_view.as_mut() {
             v.render(area, buf);
             return;
         }
@@ -284,6 +290,15 @@ impl AgentView {
         self.last_scrollback_area = Some(areas.scrollback);
         if let Some(ctx) = store.current_session_context_mut() {
             ctx.scrollback.render_count_visited(areas.scrollback, buf);
+            // TUI-102: cache total visual rows + scroll offset for scrollbar geometry.
+            self.last_scrollback_total_rows = ctx.scrollback.total_visual_rows();
+            self.last_scrollback_scroll_offset = ctx.scrollback.scroll_state().offset;
+            // TUI-102: reset drag state when scrollbar disappears.
+            let total = self.last_scrollback_total_rows;
+            let viewport = self.last_scrollback_viewport as usize;
+            if !(total > viewport && areas.scrollback.width >= 4) {
+                self.scrollback_scrollbar_drag.reset();
+            }
         }
         chrome_paint::paint_footer(&areas, buf, store, sid.as_ref());
 

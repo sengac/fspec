@@ -18,8 +18,10 @@
 //! SCROLLS its content (↑/↓ line, PageUp/PageDown page, Home/End, mouse
 //! wheel) rendering the shared `render_list_scrollbar` in a reserved
 //! 1-column gutter whenever the content overflows the visible window.
+//!
+//! TUI-101: scrollbar click-and-drag navigation via `ScrollbarDrag`.
 
-use crossterm::event::{Event, KeyCode};
+use crossterm::event::{Event, KeyCode, MouseButton, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::text::Span;
@@ -31,6 +33,8 @@ use super::help_dialog_scroll::{
     content_rows, fill_rect, gutter_rect, max_offset, wheel_direction,
 };
 use super::list_scrollbar::render_list_scrollbar;
+use crate::mouse::rect_contains;
+use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
 use super::scroll_viewport::WheelVelocity;
 use super::{Callback, Component, EventResult, Priority};
 
@@ -46,6 +50,10 @@ pub struct HelpDialog {
     scroll_offset: usize,
     visible_rows: usize,
     wheel: WheelVelocity,
+    /// TUI-101: scrollbar click-and-drag state machine.
+    scrollbar_drag: ScrollbarDrag,
+    /// TUI-101: cached gutter rect from last render for hit-testing.
+    last_gutter: Option<Rect>,
 }
 
 impl Default for HelpDialog {
@@ -82,6 +90,8 @@ impl HelpDialog {
             scroll_offset: 0,
             visible_rows: 0,
             wheel: WheelVelocity::new(),
+            scrollbar_drag: ScrollbarDrag::new(),
+            last_gutter: None,
         }
     }
 
@@ -158,6 +168,46 @@ impl Component for HelpDialog {
                 _ => {}
             }
         }
+        // TUI-101: scrollbar click-and-drag navigation.
+        if let Event::Mouse(mouse_event) = event {
+            let max = self.max_offset();
+            let total = self.lines.len();
+            let visible = self.visible_rows;
+
+            // Only handle left button events when scrollbar is visible.
+            if total > visible {
+                // Hit-test against the cached gutter rect.
+                if let Some(gutter) = self.last_gutter {
+                    let inside = rect_contains(gutter, mouse_event.column, mouse_event.row);
+
+                    match mouse_event.kind {
+                        MouseEventKind::Down(MouseButton::Left)
+                        | MouseEventKind::Drag(MouseButton::Left)
+                        | MouseEventKind::Up(MouseButton::Left) => {
+                            if inside {
+                                let geom = ScrollbarGeometry {
+                                    area_height: visible,
+                                    total_items: total,
+                                    visible_items: visible,
+                                    current_offset: self.scroll_offset,
+                                };
+                                if let Some(offset) = self.scrollbar_drag.on_mouse(*mouse_event, geom) {
+                                    self.scroll_offset = offset.min(max);
+                                }
+                                return EventResult::consumed();
+                            } else {
+                                // Reset drag state when clicking outside scrollbar
+                                if matches!(mouse_event.kind, MouseEventKind::Up(MouseButton::Left)) {
+                                    self.scrollbar_drag.reset();
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            return EventResult::ignored();
+        }
         // RPC-396: mouse wheel scrolls the content. The `Event::Mouse`
         // match lives in `help_dialog_scroll::wheel_direction` so this
         // dialog shell stays `Event::Key`-only (RPC-023 source-shape
@@ -202,8 +252,12 @@ impl Component for HelpDialog {
         // 1-column gutter. When everything fits, paint nothing.
         if total > visible {
             if let Some(gutter) = gutter_rect(rect, visible) {
+                // TUI-101: cache the gutter rect for mouse hit-testing.
+                self.last_gutter = Some(gutter);
                 render_list_scrollbar(gutter, buf, self.scroll_offset, visible, total);
             }
+        } else {
+            self.last_gutter = None;
         }
     }
 }

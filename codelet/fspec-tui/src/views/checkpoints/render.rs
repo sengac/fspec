@@ -46,6 +46,9 @@ impl CheckpointsView {
         let mut cp_rect = None;
         let mut files_rect = None;
         let mut diff_rect = None;
+        let mut cp_sb_rect = None;
+        let mut files_sb_rect = None;
+        let mut diff_sb_rect = None;
         render_full_screen_scaffold_raw_title(
             area,
             buf,
@@ -69,29 +72,35 @@ impl CheckpointsView {
                     ])
                     .split(rows[0]);
                 render_vertical_divider(top[1], buf);
-                cp_rect = Some(render_checkpoints_pane(
+                let (cr, csb) = render_checkpoints_pane(
                     top[0],
                     buf,
                     &checkpoints,
                     selected_cp,
                     cp_scroll,
                     focused,
-                ));
-                files_rect = Some(render_files_pane(
+                );
+                cp_rect = Some(cr);
+                cp_sb_rect = csb;
+                let (fr, fsb) = render_files_pane(
                     top[2],
                     buf,
                     &files,
                     selected_file,
                     file_scroll,
                     focused,
-                ));
-                diff_rect = Some(render_diff_pane(
+                );
+                files_rect = Some(fr);
+                files_sb_rect = fsb;
+                let (dr, dsb) = render_diff_pane(
                     rows[1],
                     buf,
                     &diff_lines,
                     diff_scroll,
                     focused,
-                ));
+                );
+                diff_rect = Some(dr);
+                diff_sb_rect = dsb;
             },
             None,
         );
@@ -101,6 +110,9 @@ impl CheckpointsView {
         self.last_checkpoints_rect = cp_rect;
         self.last_files_rect = files_rect;
         self.last_diff_rect = diff_rect;
+        self.last_cp_sb_rect = cp_sb_rect;
+        self.last_files_sb_rect = files_sb_rect;
+        self.last_diff_sb_rect = diff_sb_rect;
         // RPC-365: paint the restore confirmation/status modal over the
         // panes when active so it captures focus visually too.
         if let Some(dialog) = self.dialog() {
@@ -129,7 +141,7 @@ fn render_checkpoints_pane(
     selected: usize,
     scroll: usize,
     focused: Pane,
-) -> Rect {
+) -> (Rect, Option<Rect>) {
     let content = pane_header(area, buf, "Checkpoints", focused == Pane::Checkpoints);
     let visible = content.height as usize;
     let overflow = checkpoints.len() > visible;
@@ -150,10 +162,19 @@ fn render_checkpoints_pane(
         ..content
     };
     Paragraph::new(lines).render(list_area, buf);
-    if overflow {
+    let sb_rect = if overflow {
+        let sb = Rect {
+            x: content.x + list_width,
+            y: content.y,
+            width: 1,
+            height: content.height,
+        };
         render_pane_scrollbar(content, buf, list_width, scroll, visible, checkpoints.len());
-    }
-    content
+        Some(sb)
+    } else {
+        None
+    };
+    (content, sb_rect)
 }
 
 fn checkpoint_line(
@@ -183,7 +204,7 @@ fn render_files_pane(
     selected: usize,
     scroll: usize,
     focused: Pane,
-) -> Rect {
+) -> (Rect, Option<Rect>) {
     let content = pane_header(area, buf, "Files", focused == Pane::Files);
     let visible = content.height as usize;
     let overflow = files.len() > visible;
@@ -204,10 +225,19 @@ fn render_files_pane(
         ..content
     };
     Paragraph::new(lines).render(list_area, buf);
-    if overflow {
+    let sb_rect = if overflow {
+        let sb = Rect {
+            x: content.x + list_width,
+            y: content.y,
+            width: 1,
+            height: content.height,
+        };
         render_pane_scrollbar(content, buf, list_width, scroll, visible, files.len());
-    }
-    content
+        Some(sb)
+    } else {
+        None
+    };
+    (content, sb_rect)
 }
 
 fn render_diff_pane(
@@ -216,7 +246,7 @@ fn render_diff_pane(
     diff_lines: &[String],
     scroll: usize,
     focused: Pane,
-) -> Rect {
+) -> (Rect, Option<Rect>) {
     let content = pane_header(area, buf, "Diff", focused == Pane::Diff);
     let visible = content.height as usize;
     let overflow = diff_lines.len() > visible;
@@ -236,8 +266,17 @@ fn render_diff_pane(
         ..content
     };
     Paragraph::new(lines).render(list_area, buf);
-    if overflow {
+    let sb_rect = if overflow {
+        let sb = Rect {
+            x: content.x + list_width,
+            y: content.y,
+            width: 1,
+            height: content.height,
+        };
         render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());
-    }
-    content
+        Some(sb)
+    } else {
+        None
+    };
+    (content, sb_rect)
 }

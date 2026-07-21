@@ -84,6 +84,14 @@ pub struct CheckpointsView {
     last_checkpoints_rect: Option<Rect>,
     last_files_rect: Option<Rect>,
     last_diff_rect: Option<Rect>,
+    /// TUI-101: scrollbar click-and-drag state machines (one per pane).
+    cp_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    files_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    diff_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    /// TUI-101: cached scrollbar rects from last render for hit-testing.
+    last_cp_sb_rect: Option<Rect>,
+    last_files_sb_rect: Option<Rect>,
+    last_diff_sb_rect: Option<Rect>,
     /// RPC-365: the active restore confirmation/status modal, if any.
     /// While `Some`, key events are captured by the dialog.
     restore_dialog: Option<dialog::RestoreDialog>,
@@ -116,6 +124,12 @@ impl CheckpointsView {
             last_checkpoints_rect: None,
             last_files_rect: None,
             last_diff_rect: None,
+            cp_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
+            files_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
+            diff_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
+            last_cp_sb_rect: None,
+            last_files_sb_rect: None,
+            last_diff_sb_rect: None,
             restore_dialog: None,
             delete_dialog: None,
         }

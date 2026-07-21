@@ -192,6 +192,14 @@ impl ScrollbackList {
         self.recompute_offset_for_stick();
     }
 
+    /// TUI-102: jump to an absolute visual-row offset and exit stick mode.
+    /// Called by `Action::ScrollbackJumpToOffset` from scrollbar click/drag.
+    pub fn jump_to_offset(&mut self, offset: usize) {
+        self.scroll_state.stick_to_bottom = false;
+        let max_off = self.max_offset_for_viewport();
+        self.scroll_state.offset = offset.min(max_off);
+    }
+
     /// RPC-020: drop every chunk and reset scroll state to default.
     pub fn reset(&mut self) {
         self.chunks.clear();

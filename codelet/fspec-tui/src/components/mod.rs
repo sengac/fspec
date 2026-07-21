@@ -330,6 +330,11 @@ pub enum Action {
     /// RPC-094: sibling of `ScrollbackMouseWheelUp` — emitted on
     /// `MouseEventKind::ScrollDown` inside the scrollback rect.
     ScrollbackMouseWheelDown(u32),
+    /// TUI-102: emitted by `views/agent/mouse_dispatch.rs` when a scrollbar
+    /// click/drag on the scrollback gutter computes a new scroll offset.
+    /// App::dispatch routes this into the focused SessionContext's
+    /// ScrollbackList, setting `offset` and exiting `stick_to_bottom`.
+    ScrollbackJumpToOffset(usize),
     /// RPC-025: emitted by the spawned `backend.persistence_get_history`
     /// task fired in response to the user's first `Action::HistoryPrev`
     /// on a session. Carries the SessionId and the newest-first list of

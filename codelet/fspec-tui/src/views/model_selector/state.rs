@@ -25,6 +25,8 @@ impl ModelSelectorView {
             wheel: crate::components::scroll_viewport::WheelVelocity::new(),
             custom_model_mode: CustomModelMode::Browse,
             form: CustomModelForm::default(),
+            scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
+            last_scrollbar_rect: None,
         }
     }
 

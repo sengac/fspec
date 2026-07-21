@@ -106,6 +106,10 @@ pub struct ProviderSettingsView {
     visible_rows: usize,
     /// RPC-353: mouse-wheel 1×–5× velocity accelerator (shared chat-view ramp).
     wheel: crate::components::scroll_viewport::WheelVelocity,
+    /// TUI-101: scrollbar click-and-drag state machine.
+    scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    /// TUI-101: cached scrollbar rect from last render for hit-testing.
+    last_scrollbar_rect: Option<Rect>,
 }
 
 impl ProviderSettingsView {
@@ -132,6 +136,8 @@ impl ProviderSettingsView {
             oauth_last_method: None,
             visible_rows: 18,
             wheel: crate::components::scroll_viewport::WheelVelocity::new(),
+            scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
+            last_scrollbar_rect: None,
         }
     }
 

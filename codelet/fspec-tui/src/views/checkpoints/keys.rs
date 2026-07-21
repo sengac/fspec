@@ -7,10 +7,14 @@
 //! 300-line ceiling. Holds `handle_key` (pane nav + restore keys, with
 //! the restore modal capturing input while active) and `handle_mouse`
 //! (wheel routed to the pane under the cursor).
+//!
+//! TUI-101: scrollbar click-and-drag navigation for all three panes.
 
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 
 use crate::components::scroll_viewport::WheelDirection;
+use crate::mouse::rect_contains;
+use crate::mouse::scrollbar_drag::ScrollbarGeometry;
 
 use super::{CheckpointsEvent, CheckpointsView, Pane};
 
@@ -60,6 +64,80 @@ impl CheckpointsView {
         if self.dialog().is_some() || self.delete_dialog().is_some() {
             return CheckpointsEvent::Consumed;
         }
+
+        // TUI-101: handle scrollbar click-and-drag first.
+        if matches!(
+            ev.kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        ) {
+            // Hit-test checkpoints scrollbar
+            if let Some(sb_rect) = self.last_cp_sb_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let visible = self.last_checkpoints_rect.map(|r| r.height as usize).unwrap_or(0);
+                    let total = self.checkpoints.len();
+                    if total > visible {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: self.checkpoint_scroll,
+                        };
+                        if let Some(offset) = self.cp_scrollbar_drag.on_mouse(ev, geom) {
+                            self.checkpoint_scroll = offset;
+                        }
+                        return CheckpointsEvent::Consumed;
+                    }
+                }
+            }
+            // Hit-test files scrollbar
+            if let Some(sb_rect) = self.last_files_sb_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let visible = self.last_files_rect.map(|r| r.height as usize).unwrap_or(0);
+                    let total = self.files.len();
+                    if total > visible {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: self.file_scroll,
+                        };
+                        if let Some(offset) = self.files_scrollbar_drag.on_mouse(ev, geom) {
+                            self.file_scroll = offset;
+                        }
+                        return CheckpointsEvent::Consumed;
+                    }
+                }
+            }
+            // Hit-test diff scrollbar
+            if let Some(sb_rect) = self.last_diff_sb_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let visible = self.last_diff_rect.map(|r| r.height as usize).unwrap_or(0);
+                    let total = self.diff_lines.len();
+                    if total > visible {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: self.diff_scroll,
+                        };
+                        if let Some(offset) = self.diff_scrollbar_drag.on_mouse(ev, geom) {
+                            self.diff_scroll = offset;
+                        }
+                        return CheckpointsEvent::Consumed;
+                    }
+                }
+            }
+            // Click outside scrollbar: reset drag states on Up
+            if matches!(ev.kind, MouseEventKind::Up(MouseButton::Left)) {
+                self.cp_scrollbar_drag.reset();
+                self.files_scrollbar_drag.reset();
+                self.diff_scrollbar_drag.reset();
+            }
+            // Fall through to click handling
+        }
+
         // RPC-369: a left click selects the row under the cursor.
         if let MouseEventKind::Down(_) = ev.kind {
             return self.handle_click(ev.column, ev.row);

@@ -41,7 +41,9 @@ fn body_renders_capability_legend_on_bottom_row() {
     // @step When the body is rendered
     let mut term =
         ratatui::Terminal::new(ratatui::backend::TestBackend::new(80, 12)).expect("term");
-    term.draw(|f| render_body(f.area(), f.buffer_mut(), &rows, true, 1, 0, None))
+    term.draw(|f| {
+        let _ = render_body(f.area(), f.buffer_mut(), &rows, true, 1, 0, None);
+    })
         .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
@@ -72,7 +74,9 @@ fn empty_rows_render_placeholder() {
         ratatui::Terminal::new(ratatui::backend::TestBackend::new(80, 12)).expect("term");
     // PROV-104: a not-yet-loaded body (`loaded == false`) now paints a
     // DISTINCT loading indicator rather than the no-models empty state.
-    term.draw(|f| render_body(f.area(), f.buffer_mut(), &rows, false, 0, 0, None))
+    term.draw(|f| {
+        let _ = render_body(f.area(), f.buffer_mut(), &rows, false, 0, 0, None);
+    })
         .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();
@@ -180,7 +184,9 @@ fn current_model_row_shows_green_current_marker() {
     //  is not inverse-highlighted, matching ModelSelectorView.tsx)
     let mut term =
         ratatui::Terminal::new(ratatui::backend::TestBackend::new(80, 12)).expect("term");
-    term.draw(|f| render_body(f.area(), f.buffer_mut(), &rows, true, 0, 0, Some("gpt-4o")))
+    term.draw(|f| {
+        let _ = render_body(f.area(), f.buffer_mut(), &rows, true, 0, 0, Some("gpt-4o"));
+    })
         .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();

@@ -22,10 +22,14 @@ use super::row_render::{render_row, row_band_bg, row_prefix, RowKind};
 use super::row_segments::{render_segmented_row, Segment, SegmentRole};
 use super::ProviderSettingsView;
 
-pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf: &mut Buffer) {
+pub(super) fn render_nav_items(
+    view: &ProviderSettingsView,
+    body_area: Rect,
+    buf: &mut Buffer,
+) -> Option<Rect> {
     let visible_rows = body_area.height as usize;
     if visible_rows == 0 {
-        return;
+        return None;
     }
     let nav_items = &view.nav_items;
     if nav_items.is_empty() {
@@ -39,7 +43,7 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
         Paragraph::new("(no providers configured)")
             .alignment(Alignment::Center)
             .render(row, buf);
-        return;
+        return None;
     }
     let end = (view.scroll_offset + visible_rows).min(nav_items.len());
     // RPC-352: render-only scrollbar parity with /model. When the nav list
@@ -103,19 +107,24 @@ pub(super) fn render_nav_items(view: &ProviderSettingsView, body_area: Rect, buf
     }
 
     // RPC-352: paint the proportional scrollbar in the reserved column.
+    // TUI-101: return the scrollbar rect for hit-testing.
     if overflow {
+        let sb_rect = Rect {
+            x: body_area.x + list_width,
+            y: body_area.y,
+            width: 1,
+            height: body_area.height,
+        };
         crate::components::list_scrollbar::render_list_scrollbar(
-            Rect {
-                x: body_area.x + list_width,
-                y: body_area.y,
-                width: 1,
-                height: body_area.height,
-            },
+            sb_rect,
             buf,
             view.scroll_offset,
             visible_rows,
             total,
         );
+        Some(sb_rect)
+    } else {
+        None
     }
 }
 

@@ -767,7 +767,7 @@ fn tui098_two_clicks_over_300ms_are_single_clicks() {
 fn tui098_footer_hint_text_indicates_double_click_resumes_session() {
     use ratatui::buffer::Buffer;
     // @step Given the /resume session picker is open
-    let v = ResumeSessionView::new();
+    let mut v = ResumeSessionView::new();
     // @step When the view renders the footer
     let area = Rect::new(0, 0, 80, 24);
     let mut buf = Buffer::empty(area);

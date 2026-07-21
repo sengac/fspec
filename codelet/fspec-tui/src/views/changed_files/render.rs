@@ -41,6 +41,8 @@ impl ChangedFilesView {
         let diff_scroll = self.diff_scroll;
         let mut files_rect = None;
         let mut diff_rect = None;
+        let mut files_sb_rect = None;
+        let mut diff_sb_rect = None;
         render_full_screen_scaffold_raw_title(
             area,
             buf,
@@ -60,21 +62,25 @@ impl ChangedFilesView {
                     ])
                     .split(body);
                 render_vertical_divider(panes[1], buf);
-                files_rect = Some(render_files_pane(
+                let (fr, fsb) = render_files_pane(
                     panes[0],
                     buf,
                     &files,
                     selected_index,
                     file_scroll,
                     focused,
-                ));
-                diff_rect = Some(render_diff_pane(
+                );
+                files_rect = Some(fr);
+                files_sb_rect = fsb;
+                let (dr, dsb) = render_diff_pane(
                     panes[2],
                     buf,
                     &diff_lines,
                     diff_scroll,
                     focused,
-                ));
+                );
+                diff_rect = Some(dr);
+                diff_sb_rect = dsb;
             },
             None,
         );
@@ -82,6 +88,8 @@ impl ChangedFilesView {
         self.diff_lines = diff_lines;
         self.last_files_rect = files_rect;
         self.last_diff_rect = diff_rect;
+        self.last_files_sb_rect = files_sb_rect;
+        self.last_diff_sb_rect = diff_sb_rect;
     }
 }
 
@@ -94,7 +102,7 @@ fn render_empty(area: Rect, buf: &mut Buffer) {
 }
 
 /// Paint the file-list pane (shared focus-aware header + underline rule,
-/// the file rows, and an overflow scrollbar). Returns the content Rect.
+/// the file rows, and an overflow scrollbar). Returns `(content_rect, scrollbar_rect)`.
 fn render_files_pane(
     area: Rect,
     buf: &mut Buffer,
@@ -102,7 +110,7 @@ fn render_files_pane(
     selected_index: usize,
     scroll: usize,
     focused: Pane,
-) -> Rect {
+) -> (Rect, Option<Rect>) {
     let content = pane_header(area, buf, "Files", focused == Pane::Files);
     let visible = content.height as usize;
     let overflow = files.len() > visible;
@@ -123,10 +131,19 @@ fn render_files_pane(
         ..content
     };
     Paragraph::new(lines).render(list_area, buf);
-    if overflow {
+    let sb_rect = if overflow {
+        let sb = Rect {
+            x: content.x + list_width,
+            y: content.y,
+            width: 1,
+            height: content.height,
+        };
         render_pane_scrollbar(content, buf, list_width, scroll, visible, files.len());
-    }
-    content
+        Some(sb)
+    } else {
+        None
+    };
+    (content, sb_rect)
 }
 
 fn render_diff_pane(
@@ -135,7 +152,7 @@ fn render_diff_pane(
     diff_lines: &[String],
     scroll: usize,
     focused: Pane,
-) -> Rect {
+) -> (Rect, Option<Rect>) {
     let content = pane_header(area, buf, "Diff", focused == Pane::Diff);
     let visible = content.height as usize;
     let overflow = diff_lines.len() > visible;
@@ -155,8 +172,17 @@ fn render_diff_pane(
         ..content
     };
     Paragraph::new(lines).render(list_area, buf);
-    if overflow {
+    let sb_rect = if overflow {
+        let sb = Rect {
+            x: content.x + list_width,
+            y: content.y,
+            width: 1,
+            height: content.height,
+        };
         render_pane_scrollbar(content, buf, list_width, scroll, visible, diff_lines.len());
-    }
-    content
+        Some(sb)
+    } else {
+        None
+    };
+    (content, sb_rect)
 }

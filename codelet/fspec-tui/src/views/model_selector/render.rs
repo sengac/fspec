@@ -129,7 +129,8 @@ impl ModelSelectorView {
                 // known, re-clamp the offset (covers window-resize and
                 // initial-draw where navigation ran with a stale height).
                 self.adjust_scroll();
-                rows::render_body(
+                // TUI-101: cache the scrollbar rect for hit-testing.
+                let sb_rect = rows::render_body(
                     body_area,
                     buf,
                     &self.rows,
@@ -138,6 +139,7 @@ impl ModelSelectorView {
                     self.scroll_offset,
                     current.as_deref(),
                 );
+                self.last_scrollbar_rect = sb_rect;
             },
             None,
         );

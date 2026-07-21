@@ -199,7 +199,7 @@ fn handle_filter_key(view: &mut ProviderSettingsView, key: KeyEvent) -> Provider
     }
 }
 
-pub(super) fn render_list(view: &ProviderSettingsView, area: Rect, buf: &mut Buffer) {
+pub(super) fn render_list(view: &mut ProviderSettingsView, area: Rect, buf: &mut Buffer) {
     let visible = view.visible_providers();
     // Filter input row (one line, optional)
     let mut body_area = area;
@@ -229,7 +229,8 @@ pub(super) fn render_list(view: &ProviderSettingsView, area: Rect, buf: &mut Buf
     // visible_providers loop when callers only set the raw
     // ProviderCredentialInfo list (set_providers).
     if !view.nav_items.is_empty() {
-        super::list_nav_render::render_nav_items(view, body_area, buf);
+        let sb_rect = super::list_nav_render::render_nav_items(view, body_area, buf);
+        view.last_scrollbar_rect = sb_rect;
         return;
     }
 

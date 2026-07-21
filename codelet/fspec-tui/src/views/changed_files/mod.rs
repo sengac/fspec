@@ -67,6 +67,12 @@ pub struct ChangedFilesView {
     last_files_rect: Option<Rect>,
     /// Most recent diff pane Rect. Set on render.
     last_diff_rect: Option<Rect>,
+    /// TUI-101: scrollbar click-and-drag state machines (one per pane).
+    files_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    diff_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    /// TUI-101: cached scrollbar rects from last render for hit-testing.
+    last_files_sb_rect: Option<Rect>,
+    last_diff_sb_rect: Option<Rect>,
 }
 
 impl Default for ChangedFilesView {
@@ -88,6 +94,10 @@ impl ChangedFilesView {
             wheel: WheelVelocity::new(),
             last_files_rect: None,
             last_diff_rect: None,
+            files_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
+            diff_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag::new(),
+            last_files_sb_rect: None,
+            last_diff_sb_rect: None,
         }
     }
 

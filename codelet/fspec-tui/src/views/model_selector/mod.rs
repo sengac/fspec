@@ -85,6 +85,10 @@ pub struct ModelSelectorView {
     /// delete-confirm) and the in-progress form values.
     custom_model_mode: CustomModelMode,
     form: CustomModelForm,
+    /// TUI-101: scrollbar click-and-drag state machine.
+    scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    /// TUI-101: cached scrollbar rect from last render for hit-testing.
+    last_scrollbar_rect: Option<Rect>,
 }
 
 impl Default for ModelSelectorView {

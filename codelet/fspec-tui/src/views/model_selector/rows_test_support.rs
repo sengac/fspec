@@ -52,7 +52,9 @@ pub(crate) fn render_to_grid(
 ) -> (String, Vec<(String, Color)>) {
     let mut term =
         ratatui::Terminal::new(ratatui::backend::TestBackend::new(80, 12)).expect("term");
-    term.draw(|f| render_body(f.area(), f.buffer_mut(), rows, true, selected, 0, None))
+    term.draw(|f| {
+        let _ = render_body(f.area(), f.buffer_mut(), rows, true, selected, 0, None);
+    })
         .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut joined = String::new();

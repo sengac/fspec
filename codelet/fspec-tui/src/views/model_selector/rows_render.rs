@@ -26,6 +26,9 @@ use ratatui::widgets::{Paragraph, Widget};
 /// model, and the legend on the bottom row. The full visible window slices
 /// content rows — the scrollbar steals NO content row, so the selected row
 /// at a viewport edge is always painted.
+///
+/// Returns the scrollbar rect when one is painted (for TUI-101 hit-testing),
+/// `None` otherwise.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn render_body(
     area: Rect,
@@ -35,9 +38,9 @@ pub(crate) fn render_body(
     selected_index: usize,
     scroll_offset: usize,
     current_model_id: Option<&str>,
-) {
+) -> Option<Rect> {
     if area.height == 0 {
-        return;
+        return None;
     }
     // Reserve the bottom row for the legend.
     let legend_y = area.y + area.height - 1;
@@ -55,7 +58,7 @@ pub(crate) fn render_body(
 
     let list_height = area.height.saturating_sub(1);
     if list_height == 0 {
-        return;
+        return None;
     }
 
     if rows.is_empty() {
@@ -77,7 +80,7 @@ pub(crate) fn render_body(
         Paragraph::new(message)
             .alignment(Alignment::Center)
             .render(row, buf);
-        return;
+        return None;
     }
 
     let visible_rows = list_height as usize;
@@ -114,18 +117,22 @@ pub(crate) fn render_body(
     }
 
     if overflow {
+        let sb_rect = Rect {
+            x: area.x + list_width,
+            y: area.y,
+            width: 1,
+            height: list_height,
+        };
         crate::components::list_scrollbar::render_list_scrollbar(
-            Rect {
-                x: area.x + list_width,
-                y: area.y,
-                width: 1,
-                height: list_height,
-            },
+            sb_rect,
             buf,
             so,
             visible_rows,
             total,
         );
+        Some(sb_rect)
+    } else {
+        None
     }
 }
 

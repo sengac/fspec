@@ -187,9 +187,47 @@ impl ModelSelectorView {
     /// the retired modal's wheel behaviour. RPC-353: the shared
     /// `WheelVelocity` 1×–5× ramp drives the step count so rapid wheel
     /// events move multiple rows per event (same feel as the chat view).
+    ///
+    /// TUI-101: also handles scrollbar click-and-drag via `ScrollbarDrag`.
     pub fn handle_mouse(&mut self, ev: crossterm::event::MouseEvent) -> ModelSelectorEvent {
         use crate::components::scroll_viewport::WheelDirection;
-        use crossterm::event::MouseEventKind;
+        use crate::mouse::rect_contains;
+        use crate::mouse::scrollbar_drag::ScrollbarGeometry;
+        use crossterm::event::{MouseButton, MouseEventKind};
+
+        // TUI-101: handle scrollbar click-and-drag first.
+        if matches!(
+            ev.kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        ) {
+            let total = self.rows.len();
+            let visible = self.visible_rows;
+            if total > visible {
+                if let Some(sb_rect) = self.last_scrollbar_rect {
+                    if rect_contains(sb_rect, ev.column, ev.row) {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: self.scroll_offset,
+                        };
+                        if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
+                            self.scroll_offset = offset;
+                            self.adjust_scroll();
+                        }
+                        return ModelSelectorEvent::Consumed;
+                    }
+                }
+                // Click outside scrollbar: reset drag state on Up
+                if matches!(ev.kind, MouseEventKind::Up(MouseButton::Left)) {
+                    self.scrollbar_drag.reset();
+                }
+            }
+            return ModelSelectorEvent::Ignored;
+        }
+
         let dir = match ev.kind {
             MouseEventKind::ScrollUp => WheelDirection::Up,
             MouseEventKind::ScrollDown => WheelDirection::Down,

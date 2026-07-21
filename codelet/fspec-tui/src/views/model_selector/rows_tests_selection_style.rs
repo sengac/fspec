@@ -24,7 +24,9 @@ fn render_cells(
 ) -> Vec<(u16, u16, String, Color, Color, Modifier)> {
     let mut term =
         ratatui::Terminal::new(ratatui::backend::TestBackend::new(80, 12)).expect("term");
-    term.draw(|f| render_body(f.area(), f.buffer_mut(), rows, true, selected, 0, current))
+    term.draw(|f| {
+        let _ = render_body(f.area(), f.buffer_mut(), rows, true, selected, 0, current);
+    })
         .expect("draw");
     let buf = term.backend().buffer().clone();
     let mut cells = Vec::new();

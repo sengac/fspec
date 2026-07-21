@@ -14,6 +14,7 @@ use ratatui::layout::Rect;
 use crate::components::scroll_viewport::WheelDirection;
 use crate::components::{Action, EventResult};
 use crate::mouse::gesture::SelectionGesture;
+use crate::mouse::scrollbar_drag::ScrollbarGeometry;
 
 use super::file_search_popup::FilePopupOutcome;
 use super::resume_session_view::ResumeSessionViewOutcome;
@@ -105,6 +106,12 @@ impl AgentView {
     /// RPC-094: route mouse wheel events that fall inside the
     /// scrollback rect into the focused SessionContext via the new
     /// `Action::ScrollbackMouseWheel{Up,Down}(velocity)` variants.
+    ///
+    /// TUI-102: before text selection, hit-test the scrollbar gutter
+    /// (rightmost column when gutter is reserved) and route left-button
+    /// events through `ScrollbarDrag`. On computed offset, emit
+    /// `Action::ScrollbackJumpToOffset`.
+    ///
     /// Hit-tests the cached `last_scrollback_area` (set in
     /// `render_with_store`). Wheel events outside the rect bubble.
     pub(super) fn handle_scrollback_mouse(&mut self, ev: MouseEvent) -> Option<EventResult> {
@@ -131,11 +138,42 @@ impl AgentView {
                 self.emit(Action::ScrollbackMouseWheelDown(velocity));
                 Some(EventResult::consumed())
             }
-            // COPY-006: left press/drag/release drive text selection via
-            // the gesture recognizer (rule [1]) BEFORE any wheel handling.
+            // TUI-102: left press/drag/release — try scrollbar gutter first,
+            // then fall through to text selection (COPY-006 rule [1]).
             MouseEventKind::Down(MouseButton::Left)
             | MouseEventKind::Drag(MouseButton::Left)
             | MouseEventKind::Up(MouseButton::Left) => {
+                // TUI-102: check if gutter is reserved (scrollbar visible)
+                let gutter_reserved = self.last_scrollback_total_rows
+                    > self.last_scrollback_viewport as usize;
+                let scrollbar_col = rect.x.saturating_add(rect.width).saturating_sub(1);
+
+                if gutter_reserved && ev.column == scrollbar_col {
+                    // TUI-102: convert absolute screen row to scrollbar-relative row
+                    let local_row = ev.row.saturating_sub(rect.y);
+                    // Hit the scrollbar gutter — route through ScrollbarDrag
+                    let viewport = self.last_scrollback_viewport as usize;
+                    let total = self.last_scrollback_total_rows;
+                    let geom = ScrollbarGeometry {
+                        area_height: viewport,
+                        total_items: total,
+                        visible_items: viewport,
+                        current_offset: self.last_scrollback_scroll_offset,
+                    };
+                    // Feed a local mouse event with the relative row
+                    let local_ev = MouseEvent {
+                        row: local_row,
+                        ..ev
+                    };
+                    if let Some(offset) = self.scrollback_scrollbar_drag.on_mouse(local_ev, geom) {
+                        self.emit(Action::ScrollbackJumpToOffset(offset));
+                    }
+                    // TUI-102: scrollbar interaction exits stick_to_bottom
+                    // (handled by App::dispatch on ScrollbackJumpToOffset)
+                    return Some(EventResult::consumed());
+                }
+
+                // Click outside scrollbar gutter: fall through to text selection
                 self.feed_selection_recognizer(ev, rect);
                 Some(EventResult::consumed())
             }
@@ -220,3 +258,11 @@ impl AgentView {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "mouse_dispatch_tests.rs"]
+mod tests;
+
+#[cfg(test)]
+#[path = "mouse_dispatch_integration_tests.rs"]
+mod integration_tests;

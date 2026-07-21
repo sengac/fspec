@@ -1,8 +1,10 @@
 //! RPC-026 — ResumeSessionView: full-screen session picker.
 //! Mode view for `/resume`. ↑/↓ navigate, Enter/Double-click emits `Selected`.
+//!
+//! TUI-101: scrollbar click-and-drag navigation via `ScrollbarDrag`.
 
 use codelet_rpc_types::{SessionId, SessionInfo};
-use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
+use crossterm::event::{KeyCode, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use std::time::{Duration, Instant};
@@ -12,6 +14,8 @@ use super::mode_view_render::render_session_rows;
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
+use crate::mouse::rect_contains;
+use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
 
 const CHROME_ROWS: u16 = 3;
 const DOUBLE_CLICK_TIMEOUT: Duration = Duration::from_millis(300);
@@ -65,6 +69,10 @@ pub struct ResumeSessionView {
     delete_confirm: Option<ConfirmDialog>,
     wheel: WheelVelocity,
     double_click: DoubleClickDetector,
+    /// TUI-101: scrollbar click-and-drag state machine.
+    scrollbar_drag: ScrollbarDrag,
+    /// TUI-101: cached scrollbar gutter rect from last render for hit-testing.
+    last_scrollbar_rect: Option<Rect>,
 }
 
 impl Default for ResumeSessionView {
@@ -82,6 +90,8 @@ impl ResumeSessionView {
             delete_confirm: None,
             wheel: WheelVelocity::new(),
             double_click: DoubleClickDetector::new(),
+            scrollbar_drag: ScrollbarDrag::new(),
+            last_scrollbar_rect: None,
         }
     }
 
@@ -114,6 +124,8 @@ impl ResumeSessionView {
         self.sessions = sessions;
         self.selected_index = 0;
         self.scroll_offset = 0;
+        // TUI-101: reset scrollbar drag state when content changes
+        self.scrollbar_drag.reset();
     }
 
     /// TUI-096: Each session occupies 2 visual rows.
@@ -153,6 +165,43 @@ impl ResumeSessionView {
         if !Self::rect_contains(ev, body_rect) {
             return ResumeSessionViewOutcome::Ignored;
         }
+
+        // TUI-101: handle scrollbar click-and-drag first for left-button events.
+        if matches!(
+            ev.kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        ) {
+            if let Some(sb_rect) = self.last_scrollbar_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let visible_sessions = visible_rows / 2;
+                    let total = self.sessions.len();
+                    if total > visible_sessions {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible_rows,
+                            total_items: total,
+                            visible_items: visible_sessions,
+                            current_offset: self.scroll_offset,
+                        };
+                        if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
+                            self.scroll_offset = offset;
+                            // Adjust selection to stay visible
+                            if self.selected_index >= total {
+                                self.selected_index = total - 1;
+                            }
+                        }
+                        return ResumeSessionViewOutcome::Continued;
+                    }
+                }
+            }
+            // Click outside scrollbar: reset drag state on Up
+            if matches!(ev.kind, MouseEventKind::Up(MouseButton::Left)) {
+                self.scrollbar_drag.reset();
+            }
+            // Fall through to click handling
+        }
+
         match ev.kind {
             MouseEventKind::ScrollUp => {
                 let step = self.wheel.step(WheelDirection::Up);
@@ -270,8 +319,36 @@ impl ResumeSessionView {
         }
     }
 
-    /// Paint the view into the FULL area Rect.
-    pub fn render(&self, area: Rect, buf: &mut Buffer) {
+    /// Paint the view into the FULL area Rect, caching the scrollbar gutter
+    /// rect for TUI-101 click-and-drag hit-testing.
+    pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
+        let sessions = self.sessions.clone();
+        let selected_index = self.selected_index;
+        let scroll_offset = self.scroll_offset;
+        let delete_confirm = self.delete_confirm.as_ref();
+
+        // TUI-101: pre-compute scrollbar rect so we can cache it
+        let visible_rows = Self::visible_rows_for(area);
+        let visible_sessions = visible_rows / 2;
+        let show_scrollbar = sessions.len() > visible_sessions;
+        let body_area = Rect {
+            x: area.x,
+            y: area.y.saturating_add(2), // title + separator
+            width: area.width,
+            height: area.height.saturating_sub(3), // title + separator + footer
+        };
+        let sb_rect = if show_scrollbar {
+            let content_width = body_area.width.saturating_sub(1);
+            Some(Rect {
+                x: body_area.x + content_width,
+                y: body_area.y,
+                width: 1,
+                height: body_area.height,
+            })
+        } else {
+            None
+        };
+
         crate::views::full_screen_shell::render_full_screen_scaffold(
             area,
             buf,
@@ -283,13 +360,15 @@ impl ResumeSessionView {
                 render_session_rows(
                     body_area,
                     buf,
-                    &self.sessions,
-                    self.selected_index,
-                    self.scroll_offset,
+                    &sessions,
+                    selected_index,
+                    scroll_offset,
                 );
             },
-            self.delete_confirm.as_ref(),
+            delete_confirm,
         );
+
+        self.last_scrollbar_rect = sb_rect;
     }
 
     /// Heuristic visible-row hint for `handle_key`'s `visible_rows` argument.
