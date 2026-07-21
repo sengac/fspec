@@ -76,6 +76,7 @@ impl App {
                 | Action::TurnModalPageDown
                 | Action::TurnModalHome
                 | Action::TurnModalEnd
+                | Action::TurnModalJumpToOffset(_)
         )
     }
 
@@ -98,6 +99,14 @@ impl App {
             }
             Action::TurnModalHome => self.jump_turn_modal(false),
             Action::TurnModalEnd => self.jump_turn_modal(true),
+            Action::TurnModalJumpToOffset(offset) => {
+                // TUI-103: jump to the exact offset from scrollbar interaction
+                // COPY-008 rule [6]: scrollbar interaction clears any live selection.
+                self.navigator.agent.turn_modal_selection = None;
+                let (total, viewport) = self.turn_modal_metrics();
+                let max_off = total.saturating_sub(viewport);
+                self.navigator.agent.turn_modal_offset = (*offset).min(max_off);
+            }
             _ => {}
         }
     }

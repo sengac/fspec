@@ -23,7 +23,7 @@
 
 use std::cell::Cell;
 
-use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
+use crossterm::event::{KeyCode, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
@@ -32,6 +32,8 @@ use crate::components::dialog_theme::{render_dialog, Accent, DialogRow, FspecDia
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
+use crate::mouse::rect_contains;
+use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
 
 /// Outcome of routing a single key event through the file search popup.
 #[derive(Debug, Clone)]
@@ -56,6 +58,10 @@ pub struct FileSearchPopup {
     scroll_offset: usize,
     last_visible_rows: Cell<usize>,
     wheel: WheelVelocity,
+    /// TUI-103: scrollbar click-and-drag state machine.
+    scrollbar_drag: ScrollbarDrag,
+    /// TUI-103: cached scrollbar gutter rect from last render for hit-testing.
+    last_scrollbar_rect: Option<Rect>,
 }
 
 impl FileSearchPopup {
@@ -68,6 +74,8 @@ impl FileSearchPopup {
             scroll_offset: 0,
             last_visible_rows: Cell::new(10),
             wheel: WheelVelocity::new(),
+            scrollbar_drag: ScrollbarDrag::new(),
+            last_scrollbar_rect: None,
         }
     }
 
@@ -113,11 +121,15 @@ impl FileSearchPopup {
             self.filter = new_filter.to_string();
             self.selected_index = 0;
             self.scroll_offset = 0;
+            // TUI-103: reset scrollbar drag state when content changes
+            self.scrollbar_drag.reset();
         }
     }
 
     /// Replace the result list. Selection is clamped to the new length.
     pub fn set_matches(&mut self, matches: Vec<String>) {
+        // TUI-103: reset scrollbar drag state when content changes
+        self.scrollbar_drag.reset();
         self.matches = matches;
         if self.matches.is_empty() {
             self.selected_index = 0;
@@ -152,6 +164,9 @@ impl FileSearchPopup {
 
     /// Route a mouse event hit-tested against the popup's last-rendered
     /// rect. Outside the rect → `Ignored` so the caller can bubble.
+    ///
+    /// TUI-103: left-button press/drag/release on the scrollbar gutter
+    /// column are routed through `ScrollbarDrag` before wheel events.
     pub fn handle_mouse(&mut self, ev: MouseEvent, popup_rect: Rect) -> FilePopupOutcome {
         let inside = ev.column >= popup_rect.x
             && ev.column < popup_rect.x + popup_rect.width
@@ -160,6 +175,43 @@ impl FileSearchPopup {
         if !inside {
             return FilePopupOutcome::Ignored;
         }
+
+        // TUI-103: handle scrollbar click-and-drag for left-button events
+        if matches!(
+            ev.kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        ) {
+            if let Some(sb_rect) = self.last_scrollbar_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let total = self.matches.len();
+                    let visible = self.visible_rows();
+                    if total > visible {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible,
+                            total_items: total,
+                            visible_items: visible,
+                            current_offset: self.scroll_offset,
+                        };
+                        if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
+                            self.scroll_offset = offset;
+                            // Adjust selection to stay visible
+                            if self.selected_index >= total {
+                                self.selected_index = total - 1;
+                            }
+                        }
+                        return FilePopupOutcome::Continued;
+                    }
+                }
+            }
+            // Click outside scrollbar: reset drag state on Up
+            if matches!(ev.kind, MouseEventKind::Up(MouseButton::Left)) {
+                self.scrollbar_drag.reset();
+            }
+            return FilePopupOutcome::Ignored;
+        }
+
         match ev.kind {
             MouseEventKind::ScrollUp => {
                 let step = self.wheel.step(WheelDirection::Up);
@@ -232,9 +284,24 @@ impl FileSearchPopup {
         }
     }
 
-    pub fn render(&self, area: Rect, buf: &mut Buffer) {
+    pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
         let vr = (area.height as usize).saturating_sub(8).clamp(1, 20);
         self.last_visible_rows.set(vr);
+
+        // TUI-103: pre-compute scrollbar rect for hit-testing
+        let show_scrollbar = self.matches.len() > vr;
+        let sb_rect = if show_scrollbar {
+            let scrollbar_col = area.x + area.width - 1;
+            Some(Rect {
+                x: scrollbar_col,
+                y: area.y,
+                width: 1,
+                height: area.height,
+            })
+        } else {
+            None
+        };
+
         let dialog = FspecDialog {
             accent: Accent::Cyan,
             title: "File Search",
@@ -243,6 +310,8 @@ impl FileSearchPopup {
             min_width: 45,
         };
         render_dialog(area, buf, &dialog);
+
+        self.last_scrollbar_rect = sb_rect;
     }
 
     pub(super) fn build_rows(&self) -> Vec<DialogRow> {

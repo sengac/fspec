@@ -57,6 +57,9 @@ impl AgentView {
         let Some(seq) = self.turn_modal_seq else {
             self.turn_modal_rows.clear();
             self.turn_modal_body_origin = None;
+            // TUI-103: reset modal scrollbar state when modal closes
+            self.turn_modal_scrollbar_drag.reset();
+            self.turn_modal_scrollbar_rect = None;
             return;
         };
         let Some(ctx) = store.current_session_context() else {
@@ -70,6 +73,9 @@ impl AgentView {
         let rect = fixed_dialog_rect(area);
         let modal = TurnContentModal::new(text, kind);
         self.turn_modal_rows = modal.plain_rows(geom.content_width);
+        // TUI-103: cache scrollbar geometry
+        self.turn_modal_total_rows = geom.total_rows;
+        self.turn_modal_viewport_rows = geom.viewport_rows;
         // Body content begins at rect.x + 2 (border + padding) and
         // rect.y + 4 (border + padding + title + gap) — the SAME origin
         // `TurnContentModal::render` uses for its scrollbar `bar_area`.
@@ -79,6 +85,19 @@ impl AgentView {
             width: geom.content_width as u16,
             height: geom.viewport_rows as u16,
         });
+        // TUI-103: cache scrollbar gutter rect (rightmost column of body area)
+        let show_scrollbar = geom.total_rows > geom.viewport_rows;
+        self.turn_modal_scrollbar_rect = if show_scrollbar {
+            let body = self.turn_modal_body_origin.unwrap();
+            Some(Rect {
+                x: body.x + body.width - 1,
+                y: body.y,
+                width: 1,
+                height: body.height,
+            })
+        } else {
+            None
+        };
     }
 
     /// COPY-008: feed a left press/drag/release to the modal selection

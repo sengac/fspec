@@ -1164,6 +1164,9 @@ pub enum Action {
     TurnModalPageDown,
     TurnModalHome,
     TurnModalEnd,
+    /// TUI-103: jump the turn content modal to a specific scroll offset
+    /// via scrollbar click-and-drag.
+    TurnModalJumpToOffset(usize),
 
     /// COPY-006: emitted by `views/agent/mouse_dispatch.rs` when a
     /// left-button press lands inside the scrollback rect (drag start /

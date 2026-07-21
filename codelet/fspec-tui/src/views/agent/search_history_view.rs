@@ -19,13 +19,15 @@
 //! NOT depend on the legacy floating-popup machinery.
 
 use codelet_rpc_types::HistoryMatch;
-use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
+use crossterm::event::{KeyCode, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
+use crate::mouse::rect_contains;
+use crate::mouse::scrollbar_drag::{ScrollbarDrag, ScrollbarGeometry};
 use crate::views::full_screen_shell::render_full_screen_scaffold_with_title;
 
 use super::search_history_view_render::{render_body, render_title};
@@ -49,6 +51,10 @@ pub struct SearchHistoryView {
     selected_index: usize,
     scroll_offset: usize,
     wheel: WheelVelocity,
+    /// TUI-103: scrollbar click-and-drag state machine.
+    scrollbar_drag: ScrollbarDrag,
+    /// TUI-103: cached scrollbar gutter rect from last render for hit-testing.
+    last_scrollbar_rect: Option<Rect>,
 }
 
 impl Default for SearchHistoryView {
@@ -65,6 +71,8 @@ impl SearchHistoryView {
             selected_index: 0,
             scroll_offset: 0,
             wheel: WheelVelocity::new(),
+            scrollbar_drag: ScrollbarDrag::new(),
+            last_scrollbar_rect: None,
         }
     }
 
@@ -97,11 +105,15 @@ impl SearchHistoryView {
         self.query = new_query.to_string();
         self.selected_index = 0;
         self.scroll_offset = 0;
+        // TUI-103: reset scrollbar drag state when content changes
+        self.scrollbar_drag.reset();
     }
 
     /// Replace the match list. Selection is clamped; scroll is reset
     /// to keep the top row visible after refresh.
     pub fn set_matches(&mut self, matches: Vec<HistoryMatch>) {
+        // TUI-103: reset scrollbar drag state when content changes
+        self.scrollbar_drag.reset();
         self.matches = matches;
         if self.matches.is_empty() {
             self.selected_index = 0;
@@ -129,6 +141,9 @@ impl SearchHistoryView {
     }
 
     /// Route a mouse event hit-tested against the view's `body_rect`.
+    ///
+    /// TUI-103: left-button press/drag/release on the scrollbar gutter
+    /// column are routed through `ScrollbarDrag` before wheel events.
     pub fn handle_mouse(
         &mut self,
         ev: MouseEvent,
@@ -142,6 +157,42 @@ impl SearchHistoryView {
         if !inside {
             return SearchHistoryViewOutcome::Ignored;
         }
+
+        // TUI-103: handle scrollbar click-and-drag for left-button events
+        if matches!(
+            ev.kind,
+            MouseEventKind::Down(MouseButton::Left)
+                | MouseEventKind::Drag(MouseButton::Left)
+                | MouseEventKind::Up(MouseButton::Left)
+        ) {
+            if let Some(sb_rect) = self.last_scrollbar_rect {
+                if rect_contains(sb_rect, ev.column, ev.row) {
+                    let total = self.matches.len();
+                    if total > visible_rows {
+                        let geom = ScrollbarGeometry {
+                            area_height: visible_rows,
+                            total_items: total,
+                            visible_items: visible_rows,
+                            current_offset: self.scroll_offset,
+                        };
+                        if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
+                            self.scroll_offset = offset;
+                            // Adjust selection to stay visible
+                            if self.selected_index >= total {
+                                self.selected_index = total - 1;
+                            }
+                        }
+                        return SearchHistoryViewOutcome::Continued;
+                    }
+                }
+            }
+            // Click outside scrollbar: reset drag state on Up
+            if matches!(ev.kind, MouseEventKind::Up(MouseButton::Left)) {
+                self.scrollbar_drag.reset();
+            }
+            return SearchHistoryViewOutcome::Ignored;
+        }
+
         match ev.kind {
             MouseEventKind::ScrollUp => {
                 let step = self.wheel.step(WheelDirection::Up);
@@ -242,7 +293,30 @@ impl SearchHistoryView {
     /// split, and the optional overlay) to the full-screen shell
     /// (RPC-339), supplying its editable-query title via a title closure
     /// so the `(search): <query>` line and inverse cursor are preserved.
-    pub fn render(&self, area: Rect, buf: &mut Buffer) {
+    ///
+    /// TUI-103: caches the scrollbar gutter rect for hit-testing.
+    pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
+        // TUI-103: pre-compute scrollbar rect for hit-testing
+        let visible_rows = Self::visible_rows_for(area);
+        let show_scrollbar = self.matches.len() > visible_rows;
+        let body_area = Rect {
+            x: area.x,
+            y: area.y.saturating_add(2), // title + separator
+            width: area.width,
+            height: area.height.saturating_sub(3), // title + separator + footer
+        };
+        let sb_rect = if show_scrollbar {
+            let content_width = body_area.width.saturating_sub(1);
+            Some(Rect {
+                x: body_area.x + content_width,
+                y: body_area.y,
+                width: 1,
+                height: body_area.height,
+            })
+        } else {
+            None
+        };
+
         render_full_screen_scaffold_with_title(
             area,
             buf,
@@ -251,6 +325,8 @@ impl SearchHistoryView {
             |body_area, buf| render_body(self, body_area, buf),
             None,
         );
+
+        self.last_scrollbar_rect = sb_rect;
     }
 
     /// Heuristic visible-row hint used by AgentView when computing

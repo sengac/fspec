@@ -80,12 +80,49 @@ impl AgentView {
     /// bubbles to the scrollback) when the modal is closed or the event
     /// is neither a left button nor a vertical wheel. The modal is a
     /// full-screen overlay, so no rect hit-test is needed.
+    ///
+    /// TUI-103: before text selection, hit-test the scrollbar gutter
+    /// (rightmost column of the modal body) and route left-button events
+    /// through `ScrollbarDrag`. On computed offset, emit
+    /// `Action::TurnModalJumpToOffset`.
     pub(super) fn handle_turn_modal_mouse(&mut self, ev: MouseEvent) -> Option<EventResult> {
         self.turn_modal_seq?;
         match ev.kind {
             MouseEventKind::Down(MouseButton::Left)
             | MouseEventKind::Drag(MouseButton::Left)
             | MouseEventKind::Up(MouseButton::Left) => {
+                // TUI-103: check if the click is on the scrollbar gutter
+                if let Some(sb_rect) = self.turn_modal_scrollbar_rect {
+                    if crate::mouse::rect_contains(sb_rect, ev.column, ev.row) {
+                        let total = self.turn_modal_total_rows;
+                        let viewport = self.turn_modal_viewport_rows;
+                        if total > viewport {
+                            let geom = ScrollbarGeometry {
+                                area_height: viewport,
+                                total_items: total,
+                                visible_items: viewport,
+                                current_offset: self.turn_modal_offset,
+                            };
+                            // Convert to body-local row
+                            let body = self.turn_modal_body_origin?;
+                            let local_row = ev.row.saturating_sub(body.y);
+                            let local_ev = MouseEvent {
+                                row: local_row,
+                                ..ev
+                            };
+                            if let Some(offset) =
+                                self.turn_modal_scrollbar_drag.on_mouse(local_ev, geom)
+                            {
+                                self.emit(Action::TurnModalJumpToOffset(offset));
+                            }
+                            return Some(EventResult::consumed());
+                        }
+                    }
+                }
+                // Click outside scrollbar: fall through to text selection
+                if matches!(ev.kind, MouseEventKind::Up(MouseButton::Left)) {
+                    self.turn_modal_scrollbar_drag.reset();
+                }
                 self.feed_turn_modal_selection(ev);
                 Some(EventResult::consumed())
             }
@@ -266,3 +303,7 @@ mod tests;
 #[cfg(test)]
 #[path = "mouse_dispatch_integration_tests.rs"]
 mod integration_tests;
+
+#[cfg(test)]
+#[path = "tui103_popup_scrollbar_tests.rs"]
+mod tui103_tests;

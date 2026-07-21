@@ -137,6 +137,14 @@ pub struct AgentView {
     pub(crate) last_scrollback_total_rows: usize,
     /// TUI-102: cached scroll offset from last render for accurate thumb position.
     pub(crate) last_scrollback_scroll_offset: usize,
+    /// TUI-103: scrollbar click-and-drag state machine for the turn content modal.
+    pub(crate) turn_modal_scrollbar_drag: crate::mouse::scrollbar_drag::ScrollbarDrag,
+    /// TUI-103: cached scrollbar gutter rect for the turn content modal.
+    pub(crate) turn_modal_scrollbar_rect: Option<Rect>,
+    /// TUI-103: cached total rows for the turn modal scrollbar geometry.
+    pub(crate) turn_modal_total_rows: usize,
+    /// TUI-103: cached viewport rows for the turn modal scrollbar geometry.
+    pub(crate) turn_modal_viewport_rows: usize,
 }
 
 impl AgentView {
@@ -305,9 +313,9 @@ impl AgentView {
         // RPC-406: inline pause prompt OR spinner/transition/input
         // (impl in `input_area.rs` to keep this file under 300 LoC).
         self.paint_input_area(areas.input, buf, store, sid.as_ref());
-        if let Some(p) = self.slash_popup.as_ref() {
+        if let Some(p) = self.slash_popup.as_mut() {
             p.render(area, buf);
-        } else if let Some(p) = self.file_popup.as_ref() {
+        } else if let Some(p) = self.file_popup.as_mut() {
             p.render(area, buf);
         }
         // RPC-382/383 + COPY-008: turn content modal overlay + selection.
