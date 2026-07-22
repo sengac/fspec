@@ -177,6 +177,10 @@ impl AgentView {
             }
             // TUI-102: left press/drag/release — try scrollbar gutter first,
             // then fall through to text selection (COPY-006 rule [1]).
+            // Only the Down event decides whether the interaction targets the
+            // scrollbar. Drag/Up events continue to whichever handler claimed
+            // the Down event, so a drag that starts in content and ends on the
+            // scrollbar column still produces a text selection.
             MouseEventKind::Down(MouseButton::Left)
             | MouseEventKind::Drag(MouseButton::Left)
             | MouseEventKind::Up(MouseButton::Left) => {
@@ -185,7 +189,19 @@ impl AgentView {
                     > self.last_scrollback_viewport as usize;
                 let scrollbar_col = rect.x.saturating_add(rect.width).saturating_sub(1);
 
-                if gutter_reserved && ev.column == scrollbar_col {
+                // Down: decide whether the press targets the scrollbar gutter.
+                // Drag/Up: only route to scrollbar if the drag state machine
+                // is already active (Down was on the scrollbar).
+                let on_scrollbar = gutter_reserved && ev.column == scrollbar_col;
+                let scrollbar_active = self.scrollback_scrollbar_drag.is_active();
+                let route_to_scrollbar = match ev.kind {
+                    MouseEventKind::Down(MouseButton::Left) => on_scrollbar,
+                    MouseEventKind::Drag(MouseButton::Left)
+                    | MouseEventKind::Up(MouseButton::Left) => scrollbar_active,
+                    _ => false,
+                };
+
+                if route_to_scrollbar {
                     // TUI-102: convert absolute screen row to scrollbar-relative row
                     let local_row = ev.row.saturating_sub(rect.y);
                     // Hit the scrollbar gutter — route through ScrollbarDrag

@@ -34,7 +34,7 @@ fn rows_of(buf: &Buffer) -> Vec<String> {
 #[test]
 fn empty_query_renders_typeahead_placeholder() {
     // @step Given AgentView has no popups or mode views open
-    let v = SearchHistoryView::new();
+    let mut v = SearchHistoryView::new();
     let mut buf = Buffer::empty(Rect::new(0, 0, 80, 24));
     // @step When AgentView.render_with_store paints
     v.render(Rect::new(0, 0, 80, 24), &mut buf);

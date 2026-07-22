@@ -668,10 +668,10 @@ async fn empty_query_state_renders_placeholder_and_fires_no_backend_calls() {
     let mut buf = Buffer::empty(area);
     {
         let view = app
-            .navigator()
+            .navigator_mut()
             .agent
             .search_view
-            .as_ref()
+            .as_mut()
             .expect("search_view");
         view.render(area, &mut buf);
     }

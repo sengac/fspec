@@ -66,3 +66,4 @@ pub use views::agent::{
     ResumeSessionViewOutcome, SearchHistoryView, SearchHistoryViewOutcome, SLASH_COMMANDS,
 };
 pub use views::{AgentView, BoardView, Navigator, ViewMode};
+pub use store::agent_view::sanitize::sanitize_for_terminal;

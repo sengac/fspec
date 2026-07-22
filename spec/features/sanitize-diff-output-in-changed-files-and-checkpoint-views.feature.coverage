@@ -1,0 +1,140 @@
+{
+  "scenarios": [
+    {
+      "name": "Diff lines with ANSI color codes display cleanly in the Changed Files view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+          "lines": "77-116",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Diff lines with tab characters display with consistent spacing in the Checkpoint view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+          "lines": "118-158",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Diff lines with carriage returns display without line overwriting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+          "lines": "160-200",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Diff lines with control characters display without corrupted rendering",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+          "lines": "202-246",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/diff_common/diff_render.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/diff_common/diff_render.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/diff_common/diff_render.rs"
+    ],
+    "totalLinesCovered": 227
+  }
+}

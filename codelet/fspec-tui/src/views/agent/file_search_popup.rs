@@ -28,7 +28,9 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
 use super::file_search_popup_rows::build_rows as build_dialog_rows;
-use crate::components::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use crate::components::dialog_theme::{
+    dialog_rect, render_dialog, Accent, DialogRow, FspecDialog,
+};
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
@@ -62,6 +64,9 @@ pub struct FileSearchPopup {
     scrollbar_drag: ScrollbarDrag,
     /// TUI-103: cached scrollbar gutter rect from last render for hit-testing.
     last_scrollbar_rect: Option<Rect>,
+    /// TUI-103: cached body origin rect (dialog body content area) for
+    /// converting absolute mouse rows to local scrollbar rows.
+    last_body_origin: Option<Rect>,
 }
 
 impl FileSearchPopup {
@@ -76,6 +81,7 @@ impl FileSearchPopup {
             wheel: WheelVelocity::new(),
             scrollbar_drag: ScrollbarDrag::new(),
             last_scrollbar_rect: None,
+            last_body_origin: None,
         }
     }
 
@@ -102,6 +108,10 @@ impl FileSearchPopup {
     }
     pub fn scroll_offset(&self) -> usize {
         self.scroll_offset
+    }
+    /// TUI-103: cached scrollbar gutter rect from last render.
+    pub fn last_scrollbar_rect(&self) -> Option<Rect> {
+        self.last_scrollbar_rect
     }
     pub fn visible_rows(&self) -> usize {
         self.last_visible_rows.get().max(1)
@@ -188,13 +198,20 @@ impl FileSearchPopup {
                     let total = self.matches.len();
                     let visible = self.visible_rows();
                     if total > visible {
+                        // TUI-103: convert absolute screen row to body-local row
+                        let body = self.last_body_origin.unwrap();
+                        let local_row = ev.row.saturating_sub(body.y);
+                        let local_ev = MouseEvent {
+                            row: local_row,
+                            ..ev
+                        };
                         let geom = ScrollbarGeometry {
-                            area_height: visible,
+                            area_height: body.height as usize,
                             total_items: total,
                             visible_items: visible,
                             current_offset: self.scroll_offset,
                         };
-                        if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
+                        if let Some(offset) = self.scrollbar_drag.on_mouse(local_ev, geom) {
                             self.scroll_offset = offset;
                             // Adjust selection to stay visible
                             if self.selected_index >= total {
@@ -288,20 +305,6 @@ impl FileSearchPopup {
         let vr = (area.height as usize).saturating_sub(8).clamp(1, 20);
         self.last_visible_rows.set(vr);
 
-        // TUI-103: pre-compute scrollbar rect for hit-testing
-        let show_scrollbar = self.matches.len() > vr;
-        let sb_rect = if show_scrollbar {
-            let scrollbar_col = area.x + area.width - 1;
-            Some(Rect {
-                x: scrollbar_col,
-                y: area.y,
-                width: 1,
-                height: area.height,
-            })
-        } else {
-            None
-        };
-
         let dialog = FspecDialog {
             accent: Accent::Cyan,
             title: "File Search",
@@ -309,9 +312,36 @@ impl FileSearchPopup {
             footer: "↑↓ Navigate │ Tab/Enter Select │ Esc Close",
             min_width: 45,
         };
+
+        // TUI-103: compute the dialog rect so we can derive the body area
+        // for scrollbar geometry.
+        let d_rect = dialog_rect(area, &dialog);
+        let body_origin = Rect {
+            x: d_rect.x + 2,
+            y: d_rect.y + 4,
+            width: d_rect.width.saturating_sub(4).max(1),
+            height: d_rect.height.saturating_sub(4).max(1),
+        };
+
+        // TUI-103: pre-compute scrollbar rect for hit-testing — spans the
+        // dialog body area (rightmost column of body content).
+        let show_scrollbar = self.matches.len() > vr;
+        let sb_rect = if show_scrollbar {
+            let scrollbar_col = body_origin.x + body_origin.width - 1;
+            Some(Rect {
+                x: scrollbar_col,
+                y: body_origin.y,
+                width: 1,
+                height: body_origin.height,
+            })
+        } else {
+            None
+        };
+
         render_dialog(area, buf, &dialog);
 
         self.last_scrollbar_rect = sb_rect;
+        self.last_body_origin = Some(body_origin);
     }
 
     pub(super) fn build_rows(&self) -> Vec<DialogRow> {

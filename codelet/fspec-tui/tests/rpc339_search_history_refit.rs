@@ -146,7 +146,7 @@ fn refit_preserves_body_match_list() {
 #[test]
 fn refit_preserves_empty_placeholder_and_footer() {
     // @step Given a SearchHistoryView with an empty query
-    let view = SearchHistoryView::new();
+    let mut view = SearchHistoryView::new();
 
     // @step When the view is rendered through the shell title-closure variant
     let area = Rect::new(0, 0, 80, 24);

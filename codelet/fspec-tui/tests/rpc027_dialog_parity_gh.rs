@@ -13,7 +13,7 @@ use ratatui::Terminal;
 use codelet_fspec_tui::views::agent::file_search_popup::FileSearchPopup;
 use codelet_fspec_tui::views::agent::slash_command_popup::SlashCommandPopup;
 
-fn render_slash_80x24(p: &SlashCommandPopup) -> Buffer {
+fn render_slash_80x24(p: &mut SlashCommandPopup) -> Buffer {
     let backend = TestBackend::new(80, 24);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|f| p.render(f.area(), f.buffer_mut()))
@@ -21,7 +21,7 @@ fn render_slash_80x24(p: &SlashCommandPopup) -> Buffer {
     term.backend().buffer().clone()
 }
 
-fn render_file_80x24(p: &FileSearchPopup) -> Buffer {
+fn render_file_80x24(p: &mut FileSearchPopup) -> Buffer {
     let backend = TestBackend::new(80, 24);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|f| p.render(f.area(), f.buffer_mut()))
@@ -80,9 +80,9 @@ fn buffer_text(buf: &Buffer) -> String {
 #[test]
 fn slash_command_popup_renders_with_cyan_accent_and_inner_title() {
     // @step Given a SlashCommandPopup with at least one matching command
-    let popup = SlashCommandPopup::new();
+    let mut popup = SlashCommandPopup::new();
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&popup);
+    let buf = render_slash_80x24(&mut popup);
     // @step Then the border cells use foreground color Color::Cyan
     assert_eq!(find_border_color(&buf), Color::Cyan);
     // @step And the body's first non-padding row contains the text "Slash Commands"
@@ -105,7 +105,7 @@ fn slash_command_popup_uses_two_character_marker_on_every_match_row() {
     let _ = popup.handle_key(KeyCode::Down, KeyModifiers::NONE);
     assert_eq!(popup.selected_index(), 1);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&popup);
+    let buf = render_slash_80x24(&mut popup);
 
     // Locate "/" prefix of each row — first three /commands appear in top area
     let cmds: Vec<&codelet_fspec_tui::views::agent::slash_commands::SlashCommand> =
@@ -136,7 +136,7 @@ fn slash_command_popup_highlights_selected_match_with_inverse_cyan_black() {
     use crossterm::event::{KeyCode, KeyModifiers};
     let _ = popup.handle_key(KeyCode::Down, KeyModifiers::NONE);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&popup);
+    let buf = render_slash_80x24(&mut popup);
     // Locate the second command's name on the body
     let cmds: Vec<&codelet_fspec_tui::views::agent::slash_commands::SlashCommand> =
         popup.matches().iter().take(3).copied().collect();
@@ -161,9 +161,9 @@ fn slash_command_popup_highlights_selected_match_with_inverse_cyan_black() {
 #[test]
 fn slash_command_popup_footer_documents_tab_enter_select() {
     // @step Given a SlashCommandPopup with matches
-    let popup = SlashCommandPopup::new();
+    let mut popup = SlashCommandPopup::new();
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_slash_80x24(&popup);
+    let buf = render_slash_80x24(&mut popup);
     let text = buffer_text(&buf);
     // @step Then the footer contains "↑↓ Navigate │ Tab/Enter Select │ Esc Close"
     assert!(text.contains("↑↓ Navigate │ Tab/Enter Select │ Esc Close"));
@@ -183,7 +183,7 @@ fn file_search_popup_renders_with_cyan_accent_and_inner_title() {
     let mut popup = FileSearchPopup::new(0, "rea");
     popup.set_matches(vec!["README.md".to_string()]);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&popup);
+    let buf = render_file_80x24(&mut popup);
     // @step Then the border cells use foreground color Color::Cyan
     assert_eq!(find_border_color(&buf), Color::Cyan);
     // @step And the body's first non-padding row contains the text "File Search"
@@ -207,7 +207,7 @@ fn file_search_popup_uses_two_character_marker_on_every_match_row() {
         "c.md".to_string(),
     ]);
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&popup);
+    let buf = render_file_80x24(&mut popup);
     // @step Then the row at index 0 begins with the two-character marker "▸ "
     let (a_x, a_y) = find_text(&buf, "a.md").expect("a.md present");
     assert_eq!(buf[(a_x - 2, a_y)].symbol(), "▸");
@@ -225,9 +225,9 @@ fn file_search_popup_uses_two_character_marker_on_every_match_row() {
 #[test]
 fn file_search_popup_empty_state_literal_renders_in_plain_text() {
     // @step Given a FileSearchPopup with no matches and an empty filter
-    let popup = FileSearchPopup::new(0, "");
+    let mut popup = FileSearchPopup::new(0, "");
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&popup);
+    let buf = render_file_80x24(&mut popup);
     let text = buffer_text(&buf);
     // @step Then the body contains the literal "(type to search files)"
     assert!(text.contains("(type to search files)"));
@@ -245,9 +245,9 @@ fn file_search_popup_empty_state_literal_renders_in_plain_text() {
 #[test]
 fn file_search_popup_no_match_state_renders_with_filter_quoted() {
     // @step Given a FileSearchPopup with filter "zzz" and zero matches
-    let popup = FileSearchPopup::new(0, "zzz");
+    let mut popup = FileSearchPopup::new(0, "zzz");
     // @step When I render it onto an 80x24 TestBackend buffer
-    let buf = render_file_80x24(&popup);
+    let buf = render_file_80x24(&mut popup);
     let text = buffer_text(&buf);
     // @step Then the body contains the literal "(no files match \"zzz\")"
     assert!(

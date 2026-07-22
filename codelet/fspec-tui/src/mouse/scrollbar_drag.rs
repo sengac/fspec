@@ -91,6 +91,13 @@ impl ScrollbarDrag {
         matches!(self.state, State::Dragging { .. })
     }
 
+    /// True when the state machine is not idle (either Pressed or Dragging).
+    /// Used by consumers to decide whether Drag/Up events should be routed
+    /// back to the scrollbar handler.
+    pub fn is_active(&self) -> bool {
+        !matches!(self.state, State::Idle)
+    }
+
     /// Invert the proportional formula: offset = (row * total) / area_height.
     fn compute_offset(row: u16, geom: &ScrollbarGeometry) -> usize {
         if geom.total_items == 0 || geom.area_height == 0 {

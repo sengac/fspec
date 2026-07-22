@@ -253,17 +253,31 @@ fn slash_command_popup_handle_mouse_routes_scrollbar_events() {
     let mut buf = ratatui::buffer::Buffer::empty(popup_rect);
     popup.render(popup_rect, &mut buf);
 
-    let scrollbar_col = popup_rect.x + popup_rect.width - 1; // column 49
+    // Use the actual cached scrollbar rect from the render
+    let sb_rect = popup
+        .last_scrollbar_rect()
+        .expect("scrollbar rect should be cached after render");
+    let scrollbar_col = sb_rect.x;
+    // Click at a row near the bottom of the scrollbar track
+    let click_row = sb_rect.y + sb_rect.height - 1;
 
-    // When: click on scrollbar track at row 15
-    let down_ev = mouse_event(MouseEventKind::Down(MouseButton::Left), scrollbar_col, 15);
+    // When: click on scrollbar track
+    let down_ev = mouse_event(
+        MouseEventKind::Down(MouseButton::Left),
+        scrollbar_col,
+        click_row,
+    );
     let down_result = popup.handle_mouse(down_ev, popup_rect);
     assert!(
         matches!(down_result, PopupOutcome::Continued | PopupOutcome::Ignored),
         "Down event should not produce a selection outcome"
     );
 
-    let up_ev = mouse_event(MouseEventKind::Up(MouseButton::Left), scrollbar_col, 15);
+    let up_ev = mouse_event(
+        MouseEventKind::Up(MouseButton::Left),
+        scrollbar_col,
+        click_row,
+    );
     let up_result = popup.handle_mouse(up_ev, popup_rect);
 
     // Then: scroll offset should have changed (not 0)
@@ -304,18 +318,27 @@ fn file_search_popup_handle_mouse_routes_scrollbar_drag() {
     let mut buf = ratatui::buffer::Buffer::empty(popup_rect);
     popup.render(popup_rect, &mut buf);
 
-    let scrollbar_col = popup_rect.x + popup_rect.width - 1;
+    // Use the actual cached scrollbar rect from the render
+    let sb_rect = popup
+        .last_scrollbar_rect()
+        .expect("scrollbar rect should be cached after render");
+    let scrollbar_col = sb_rect.x;
 
-    // When: press at row 5 (top of scrollbar rect, which starts at popup_rect.y)
-    let down_ev = mouse_event(MouseEventKind::Down(MouseButton::Left), scrollbar_col, 5);
+    // When: press at the top of the scrollbar rect
+    let down_ev = mouse_event(
+        MouseEventKind::Down(MouseButton::Left),
+        scrollbar_col,
+        sb_rect.y,
+    );
     let down_result = popup.handle_mouse(down_ev, popup_rect);
     assert!(
         matches!(down_result, FilePopupOutcome::Continued | FilePopupOutcome::Ignored),
         "Down event should not produce a selection outcome"
     );
 
-    // And: drag to row 15 (within scrollbar rect)
-    let drag_ev = mouse_event(MouseEventKind::Drag(MouseButton::Left), scrollbar_col, 15);
+    // And: drag to the middle of the scrollbar rect
+    let drag_row = sb_rect.y + sb_rect.height / 2;
+    let drag_ev = mouse_event(MouseEventKind::Drag(MouseButton::Left), scrollbar_col, drag_row);
     let drag_result = popup.handle_mouse(drag_ev, popup_rect);
 
     // Then: scroll offset should have changed
@@ -361,22 +384,36 @@ fn search_history_view_handle_mouse_routes_scrollbar_events() {
         width: 80,
         height: 20,
     };
-    let scrollbar_col = body_rect.x + body_rect.width - 1;
     let visible_rows = SearchHistoryView::visible_rows_for(body_rect);
 
     // Render to cache the scrollbar rect
     let mut buf = ratatui::buffer::Buffer::empty(body_rect);
     view.render(body_rect, &mut buf);
 
-    // When: click on scrollbar track at row 15
-    let down_ev = mouse_event(MouseEventKind::Down(MouseButton::Left), scrollbar_col, 15);
+    // Use the actual cached scrollbar rect from the render
+    let sb_rect = view
+        .last_scrollbar_rect()
+        .expect("scrollbar rect should be cached after render");
+    let scrollbar_col = sb_rect.x;
+
+    // When: click on scrollbar track near the bottom
+    let click_row = sb_rect.y + sb_rect.height - 2;
+    let down_ev = mouse_event(
+        MouseEventKind::Down(MouseButton::Left),
+        scrollbar_col,
+        click_row,
+    );
     let down_result = view.handle_mouse(down_ev, body_rect, visible_rows);
     assert!(
         matches!(down_result, SearchHistoryViewOutcome::Continued | SearchHistoryViewOutcome::Ignored),
         "Down event should not produce a selection outcome"
     );
 
-    let up_ev = mouse_event(MouseEventKind::Up(MouseButton::Left), scrollbar_col, 15);
+    let up_ev = mouse_event(
+        MouseEventKind::Up(MouseButton::Left),
+        scrollbar_col,
+        click_row,
+    );
     let up_result = view.handle_mouse(up_ev, body_rect, visible_rows);
 
     // Then: scroll offset should have changed

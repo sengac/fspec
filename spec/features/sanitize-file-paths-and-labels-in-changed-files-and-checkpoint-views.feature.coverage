@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "name": "File paths with unusual characters display cleanly in the Changed Files view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+          "lines": "103-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkpoint labels with special characters display cleanly in the Checkpoint view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/diff_common/row.rs",
+          "lines": "154-204",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/checkpoints/render.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/diff_common/row.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/diff_common/row.rs",
+      "codelet/fspec-tui/src/views/checkpoints/render.rs"
+    ],
+    "totalLinesCovered": 147
+  }
+}

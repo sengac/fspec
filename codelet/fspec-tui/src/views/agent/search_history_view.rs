@@ -96,6 +96,11 @@ impl SearchHistoryView {
         self.scroll_offset
     }
 
+    /// TUI-103: cached scrollbar gutter rect from last render.
+    pub fn last_scrollbar_rect(&self) -> Option<Rect> {
+        self.last_scrollbar_rect
+    }
+
     pub fn selected(&self) -> Option<&HistoryMatch> {
         self.matches.get(self.selected_index)
     }
@@ -169,13 +174,19 @@ impl SearchHistoryView {
                 if rect_contains(sb_rect, ev.column, ev.row) {
                     let total = self.matches.len();
                     if total > visible_rows {
+                        // TUI-103: convert absolute screen row to body-local row
+                        let local_row = ev.row.saturating_sub(sb_rect.y);
+                        let local_ev = MouseEvent {
+                            row: local_row,
+                            ..ev
+                        };
                         let geom = ScrollbarGeometry {
-                            area_height: visible_rows,
+                            area_height: sb_rect.height as usize,
                             total_items: total,
                             visible_items: visible_rows,
                             current_offset: self.scroll_offset,
                         };
-                        if let Some(offset) = self.scrollbar_drag.on_mouse(ev, geom) {
+                        if let Some(offset) = self.scrollbar_drag.on_mouse(local_ev, geom) {
                             self.scroll_offset = offset;
                             // Adjust selection to stay visible
                             if self.selected_index >= total {
