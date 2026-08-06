@@ -4,17 +4,37 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 
 ## Quick Start
 
-1. Copy `fspec-hooks.json` into your project's `spec/` directory
-2. Copy the `.sh` scripts into `spec/hooks/examples/` (or wherever you prefer)
-3. Make the scripts executable: `chmod +x spec/hooks/examples/*.sh`
-4. Adjust the `command` paths in `fspec-hooks.json` to match your layout
+1. Copy `fspec-hooks.json.example` to `spec/fspec-hooks.json` in your project root
+2. Copy the `.sh` scripts to `spec/hooks/` (or wherever you prefer)
+3. Make the scripts executable: `chmod +x spec/hooks/*.sh`
+4. Adjust the `command` paths in `spec/fspec-hooks.json` to match your layout
+
+```bash
+cp examples/hooks/fspec-hooks.json.example spec/fspec-hooks.json
+mkdir -p spec/hooks
+cp examples/hooks/*.sh spec/hooks/
+chmod +x spec/hooks/*.sh
+```
+
+### Two-Level Config
+
+Hooks can be configured at two levels, which are concatenated at runtime:
+
+| Level | Path | Priority |
+|-------|------|----------|
+| User | `~/.fspec/fspec-hooks.json` | First (runs before project-level) |
+| Project | `spec/fspec-hooks.json` | Appended after user-level |
+
+Both files use the same JSON format. Project-level `global` settings take precedence over user-level.
+
+---
 
 ## The 6 Agent Lifecycle Events
 
 ### 1. `session_start` — Session Initialization
 
-**Script:** [`on-session-start.sh`](on-session-start.sh)  
-**Format:** `HookDefinition[]` (name, command, blocking, timeout)  
+**Script:** [`on-session-start.sh`](on-session-start.sh)
+**Format:** `HookDefinition[]` (name, command, timeout)
 **When:** Fires when an agent session starts (startup or resume)
 
 **What it does:**
@@ -26,18 +46,19 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 ```json
 {
   "name": "inject-project-standards",
-  "command": "spec/hooks/examples/on-session-start.sh",
-  "blocking": false,
+  "command": "spec/hooks/on-session-start.sh",
   "timeout": 10
 }
 ```
+
+**Blocking:** Non-blocking. Exit codes produce warnings only — the session always starts.
 
 ---
 
 ### 2. `session_end` — Session Cleanup
 
-**Script:** [`on-session-end.sh`](on-session-end.sh)  
-**Format:** `HookDefinition[]`  
+**Script:** [`on-session-end.sh`](on-session-end.sh)
+**Format:** `HookDefinition[]`
 **When:** Fires when a session ends (completed, cancelled, exit, or error)
 
 **What it does:**
@@ -49,8 +70,7 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 ```json
 {
   "name": "log-session-end",
-  "command": "spec/hooks/examples/on-session-end.sh",
-  "blocking": false,
+  "command": "spec/hooks/on-session-end.sh",
   "timeout": 10
 }
 ```
@@ -59,8 +79,8 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 
 ### 3. `user_prompt_submit` — Prompt Policy Enforcement
 
-**Script:** [`on-user-prompt.sh`](on-user-prompt.sh)  
-**Format:** `HookDefinition[]`  
+**Script:** [`on-user-prompt.sh`](on-user-prompt.sh)
+**Format:** `HookDefinition[]`
 **When:** Fires after the user submits a prompt, before the agent sees it
 
 **What it does:**
@@ -68,13 +88,12 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 - Blocks prompts with destructive intent (`rm -rf`, `drop database`)
 - Allows normal prompts through
 
-**Blocking:** Exit code 2 + stderr message → prompt rejected, user sees the message. The agent never processes the blocked prompt.
+**Blocking:** Exit code 2 + stderr message → prompt blocked, user sees the message. The agent never processes the blocked prompt.
 
 ```json
 {
   "name": "policy-enforcement",
-  "command": "spec/hooks/examples/on-user-prompt.sh",
-  "blocking": true,
+  "command": "spec/hooks/on-user-prompt.sh",
   "timeout": 5
 }
 ```
@@ -83,8 +102,8 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 
 ### 4. `pre_tool_use` — Tool Call Security Gate
 
-**Script:** [`on-pre-tool-use.sh`](on-pre-tool-use.sh)  
-**Format:** `HookGroup[]` (with regex `matcher` for tool name filtering)  
+**Script:** [`on-pre-tool-use.sh`](on-pre-tool-use.sh)
+**Format:** `HookGroup[]` (with regex `matcher` for tool name filtering)
 **When:** Fires BEFORE a tool executes
 
 **What it does:**
@@ -93,28 +112,32 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 - **Continues** (no opinion) for safe commands
 
 **Decisions (Claude Code compatible JSON):**
-- `permissionDecision: "allow"` → auto-approve, skip permission prompt
-- `permissionDecision: "deny"` → block the tool call
-- `permissionDecision: "ask"` → force interactive user prompt
+- `hookSpecificOutput.permissionDecision: "allow"` → auto-approve, skip permission prompt
+- `hookSpecificOutput.permissionDecision: "deny"` → block the tool call
+- `hookSpecificOutput.permissionDecision: "ask"` → force interactive user prompt
 - Exit 0, no JSON → Continue (no opinion)
 
 **Short-circuit:** Allow/Deny stops evaluation of remaining hook groups. Continue passes to the next group.
+
+**Timeout:** If a pre_tool_use hook times out, the tool call is **denied** (safety-first).
 
 ```json
 {
   "matcher": "Bash",
   "hooks": [
-    { "command": "spec/hooks/examples/on-pre-tool-use.sh", "timeout": 5 }
+    { "command": "spec/hooks/on-pre-tool-use.sh", "timeout": 5 }
   ]
 }
 ```
+
+**Matcher:** The `matcher` is a regex that must match the **entire** tool name (anchored as `^(?:PATTERN)$`). For example, `"Bash"` matches only the tool named exactly "Bash".
 
 ---
 
 ### 5. `post_tool_use` — Post-Execution Analysis
 
-**Script:** [`on-post-tool-use.sh`](on-post-tool-use.sh)  
-**Format:** `HookGroup[]` (with regex `matcher`)  
+**Script:** [`on-post-tool-use.sh`](on-post-tool-use.sh)
+**Format:** `HookGroup[]` (with regex `matcher`)
 **When:** Fires AFTER a tool finishes executing
 
 **What it does:**
@@ -123,11 +146,13 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 
 **Context injection:** Return JSON with `hookSpecificOutput.additionalContext` to inject lint warnings, test results, or other feedback as system messages.
 
+**Timeout:** If a post_tool_use hook times out, a warning is logged but execution continues.
+
 ```json
 {
   "matcher": "Write|Edit",
   "hooks": [
-    { "command": "spec/hooks/examples/on-post-tool-use.sh", "timeout": 10 }
+    { "command": "spec/hooks/on-post-tool-use.sh", "timeout": 10 }
   ]
 }
 ```
@@ -136,8 +161,8 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 
 ### 6. `notification` — System Event Logger
 
-**Script:** [`on-notification.sh`](on-notification.sh)  
-**Format:** `HookDefinition[]`  
+**Script:** [`on-notification.sh`](on-notification.sh)
+**Format:** `HookDefinition[]`
 **When:** Fires when the agent system emits notifications (permission prompts, task completions, errors)
 
 **What it does:**
@@ -147,8 +172,7 @@ Example hook scripts demonstrating all 6 agent lifecycle events. Copy and adapt 
 ```json
 {
   "name": "log-notifications",
-  "command": "spec/hooks/examples/on-notification.sh",
-  "blocking": false,
+  "command": "spec/hooks/on-notification.sh",
   "timeout": 5
 }
 ```
@@ -165,7 +189,7 @@ Every hook receives a JSON payload on stdin and environment variables on the pro
 |----------|-------------|
 | `FSPEC_PROJECT_DIR` | Workspace root path |
 | `FSPEC_SESSION_ID` | UUID of the agent session |
-| `FSPEC_HOOK_EVENT` | Event name (e.g., `PreToolUse`) |
+| `FSPEC_HOOK_EVENT` | Event name (e.g., `SessionStart`) |
 | `FSPEC_TRANSCRIPT_PATH` | Path to the session transcript file |
 
 ### Payloads by Event
@@ -202,13 +226,15 @@ Every hook receives a JSON payload on stdin and environment variables on the pro
 
 ## Exit Code Semantics
 
-| Exit Code | Meaning |
-|-----------|---------|
-| `0` | Success / Continue (no opinion) |
-| `2` + stderr | Deny / Block (reason = stderr message) |
-| `2` + no stderr | Warning (continue) |
-| Other non-zero | Non-blocking warning |
-| Timeout | Deny for `pre_tool_use` (safety-first), Warning for all others |
+| Exit Code | session_start / session_end / notification | user_prompt_submit | pre_tool_use |
+|-----------|-------------------------------------------|--------------------|------------------------|
+| `0` | Success | Allow (unless JSON says otherwise) | Continue (no opinion) |
+| `2` + stderr | Warning (logged) | **Block** prompt | **Deny** tool call |
+| `2` + no stderr | Warning | Warning | Warning (continue) |
+| Other non-zero | Warning | Warning | Warning (continue) |
+| Timeout | Warning | Warning | **Deny** (safety-first) |
+
+For `post_tool_use`: all non-zero exit codes produce warnings only (never blocks).
 
 ## Claude Code Compatible JSON Response
 
@@ -219,7 +245,6 @@ Hook stdout can contain JSON compatible with Claude Code's hook protocol:
   "continue": true,
   "decision": "allow",
   "reason": "Explanation text",
-  "suppressOutput": false,
   "hookSpecificOutput": {
     "permissionDecision": "allow|deny|ask",
     "additionalContext": "Text injected as system message"
@@ -227,9 +252,16 @@ Hook stdout can contain JSON compatible with Claude Code's hook protocol:
 }
 ```
 
+**JSON response priority for pre_tool_use:**
+1. `hookSpecificOutput.permissionDecision` → Allow/Deny/Ask
+2. `continue: false` → Deny
+3. `decision: "deny"` or `"block"` → Deny
+4. Exit code 2 + stderr → Deny
+5. Everything else → Continue (no opinion)
+
 ## Config Format Reference
 
-See [`fspec-hooks.json`](fspec-hooks.json) for a complete example with all 6 events configured. Key structure:
+See [`fspec-hooks.json.example`](fspec-hooks.json.example) for a complete example with all 6 events configured. Key structure:
 
 ```json
 {
@@ -238,10 +270,10 @@ See [`fspec-hooks.json`](fspec-hooks.json) for a complete example with all 6 eve
     "shell": "bash -c"
   },
   "hooks": {
-    "session_start":        [{ "name": "...", "command": "...", "blocking": false, "timeout": 10 }],
-    "session_end":          [{ "name": "...", "command": "...", "blocking": false, "timeout": 10 }],
-    "user_prompt_submit":   [{ "name": "...", "command": "...", "blocking": true,  "timeout": 5  }],
-    "notification":         [{ "name": "...", "command": "...", "blocking": false, "timeout": 5  }],
+    "session_start":        [{ "name": "...", "command": "...", "timeout": 10 }],
+    "session_end":          [{ "name": "...", "command": "...", "timeout": 10 }],
+    "user_prompt_submit":   [{ "name": "...", "command": "...", "timeout": 5  }],
+    "notification":         [{ "name": "...", "command": "...", "timeout": 5  }],
     "pre_tool_use":         [{ "matcher": "Bash", "hooks": [{ "command": "...", "timeout": 5 }] }],
     "post_tool_use":        [{ "matcher": "Write|Edit", "hooks": [{ "command": "...", "timeout": 10 }] }]
   }
