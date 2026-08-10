@@ -65,27 +65,19 @@ difference is debug-info retention.
 | `release`        | `1`     | `"none"`    | ~800 MB      | Local profiling builds (pprof-rs symbol resolution) |
 | `release-slim`   | `false` | `"symbols"` | ~150 MB      | **Shipping the standalone `fspec` binary**    |
 
-### Why `release-slim` for Distribution?
+### Why Two Profiles?
 
 The default `[profile.release]` block retains DWARF line tables (`debug = 1`)
 and the full symbol table (`strip = "none"`) with `split-debuginfo = "off"` so
-the DWARF stays *embedded* in the artifact. This exists for one reason:
-**the `codelet-napi` Node SEA pprof contract**.
+the DWARF stays *embedded* in the artifact. This is required for **pprof-rs
+sampling profiler** builds — the profiler needs line-table DWARF to resolve
+Rust symbols to file:line attribution inside the binary.
 
-At launch, the Node Single-Executable-Application extracts the embedded
-`codelet-napi.node` into a random temp directory
-(`/var/folders/.../T/fspec-sea-<pid>/codelet-napi.node`). macOS's
-path-convention `.dSYM` lookup then searches for a sibling
-`codelet-napi.node.dSYM` bundle in that temp dir — which never exists
-— so without embedded DWARF, every `pprof` sample resolves to a raw
-address and `AgentManager.profile` returns phantom hot-spots like
-`_napi_register_module_v1` instead of real Rust function attribution.
+The standalone `fspec` distribution binary does not need this:
 
-The standalone `fspec` binary has **none** of those constraints:
-
-- It is not packed into a SEA — DWARF doesn't need to ride with the file.
-- It is not the pprof sampling target — `codelet-napi` is.
 - It is shipped to end users — every megabyte of DWARF is dead weight.
+- Profiling is a developer-only concern, handled by the `release` profile.
+- Distribution only needs optimised code, not debug symbols.
 
 ### What `release-slim` Does
 
@@ -225,10 +217,10 @@ ls -lh target/release-slim/fspec
 
 - ✅ **Do** use `--profile release-slim` for the standalone `fspec` ELF.
 - ❌ **Do not** add `strip = "symbols"` or `debug = false` to
-  `[profile.release]`. That would silently break pprof attribution
-  inside the `codelet-napi.node` shipped through the Node SEA on macOS.
-- ❌ **Do not** post-process the SEA-bound `.node` file with `strip(1)`
-  for the same reason.
+  `[profile.release]`. That would break pprof-rs symbol resolution
+  for local profiling builds.
+- ❌ **Do not** post-process `release` builds with `strip(1)` — use
+  `--profile release-slim` instead.
 
 If you only need a slim Linux binary right now without rebuilding,
 `strip -s codelet/target/release/fspec` produces the same ~150 MB
