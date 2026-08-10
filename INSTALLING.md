@@ -1,16 +1,16 @@
 # Installation Guide
 
-fspec supports multiple installation methods. Choose the one that works best for you.
+fspec is a pure-Rust binary. Choose the installation method that works best for you.
 
 ## Quick Install
 
-### macOS & Linux (Native Installer — Recommended)
+### macOS & Linux
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
 ```
 
-No dependencies required — downloads a self-contained binary with Node.js embedded.
+No dependencies required — downloads a self-contained Rust binary (~150 MB).
 
 ### Windows (PowerShell)
 
@@ -18,13 +18,13 @@ No dependencies required — downloads a self-contained binary with Node.js embe
 irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex
 ```
 
-### npm (All Platforms)
+### Build from Source
 
 ```bash
-npm install -g @sengac/fspec
+cd codelet
+cargo build --profile release-slim -p codelet-fspec
+cp target/release-slim/fspec ~/.local/bin/
 ```
-
-> **Note:** The npm package requires Node.js >= 18.0.0 and includes native binaries for supported platforms. The native installer downloads a standalone SEA (Single Executable Application) binary with no runtime dependencies.
 
 ## Installation Methods
 
@@ -32,8 +32,7 @@ npm install -g @sengac/fspec
 | --- | --- | --- | --- |
 | **Native Installer** | macOS, Linux | `curl ... \| bash` (see above) | Recommended — standalone binary, no dependencies |
 | **PowerShell Installer** | Windows | `irm ... \| iex` (see above) | Standalone binary for Windows |
-| **npm** | All | `npm install -g @sengac/fspec` | Requires Node.js >= 18 |
-| **Build from Source** | All | See [Building from Source](#building-from-source) | For contributors and advanced users |
+| **Build from Source** | All | `cargo build` (see above) | For contributors and advanced users |
 
 ## After Installation
 
@@ -92,7 +91,7 @@ The native installer:
 
 1. Detects your OS and CPU architecture
 2. Fetches the latest release from GitHub
-3. Downloads the platform-specific SEA binary archive
+3. Downloads the platform-specific binary
 4. Verifies the SHA-256 checksum (if available)
 5. Extracts and installs the binary to `~/.local/bin` (configurable)
 6. Adds PATH guidance if the directory isn't already in your PATH
@@ -137,14 +136,12 @@ irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | ie
 
 ## Building from Source
 
-For contributors or users who want to build from source:
-
 ### Prerequisites
 
-- **Node.js >= 25.5.0** (for SEA binary building) or **>= 18.0.0** (for npm usage)
-- **Rust** (via rustup) — required for the NAPI-RS native addon
+- **Rust** (via rustup)
 - **Protocol Buffers compiler** (`protoc`) — required at build time
-- See [BUILD.md](BUILD.md) for complete build prerequisites
+
+See [BUILD.md](BUILD.md) for complete build prerequisites.
 
 ### Build Steps
 
@@ -153,35 +150,26 @@ For contributors or users who want to build from source:
 git clone https://github.com/sengac/fspec.git
 cd fspec
 
-# Install dependencies
-npm install
+# Build the standalone binary
+cd codelet
+cargo build --profile release-slim -p codelet-fspec
 
-# Build the Vite bundle + NAPI-RS native addon
-npm run build
-
-# Option A: Run directly via Node.js
-node dist/index.js --version
-
-# Option B: Build a standalone SEA binary (requires Node.js >= 25.5.0)
-npm run build:sea
-
-# Install the SEA binary locally
-npm run install:local
-# or manually:
-cp dist/sea/fspec /usr/local/bin/fspec
+# Install locally
+cp target/release-slim/fspec ~/.local/bin/
 ```
 
 ### Development Mode
 
 ```bash
-# Watch mode — rebuilds on file changes
-npm run dev
+# Build and run directly
+cd codelet
+cargo run -p codelet-fspec
 
 # Run tests
-npm test
+cargo test -p codelet-fspec
 
-# Format code
-npm run format
+# Check code
+cargo clippy -p codelet-fspec
 ```
 
 ## Troubleshooting
@@ -246,16 +234,17 @@ If macOS blocks the binary with "cannot be opened because the developer cannot b
 xattr -d com.apple.quarantine ~/.local/bin/fspec
 ```
 
-### npm install fails with native addon errors
-
-The npm package includes pre-built native binaries. If the binary for your platform isn't available:
+### Build fails with missing protoc
 
 ```bash
-# Try installing with build from source
-npm install -g @sengac/fspec --build-from-source
+# macOS
+brew install protobuf
 
-# Or use the native installer instead
-curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
+# Ubuntu/Debian
+sudo apt install -y protobuf-compiler
+
+# Verify
+protoc --version  # libprotoc 3.x or higher
 ```
 
 ### Still stuck?
@@ -279,12 +268,6 @@ rm /usr/local/bin/fspec
 Remove-Item "$env:USERPROFILE\.local\bin\fspec.exe"
 ```
 
-### npm
-
-```bash
-npm uninstall -g @sengac/fspec
-```
-
 ## Installation Paths
 
 ### macOS & Linux
@@ -293,7 +276,7 @@ npm uninstall -g @sengac/fspec
 | --- | --- |
 | `~/.local/bin/fspec` | Default (native installer) |
 | `/usr/local/bin/fspec` | System-wide (requires sudo) |
-| `$(npm prefix -g)/bin/fspec` | npm global install |
+| `codelet/target/release-slim/fspec` | Build from source |
 
 ### Windows
 
@@ -301,7 +284,7 @@ npm uninstall -g @sengac/fspec
 | --- | --- |
 | `%USERPROFILE%\.local\bin\fspec.exe` | Default (PowerShell installer) |
 | `C:\Program Files\fspec\fspec.exe` | System-wide (requires admin) |
-| `%APPDATA%\npm\fspec.cmd` | npm global install |
+| `codelet\target\release-slim\fspec.exe` | Build from source |
 
 ## Additional Resources
 

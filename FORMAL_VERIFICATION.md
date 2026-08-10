@@ -14,7 +14,7 @@ property-based tests.
 
 ## Why Alloy?
 
-Conventional testing (Vitest, Rust unit tests, integration tests) verifies
+Conventional testing (Rust unit tests, proptest, integration tests) verifies
 **examples** — specific inputs produce specific outputs. Alloy verifies
 **universally quantified properties** over a bounded universe — for every
 possible state up to some scope, an invariant holds (or a counterexample is

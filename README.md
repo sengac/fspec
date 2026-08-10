@@ -8,7 +8,6 @@
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![npm](https://img.shields.io/npm/v/@sengac/fspec)](https://www.npmjs.com/package/@sengac/fspec)
 
 ---
 
@@ -82,8 +81,21 @@ Configure providers with `/provider` in any session.
 
 ## Quick Start
 
+### Install
+
 ```bash
-npm install -g @sengac/fspec
+# macOS / Linux — native installer (recommended):
+curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
+
+# Or build from source:
+cd codelet
+cargo build --profile release-slim -p codelet-fspec
+cp target/release-slim/fspec ~/.local/bin/
+```
+
+### Run
+
+```bash
 cd /path/to/your/project
 fspec
 ```
@@ -92,15 +104,88 @@ This opens the factory floor—your Kanban board with AI workstations ready to t
 
 ![Interactive Kanban](interactive-kanban.png)
 
-> **Building from source?** See [BUILD.md](BUILD.md) for both the
-> `codelet-napi` multi-platform binaries and the standalone pure-Rust
-> `fspec` binary. The standalone binary **must** be built with the
-> `release-slim` profile (`cargo build --profile release-slim -p codelet-fspec`)
-> — the default `release` profile retains ~650 MB of embedded DWARF that
-> only exists to make `pprof` sampling work inside the macOS Node SEA
-> bundle for `codelet-napi`. See
-> [BUILD.md → Building the standalone `fspec` Rust binary](BUILD.md#building-the-standalone-fspec-rust-binary)
-> for the full rationale and the table of profile differences.
+> **Building from source?** See [BUILD.md](BUILD.md) for complete build instructions,
+> cross-compilation, and the `release-slim` profile rationale.
+
+---
+
+## Rust Binary Architecture
+
+The `fspec` binary is a pure-Rust application built in the `codelet/` directory.
+It provides the TUI, WebSocket server, and ACDD command surface as a single
+self-contained executable — no Node.js runtime required.
+
+### Three Operating Modes
+
+The binary supports three modes via clap subcommands:
+
+| Mode | Command | Description |
+|------|---------|-------------|
+| **Combined** (default) | `fspec` | TUI + always-on WebSocket server in one process |
+| **Daemon** | `fspec daemon` | Headless WebSocket server only (suitable for systemd / launchd) |
+| **Client** | `fspec client` | Frontend-only; connects to a running daemon via WebSocket |
+
+### Workspace Structure
+
+The Rust codebase is organized as a Cargo workspace with 25 crates:
+
+| Crate | Purpose |
+|-------|---------|
+| `codelet-fspec` | **Main binary** — CLI entry point, clap subcommands, mode selection |
+| `codelet-fspec-core` | Command implementations — pure-Rust port of all fspec CLI commands |
+| `codelet-fspec-tui` | Terminal UI — ratatui-based Kanban board, session views, agent interaction |
+| `codelet-agent-loop` | LLM agent loop — drains input, dispatches to LlmProvider, emits streaming output |
+| `codelet-sessions` | Session management — NAPI-free SessionManager + BackgroundSession |
+| `codelet-core` | Persistence, compaction, lifecycle hooks, token tracking, scheduler |
+| `codelet-common` | Shared utilities — data directory, file locking, logging, config |
+| `codelet-providers` | LLM provider integrations — Anthropic, OpenAI, Gemini, Codex, etc. |
+| `codelet-rpc` | RPC framework — tarpc-based in-process and WebSocket transports |
+| `codelet-rpc-server` | WebSocket RPC server — headless daemon mode |
+| `codelet-rpc-types` | Shared RPC types and message definitions |
+| `codelet-rpc-embedded` | Embedded transport — in-process tarpc channel |
+| `codelet-tools` | AI tool implementations — Read, Write, Bash, Grep, AstGrep, etc. |
+| `codelet-graph` | Knowledge graph — AST indexing, concept relationships |
+| `codelet-git` | Git operations — checkpoints, worktrees, branch management |
+| `codelet-cli` | CLI utilities — context gathering, interactive helpers, terminal output |
+| `codelet-tui` | TUI components — widgets, layouts, state management |
+| `codelet-attachment-viewer` | Axum HTTP server for serving project attachments |
+| `codelet-fspec-json-error` | JSON error formatting — human-friendly diagnostics |
+| `codelet-test-helpers` | Shared test utilities for integration tests |
+| `codelet-benches` | Performance benchmarks |
+| `codelet-future` | Experimental features |
+| `codelet-patches` | Patched upstream dependencies (rig-core) |
+
+### Command Architecture
+
+All fspec CLI commands are implemented in `codelet-fspec-core`. Each command
+exposes a single entry point:
+
+```rust
+pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>
+```
+
+This function serves as the **single source of truth** for both:
+
+1. **The LLM-facing dispatcher** — called by the agent loop when the AI agent invokes an fspec tool
+2. **The standalone CLI** — called by the `fspec` binary when invoked from the shell
+
+This "two front doors, one source of truth" pattern ensures business logic is
+never duplicated between the agent-facing and shell-facing interfaces.
+
+### Distribution
+
+The standalone `fspec` binary is a self-contained executable:
+- **No Node.js runtime** needed
+- **No `.node` files** or NAPI bindings
+- **~150 MB** distribution size (using `release-slim` profile)
+
+Build and run directly:
+
+```bash
+cd codelet
+cargo build --profile release-slim -p codelet-fspec
+./target/release-slim/fspec --version
+```
 
 ---
 
@@ -262,26 +347,6 @@ curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/setup-san
 irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/setup-sandbox.ps1 | iex
 ```
 
-**Or manually:**
-```bash
-# 1. Install ExitBox
-mkdir -p ~/.local/bin
-curl -fsSL https://github.com/Cloud-Exit/ExitBox/releases/latest/download/exitbox-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') -o ~/.local/bin/exitbox
-chmod +x ~/.local/bin/exitbox
-
-# 2. Run setup wizard
-exitbox setup
-# Select "node" in development profiles
-
-# 3. Run factory in sandbox
-cd /path/to/your/project
-exitbox run claude
-
-# 4. Inside container, install fspec
-npm install -g @sengac/fspec
-fspec
-```
-
 ### What Gets Restricted
 
 | Resource | Without Sandbox | With ExitBox |
@@ -390,7 +455,7 @@ System config (`~/.fspec/blocklist.json`):
       "reason": "SSH keys are sensitive credentials"
     },
     {
-      "id": "env-prompt", 
+      "id": "env-prompt",
       "pattern": "\\.env",
       "action": "prompt",
       "reason": "Environment files may contain secrets"
@@ -398,7 +463,7 @@ System config (`~/.fspec/blocklist.json`):
     {
       "id": "aws-prompt",
       "pattern": "\\.aws",
-      "action": "prompt", 
+      "action": "prompt",
       "reason": "AWS credentials directory"
     }
   ]
@@ -463,7 +528,7 @@ Monitor and interact with your factory from your phone. The Bridge tool connects
 
 3. **Start the endpoint**:
    ```bash
-   npm run bridge:telegram
+   cargo run -p codelet-bridge -- telegram
    ```
 
 4. **Message your bot** — Send any message to link your chat
@@ -499,145 +564,6 @@ A dedicated mobile app for iOS and Android is in development at [github.com/seng
 
 ---
 
-## WebMCP Chrome Extension
-
-The fspec Browser Agent Chrome Extension bridges your browser to AI agents via the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). It exposes browser control tools and discovers [WebMCP](https://developer.chrome.com/blog/webmcp-epp) tools registered by websites—all accessible through a standard MCP connection.
-
-### What It Does
-
-Once connected, your AI agent can:
-
-- **Control the browser** — Navigate tabs, take screenshots, click elements, fill forms, execute JavaScript
-- **Discover website tools** — Websites using Chrome's [WebMCP API](https://developer.chrome.com/blog/webmcp-epp) (`navigator.modelContext.registerTool()`) automatically appear as callable tools
-- **Receive browser events** — Tab navigation, page loads, tab creation/closure arrive as real-time MCP notifications via SSE
-
-### Architecture
-
-```
-AI Agent (fspec)
-  ↕ ConnectMCP (HTTP)
-Native Messaging Host (Node.js, port 19876)
-  ↕ stdin/stdout (Chrome native messaging protocol)
-Service Worker (Chrome extension)
-  ↕ chrome.runtime / chrome.tabs
-Content Script (isolated world relay)
-  ↕ window.postMessage
-Main-World Script (WebMCP tool discovery & invocation)
-```
-
-### Prerequisites
-
-- **Node.js** 18+ (for the native messaging host)
-- **Google Chrome** 120+ (for browser control tools)
-- **Google Chrome 146+** with WebMCP flag enabled (only needed for WebMCP website tool discovery)
-
-### Installation
-
-#### 1. Build the extension
-
-```bash
-cd extension
-npm install
-npm run build
-```
-
-This produces the loadable extension in the `extension/` directory (with built files in `extension/dist/`).
-
-#### 2. Load the extension in Chrome
-
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable **Developer mode** using the toggle in the top-right corner
-3. Click **Load unpacked**
-4. Select the `extension/` directory from the fspec repository
-5. Note the **extension ID** shown on the extension card (e.g., `abcdefghijklmnopqrstuvwxyz`)
-
-#### 3. Register the native messaging host
-
-The native messaging host is a Node.js process that Chrome launches automatically when the extension connects. You need to register it once so Chrome knows where to find it:
-
-```bash
-node extension/host/native-host.mjs --register --extension-id <your-extension-id>
-```
-
-Replace `<your-extension-id>` with the ID from step 2.
-
-This writes a `com.fspec.browser.agent.json` manifest to Chrome's native messaging host directory:
-
-| Platform | Manifest Location |
-|----------|-------------------|
-| **macOS** | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/` |
-| **Linux** | `~/.config/google-chrome/NativeMessagingHosts/` |
-| **Windows** | `%LOCALAPPDATA%\Google\Chrome\User Data\NativeMessagingHosts\` |
-
-#### 4. Enable WebMCP (optional, for website tool discovery)
-
-If you want AI agents to discover tools registered by websites via `navigator.modelContext`:
-
-1. Navigate to `chrome://flags`
-2. Search for **WebMCP for testing**
-3. Set it to **Enabled**
-4. Relaunch Chrome
-
-This is only needed for WebMCP tool discovery. All native browser control tools work without this flag.
-
-### Connecting from fspec
-
-Once installed, tell your AI agent:
-
-```
-Connect to the Chrome extension at http://localhost:19876/mcp
-```
-
-Or the agent can call the ConnectMCP tool directly:
-
-```
-ConnectMCP(transport: "http", url: "http://localhost:19876/mcp")
-```
-
-The extension popup (click the extension icon) shows the current status: server status, port, connected clients, and available tools grouped by source.
-
-### Available Tools
-
-The extension provides 11 native browser control tools out of the box:
-
-| Tool | Description |
-|------|-------------|
-| `browser_navigate` | Navigate a tab to a URL |
-| `browser_screenshot` | Capture a screenshot of a tab |
-| `browser_list_tabs` | List all open tabs with IDs, URLs, and titles |
-| `browser_execute_script` | Execute JavaScript in a tab |
-| `browser_switch_tab` | Activate a tab and focus its window |
-| `browser_close_tab` | Close a tab |
-| `browser_get_page_content` | Get page content as text or HTML |
-| `browser_click_element` | Click an element by CSS selector |
-| `browser_fill_form` | Fill a form field by CSS selector |
-| `browser_go_back` | Navigate back in browser history |
-| `browser_go_forward` | Navigate forward in browser history |
-
-WebMCP tools from websites appear dynamically with the naming pattern `webmcp__<hostname>__<toolName>` (e.g., `webmcp__travel-demo.bandarra.me__searchFlights`).
-
-### Browser Event Notifications
-
-When connected via SSE, the agent receives real-time notifications:
-
-| Event | Method | Params |
-|-------|--------|--------|
-| Page navigation | `notifications/browser/navigation` | `tabId`, `url`, `title` |
-| Page loaded | `notifications/browser/load_complete` | `tabId`, `url`, `title` |
-| Tab created | `notifications/browser/tab_created` | `tabId`, `url` |
-| Tab closed | `notifications/browser/tab_closed` | `tabId` |
-| Tool list changed | `notifications/tools/list_changed` | *(none)* |
-
-### Custom Port
-
-The native host defaults to port 19876. To use a different port:
-
-```bash
-node extension/host/native-host.mjs --port 8080
-```
-
----
-
 ## Watcher Sessions
 
 Watchers are supervisor agents that observe production in real-time and automatically interject with feedback. Think of them as quality inspectors on the factory floor.
@@ -645,7 +571,7 @@ Watchers are supervisor agents that observe production in real-time and automati
 ### Use Cases
 
 - **Security Reviewer** — Watches for SQL injection, XSS, authentication issues
-- **Test Enforcer** — Ensures tests are written before implementation  
+- **Test Enforcer** — Ensures tests are written before implementation
 - **Architecture Advisor** — Suggests patterns and flags structural problems
 - **Documentation Checker** — Ensures code changes include doc updates
 

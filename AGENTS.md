@@ -6,10 +6,11 @@ This document provides guidelines for AI assistants working on the **fspec codeb
 
 ## Project Overview
 
-**fspec** is a standardized CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Acceptance Criteria Driven Development (ACDD).
+**fspec** is a pure-Rust CLI tool for AI agents to manage Gherkin-based feature specifications and project work units using Acceptance Criteria Driven Development (ACDD).
 
 - **Repository**: https://github.com/sengac/fspec
 - **License**: MIT
+- **Language**: Rust (Cargo workspace in `codelet/`)
 
 For complete project context:
 - **Project foundation**: [spec/FOUNDATION.md](spec/FOUNDATION.md)
@@ -23,106 +24,94 @@ For complete project context:
 
 ### CRITICAL DO NOT VIOLATIONS - CODE WILL BE REJECTED
 
-#### TypeScript Violations:
+#### Rust Violations:
 
-- ❌ **NEVER** use `any` type - use proper types always
-- ❌ **NEVER** use `as unknown as` - use proper type guards or generics
-- ❌ **NEVER** use `require()` - only ES6 `import`/`export`
-- ❌ **NEVER** use CommonJS syntax (`module.exports`, `__dirname`, `__filename`)
-- ❌ **NEVER** use file extensions in TypeScript imports (`import './file.ts'` or `import './file.js'` → `import './file'`)
-- ❌ **NEVER** use `var` - only `const`/`let`
-- ❌ **NEVER** use `==` or `!=` - only `===` and `!==`
-- ❌ **NEVER** skip curly braces: `if (x) doSomething()` → `if (x) { doSomething() }`
+- ❌ **NEVER** use `unwrap()` — use `expect("reason")` or proper error handling
+- ❌ **NEVER** use `anyhow::Error` in public APIs — use `thiserror` derive macros
+- ❌ **NEVER** use `println!` / `eprintln!` in production code — use `tracing` macros
+- ❌ **NEVER** use `panic!()` — return errors instead
+- ❌ **NEVER** use `unsafe` blocks — workspace denies `unsafe_code`
+- ❌ **NEVER** use `dbg!()` in production code — workspace warns on `dbg_macro`
+- ❌ **NEVER** use `todo!()` — workspace warns on `todo`
 
-#### Import Violations:
+#### Clippy Violations (All Deny):
 
-- ❌ **NEVER** use dynamic imports unless absolutely necessary (e.g., `await import('./module')`)
-- ❌ **NEVER** write: `import { Type } from './types'` when only using as type
-- ✅ **ALWAYS** use static imports: `import { something } from './module'`
-- ✅ **ALWAYS** write: `import type { Type } from './types'` for type-only imports
-- ✅ **ALWAYS** omit file extensions in TypeScript imports - Vite handles the build
+- ❌ **NEVER** use `expect_used` — use `expect("descriptive reason")`
+- ❌ **NEVER** use `unwrap_used` — use `expect("descriptive reason")`
+- ❌ **NEVER** use `panic` — return errors via `?`
+- ❌ **NEVER** write manual implementations when std provides idiomatic alternatives:
+  - `manual_clamp`, `manual_filter`, `manual_find`, `manual_flatten`
+  - `manual_map`, `manual_memcpy`, `manual_non_exhaust`
+  - `manual_ok_or`, `manual_range_contains`, `manual_retain`
+  - `manual_strip`, `manual_try_fold`, `manual_unwrap_or`
+- ❌ **NEVER** leave redundant clones, needless borrows, or unnecessary lazy evaluations
 
-#### Interface Violations:
+#### Error Handling (Required):
 
-- ❌ **NEVER** use `type` for object shapes
-- ✅ **ALWAYS** use `interface` for object definitions
+```rust
+// ✅ CORRECT — thiserror derive + anyhow for internal
+use thiserror::Error;
 
-#### Promise Violations:
+#[derive(Error, Debug)]
+pub enum FspecCoreError {
+    #[error("work unit {0} not found")]
+    WorkUnitNotFound(String),
+    #[error("invalid JSON: {0}")]
+    Json(#[from] serde_json::Error),
+}
 
-- ❌ **NEVER** have floating promises - all promises must be awaited or explicitly ignored with `void`
-- ❌ **NEVER** await non-promises
+// ✅ CORRECT — propagate with ?
+pub async fn run(args: &str) -> Result<String, FspecCoreError> {
+    let data = parse_args(args)?;
+    let result = process(data)?;
+    Ok(result)
+}
 
-#### Variable Violations:
+// ❌ WRONG — unwrap/expect without reason
+let result = parse_args(args).unwrap();
+```
 
-- ❌ **NEVER** declare unused variables
-- ❌ **NEVER** use `let` when value never changes - use `const`
+#### Logging (Required):
 
-#### Console Violations:
+```rust
+// ✅ CORRECT — tracing macros
+use tracing::{info, warn, error, debug};
 
-- ❌ **NEVER** use `console.log/error/warn` in source code (tests are OK)
-- ✅ **ONLY** use chalk for colored CLI output in commands
+info!("Processing work unit {}", id);
+warn!("Deprecated command used: {}", cmd);
+error!("Failed to load config: {err:?}");
+
+// ❌ WRONG — println in production code
+println!("Processing work unit {}", id);
+```
 
 ---
 
 ## MANDATORY IMPLEMENTATION PATTERNS
 
-### ES Modules (Required):
+### Two Front Doors, One Source of Truth
 
-```typescript
-// ✅ CORRECT
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+Every command in `codelet-fspec-core` exposes a single entry point:
 
-// ❌ WRONG
-const __dirname = require('path').dirname(__filename);
+```rust
+pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>
 ```
 
-### Type Safety (Required):
+This function is called by **both**:
+1. The LLM-facing dispatcher (agent tool calls)
+2. The standalone CLI (shell subcommands)
 
-```typescript
-// ✅ CORRECT
-interface FeatureFile {
-  path: string;
-  tags: string[];
-}
-const feature: FeatureFile = loadFeature();
+**NEVER duplicate business logic** between these two entry points.
 
-// ❌ WRONG
-const feature: any = loadFeature();
-```
+### Async Runtime
 
-### Error Handling (Required):
+- ✅ **ALWAYS** use `tokio` for async operations
+- ✅ **ALWAYS** get runtime handle via `tokio::runtime::Handle::current()`
+- ❌ **NEVER** create new `tokio::runtime::Builder` / `Runtime::new` instances
 
-```typescript
-// ✅ CORRECT - All async operations must have error handling
-try {
-  const result = await operation();
-  return result;
-} catch (error: any) {
-  console.error(chalk.red('Error:'), error.message);
-  throw error;
-}
-```
+### File Organization
 
-### CLI Output (Required):
-
-```typescript
-// ✅ CORRECT - Use chalk for colored output
-import chalk from 'chalk';
-console.log(chalk.green('✓ Feature file is valid'));
-console.error(chalk.red('✗ Validation failed'));
-
-// ❌ WRONG - Plain console.log in commands
-console.log('Feature file is valid');
-```
-
----
-
-## File Organization
-
-- **Keep files under 300 lines** - refactor when approaching this limit
+- **Keep files under 300 lines** — refactor when approaching this limit
 - When a file exceeds 300 lines, stop and refactor BEFORE continuing
 - Ask for approval before major refactoring
 
@@ -134,60 +123,45 @@ console.log('Feature file is valid');
 
 ### Critical Rules
 
-- **Use Vitest exclusively** - NEVER use Jest
-- **Write ALL tests in TypeScript** - NEVER create standalone JavaScript test files
-- **NEVER write external JavaScript files for testing** - All tests must be TypeScript files running through Vitest
-- **NEVER create .mjs or .js test files** - Only .ts test files within the project structure
-- **NEVER test module imports using Node.js directly** - Always test through Vitest
+- **Use Rust's built-in test framework** — `#[test]`, `#[tokio::test]`
+- **Use `proptest` for property-based tests** — especially parsing and serialization logic
+- **Use `insta` for snapshot tests** — YAML snapshots for complex output verification
+- **Use `serial_test` for tests that mutate global state** — process-level singletons
 - Write meaningful tests that verify actual functionality
-- No trivial tests like `expect(true).toBe(true)`
+- No trivial tests like `assert!(true)`
 - **Test Coverage:** All new code must have corresponding unit tests
-- **Type Safety:** No `any` types allowed in tests - use proper type assertions
 
 ### Test Philosophy: Integration First, Mocks Last
 
-- **Prefer integration tests** that use real filesystems (OS temp dirs), real stores, and real NAPI calls
-- **Redirect, don't intercept** — control inputs (`process.env.HOME`, temp directories) rather than mocking code paths
-- **Use `vi.fn()` only for callback event sinks** (onChange, onSubmit) — never for module replacement
-- **Use `memfs`** only for command-layer tests that need the full write→read→modify→write cycle with file locking
-- **Reuse shared helpers** from `src/test-helpers/` — never duplicate filesystem setup logic
+- **Prefer integration tests** that use real filesystems (temp dirs), real stores
+- **Redirect, don't intercept** — control inputs via temp directories rather than mocking code paths
+- **Reuse shared helpers** from `codelet/test-helpers/` — never duplicate filesystem setup logic
 
 ### Test File Requirements
 
-- ❌ **NEVER** create `test.mjs`, `test.js`, or any external JavaScript test files
-- ❌ **NEVER** run tests with `node test.js` or `node test.mjs`
-- ✅ **ALWAYS** create `.test.ts` or `.spec.ts` files
-- ✅ **ALWAYS** run tests through `npm test` using Vitest
-- ✅ **ALWAYS** import and test TypeScript modules directly in TypeScript test files
-- ✅ **ALWAYS** use helpers from `src/test-helpers/` for temp dirs, file ops, and fixtures
+- ✅ **ALWAYS** create `tests/*.rs` integration test files or inline `#[cfg(test)]` modules
+- ✅ **ALWAYS** run tests through `cargo test -p <crate> --test <name>`
+- ✅ **ALWAYS** use helpers from `codelet/test-helpers/` for temp dirs and fixtures
 
 ### Test Naming Convention
 
-```typescript
-// Test file: src/commands/__tests__/validate.test.ts
+```rust
+// tests/rpc080_agent_loop_persistence.rs
 
-/**
- * Feature: spec/features/gherkin-validation.feature
- */
-describe('Feature: Gherkin Syntax Validation', () => {
-  describe('Scenario: Validate single feature file with valid syntax', () => {
-    it('should exit with code 0 and display success message', async () => {
-      // @step Given I have a feature file with valid syntax
-      const tmpDir = await setupTempDirectory();
-      const featureFile = join(tmpDir, 'spec/features/test.feature');
-      await writeFile(featureFile, validGherkinContent);
+/// Feature: spec/features/agent-loop-persistence.feature
+#[tokio::test]
+async fn scenario_agent_loop_saves_turns_to_disk() {
+    // Given: fresh temp directory
+    let tmp_dir = setup_temp_directory();
 
-      // @step When I run `fspec validate spec/features/test.feature`
-      const result = await validate({ file: featureFile, cwd: tmpDir });
+    // When: agent loop processes a turn
+    let session = create_session(&tmp_dir).await;
+    session.send_input("hello").await;
 
-      // @step Then the command should exit with code 0
-      expect(result.exitCode).toBe(0);
-
-      // @step And the output should display success message
-      expect(result.valid).toBe(true);
-    });
-  });
-});
+    // Then: turn is persisted to disk
+    let turns = load_turns(&tmp_dir).await;
+    assert!(turns.len() >= 1);
+}
 ```
 
 ---
@@ -196,21 +170,23 @@ describe('Feature: Gherkin Syntax Validation', () => {
 
 ### Build System
 
-- **Vite**: Bundles TypeScript to single `dist/index.js`
-- **TypeScript**: ES modules (`"type": "module"`)
-- **NO file extensions** in TypeScript imports - Vite handles compilation
+- **Cargo**: Rust package manager and build system
+- **Cargo workspace**: 25 crates in `codelet/`
+- **rustup**: Rust toolchain manager
 
 ### Key Technologies
 
-- **CLI Framework**: Commander.js for argument parsing
-- **Gherkin Parser**: @cucumber/gherkin for official Gherkin validation
-- **Mermaid Validation**: mermaid.parse() with jsdom for diagram syntax validation
-- **Formatting**: Custom AST-based formatter using @cucumber/gherkin
-- **Testing**: Vitest (unit/integration), ink-testing-library (TUI components), @microsoft/tui-test (terminal E2E) — see [TESTING.md](TESTING.md)
-- **File Operations**: fs/promises (Node.js built-in)
-- **Globbing**: tinyglobby for file pattern matching
-- **Output**: chalk for colored CLI output
-- **JSON Schema**: Ajv for validating foundation.json and tags.json
+- **CLI Framework**: clap v4 (derive macros)
+- **Terminal UI**: ratatui (TUI), crossterm (terminal events)
+- **Async Runtime**: tokio
+- **LLM Integration**: rig-core (patched via `patches/rig-core`)
+- **RPC Framework**: tarpc (in-process + WebSocket transports)
+- **HTTP Server**: axum (attachment viewer)
+- **Gherkin Parser**: `gherkin` crate (pure Rust)
+- **JSON Schema**: `jsonschema` crate
+- **Logging**: tracing + tracing-subscriber + tracing-appender
+- **Testing**: proptest, insta, serial_test, assert_cmd
+- **Profiling**: pprof-rs (sampling profiler)
 
 ---
 
@@ -218,9 +194,9 @@ describe('Feature: Gherkin Syntax Validation', () => {
 
 This project uses **Acceptance Criteria Driven Development** where:
 
-1. **Specifications come first** - We define acceptance criteria in Gherkin format (see spec/features/*.feature)
-2. **Tests come second** - We write tests that directly map to scenarios BEFORE any code
-3. **Code comes last** - We implement just enough code to make the tests pass
+1. **Specifications come first** — We define acceptance criteria in Gherkin format (see spec/features/*.feature)
+2. **Tests come second** — We write tests that directly map to scenarios BEFORE any code
+3. **Code comes last** — We implement just enough code to make the tests pass
 
 ### CRITICAL RULES:
 
@@ -261,8 +237,8 @@ This project uses **Acceptance Criteria Driven Development** where:
    - Follow existing patterns in the codebase
 
 4. **Verify implementation**
-   - Run `npm run build` to ensure TypeScript compiles
-   - Run `npm test` to ensure all tests pass
+   - Run `cargo check -p <crate>` to ensure Rust compiles
+   - Run `cargo test -p <crate>` to ensure all tests pass
    - Run `fspec validate` to verify feature files
    - Run `fspec validate-tags` to verify tags are registered
 
@@ -271,95 +247,71 @@ This project uses **Acceptance Criteria Driven Development** where:
 Run quality checks before committing:
 
 ```bash
-npm run build     # Build TypeScript
-npm test          # Run all tests
-npm run format    # Format code with Prettier
+cargo check -p codelet-fspec       # Check compilation
+cargo clippy -p codelet-fspec      # Check clippy lints
+cargo test -p codelet-fspec        # Run tests
 ```
 
-**Code that violates TypeScript standards will be rejected by the compiler.**
-
----
-
-## Implementing Hook Support for New Commands
-
-When adding new commands, integrate hooks using the wrapper:
-
-```typescript
-import { runCommandWithHooks } from '../hooks/integration';
-
-export async function myCommand(options: MyCommandOptions): Promise<void> {
-  await runCommandWithHooks(
-    'my-command',
-    options,
-    async (opts) => {
-      // Your command logic here
-      // This runs between pre- and post- hooks
-    }
-  );
-}
-```
-
-The wrapper automatically:
-1. Discovers pre-hooks for the command
-2. Executes pre-hooks (blocking failures prevent command)
-3. Runs your command logic
-4. Executes post-hooks (blocking failures set exit code to 1)
-5. Wraps blocking hook stderr in `<system-reminder>` tags or something that is an agent specific equivalent
-
----
-
-## Hook Development Guidelines
-
-**DO:**
-- ✅ Use TypeScript for hook logic (src/hooks/)
-- ✅ Validate hook configurations with JSON schema
-- ✅ Test hook execution with timeout scenarios
-- ✅ Test blocking vs non-blocking behavior
-- ✅ Test condition evaluation (tags, prefix, epic, estimate)
-- ✅ Write comprehensive help files for hook commands
-
-**DON'T:**
-- ❌ Skip timeout validation (hooks must timeout properly)
-- ❌ Forget to test system-reminder (or equivalent) formatting for blocking hooks
-- ❌ Hard-code event names (derive from command names)
-- ❌ Skip error handling for missing/invalid hook scripts
+**Code that violates workspace lints will be rejected by the compiler.**
 
 ---
 
 ## Common Build Commands
 
 ```bash
-# Install dependencies
-npm install
+# Check compilation
+cargo check -p codelet-fspec
 
-# Build project
-npm run build
+# Run clippy
+cargo clippy -p codelet-fspec
 
-# Development mode (watch)
-npm run dev
+# Run tests for a specific crate
+cargo test -p codelet-fspec
 
-# Run tests
-npm test
+# Run a specific test file
+cargo test -p codelet-fspec --test no_napi_dependency
+
+# Build release binary
+cargo build --profile release-slim -p codelet-fspec
+
+# Run the binary directly
+cargo run -p codelet-fspec -- --help
 
 # Format code
-npm run format
+cargo fmt -p codelet-fspec
+```
 
-# Run fspec CLI (after build)
-fspec validate
-fspec format
-fspec list-features
+---
+
+## Workspace Testing Guidelines
+
+### ⚠️ NEVER run unscoped `cargo test` or `cargo test --workspace`
+
+A plain `cargo test --workspace` compiled all 944 integration-test binaries with full DWARF debug info (1.4–2 GB PER BINARY). The machine crashed mid-link.
+
+**Safe invocation patterns:**
+
+```bash
+# 1. Scope by package + target (preferred):
+cargo test -p codelet-fspec --test no_napi_dependency
+
+# 2. Broader runs with explicit packages:
+cargo test -p codelet-fspec -p codelet-fspec-core -j 12 --no-fail-fast
+
+# 3. Use the dedicated profile:
+cargo test --profile ci-test -p codelet-fspec
 ```
 
 ---
 
 ## Important Reminders
 
-1. **Quality over Speed**: Take time to write proper types and tests
+1. **Quality over Speed**: Take time to write proper types and error handling
 2. **Ask Before Major Changes**: Propose refactoring before implementing
 3. **Maintain Specifications**: Update feature files as code evolves
 4. **Cross-Platform**: Always consider Windows path/shell differences
-5. **No Shortcuts**: Fix issues properly, don't use `any` types or disable linters
-6. **No File Extensions**: Never use .js or .ts extensions in TypeScript imports
+5. **No Shortcuts**: Fix issues properly, don't use `unwrap()` or disable linters
+6. **No Unsafe**: The workspace denies `unsafe_code`
 
 ---
 
