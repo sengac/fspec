@@ -1,16 +1,86 @@
 # Building the fspec Binary
 
-This document describes how to build the `fspec` standalone Rust binary.
+This document describes how to build the `fspec` standalone Rust binary,
+including cross-compilation for Windows.
 
 ---
 
 ## Quick Start
 
 ```bash
-cd codelet
-cargo build --profile release-slim -p codelet-fspec
-ls -lh target/release-slim/fspec   # ≈ 150 MB
+# Build for current platform:
+./scripts/build.sh
+
+# Build and package for distribution:
+./scripts/build.sh --package
+
+# Cross-compile Windows binary from macOS/Linux:
+./scripts/build-cross.sh
 ```
+
+---
+
+## Build Scripts
+
+The `scripts/` directory provides two self-contained build scripts that
+handle all prerequisites automatically.
+
+### `scripts/build.sh` — Native Build
+
+Builds `fspec` for the current platform (macOS or Linux).
+
+```bash
+# Build only:
+./scripts/build.sh
+
+# Build and package as tarball in dist/:
+./scripts/build.sh --package
+
+# Use release profile (with debug info for profiling):
+./scripts/build.sh --profile release
+```
+
+**Output:**
+- Binary: `codelet/target/release-slim/fspec` (~150 MB)
+- Archive: `dist/fspec-<arch>-<platform>.tar.gz` (~50 MB)
+
+### `scripts/build-cross.sh` — Cross-Compile Windows & Linux
+
+Cross-compiles Windows and Linux binaries from macOS or Linux using
+`cargo-xwin` (Windows) and `cargo-zigbuild` (Linux/macOS).
+**No Docker required.**
+
+```bash
+# Build x86_64 Windows (default):
+./scripts/build-cross.sh
+
+# Build x86_64 Linux:
+./scripts/build-cross.sh --target x86_64-unknown-linux-gnu
+
+# Build ARM64 Linux:
+./scripts/build-cross.sh --target aarch64-unknown-linux-gnu
+
+# Build all supported targets:
+./scripts/build-cross.sh --all
+```
+
+**Output:**
+- Windows: `dist/fspec-x86_64-pc-windows-msvc.zip` (~65 MB)
+- Linux x86_64: `dist/fspec-x86_64-unknown-linux-gnu.tar.gz` (~58 MB)
+- Linux ARM64: `dist/fspec-aarch64-unknown-linux-gnu.tar.gz` (~54 MB)
+
+### Auto-Installed Prerequisites
+
+Both scripts handle their own prerequisites:
+
+| Script | Auto-installs | Manual prerequisites |
+|--------|--------------|----------------------|
+| `build.sh` | — | Rust (cargo), protoc |
+| `build-cross.sh` | cargo-xwin, cargo-zigbuild, zig, LLVM, lld, llvm-tools | Rust (cargo), Homebrew (macOS) or apt (Linux) |
+
+The cross-compilation script installs `cargo-xwin` and `cargo-zigbuild` via
+`cargo install`, downloads the full LLVM toolchain via Homebrew (macOS) or apt
+(Linux), and installs the `lld` linker. All are cached for subsequent runs.
 
 ---
 
@@ -26,9 +96,6 @@ ls -lh target/release-slim/fspec   # ≈ 150 MB
    # Install rustup
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    source "$HOME/.cargo/env"
-
-   # Add x86_64 macOS target for cross-compilation
-   rustup target add x86_64-apple-darwin
    ```
 
 2. **Protocol Buffers compiler (`protoc`)** — build-time only
@@ -48,9 +115,17 @@ ls -lh target/release-slim/fspec   # ≈ 150 MB
    `cargo build`. The compiled fspec binary has **no runtime dependency** on
    protobuf — all generated code is baked in at compile time.
 
-3. **Docker Desktop** (for Linux and Windows cross-compilation)
-   - Download from https://www.docker.com/products/docker-desktop/
-   - Ensure Docker is running before building
+### Cross-Compilation Prerequisites (macOS)
+
+For `build-cross.sh`, LLVM and lld must be available on the PATH. The script
+installs them automatically, but you may also add them permanently:
+
+```bash
+# Add to ~/.zshrc for future sessions:
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
+echo 'export PATH="/opt/homebrew/opt/lld/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
 
 ---
 
@@ -117,16 +192,75 @@ cargo build --release -p codelet-fspec
 
 ## Cross-Compiling
 
-### Linux aarch64
+### Using build-cross.sh (Recommended)
 
 ```bash
-cargo build --profile release-slim -p codelet-fspec \
+# Build x86_64 Windows (default):
+./scripts/build-cross.sh
+
+# Build x86_64 Linux:
+./scripts/build-cross.sh --target x86_64-unknown-linux-gnu
+
+# Build ARM64 Linux:
+./scripts/build-cross.sh --target aarch64-unknown-linux-gnu
+
+# Build all supported targets:
+./scripts/build-cross.sh --all
+```
+
+This uses `cargo-xwin` for Windows and `cargo-zigbuild` for Linux/macOS —
+**no Docker required**. The script auto-installs cargo-xwin, cargo-zigbuild,
+zig, LLVM, and lld on first run.
+
+### Manual Cross-Compilation
+
+#### Windows (cargo-xwin)
+
+```bash
+# Install cargo-xwin (one-time):
+cargo install --locked cargo-xwin
+
+# Add LLVM to PATH (macOS):
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export PATH="/opt/homebrew/opt/lld/bin:$PATH"
+
+# Add Windows target:
+rustup target add x86_64-pc-windows-msvc
+
+# Build:
+cd codelet
+cargo xwin build --profile release-slim -p codelet-fspec \
+  --target x86_64-pc-windows-msvc
+```
+
+#### Linux (cargo-zigbuild)
+
+```bash
+# Install cargo-zigbuild and zig (one-time):
+cargo install --locked cargo-zigbuild
+brew install zig  # macOS
+
+# Add Linux target:
+rustup target add x86_64-unknown-linux-gnu
+
+# Build x86_64 Linux (requires AVX-512 flags for lance-linalg):
+cd codelet
+TARGET_CC="zig cc" TARGET_CFLAGS="-mcpu=sapphirerapids -mavx512bw" \
+  cargo zigbuild --profile release-slim -p codelet-fspec \
+  --target x86_64-unknown-linux-gnu
+
+# Build ARM64 Linux (no AVX-512 flags needed):
+rustup target add aarch64-unknown-linux-gnu
+TARGET_CC="zig cc" \
+  cargo zigbuild --profile release-slim -p codelet-fspec \
   --target aarch64-unknown-linux-gnu
 ```
 
 ### macOS Universal
 
 ```bash
+cd codelet
+
 # Apple Silicon
 cargo build --profile release-slim -p codelet-fspec \
   --target aarch64-apple-darwin
@@ -134,13 +268,6 @@ cargo build --profile release-slim -p codelet-fspec \
 # Intel
 cargo build --profile release-slim -p codelet-fspec \
   --target x86_64-apple-darwin
-```
-
-### Windows x64 (via cargo-xwin in Docker)
-
-```bash
-cargo xwin build --profile release-slim -p codelet-fspec \
-  --target x86_64-pc-windows-msvc --cross-compiler clang
 ```
 
 Artifacts land at `codelet/target/<triple>/release-slim/fspec[.exe]`.
@@ -186,9 +313,30 @@ You have Homebrew Rust instead of rustup. Follow the prerequisites to switch.
 
 The build sets `RUST_MIN_STACK=16777216` (16MB) to handle deep recursion. If builds still fail, increase available memory.
 
-### "Docker is not running" (for cross-compilation)
+### Cross-compilation fails with "can't find crate for core"
 
-Start Docker Desktop before running cross-compilation builds.
+The Windows target may not be installed for the active toolchain. Run:
+
+```bash
+# Check which toolchain cargo is using:
+rustup show active-toolchain
+
+# Add the target to that specific toolchain:
+rustup target add x86_64-pc-windows-msvc --toolchain <toolchain-name>
+```
+
+The `build-cross.sh` script handles this automatically.
+
+### Cross-compilation fails with "failed to find tool llvm-lib"
+
+LLVM is keg-only on macOS and not in PATH by default. The `build-cross.sh`
+script adds it automatically. To add it permanently:
+
+```bash
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
+echo 'export PATH="/opt/homebrew/opt/lld/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
 
 ### MSVC sysroot download is slow (Windows cross-compilation)
 

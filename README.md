@@ -84,13 +84,12 @@ Configure providers with `/provider` in any session.
 ### Install
 
 ```bash
-# macOS / Linux — native installer (recommended):
-curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
+# macOS / Linux — build and install from source:
+./scripts/install.sh
 
-# Or build from source:
-cd codelet
-cargo build --profile release-slim -p codelet-fspec
-cp target/release-slim/fspec ~/.local/bin/
+# Or build manually:
+./scripts/build.sh --package
+cp dist/fspec-*.tar.gz ~/.local/bin/
 ```
 
 ### Run

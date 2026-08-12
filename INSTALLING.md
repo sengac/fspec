@@ -4,35 +4,120 @@ fspec is a pure-Rust binary. Choose the installation method that works best for 
 
 ## Quick Install
 
-### macOS & Linux
+### macOS & Linux (from source)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
+# From the repository:
+./scripts/install.sh
+
+# Install to a custom directory:
+./scripts/install.sh --dir /usr/local/bin
 ```
 
-No dependencies required — downloads a self-contained Rust binary (~150 MB).
+Requires `cargo` (Rust) and `git` to be installed. The script builds from source
+and installs the binary to `~/.local/bin` by default.
 
-### Windows (PowerShell)
+### Windows
+
+Build from source on macOS/Linux using cross-compilation, then copy the binary:
+
+```bash
+# Cross-compile Windows binary from macOS/Linux:
+./scripts/build-cross.sh
+
+# The packaged binary is in dist/fspec-x86_64-pc-windows-msvc.zip
+```
+
+Or build natively on Windows with Rust installed:
 
 ```powershell
-irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex
+cd codelet
+cargo build --profile release-slim -p codelet-fspec
+copy target\release-slim\fspec.exe $env:USERPROFILE\.local\bin\
 ```
 
 ### Build from Source
 
 ```bash
-cd codelet
-cargo build --profile release-slim -p codelet-fspec
-cp target/release-slim/fspec ~/.local/bin/
+./scripts/build.sh
 ```
 
 ## Installation Methods
 
 | Method | Platforms | Command | Notes |
 | --- | --- | --- | --- |
-| **Native Installer** | macOS, Linux | `curl ... \| bash` (see above) | Recommended — standalone binary, no dependencies |
-| **PowerShell Installer** | Windows | `irm ... \| iex` (see above) | Standalone binary for Windows |
-| **Build from Source** | All | `cargo build` (see above) | For contributors and advanced users |
+| **install.sh** | macOS, Linux | `./scripts/install.sh` | Builds from source, installs to `~/.local/bin` |
+| **build.sh** | macOS, Linux | `./scripts/build.sh` | Builds only, no installation |
+| **build-cross.sh** | macOS, Linux → Windows | `./scripts/build-cross.sh` | Cross-compiles Windows binaries |
+| **cargo build** | All | `cargo build` | Manual build for contributors |
+
+## Build Scripts
+
+### `scripts/install.sh`
+
+Builds and installs the Rust binary from source.
+
+```bash
+# Default install (~/.local/bin):
+./scripts/install.sh
+
+# Custom install directory:
+./scripts/install.sh --dir /usr/local/bin
+
+# Use release profile (with debug info):
+./scripts/install.sh --profile release
+```
+
+**How it works:**
+1. Checks for `cargo` and `git` prerequisites
+2. Detects whether running from the repository or piped via `curl`
+3. If piped without a local repo, clones the fspec repository
+4. Builds the Rust binary from source using `cargo build`
+5. Copies the binary to `~/.local/bin` (configurable)
+6. Provides PATH guidance if the directory isn't already in your PATH
+
+### `scripts/build.sh`
+
+Builds `fspec` for the current platform.
+
+```bash
+# Build only:
+./scripts/build.sh
+
+# Build and package as tarball in dist/:
+./scripts/build.sh --package
+```
+
+### `scripts/build-cross.sh`
+
+Cross-compiles Windows and Linux binaries from macOS or Linux.
+**No Docker required.**
+
+```bash
+# Build x86_64 Windows (default):
+./scripts/build-cross.sh
+
+# Build x86_64 Linux:
+./scripts/build-cross.sh --target x86_64-unknown-linux-gnu
+
+# Build ARM64 Linux:
+./scripts/build-cross.sh --target aarch64-unknown-linux-gnu
+
+# Build all supported targets:
+./scripts/build-cross.sh --all
+```
+
+**Auto-installs on first run:**
+- `cargo-xwin` (Windows cross-compilation)
+- `cargo-zigbuild` (Linux/macOS cross-compilation)
+- `zig` (cross-linker for Linux targets)
+- Full LLVM toolchain (via Homebrew on macOS, apt on Linux)
+- `lld` linker (via Homebrew on macOS)
+- `llvm-tools` rustup component
+
+**Prerequisites:**
+- Rust (cargo) installed
+- Homebrew (macOS) or apt (Linux)
 
 ## After Installation
 
@@ -83,94 +168,36 @@ fspec works with any AI provider that supports tool calling. Set the correspondi
 
 Configure or switch providers interactively with `/provider` in any session.
 
-## Native Installer Details
+## Cross-Compilation Details
 
-### How It Works
+### Prerequisites (macOS)
 
-The native installer:
-
-1. Detects your OS and CPU architecture
-2. Fetches the latest release from GitHub
-3. Downloads the platform-specific binary
-4. Verifies the SHA-256 checksum (if available)
-5. Extracts and installs the binary to `~/.local/bin` (configurable)
-6. Adds PATH guidance if the directory isn't already in your PATH
-
-### Installer Options
-
-#### macOS & Linux
+The cross-compilation script auto-installs LLVM and lld, but you may want to
+add them to your PATH permanently:
 
 ```bash
-# Install to default location (~/.local/bin)
-curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
-
-# Install to a custom directory
-curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash -s -- --dir /usr/local/bin
-
-# Or set via environment variable
-INSTALL_DIR=/opt/fspec curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
+# Add to ~/.zshrc:
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
+echo 'export PATH="/opt/homebrew/opt/lld/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
-#### Windows (PowerShell)
+### First Build
 
-```powershell
-# Install to default location (%USERPROFILE%\.local\bin)
-irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.ps1 | iex
+The first Windows cross-compilation downloads ~300MB of MSVC headers/libraries
+and takes ~20 minutes to compile. Subsequent builds are faster since the MSVC
+sysroot is cached in `~/.cache/cargo-xwin/`.
 
-# Install to a custom directory
-.\install.ps1 -InstallDir "C:\Program Files\fspec"
+### Output
+
+```
+dist/
+├── fspec-x86_64-pc-windows-msvc.zip       (~65 MB)
+├── fspec-x86_64-unknown-linux-gnu.tar.gz  (~58 MB)
+└── fspec-aarch64-unknown-linux-gnu.tar.gz (~54 MB)
 ```
 
-> **Note:** Installing to `C:\Program Files` may require running PowerShell as Administrator.
-
-### Supported Platforms
-
-| Platform | Architecture | Archive Format |
-| --- | --- | --- |
-| macOS | Apple Silicon (ARM64) | `.tar.gz` |
-| macOS | Intel (x86_64) | `.tar.gz` |
-| Linux | x86_64 | `.tar.gz` |
-| Linux | ARM64 | `.tar.gz` |
-| Windows | x86_64 | `.zip` |
-| Windows | ARM64 | `.zip` |
-
-## Building from Source
-
-### Prerequisites
-
-- **Rust** (via rustup)
-- **Protocol Buffers compiler** (`protoc`) — required at build time
-
-See [BUILD.md](BUILD.md) for complete build prerequisites.
-
-### Build Steps
-
-```bash
-# Clone the repository
-git clone https://github.com/sengac/fspec.git
-cd fspec
-
-# Build the standalone binary
-cd codelet
-cargo build --profile release-slim -p codelet-fspec
-
-# Install locally
-cp target/release-slim/fspec ~/.local/bin/
-```
-
-### Development Mode
-
-```bash
-# Build and run directly
-cd codelet
-cargo run -p codelet-fspec
-
-# Run tests
-cargo test -p codelet-fspec
-
-# Check code
-cargo clippy -p codelet-fspec
-```
+Each archive contains `fspec` (or `fspec.exe` for Windows) ready to run on the target platform.
 
 ## Troubleshooting
 
@@ -192,46 +219,31 @@ source ~/.zshrc   # or ~/.bashrc
 
 **Windows:**
 
-Restart PowerShell or Command Prompt. If still not found, add the installation directory to your PATH via System → Advanced system settings → Environment Variables.
+Restart PowerShell or Command Prompt. If still not found, add the installation
+directory to your PATH via System → Advanced system settings → Environment Variables.
 
-### Installation fails with network errors
+### Cross-compilation fails with "can't find crate for core"
+
+The Windows target may not be installed for the active toolchain. The
+`build-cross.sh` script handles this automatically. To fix manually:
 
 ```bash
-# 1. Check internet connection
-curl https://api.github.com
+# Check which toolchain cargo is using:
+rustup show active-toolchain
 
-# 2. Check GitHub is accessible
-curl -I https://github.com/sengac/fspec/releases
-
-# 3. Check GitHub status
-# Visit https://www.githubstatus.com/
-
-# 4. Try again in a fresh terminal
+# Add the target to that specific toolchain:
+rustup target add x86_64-pc-windows-msvc --toolchain <toolchain-name>
 ```
 
-### Permission denied
+### Cross-compilation fails with "failed to find tool llvm-lib"
 
-**macOS/Linux:**
-
-```bash
-# Option 1: Install to user directory (no sudo needed)
-INSTALL_DIR=$HOME/.local/bin curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/install.sh | bash
-
-# Option 2: Fix permissions on /usr/local/bin
-sudo chmod +x /usr/local/bin/fspec
-```
-
-**Windows:**
-
-Run PowerShell as Administrator if installing to a system directory.
-
-### macOS Gatekeeper warning
-
-If macOS blocks the binary with "cannot be opened because the developer cannot be verified":
+LLVM is keg-only on macOS and not in PATH by default. The `build-cross.sh`
+script adds it automatically. To add it permanently:
 
 ```bash
-# Remove quarantine attribute
-xattr -d com.apple.quarantine ~/.local/bin/fspec
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
+echo 'export PATH="/opt/homebrew/opt/lld/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ### Build fails with missing protoc
@@ -247,24 +259,36 @@ sudo apt install -y protobuf-compiler
 protoc --version  # libprotoc 3.x or higher
 ```
 
+### macOS Gatekeeper warning
+
+If macOS blocks the binary with "cannot be opened because the developer cannot be verified":
+
+```bash
+# Remove quarantine attribute
+xattr -d com.apple.quarantine ~/.local/bin/fspec
+```
+
 ### Still stuck?
 
 - Open an issue: https://github.com/sengac/fspec/issues
 - Check the [README](README.md) for the latest documentation
+- See [BUILD.md](BUILD.md) for detailed build instructions
 
 ## Uninstall
 
-### Native Installer
+### macOS/Linux
 
 ```bash
-# macOS/Linux — remove the binary
+# Remove the binary
 rm ~/.local/bin/fspec
 # or wherever you installed it:
 rm /usr/local/bin/fspec
 ```
 
+### Windows
+
 ```powershell
-# Windows — remove the binary
+# Remove the binary
 Remove-Item "$env:USERPROFILE\.local\bin\fspec.exe"
 ```
 
@@ -274,7 +298,7 @@ Remove-Item "$env:USERPROFILE\.local\bin\fspec.exe"
 
 | Path | Description |
 | --- | --- |
-| `~/.local/bin/fspec` | Default (native installer) |
+| `~/.local/bin/fspec` | Default (install.sh) |
 | `/usr/local/bin/fspec` | System-wide (requires sudo) |
 | `codelet/target/release-slim/fspec` | Build from source |
 
@@ -282,12 +306,12 @@ Remove-Item "$env:USERPROFILE\.local\bin\fspec.exe"
 
 | Path | Description |
 | --- | --- |
-| `%USERPROFILE%\.local\bin\fspec.exe` | Default (PowerShell installer) |
+| `%USERPROFILE%\.local\bin\fspec.exe` | Default |
 | `C:\Program Files\fspec\fspec.exe` | System-wide (requires admin) |
 | `codelet\target\release-slim\fspec.exe` | Build from source |
 
 ## Additional Resources
 
 - **[README.md](README.md)** — Project overview and quick start
-- **[BUILD.md](BUILD.md)** — Detailed build instructions for contributors
-- **[GitHub Releases](https://github.com/sengac/fspec/releases)** — Download binaries manually
+- **[BUILD.md](BUILD.md)** — Detailed build instructions, profiles, and troubleshooting
+- **[scripts/](scripts/)** — Build and installation scripts
