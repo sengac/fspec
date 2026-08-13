@@ -1,7 +1,7 @@
 {
   "name": "@sengac/fspec",
-  "version": "0.9.3",
-  "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
+  "version": "0.10.0",
+  "description": "fspec: The Spec-Driven, Multi-Agent Coding Factory",
   "scripts": {
     "build:rust:fspec": "(cd rust && cargo build -p codelet-fspec --release) && mkdir -p dist && cp rust/target/release/fspec dist/fspec && chmod +x dist/fspec",
     "bridge:telegram": "npx tsx bridge/telegram-endpoint.ts",
@@ -24,7 +24,6 @@
     "workflow",
     "bdd",
     "gherkin",
-    "cucumber",
     "feature-files",
     "ai-agents",
     "agentic-ai",
@@ -57,34 +56,9 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@cucumber/gherkin": "^29.0.0",
-    "@cucumber/messages": "^25.0.1",
-    "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1",
-    "chalk": "^5.6.2",
-    "chokidar": "^4.0.3",
-    "commander": "^14.0.1",
-    "cron-validate": "^1.5.3",
-    "diff": "^8.0.2",
-    "dompurify": "^3.3.0",
     "dotenv": "^17.2.3",
-    "execa": "^9.6.0",
-    "express": "^5.1.0",
-    "immer": "^10.2.0",
-    "ink": "^7.0.2",
-    "jsdom": "^27.0.0",
-    "lodash.throttle": "^4.1.1",
-    "marked": "^16.4.1",
-    "marked-gfm-heading-id": "^4.1.2",
-    "mermaid": "^11.12.0",
-    "open": "^10.2.0",
-    "proper-lockfile": "^4.1.2",
-    "react": "^19.2.6",
-    "react-devtools-core": "^6.1.5",
-    "string-width": "^8.1.0",
-    "tinyglobby": "^0.2.10",
-    "winston": "^3.18.3",
-    "zustand": "^5.0.8"
+    "node-telegram-bot-api": "^0.66.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {}
 }
