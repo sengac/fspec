@@ -1,32 +1,21 @@
-# Building & Installing fspec
+# Building fspec
 
-fspec is a pure-Rust binary. This document covers building from source, installing, cross-compilation, and troubleshooting.
+fspec is a pure-Rust binary. This document covers building from source and cross-compilation.
 
 ---
 
 ## Quick Start
 
 ```bash
-# Install (builds from source, installs to ~/.local/bin):
-./scripts/install.sh
-
-# Build only (no installation):
+# Build for current platform:
 ./scripts/build.sh
+
+# Build and package for distribution:
+./scripts/build.sh --package
 
 # Cross-compile Windows binary from macOS/Linux:
 ./scripts/build-cross.sh
 ```
-
----
-
-## Installation Methods
-
-| Method | Platforms | Command | Notes |
-| --- | --- | --- | --- |
-| **install.sh** | macOS, Linux | `./scripts/install.sh` | Builds from source, installs to `~/.local/bin` |
-| **build.sh** | macOS, Linux | `./scripts/build.sh` | Builds only, no installation |
-| **build-cross.sh** | macOS, Linux → Windows/Linux | `./scripts/build-cross.sh` | Cross-compiles Windows/Linux binaries |
-| **cargo build** | All | `cargo build` | Manual build for contributors |
 
 ---
 
@@ -72,29 +61,6 @@ source ~/.zshrc
 ---
 
 ## Build Scripts
-
-### `scripts/install.sh` — Build & Install
-
-Builds and installs the Rust binary from source.
-
-```bash
-# Default install (~/.local/bin):
-./scripts/install.sh
-
-# Custom install directory:
-./scripts/install.sh --dir /usr/local/bin
-
-# Use release profile (with debug info):
-./scripts/install.sh --profile release
-```
-
-**How it works:**
-1. Checks for `cargo` and `git` prerequisites
-2. Detects whether running from the repository or piped via `curl`
-3. If piped without a local repo, clones the fspec repository
-4. Builds the Rust binary from source using `cargo build`
-5. Copies the binary to `~/.local/bin` (configurable)
-6. Provides PATH guidance if the directory isn't already in your PATH
 
 ### `scripts/build.sh` — Native Build
 
@@ -301,59 +267,6 @@ Artifacts land at `rust/target/<triple>/release-slim/fspec[.exe]`.
 
 ---
 
-## After Installation
-
-### 1. Verify Installation
-
-```bash
-fspec --version
-```
-
-### 2. Set Your AI Provider API Key
-
-```bash
-# Anthropic (recommended)
-export ANTHROPIC_API_KEY="sk-ant-..."
-
-# Or any supported provider — see Supported Providers below
-```
-
-### 3. Start the Factory
-
-```bash
-cd /path/to/your/project
-fspec
-```
-
-This opens the Kanban board — your factory floor with AI workstations ready to take jobs.
-
----
-
-## Supported AI Providers
-
-fspec works with any AI provider that supports tool calling. Set the corresponding environment variable:
-
-| Provider | Environment Variable |
-| --- | --- |
-| **Anthropic** | `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` |
-| **Google Gemini** | `GOOGLE_GENERATIVE_AI_API_KEY` |
-| **OpenAI** | `OPENAI_API_KEY` |
-| **Codex (ChatGPT)** | OAuth (automatic via `/provider`) |
-| **xAI** | `XAI_API_KEY` |
-| **DeepSeek** | `DEEPSEEK_API_KEY` |
-| **Z.AI** | `ZAI_API_KEY` |
-| **Mistral** | `MISTRAL_API_KEY` |
-| **Groq** | `GROQ_API_KEY` |
-| **OpenRouter** | `OPENROUTER_API_KEY` |
-| **Together AI** | `TOGETHER_API_KEY` |
-| **Azure OpenAI** | `AZURE_OPENAI_API_KEY` |
-
-**OpenAI-compatible APIs** — Ollama, vLLM, LM Studio, and any server implementing the OpenAI API format work via the OpenAI provider with `OPENAI_API_KEY`.
-
-Configure or switch providers interactively with `/provider` in any session.
-
----
-
 ## Testing
 
 ### ⚠️ NEVER run unscoped `cargo test` or `cargo test --workspace`
@@ -376,67 +289,7 @@ cargo test --profile ci-test -p codelet-fspec
 
 ---
 
-## Installation Paths
-
-### macOS & Linux
-
-| Path | Description |
-| --- | --- |
-| `~/.local/bin/fspec` | Default (install.sh) |
-| `/usr/local/bin/fspec` | System-wide (requires sudo) |
-| `rust/target/release-slim/fspec` | Build from source |
-
-### Windows
-
-| Path | Description |
-| --- | --- |
-| `%USERPROFILE%\.local\bin\fspec.exe` | Default |
-| `C:\Program Files\fspec\fspec.exe` | System-wide (requires admin) |
-| `rust\target\release-slim\fspec.exe` | Build from source |
-
----
-
-## Uninstall
-
-### macOS/Linux
-
-```bash
-# Remove the binary
-rm ~/.local/bin/fspec
-# or wherever you installed it:
-rm /usr/local/bin/fspec
-```
-
-### Windows
-
-```powershell
-# Remove the binary
-Remove-Item "$env:USERPROFILE\.local\bin\fspec.exe"
-```
-
----
-
 ## Troubleshooting
-
-### Command not found after installation
-
-**macOS/Linux:**
-
-```bash
-# Check if ~/.local/bin is in your PATH
-echo $PATH | tr ':' '\n' | grep local
-
-# If not, add it to your shell configuration:
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc   # zsh
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc  # bash
-
-# Reload your shell
-source ~/.zshrc   # or ~/.bashrc
-```
-
-**Windows:**
-
-Restart PowerShell or Command Prompt. If still not found, add the installation directory to your PATH via System → Advanced system settings → Environment Variables.
 
 ### Build fails with missing protoc
 
@@ -481,11 +334,6 @@ echo 'export PATH="/opt/homebrew/opt/lld/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-### macOS Gatekeeper warning
+### MSVC sysroot download is slow (Windows cross-compilation)
 
-If macOS blocks the binary with "cannot be opened because the developer cannot be verified":
-
-```bash
-# Remove quarantine attribute
-xattr -d com.apple.quarantine ~/.local/bin/fspec
-```
+The first Windows build downloads ~300 MB of MSVC headers/libraries. Subsequent builds use the cached version in `~/.cache/cargo-xwin/`.

@@ -21,7 +21,7 @@ This isn't another agent harness. It's a **coding factory**.
 
 Many agent harnesses support multiple agents and basic planning. The difference is **how work gets broken down and executed**.
 
-In a typical agent harness, you describe a task and the agent writes code. Planning is informal, code is produced directly, and there's no structural guarantee that the output matches your intent.
+In a typical agent harness, you describe a task and the agent writes code. Planning is informal, code is produced directly, and there's no structural guarantee that the output matches your intent. You can add formal planning via external frameworks (BMAD, GSD, etc.), but those frameworks are bolted on — they don't enforce a spec-first, test-first pipeline or tie every line of code back to a verifiable requirement.
 
 fspec uses **Acceptance Criteria Driven Development (ACDD)** — a disciplined pipeline where every feature must pass through specification, testing, and implementation in order:
 
@@ -63,26 +63,7 @@ fspec makes this possible through **Acceptance Criteria Driven Development (ACDD
 
 ## Supported Providers
 
-fspec works with any AI provider that supports tool calling. Set your API key and start the factory:
-
-| Provider | Environment Variable |
-|----------|---------------------|
-| **Anthropic** | `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` (run `claude setup-token`) |
-| **Google Gemini** | `GOOGLE_GENERATIVE_AI_API_KEY` |
-| **OpenAI** | `OPENAI_API_KEY` |
-| **Codex** | OAuth (automatic) |
-| **xAI** | `XAI_API_KEY` |
-| **DeepSeek** | `DEEPSEEK_API_KEY` |
-| **Z.AI** | `ZAI_API_KEY` |
-| **Mistral** | `MISTRAL_API_KEY` |
-| **Groq** | `GROQ_API_KEY` |
-| **OpenRouter** | `OPENROUTER_API_KEY` |
-| **Together AI** | `TOGETHER_API_KEY` |
-| **Azure OpenAI** | `AZURE_OPENAI_API_KEY` |
-
-**OpenAI-compatible APIs** — Ollama, vLLM, LM Studio, and any server implementing the OpenAI API format work via the OpenAI provider with `OPENAI_API_KEY`.
-
-Configure providers with `/provider` in any session.
+fspec works with any AI provider that supports tool calling. See [docs/PROVIDERS.md](docs/PROVIDERS.md) for the full list and configuration.
 
 > **⚠️ Subscription Tokens**: Some tokens (like `CLAUDE_CODE_OAUTH_TOKEN`) come from subscription services rather than pay-per-use APIs. Check your provider's terms of service before using subscription tokens with third-party tools.
 
@@ -116,82 +97,6 @@ This opens the factory floor—your Kanban board with AI workstations ready to t
 > cross-compilation, and the `release-slim` profile rationale.
 
 ---
-
-## Rust Binary Architecture
-
-The `fspec` binary is a pure-Rust application built in the `rust/` directory.
-It provides the TUI, WebSocket server, and ACDD command surface as a single
-self-contained executable — no Node.js runtime required.
-
-### Three Operating Modes
-
-The binary supports three modes via clap subcommands:
-
-| Mode | Command | Description |
-|------|---------|-------------|
-| **Combined** (default) | `fspec` | TUI + always-on WebSocket server in one process |
-| **Daemon** | `fspec daemon` | Headless WebSocket server only (suitable for systemd / launchd) |
-| **Client** | `fspec client` | Frontend-only; connects to a running daemon via WebSocket |
-
-### Workspace Structure
-
-The Rust codebase is organized as a Cargo workspace with 21 crates:
-
-| Crate | Purpose |
-|-------|---------|
-| `codelet-fspec` | **Main binary** — CLI entry point, clap subcommands, mode selection |
-| `codelet-fspec-core` | Command implementations — pure-Rust port of all fspec CLI commands |
-| `codelet-fspec-tui` | Terminal UI — ratatui-based Kanban board, session views, agent interaction |
-| `codelet-agent-loop` | LLM agent loop — drains input, dispatches to LlmProvider, emits streaming output |
-| `codelet-sessions` | Session management — NAPI-free SessionManager + BackgroundSession |
-| `codelet-core` | Persistence, compaction, lifecycle hooks, token tracking, scheduler |
-| `codelet-common` | Shared utilities — data directory, file locking, logging, config |
-| `codelet-providers` | LLM provider integrations — Anthropic, OpenAI, Gemini, Codex, etc. |
-| `codelet-rpc` | RPC framework — tarpc-based in-process and WebSocket transports |
-| `codelet-rpc-server` | WebSocket RPC server — headless daemon mode |
-| `codelet-rpc-types` | Shared RPC types and message definitions |
-| `codelet-rpc-embedded` | Embedded transport — in-process tarpc channel |
-| `codelet-tools` | AI tool implementations — Read, Write, Bash, Grep, AstGrep, etc. |
-| `codelet-graph` | Knowledge graph — AST indexing, concept relationships |
-| `codelet-git` | Git operations — checkpoints, worktrees, branch management |
-| `codelet-cli` | CLI utilities — context gathering, interactive helpers, terminal output |
-| `codelet-tui` | TUI components — widgets, layouts, state management |
-| `codelet-attachment-viewer` | Axum HTTP server for serving project attachments |
-| `codelet-fspec-json-error` | JSON error formatting — human-friendly diagnostics |
-| `codelet-test-helpers` | Shared test utilities for integration tests |
-| `codelet-napi` | Node.js NAPI bindings — thin adapter for legacy JS integration |
-
-### Command Architecture
-
-All fspec CLI commands are implemented in `codelet-fspec-core`. Each command
-exposes a single entry point:
-
-```rust
-pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCoreError>
-```
-
-This function serves as the **single source of truth** for both:
-
-1. **The LLM-facing dispatcher** — called by the agent loop when the AI agent invokes an fspec tool
-2. **The standalone CLI** — called by the `fspec` binary when invoked from the shell
-
-This "two front doors, one source of truth" pattern ensures business logic is
-never duplicated between the agent-facing and shell-facing interfaces.
-
-### Distribution
-
-The standalone `fspec` binary is a self-contained executable:
-- **No Node.js runtime** needed
-- **No `.node` files** or NAPI bindings
-- **~150 MB** distribution size (using `release-slim` profile)
-
-Build and run directly:
-
-```bash
-cd rust
-cargo build --profile release-slim -p codelet-fspec
-./target/release-slim/fspec --version
-```
 
 ---
 
@@ -304,65 +209,13 @@ This is **Acceptance Criteria Driven Development (ACDD)**. Specifications are bl
 
 ## Using with External Agents
 
-fspec also works as tooling for Claude Code, Cursor, Codex, or any AI agent:
-
-```bash
-cd /path/to/your/project
-fspec init
-```
-
-This installs agent-specific documentation and slash commands. Then tell your agent:
-
-```
-"Run fspec bootstrap"
-"Create a story for user authentication"
-"Show me the board"
-```
-
-The agent learns the factory workflow and manages production automatically.
+fspec works as tooling for Claude Code, Cursor, Codex, or any AI agent. See [docs/EXTERNAL.md](docs/EXTERNAL.md) for setup instructions.
 
 ---
 
-## ⚠️ Security: Running in a Sandbox
+## Security
 
-**fspec agents have full access to your file system, network, and shell.** They can read, write, and execute anything your user account can. This is by design—agents need these capabilities to write code, run tests, and manage your project.
-
-However, this means a compromised or misbehaving agent could:
-- Read sensitive files (SSH keys, credentials, other projects)
-- Make network requests to arbitrary endpoints
-- Execute destructive commands
-
-### Recommended: Use ExitBox
-
-[ExitBox](https://github.com/cloud-exit/exitbox) runs AI agents in isolated containers with defense-in-depth security:
-
-- **Network firewall** — Agents can only reach allowlisted domains
-- **File isolation** — Only your project directory is mounted
-- **Capability restrictions** — No raw sockets, no privilege escalation
-- **Credential protection** — SSH keys and cloud credentials are not exposed
-
-### Quick Setup
-
-**Windows (PowerShell):**
-```powershell
-irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/setup-sandbox.ps1 | iex
-```
-
-### What Gets Restricted
-
-| Resource | Without Sandbox | With ExitBox |
-|----------|-----------------|--------------|
-| File system | Full access | Only `/workspace` (your project) |
-| Network | Unrestricted | Allowlisted domains only |
-| SSH keys | Accessible | Hidden (unless `--full-git-support`) |
-| Other projects | Accessible | Isolated |
-| System commands | Full shell | Restricted capabilities |
-
-### When to Skip the Sandbox
-
-If you're running fspec on throwaway VMs, CI environments, or fully trust the agent, you can run directly. The sandbox adds a small amount of overhead and complexity.
-
-For local development on your primary machine, **the sandbox is strongly recommended**.
+fspec agents have full access to your file system, network, and shell. See [docs/SECURITY.md](docs/SECURITY.md) for sandboxing recommendations and ExitBox integration.
 
 ---
 
@@ -385,81 +238,9 @@ Block, allow, or prompt for approval on specific commands and file access patter
 
 ---
 
-## Scaling Work: AgentManager, SessionSearch & DeepSearch
+## Scaling Work
 
-Three tools work together to scale beyond single-threaded development:
-
-### AgentManager — Parallel Worker Sessions
-
-Spawn subordinate AI agents with full tool access. Each worker inherits the supervisor's model and runs independently:
-
-- **spawn** — Create a new worker session with an optional role (e.g., "security reviewer")
-- **message** — Send tasks to workers, with optional context references from other sessions
-- **list / get_status** — Monitor worker progress
-- **await_idle** — Block until workers finish (instead of polling)
-- **close** — Terminate workers when done
-
-```
-AgentManager(action='spawn', role='Security reviewer')
-# → { session_id: 'abc-123' }
-
-AgentManager(action='message', session_id='abc-123',
-  message='Review src/auth/ for vulnerabilities')
-
-AgentManager(action='await_idle', session_id='abc-123')
-# Blocks until the worker finishes
-
-AgentManager(action='close', session_id='abc-123')
-```
-
-### SessionSearch — Cross-Session Memory
-
-Search and view conversation history across all sessions. Workers use SessionSearch to PULL context from their supervisor:
-
-- **recent** — List recent sessions for discovery
-- **search** — Keyword search with regex across all content (user inputs, responses, tool calls)
-- **show** — Load a specific session's conversation
-
-```
-SessionSearch(action='recent', count=5)
-# → List of recent sessions with timestamps
-
-SessionSearch(action='search', query='authentication', last_hours=24)
-# → Matches with surrounding context
-
-SessionSearch(action='show', session_id='abc-123', max_turns=20)
-# → Conversation history for drill-down
-```
-
-### DeepSearch — Ephemeral Research Sub-Agents
-
-Spawn a read-only sub-agent that explores a scoped corpus (code files or session history) and returns a synthesized answer:
-
-```
-DeepSearch(query='How is authentication handled?', scope='src/auth/')
-# → Sub-agent explores the directory and returns findings
-
-DeepSearch(query='What was decided about the database schema?')
-# → Searches session history only (no code scope)
-```
-
-### How They Work Together
-
-| Tool | Use When | Persistence |
-|------|----------|-------------|
-| **SessionSearch** | Recall decisions, pull context from another agent | Reads existing data |
-| **DeepSearch** | Answer research questions requiring many file reads | Ephemeral (no persistence) |
-| **AgentManager** | Parallel workers doing real work — writing code, running tests | Full session (searchable) |
-
-**Typical pattern:**
-
-1. Supervisor spawns workers via AgentManager
-2. Workers use SessionSearch to pull context from the supervisor
-3. Workers use DeepSearch for codebase research
-4. Supervisor uses `await_idle` to wait for results
-5. Workers close when done
-
-This enables factory-scale parallelism: one agent implements a feature while another reviews security, all sharing context through SessionSearch.
+AgentManager, SessionSearch, and DeepSearch enable parallel work across multiple agents. See [docs/SCALING.md](docs/SCALING.md) for details.
 
 ---
 
