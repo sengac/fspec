@@ -126,7 +126,7 @@ The binary supports three modes via clap subcommands:
 
 ### Workspace Structure
 
-The Rust codebase is organized as a Cargo workspace with 25 crates:
+The Rust codebase is organized as a Cargo workspace with 21 crates:
 
 | Crate | Purpose |
 |-------|---------|
@@ -150,9 +150,7 @@ The Rust codebase is organized as a Cargo workspace with 25 crates:
 | `codelet-attachment-viewer` | Axum HTTP server for serving project attachments |
 | `codelet-fspec-json-error` | JSON error formatting — human-friendly diagnostics |
 | `codelet-test-helpers` | Shared test utilities for integration tests |
-| `codelet-benches` | Performance benchmarks |
-| `codelet-future` | Experimental features |
-| `codelet-patches` | Patched upstream dependencies (rig-core) |
+| `codelet-napi` | Node.js NAPI bindings — thin adapter for legacy JS integration |
 
 ### Command Architecture
 
@@ -181,7 +179,7 @@ The standalone `fspec` binary is a self-contained executable:
 Build and run directly:
 
 ```bash
-cd codelet
+cd rust
 cargo build --profile release-slim -p codelet-fspec
 ./target/release-slim/fspec --version
 ```
@@ -335,11 +333,6 @@ However, this means a compromised or misbehaving agent could:
 - **Credential protection** — SSH keys and cloud credentials are not exposed
 
 ### Quick Setup
-
-**macOS / Linux:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/setup-sandbox.sh | bash
-```
 
 **Windows (PowerShell):**
 ```powershell
@@ -527,7 +520,7 @@ Monitor and interact with your factory from your phone. The Bridge tool connects
 
 3. **Start the endpoint**:
    ```bash
-   cargo run -p codelet-bridge -- telegram
+   npx tsx bridge/telegram-endpoint.ts
    ```
 
 4. **Message your bot** — Send any message to link your chat
