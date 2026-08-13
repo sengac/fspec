@@ -4,7 +4,7 @@
   <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**The Spec-Driven, Multi-Agent Coding Factory**
+**The Spec-Driven, Multi-Agent Harness**
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -15,22 +15,31 @@
 
 **fspec** (Factory Spec) is infrastructure for running a software factory—multiple AI agents working jobs in parallel, driven by specifications, managed on a Kanban board.
 
-This isn't another coding assistant. It's a **coding factory**.
+This isn't another agent harness. It's a **coding factory**.
 
-### Coding Agent vs. Coding Factory
+### How fspec Differs from Agent Harnesses
 
-A **coding agent** is a single AI that helps you write code. You chat with it, it writes some code, you review it, repeat. One conversation, one task, one developer. It's pair programming with a robot.
+Many agent harnesses support multiple agents and basic planning. The difference is **how work gets broken down and executed**.
 
-A **coding factory** is fundamentally different:
+In a typical agent harness, you describe a task and the agent writes code. Planning is informal, code is produced directly, and there's no structural guarantee that the output matches your intent.
 
-| | Coding Agent | Coding Factory |
+fspec uses **Acceptance Criteria Driven Development (ACDD)** — a disciplined pipeline where every feature must pass through specification, testing, and implementation in order:
+
+1. **Features on a board** — Work is broken into user-facing capabilities, each tracked as a work unit on a Kanban board
+2. **Specification first** — Before any code, the agent writes Gherkin scenarios capturing exactly what the feature should do, asking clarifying questions to uncover edge cases
+3. **Tests before code** — Failing tests are written from the spec, proving the agent understands the requirements
+4. **Minimal implementation** — Just enough code to make the tests pass, nothing more
+
+This discipline produces code that is **robust** (every behavior is tested), **isolated** (each feature is independently specified and tested), and **behavior-driven** (the spec is the source of truth, not the code).
+
+| | Agent Harness | fspec (ACDD) |
 |---|---|---|
-| **Concurrency** | One conversation at a time | Multiple agents working simultaneously |
-| **Input** | Informal chat prompts | Structured specifications |
-| **Workflow** | Ad-hoc | Systematic (backlog → done) |
-| **Traceability** | None | Every line links to a requirement |
-| **Overnight work** | Not practical | Agents run while you sleep |
-| **Scale** | One developer's productivity | Factory-level throughput |
+| **Work breakdown** | Free-form prompts or tasks | Features as user capabilities on a Kanban board |
+| **Spec → code** | Code written directly from prompts | Gherkin spec → failing tests → minimal implementation |
+| **Quality guarantee** | Depends on agent judgment | Every acceptance criterion has a failing test before code is written |
+| **Traceability** | None or informal | Every line of code links back to a Gherkin scenario |
+| **Scope control** | Agents tend to over-implement | Tests dictate exactly what gets implemented |
+| **Concurrency** | Optional, unstructured | Structured — each agent pulls a specified work unit from the board |
 
 In a factory, you don't stand at every machine. You design the product, write the specifications, and let the production line run. You check output quality. You fix bottlenecks. But the machines do the work.
 
@@ -359,134 +368,7 @@ For local development on your primary machine, **the sandbox is strongly recomme
 
 ## Command & File Blocklist
 
-fspec includes a blocklist system that can block, allow, or prompt for approval on specific commands and file access patterns. This provides fine-grained control over what agents can do—without requiring a full sandbox.
-
-### Configuration Files
-
-| Location | Purpose |
-|----------|---------|
-| `~/.fspec/blocklist.json` | System-wide rules (apply to all projects) |
-| `.fspec/blocklist.json` | Project-specific rules (override system rules) |
-
-### Config Structure
-
-```json
-{
-  "version": "1.0.0",
-  "rules": [
-    {
-      "id": "git-checkout-block",
-      "pattern": "^git\\s+checkout\\b",
-      "action": "block",
-      "reason": "git checkout is deprecated",
-      "guidance": "Use git switch instead"
-    },
-    {
-      "id": "ssh-config-prompt",
-      "pattern": "\\.ssh",
-      "action": "prompt",
-      "reason": "SSH directory may contain sensitive keys"
-    },
-    {
-      "id": "allow-node-modules-rm",
-      "pattern": "^rm\\s+-rf\\s+\\./node_modules\\b",
-      "action": "allow",
-      "reason": ""
-    }
-  ]
-}
-```
-
-### Actions
-
-| Action | Behavior |
-|--------|----------|
-| **block** | Immediately reject. The AI receives the `reason` and `guidance` as an error message. |
-| **prompt** | Pause and ask the user. Shows a triple-choice dialog: **Allow Once**, **Allow Session**, or **Deny**. |
-| **allow** | Explicitly permit. Used to override a more general blocking rule. |
-
-### How Rules Are Evaluated
-
-1. **Project rules first** — `.fspec/blocklist.json` rules are checked before system rules
-2. **First match wins** — Evaluation stops at the first matching pattern
-3. **Allow overrides block** — A project `allow` rule can override a system `block` rule
-
-This means you can have a system-wide rule blocking `rm -rf` but allow it specifically for `./node_modules` in a project config.
-
-### Pattern Syntax
-
-Patterns use **regex**. Common patterns:
-
-```json
-"^git\\s+checkout\\b"     // Command starts with "git checkout"
-"\\.env"                   // Path contains ".env"
-"^rm\\s+-rf\\b"           // Command starts with "rm -rf"
-"~/.ssh"                   // Path contains "~/.ssh"
-```
-
-### What Gets Checked
-
-- **Bash tool** — Command string is checked before execution
-- **Read/Write/Edit tools** — File path is checked before access
-
-### Session Allowances
-
-When a user selects **Allow Session** on a prompt, that pattern is remembered for the current session. The agent can access matching resources without re-prompting until the TUI is restarted.
-
-### Example: Protecting Sensitive Files
-
-System config (`~/.fspec/blocklist.json`):
-```json
-{
-  "version": "1.0.0",
-  "rules": [
-    {
-      "id": "ssh-prompt",
-      "pattern": "\\.ssh",
-      "action": "prompt",
-      "reason": "SSH keys are sensitive credentials"
-    },
-    {
-      "id": "env-prompt",
-      "pattern": "\\.env",
-      "action": "prompt",
-      "reason": "Environment files may contain secrets"
-    },
-    {
-      "id": "aws-prompt",
-      "pattern": "\\.aws",
-      "action": "prompt",
-      "reason": "AWS credentials directory"
-    }
-  ]
-}
-```
-
-### Example: Enforcing Tool Usage
-
-Block agents from using shell commands when proper tools exist:
-
-```json
-{
-  "version": "1.0.0",
-  "rules": [
-    {
-      "id": "cat-block",
-      "pattern": "^cat\\s+",
-      "action": "block",
-      "reason": "Use the Read tool for file reading, not Bash",
-      "guidance": "The Read tool provides proper encoding and line numbers"
-    },
-    {
-      "id": "echo-redirect-block",
-      "pattern": "echo.*>",
-      "action": "block",
-      "reason": "Use the Write tool for file writing, not Bash",
-      "guidance": "The Write tool handles encoding and creates parent directories"
-    }
-  ]
-}
-```
+Block, allow, or prompt for approval on specific commands and file access patterns. See [docs/BLOCKLIST.md](docs/BLOCKLIST.md) for configuration details.
 
 ---
 
@@ -583,125 +465,10 @@ This enables factory-scale parallelism: one agent implements a feature while ano
 
 ## Telegram Bridge
 
-Monitor and interact with your factory from your phone. The Bridge tool connects any session to external WebSocket endpoints, with a built-in Telegram integration.
-
-### Setup
-
-1. **Create a Telegram bot** — Message [@BotFather](https://t.me/botfather), send `/newbot`, get your token
-
-2. **Configure the bridge** — Create `bridge/.env`:
-   ```bash
-   TELEGRAM_BOT_TOKEN=your_token_here
-   TELEGRAM_ALLOWED_USER_IDS=123456789   # Your Telegram user ID (optional but recommended)
-   ```
-
-3. **Start the endpoint**:
-   ```bash
-   npx tsx bridge/telegram-endpoint.ts
-   ```
-
-4. **Message your bot** — Send any message to link your chat
-
-5. **Connect the agent** — Tell it:
-   ```
-   Connect to the Telegram bridge at ws://localhost:8181
-   ```
-
-Now all agent output streams to Telegram. Send messages back to provide input. Run the factory overnight and check production from bed.
-
-### Security: User Whitelist
-
-By default, anyone who finds your bot can interact with it. Set `TELEGRAM_ALLOWED_USER_IDS` to restrict access:
-
-```bash
-# Single user
-TELEGRAM_ALLOWED_USER_IDS=123456789
-
-# Multiple users (comma-separated)
-TELEGRAM_ALLOWED_USER_IDS=123456789,987654321
-```
-
-To find your Telegram user ID, message [@userinfobot](https://t.me/userinfobot) or check the bridge console output when you send a message.
+Monitor and interact with your factory from your phone via Telegram. See [docs/TELEGRAM.md](docs/TELEGRAM.md) for setup instructions.
 
 ---
 
 ## Isolated Sessions & Worktrees
 
-When you start a new agent, you can choose between **Normal** and **Isolated** mode:
-
-- **Normal** — Agent works directly in your project directory
-- **Isolated** — Agent works in a git worktree (separate directory, same repository)
-
-### Why Isolated Sessions?
-
-Isolated sessions provide safe experimentation without risking your main codebase:
-
-- **Parallel development** — Multiple agents can work on different features simultaneously
-- **Safe experimentation** — Changes are contained in a separate worktree
-- **Easy rollback** — Discard changes without affecting the main project
-- **Clean merges** — Apply changes back only when you're satisfied
-
-### How It Works
-
-1. **Create an isolated session** — Press `/` and select "Isolated" mode
-2. **Work normally** — The agent sees the worktree as its project root
-3. **Review changes** — All files are modified in the isolated worktree
-4. **Merge or discard** — When finished, merge changes back or discard them
-
-### Merging Changes
-
-To merge isolated session changes back to the main project:
-
-```
-/merge-worktree
-```
-
-This command:
-
-1. **Checks for conflicts** — Detects if files changed in both session and main project
-2. **Applies changes** — Copies modifications, additions, and deletions to main worktree
-3. **Shows summary** — Displays files modified, added, and deleted
-4. **Closes session** — Returns you to the board view
-
-### Conflict Handling
-
-If conflicts are detected:
-
-- The merge is **not applied**
-- Conflict details are shown in the chat
-- The session remains **active** so you can resolve conflicts
-- After resolving, run `/merge-worktree` again
-
-### Discarding Changes
-
-If you decide not to keep isolated changes:
-
-```
-/sessions
-```
-
-This opens the session manager where you can:
-
-- View all isolated sessions
-- Inspect changes before deciding
-- Discard sessions you don't want
-
-Discarding removes the worktree and all uncommitted changes—**no changes are applied to the main project**.
-
-### When to Use Isolated Sessions
-
-| Use Case | Recommended Mode |
-|----------|------------------|
-| Quick bug fix | Normal |
-| Experimental feature | Isolated |
-| Multiple agents working simultaneously | Isolated |
-| Refactoring with uncertain outcomes | Isolated |
-| Production hotfix | Normal |
-| Code review/analysis | Normal |
-
-### Technical Details
-
-- Worktrees are created in `.fspec/worktrees/<session-id>/`
-- Each worktree shares the same git history as the main repository
-- Sessions are tracked in `~/.fspec/git-sessions/`
-- Orphaned worktrees (from crashed sessions) are cleaned up automatically
+Work in git worktrees for safe experimentation and parallel development. See [docs/WORKTREES.md](docs/WORKTREES.md) for details.
