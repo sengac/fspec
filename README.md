@@ -500,7 +500,6 @@ Block agents from using shell commands when proper tools exist:
 - **Git checkpoints** — Automatic save points for safe experimentation
 - **Coverage tracking** — Link code to requirements
 - **Isolated sessions** — Work in git worktrees for safe experimentation
-- **Watcher sessions** — Supervisor agents that review production in real-time
 
 ---
 
@@ -545,58 +544,6 @@ TELEGRAM_ALLOWED_USER_IDS=123456789,987654321
 ```
 
 To find your Telegram user ID, message [@userinfobot](https://t.me/userinfobot) or check the bridge console output when you send a message.
-
-### Multiple Bridges
-
-Connect to multiple endpoints simultaneously—Telegram, Slack, Discord, or any WebSocket server. Each bridge receives the same stream.
-
-### Mobile App (Coming Soon)
-
-A dedicated mobile app for iOS and Android is in development at [github.com/sengac/fspec.app](https://github.com/sengac/fspec.app). It connects to fspec via the Bridge protocol, providing a native interface for monitoring production, sending input, and managing jobs from your phone.
-
----
-
-## Watcher Sessions
-
-Watchers are supervisor agents that observe production in real-time and automatically interject with feedback. Think of them as quality inspectors on the factory floor.
-
-### Use Cases
-
-- **Security Reviewer** — Watches for SQL injection, XSS, authentication issues
-- **Test Enforcer** — Ensures tests are written before implementation
-- **Architecture Advisor** — Suggests patterns and flags structural problems
-- **Documentation Checker** — Ensures code changes include doc updates
-
-### Creating a Watcher
-
-Type `/watcher` in any session to open the watcher overlay. Press **N** to create a new template:
-
-- **Name** — Role name like "Security Reviewer"
-- **Authority** — Peer (suggestions) or Supervisor (directives)
-- **Model** — Which AI model to use
-- **Brief** — Instructions for what to watch for
-- **Auto-inject** — Whether to automatically send feedback to the production agent
-
-### How It Works
-
-1. Watcher observes production agent output in real-time
-2. At breakpoints (tool results, turn completion), watcher evaluates what it saw
-3. If the watching brief is triggered, watcher decides to interject or continue
-4. **Auto-inject ON**: Feedback automatically appears in production session as a purple message
-5. **Auto-inject OFF**: You review the feedback and manually inject if desired
-
-### Split View
-
-When viewing a watcher session, the screen splits:
-
-- **Left pane** — Production session (read-only, dimmed)
-- **Right pane** — Watcher conversation (interactive)
-- **←/→ arrows** — Switch between panes
-- **Tab** — Select specific turns to discuss
-
-### Templates
-
-Watcher configurations are saved as reusable templates in `~/.fspec/watcher-templates.json`. Spawn instances quickly with `/watcher spawn <slug>` or press Enter on any template in the overlay.
 
 ---
 
