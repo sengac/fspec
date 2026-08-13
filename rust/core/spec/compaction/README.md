@@ -3,7 +3,7 @@
 This directory contains Alloy 6 models that formally verify invariants of the
 context compaction subsystem.
 
-> **Background:** see `FORMAL_VERIFICATION.md` in the project root for the
+> **Background:** see `docs/FORMAL_VERIFICATION.md` for the
 > overall verification process and proof index.
 
 ## Models in this directory

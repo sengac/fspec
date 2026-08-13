@@ -17,7 +17,7 @@ All 4 feature files pass `fspec show-coverage` at 100% (16/16 scenarios linked).
 
 ### 🟡 W1 — Three test-file header comments reference the wrong feature file
 
-ACDD convention (TESTING.md) requires the header `Feature:` comment on each test file to point at the feature whose scenarios the test asserts. All three RPC-054 dispatch / parity / source-shape test files copy-paste `rpc054-provider-settings-view.feature` instead.
+ACDD convention (docs/TESTING.md) requires the header `Feature:` comment on each test file to point at the feature whose scenarios the test asserts. All three RPC-054 dispatch / parity / source-shape test files copy-paste `rpc054-provider-settings-view.feature` instead.
 
 | File | Line | Current (Wrong) | Correct |
 |---|---|---|---|

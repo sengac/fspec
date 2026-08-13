@@ -119,7 +119,7 @@ This function is called by **both**:
 
 ## Testing Requirements
 
-> **📖 For the complete testing guide — runners, fixtures, patterns, and examples — see [TESTING.md](TESTING.md).**
+> **📖 For the complete testing guide — runners, fixtures, patterns, and examples — see [TESTING.md](docs/TESTING.md).**
 
 ### Critical Rules
 

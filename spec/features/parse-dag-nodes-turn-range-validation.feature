@@ -6,7 +6,7 @@
 @CMPCT-035
 Feature: Validate turn_start <= turn_end in parse_dag_nodes (FV-003-a)
   """
-  On completion, FORMAL_VERIFICATION.md MUST be updated: (1) Remove FV-003-a row from Findings table at line 196. (2) Decrement limitation count in FV-003 row of Proofs status table at line 216. (3) Remove the limitation_parser_does_not_validate_start_le_end test from dag_node_proptest.test.rs.
+  On completion, docs/FORMAL_VERIFICATION.md MUST be updated: (1) Remove FV-003-a row from Findings table at line 196. (2) Decrement limitation count in FV-003 row of Proofs status table at line 216. (3) Remove the limitation_parser_does_not_validate_start_le_end test from dag_node_proptest.test.rs.
   """
 
   # ========================================

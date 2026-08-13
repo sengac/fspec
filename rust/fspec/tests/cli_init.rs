@@ -22,7 +22,7 @@ use common::fspec_bin;
 // ---------- helpers ----------
 
 /// Run `fspec init <extra_args>` in `cwd` with HOME redirected into the
-/// tempdir (TESTING.md: "redirect, don't intercept") so codex/codex-cli
+/// tempdir (docs/TESTING.md: "redirect, don't intercept") so codex/codex-cli
 /// home-dir writes never escape the sandbox.
 fn run_init(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
     let mut cmd = Command::new(fspec_bin());

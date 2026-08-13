@@ -70,7 +70,7 @@ and a new positive test added to confirm that valid ranges still parse.
 3. New proptest assertion: for every parsed `DagNode`, `node.turn_start <= node.turn_end`.
 4. Existing `limitation_parser_does_not_validate_start_le_end` is **removed** (the
    limitation is no longer accurate).
-5. **Update `FORMAL_VERIFICATION.md`:**
+5. **Update `docs/FORMAL_VERIFICATION.md`:**
    - Remove the FV-003-a row from the "Findings (open observations)" table.
    - Update the FV-003 row in the "Proofs" status table from
      `✅ Cross-checked + 3 limitations pinned` to

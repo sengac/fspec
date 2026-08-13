@@ -82,7 +82,7 @@ matching the parser's existing left-to-right preference.
 4. New proptest assertion: for every pair of same-depth nodes in the output,
    their ranges are disjoint.
 5. Existing `limitation_parser_does_not_reject_overlap` is **removed**.
-6. **Update `FORMAL_VERIFICATION.md`:**
+6. **Update `docs/FORMAL_VERIFICATION.md`:**
    - Remove the FV-003-b row from the "Findings (open observations)" table.
    - Decrement the limitation count in the FV-003 row of the "Proofs" status
      table.

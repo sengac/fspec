@@ -20,7 +20,7 @@ None.
 
 #### 🟡 Warnings (Should Fix)
 
-1. **`codelet/git/tests/count_checkpoints_rpc015.rs` line 3** — header doc comment references a non-existent feature file `spec/features/rpc015-checkpoint-counts.feature`. The actual feature file backing this test is `spec/features/rpc015-count-checkpoints-helper.feature` (verified via `Fspec show-coverage`). TESTING.md requires the test file header to reference the feature file; a wrong reference breaks traceability.
+1. **`codelet/git/tests/count_checkpoints_rpc015.rs` line 3** — header doc comment references a non-existent feature file `spec/features/rpc015-checkpoint-counts.feature`. The actual feature file backing this test is `spec/features/rpc015-count-checkpoints-helper.feature` (verified via `Fspec show-coverage`). docs/TESTING.md requires the test file header to reference the feature file; a wrong reference breaks traceability.
 
 2. **`codelet/fspec-tui/tests/checkpoint_counts_rpc015.rs` line 3** — header doc comment references the same non-existent feature file `spec/features/rpc015-checkpoint-counts.feature`. The actual feature file backing this test is `spec/features/rpc015-cross-transport-parity.feature`.
 
@@ -93,7 +93,7 @@ None.
 
 Per the user's instruction "keep strictly to the requirements of this card — no scope creep":
 
-- ✅ FIX: Test-header doc references (warnings 1–3) — these are documentation accuracy fixes, not new behaviour. TESTING.md requires the reference; fixing a wrong path is a typo-class correction.
+- ✅ FIX: Test-header doc references (warnings 1–3) — these are documentation accuracy fixes, not new behaviour. docs/TESTING.md requires the reference; fixing a wrong path is a typo-class correction.
 - ⏭️ SKIP: Observations 1 and 2 — these touch concerns outside RPC-015's acceptance criteria. The source-shape Gherkin scenario already passes `fspec validate`; the silent `unwrap_or_default()` is a deliberate design choice given the tarpc `Result`-free return type.
 
 ---

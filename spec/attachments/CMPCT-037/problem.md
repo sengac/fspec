@@ -88,7 +88,7 @@ preserve that invariant".
 5. New proptest assertion: post-clamping, every output node satisfies
    `turn_start <= turn_end`.
 6. Existing `limitation_clamping_can_invert_range` is **removed**.
-7. **Update `FORMAL_VERIFICATION.md`:**
+7. **Update `docs/FORMAL_VERIFICATION.md`:**
    - Remove the FV-003-c row from the "Findings (open observations)" table.
    - If FV-003-a and FV-003-b are also fixed, change the FV-003 row in the
      "Proofs" status table from
