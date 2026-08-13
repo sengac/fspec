@@ -2,12 +2,7 @@
   "name": "@sengac/fspec",
   "version": "0.9.3",
   "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
-  "workspaces": [
-    "rust/napi"
-  ],
   "scripts": {
-    "build:codelet-napi": "cd rust/napi && npm run build",
-    "build:codelet-napi:all": "cd rust/napi && npm run build:all",
     "build:rust:fspec": "(cd rust && cargo build -p codelet-fspec --release) && mkdir -p dist && cp rust/target/release/fspec dist/fspec && chmod +x dist/fspec",
     "bridge:telegram": "npx tsx bridge/telegram-endpoint.ts",
     "bridge:telegram:bg": "nohup npx tsx bridge/telegram-endpoint.ts > bridge/telegram.log 2>&1 & echo $! > bridge/telegram.pid && echo 'Telegram bridge started in background (PID saved to bridge/telegram.pid)'",
@@ -64,7 +59,6 @@
   "dependencies": {
     "@cucumber/gherkin": "^29.0.0",
     "@cucumber/messages": "^25.0.1",
-    "@sengac/codelet-napi": "^0.1.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "chalk": "^5.6.2",
