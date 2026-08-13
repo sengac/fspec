@@ -1,13 +1,11 @@
-//! PROV-129 — Codex model allowlist (TS parity with
-//! `src/tui/services/codexAllowlistService.ts`).
+//! PROV-129 — Codex model allowlist.
 //!
 //! Feature: spec/features/codex-section-synthesis.feature
 //!
 //! When Codex (ChatGPT) credentials are present the model selector re-parents
 //! the OpenAI cloud catalog under a synthetic "Codex (ChatGPT)" section
 //! (see [`crate::cloud_models::synthesize_codex_section`]). This module filters
-//! that catalog down to the Codex-supported model slugs, exactly mirroring the
-//! TS `matchesCodexAllowlist` / `filterByCodexAllowlist`:
+//! that catalog down to the Codex-supported model slugs:
 //!
 //! * Only entries whose `visibility` equals `"list"` can match.
 //! * A model matches by an EXACT slug equality, or by a `slug-<date>` variant
@@ -15,19 +13,17 @@
 //!   model family such as `-mini` / `-nano`).
 //! * Matched models are sorted by ascending allowlist `priority`.
 //!
-//! The bundled default allowlist is the SAME JSON the TS build ships
-//! (`src/tui/data/codex-models.json`), embedded via `include_str!` so there is
-//! a single source of truth. A user override at `~/.fspec/codex-models.json`
+//! The bundled default allowlist lives in `data/codex-models.json`, embedded
+//! via `include_str!`. A user override at `~/.fspec/codex-models.json`
 //! (resolved via `FSPEC_USER_DIR`/`HOME`) takes precedence when it exists and
 //! is non-empty. All failures degrade gracefully — a load error yields the
-//! unfiltered model list, matching the TS try/catch.
+//! unfiltered model list.
 
 use codelet_rpc_types::ModelEntry;
 use serde::Deserialize;
 
-/// Bundled default Codex allowlist — shared verbatim with the TS build so the
-/// Rust and Ink selectors filter identically.
-const BUNDLED_ALLOWLIST_JSON: &str = include_str!("../../../src/tui/data/codex-models.json");
+/// Bundled default Codex allowlist — embedded at compile time.
+const BUNDLED_ALLOWLIST_JSON: &str = include_str!("../data/codex-models.json");
 
 /// A single Codex allowlist entry (`{ slug, visibility, priority }`). Mirrors
 /// the TS `CodexModelEntry`.
