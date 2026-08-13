@@ -2,37 +2,13 @@
   "name": "@sengac/fspec",
   "version": "0.9.3",
   "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
-  "type": "module",
   "workspaces": [
     "rust/napi"
   ],
-  "main": "./dist/index.js",
-  "bin": {
-    "fspec": "./dist/index.js"
-  },
   "scripts": {
     "build:codelet-napi": "cd rust/napi && npm run build",
     "build:codelet-napi:all": "cd rust/napi && npm run build:all",
-    "build:rust:fspec": "(cd codelet && cargo build -p fspec --release) && mkdir -p dist && cp rust/target/release/fspec dist/fspec && chmod +x dist/fspec",
-    "build": "npm run build:codelet-napi && vite build && chmod +x dist/index.js",
-    "build:sea": "npm run build && ./scripts/build-sea.sh",
-    "build:sea:clean": "./scripts/build-sea.sh --clean",
-    "dev": "vite build --watch",
-    "install:local": "./scripts/install-local.sh",
-    "test:napi-publish": "./scripts/test-napi-publish.sh",
-    "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "eslint 'src/**/*.ts' --fix",
-    "format": "prettier --write 'src/**/*.ts' 'rust/**/*.ts'",
-    "format:spec": "fspec format",
-    "test": "npm run build && vitest run",
-    "test:e2e": "npm run build && vitest run --config vitest.e2e.config.ts",
-    "test:tui": "npm run build && ./scripts/run-tui-test.sh",
-    "test:tui:trace": "npm run build && ./scripts/run-tui-test.sh --trace",
-    "test:extension": "vitest run --config vitest.config.ts extension/",
-    "test:watch": "vitest --watch",
-    "postinstall": "patch-package",
-    "prepare": "husky",
-    "prepublishOnly": "node scripts/check-publish-deps.js",
+    "build:rust:fspec": "(cd rust && cargo build -p codelet-fspec --release) && mkdir -p dist && cp rust/target/release/fspec dist/fspec && chmod +x dist/fspec",
     "bridge:telegram": "npx tsx bridge/telegram-endpoint.ts",
     "bridge:telegram:bg": "nohup npx tsx bridge/telegram-endpoint.ts > bridge/telegram.log 2>&1 & echo $! > bridge/telegram.pid && echo 'Telegram bridge started in background (PID saved to bridge/telegram.pid)'",
     "bridge:telegram:stop": "kill $(cat bridge/telegram.pid) 2>/dev/null && rm bridge/telegram.pid && echo 'Telegram bridge stopped' || echo 'No running bridge found'",
@@ -116,46 +92,5 @@
     "winston": "^3.18.3",
     "zustand": "^5.0.8"
   },
-  "devDependencies": {
-    "@ast-grep/cli": "^0.40.5",
-    "@eslint/js": "^9.38.0",
-    "@microsoft/tui-test": "^0.0.3",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.1",
-    "@types/diff": "^7.0.2",
-    "@types/dompurify": "^3.0.5",
-    "@types/express": "^5.0.5",
-    "@types/fs-extra": "^11.0.4",
-    "@types/lodash.throttle": "^4.1.9",
-    "@types/node": "^24.5.1",
-    "@types/node-fetch": "^2.6.13",
-    "@types/node-telegram-bot-api": "^0.64.13",
-    "@types/react": "^19.2.14",
-    "@types/ws": "^8.18.1",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "delay": "^7.0.0",
-    "eslint": "^9.38.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "fs-extra": "^11.3.2",
-    "husky": "^9.1.7",
-    "ink-testing-library": "^4.0.0",
-    "lint-staged": "^16.2.6",
-    "memfs": "^4.49.0",
-    "node-fetch": "^3.3.2",
-    "node-telegram-bot-api": "^0.67.0",
-    "patch-package": "^8.0.1",
-    "prettier": "^3.6.2",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.5",
-    "vitest": "^4.0.1",
-    "ws": "^8.19.0"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ]
-  }
+  "devDependencies": {}
 }
